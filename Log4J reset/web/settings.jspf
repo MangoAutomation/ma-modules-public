@@ -1,0 +1,11 @@
+<%--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+--%><%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
+<script type="text/javascript" src="/dwr/interface/Log4JResetDwr.js"></script>
+<input type="button" value="<fmt:message key="log4JReset.settings.reload"/>" onclick="Log4JResetDwr.resetLog4J()"/><br/>
+<input type="button" value="<fmt:message key="log4JReset.settings.test.debug"/>" onclick="Log4JResetDwr.testDebug()"/><br/>
+<input type="button" value="<fmt:message key="log4JReset.settings.test.info"/>" onclick="Log4JResetDwr.testInfo()"/><br/>
+<input type="button" value="<fmt:message key="log4JReset.settings.test.warn"/>" onclick="Log4JResetDwr.testWarn()"/><br/>
+<input type="button" value="<fmt:message key="log4JReset.settings.test.error"/>" onclick="Log4JResetDwr.testError()"/><br/>
+<input type="button" value="<fmt:message key="log4JReset.settings.test.fatal"/>" onclick="Log4JResetDwr.testFatal()"/><br/>

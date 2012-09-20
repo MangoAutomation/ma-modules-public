@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="maintenanceEvents" key="dox.maintenanceEvents" filename="maintenanceEvents.htm">
+    <relation id="cronPatterns"/>
+    <relation id="eventDetectors"/>
+  </item>
+</doxManifest>
