@@ -1,0 +1,44 @@
+<%--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+--%><%@page import="com.serotonin.m2m2.Common"%>
+<%@page import="com.serotonin.m2m2.reports.ReportPurgeDefinition"%>
+<%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
+
+<c:set var="reportPurgePeriods"><%= ReportPurgeDefinition.REPORT_PURGE_PERIODS %></c:set>
+<c:set var="reportPurgePeriodType"><%= ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE %></c:set>
+
+<script type="text/javascript">
+  function saveReportSettings() {
+      setUserMessage("reportsMessage");
+      setDisabled("saveReportSettingsBtn", true);
+      
+	  var settings = {};
+      settings["${reportPurgePeriods}"] = $get("${reportPurgePeriods}");
+      settings["${reportPurgePeriodType}"] = $get("${reportPurgePeriodType}");
+	  SystemSettingsDwr.saveSettings(settings, function() {
+          setDisabled("saveReportSettingsBtn", false);
+          setUserMessage("reportsMessage", "<fmt:message key="systemSettings.reportsSettingsSaved"/>");
+	  });
+  }
+</script>
+<table>
+  <tr>
+    <td class="formLabelRequired"><fmt:message key="systemSettings.purgeReports"/></td>
+    <td class="formField">
+      <input id="${reportPurgePeriods}" type="text" value="<m2m2:systemSetting key="${reportPurgePeriods}" defaultValue="1"/>" class="formShort"/>
+      <c:set var="type"><%= Common.TimePeriods.MONTHS %></c:set>
+      <c:set var="periods"><m2m2:systemSetting key="${reportPurgePeriods}" defaultValue="${type}"/></c:set>
+      <tag:timePeriods id="${reportPurgePeriodType}" d="true" w="true" mon="true" y="true" value="${periods}"/>
+    </td>
+  </tr>
+  
+  <tr>
+    <td colspan="2" align="center">
+      <input id="saveReportSettingsBtn" type="button" value="<fmt:message key="common.save"/>" onclick="saveReportSettings()"/>
+      <tag:help id="reportSettings"/>
+    </td>
+  </tr>
+  
+  <tr><td colspan="2" id="reportsMessage" class="formError"></td></tr>
+</table>

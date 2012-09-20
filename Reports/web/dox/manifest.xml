@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="reportInstances" key="dox.reportInstances" filename="reportInstances.htm">
+    <relation id="otherSettings"/>
+    <relation id="reportTemplates"/>
+  </item>
+  
+  <item id="reportTemplates" key="dox.reportTemplates" filename="reportTemplates.htm">
+    <relation id="cronPatterns"/>
+    <relation id="reportInstances"/>
+    <relation id="colours"/>
+  </item>
+  
+  <item id="reportSettings" key="dox.reportSettings" filename="reportSettings.htm"/>
+</doxManifest>

@@ -1,0 +1,21 @@
+*Release notes for version 1.4.0*
+
+* Added timezone support
+* Dojo upgrade
+* Changes to support core 2.0
+
+
+*Release notes for version 1.3.0*
+
+* Added plot type attribute in report points
+* Changes to support core 1.3
+
+
+*Release notes for version 1.3.0*
+
+* Added plot type attribute in report points
+* Changes to support core 1.3Release notes for version 1.1.0
+
+* Servlet path change to prevent collision with event search download
+* Documentation fixes
+* License enforcement
