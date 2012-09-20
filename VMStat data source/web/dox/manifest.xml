@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="vmstatDS" key="dox.vmstatDS" filename="vmstatDS.htm">
+    <relation id="vmstatPP"/>
+  </item>
+  
+  <item id="vmstatPP" key="dox.vmstatPP" filename="vmstatPP.htm">
+    <relation id="vmstatDS"/>
+  </item>
+</doxManifest>

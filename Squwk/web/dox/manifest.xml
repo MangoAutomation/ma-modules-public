@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+<!--   <item id="squwkDS" key="dox.squwkDS" filename="squwkDS.htm"> -->
+<!--     <relation id="squwkPP"/> -->
+<!--     <relation id="squwkPublishing"/> -->
+<!--   </item> -->
+  
+<!--   <item id="squwkPP" key="dox.squwkPP" filename="squwkPP.htm"> -->
+<!--     <relation id="squwkDS"/> -->
+<!--   </item> -->
+  
+  <item id="squwkPublishing" key="dox.squwkPublishing" filename="squwkPublishing.htm">
+<!--     <relation id="squwkDS"/> -->
+  </item>
+</doxManifest>

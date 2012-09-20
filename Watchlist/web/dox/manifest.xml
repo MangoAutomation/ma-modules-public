@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="watchListCharts" key="dox.watchListCharts" filename="watchListCharts.htm">
+    <relation id="watchListPoints"/>
+    <relation id="watchList"/>
+  </item>
+  
+  <item id="watchList" key="dox.watchList" filename="watchList.htm">
+    <relation id="watchListCharts"/>
+    <relation id="watchListPoints"/>
+    <relation id="watchListSharing"/>
+  </item>
+  
+  <item id="watchListSharing" key="dox.watchListSharing" filename="watchListSharing.htm">
+    <relation id="watchList"/>
+  </item>
+  
+  <item id="watchListPoints" key="dox.watchListPoints" filename="watchListPoints.htm">
+    <relation id="watchListCharts"/>
+    <relation id="watchList"/>
+  </item>
+</doxManifest>

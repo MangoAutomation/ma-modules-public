@@ -1,0 +1,10 @@
+*Version 1.4.0*
+
+* Null blob handling
+* Updated to work with core 2.0
+
+
+*Release notes for version 1.1.1*
+
+* Support core version 1.2+
+* Changed debug message to warning

@@ -1,0 +1,19 @@
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+<p>The Virtual Data Source is a data source without any connection to an external or physical system. It exists entirely within the system's own memory space. The data it produces is either random, or deterministic depending on how you configure the points.</p>
+
+<p>
+  Virtual data sources can be useful in a number of ways:
+</p>
+<ul>
+  <li>A simple way to validate that your system is working</li>
+  <li>It can create predictable data with which to benchmark your real data</li>
+  <li>You can control equipment in more complex ways. For example, if your home lighting is controlled by the system, you could use a random binary point to turn the lights off and on while you are on vacation, creating the impression that you are still home.</li>
+  <li>Anywhere where deterministic or random data is useful</li>
+</ul>
+
+<p>
+  The data source configuration is simple. It requires only a name, and the period of time between each data update. For example, if you choose "2 minutes", then every two minutes the algorithms that change the virtual point values for that data source will be run.
+</p>

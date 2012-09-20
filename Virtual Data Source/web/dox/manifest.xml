@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="virtual-pp" key="dox.virtualPP" filename="pp.htm">
+    <relation id="virtual-ds"/>
+  </item>
+
+  <item id="virtual-ds" key="dox.virtualDS" filename="ds.htm">
+    <relation id="virtual-pp"/>
+  </item>
+</doxManifest>

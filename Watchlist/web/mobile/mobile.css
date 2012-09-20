@@ -1,0 +1,65 @@
+/*
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+*/
+html > body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #000000;
+	background-color: #FFFFFF;
+	margin: 0px;
+	padding: 0px;
+}
+a, a:visited, a:link, .link {
+	color: #804000;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	text-decoration: underline;
+	font-size: 11px;
+}
+a:hover {
+	color: #F07800;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	text-decoration: underline;
+	font-size: 11px;
+}
+.footer {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	color: #333333;
+	font-size: 9px;
+}
+
+/**
+ * Form styles
+ */
+.formLabel, .formLabelRequired, .formField, .formError, select, input, textarea {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+}
+.formLabel, .formLabelRequired {
+	color: #333333;
+	padding-right: 10px;
+	text-align: right;
+	white-space: nowrap;
+	padding-top: 5px;
+	vertical-align: top;
+}
+.formLabelRequired, .formError {
+	font-weight: bold;
+}
+.formField {
+	padding: 2px;
+	color: #333333;
+}
+.formError {
+	color: #FF0000;
+	padding-left: 10px;
+}
+select, input, textarea {
+	color: #333333;
+	border: 1px solid #F07800;
+	padding: 2px;
+}
+input[type="checkbox"], input[type="radio"] {
+	color: #F07800;
+	border: 0;
+}

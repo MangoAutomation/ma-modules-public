@@ -1,0 +1,14 @@
+*Version 1.3.0*
+
+* Output scale uses code names in exports instead of numeric id.
+* Updated to work with core 2.0
+
+
+*Version 1.3.0*
+
+* Updated to work with core 1.3
+
+
+*Version 1.1.1*
+
+* Support for core 1.2+

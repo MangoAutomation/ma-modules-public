@@ -1,0 +1,29 @@
+/*
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+*/
+/*
+ orange: #ff8000
+ brown: #804000
+ green: #699D2E
+*/
+
+*, html, body, td, th { font-family: Tahoma; }
+#subHeader { background-color: #f6f6f6; }
+.smallTitle { color: #699D2E; font-family: Tahoma; }
+select, input, textarea { border-color: #804000; }
+.borderDiv, .borderDivPadded { border-color: #804000; }
+.rowHeader td, .smRowHeader td { background-colorx: #804000; background-color: #909090; }
+.labelDiv, .windowDiv { background-color: #f0f0f0; }
+.labelDiv { border-color: #804000; }
+.dijitTextBox { border-color: #804000 !important; }
+#viewContent #compCoords { border-color: #804000 !important; }
+.controlsDiv td div, .controlContent { background-color: #f0f0f0; border-color: #804000; }
+h1 { color: #699D2E; }
+#help h1 { color: #699D2E; }
+.formLabel, .formLabelRequired, .formField, .formError, select, input, textarea { font-family: Tahoma; }
+.rowHeader td, .smRowHeader td, .row td, .smRow td, .rowAlt td, .smRowAlt td, .rowAlt2 td { font-family: Tahoma; }
+a, a:visited, a:link, .link { font-family: Tahoma; }
+
+.labelled-section { border: solid 1px #804000;  }
+.labelled-section > label { top: -0.75em; left: 5px; font-size: 13px; color: #699D2E; }
