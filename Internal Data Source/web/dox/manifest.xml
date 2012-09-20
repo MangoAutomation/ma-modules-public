@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="internalDS" key="dox.internalDS" filename="internalDS.htm">
+    <relation id="internalPP"/>
+  </item>
+  
+  <item id="internalPP" key="dox.internalPP" filename="internalPP.htm">
+    <relation id="internalDS"/>
+  </item>
+</doxManifest>

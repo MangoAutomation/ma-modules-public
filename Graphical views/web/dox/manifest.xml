@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="editingGraphicalViews" key="dox.editingGraphicalViews" filename="editingGraphicalViews.htm">
+    <relation id="serversidescriptexamples"/>
+    <relation id="graphicalViews"/>
+    <relation id="viewSharing"/>
+  </item>
+   <item id="serversidescriptexamples" key="dox.serversidescriptexamples" filename="serversidescriptexamples.htm">
+    <relation id="editingGraphicalViews"/>
+  </item>
+
+  <item id="pointViewSettingsEditor" key="dox.pointViewSettingsEditor" filename="pointViewSettingsEditor.htm"/>
+  
+  <item id="graphicalViews" key="dox.graphicalViews" filename="graphicalViews.htm">
+    <relation id="editingGraphicalViews"/>
+  </item>
+  
+  <item id="viewSharing" key="dox.viewSharing" filename="viewSharing.htm">
+    <relation id="editingGraphicalViews"/>
+  </item>
+</doxManifest>
