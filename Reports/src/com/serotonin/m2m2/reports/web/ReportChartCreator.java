@@ -379,7 +379,7 @@ public class ReportChartCreator {
             Double d = ((AnalogStatistics) stats).getMinimumValue();
             if (d == null)
                 return null;
-            return textRenderer.getText(d, TextRenderer.HINT_FULL);
+            return textRenderer.getText(d, TextRenderer.HINT_SPECIFIC);
         }
 
         public String getAnalogMinTime() {
@@ -393,7 +393,7 @@ public class ReportChartCreator {
             Double d = ((AnalogStatistics) stats).getMaximumValue();
             if (d == null)
                 return null;
-            return textRenderer.getText(d, TextRenderer.HINT_FULL);
+            return textRenderer.getText(d, TextRenderer.HINT_SPECIFIC);
         }
 
         public String getAnalogMaxTime() {
@@ -407,11 +407,11 @@ public class ReportChartCreator {
             Double d = ((AnalogStatistics) stats).getAverage();
             if (d == null)
                 return null;
-            return textRenderer.getText(d, TextRenderer.HINT_FULL);
+            return textRenderer.getText(d, TextRenderer.HINT_SPECIFIC);
         }
 
         public String getAnalogSum() {
-            return textRenderer.getText(((AnalogStatistics) stats).getSum(), TextRenderer.HINT_FULL);
+            return textRenderer.getText(((AnalogStatistics) stats).getSum(), TextRenderer.HINT_SPECIFIC);
         }
 
         public String getAnalogCount() {
@@ -456,7 +456,7 @@ public class ReportChartCreator {
         }
 
         public String getValue() {
-            return textRenderer.getText(sar.getDataValue(), TextRenderer.HINT_FULL);
+            return textRenderer.getText(sar.getDataValue(), TextRenderer.HINT_SPECIFIC);
         }
 
         public String getStarts() {
@@ -521,7 +521,7 @@ public class ReportChartCreator {
             point.setTextRenderer(pointInfo.getTextRenderer());
             if (pointInfo.getStartValue() != null)
                 point.setStartValue(pointInfo.getTextRenderer().getText(pointInfo.getStartValue(),
-                        TextRenderer.HINT_FULL));
+                        TextRenderer.HINT_SPECIFIC));
             pointStatistics.add(point);
 
             Color colour = null;
