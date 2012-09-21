@@ -76,6 +76,11 @@
     function loadReportCB(report) {
         if (!selectedReport)
             show($("reportDetails"));
+        else {
+            // Un-fancy all the points in the old report.
+            for (var i=0; i<selectedReport.points.length; i++)
+                removeFromReportPointsArray(selectedReport.points[i].pointId);
+        }
         selectedReport = report;
         
         $set("name", report.name);

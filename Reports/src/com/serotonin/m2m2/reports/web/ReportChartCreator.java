@@ -540,7 +540,7 @@ public class ReportChartCreator {
                         .getStartValue().getDoubleValue()));
 
                 discreteTimeSeries = null;
-                TimeSeries timeSeries = new TimeSeries(pointInfo.getExtendedName());
+                TimeSeries timeSeries = new TimeSeries(pointInfo.getExtendedName(), null, null);
                 timeSeries.setRangeDescription(point.getTextRenderer().getMetaText());
                 numericTimeSeries = new NumericTimeSeries(pointInfo.getPlotType(), timeSeries, colour, stroke);
                 point.setNumericTimeSeries(numericTimeSeries);
