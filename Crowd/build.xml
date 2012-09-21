@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
 <project name="M2M2 - Crowd" basedir="." default="deploy">
-  <property name="coreHome" value="/Users/Matthew/git/ma-core-public/Core"/>
+  <property name="coreHome" value="../../ma-core-public/Core"/>
   <import file="${coreHome}/module-build.xml"/>
 </project>
