@@ -5,6 +5,7 @@
 <%@page import="com.serotonin.m2m2.Common"%>
 <%@page import="com.serotonin.m2m2.reports.vo.ReportVO"%>
 <%@page import="com.serotonin.m2m2.reports.vo.ReportInstance"%>
+<%@page import="com.serotonin.m2m2.vo.DataPointVO"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <tag:page dwr="ReportsDwr" js="/resources/emailRecipients.js" onload="init">
@@ -86,8 +87,12 @@
         $set("name", report.name);
         reportPointsArray = new Array();
         for (var i=0; i<report.points.length; i++)
-            addToReportPointsArray(report.points[i].pointId, report.points[i].colour, report.points[i].weight,
-                    report.points[i].consolidatedChart);
+            addToReportPointsArray(
+                report.points[i].pointId, 
+                report.points[i].colour, 
+                report.points[i].weight,
+                report.points[i].plotType,
+                report.points[i].consolidatedChart);
         $set("includeEvents", report.includeEvents);
         $set("includeUserComments", report.includeUserComments);
         $set("dateRangeType", report.dateRangeType);
@@ -132,7 +137,7 @@
     
     function addPointToReport(pointId) {
         if (!reportContainsPoint(pointId)) {
-            addToReportPointsArray(pointId, "", 1, true);
+            addToReportPointsArray(pointId, "", 1, "", true);
             writeReportPointsArray();
         }
     }
@@ -141,7 +146,7 @@
         return getElement(reportPointsArray, pointId, "pointId") != null;
     }
     
-    function addToReportPointsArray(pointId, colour, weight, consolidatedChart) {
+    function addToReportPointsArray(pointId, colour, weight, plotType, consolidatedChart) {
         var data = getPointData(pointId);
         if (data) {
             data.fancyName = "<span class='disabled'>"+ data.name +"</span>";
@@ -153,6 +158,7 @@
                 pointType : data.dataTypeMessage,
                 colour : !colour ? (!data.chartColour ? "" : data.chartColour) : colour,
                 weight : weight,
+                plotType : !plotType ? (!data.plotType ? <c:out value="<%= Integer.toString(DataPointVO.PlotTypes.STEP) %>" /> : data.plotType) : plotType,
                 consolidatedChart : consolidatedChart
             });
         }
@@ -184,8 +190,18 @@
                                 "onblur='updatePointColour("+ data.pointId +", this.value)'/>";
                     },
                     function(data) {
-                        return "<input type='text' value='"+ data.weight +"' "+
+                        return "<input class='formVeryShort' type='text' value='"+ data.weight +"' "+
                                 "onblur='updatePointWeight("+ data.pointId +", this.value)'/>";
+                    },
+                    function(data) {
+	                    return "<select onblur='updatePointPlotType("+ data.pointId +", this.value)'>"+
+	                    	"<option value='<c:out value="<%= Integer.toString(DataPointVO.PlotTypes.STEP) %>" />' " + 
+	                    	    (data.plotType==1 ? "selected" : "") + "><fmt:message key="pointEdit.plotType.step"/></option>"+
+	                    	"<option value='<c:out value="<%= Integer.toString(DataPointVO.PlotTypes.LINE) %>" />' " + 
+	                    	    (data.plotType==2 ? "selected" : "") + "><fmt:message key="pointEdit.plotType.line"/></option>"+
+	                    	"<option value='<c:out value="<%= Integer.toString(DataPointVO.PlotTypes.SPLINE) %>" />' " + 
+	                    	    (data.plotType==3 ? "selected" : "") + "><fmt:message key="pointEdit.plotType.spline"/></option>"+
+	                    	"</select>";
                     },
                     function(data) {
                         return "<input type='checkbox'"+ (data.consolidatedChart ? " checked='checked'" : "") +
@@ -204,7 +220,7 @@
                     },
                     cellCreator:function(options) {
                         var td = document.createElement("td");
-                        if (options.cellNum == 4)
+                        if (options.cellNum == 5)
                             td.align = "center";
                         return td;
                     }
@@ -222,6 +238,12 @@
         var item = getElement(reportPointsArray, pointId, "pointId");
         if (item)
             item["weight"] = weight;
+    }
+    
+    function updatePointPlotType(pointId, plotType) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item)
+            item["plotType"] = plotType;
     }
     
     function updatePointConsolidatedChart(pointId, consolidatedChart) {
@@ -416,6 +438,7 @@
                 pointId: reportPointsArray[i].pointId, 
                 colour: reportPointsArray[i].colour,
                 weight: reportPointsArray[i].weight,
+                plotType: reportPointsArray[i].plotType,
                 consolidatedChart: reportPointsArray[i].consolidatedChart
             };
         return points;
@@ -610,6 +633,7 @@
                       <td><fmt:message key="reports.dataType"/></td>
                       <td><fmt:message key="reports.colour"/></td>
                       <td><fmt:message key="reports.weight"/></td>
+                      <td><fmt:message key="pointEdit.plotType"/></td>
                       <td><fmt:message key="reports.consolidatedChart"/></td>
                       <td></td>
                     </tr>
