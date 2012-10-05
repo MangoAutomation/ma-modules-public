@@ -1,4 +1,11 @@
-*Release notes for version 1.4.0*
+*Release notes for version 2.0.1*
+
+* Chart range axis label fix
+* Deselect points in point chooser when report changes
+* Added options to override plot types for report charts
+
+
+*Release notes for version 2.0.0*
 
 * Added timezone support
 * Dojo upgrade
