@@ -380,7 +380,7 @@ public class GraphicalViewDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public String setViewPoint(String viewComponentId, String valueStr) {
         User user = Common.getUser();
-        GraphicalView view = GraphicalViewsCommon.getUserEditView(user);
+        GraphicalView view = GraphicalViewsCommon.getUserView(user);
         DataPointVO point = view.findDataPoint(viewComponentId);
 
         if (point != null) {
