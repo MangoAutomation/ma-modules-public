@@ -1,0 +1,2 @@
+//>>built
+define("dojox/grid/enhanced/nls/pt-br/EnhancedGrid",{"singleSort":"Classificação Única","indirectSelectionRadio":"Linha ${0}, seleção única, caixa de opção","ascending":"Crescente","indirectSelectionCheckBox":"Linha ${0}, seleção múltipla, caixa de seleção","descending":"Decrescente","selectAll":"Selecionar todos","nestedSort":"Classificação Aninhada","unsorted":"Não classificar esta coluna","sortingState":"${0} - ${1}"});

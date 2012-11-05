@@ -1,0 +1,3 @@
+define('dojox/grid/enhanced/nls/pt-br/Pagination',
+{"gotoButtonTitle":"Ir para uma página específica","prevTip":"Página Anterior","pageStepLabelTemplate":"Página ${0}","pageCountIndication":" (${0} páginas)","descTemplate":"${2} - ${3} de ${1} ${0}","lastTip":"Última Página","all":"todos","nextTip":"Próxima Página","pageSizeLabelTemplate":"${0} itens por página","dialogCancel":"Cancelar","itemTitle":"itens","dialogConfirm":"Ir","firstTip":"Primeira Página","allItemsLabelTemplate":"Todos os itens","singularItemTitle":"item","dialogIndication":"Especificar o número da página","dialogTitle":"Ir para a página"}
+);
