@@ -2,6 +2,7 @@
     Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
     @author Matthew Lohbihler
 --%>
+<%@ page import="com.serotonin.m2m2.Common" %>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 <%@ taglib prefix="views" tagdir="/WEB-INF/tags/graphicalViews" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -33,6 +34,8 @@
   <script type="text/javascript" src="resources/header.js"></script>
   <script type="text/javascript" src="${modulePath}/web/graphicalViews.js"></script>
   <script type="text/javascript" src="${modulePath}/web/wz_jsgraphics.js"></script>
+  <c:forEach items="<%= Common.applicationScripts %>" var="modScript">
+    <script type="text/javascript" src="/${modScript}"></script></c:forEach>
 </head>
 
 <body style="background-color:transparent">
