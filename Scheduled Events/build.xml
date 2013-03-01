@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 
-<project name="M2M2 - Scheduled Events" basedir="." default="deploy">
-  <property name="coreHome" value="../../ma-core-public/Core"/>
+<project name="MA - Scheduled Events" basedir="." default="deploy">
   <import file="${coreHome}/module-build.xml"/>
 </project>
