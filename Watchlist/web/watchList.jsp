@@ -431,12 +431,44 @@
               }
           }
       }
+
+      function showChange(mangoId, event, source) {
+          if (isMouseLeaveOrEnter(event, source)) {
+              var changeLayerName = 'p'+ mangoId +'Change';
+              //Position the new layer near the mouse
+              var changeLayer = dojo.byId(changeLayerName);
+              dojo.style(changeLayer,
+            		  {
+            	  		position: 'absolute',
+            	  		visibility: 'visible',
+            	  	    left: event.layerX + 'px',
+            	  		top: event.layerY + 'px'
+            		  });
+          }
+      }
+      
+      function hideChange(mangoId, event, source) {
+          if (isMouseLeaveOrEnter(event, source))
+              hideLayer('p'+ mangoId +'Change');
+      }
       
       function showChart(mangoId, event, source) {
           if (isMouseLeaveOrEnter(event, source)) {
               // Take the data in the chart textarea and put it into the chart layer div
-              $set('p'+ mangoId +'ChartLayer', $get('p'+ mangoId +'Chart'));
-              showMenu('p'+ mangoId +'ChartLayer', 4, 12);
+              var chartName = 'p'+ mangoId +'Chart';
+              var chartLayerName = 'p'+ mangoId +'ChartLayer';
+              //Get the chart data to display
+              var chartData =  $get(chartName);
+              $set(chartLayerName,chartData);
+              //Position the new layer near the mouse
+              var chartLayer = dojo.byId(chartLayerName);
+              dojo.style(chartLayer,
+            		  {
+            	  		position: 'absolute',
+            	  		visibility: 'visible',
+            	  	    left: event.layerX + 'px',
+            	  		top: event.layerY + 'px'
+            		  });
           }
       }
       
@@ -579,11 +611,11 @@
                   <td width="1">
                     <table class="rowIcons">
                       <tr>
-                        <td onmouseover="mango.view.showChange('p'+ getMangoId(this) +'Change', 4, 12);"
-                                onmouseout="mango.view.hideChange('p'+ getMangoId(this) +'Change');"
+                        <td onmouseover="showChange(getMangoId(this), event,this);"
+                                onmouseout="hideChange(getMangoId(this),event,this);"
                                 id="p_TEMPLATE_ChangeMin" style="display:none;"><img alt="" id="p_TEMPLATE_Changing" 
                                 src="images/icon_edit.png"/><div id="p_TEMPLATE_Change" class="labelDiv" 
-                                style="visibility:hidden;top:10px;left:1px;" onmouseout="hideLayer(this);">
+                                style="visibility:hidden;top:10px;left:1px;" >
                           <tag:img png="hourglass" title="common.gettingData"/>
                         </div></td>
                         <td id="p_TEMPLATE_ChartMin" style="display:none;" onmouseover="showChart(getMangoId(this), event, this);"
