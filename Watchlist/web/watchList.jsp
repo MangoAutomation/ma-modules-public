@@ -46,6 +46,7 @@
       dojo.require("dojo.store.Memory");
       dojo.require("dijit.form.FilteringSelect");
       
+      
       mango.view.initWatchlist();
       mango.share.dwr = WatchListDwr;
       var owner;
@@ -432,21 +433,6 @@
           }
       }
 
-      function showChange(mangoId, event, source) {
-          if (isMouseLeaveOrEnter(event, source)) {
-              var changeLayerName = 'p'+ mangoId +'Change';
-              //Position the new layer near the mouse
-              var changeLayer = dojo.byId(changeLayerName);
-              dojo.style(changeLayer,
-            		  {
-            	  		position: 'absolute',
-            	  		visibility: 'visible',
-            	  	    left: event.layerX + 'px',
-            	  		top: event.layerY + 'px'
-            		  });
-          }
-      }
-      
       function hideChange(mangoId, event, source) {
           if (isMouseLeaveOrEnter(event, source))
               hideLayer('p'+ mangoId +'Change');
@@ -455,23 +441,11 @@
       function showChart(mangoId, event, source) {
           if (isMouseLeaveOrEnter(event, source)) {
               // Take the data in the chart textarea and put it into the chart layer div
-              var chartName = 'p'+ mangoId +'Chart';
-              var chartLayerName = 'p'+ mangoId +'ChartLayer';
-              //Get the chart data to display
-              var chartData =  $get(chartName);
-              $set(chartLayerName,chartData);
-              //Position the new layer near the mouse
-              var chartLayer = dojo.byId(chartLayerName);
-              dojo.style(chartLayer,
-            		  {
-            	  		position: 'absolute',
-            	  		visibility: 'visible',
-            	  	    left: event.layerX + 'px',
-            	  		top: event.layerY + 'px'
-            		  });
+              $set('p'+ mangoId +'ChartLayer', $get('p'+ mangoId +'Chart'));
+              showMenu('p'+ mangoId +'ChartLayer', 4, 18);
           }
       }
-      
+
       function hideChart(mangoId, event, source) {
           if (isMouseLeaveOrEnter(event, source))
               hideLayer('p'+ mangoId +'ChartLayer');
@@ -603,7 +577,7 @@
               </td>
             </tr>
           </table>
-          <div id="watchListDiv" class="watchListAttr">
+          <div id="watchListDiv" class="watchListAttr" style="position:relative">
             <table style="display:none;">
               <tbody id="p_TEMPLATE_">
                 <tr id="p_TEMPLATE_BreakRow"><td class="horzSeparator" colspan="5"></td></tr>
@@ -611,11 +585,11 @@
                   <td width="1">
                     <table class="rowIcons">
                       <tr>
-                        <td onmouseover="showChange(getMangoId(this), event,this);"
+                        <td onmouseover="mango.view.showChange('p'+ getMangoId(this) +'Change', 4, 18);"
                                 onmouseout="hideChange(getMangoId(this),event,this);"
                                 id="p_TEMPLATE_ChangeMin" style="display:none;"><img alt="" id="p_TEMPLATE_Changing" 
                                 src="images/icon_edit.png"/><div id="p_TEMPLATE_Change" class="labelDiv" 
-                                style="visibility:hidden;top:10px;left:1px;" >
+                                style="visibility:hidden;top:10px;left:1px;z-index:1000" >
                           <tag:img png="hourglass" title="common.gettingData"/>
                         </div></td>
                         <td id="p_TEMPLATE_ChartMin" style="display:none;" onmouseover="showChart(getMangoId(this), event, this);"
