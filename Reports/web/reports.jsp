@@ -43,7 +43,6 @@
             new dijit.form.FilteringSelect({
                 store: new dojo.store.Memory({ data: allPointsArray }),
                 labelAttr: "fancyName",
-                labelType: "html",
                 searchAttr: "name",
                 autoComplete: false,
                 style: "width: 254px;",

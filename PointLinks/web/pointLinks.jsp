@@ -24,15 +24,19 @@
          	sourcePointSelector = new dijit.form.FilteringSelect({
                 store: new dojo.store.Memory({idProperty: 'key', data: response.sourcePoints }),
                 searchAttr: "value",                  
-                autoComplete: true,
-                style: "width: 100%;",
+                autoComplete: false,
+                style: "width: 100%",
+                queryExpr: "*\${0}*",
+                highlightMatch: "all",
                 required: true
             }, "sourcePointId");
          	targetPointSelector = new dijit.form.FilteringSelect({
                 store: new dojo.store.Memory({idProperty: 'key', data: response.targetPoints }),
                 searchAttr: "value",                  
-                autoComplete: true,
-                style: "width: 100%;",
+                autoComplete: false,
+                style: "width: 100%",
+                highlightMatch: "all",
+                queryExpr: "*\${0}*",
                 required: true
             }, "targetPointId");
 

@@ -111,16 +111,12 @@
               new dijit.form.FilteringSelect({
                   store: new dojo.store.Memory({ data: pointList }),
                   labelAttr: "fancyName",
-                  labelType: "html",
                   searchAttr: "name",                  
                   autoComplete: false,
                   style: "width: 100%;",
                   queryExpr: "*\${0}*",
                   highlightMatch: "all",
                   required: false,
-                  //onKeyPress: function() {
-                  //    alert("open: "+ this._opened);
-                  //},
                   onChange: function(point) {
                       if (this.item) {
                           addToWatchList(this.item.id);
