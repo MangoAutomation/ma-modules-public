@@ -20,7 +20,7 @@
     <table>
       <tr>
         <td class="formLabelRequired"><fmt:message key="viewEdit.settings.point"/></td>
-        <td class="formField"><select id="settingsPointList" onchange="settingsEditor.pointSelectChanged()"></select></td>
+        <td class="formField"><select id="settingsPointList"></select><span id="settingsPointInfo"></span></td>
       </tr>
       <tr>
         <td class="formLabel"><fmt:message key="viewEdit.settings.nameOverride"/></td>
@@ -50,6 +50,24 @@
   </td></tr></table>
   
   <script type="text/javascript">
+  dojo.require("dojo.store.Memory");
+  dojo.require("dijit.form.FilteringSelect");
+  var pointFilteringSelect; //Global to use select easily
+  dojo.ready(function(){
+      // Point lookup
+      pointFilteringSelect = new dijit.form.FilteringSelect({
+          store: new dojo.store.Memory(),
+          autoComplete: false,
+          queryExpr: "*\${0}*",
+          highlightMatch: "all",
+          required: true,
+          onChange: function(point) {
+          	settingsEditor.pointSelectChanged();
+          }
+      }, "settingsPointList");  
+  })
+  
+  
     // Script requires
     //  - Drag and Drop library for locating objects and positioning the window.
     //  - DWR utils for using $() prototype.
@@ -68,7 +86,8 @@
                 settingsEditor.updatePointList(comp.supportedDataTypes);
                 
                 // Update the data in the form.
-                $set("settingsPointList", comp.dataPointId);
+                //$set("settingsPointList", comp.dataPointId);
+                pointFilteringSelect.value = comp.dataPointId;
                 $set("settingsPointName", comp.nameOverride);
                 $set("settingsSettable", comp.settableOverride);
                 $set("settingsBkgdColor", comp.bkgdColorOverride);
@@ -90,7 +109,7 @@
         
         this.save = function() {
             hideContextualMessages("settingsEditorPopup");
-            GraphicalViewDwr.setPointComponentSettings(settingsEditor.componentId, $get("settingsPointList"),
+            GraphicalViewDwr.setPointComponentSettings(settingsEditor.componentId, pointFilteringSelect.value,
                     $get("settingsPointName"), $get("settingsSettable"), $get("settingsBkgdColor"),
                     $get("settingsControls"), $get("settingsX"), $get("settingsY"), function(response) {
                 if (response.hasMessages) {
@@ -122,15 +141,20 @@
         };
         
         this.updatePointList = function(dataTypes) {
-            dwr.util.removeAllOptions("settingsPointList");
-            var sel = $("settingsPointList");
-            sel.options[0] = new Option("", 0);
+
+            pointFilteringSelect.store = new dojo.store.Memory({ data: settingsEditor.pointList });
+			pointFilteringSelect.store.data.push({id: 0, name: ""});        	
+
+        	
+//             dwr.util.removeAllOptions("settingsPointList");
+//             var sel = $("settingsPointList");
+//             sel.options[0] = new Option("", 0);
             
-            for (var i=0; i<settingsEditor.pointList.length; i++) {
-                if (contains(dataTypes, settingsEditor.pointList[i].dataType))
-                    sel.options[sel.options.length] = new Option(settingsEditor.pointList[i].name,
-                            settingsEditor.pointList[i].id);
-            }
+//             for (var i=0; i<settingsEditor.pointList.length; i++) {
+//                 if (contains(dataTypes, settingsEditor.pointList[i].dataType))
+//                     sel.options[sel.options.length] = new Option(settingsEditor.pointList[i].name,
+//                             settingsEditor.pointList[i].id);
+//             }
         };
     }
     var settingsEditor = new SettingsEditor();

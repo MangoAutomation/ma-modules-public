@@ -337,7 +337,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
         DataPointVO dp = new DataPointDao().getDataPoint(dataPointId);
         if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
-            response.addContextualMessage("settingsPointList", "validate.required");
+            response.addContextualMessage("settingsPointInfo", "validate.required");
 
         if (x < 0)
             response.addContextualMessage("settingsX", "validate.cannotBeNegative");
