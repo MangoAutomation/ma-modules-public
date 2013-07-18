@@ -144,7 +144,7 @@
 
             pointFilteringSelect.store = new dojo.store.Memory({ data: settingsEditor.pointList });
 			pointFilteringSelect.store.data.push({id: 0, name: ""});        	
-
+			pointFilteringSelect.reset();
         	
 //             dwr.util.removeAllOptions("settingsPointList");
 //             var sel = $("settingsPointList");
