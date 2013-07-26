@@ -15,14 +15,16 @@ import com.serotonin.m2m2.web.dwr.longPoll.LongPollState;
 
 public class WatchListLongPollHandler implements LongPollHandler {
     private final WatchListDwr watchListDwr;
-
-    public WatchListLongPollHandler(WatchListDwr watchListDwr) {
+    private final String key; //Key in Long Poll Handler Map
+    
+    public WatchListLongPollHandler(WatchListDwr watchListDwr, String handlerKey) {
         this.watchListDwr = watchListDwr;
+        this.key = handlerKey; 
     }
 
     @Override
     public void handleLongPoll(LongPollData data, Map<String, Object> response, User user) {
-        if (data.getRequest().hasHandler("watchlist") && user != null) {
+        if (data.getRequest().hasHandler(key) && user != null) {
             LongPollState state = data.getState();
             List<WatchListState> watchListStates = WatchListCommon.getWatchListStates(data);
 
