@@ -28,7 +28,11 @@ import com.serotonin.util.SerializationHelper;
 public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	
     private static final ExportCodes EVENT_CODES = new ExportCodes();
-
+    static {
+        EVENT_CODES.addElement(SerialDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
+        EVENT_CODES.addElement(SerialDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
+        EVENT_CODES.addElement(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, "POINT_WRITE_EXCEPTION");
+    }
     @JsonProperty
     private String commPortId;
     @JsonProperty
@@ -51,8 +55,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
-		//TODO Flesh this out
-		return new TranslatableMessage("serial.connection");
+		return new TranslatableMessage("serial.connection",this.commPortId);
 	}
 
 	@Override
@@ -72,7 +75,12 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 
 	@Override
 	protected void addEventTypes(List<EventTypeVO> eventTypes) {
-		// TODO Auto-generated method stub
+		eventTypes.add(createEventType(SerialDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(
+                "event.ds.dataSource")));
+		eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(
+                "event.ds.pointRead")));
+		eventTypes.add(createEventType(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, new TranslatableMessage(
+                "event.ds.pointWrite")));
 		
 	}
 	public int getFlowControlMode() {
