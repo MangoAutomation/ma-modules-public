@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2013 Infinite Automation All rights reserved.
+    @author Terry Packer
+-->
+
+<doxManifest>
+  <item id="serialPP" key="dox.serialPP" filename="serialPP.htm">
+    <relation id="serialDS"/>
+  </item>
+
+  <item id="serialDS" key="dox.serialDS" filename="serialDS.htm">
+    <relation id="serialPP"/>
+  </item>
+</doxManifest>
