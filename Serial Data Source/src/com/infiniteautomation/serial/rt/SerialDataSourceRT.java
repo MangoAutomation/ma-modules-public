@@ -91,7 +91,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 			//Pin the terminator on the end
 			String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
 	        messageTerminator = StringEscapeUtils.unescapeJava(messageTerminator);
-			PointValueTime newValue = new PointValueTime(valueTime.getStringValue() + messageTerminator,valueTime.getTime());
+	        //Do we need to or is it already on the end?
+	        String fullMsg = valueTime.getStringValue();
+	        if(!fullMsg.endsWith(messageTerminator)){
+	        	fullMsg +=  messageTerminator;
+	        }
+			PointValueTime newValue = new PointValueTime(fullMsg,valueTime.getTime());
 
 			String output = newValue.getStringValue();
 			byte[] data = output.getBytes();
