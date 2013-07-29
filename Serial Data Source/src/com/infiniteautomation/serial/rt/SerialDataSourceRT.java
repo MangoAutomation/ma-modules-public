@@ -17,7 +17,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -95,20 +94,14 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
     	
     	if(connected){
     		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
-    	}else{
-    		//TODO This is probabaly not the right way to do this...
-    		SerialDataSourceVO vo = (SerialDataSourceVO) this.getVo();
-			vo.setEnabled(false);
-			Common.runtimeManager.saveDataSource(vo);
     	}
-    	
+        super.initialize();
     	
     }
     @Override
     public void terminate() {
         super.terminate();
         if(this.port != null)
-        	
         	this.port.close();
 
     }
@@ -118,8 +111,10 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 			SetPointSource source) {
 
 		//Are we connected?
-		if(this.port == null)
+		if(this.port == null){
+			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.writeFailedPortNotSetup"));
 			return;
+		}
 		
 		try {
 			OutputStream os = this.port.getOutputStream();
@@ -151,6 +146,11 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 
 	@Override
 	public void serialEvent(SerialPortEvent arg0) {
+		//Should never happen
+		if(this.port == null){
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.readFailedPortNotSetup"));
+			return;
+		}
 		//We recieved some data, now parse it.
 		byte[] buffer = new byte[1024]; //Max size TBD
 		try{
@@ -185,7 +185,11 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 	@Override
 	protected void doPoll(long time) {
 		//For now do nothing as we are event driven.
-		
+		if(this.port == null){
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.readFailedPortNotSetup"));
+			return;
+		}
+
 	}
 
 	
