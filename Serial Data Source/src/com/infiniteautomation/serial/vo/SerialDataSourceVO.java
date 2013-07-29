@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -41,6 +43,11 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private int stopBits = 1;
     @JsonProperty
     private int parity = 0;
+    @JsonProperty
+    private int readTimeout = 1000; //Timeout in ms
+    @JsonProperty
+    private String messageTerminator;
+    
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
@@ -128,7 +135,23 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 		this.parity = parity;
 	}
 	
-    @Override
+    public int getReadTimeout() {
+		return readTimeout;
+	}
+
+	public void setReadTimeout(int readTimeout) {
+		this.readTimeout = readTimeout;
+	}
+
+	public String getMessageTerminator() {
+		return messageTerminator;
+	}
+
+	public void setMessageTerminator(String messageTerminator) {
+		this.messageTerminator = messageTerminator;
+	}
+
+	@Override
     public void validate(ProcessResult response) {
         super.validate(response);
         if (isBlank(commPortId))
@@ -145,30 +168,44 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             response.addContextualMessage("stopBits", "validate.invalidValue");
         if (parity < 0 || parity > 4)
             response.addContextualMessage("parityBits", "validate.invalidValue");
+        
+        if(isBlank(messageTerminator))
+        	response.addContextualMessage("messageTerminator", "validate.required");
+        if(StringEscapeUtils.unescapeJava(messageTerminator).length() > 1)
+        	response.addContextualMessage("messageTerminator","validate.invalidValue");
+        
+        if(readTimeout < 100)
+        	response.addContextualMessage("readTimeout","validate.invalidValue");
      }
 
     @Override
     protected void addPropertiesImpl(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.port", commPortId);
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.baud", baudRate);
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.flowControlIn", flowControlIn);
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.flowControlOut", flowControlOut);
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.dataBits", dataBits);
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.stopBits", stopBits);
-        AuditEventType.addPropertyMessage(list, "dsEdit.modbusSerial.parity", parity);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.port", commPortId);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.baud", baudRate);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.flowControlIn", flowControlIn);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.flowControlOut", flowControlOut);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.dataBits", dataBits);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.stopBits", stopBits);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.parity", parity);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.messageTerminator", messageTerminator);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.readTimeout", readTimeout);
+        
     }
 
     @Override
     protected void addPropertyChangesImpl(List<TranslatableMessage> list, SerialDataSourceVO from) {
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.port", from.commPortId, commPortId);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.baud", from.baudRate, baudRate);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.flowControlIn", from.flowControlIn,
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.port", from.commPortId, commPortId);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.baud", from.baudRate, baudRate);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.flowIn", from.flowControlIn,
                 flowControlIn);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.flowControlOut", from.flowControlOut,
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.flowOut", from.flowControlOut,
                 flowControlOut);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.dataBits", from.dataBits, dataBits);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.stopBits", from.stopBits, stopBits);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.modbusSerial.parity", from.parity, parity);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.dataBits", from.dataBits, dataBits);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.stopBits", from.stopBits, stopBits);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.parity", from.parity, parity);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.messageTerminator", from.messageTerminator, messageTerminator);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.readTimeout", from.readTimeout, readTimeout);
+
     }
 
     //
@@ -188,6 +225,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         out.writeInt(dataBits);
         out.writeInt(stopBits);
         out.writeInt(parity);
+        SerializationHelper.writeSafeUTF(out, messageTerminator);
+        out.writeInt(readTimeout);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -202,6 +241,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             dataBits = in.readInt();
             stopBits = in.readInt();
             parity = in.readInt();
+            messageTerminator = SerializationHelper.readSafeUTF(in);
+            readTimeout = in.readInt();
         }
     }
 

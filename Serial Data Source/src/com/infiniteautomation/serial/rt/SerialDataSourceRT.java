@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -49,7 +51,8 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 	                		vo.getStopBits(),
 	                		vo.getParity());
 	                this.port.setFlowControlMode(vo.getFlowControlMode());
-	                
+	                this.port.enableReceiveTimeout(vo.getReadTimeout()); //Number of ms to wait before timeout...
+	                this.port.enableReceiveThreshold(1); //Number of bytes to read each time...
 	                this.port.addEventListener(this);
 	                this.port.notifyOnDataAvailable(true);
 	            }else{
@@ -85,14 +88,19 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 		
 		try {
 			OutputStream os = this.port.getOutputStream();
-			String output = valueTime.getStringValue();
+			//Pin the terminator on the end
+			String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
+	        messageTerminator = StringEscapeUtils.unescapeJava(messageTerminator);
+			PointValueTime newValue = new PointValueTime(valueTime.getStringValue() + messageTerminator,valueTime.getTime());
+
+			String output = newValue.getStringValue();
 			byte[] data = output.getBytes();
 			for(byte b : data){
 				os.write(b);
 			}
 			os.flush();
 			//Finally Set the point value
-			dataPoint.setPointValue(valueTime, source);
+			dataPoint.setPointValue(newValue, source);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -110,11 +118,15 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 			InputStream in = this.port.getInputStream();
             int len = 0;
             int data;
+            String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
+	        messageTerminator = StringEscapeUtils.unescapeJava(messageTerminator);
+	        char terminator = messageTerminator.charAt(0);
+	        //TODO add Event to notify that no termination char was received
             while (( data = in.read()) > -1 ){
-                if (( data == '\n' )||(data == ';')) {
+                buffer[len++] = (byte)data;
+                if ( data == terminator) {
                     break;
                 }
-                buffer[len++] = (byte)data;
             }
             
             if(this.dataPoints.isEmpty())

@@ -12,7 +12,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
 
 	   @DwrPermission(user = true)
 	    public ProcessResult saveSerialDataSource(BasicDataSourceVO basic, String commPortId, int baudRate, int flowControlIn,
-	            int flowControlOut, int dataBits, int stopBits, int parity) {
+	            int flowControlOut, int dataBits, int stopBits, int parity, int readTimeout, String messageTerminator) {
 	        SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
 
 	        setBasicProps(ds, basic);
@@ -23,6 +23,8 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	        ds.setDataBits(dataBits);
 	        ds.setStopBits(stopBits);
 	        ds.setParity(parity);
+	        ds.setReadTimeout(readTimeout);
+	        ds.setMessageTerminator(messageTerminator);
 
 	        return tryDataSourceSave(ds);
 	    }	
