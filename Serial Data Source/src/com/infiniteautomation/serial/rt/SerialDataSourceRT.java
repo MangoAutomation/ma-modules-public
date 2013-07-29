@@ -2,6 +2,7 @@ package com.infiniteautomation.serial.rt;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -16,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -42,12 +44,13 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 	 * @param portName
 	 * @throws Exception 
 	 */
-	public void connect () throws Exception{
+	public boolean connect () throws Exception{
 		SerialDataSourceVO vo = (SerialDataSourceVO) this.getVo();
 		
         CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(vo.getCommPortId());
         if ( portIdentifier.isCurrentlyOwned() ){
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.portInUse",vo.getCommPortId()));
+			return false;
         }else{
             CommPort commPort = portIdentifier.open(this.getClass().getName(),2000);
             
@@ -62,9 +65,10 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
                 this.port.enableReceiveThreshold(1); //Number of bytes to read each time...
                 this.port.addEventListener(this);
                 this.port.notifyOnDataAvailable(true);
-                returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
+                return true;
             }else{
     			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.invalidPort"));
+    			return false;
             }
         }
 
@@ -72,12 +76,31 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 	
     @Override
     public void initialize() {
+    	boolean connected = false;
     	try{
-    		this.connect();
+    		connected = this.connect();
+    	}catch(NoSuchPortException e1){
+    		SerialDataSourceVO vo = (SerialDataSourceVO)this.getVo();
+    		LOG.debug("No Such Port: " + vo.getCommPortId());
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.noSuchPort",vo.getCommPortId()));
     	}catch(Exception e){
     		LOG.debug("Error while initializing data source", e);
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.connectFailed",e.getMessage()));
+    		String msg = e.getMessage();
+    		if(msg == null){
+    			msg = "Unknown";
+    		}
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.connectFailed",msg));
     	}
+    	
+    	if(connected){
+    		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
+    	}else{
+    		SerialDataSourceVO vo = (SerialDataSourceVO) this.getVo();
+			vo.setEnabled(false);
+			Common.runtimeManager.saveDataSource(vo);
+    	}
+    	
+    	
     }
     @Override
     public void terminate() {
