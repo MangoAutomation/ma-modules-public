@@ -90,11 +90,13 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
     			msg = "Unknown";
     		}
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.connectFailed",msg));
+			
     	}
     	
     	if(connected){
     		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
     	}else{
+    		//TODO This is probabaly not the right way to do this...
     		SerialDataSourceVO vo = (SerialDataSourceVO) this.getVo();
 			vo.setEnabled(false);
 			Common.runtimeManager.saveDataSource(vo);
