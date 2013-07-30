@@ -1,6 +1,7 @@
 package com.infiniteautomation.rq;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Message extends ErrorContainer{
@@ -71,6 +72,24 @@ public class Message extends ErrorContainer{
 			return false;
 	}
 
+	@Override
+	public boolean hasErrors(){
+		if(super.hasErrors() || this.address.hasErrors() || this.data.hasErrors())
+			return true;
+		else
+			return false;
+	}
+	
+	@Override
+	public List<ErrorCode> getErrors(){
+		List<ErrorCode> allCodes = new ArrayList<ErrorCode>(super.getErrors());
+		allCodes.addAll(this.address.getErrors());
+		allCodes.addAll(this.data.getErrors());
+		
+		return allCodes;
+	}
+	
+	
 	/**
 	 * Get the message data
 	 * @return
