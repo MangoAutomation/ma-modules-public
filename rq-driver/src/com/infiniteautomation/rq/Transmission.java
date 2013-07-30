@@ -11,10 +11,15 @@ public abstract class Transmission {
 	protected Message response;
 	protected Message request;
 	
+	/**
+	 * Create a request using a node address
+	 * @param address
+	 */
 	public Transmission(String address){
 		this.request = this.createRequestMessage(new NodeAddress(address));
 	}
 
+	
 	/**
 	 * For subclass to override and implement
 	 * @return
@@ -28,7 +33,11 @@ public abstract class Transmission {
 	 */
 	public Message parseResponseMessage(char[] buffer){
 		
+		//Confirm we are not null
 		if(buffer == null)
+			return new Message(ErrorCode.MESSAGE_EMPTY);
+		//Confirm we are at least 1 char long
+		if(buffer.length >= 1)
 			return null; //TODO Create error message here
 		//Confirm start char is correct
 		if(buffer[0] != this.request.getStartChar())
@@ -85,17 +94,25 @@ public abstract class Transmission {
 		return this.response.hasData();
 	}
 	
+	/**
+	 * Perform the request/response to the device and process the input.
+	 * 
+	 * The result will be stored in the response.data member.
+	 * @param os
+	 * @param in
+	 */
 	public void transmit(OutputStream os, InputStream in) {
 		
 		//Validate the request
-		this.request.validate();
+		if(!this.request.hasErrors()){
+			return;
+		}
 		
 		//Send the request
 		try {
 			os.write(this.request.getByteArray());
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			this.request.addError(ErrorCode.WRITE_FAILED);
 		}
 		
 		//TODO May need some delay built in...
@@ -127,5 +144,14 @@ public abstract class Transmission {
 	 */
 	public Message getResponse() {
 		return this.response;
+	}
+
+
+	/**
+	 * Return the request
+	 * @return
+	 */
+	public Message getRequest() {
+		return this.request;
 	}
 }

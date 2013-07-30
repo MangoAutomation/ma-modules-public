@@ -1,23 +1,35 @@
 package com.infiniteautomation.rq;
 
 import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * Holds RQ Message data
  * @author tpacker
  *
  */
-public class MessageData {
+public class MessageData extends ErrorContainer{
 
 	protected char[] dataArray;
-	protected boolean dataOk = true;
-	protected List<String> messages; //Messages to describe bad data.
 	
+	/**
+	 * Create a message data with data
+	 * @param dataArray
+	 */
 	public MessageData(char[] dataArray){
+		super(new ArrayList<ErrorCode>());
 		this.dataArray = dataArray;
-		this.messages = new ArrayList<String>();
 	}
+	
+	/**
+	 * Create a message data from error
+	 * @param dataArray
+	 */
+	public MessageData(ErrorCode code){
+		super(code);
+		this.dataArray = new char[0];
+	}
+	
 	
 	public char[] getChars(){
 		return this.dataArray;
@@ -27,9 +39,7 @@ public class MessageData {
 	 * To be overridden by subclass if necessary
 	 */
 	public boolean validate() {
-		return this.dataOk;
+		return this.hasErrors();
 	}
-
-
 	
 }

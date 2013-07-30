@@ -1,7 +1,9 @@
 package com.infiniteautomation.rq;
 
+import java.util.ArrayList;
 
-public class Message {
+
+public class Message extends ErrorContainer{
 
 	//Request Parameters
 	private static char start = '!';
@@ -10,7 +12,6 @@ public class Message {
 	protected MessageData data; //Optional
 	private char terminator = ';'; //Potentially this is configurable between CR and ;
 	
-
 	
 	/**
 	 * Create a message out of its parts for transmission
@@ -19,9 +20,21 @@ public class Message {
 	 * @param data
 	 */
 	public Message(NodeAddress address, char command, MessageData data){
+		super(new ArrayList<ErrorCode>());
 		this.address = address;
 		this.command = command;
 		this.data = data;
+	}
+	
+	/**
+	 * Create an error message
+	 * @param code
+	 */
+	public Message(ErrorCode code){
+		super(code);
+		this.address = new NodeAddress(ErrorCode.ADDRESS_MISSING);
+		this.command = 0;
+		this.data = new MessageData(ErrorCode.DATA_MISSING);
 	}
 	
 	/**
@@ -47,19 +60,15 @@ public class Message {
 	
 
 
+	/**
+	 * Does the message have any data
+	 * @return
+	 */
 	public boolean hasData() {
 		if(this.data.getChars().length > 0)
 			return true;
 		else
 			return false;
-	}
-
-	/**
-	 * Validate the message
-	 */
-	public boolean validate() {
-		return this.address.validate()&&this.data.validate();
-		
 	}
 
 	/**
