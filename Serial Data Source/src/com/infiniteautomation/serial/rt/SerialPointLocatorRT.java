@@ -16,4 +16,8 @@ public class SerialPointLocatorRT extends PointLocatorRT{
 		return this.vo.isSettable();
 	}
 
+	public SerialPointLocatorVO getVo(){
+		return this.vo;
+	}
+	
 }

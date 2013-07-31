@@ -32,7 +32,9 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         EVENT_CODES.addElement(SerialDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
         EVENT_CODES.addElement(SerialDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
         EVENT_CODES.addElement(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, "POINT_WRITE_EXCEPTION");
-    }
+        EVENT_CODES.addElement(SerialDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, "POINT_READ_PATTERN_MISMATCH_EVENT");
+   }
+    
     @JsonProperty
     private String commPortId;
     @JsonProperty
@@ -51,7 +53,10 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private int readTimeout = 1000; //Timeout in ms
     @JsonProperty
     private String messageTerminator;
-    
+    @JsonProperty
+    private String messageRegex;
+    @JsonProperty
+    private int pointIdentifierIndex;
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
@@ -159,6 +164,22 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 		this.messageTerminator = messageTerminator;
 	}
 
+	public String getMessageRegex() {
+		return messageRegex;
+	}
+
+	public void setMessageRegex(String messageRegex) {
+		this.messageRegex = messageRegex;
+	}
+
+	public int getPointIdentifierIndex() {
+		return pointIdentifierIndex;
+	}
+
+	public void setPointIdentifierIndex(int pointIdentifierIndex) {
+		this.pointIdentifierIndex = pointIdentifierIndex;
+	}
+
 	@Override
     public void validate(ProcessResult response) {
         super.validate(response);
@@ -184,6 +205,13 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         
         if(readTimeout < 100)
         	response.addContextualMessage("readTimeout","validate.invalidValue");
+        
+        if (isBlank(messageRegex))
+            response.addContextualMessage("messageRegex", "validate.required");
+        //TODO Validate Message Regex by compiling or something...
+        if(pointIdentifierIndex < 0)
+        	response.addContextualMessage("pointIdentifierIndex", "validate.invalidValue");
+        
      }
 
     @Override
@@ -197,7 +225,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         AuditEventType.addPropertyMessage(list, "dsEdit.serial.parity", parity);
         AuditEventType.addPropertyMessage(list, "dsEdit.serial.messageTerminator", messageTerminator);
         AuditEventType.addPropertyMessage(list, "dsEdit.serial.readTimeout", readTimeout);
-        
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.messageRegex", messageRegex);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.pointIdentifierIndex", pointIdentifierIndex);
     }
 
     @Override
@@ -213,6 +242,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.parity", from.parity, parity);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.messageTerminator", from.messageTerminator, messageTerminator);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.readTimeout", from.readTimeout, readTimeout);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.messageRegex", from.messageRegex, messageRegex);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.pointIdentifierIndex", from.pointIdentifierIndex, pointIdentifierIndex);
 
     }
 
@@ -235,6 +266,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         out.writeInt(parity);
         SerializationHelper.writeSafeUTF(out, messageTerminator);
         out.writeInt(readTimeout);
+        SerializationHelper.writeSafeUTF(out, messageRegex);
+        out.writeInt(pointIdentifierIndex);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -251,6 +284,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             parity = in.readInt();
             messageTerminator = SerializationHelper.readSafeUTF(in);
             readTimeout = in.readInt();
+            messageRegex = SerializationHelper.readSafeUTF(in);
+            pointIdentifierIndex = in.readInt();
         }
     }
 
@@ -264,7 +299,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         super.jsonRead(reader, jsonObject);
     }
 	
-	public boolean isBlank(CharSequence cs) {
+	public static boolean isBlank(CharSequence cs) {
 		int strLen;
 		if ((cs == null) || ((strLen = cs.length()) == 0))
 			return true;

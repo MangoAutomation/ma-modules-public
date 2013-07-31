@@ -11,12 +11,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
+import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
+import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -28,6 +33,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
+    public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
     
 	private SerialPort port; //Serial Communication Port
 	
@@ -104,6 +110,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
         if(this.port != null)
         	this.port.close();
 
+
     }
     
 	@Override
@@ -121,21 +128,26 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 			//Pin the terminator on the end
 			String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
 	        messageTerminator = StringEscapeUtils.unescapeJava(messageTerminator);
+	        
+	        //Create Message from Message Start 
+	        SerialPointLocatorRT pl = dataPoint.getPointLocator();
+	        String identifier = pl.getVo().getPointIdentifier();
+	        
 	        //Do we need to or is it already on the end?
-	        String fullMsg = valueTime.getStringValue();
+	        String fullMsg = identifier +  valueTime.getStringValue();
 	        if(!fullMsg.endsWith(messageTerminator)){
 	        	fullMsg +=  messageTerminator;
 	        }
-			PointValueTime newValue = new PointValueTime(fullMsg,valueTime.getTime());
+			//PointValueTime newValue = new PointValueTime(fullMsg,valueTime.getTime());
 
-			String output = newValue.getStringValue();
-			byte[] data = output.getBytes();
+			//String output = newValue.getStringValue();
+			byte[] data = fullMsg.getBytes();
 			for(byte b : data){
 				os.write(b);
 			}
 			os.flush();
-			//Finally Set the point value
-			dataPoint.setPointValue(newValue, source);
+			//Finally Set the point value (to the incoming one)
+			//dataPoint.setPointValue(valueTime, source);
 			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
 		} catch (IOException e) {
 			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.writeFailed",e.getMessage()));
@@ -155,9 +167,10 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 		byte[] buffer = new byte[1024]; //Max size TBD
 		try{
 			InputStream in = this.port.getInputStream();
+			SerialDataSourceVO vo = ((SerialDataSourceVO)this.getVo());
             int len = 0;
             int data;
-            String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
+            String messageTerminator = vo.getMessageTerminator();
 	        messageTerminator = StringEscapeUtils.unescapeJava(messageTerminator);
 	        char terminator = messageTerminator.charAt(0);
 	        //TODO add Event to notify that no termination char was received
@@ -167,13 +180,62 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
                     break;
                 }
             }
-            
+
             if(!this.dataPoints.isEmpty()){
-            	//Update all points...
-            	PointValueTime newValue = new PointValueTime(new String(buffer,0,len),new Date().getTime());
-            	for(DataPointRT dp: this.dataPoints){
-            		dp.updatePointValue(newValue);
-            	}
+
+
+                String msg = new String(buffer,0,len);
+                
+                //DS Information
+                String messageRegex = vo.getMessageRegex(); //"!([A-Z0-9]{3,3})([a-zA-Z])(.*);";
+                int pointIdentifierIndex = vo.getPointIdentifierIndex();
+                
+                
+            	Pattern messagePattern = Pattern.compile(messageRegex);
+            	Matcher messageMatcher = messagePattern.matcher(msg);
+                if(messageMatcher.matches()){
+                	
+                    //Parse out the Identifier
+                	String pointIdentifier = messageMatcher.group(pointIdentifierIndex);
+                	
+                	//Update all points that have this Identifier
+                	for(DataPointRT dp: this.dataPoints){
+                		SerialPointLocatorRT pl = dp.getPointLocator();
+                		SerialPointLocatorVO plVo = pl.getVo();
+                		if(plVo.getPointIdentifier().equals(pointIdentifier)){
+                			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
+                			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
+                        	if(pointValueMatcher.matches()){
+	                        	String value = pointValueMatcher.group(plVo.getValueIndex());                	
+	                        	PointValueTime newValue;
+	                        	
+	                        	//Switch on the type
+	                        	switch(plVo.getDataTypeId()){
+	                        	case DataTypes.ALPHANUMERIC:
+	                        		newValue = new PointValueTime(value,new Date().getTime());
+	                        		break;
+	                        	case DataTypes.NUMERIC:
+	                        		newValue = new PointValueTime(Double.parseDouble(value),new Date().getTime());
+	                        		break;
+	                        	case DataTypes.MULTISTATE:
+	                        		newValue = new PointValueTime(Integer.parseInt(value),new Date().getTime());
+	                        		break;
+	                        	case DataTypes.BINARY:
+	                        		newValue = new PointValueTime(Boolean.parseBoolean(value),new Date().getTime());
+	                        		break;
+	                        	default:
+	                        		throw new ShouldNeverHappenException("Uknown Data type for point");
+	                        	}
+	                    		dp.updatePointValue(newValue);
+                        	}//end if value matches
+	                	}//end for this point id
+                	}
+                	
+                	
+                }else{
+                	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(),true,new TranslatableMessage("serial.event.patternMismatch",vo.getMessageRegex(),msg));
+                }
+                
             }
             returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
         }catch ( IOException e ){
