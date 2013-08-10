@@ -313,6 +313,7 @@
       }
       
       var watchListCount = 0;
+      
       function addToWatchListImpl(pointId) {
           watchListCount++;
       
@@ -426,11 +427,6 @@
                       show(rows[i].id +"MoveDown");
               }
           }
-      }
-
-      function hideChange(mangoId, event, source) {
-          if (isMouseLeaveOrEnter(event, source))
-              hideLayer('p'+ mangoId +'Change');
       }
       
       function showChart(mangoId, event, source) {
@@ -581,7 +577,7 @@
                     <table class="rowIcons">
                       <tr>
                         <td onmouseover="mango.view.showChange('p'+ getMangoId(this) +'Change', 4, 18);"
-                                onmouseout="hideChange(getMangoId(this),event,this);"
+                                onmouseout="mango.view.hideChange('p' + getMangoId(this) + 'Change',event,this);"
                                 id="p_TEMPLATE_ChangeMin" style="display:none;"><img alt="" id="p_TEMPLATE_Changing" 
                                 src="images/icon_edit.png"/><div id="p_TEMPLATE_Change" class="labelDiv" 
                                 style="visibility:hidden;top:10px;left:1px;z-index:1000" >

@@ -1,3 +1,7 @@
+*Version 1.5.0*
+* Fixed bug where watchlist popup charts end up off screen while scrolling
+
+
 *Version 1.4.0*
 
 * Moved point hierarchy to the core
