@@ -1,6 +1,6 @@
 *Version 1.5.0*
 * Fixed bug where watchlist popup charts end up off screen while scrolling
-
+* Added ability to download XLSX File types for chart data.
 
 *Version 1.4.0*
 
