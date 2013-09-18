@@ -7,7 +7,7 @@
 <%@page import="com.serotonin.m2m2.view.ShareUser"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
-<tag:page dwr="WatchListDwr" js="/resources/view.js,${modulePath}/web/watchList.js">
+<tag:page showHeader="${param.showHeader}" showToolbar="${param.showToolbar}" dwr="WatchListDwr" js="/resources/view.js,${modulePath}/web/watchList.js">
   <jsp:attribute name="styles">
     <style>
     html > body .dijitTreeNodeLabelSelected {
@@ -960,7 +960,16 @@
                             onclick="removeFromWatchList(getMangoId(this))"/>
                   </td>
                 </tr>
-                <tr><td colspan="5" style="padding-left:16px;" id="p_TEMPLATE_Messages"></td></tr>
+                <tr>
+                <td colspan="5" style="padding-left:16px;" >
+                    <!-- Adding scrolling div for messages -->
+                    <div style='max-height:100px; overflow-y: scroll'>
+                       <table>
+                       <tr><td id="p_TEMPLATE_Messages"></td></tr>
+                       </table>
+                   </div>
+                 </td>
+                </tr>
               </tbody>
             </table>
             <table id="watchListTable" class="wide"></table>
