@@ -47,9 +47,7 @@
       dojo.require("dojo.store.Memory");
       dojo.require("dijit.form.FilteringSelect");
       dojo.require("dijit.form.Select");
-      
-      require(["dojo","dijit/form/Select"], 
-              function(dojo,Select){
+
       
 	      mango.view.initWatchlist();
 	      mango.share.dwr = WatchListDwr;
@@ -64,7 +62,7 @@
 	    	  
 	    	  
 	          //Setup the File Download Selector
-	          var uploadTypeChoice = new Select({
+	          var uploadTypeChoice = new dijit.form.Select({
 	              name: "downloadTypeSelect",
 	              options: [
 	                  { label: "Excel", value: ".xlsx", selected: true},
@@ -526,8 +524,6 @@
 	        }
 	      </m2m2:moduleExists>
 
-	      
-      }); //end Require
       
       function displayWatchList(data) {
           if (!data.points)
