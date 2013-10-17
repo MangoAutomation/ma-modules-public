@@ -91,6 +91,7 @@ public class ReportChartCreator {
     private File eventFile;
     private File commentFile;
     private List<PointStatistics> pointStatistics;
+	private HashMap<String, HashMap<String, PointStatistics>> devices;
 
     final Translations translations;
     final TimeZone timeZone;
@@ -123,6 +124,7 @@ public class ReportChartCreator {
         reportDao.reportInstanceData(reportInstance.getId(), handler);
 
         pointStatistics = handler.getPointStatistics();
+		devices = handler.getDevices();
         UsedImagesDirective inlineImages = new UsedImagesDirective();
         SubjectDirective subjectDirective = new SubjectDirective(translations);
 
@@ -135,6 +137,7 @@ public class ReportChartCreator {
         model.put("timezone", timeZone.getID());
         model.put("points", pointStatistics);
         model.put("inline", inlinePrefix == null ? "" : "cid:");
+		model.put("devices", devices);
 
         model.put("ALPHANUMERIC", DataTypes.ALPHANUMERIC);
         model.put("BINARY", DataTypes.BINARY);
@@ -288,6 +291,7 @@ public class ReportChartCreator {
     public class PointStatistics {
         private final int reportPointId;
         private String name;
+		private String deviceName;
         private int dataType;
         private String dataTypeDescription;
         private String startValue;
@@ -310,6 +314,14 @@ public class ReportChartCreator {
         public void setName(String name) {
             this.name = name;
         }
+		
+		public String getDeviceName() {
+			return deviceName;
+		}
+		
+		public void setDeviceName(String deviceName) {
+			this.deviceName = deviceName;
+		}
 
         public int getDataType() {
             return dataType;
@@ -483,10 +495,14 @@ public class ReportChartCreator {
         private NumericTimeSeries numericTimeSeries;
         private DiscreteTimeSeries discreteTimeSeries;
         private AbstractDataQuantizer quantizer;
+		
+		private HashMap<String, HashMap<String, PointStatistics>> devices;
 
         public StreamHandler(long start, long end, int imageWidth, boolean createExportFile, Translations translations) {
             pointStatistics = new ArrayList<PointStatistics>();
             pointTimeSeriesCollection = new PointTimeSeriesCollection(timeZone);
+			
+			devices = new HashMap<String, HashMap<String, PointStatistics>>();
 
             this.start = start;
             this.end = end;
@@ -509,13 +525,20 @@ public class ReportChartCreator {
         public PointTimeSeriesCollection getPointTimeSeriesCollection() {
             return pointTimeSeriesCollection;
         }
+		
+		public HashMap<String, HashMap<String, PointStatistics>> getDevices() {
+			return devices;
+		}
 
         @Override
         public void startPoint(ExportPointInfo pointInfo) {
             donePoint();
+			
+			addDeviceIfAbsent(pointInfo.getDeviceName());
 
             point = new PointStatistics(pointInfo.getReportPointId());
-            point.setName(pointInfo.getExtendedName());
+            point.setName(pointInfo.getPointName());
+			point.setDeviceName(pointInfo.getDeviceName());
             point.setDataType(pointInfo.getDataType());
             point.setDataTypeDescription(DataTypes.getDataTypeMessage(pointInfo.getDataType()).translate(translations));
             point.setTextRenderer(pointInfo.getTextRenderer());
@@ -523,6 +546,7 @@ public class ReportChartCreator {
                 point.setStartValue(pointInfo.getTextRenderer().getText(pointInfo.getStartValue(),
                         TextRenderer.HINT_SPECIFIC));
             pointStatistics.add(point);
+            devices.get(point.getDeviceName()).put(point.getName(), point);
 
             Color colour = null;
             try {
@@ -621,5 +645,11 @@ public class ReportChartCreator {
             if (exportCsvStreamer != null)
                 exportCsvStreamer.done();
         }
+		
+		private void addDeviceIfAbsent(String deviceName) {
+			if(devices.containsKey(deviceName))
+				return;
+			devices.put(deviceName, new HashMap<String, PointStatistics>());
+		}
     }
 }
