@@ -74,7 +74,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 		
 		DataPointDao dpDao = new DataPointDao();
 		//Create Test Points
-		for(int i=0; i<100; i++){
+		for(int i=0; i<10; i++){
 			VirtualPointLocatorVO pointLocator = ds.createPointLocator();
 			//Create a Random Points
 			pointLocator.setDataTypeId(DataTypes.NUMERIC);

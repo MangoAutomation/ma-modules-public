@@ -8,6 +8,7 @@ import com.serotonin.m2m2.module.DwrConversionDefinition;
 import com.serotonin.m2m2.virtual.vo.AlternateBooleanChangeVO;
 import com.serotonin.m2m2.virtual.vo.AnalogAttractorChangeVO;
 import com.serotonin.m2m2.virtual.vo.BrownianChangeVO;
+import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.IncrementAnalogChangeVO;
 import com.serotonin.m2m2.virtual.vo.IncrementMultistateChangeVO;
 import com.serotonin.m2m2.virtual.vo.NoChangeVO;
@@ -21,6 +22,7 @@ public class VirtualDwrConversionDefinition extends DwrConversionDefinition {
         addConversion(AlternateBooleanChangeVO.class);
         addConversion(AnalogAttractorChangeVO.class);
         addConversion(BrownianChangeVO.class);
+        addConversion(ChangeTypeVO.class);
         addConversion(IncrementAnalogChangeVO.class);
         addConversion(IncrementMultistateChangeVO.class);
         addConversion(NoChangeVO.class);
