@@ -16,7 +16,7 @@
       </c:if>
 </table>
 
-
+<tag:help id="import-help"/>
  <div id="upload-type-choice">
  </div>
 

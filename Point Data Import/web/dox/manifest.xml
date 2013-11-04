@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Copyright (C) 2006-2011 Serotonin Software Technologies Inc. All rights reserved.
-    @author Matthew Lohbihler
+  Copyright (C) 2013 Infinite Automation. All rights reserved.
+  @author Terry Packer
+
 -->
 
 <doxManifest>
+
+ <item id="import-help" key="dox.importHelp" filename="import.htm">
+  </item>
+
+
 </doxManifest>
