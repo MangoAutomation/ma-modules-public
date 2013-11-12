@@ -9,17 +9,37 @@
 
 <tag:page dwr="PointLinksDwr" onload="init">
   <script type="text/javascript">
+    dojo.require("dojo.store.Memory");
+    dojo.require("dijit.form.FilteringSelect");
+    
     var sourcePoints;
     var editingPointLink;
+    var sourcePointSelector,targetPointSelector;
     
     function init() {
         PointLinksDwr.init(function(response) {
             sourcePoints = response.sourcePoints;
-            
-            // Add points to source and target selects
-            dwr.util.addOptions("sourcePointId", response.sourcePoints, "key", "value");
-            dwr.util.addOptions("targetPointId", response.targetPoints, "key", "value");
-            
+			
+            //Fill in the filtering selects for the points
+         	sourcePointSelector = new dijit.form.FilteringSelect({
+                store: new dojo.store.Memory({idProperty: 'key', data: response.sourcePoints }),
+                searchAttr: "value",                  
+                autoComplete: false,
+                style: "width: 100%",
+                queryExpr: "*\${0}*",
+                highlightMatch: "all",
+                required: true
+            }, "sourcePointId");
+         	targetPointSelector = new dijit.form.FilteringSelect({
+                store: new dojo.store.Memory({idProperty: 'key', data: response.targetPoints }),
+                searchAttr: "value",                  
+                autoComplete: false,
+                style: "width: 100%",
+                highlightMatch: "all",
+                queryExpr: "*\${0}*",
+                required: true
+            }, "targetPointId");
+
             // Create the list of existing links
             for (var i=0; i<response.pointLinks.length; i++) {
                 appendPointLink(response.pointLinks[i].id);
@@ -44,8 +64,17 @@
             editingPointLink = pl;
             
             $set("xid", pl.xid);
-            $set("sourcePointId", pl.sourcePointId);
-            $set("targetPointId", pl.targetPointId);
+            
+            if(pl.sourcePointId > 0)
+            	sourcePointSelector.set('value',pl.sourcePointId);
+            else
+            	sourcePointSelector.reset();
+            
+            if(pl.targetPointId > 0)
+           		targetPointSelector.set('value',pl.targetPointId);
+            else
+            	targetPointSelector.reset();
+            
             $set("script", pl.script);
             $set("event", pl.event);
             $set("writeAnnotation", pl.writeAnnotation);
@@ -60,7 +89,17 @@
     function savePointLink() {
         setUserMessage();
         hideContextualMessages("pointLinkDetails")
-        PointLinksDwr.savePointLink(editingPointLink.id, $get("xid"), $get("sourcePointId"), $get("targetPointId"),
+        //Since the Filtering Select has issues with the IntStringPair objects
+        // we can't use .value directly so we need to confirm there is a value set
+        var targetPointId=0,sourcePointId=0;
+        if(targetPointSelector.item != null){
+        	targetPointId = targetPointSelector.item.key;
+        }
+        if(sourcePointSelector.item != null){
+        	sourcePointId = sourcePointSelector.item.key;
+        }
+        PointLinksDwr.savePointLink(editingPointLink.id, $get("xid"), 
+        		sourcePointId, targetPointId,
                 $get("script"), $get("event"), $get("writeAnnotation"), $get("disabled"), function(response) {
             if (response.hasMessages)
                 showDwrMessages(response.messages);

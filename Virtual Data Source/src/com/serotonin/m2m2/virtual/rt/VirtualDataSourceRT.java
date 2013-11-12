@@ -30,7 +30,8 @@ public class VirtualDataSourceRT extends PollingDataSource {
             DataValue newValue = locator.getCurrentValue();
 
             // Update the data image with the new value if necessary.
-            if (!DataValue.isEqual(oldValue, newValue))
+            //TP EDIT, let the data point settings in the core choose this for us
+            //if (!DataValue.isEqual(oldValue, newValue))
                 dataPoint.updatePointValue(new PointValueTime(locator.getCurrentValue(), time));
         }
     }

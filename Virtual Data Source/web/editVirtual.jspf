@@ -170,9 +170,17 @@
       dwr.util.addOptions(startDD, arr);
       startDD.value = currentStart;
   }
-</script>
+  function createTestSource(){
+	  VirtualEditDwr.createTestSource();
+  }
+  </script>
 
 <tag:dataSourceAttrs descriptionKey="dsEdit.virtual.desc" helpId="virtual-ds">
+	<tr>
+	<td>Create Test Data</td>
+	<td><button onclick="createTestSource();">Create Test Data</button>
+	</td>
+	</tr>
   <tr>
     <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
     <td class="formField">

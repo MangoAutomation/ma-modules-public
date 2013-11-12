@@ -42,8 +42,8 @@
             // Create the lookup
             new dijit.form.FilteringSelect({
                 store: new dojo.store.Memory({ data: allPointsArray }),
-                labelAttr: "fancyName",
                 labelType: "html",
+                labelAttr: "fancyName",
                 searchAttr: "name",
                 autoComplete: false,
                 style: "width: 254px;",

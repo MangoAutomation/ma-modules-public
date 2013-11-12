@@ -1,0 +1,44 @@
+<h1>Data Import Help</h1>
+
+Historical point values can be imported from other Mango instances or backups from this system.  The import format is exactly the same as the export format.
+<br>
+
+On the import data page first select the type of data to import.  CSV format or XLSX format.
+
+
+<h2>XLSX Data Import</h2>
+Data can be exported from 3 areas for backup or to prepare data to be modified.  It is highly recommeded to export some data (or use the below file) and modify the file instead of hand writing a file for import.
+ 
+<ul>
+<li>The point details page can export an XLSX file from the chart area.</li>
+<li>The report module can export data as an XLSX file.</li>
+<li>The watchlist module can export data as an XLSX file.
+</ul>  
+
+<h3>Data Format</h3>
+The import file should have the following column headers
+<ul>
+<li>Point Value ID - the id of the point value in the database, setting to -1 will create a new point value otherwise will overwrite existing value</li>
+<li>Data Point XID - the Data Point XID that this value is be assigned to</li>
+<li>Device Name - for display only, this vlaue is not saved</li>
+<li>Point Name - for display only, this value is not saved</li>
+<li>Time - the time for the point value</li>
+<li>Value - the value that will be saved into the system</li>
+<li>Rendered - for display only, this value is not saved</li>
+<li>Annotation - the annotation to match to the value</li>
+</ul>
+
+<a href="/modules/dataImport/web/dox/example.xlsx">Here</a> is an example file.  
+
+<h2>CSV Data Import</h2>
+
+<h3>Data Format</h3>
+The import file should have the following format, not limited to 2 data points or 2 data values per point.
+
+<table border="1" >
+<tr><td align="center">-empty-</td><td align="center">Point1 XID</td><td align="center">Point2 XID</td></tr>
+<tr><td align="center">1970/1/01 12:00:00</td><td align="center">1.0</td><td align="center">1.1</td></tr>
+<tr><td align="center">1970/1/01 12:01:00</td><td align="center">2.0</td><td align="center">2.1</td></tr>
+</table>
+<br>
+In the above table the values of 1.0 and 2.0 will be assigned to Point 1 and 1.1 and 2.1 will be assigned to Point 2.

@@ -15,7 +15,7 @@ public class WatchListLongPollDefinition extends LongPollDefinition {
         super.preInitialize();
         WatchListDwr dwr = new WatchListDwr();
         dwr.setModule(getModule());
-        handler = new WatchListLongPollHandler(dwr);
+        handler = new WatchListLongPollHandler(dwr,"watchlist");
     }
 
     @Override

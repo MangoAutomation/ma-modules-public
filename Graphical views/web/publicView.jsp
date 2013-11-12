@@ -34,8 +34,8 @@
   <script type="text/javascript" src="resources/header.js"></script>
   <script type="text/javascript" src="${modulePath}/web/graphicalViews.js"></script>
   <script type="text/javascript" src="${modulePath}/web/wz_jsgraphics.js"></script>
-  <c:forEach items="<%= Common.applicationScripts %>" var="modScript">
-    <script type="text/javascript" src="/${modScript}"></script></c:forEach>
+<%--   <c:forEach items="<%= Common.applicationScripts %>" var="modScript"> --%>
+<%--     <script type="text/javascript" src="/${modScript}"></script></c:forEach> --%>
 </head>
 
 <body style="background-color:transparent">
