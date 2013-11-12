@@ -1,3 +1,6 @@
+*Version 1.4.1
+*Modified for Core 2.1
+
 *Release notes for 1.4.0*
 
 * Create a new maintenance event if the XID on import is not provided
