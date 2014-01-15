@@ -84,6 +84,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 			pointLocator.getRandomAnalogChange().setStartValue("1");
 			pointLocator.setSettable(true);
 			
+			
 			DataPointVO dp = new DataPointVO();
 			dp.setXid(dpDao.generateUniqueXid());
 			dp.setName("Virtual Random " + i);
@@ -99,8 +100,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
             dp.setPointLocator(pointLocator);
 			dp.setEnabled(true);
 			dp.setSettable(true);
-			
-			
+			dp.setDefaultCacheSize(0);			
 			
 			dp.validate(response);
 			if(!response.getHasMessages())
