@@ -223,7 +223,7 @@ public class ReportDao extends BaseDao {
     }
 
     public int runReport(final ReportInstance instance, List<PointInfo> points) {
-        PointValueDao pointValueDao = new PointValueDao();
+        PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         int count = 0;
 
         // The timestamp selection code is used multiple times for different tables
