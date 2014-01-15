@@ -72,7 +72,7 @@ public class DataImportController implements UrlHandler {
     private int importCsv(FileItem item) throws IOException, TranslatableException {
         CSVReader csvReader = new CSVReader(new InputStreamReader(item.getInputStream()));
         DataPointDao dataPointDao = new DataPointDao();
-        PointValueDao pointValueDao = new PointValueDao();
+        PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
 
         // Basic validation
