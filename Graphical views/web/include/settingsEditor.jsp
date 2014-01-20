@@ -86,8 +86,7 @@
                 settingsEditor.updatePointList(comp.supportedDataTypes);
                 
                 // Update the data in the form.
-                //$set("settingsPointList", comp.dataPointId);
-                pointFilteringSelect.value = comp.dataPointId;
+                pointFilteringSelect.set('value',comp.dataPointId);
                 $set("settingsPointName", comp.nameOverride);
                 $set("settingsSettable", comp.settableOverride);
                 $set("settingsBkgdColor", comp.bkgdColorOverride);
