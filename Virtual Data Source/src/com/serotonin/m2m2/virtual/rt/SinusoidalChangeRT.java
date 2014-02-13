@@ -25,7 +25,8 @@ public class SinusoidalChangeRT extends ChangeTypeRT{
     public DataValue change(DataValue currentValue) {
     	
     	//This Equation needs work to make sense with the inputs
-        double newValue = vo.getOffset() + vo.getAmplitude()*Math.sin(Math.toRadians(vo.getPeriod())*time + vo.getPhaseShift());
+    	double angularFreq = 2d * Math.PI * (1d/vo.getPeriod());
+        double newValue = vo.getOffset() + vo.getAmplitude()*Math.sin(angularFreq*time + vo.getPhaseShift());
         time = time + 1d;
         return new NumericValue(newValue);
     }
