@@ -36,6 +36,7 @@
       delete locator.randomBooleanChange.description;
       delete locator.randomMultistateChange.description;
       delete locator.analogAttractorChange.description;
+      delete locator.sinusoidalChange.description;
       delete locator.relinquishable;
       
       locator.settable = $get("settable");
@@ -63,6 +64,10 @@
       locator.analogAttractorChange.volatility = $get("analogAttractorChange.volatility");
       locator.analogAttractorChange.attractionPointId = $get("analogAttractorChange.attractionPointId");
       locator.analogAttractorChange.startValue = $get("analogAttractorChange.startValue");
+      locator.sinusoidalChange.amplitude = $get("sinusoidalChange.amplitude");
+      locator.sinusoidalChange.offset = $get("sinusoidalChange.offset");
+      locator.sinusoidalChange.period = $get("sinusoidalChange.period");
+      locator.sinusoidalChange.phaseShift = $get("sinusoidalChange.phaseShift");
       
       VirtualEditDwr.saveVirtualPointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
   }
@@ -120,6 +125,12 @@
       $set("analogAttractorChange.volatility", locator.analogAttractorChange.volatility);
       $set("analogAttractorChange.attractionPointId", locator.analogAttractorChange.attractionPointId);
       $set("analogAttractorChange.startValue", locator.analogAttractorChange.startValue);
+      
+      $set("sinusoidalChange.amplitude", locator.sinusoidalChange.amplitude);
+      $set("sinusoidalChange.offset", locator.sinusoidalChange.offset);
+      $set("sinusoidalChange.period", locator.sinusoidalChange.period);
+      $set("sinusoidalChange.phaseShift", locator.sinusoidalChange.phaseShift);
+      
   }
   
   //
@@ -176,11 +187,6 @@
   </script>
 
 <tag:dataSourceAttrs descriptionKey="dsEdit.virtual.desc" helpId="virtual-ds">
-	<tr>
-	<td>Create Test Data</td>
-	<td><button onclick="createTestSource();">Create Test Data</button>
-	</td>
-	</tr>
   <tr>
     <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
     <td class="formField">
@@ -391,4 +397,30 @@
       <td class="formField"><input type="text" id="analogAttractorChange.startValue" /></td>
     </tr>
   </tbody>
+
+  <%--
+      Sinusoidal, change type 10
+  --%>
+  <tbody id="divCH10" style="display: none;">
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.virtual.amplitude"/></td>
+      <td class="formField"><input type="number" id="sinusoidalChange.amplitude" /></td>
+    </tr>
+
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.virtual.offset"/></td>
+      <td class="formField"><input type="number" id="sinusoidalChange.offset" /></td>
+    </tr>
+
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.virtual.period"/></td>
+      <td class="formField"><input type="number" id="sinusoidalChange.period" /></td>
+    </tr>
+
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.virtual.phaseShift"/></td>
+      <td class="formField"><input type="number" id="sinusoidalChange.phaseShift" /></td>
+    </tr>
+  </tbody>
+
 </tag:pointList>

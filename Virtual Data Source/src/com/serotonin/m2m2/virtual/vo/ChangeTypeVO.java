@@ -39,6 +39,7 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable, Ch
         public static final int RANDOM_BOOLEAN = 7;
         public static final int RANDOM_MULTISTATE = 8;
         public static final int ANALOG_ATTRACTOR = 9;
+        public static final int SINUSOIDAL = 10;
     }
 
     public static final ExportCodes CHANGE_TYPE_CODES = new ExportCodes();
@@ -54,6 +55,7 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable, Ch
         CHANGE_TYPE_CODES.addElement(Types.RANDOM_BOOLEAN, "RANDOM_BOOLEAN", "dsEdit.virtual.changeType.random");
         CHANGE_TYPE_CODES.addElement(Types.RANDOM_MULTISTATE, "RANDOM_MULTISTATE", "dsEdit.virtual.changeType.random");
         CHANGE_TYPE_CODES.addElement(Types.ANALOG_ATTRACTOR, "ANALOG_ATTRACTOR", "dsEdit.virtual.changeType.attractor");
+        CHANGE_TYPE_CODES.addElement(Types.SINUSOIDAL, "SINUSOIDAL", "dsEdit.virtual.changeType.sinusoidal");
     }
 
     public static IntMessagePair[] getChangeTypes(int dataTypeId) {
@@ -72,7 +74,9 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable, Ch
                     new IntMessagePair(Types.INCREMENT_ANALOG, IncrementAnalogChangeVO.KEY),
                     new IntMessagePair(Types.NO_CHANGE, NoChangeVO.KEY),
                     new IntMessagePair(Types.RANDOM_ANALOG, RandomAnalogChangeVO.KEY),
-                    new IntMessagePair(Types.ANALOG_ATTRACTOR, AnalogAttractorChangeVO.KEY), };
+                    new IntMessagePair(Types.ANALOG_ATTRACTOR, AnalogAttractorChangeVO.KEY), 
+            		new IntMessagePair(Types.SINUSOIDAL, SinusoidalChangeVO.KEY)};
+            		
         case DataTypes.ALPHANUMERIC:
             return new IntMessagePair[] { new IntMessagePair(Types.NO_CHANGE, NoChangeVO.KEY), };
         }

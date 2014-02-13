@@ -33,13 +33,14 @@
 </ul>
 
 <h1>Numeric Points</h1>
-<p>Numeric points represent analog values, and can be any real number that can be represented as a 64-bit floating point. Five change types are available:</p>
+<p>Numeric points represent analog values, and can be any real number that can be represented as a 64-bit floating point. Six change types are available:</p>
 <ul>
   <li><b>Brownian</b>: randomly generated Brownian motion, meaning that the point will change some randomly generated differential from its previous value. Lower and upper bounds for the value can be set with <b>Minimum</b> and <b>Maximum</b> respectively. The <b>Maximum change</b> value determines the maximum random differential that can be generated.</li>
   <li><b>Increment</b>: the point changes by the <b>Change</b> amount every run time. The Change value may be negative. Lower and upper bounds for the value can be set with <b>Minimum</b> and <b>Maximum</b> respectively. If <b>Roll</b> is on, the point will return to the bound once it exceeds the opposite bound. If Roll is off, the point will use the negative value of Change once it exceeds a bound.</li>
   <li><b>No change</b>: the point does not automatically change (useful for points that are manually settable)</li>
   <li><b>Random</b>: the point will randomly assume (uniformly distributed) a value between the minimum and maximum bounds (inclusive).</li>
   <li><b>Attractor</b>: the point will asymptotically approach the value of another numeric point in the system. The <b>Maximum change</b> value determines how large the jump toward the target value can be. The <b>Volatility</b> value can be used to represent random fluctuations in the point.</li>
+  <li><b>Sinusoidal</b>: the point output is a sine wave.  The frequency depends on the sample period.  Every sample period is an increment of 1 in the time counter.</li>
 </ul>
 
 <h1>Alphanumeric Points</h1>
