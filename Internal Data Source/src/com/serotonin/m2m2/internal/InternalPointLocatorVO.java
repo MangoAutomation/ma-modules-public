@@ -39,6 +39,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         int MONITOR_THREAD_COUNT = 7;
         int MONITOR_DB_ACTIVE_CONNECTIONS = 8;
         int MONITOR_DB_IDLE_CONNECTIONS = 9;
+        int BATCH_WRITE_SPEED_MONITOR = 10;
     }
 
     // Values in this array correspond to the attribute ids above.
@@ -52,6 +53,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.threadCount", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbActiveConnections", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbIdleConnections", //
+            "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.BATCH_WRITE_SPEED_MONITOR", //
     };
 
     public static ExportCodes ATTRIBUTE_CODES = new ExportCodes();
@@ -70,6 +72,9 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
                 "internal.monitor.DB_ACTIVE_CONNECTIONS");
         ATTRIBUTE_CODES.addElement(Attributes.MONITOR_DB_IDLE_CONNECTIONS, "DB_IDLE_CONNECTIONS",
                 "internal.monitor.DB_IDLE_CONNECTIONS");
+        ATTRIBUTE_CODES.addElement(Attributes.BATCH_WRITE_SPEED_MONITOR, "BATCH_WRITE_SPEED_MONITOR",
+                "internal.monitor.BATCH_WRITE_SPEED_MONITOR");
+        
     };
 
     private int attributeId = Attributes.BATCH_ENTRIES;
