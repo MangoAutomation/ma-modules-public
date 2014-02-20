@@ -32,7 +32,7 @@
   index.jsp is).
 </p>
 
-<%--
+<!-- This code needs to remain here in order to build the Tags for the JSPs -->
 <h3>A simple table of some static values</h3>
 <table>
   <tr>
@@ -135,6 +135,5 @@
   <jview:chartPoint xid="changeMe3" color="dodgerblue"/>
   <jview:chartPoint xid="changeMe4" color="red"/>
 </jview:chart>
---%>
 </body>
 </html>
