@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<project name="MA - Core" basedir="." default="deploy-all">
+
+	<target name="deploy-all">
+		<subant target="deploy">
+			<fileset dir="Crowd" includes="build.xml"/>
+		</subant>
+	</target>
+
+
+</project>
