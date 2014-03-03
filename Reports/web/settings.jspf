@@ -28,7 +28,7 @@
     <td class="formField">
       <input id="${reportPurgePeriods}" type="text" value="<m2m2:systemSetting key="${reportPurgePeriods}" defaultValue="1"/>" class="formShort"/>
       <c:set var="type"><%= Common.TimePeriods.MONTHS %></c:set>
-      <c:set var="periods"><m2m2:systemSetting key="${reportPurgePeriods}" defaultValue="${type}"/></c:set>
+      <c:set var="periods"><m2m2:systemSetting key="${reportPurgePeriodType}" defaultValue="${type}"/></c:set>
       <tag:timePeriods id="${reportPurgePeriodType}" d="true" w="true" mon="true" y="true" value="${periods}"/>
     </td>
   </tr>
