@@ -1,12 +1,5 @@
 package com.infiniteautomation.serial.rt;
 
-import gnu.io.CommPort;
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,6 +14,12 @@ import org.apache.commons.logging.LogFactory;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.io.serial.SerialParameters;
+import com.serotonin.io.serial.SerialPortException;
+import com.serotonin.io.serial.SerialPortProxy;
+import com.serotonin.io.serial.SerialPortProxyEvent;
+import com.serotonin.io.serial.SerialPortProxyEventListener;
+import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -28,14 +27,14 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 
-public class SerialDataSourceRT extends PollingDataSource implements SerialPortEventListener{
+public class SerialDataSourceRT extends PollingDataSource implements SerialPortProxyEventListener{
 	private final Log LOG = LogFactory.getLog(SerialDataSourceRT.class);
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
     public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
     
-	private SerialPort port; //Serial Communication Port
+	private SerialPortProxy port; //Serial Communication Port
 	
 	
 	public SerialDataSourceRT(SerialDataSourceVO vo) {
@@ -52,27 +51,28 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 	public boolean connect () throws Exception{
 		SerialDataSourceVO vo = (SerialDataSourceVO) this.getVo();
 		
-        CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(vo.getCommPortId());
-        if ( portIdentifier.isCurrentlyOwned() ){
+		SerialParameters params = new SerialParameters();
+		params.setCommPortId(vo.getCommPortId());
+        params.setPortOwnerName("Mango Serial Data Source");
+        params.setBaudRate(vo.getBaudRate());
+        params.setFlowControlIn(vo.getFlowControlIn());
+        params.setFlowControlOut(vo.getFlowControlOut());
+        params.setDataBits(vo.getDataBits());
+        params.setStopBits(vo.getStopBits());
+        params.setParity(vo.getParity());
+        params.setRecieveTimeout(vo.getReadTimeout());
+		
+        if ( SerialUtils.portOwned(vo.getCommPortId()) ){
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.portInUse",vo.getCommPortId()));
 			return false;
         }else{
-            CommPort commPort = portIdentifier.open(this.getClass().getName(),2000);
-            
-            if ( commPort instanceof SerialPort ){
-                this.port = (SerialPort) commPort;
-                this.port.setSerialPortParams(vo.getBaudRate(),
-                		vo.getDataBits(),
-                		vo.getStopBits(),
-                		vo.getParity());
-                this.port.setFlowControlMode(vo.getFlowControlMode());
-                this.port.enableReceiveTimeout(vo.getReadTimeout()); //Number of ms to wait before timeout...
-                this.port.enableReceiveThreshold(1); //Number of bytes to read each time...
+        	try{
+                this.port = SerialUtils.openSerialPort(params);
                 this.port.addEventListener(this);
-                this.port.notifyOnDataAvailable(true);
                 return true;
-            }else{
-    			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.invalidPort"));
+              
+            }catch(Exception e){
+    			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.portError",vo.getCommPortId(),e.getLocalizedMessage()));
     			return false;
             }
         }
@@ -84,10 +84,11 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
     	boolean connected = false;
     	try{
     		connected = this.connect();
-    	}catch(NoSuchPortException e1){
-    		SerialDataSourceVO vo = (SerialDataSourceVO)this.getVo();
-    		LOG.debug("No Such Port: " + vo.getCommPortId());
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.noSuchPort",vo.getCommPortId()));
+ // No longer able to detect this exact exception
+//    	}catch(NoSuchPortException e1){
+//    		SerialDataSourceVO vo = (SerialDataSourceVO)this.getVo();
+//    		LOG.debug("No Such Port: " + vo.getCommPortId());
+//			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.noSuchPort",vo.getCommPortId()));
     	}catch(Exception e){
     		LOG.debug("Error while initializing data source", e);
     		String msg = e.getMessage();
@@ -108,7 +109,13 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
     public void terminate() {
         super.terminate();
         if(this.port != null)
-        	this.port.close();
+			try {
+				this.port.close();
+			} catch (SerialPortException e) {
+	    		LOG.debug("Error while closing serial port", e);
+				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.portError",this.port.getParameters().getCommPortId(),e.getLocalizedMessage()));
+
+			}
 
 
     }
@@ -157,7 +164,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortE
 	}
 
 	@Override
-	public void serialEvent(SerialPortEvent arg0) {
+	public void serialEvent(SerialPortProxyEvent evt) {
 		//Should never happen
 		if(this.port == null){
 			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("serial.event.readFailedPortNotSetup"));
