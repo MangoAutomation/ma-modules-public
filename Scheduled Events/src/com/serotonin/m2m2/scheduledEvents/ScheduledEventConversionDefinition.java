@@ -10,5 +10,6 @@ public class ScheduledEventConversionDefinition extends DwrConversionDefinition 
     @Override
     public void addConversions() {
         addConversion(ScheduledEventVO.class);
+        addConversion(ScheduledEventType.class, "bean");
     }
 }
