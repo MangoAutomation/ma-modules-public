@@ -40,7 +40,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     
 	private SerialPortProxy port; //Serial Communication Port
 	private ByteQueue buffer; //Max size TBD
-	private String terminator;
+	private byte[] terminator;
 	private int index;
 	
 	
@@ -48,7 +48,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		super(vo);
 		buffer = new ByteQueue(1024);
 		SerialDataSourceVO properties = (SerialDataSourceVO)this.getVo();
-		terminator = properties.getMessageTerminator();
+		terminator = properties.getMessageTerminator().getBytes();
 	}
 
 
@@ -173,10 +173,10 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	}
 	
 	private boolean isTerminatorFound() {
-		if(buffer.size() < terminator.length())
+		if(buffer.size() < terminator.length)
 			return false;
-		byte[] tw = buffer.peek(buffer.size()-terminator.length(), terminator.length());
-		return ArrayUtils.isEquals(tw, terminator.getBytes());
+		byte[] tw = buffer.peek(buffer.size()-terminator.length, terminator.length);
+		return ArrayUtils.isEquals(tw, terminator);
 	}
 
 	@Override
