@@ -86,6 +86,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 "event.ds.pointRead")));
 		eventTypes.add(createEventType(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointWrite")));
+		eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, new TranslatableMessage(
+                "event.serial.patternMismatch")));
 		
 	}
 	public int getFlowControlMode() {
