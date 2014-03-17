@@ -46,8 +46,6 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 
 	@Override
 	public void validate(ProcessResult response) {
-		if (AsciiFileDataSourceVO.isBlank(pointIdentifier))
-            response.addContextualMessage("pointIdentifier", "validate.required");	
 
 		if (AsciiFileDataSourceVO.isBlank(valueRegex))
             response.addContextualMessage("valueRegex", "validate.required");	

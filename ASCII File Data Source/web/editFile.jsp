@@ -10,7 +10,7 @@
 	 */
 	function saveDataSourceImpl(basic){
 
-		  FileEditDwr.saveFileDataSource(basic, $get("updatePeriods"), $get("updatePeriodType"), $get("filePath"), saveDataSourceCB);
+		AsciiFileEditDwr.saveFileDataSource(basic, $get("updatePeriods"), $get("updatePeriodType"), $get("filePath"), saveDataSourceCB);
 	}
 	
 	function hideTSindex() {
@@ -30,7 +30,7 @@
 	 */
 	  function checkFile() {
 		  fileTestButton(true);
-		  FileEditDwr.checkIsFileReadable($get("filePath"), checkFileCB);
+		  AsciiFileEditDwr.checkIsFileReadable($get("filePath"), checkFileCB);
 	  }
 	  
 	  function fileTestButton(testing) {
@@ -88,7 +88,7 @@
 		  locator.timestampIndex = $get("timestampIndex");
 		  locator.timestampFormat = $get("timestampFormat");
 		  
-	      FileEditDwr.savePointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
+		  AsciiFileEditDwr.savePointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
 	  }
 </script>
 
