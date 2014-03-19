@@ -1,2 +1,7 @@
+*Version 1.1.0*
+* Core 2.2
+* Uses JSSC driver
+* Consumed but unmatched instream persists in buffer between serial events
+
 *Version 1.0.1
 * Modified for Core 2.1
