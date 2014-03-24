@@ -10,5 +10,6 @@ public class MaintenanceEventsConversionDefinition extends DwrConversionDefiniti
     @Override
     public void addConversions() {
         addConversion(MaintenanceEventVO.class);
+        addConversion(MaintenanceEventType.class, "bean");
     }
 }

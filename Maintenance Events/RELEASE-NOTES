@@ -1,3 +1,7 @@
+*Version 1.4.3
+* Added Conversion definition for Maintenance Event Type to be viewable on the Events Report page
+* Fixed broken image link on event creation page
+
 *Version 1.4.2
 *Modified for Core 2.2
 

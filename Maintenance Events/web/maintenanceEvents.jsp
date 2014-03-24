@@ -148,9 +148,9 @@
     function updateMaintenanceEvent(me) {
         $("me"+ me.id +"Name").innerHTML = me.description;
         if (me.disabled)
-            updateImg("me"+ me.id +"Img", "images/hammer_disabled.png", "<sst:i18n key="maintenanceEvents.meDisabled" escapeDQuotes="true"/>", true);
+            updateImg("me"+ me.id +"Img", "${modulePath}/web/hammer_disabled.png", "<sst:i18n key="maintenanceEvents.meDisabled" escapeDQuotes="true"/>", true);
         else
-            updateImg("me"+ me.id +"Img", "images/hammer.png", "<sst:i18n key="maintenanceEvents.me" escapeDQuotes="true"/>", true);
+            updateImg("me"+ me.id +"Img", "${modulePath}/web/hammer.png", "<sst:i18n key="maintenanceEvents.me" escapeDQuotes="true"/>", true);
     }
     
     function deleteMaintenanceEvent() {
