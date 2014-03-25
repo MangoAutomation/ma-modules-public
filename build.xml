@@ -1,111 +1,33 @@
 <?xml version="1.0"?>
 <project name="MA - Core" basedir="." default="deploy-all">
+ 
+ <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${coreHome}/lib-opt/ant-contrib-1.0b3.jar" />
+ 
 
-	<target name="deploy-all" description="Deploy All Modules into Core" >
+ <property name="modules" value="Crowd,EnvCan Data Source,Graphical views,Internal Data Source,JSP Views,Language - de,Language - en,Language - fi,Language - nl,Language - pt,Language - zh,Log4J reset,Maintenance Events,Point Data Import,PointLinks,Reports,Scheduled Events,Serial Data Source,SQL Console,Squwk,SST Graphics,SST Theme,Virtual Data Source,VMStat data source,Watchlist"/>
 
-		<subant target="deploy">
-			<fileset dir="Crowd" includes="build.xml"/>
-		</subant>
-		
-		<!-- Not deploying Dojo -->
-		
-		<subant target="deploy">
-			<fileset dir="EnvCan Data Source" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Graphical views" includes="build.xml"/>
-		</subant>
-		
-        <subant target="deploy">
-			<fileset dir="Internal Data Source" includes="build.xml"/>
-		</subant>
-        
-		<subant target="deploy">
-			<fileset dir="JSP Views" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Language - de" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Language - en" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Language - fi" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Language - nl" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Language - pt" includes="build.xml"/>
-		</subant>
-		
-		<subant target="deploy">
-			<fileset dir="Language - zh" includes="build.xml"/>
-		</subant>
+ <target name="deploy-all-zip" description="Deploy All Public Modules into Core and Zip them" >
+    
+    <!-- Set the property to force a zip -->
+    <for list="${modules}" param="moduleName" delimiter=",">
+        <sequential>
+            <subant target="deploy">
+                <property name="zip-modules" value="true"/>
+                <fileset dir="@{moduleName}" includes="build.xml"/>
+            </subant>
+        </sequential>
+    </for>
+</target>
 
-		<subant target="deploy">
-			<fileset dir="Log4J reset" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Maintenance Events" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Point Data Import" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="PointLinks" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Reports" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Scheduled Events" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Serial Data Source" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="SQL console" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Squwk" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="SST Graphics" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="SST Theme" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Virtual Data Source" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="VMStat data source" includes="build.xml"/>
-		</subant>
-
-		<subant target="deploy">
-			<fileset dir="Watchlist" includes="build.xml"/>
-		</subant>
-
-	</target>
+<target name="deploy-all" description="Deploy All Public Modules into Core" >
+    <for list="${modules}" param="moduleName" delimiter=",">
+        <sequential>
+            <subant target="deploy">
+                <fileset dir="@{moduleName}" includes="build.xml"/>
+            </subant>
+        </sequential>
+    </for>
+</target>
 
 
 </project>
