@@ -45,8 +45,37 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
     @Override
     public void initialize() {
         super.initialize();
+        String command;
+        String osName = System.getProperty("os.name");
+        if(osName.equals("Linux")){
+            osName = "linux";
+            command = "vmstat -n ";
+        }
+        else if(osName.startsWith("Win")){
+            osName = "windows";
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                    "event.initializationError", "OS: " + osName + " Not Supported"));
+            return;
+        }//since 0.9.0 ->
+        else if(osName.equals("SunOS")){
+            osName = "solaris";
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                    "event.initializationError", "OS: " + osName + " Not Supported"));
+            return;
+        }
+        else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
+            osName = "mac_os_x";
+            command = "vm_stat -n"; //TODO Implement this for OSX, output format is different
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                    "event.initializationError", "OS: " + osName + " Not Supported"));
+            return;
+           
+        }else{
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                    "event.initializationError", "OS: " + osName + " Not Supported"));
+            return;
+        }
 
-        String command = "vmstat -n ";
         switch (vo.getOutputScale()) {
         case VMStatDataSourceVO.OutputScale.LOWER_K:
             command += "-S k ";
