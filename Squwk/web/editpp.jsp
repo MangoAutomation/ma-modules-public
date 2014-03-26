@@ -5,11 +5,12 @@
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 <script type="text/javascript">
   dojo.require("dojo.store.Memory");
-  dojo.require("dijit.form.FilteringSelect");
+  dojo.require("dijit.form.ComboBox");
   
   var allPoints = [];  
   var selectedPoints = [];  
-  
+  var pointLookupText = ""; //For selection to remain in the filter
+
   dojo.ready(function() { 
       SquwkPublisherDwr.initSender(function(response) {
           dojo.forEach(response.data.allPoints, function(item) {
@@ -28,7 +29,7 @@
           refreshSelectedPoints();
           
           // Create the lookup
-          new dijit.form.FilteringSelect({
+          new dijit.form.ComboBox({
               store: new dojo.store.Memory({ data: allPoints }),
               labelAttr: "fancyName",
               labelType: "html",
@@ -41,8 +42,12 @@
               onChange: function(point) {
                   if (this.item) {
                       selectPoint(this.item.id);
-                      this.reset();
+                      this.set('displayedValue',pointLookupText);
+                      this.openDropDown();
                   }
+              },
+              onKeyUp: function(event){
+                  pointLookupText = this.get('displayedValue');
               }
           }, "pointLookup");        
       });
