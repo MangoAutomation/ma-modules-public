@@ -56,7 +56,8 @@
 	      var pointList = [];
 	      var watchlistChangeId = 0;
 	      var iconSrc = "images/bullet_go.png";
-	      
+	      //Hack to allow filter to remain on display
+          var pointLookupText = "";
 	      
 	      dojo.ready(function() {
 	    	  
@@ -124,12 +125,13 @@
 	              maybeDisplayDeleteImg();
 	              
 	              
-	              //Hack to allow filter to remain on display
-	              var pickerDisplayedValue = "";
+	              
 	              // Create the lookup
 	              new dijit.form.ComboBox({
 	                  store: new dojo.store.Memory({ data: pointList }),
-	                  searchAttr: "extendedName",                  
+	                  searchAttr: "extendedName",
+	                  labelType: "html",
+	                  labelAttr: "fancyName",
 	                  autoComplete: false,
 	                  style: "width: 100%;",
 	                  queryExpr: "*\${0}*",
@@ -138,16 +140,14 @@
 	                  onChange: function(point) {
 	                      if (this.item) {
 	                          addToWatchList(this.item.id);
-	                          // Unable to refresh list while it is open so this doesn't work right
-	                          //this.store.remove(this.item.id); //Remove from store?
-
-	                          this.set('displayedValue',pickerDisplayedValue);
-
-	                          this.openDropDown();
+	                          this.loadAndOpenDropDown();
+	                          this.set('displayedValue',pointLookupText);
+	                          if(typeof(this._startSearch) == 'function')
+	                              this._startSearch(pointLookupText); //Dangerous because could change, but works!
 	                      }
 	                  },
 	                  onKeyUp: function(event){
-	                      pickerDisplayedValue = this.get('displayedValue');
+	                      pointLookupText = this.get('displayedValue');
 	                  }
 	              }, "picker");
 	              
@@ -339,6 +339,11 @@
 	          addToWatchListImpl(pointId);
 	          WatchListDwr.addToWatchList(pointId, mango.view.watchList.setDataImpl);
 	          fixRowFormatting();
+	          
+	          //Disable the name in the list
+	          var data = getElement(pointList, pointId);
+	          data.fancyName = "<span class='disabled'>"+ data.name +"</span>";
+
 	      }
 	      
 	      var watchListCount = 0;
@@ -376,6 +381,12 @@
 	          
 	          // Enable the element in the point list.
 	          togglePointTreeIcon(pointId, true);
+	          
+	           //Disable the name in the list
+              var data = getElement(pointList, pointId);
+              data.fancyName = data.name;
+
+	          
 	      }
 	      
 	      function togglePointTreeIcon(pointId, enable) {

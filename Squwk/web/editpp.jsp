@@ -42,8 +42,10 @@
               onChange: function(point) {
                   if (this.item) {
                       selectPoint(this.item.id);
+                      this.loadAndOpenDropDown();
                       this.set('displayedValue',pointLookupText);
-                      this.openDropDown();
+                      if(typeof(this._startSearch) == 'function')
+                          this._startSearch(pointLookupText); //Dangerous because could change, but works!
                   }
               },
               onKeyUp: function(event){
