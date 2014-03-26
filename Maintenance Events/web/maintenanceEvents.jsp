@@ -419,9 +419,7 @@
                     <td id="activeYearData"><input id="activeYear" type="text" class="formVeryShort"/></td>
                     <td id="activeYearSlash">/</td>
                     <td id="activeMonthData">
-                      <select id="activeMonth">
-                        <tag:monthOptions/>
-                      </select>
+                        <tag:monthOptions id="activeMonth"/>
                     </td>
                     <td id="activeMonthSlash">/</td>
                     <td><select id="activeDay"></select></td>
@@ -483,9 +481,7 @@
                     <td id="inactiveYearData"><input id="inactiveYear" type="text" class="formVeryShort"/></td>
                     <td id="inactiveYearSlash">/</td>
                     <td id="inactiveMonthData">
-                      <select id="inactiveMonth">
-                        <tag:monthOptions/>
-                      </select>
+                        <tag:monthOptions id="inactiveMonth"/>
                     </td>
                     <td id="inactiveMonthSlash">/</td>
                     <td><select id="inactiveDay"></select></td>

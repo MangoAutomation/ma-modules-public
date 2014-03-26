@@ -45,8 +45,8 @@
       dojo.require("dijit.tree.TreeStoreModel");
       dojo.require("dojo.data.ItemFileWriteStore");
       dojo.require("dojo.store.Memory");
-      dojo.require("dijit.form.FilteringSelect");
       dojo.require("dijit.form.Select");
+      dojo.require("dijit.form.ComboBox");
 
       
 	      mango.view.initWatchlist();
@@ -123,8 +123,11 @@
 	              displayWatchList(data.selectedWatchList);
 	              maybeDisplayDeleteImg();
 	              
+	              
+	              //Hack to allow filter to remain on display
+	              var pickerDisplayedValue = "";
 	              // Create the lookup
-	              new dijit.form.FilteringSelect({
+	              new dijit.form.ComboBox({
 	                  store: new dojo.store.Memory({ data: pointList }),
 	                  searchAttr: "extendedName",                  
 	                  autoComplete: false,
@@ -135,10 +138,20 @@
 	                  onChange: function(point) {
 	                      if (this.item) {
 	                          addToWatchList(this.item.id);
-	                          this.reset();
+	                          // Unable to refresh list while it is open so this doesn't work right
+	                          //this.store.remove(this.item.id); //Remove from store?
+
+	                          this.set('displayedValue',pickerDisplayedValue);
+
+	                          this.openDropDown();
 	                      }
+	                  },
+	                  onKeyUp: function(event){
+	                      pickerDisplayedValue = this.get('displayedValue');
 	                  }
 	              }, "picker");
+	              
+	              
 	              
 	              // Start EXPERIMENTAL
 	//               var n = dojo.query("#widget_picker > .dijitValidationContainer");

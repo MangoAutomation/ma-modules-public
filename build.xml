@@ -4,7 +4,7 @@
  <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${coreHome}/lib-opt/ant-contrib-1.0b3.jar" />
  
 
- <property name="modules" value="Crowd,EnvCan Data Source,Graphical views,Internal Data Source,JSP Views,Language - de,Language - en,Language - fi,Language - nl,Language - pt,Language - zh,Log4J reset,Maintenance Events,Point Data Import,PointLinks,Reports,Scheduled Events,Serial Data Source,SQL Console,Squwk,SST Graphics,SST Theme,Virtual Data Source,VMStat data source,Watchlist"/>
+ <property name="modules" value="Crowd,EnvCan Data Source,Graphical views,Internal Data Source,JSP Views,Language - de,Language - en,Language - fi,Language - nl,Language - pt,Language - zh,Log4J reset,Maintenance Events,Point Data Import,PointLinks,Reports,Scheduled Events,Serial Data Source,SQL console,Squwk,SST Graphics,SST Theme,Virtual Data Source,VMStat data source,Watchlist"/>
 
  <target name="deploy-all-zip" description="Deploy All Public Modules into Core and Zip them" >
     
