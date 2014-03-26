@@ -1,5 +1,6 @@
 *Version 1.4.3
 * Added OS Detection to create failure event on all OS other than linux
+* Improved statistic extraction to be more robust by removing white-space before parsing statistics.
 
 *Version 1.4.2
 * Modified for Core 2.2

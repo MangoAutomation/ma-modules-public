@@ -105,6 +105,7 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
 
             // Create a mapping of attribute ids to split array positions.
             attributePositions = new HashMap<Integer, Integer>();
+            headers = headers.trim();
             String[] headerParts = headers.split("\\s+");
             for (int i = 0; i < headerParts.length; i++) {
                 int attributeId = -1;
@@ -186,8 +187,9 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
                         break;
                     throw new IOException("no data");
                 }
-
-                readParts(line.split("\\s+"));
+                line = line.trim();
+                String[] parts = line.split("\\s+");
+                readParts(parts);
                 readError();
             }
         }
