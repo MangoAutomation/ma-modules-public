@@ -521,12 +521,25 @@
 	              });
 	          }
 	      }
+
+	      /**
+	       * Toggle the added to chart value
+	       */
+	       function toggleAdded() {
+	              var pointInclusionChecks = nodes = document.getElementsByName("chartCB");
+	              for (var i=pointInclusionChecks.length-1; i>=0; i--) {
+	                  if (pointInclusionChecks[i].value != "_TEMPLATE_") {
+	                   //Set the value to chart it
+	                   pointInclusionChecks[i].checked = !pointInclusionChecks[i].checked;
+	                  }
+	              }
+	          }
 	      
 	      function getChartPointList() {
-	          var pointIds = $get("chartCB");
+	          var pointIds = $get("chartCB"); //Get the table list
 	          for (var i=pointIds.length-1; i>=0; i--) {
 	              if (pointIds[i] == "_TEMPLATE_") {
-	                  pointIds.splice(i, 1);
+	                  pointIds.splice(i, 1); //Remove the template row
 	              }
 	          }
 	          return pointIds;
@@ -549,332 +562,7 @@
 	      </m2m2:moduleExists>
 
       
-      function displayWatchList(data) {
-          if (!data.points)
-              // Couldn't find the watchlist. Reload the page
-              window.location.reload();
-          
-          var points = data.points;
-          owner = data.access == <c:out value="<%= ShareUser.ACCESS_OWNER %>"/>;
-          
-          // Add the new rows.
-          for (var i=0; i<points.length; i++) {
-              if (!pointNames[points[i]]) {
-                  // The point id isn't in the list. Refresh the page to ensure we have current data.
-                  window.location.reload();
-                  return;
-              }
-              addToWatchListImpl(points[i]);
-          }
-          
-          fixRowFormatting();
-          mango.view.watchList.reset();
-          
-          var select = $("watchListSelect");
-          var txt = $("newWatchListName");
-          $set(txt, select.options[select.selectedIndex].text);
-          
-          // Display controls based on access
-          if (owner) {
-              show("wlEditDiv", "inline");
-              show("usersEditDiv", "inline");
-              
-              // Set the share users.
-              mango.share.writeSharedUsers(data.users);
-              iconSrc = "images/bullet_go.png";
-          }
-          else {
-              hide("wlEditDiv");
-              hide("usersEditDiv");
-              iconSrc = "images/bullet_key.png";
-          }
-          
-          var icons = getElementsByMangoName($("treeDiv"), "pointTreeIcon");
-          for (var i=0; i<icons.length; i++)
-              icons[i].src = iconSrc;
-      }
-      
-      function showWatchListEdit() {
-          openLayer("wlEdit");
-          $("newWatchListName").select();
-      }
-    
-      function saveWatchListName() {
-          var name = $get("newWatchListName");
-          var select = $("watchListSelect");
-          select.options[select.selectedIndex].text = name;
-          WatchListDwr.updateWatchListName(name);
-          hideLayer("wlEdit");
-      }
-      
-      function watchListChanged() {
-          // Clear the list.
-          var rows = getElementsByMangoName($("watchListTable"), "watchListRow");
-          for (var i=0; i<rows.length; i++)
-              removeFromWatchListImpl(rows[i].id.substring(1));
-          
-          watchlistChangeId++;
-          var id = watchlistChangeId;
-          WatchListDwr.setSelectedWatchList($get("watchListSelect"), function(data) {
-              // Ensure that the data received is the latest data that was requested.
-              if (id == watchlistChangeId)
-                  displayWatchList(data);
-          });
-      }
-      
-      function addWatchList(copy) {
-          var copyId = ${NEW_ID};
-          if (copy)
-              copyId = $get("watchListSelect");
-          
-          WatchListDwr.addNewWatchList(copyId, function(watchListData) {
-              var wlselect = $("watchListSelect");
-              wlselect.options[wlselect.options.length] = new Option(watchListData.value, watchListData.key);
-              $set(wlselect, watchListData.key);
-              watchListChanged();
-              maybeDisplayDeleteImg();
-          });
-      }
-      
-      function deleteWatchList() {
-          var wlselect = $("watchListSelect");
-          var deleteId = $get(wlselect);
-          wlselect.options[wlselect.selectedIndex] = null;
-          
-          watchListChanged();
-          WatchListDwr.deleteWatchList(deleteId);
-          maybeDisplayDeleteImg();
-      }
-      
-      function maybeDisplayDeleteImg() {
-          var wlselect = $("watchListSelect");
-          display("watchListDeleteImg", wlselect.options.length > 1);
-      }
-      
-      function showWatchListUsers() {
-          openLayer("usersEdit");
-      }
-      
-      function openLayer(nodeId) {
-          var nodeDiv = $(nodeId);
-          closeLayers(nodeId);
-          showLayer(nodeDiv, true);
-      }
-    
-      function closeLayers(exclude) {
-          if (exclude != "wlEdit")
-              hideLayer("wlEdit");
-          if (exclude != "usersEdit")
-              hideLayer("usersEdit");
-      }
-      
-      
-      //
-      // Watch list membership
-      //
-      function addToWatchList(pointId) {
-          // Check if this point is already in the watch list.
-          if ($("p"+ pointId) || !owner)
-              return;
-          addToWatchListImpl(pointId);
-          WatchListDwr.addToWatchList(pointId, mango.view.watchList.setDataImpl);
-          fixRowFormatting();
-      }
-      
-      var watchListCount = 0;
-      
-      function addToWatchListImpl(pointId) {
-          watchListCount++;
-      
-          // Add a row for the point by cloning the template row.
-          var pointContent = createFromTemplate("p_TEMPLATE_", pointId, "watchListTable");
-          pointContent.mangoName = "watchListRow";
-          
-          if (owner) {
-              show("p"+ pointId +"MoveUp");
-              show("p"+ pointId +"MoveDown");
-              show("p"+ pointId +"Delete");
-          }
-          
-          $("p"+ pointId +"Name").innerHTML = pointNames[pointId].extendedName;
-          
-          // Disable the element in the point list.
-          togglePointTreeIcon(pointId, false);
-      }
-      
-      function removeFromWatchList(pointId) {
-          removeFromWatchListImpl(pointId);
-          fixRowFormatting();
-          WatchListDwr.removeFromWatchList(pointId);
-      }
-      
-      function removeFromWatchListImpl(pointId) {
-          watchListCount--;
-          var pointContent = $("p"+ pointId);
-          var watchListTable = $("watchListTable");
-          watchListTable.removeChild(pointContent);
-          
-          // Enable the element in the point list.
-          togglePointTreeIcon(pointId, true);
-      }
-      
-      function togglePointTreeIcon(pointId, enable) {
-          // Toggle the tree icon
-          var node = $("ph"+ pointId +"Image");
-          if (node) {
-              if (enable)
-                  dojo.style(node, "opacity", 1);
-              else
-                  dojo.style(node, "opacity", 0.2);
-          }
-          
-          // Toggle the lookup text
-          var dps = pointNames[pointId];
-          if (enable)
-              dps.fancyName = dps.extendedName;
-          else
-              dps.fancyName = "<span class='disabled'>"+ dps.extendedName +"</span>";
-      }
-      
-      //
-      // List state updating
-      //
-      function moveRowDown(pointId) {
-          var watchListTable = $("watchListTable");
-          var rows = getElementsByMangoName(watchListTable, "watchListRow");
-          var i=0;
-          for (; i<rows.length; i++) {
-              if (rows[i].id == pointId)
-                  break;
-          }
-          if (i < rows.length - 1) {
-              if (i == rows.length - 1)
-                  watchListTable.append(rows[i]);
-              else
-                  watchListTable.insertBefore(rows[i], rows[i+2]);
-              WatchListDwr.moveDown(pointId.substring(1));
-              fixRowFormatting();
-          }
-      }
-      
-      function moveRowUp(pointId) {
-          var watchListTable = $("watchListTable");
-          var rows = getElementsByMangoName(watchListTable, "watchListRow");
-          var i=0;
-          for (; i<rows.length; i++) {
-              if (rows[i].id == pointId)
-                  break;
-          }
-          if (i != 0) {
-              watchListTable.insertBefore(rows[i], rows[i-1]);
-              WatchListDwr.moveUp(pointId.substring(1));
-              fixRowFormatting();
-          }
-      }
-      
-      function fixRowFormatting() {
-          var rows = getElementsByMangoName($("watchListTable"), "watchListRow");
-          if (rows.length == 0) {
-              show("emptyListMessage");
-          }
-          else {
-              hide("emptyListMessage");
-              for (var i=0; i<rows.length; i++) {
-                  if (i == 0) {
-                      hide(rows[i].id +"BreakRow");
-                      hide(rows[i].id +"MoveUp");
-                  }
-                  else {
-                      show(rows[i].id +"BreakRow");
-                      if (owner)
-                          show(rows[i].id +"MoveUp");
-                  }
-                      
-                  if (i == rows.length - 1)
-                      hide(rows[i].id +"MoveDown");
-                  else if (owner)
-                      show(rows[i].id +"MoveDown");
-              }
-          }
-      }
-      
-      function showChart(mangoId, event, source) {
-          if (isMouseLeaveOrEnter(event, source)) {
-              // Take the data in the chart textarea and put it into the chart layer div
-              $set('p'+ mangoId +'ChartLayer', $get('p'+ mangoId +'Chart'));
-              showMenu('p'+ mangoId +'ChartLayer', 4, 18);
-          }
-      }
 
-      function hideChart(mangoId, event, source) {
-          if (isMouseLeaveOrEnter(event, source))
-              hideLayer('p'+ mangoId +'ChartLayer');
-      }
-      
-      //
-      // Image chart
-      //
-      function getImageChart() {
-          var width = dojo.contentBox($("imageChartDiv")).w - 20;
-          startImageFader($("imageChartImg"));
-          WatchListDwr.getImageChartData(getChartPointList(), $get("fromYear"), $get("fromMonth"), $get("fromDay"), 
-                  $get("fromHour"), $get("fromMinute"), $get("fromSecond"), $get("fromNone"), $get("toYear"), 
-                  $get("toMonth"), $get("toDay"), $get("toHour"), $get("toMinute"), $get("toSecond"), $get("toNone"), 
-                  width, 350, function(data) {
-              $("imageChartDiv").innerHTML = data;
-              stopImageFader($("imageChartImg"));
-              
-              // Make sure the length of the chart doesn't mess up the watch list display. Do async to
-              // make sure the rendering gets done.
-              // TODO - onResized no longer works.
-              //setTimeout('dijit.byId("splitContainer").onResized()', 2000);
-          });
-      }
-      
-      function getChartData() {
-          var pointIds = getChartPointList();
-          if (pointIds.length == 0)
-              alert("<fmt:message key="watchlist.noExportables"/>");
-          else {
-              startImageFader($("chartDataImg"));
-              WatchListDwr.getChartData(getChartPointList(), $get("fromYear"), $get("fromMonth"), $get("fromDay"), 
-                      $get("fromHour"), $get("fromMinute"), $get("fromSecond"), $get("fromNone"), $get("toYear"), 
-                      $get("toMonth"), $get("toDay"), $get("toHour"), $get("toMinute"), $get("toSecond"), $get("toNone"), 
-                      function(data) {
-                  stopImageFader($("chartDataImg"));
-                  
-                  var downloadTypeSelect = dijit.byId("downloadTypeSelect");
-                  var downloadUrl = "chartExport/watchListData" + downloadTypeSelect.get('value');
-                  window.location = downloadUrl;
-              });
-          }
-      }
-      
-      function getChartPointList() {
-          var pointIds = $get("chartCB");
-          for (var i=pointIds.length-1; i>=0; i--) {
-              if (pointIds[i] == "_TEMPLATE_") {
-                  pointIds.splice(i, 1);
-              }
-          }
-          return pointIds;
-      }
-
-      <m2m2:moduleExists name="reports">
-        function createReport() {
-            var pointIds = getChartPointList();
-            var pointList = "";
-            for (var i=0; i<pointIds.length; i++) {
-                if (i > 0)
-                    pointList += ",";
-                pointList += pointIds[i];
-            }
-
-            var select = $("watchListSelect");
-            var name = escape(select.options[select.selectedIndex].text);
-            window.location='reports.shtm?createName='+ name +'&createPoints='+ pointList;
-        }
-      </m2m2:moduleExists>
     </script>
   
     <table class="wide">
@@ -919,7 +607,6 @@
                     <a class="ptr" id="saveWatchListNameLink" onclick="saveWatchListName()"><fmt:message key="common.save"/></a>
                   </div>
                 </div>
-                
                 <div id="usersEditDiv" style="display:inline;" onmouseover="showWatchListUsers()">
                   <tag:img png="user" title="share.sharing" onmouseover="closeLayers();"/>
                   <div id="usersEdit" style="visibility:hidden;right:0px;top:15px;" class="labelDiv">
@@ -927,7 +614,7 @@
                             closeFunction="hideLayer('usersEdit')"/>
                   </div>
                 </div>
-                
+                <tag:img png="tick" onclick="toggleAdded()" title="watchlist.addAllToChart" onmouseover="closeLayers();"/>
                 <tag:img png="copy" onclick="addWatchList(true)" title="watchlist.copyList" onmouseover="closeLayers();"/>
                 <tag:img png="add" onclick="addWatchList(false)" title="watchlist.addNewList" onmouseover="closeLayers();"/>
                 <tag:img png="delete" id="watchListDeleteImg" onclick="deleteWatchList()" title="watchlist.deleteList"

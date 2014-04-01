@@ -1,5 +1,6 @@
 *Version 1.5.3*
 * Modified behavior of the Filtering Select for the lookup style list creation.  The filter now remains open and allows multiple selections to be made from the list.
+* Added toggle all for inclusion/exclusion on chart and data export
 
 *Version 1.5.2*
 * Modified for Core 2.2
