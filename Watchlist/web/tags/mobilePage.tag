@@ -19,22 +19,22 @@
   
   <!-- Scripts -->
   <script type="text/javascript" src="${dojoURI}dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug:true, extraLocale: ['${lang}']"></script>
-  <script type="text/javascript" src="/dwr/engine.js"></script>
-  <script type="text/javascript" src="/dwr/util.js"></script>
-  <script type="text/javascript" src="/dwr/interface/MiscDwr.js"></script>
-  <script type="text/javascript" src="/resources/common.js"></script>
-  <script type="text/javascript" src="${modulePath}/web/mobile/mobile-header.js"></script>
+  <tag:versionedJavascript  src="/dwr/engine.js" />
+  <tag:versionedJavascript  src="/dwr/util.js" />
+  <tag:versionedJavascript  src="/dwr/interface/MiscDwr.js" />
+  <tag:versionedJavascript  src="/resources/common.js" />
+  <tag:versionedJavascript  src="${modulePath}/web/mobile/mobile-header.js" />
     
-  <c:forEach items="${dwr}" var="dwrname"><script type="text/javascript" src="/dwr/interface/${dwrname}.js"></script>
+  <c:forEach items="${dwr}" var="dwrname"><tag:versionedJavascript  src="/dwr/interface/${dwrname}.js" />
   </c:forEach>
 
-  <c:forEach items="${js}" var="jspath"><script type="text/javascript" src="${jspath}"></script>
+  <c:forEach items="${js}" var="jspath"><tag:versionedJavascript  src="${jspath}" />
   </c:forEach>
 
   <script type="text/javascript">mango.i18n = <sst:convert obj="${clientSideMessages}"/>;
   </script>
   
-  <c:forEach items="<%= Common.moduleScripts %>" var="modScript"><script type="text/javascript" src="/${modScript}"></script>
+  <c:forEach items="<%= Common.moduleScripts %>" var="modScript"><tag:versionedJavascript  src="/${modScript}" />
   </c:forEach>
   
   <!-- Setup the Header and Start the Longpoll -->

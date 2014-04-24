@@ -41,7 +41,7 @@
     <jsp:include page="/WEB-INF/snippet/view/pointValue/pointValueEmport.jsp"/>
   </div>
   
-  <script type="text/javascript" src="${modulePath}/web/js/dataImport.js"></script>
+  <tag:versionedJavascript  src="${modulePath}/web/js/dataImport.js" />
   
   
 </tag:page>
