@@ -121,7 +121,10 @@ public class ReportChartCreator {
         StreamHandler handler = new StreamHandler(reportInstance.getReportStartTime(),
                 reportInstance.getReportEndTime(), IMAGE_WIDTH, createExportFile, translations);
         // Process the report content with the handler.
-        reportDao.reportInstanceData(reportInstance.getId(), handler);
+        if(Common.databaseProxy.getNoSQLProxy() == null)
+        	reportDao.reportInstanceDataSQL(reportInstance.getId(), handler);
+        else
+        	reportDao.reportInstanceDataNoSQL(reportInstance.getId(), handler);
 
         pointStatistics = handler.getPointStatistics();
 		devices = handler.getDevices();

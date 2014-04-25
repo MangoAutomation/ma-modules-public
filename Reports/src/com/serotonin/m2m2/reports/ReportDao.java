@@ -8,19 +8,27 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.BaseDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.db.dao.nosql.NoSQLDao;
+import com.serotonin.m2m2.db.dao.nosql.NoSQLQueryCallback;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportUserComment;
+import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
@@ -30,6 +38,7 @@ import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.view.stats.ITime;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.UserComment;
@@ -222,7 +231,13 @@ public class ReportDao extends BaseDao {
         }
     }
 
-    public int runReport(final ReportInstance instance, List<PointInfo> points) {
+    /**
+     * SQL Database Report
+     * @param instance
+     * @param points
+     * @return
+     */
+    public int runReportSQL(final ReportInstance instance, List<PointInfo> points) {
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         int count = 0;
 
@@ -395,7 +410,7 @@ public class ReportDao extends BaseDao {
             + "  left join reportInstanceDataAnnotations rda on "
             + "      rd.pointValueId=rda.pointValueId and rd.reportInstancePointId=rda.reportInstancePointId ";
 
-    public void reportInstanceData(int instanceId, final ExportDataStreamHandler handler) {
+    public void reportInstanceDataSQL(int instanceId, final ExportDataStreamHandler handler) {
         // Retrieve point information.
         List<ExportPointInfo> pointInfos = query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
                 new Object[] { instanceId }, new RowMapper<ExportPointInfo>() {
@@ -461,6 +476,58 @@ public class ReportDao extends BaseDao {
         handler.done();
     }
 
+    
+    public void reportInstanceDataNoSQL(int instanceId, final ExportDataStreamHandler handler) {
+        // Retrieve point information.
+        List<ExportPointInfo> pointInfos = query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
+                new Object[] { instanceId }, new RowMapper<ExportPointInfo>() {
+                    @Override
+                    public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        int i = 0;
+                        ExportPointInfo rp = new ExportPointInfo();
+                        rp.setReportPointId(rs.getInt(++i));
+                        rp.setDeviceName(rs.getString(++i));
+                        rp.setPointName(rs.getString(++i));
+                        rp.setDataType(rs.getInt(++i));
+                        String startValue = rs.getString(++i);
+                        if (startValue != null)
+                            rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
+                        rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
+                                .getBinaryStream()));
+                        rp.setColour(rs.getString(++i));
+                        rp.setWeight(rs.getFloat(++i));
+                        rp.setConsolidatedChart(charToBool(rs.getString(++i)));
+                        rp.setPlotType(rs.getInt(++i));
+                        return rp;
+                    }
+                });
+
+        final ExportDataValue edv = new ExportDataValue();
+        for (final ExportPointInfo point : pointInfos) {
+            handler.startPoint(point);
+
+            edv.setReportPointId(point.getReportPointId());
+            final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
+            final String pointStore = instanceId + "_" + point.getReportPointId();
+            dao.getData(pointStore, 0, Long.MAX_VALUE, new NoSQLQueryCallback(){
+
+				@Override
+				public void entry(String storeName, long timestamp, ITime entry) {
+					PointValueTime pvt = (PointValueTime) entry;
+					edv.setValue(pvt.getValue());
+					edv.setTime(pvt.getTime());
+					
+					if(pvt instanceof AnnotatedPointValueTime)
+						edv.setAnnotation(((AnnotatedPointValueTime)pvt).getSourceMessage());
+					
+					handler.pointData(edv);
+				}
+            	
+            });
+        }
+        handler.done();
+    }
+    
     private static final String EVENT_SELECT = //
     "select eventId, typeName, subtypeName, typeRef1, typeRef2, activeTs, rtnApplicable, rtnTs, rtnCause, " //
             + "  alarmLevel, message, ackTs, 0, ackUsername, alternateAckSource, 0 " //
@@ -531,4 +598,183 @@ public class ReportDao extends BaseDao {
                 + "  join reportInstancePoints p on d.reportInstancePointId=p.id " //
                 + "where p.dataType=?", new Object[] { DataTypes.IMAGE }, Long.class);
     }
+    
+    
+    /**
+     * Generate a report using the NoSQL DB for point value storage
+     * @param instance
+     * @param points
+     * @return
+     */
+    public int runReportNoSQL(final ReportInstance instance, List<PointInfo> points) {
+        PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
+        int count = 0;
+
+        // The timestamp selection code is used multiple times for different tables
+        String timestampSql;
+        Object[] timestampParams;
+        if (instance.isFromInception() && instance.isToNow()) {
+            timestampSql = "";
+            timestampParams = new Object[0];
+        }
+        else if (instance.isFromInception()) {
+            timestampSql = "and ${field}<?";
+            timestampParams = new Object[] { instance.getReportEndTime() };
+        }
+        else if (instance.isToNow()) {
+            timestampSql = "and ${field}>=?";
+            timestampParams = new Object[] { instance.getReportStartTime() };
+        }
+        else {
+            timestampSql = "and ${field}>=? and ${field}<?";
+            timestampParams = new Object[] { instance.getReportStartTime(), instance.getReportEndTime() };
+        }
+
+        // For each point.
+        List<Integer> pointIds = new ArrayList<Integer>();
+        for (PointInfo pointInfo : points) {
+            DataPointVO point = pointInfo.getPoint();
+            pointIds.add(point.getId());
+            int dataType = point.getPointLocator().getDataTypeId();
+            
+            
+            DataValue startValue = null;
+            if (!instance.isFromInception()) {
+                // Get the value just before the start of the report
+                PointValueTime pvt = pointValueDao.getPointValueBefore(point.getId(), instance.getReportStartTime());
+                if (pvt != null)
+                    startValue = pvt.getValue();
+
+                // Make sure the data types match
+                if (DataTypes.getDataType(startValue) != dataType)
+                    startValue = null;
+            }
+
+            // Insert the reportInstancePoints record
+            String name = Functions.truncate(point.getName(), 100);
+
+            //Map the pointId to the Report PointId
+            final Map<Integer,Integer> pointIdMap = new HashMap<Integer,Integer>();
+            
+            int reportPointId = doInsert(
+                    REPORT_INSTANCE_POINTS_INSERT,
+                    new Object[] { instance.getId(), point.getDeviceName(), name, dataType,
+                            DataTypes.valueToString(startValue),
+                            SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
+                            pointInfo.getWeight(), boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType() },
+                    new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
+                            Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
+
+            //Keep the info in the map
+            pointIdMap.put(pointInfo.getPoint().getId(), reportPointId);
+            
+//            // Insert the reportInstanceData records
+//            String insertSQL = "insert into reportInstanceData " //
+//                    + "  select id, " + reportPointId + ", pointValue, ts from pointValues " //
+//                    + "    where dataPointId=? and dataType=? " //
+//                    + StringUtils.replaceMacro(timestampSql, "field", "ts");
+//            count += ejt.update(insertSQL, appendParameters(timestampParams, point.getId(), dataType));
+
+            // Insert the reportInstanceDataAnnotations records
+            ejt.update(
+                    "insert into reportInstanceDataAnnotations " //
+                            + "  (pointValueId, reportInstancePointId, textPointValueShort, textPointValueLong, sourceMessage) " //
+                            + "  select rd.pointValueId, rd.reportInstancePointId, pva.textPointValueShort, " //
+                            + "    pva.textPointValueLong, pva.sourceMessage " //
+                            + "  from reportInstanceData rd " //
+                            + "    join reportInstancePoints rp on rd.reportInstancePointId = rp.id " //
+                            + "    join pointValueAnnotations pva on rd.pointValueId = pva.pointValueId " //
+                            + "  where rp.id = ?", new Object[] { reportPointId });
+
+            // Insert the reportInstanceEvents records for the point.
+            if (instance.getIncludeEvents() != ReportVO.EVENTS_NONE) {
+                String eventSQL = "insert into reportInstanceEvents " //
+                        + "  (eventId, reportInstanceId, typeName, subtypeName, typeRef1, typeRef2, activeTs, " //
+                        + "   rtnApplicable, rtnTs, rtnCause, alarmLevel, message, ackTs, ackUsername, " //
+                        + "   alternateAckSource)" //
+                        + "  select e.id, " + instance.getId() + ", e.typeName, e.subtypeName, e.typeRef1, " //
+                        + "    e.typeRef2, e.activeTs, e.rtnApplicable, e.rtnTs, e.rtnCause, e.alarmLevel, " //
+                        + "    e.message, e.ackTs, u.username, e.alternateAckSource " //
+                        + "  from events e join userEvents ue on ue.eventId=e.id " //
+                        + "    left join users u on e.ackUserId=u.id " //
+                        + "  where ue.userId=? " //
+                        + "    and e.typeName=? " //
+                        + "    and e.typeRef1=? ";
+
+                if (instance.getIncludeEvents() == ReportVO.EVENTS_ALARMS)
+                    eventSQL += "and e.alarmLevel > 0 ";
+
+                eventSQL += StringUtils.replaceMacro(timestampSql, "field", "e.activeTs");
+                ejt.update(
+                        eventSQL,
+                        appendParameters(timestampParams, instance.getUserId(), EventType.EventTypeNames.DATA_POINT,
+                                point.getId()));
+            } //end for all points
+            
+            //Insert the data into the NoSQL DB
+           final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
+           final String reportId = Integer.toString(instance.getId()) + "_";
+           pointValueDao.getPointValuesBetween(pointIds, instance.getReportStartTime(), instance.getReportEndTime(), new MappedRowCallback<IdPointValueTime>(){
+				@Override
+				public void row(IdPointValueTime ipvt, int rowId) {
+					dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getDataPointId())),ipvt);
+				}
+           });
+           
+            
+
+            // Insert the reportInstanceUserComments records for the point.
+            if (instance.isIncludeUserComments()) {
+                String commentSQL = "insert into reportInstanceUserComments " //
+                        + "  (reportInstanceId, username, commentType, typeKey, ts, commentText)" //
+                        + "  select " + instance.getId() + ", u.username, " + UserComment.TYPE_POINT + ", " //
+                        + reportPointId + ", uc.ts, uc.commentText " //
+                        + "  from userComments uc " //
+                        + "    left join users u on uc.userId=u.id " //
+                        + "  where uc.commentType=" + UserComment.TYPE_POINT //
+                        + "    and uc.typeKey=? ";
+
+                // Only include comments made in the duration of the report.
+                commentSQL += StringUtils.replaceMacro(timestampSql, "field", "uc.ts");
+                ejt.update(commentSQL, appendParameters(timestampParams, point.getId()));
+            }
+        }
+
+        // Insert the reportInstanceUserComments records for the selected events
+        if (instance.isIncludeUserComments()) {
+            String commentSQL = "insert into reportInstanceUserComments " //
+                    + "  (reportInstanceId, username, commentType, typeKey, ts, commentText)" //
+                    + "  select " + instance.getId() + ", u.username, " + UserComment.TYPE_EVENT + ", uc.typeKey, " //
+                    + "    uc.ts, uc.commentText " //
+                    + "  from userComments uc " //
+                    + "    left join users u on uc.userId=u.id " //
+                    + "    join reportInstanceEvents re on re.eventId=uc.typeKey " //
+                    + "  where uc.commentType=" + UserComment.TYPE_EVENT //
+                    + "    and re.reportInstanceId=? ";
+            ejt.update(commentSQL, new Object[] { instance.getId() });
+        }
+
+        // If the report had undefined start or end times, update them with values from the data.
+        if (instance.isFromInception() || instance.isToNow()) {
+        	throw new ShouldNeverHappenException("Unimplemented!");
+//            ejt.query(
+//                    "select min(rd.ts), max(rd.ts) " //
+//                            + "from reportInstancePoints rp "
+//                            + "  join reportInstanceData rd on rp.id=rd.reportInstancePointId "
+//                            + "where rp.reportInstanceId=?", new Object[] { instance.getId() },
+//                    new RowCallbackHandler() {
+//                        @Override
+//                        public void processRow(ResultSet rs) throws SQLException {
+//                            if (instance.isFromInception())
+//                                instance.setReportStartTime(rs.getLong(1));
+//                            if (instance.isToNow())
+//                                instance.setReportEndTime(rs.getLong(2));
+//                        }
+//                    });
+        }
+
+        return count;
+    }
+    
+    
 }

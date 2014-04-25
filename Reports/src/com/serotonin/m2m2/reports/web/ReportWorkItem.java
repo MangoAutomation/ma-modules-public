@@ -130,8 +130,12 @@ public class ReportWorkItem implements WorkItem {
             //                recordCount = -2;
             //            else if (!points.isEmpty())
             //                recordCount = reportDao.runReport(reportInstance, points);
-            if (!points.isEmpty())
-                recordCount = reportDao.runReport(reportInstance, points);
+            if (!points.isEmpty()){
+                if(Common.databaseProxy.getNoSQLProxy() == null)
+                	recordCount = reportDao.runReportSQL(reportInstance, points);
+                else
+                	recordCount = reportDao.runReportNoSQL(reportInstance, points);
+            }
         }
         catch (RuntimeException e) {
             recordCount = -1;
