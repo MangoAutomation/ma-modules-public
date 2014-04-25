@@ -509,7 +509,7 @@ public class ReportDao extends BaseDao {
             edv.setReportPointId(point.getReportPointId());
             final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
             final String pointStore = instanceId + "_" + point.getReportPointId();
-            dao.getData(pointStore, 0, Long.MAX_VALUE, new NoSQLQueryCallback(){
+            dao.getData(pointStore, 0, Long.MAX_VALUE, -1, false, new NoSQLQueryCallback(){
 
 				@Override
 				public void entry(String storeName, long timestamp, ITime entry) {
@@ -608,7 +608,8 @@ public class ReportDao extends BaseDao {
      */
     public int runReportNoSQL(final ReportInstance instance, List<PointInfo> points) {
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
-        int count = 0;
+        final MappedCallbackCounter count = new MappedCallbackCounter();
+        final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
 
         // The timestamp selection code is used multiple times for different tables
         String timestampSql;
@@ -632,6 +633,9 @@ public class ReportDao extends BaseDao {
 
         // For each point.
         List<Integer> pointIds = new ArrayList<Integer>();
+        //Map the pointId to the Report PointId
+        final Map<Integer,Integer> pointIdMap = new HashMap<Integer,Integer>();
+
         for (PointInfo pointInfo : points) {
             DataPointVO point = pointInfo.getPoint();
             pointIds.add(point.getId());
@@ -652,9 +656,6 @@ public class ReportDao extends BaseDao {
 
             // Insert the reportInstancePoints record
             String name = Functions.truncate(point.getName(), 100);
-
-            //Map the pointId to the Report PointId
-            final Map<Integer,Integer> pointIdMap = new HashMap<Integer,Integer>();
             
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
@@ -712,12 +713,12 @@ public class ReportDao extends BaseDao {
             } //end for all points
             
             //Insert the data into the NoSQL DB
-           final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
            final String reportId = Integer.toString(instance.getId()) + "_";
            pointValueDao.getPointValuesBetween(pointIds, instance.getReportStartTime(), instance.getReportEndTime(), new MappedRowCallback<IdPointValueTime>(){
 				@Override
 				public void row(IdPointValueTime ipvt, int rowId) {
 					dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getDataPointId())),ipvt);
+					count.increment();
 				}
            });
            
@@ -756,25 +757,47 @@ public class ReportDao extends BaseDao {
 
         // If the report had undefined start or end times, update them with values from the data.
         if (instance.isFromInception() || instance.isToNow()) {
-        	throw new ShouldNeverHappenException("Unimplemented!");
-//            ejt.query(
-//                    "select min(rd.ts), max(rd.ts) " //
-//                            + "from reportInstancePoints rp "
-//                            + "  join reportInstanceData rd on rp.id=rd.reportInstancePointId "
-//                            + "where rp.reportInstanceId=?", new Object[] { instance.getId() },
-//                    new RowCallbackHandler() {
-//                        @Override
-//                        public void processRow(ResultSet rs) throws SQLException {
-//                            if (instance.isFromInception())
-//                                instance.setReportStartTime(rs.getLong(1));
-//                            if (instance.isToNow())
-//                                instance.setReportEndTime(rs.getLong(2));
-//                        }
-//                    });
+        	if(instance.isFromInception()){
+	        	final List<ITime> firstValueTimeList = new ArrayList<ITime>();
+				dao.getData("reports", 0L, Long.MAX_VALUE, 1, false, new NoSQLQueryCallback(){
+					@Override
+					public void entry(String storeName, long timestamp,
+							ITime entry) {
+						firstValueTimeList.add(entry); 
+					}
+	           });
+	
+				if(firstValueTimeList.size() > 0){
+					instance.setReportStartTime(firstValueTimeList.get(0).getTime());
+				}
+        	}		
+        	if(instance.isToNow()){
+	        	final List<ITime> lastValueTimeList = new ArrayList<ITime>();
+				dao.getData("reports", 0L, Long.MAX_VALUE, 1, true, new NoSQLQueryCallback(){
+					@Override
+					public void entry(String storeName, long timestamp,
+							ITime entry) {
+						lastValueTimeList.add(entry); 
+					}
+				});
+				if(lastValueTimeList.size() > 0){
+					instance.setReportEndTime(lastValueTimeList.get(0).getTime());
+				}
+				
+        	}
         }
 
-        return count;
+        return count.getCount();
     }
     
+    class MappedCallbackCounter {
+    	int count = 0;
+    	public int getCount(){
+    		return count;
+    	}
+    	public void increment(){
+    		this.count++;
+    	}
+    }
     
 }
