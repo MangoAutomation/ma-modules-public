@@ -1,14 +1,17 @@
-*Version 1.4.4
+*Version 1.4.5*
+* Upgraded to work with core version 2.3.x
+
+*Version 1.4.4*
 * Fixed broken month options for active/inactive times on the Schedule Once type Events.
 
-*Version 1.4.3
+*Version 1.4.3*
 * Added Conversion definition for Maintenance Event Type to be viewable on the Events Report page
 * Fixed broken image link on event creation page
 
-*Version 1.4.2
+*Version 1.4.2*
 *Modified for Core 2.2
 
-*Version 1.4.1
+*Version 1.4.1*
 *Modified for Core 2.1
 
 *Release notes for 1.4.0*

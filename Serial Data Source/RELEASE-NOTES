@@ -1,3 +1,6 @@
+*Version 1.1.1*
+* Upgraded to work with core version 2.3.x
+
 *Version 1.1.0*
 * Core 2.2
 * Uses JSSC driver

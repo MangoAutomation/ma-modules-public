@@ -1,7 +1,10 @@
-*Version 1.4.2
+*Version 1.4.3*
+* Upgraded to work with core version 2.3.x
+
+*Version 1.4.2*
 * Modified for Core 2.2
 
-*Version 1.4.1
+*Version 1.4.1*
 * Modified for Core 2.1
 
 *Version 1.4.0*
