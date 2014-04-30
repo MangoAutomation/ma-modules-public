@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
+    @author Terry Packer
+-->
+
+<doxManifest>  
+  <item id="cronPatterns" key="dox.cronPatterns" filename="cronPatterns.htm"/>
+  
+  <item id="userAdministration" key="dox.userAdministration" filename="userAdministration.htm"/>
+
+  <item id="generalPublisherProperties" key="dox.generalPublisherProperties" filename="generalPublisherProperties.htm"/>
+  
+
+  <item id="eventHandlers" key="dox.eventHandlers" filename="eventHandlers.htm"/>
+  
+  <item id="emailSettings" key="dox.emailSettings" filename="emailSettings.htm"/>
+  
+  <item id="httpSettings" key="dox.httpSettings" filename="httpSettings.htm"/>
+
+  
+  <item id="welcomeToMango" key="dox.welcomeToMango" filename="welcomeToMango.htm"/>  
+  
+  <item id="publisherList" key="dox.publisherList" filename="publisherList.htm"/>
+
+  <item id="datetimeFormats" key="dox.datetimeFormats" filename="datetimeFormats.htm">
+    <relation id="textRenderers"/>
+  </item>
+  
+  <item id="dataPointEditing" key="dox.dataPointEditing" filename="dataPointEditing.htm">
+    <relation id="colours"/>
+  </item>
+  
+  
+  <item id="dataSourceList" key="dox.dataSourceList" filename="dataSourceList.htm"/>
+
+  <item id="eventDetectors" key="dox.eventDetectors" filename="eventDetectors.htm"/>
+    
+  <item id="mailingLists" key="dox.mailingLists" filename="mailingLists.htm"/>
+  
+  
+  <item id="systemInformation" key="dox.systemInformation" filename="systemInformation.htm"/>
+  
+  <item id="otherSettings" key="dox.otherSettings" filename="otherSettings.htm"/>
+  
+  
+  <item id="languageSettings" key="dox.languageSettings" filename="languageSettings.htm"/>
+  
+  <item id="systemAlarmLevels" key="dox.systemAlarmLevels" filename="systemAlarmLevels.htm"/>
+  
+  <item id="auditAlarmLevels" key="systemSettings.auditAlarmLevels" filename="auditAlarmLevels.htm"/>
+  
+  <item id="emport" key="dox.emport" filename="emport.htm"/>
+  
+  
+  <item id="pointHierarchy" key="dox.pointHierarchy" filename="pointHierarchy.htm"/>
+  
+  
+</doxManifest>
