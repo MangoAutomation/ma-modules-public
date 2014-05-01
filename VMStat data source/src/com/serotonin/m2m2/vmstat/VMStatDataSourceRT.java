@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -230,7 +231,9 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
                     }
                     catch (ArrayIndexOutOfBoundsException e) {
                         log.error("Weird. We need element " + position + " but the vmstat data is only " + parts.length
-                                + " elements long");
+                                + " elements long. The statistic " + Common.translate(VMStatPointLocatorVO.ATTRIBUTE_CODES.getKey(locator.getAttributeId())) + " is missing from the vmstat output.");
+                        raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                                "event.vmstat.process", "The statistic " + Common.translate(VMStatPointLocatorVO.ATTRIBUTE_CODES.getKey(locator.getAttributeId())) + " is missing from the vmstat output."));
                     }
                 }
             }
