@@ -155,7 +155,14 @@
     }
     
     function validateScript() {
-        PointLinksDwr.validateScript($get("script"), $get("sourcePointId"), $get("targetPointId"),
+    	var targetPointId=0,sourcePointId=0;
+        if(targetPointSelector.item != null){
+        	targetPointId = targetPointSelector.item.key;
+        }
+        if(sourcePointSelector.item != null){
+        	sourcePointId = sourcePointSelector.item.key;
+        }
+        PointLinksDwr.validateScript($get("script"), sourcePointId, targetPointId,
                 function(response) {
             showDwrMessages(response.messages);
         });
