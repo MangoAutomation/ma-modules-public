@@ -181,8 +181,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 
 	@Override
 	public void serialEvent(SerialPortProxyEvent evt) {
-		//Should never happen
-		int maxLoops = 1023;
+		int maxLoops = 511;
 		int count = 0;
 		while(count < maxLoops) {
 			count += 1;
