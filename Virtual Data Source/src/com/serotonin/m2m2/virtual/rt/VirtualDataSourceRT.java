@@ -31,6 +31,8 @@ public class VirtualDataSourceRT extends PollingDataSource {
 
             // Update the data image with the new value if necessary.
             //TP EDIT, let the data point settings in the core choose this for us
+            //TP TODO: this actually causes issues in high polling data sources.  When setting the value from the UI
+            // it will set the value once from there and another time from here.
             //if (!DataValue.isEqual(oldValue, newValue))
                 dataPoint.updatePointValue(new PointValueTime(locator.getCurrentValue(), time));
         }
