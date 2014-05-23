@@ -18,7 +18,6 @@ Data can be exported from 3 areas for backup or to prepare data to be modified. 
 <h3>Data Format</h3>
 The import file should have the following column headers
 <ul>
-<li>Point Value ID - the id of the point value in the database, setting to -1 will create a new point value otherwise will overwrite existing value</li>
 <li>Data Point XID - the Data Point XID that this value is be assigned to</li>
 <li>Device Name - for display only, this vlaue is not saved</li>
 <li>Point Name - for display only, this value is not saved</li>
@@ -26,7 +25,7 @@ The import file should have the following column headers
 <li>Value - the value that will be saved into the system</li>
 <li>Rendered - for display only, this value is not saved</li>
 <li>Annotation - the annotation to match to the value</li>
-<li>Delete - if this cell contains 'yes' then this entry will be removed from the system</li>
+<li>modify - if this cell contains 'add' then this entry will be added to the system, 'delete' will remove it from the system, if blank the value will be updated in Mango using the timestamp to find the value to update</li>
 </ul>
 
 <a href="/modules/dataImport/web/dox/example.xlsx">Here</a> is an example file.  

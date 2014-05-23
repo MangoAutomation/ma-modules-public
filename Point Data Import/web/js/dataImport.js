@@ -23,8 +23,6 @@ function(Select,domStyle,html,put,when,on,
 			  hide("pointValueEmport");
 			  show("csv-upload");
 		  }
-		 
-		  
 	  });
 	
 	
