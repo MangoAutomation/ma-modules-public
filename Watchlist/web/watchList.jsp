@@ -561,7 +561,16 @@
 	        }
 	      </m2m2:moduleExists>
 
-      
+	  /**
+	   * Export the currently selected watchlist
+	   *  this value is stored on the server side in the User
+	   */
+      function exportCurrentWatchlist(){
+          WatchListDwr.exportCurrentWatchlist(function(response){
+                  $set("exportData", response.data.json);
+                  exportDialog.show();
+          });
+      }
 
     </script>
   
@@ -624,6 +633,7 @@
                   <tag:img src="/${modulesDir}/reports/web/report_add.png" onclick="createReport();"
                           title="watchlist.createReport" onmouseover="closeLayers();"/>
                 </m2m2:moduleExists>
+                 <tag:img png="emport" onclick="exportCurrentWatchlist()" title="watchlist.export" onmouseover="closeLayers();"/>
               </td>
             </tr>
           </table>

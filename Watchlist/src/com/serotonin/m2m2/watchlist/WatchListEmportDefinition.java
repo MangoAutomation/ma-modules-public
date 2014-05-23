@@ -18,8 +18,11 @@ import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class WatchListEmportDefinition extends EmportDefinition {
-    private WatchListDao watchListDao;
-
+    
+	public static String elementId = "watchlists";
+	
+	private WatchListDao watchListDao;
+    
     @Override
     public void postInitialize() {
         super.postInitialize();
@@ -28,7 +31,7 @@ public class WatchListEmportDefinition extends EmportDefinition {
 
     @Override
     public String getElementId() {
-        return "watchLists";
+        return elementId;
     }
 
     @Override

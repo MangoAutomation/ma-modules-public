@@ -1,5 +1,6 @@
 *Version 1.5.5*
 * Fixed bug where users were unable to download data as Excel spreadsheet
+* Added ability to export single watchlist from menu
 
 *Version 1.5.4*
 * Upgraded to work with core version 2.3.x

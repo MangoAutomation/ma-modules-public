@@ -6,6 +6,7 @@ package com.serotonin.m2m2.watchlist;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,11 +18,12 @@ import org.directwebremoting.WebContextFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import com.serotonin.m2m2.Common;
 import com.serotonin.db.pair.IntStringPair;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RuntimeManager;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -34,6 +36,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.web.dwr.EmportDwr;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.beans.DataExportDefinition;
 import com.serotonin.m2m2.web.dwr.longPoll.LongPollData;
@@ -469,4 +472,23 @@ public class WatchListDwr extends ModuleDwr {
         DataExportDefinition def = new DataExportDefinition(pointIds, from, to);
         user.setDataExportDefinition(def);
     }
+    
+    @DwrPermission(user = true)
+    public ProcessResult exportCurrentWatchlist(){
+    	ProcessResult result = new ProcessResult();
+    	WatchList wl = getWatchList();
+    	
+    	//TODO Could check for null, probably unlikely though
+    	
+    	Map<String, Object> data = new LinkedHashMap<String, Object>();
+        //Get the Full VO for the export
+        List<WatchList> vos = new ArrayList<WatchList>();
+    	vos.add(wl);
+        data.put(WatchListEmportDefinition.elementId, vos);
+        
+        result.addData("json", EmportDwr.export(data, 3));
+        
+    	return result;
+    }
+    
 }
