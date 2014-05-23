@@ -517,7 +517,7 @@
 	                  var downloadTypeSelect = dijit.byId("downloadTypeSelect");
 	                  var downloadUrl = "chartExport/watchListData" + downloadTypeSelect.get('value');
 	                  window.location = downloadUrl;
-	                  window.location = "chartExport/watchListData.csv";
+	                 
 	              });
 	          }
 	      }
