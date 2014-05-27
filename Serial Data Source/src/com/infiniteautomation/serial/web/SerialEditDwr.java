@@ -1,5 +1,8 @@
 package com.infiniteautomation.serial.web;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.Common;
@@ -7,6 +10,8 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.dataSource.BasicDataSourceVO;
 import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
+
+import freemarker.template.utility.StringUtil;
 
 public class SerialEditDwr extends DataSourceEditDwr{
 
@@ -25,7 +30,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	        ds.setStopBits(stopBits);
 	        ds.setParity(parity);
 	        ds.setReadTimeout(readTimeout);
-	        ds.setMessageTerminator(messageTerminator);
+	        ds.setMessageTerminator(StringEscapeUtils.unescapeJava(messageTerminator));
 	        ds.setMessageRegex(messageRegex);
 	        ds.setPointIdentifierIndex(pointIdentifierIndex);
 	        

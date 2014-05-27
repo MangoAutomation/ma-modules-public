@@ -23,7 +23,9 @@ import com.serotonin.io.serial.SerialPortProxy;
 import com.serotonin.io.serial.SerialPortProxyEvent;
 import com.serotonin.io.serial.SerialPortProxyEventListener;
 import com.serotonin.io.serial.SerialUtils;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -49,6 +51,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		buffer = new ByteQueue(1024);
 		SerialDataSourceVO properties = (SerialDataSourceVO)this.getVo();
 		terminator = properties.getMessageTerminator().getBytes();
+		setPollingPeriod(TimePeriods.SECONDS, 15, false);
 	}
 
 
@@ -272,6 +275,22 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		if(this.port == null){
 			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
 			return;
+		}
+		
+		try {
+		byte[] buf = new byte[1024];
+		String str = "";
+		InputStream in = this.port.getInputStream();
+		byte c = 0; 
+		int k = 0;
+		while( (c = (byte)in.read()) >= 0 ) {
+			buf[k] = c;
+			k+=1;
+		}
+		str = new String(buf, 0, k);
+		System.out.print(str);
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 
 	}
