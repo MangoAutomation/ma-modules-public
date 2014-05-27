@@ -255,7 +255,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
@@ -276,6 +276,19 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         int ver = in.readInt();
 
         // Switch on the version of the class so that version changes can be elegantly handled.
+        if (ver == 1) {
+            commPortId = SerializationHelper.readSafeUTF(in);
+            baudRate = in.readInt();
+            flowControlIn = in.readInt();
+            flowControlOut = in.readInt();
+            dataBits = in.readInt();
+            stopBits = in.readInt();
+            parity = in.readInt();
+            messageTerminator = StringEscapeUtils.unescapeJava(SerializationHelper.readSafeUTF(in));
+            readTimeout = in.readInt();
+            messageRegex = SerializationHelper.readSafeUTF(in);
+            pointIdentifierIndex = in.readInt();
+        }
         if (ver == 1) {
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();

@@ -51,7 +51,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		buffer = new ByteQueue(1024);
 		SerialDataSourceVO properties = (SerialDataSourceVO)this.getVo();
 		terminator = properties.getMessageTerminator().getBytes();
-		setPollingPeriod(TimePeriods.SECONDS, 15, false);
 	}
 
 
@@ -146,7 +145,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 			OutputStream os = this.port.getOutputStream();
 			//Pin the terminator on the end
 			String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
-	        messageTerminator = StringEscapeUtils.unescapeJava(messageTerminator);
 	        
 	        //Create Message from Message Start 
 	        SerialPointLocatorRT pl = dataPoint.getPointLocator();
@@ -276,23 +274,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
 			return;
 		}
-		
-		try {
-		byte[] buf = new byte[1024];
-		String str = "";
-		InputStream in = this.port.getInputStream();
-		byte c = 0; 
-		int k = 0;
-		while( (c = (byte)in.read()) >= 0 ) {
-			buf[k] = c;
-			k+=1;
-		}
-		str = new String(buf, 0, k);
-		System.out.print(str);
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	
