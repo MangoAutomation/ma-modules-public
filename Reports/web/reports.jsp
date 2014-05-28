@@ -91,6 +91,7 @@
         selectedReport = report;
         
         $set("name", report.name);
+        $set("xid", report.xid);
         reportPointsArray = new Array();
         for (var i=0; i<report.points.length; i++)
             addToReportPointsArray(
@@ -487,7 +488,7 @@
     }
     
     function saveReport() {
-        ReportsDwr.saveReport(selectedReport.id, $get("name"), getReportPointIdsArray(), $get("includeEvents"),
+        ReportsDwr.saveReport(selectedReport.id, $get("name"), $get("xid"), getReportPointIdsArray(), $get("includeEvents"),
                 $get("includeUserComments"), $get("dateRangeType"), $get("relativeType"), $get("prevPeriodCount"),
                 $get("prevPeriodType"), $get("pastPeriodCount"), $get("pastPeriodType"), $get("fromNone"),
                 $get("fromYear"), $get("fromMonth"), $get("fromDay"), $get("fromHour"), $get("fromMinute"),
@@ -557,7 +558,7 @@
         if (hasImageFader("runImg"))
             return;
         
-        ReportsDwr.runReport($get("name"), getReportPointIdsArray(), $get("includeEvents"),
+        ReportsDwr.runReport($get("xid"), $get("name"), getReportPointIdsArray(), $get("includeEvents"),
                 $get("includeUserComments"), $get("dateRangeType"), $get("relativeType"), $get("prevPeriodCount"),
                 $get("prevPeriodType"), $get("pastPeriodCount"), $get("pastPeriodType"), $get("fromNone"),
                 $get("fromYear"), $get("fromMonth"), $get("fromDay"), $get("fromHour"), $get("fromMinute"),
@@ -659,7 +660,12 @@
                 <span class="formError" id="nameError"></span>
               </td>
             </tr>
-            
+            <tr>
+              <td class="formLabelRequired"><fmt:message key="common.xid"/></td>
+              <td class="formField">
+                <input type="text" id="xid" class="formLong"/><br/>
+              </td>
+            </tr>            
             <tr>
               <td class="formLabelRequired"><fmt:message key="common.points"/></td>
               <td class="formField">

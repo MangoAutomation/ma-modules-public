@@ -15,7 +15,6 @@ import java.util.Map;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
@@ -57,8 +56,12 @@ public class ReportDao extends BaseDao {
     //
     // Report Templates
     //
-    private static final String REPORT_SELECT = "select data, id, userId, name from reports ";
+    private static final String REPORT_SELECT = "select data, id, xid, userId, name from reports ";
 
+    public String generateUniqueXid() {
+        return generateUniqueXid(ReportVO.XID_PREFIX, "reports");
+    }
+    
     public List<ReportVO> getReports() {
         return query(REPORT_SELECT, new ReportRowMapper());
     }
@@ -67,6 +70,14 @@ public class ReportDao extends BaseDao {
         return query(REPORT_SELECT + "where userId=? order by name", new Object[] { userId }, new ReportRowMapper());
     }
 
+	/**
+	 * @param xid
+	 * @return
+	 */
+	public ReportVO getReport(String xid) {
+        return queryForObject(REPORT_SELECT + "where xid=?", new Object[] { xid }, new ReportRowMapper(), null);
+	}
+    
     public ReportVO getReport(int id) {
         return queryForObject(REPORT_SELECT + "where id=?", new Object[] { id }, new ReportRowMapper(), null);
     }
@@ -77,6 +88,7 @@ public class ReportDao extends BaseDao {
             int i = 0;
             ReportVO report = (ReportVO) SerializationHelper.readObjectInContext(rs.getBlob(++i).getBinaryStream());
             report.setId(rs.getInt(++i));
+            report.setXid(rs.getString(++i));
             report.setUserId(rs.getInt(++i));
             report.setName(rs.getString(++i));
             return report;
@@ -90,21 +102,21 @@ public class ReportDao extends BaseDao {
             updateReport(report);
     }
 
-    private static final String REPORT_INSERT = "insert into reports (userId, name, data) values (?,?,?)";
+    private static final String REPORT_INSERT = "insert into reports (xid, userId, name, data) values (?,?,?,?)";
 
     private void insertReport(final ReportVO report) {
         report.setId(doInsert(REPORT_INSERT,
-                new Object[] { report.getUserId(), report.getName(), SerializationHelper.writeObject(report) },
-                new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB }));
+                new Object[] { report.getXid(), report.getUserId(), report.getName(), SerializationHelper.writeObject(report) },
+                new int[] { Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB }));
     }
 
-    private static final String REPORT_UPDATE = "update reports set userId=?, name=?, data=? where id=?";
+    private static final String REPORT_UPDATE = "update reports set xid=?, userId=?, name=?, data=? where id=?";
 
     private void updateReport(final ReportVO report) {
         ejt.update(
                 REPORT_UPDATE,
-                new Object[] { report.getUserId(), report.getName(), SerializationHelper.writeObject(report),
-                        report.getId() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.INTEGER });
+                new Object[] { report.getXid(), report.getUserId(), report.getName(), SerializationHelper.writeObject(report),
+                        report.getId() }, new int[] { Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.INTEGER });
     }
 
     public void deleteReport(int reportId) {
@@ -128,6 +140,8 @@ public class ReportDao extends BaseDao {
                 new ReportInstanceRowMapper(), null);
     }
 
+
+    
     class ReportInstanceRowMapper implements RowMapper<ReportInstance> {
         @Override
         public ReportInstance mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -153,8 +167,27 @@ public class ReportDao extends BaseDao {
     }
 
     public int purgeReportsBefore(final long time) {
-        return ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
+    	//Check to see if we are using NoSQL
+    	if(Common.databaseProxy.getNoSQLProxy() == null){
+    		return ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
                 boolToChar(false) });
+    	}else{
+    		//We need to get the report instances to delete first
+    		List<ReportInstance> instances =  query(REPORT_INSTANCE_SELECT + "where runStartTime<? and preventPurge=?", new Object[] { time,
+                    boolToChar(false) },new ReportInstanceRowMapper());
+	        final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
+    		
+    		for(ReportInstance instance :instances){
+    			List<ExportPointInfo> points = this.getReportInstancePoints(instance.getId());
+    			//Drop the series for these
+    			for(ExportPointInfo point : points){
+    				dao.deleteStore(instance.getId() + "_" + point.getReportPointId());
+    			}
+    		}
+    		
+    		return ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
+                    boolToChar(false) });
+    	}
     }
 
     public void setReportInstancePreventPurge(int id, boolean preventPurge, int userId) {
@@ -404,6 +437,37 @@ public class ReportDao extends BaseDao {
     private static final String REPORT_INSTANCE_POINT_SELECT = "select id, deviceName, pointName, dataType, " // 
             + "startValue, textRenderer, colour, weight, consolidatedChart, plotType " //
             + "from reportInstancePoints ";
+    
+    /**
+     * Get the Points for a report
+     * @param instanceId
+     * @return
+     */
+    public List<ExportPointInfo> getReportInstancePoints(int instanceId){
+    	return query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
+                new Object[] { instanceId }, new RowMapper<ExportPointInfo>() {
+                    @Override
+                    public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        int i = 0;
+                        ExportPointInfo rp = new ExportPointInfo();
+                        rp.setReportPointId(rs.getInt(++i));
+                        rp.setDeviceName(rs.getString(++i));
+                        rp.setPointName(rs.getString(++i));
+                        rp.setDataType(rs.getInt(++i));
+                        String startValue = rs.getString(++i);
+                        if (startValue != null)
+                            rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
+                        rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
+                                .getBinaryStream()));
+                        rp.setColour(rs.getString(++i));
+                        rp.setWeight(rs.getFloat(++i));
+                        rp.setConsolidatedChart(charToBool(rs.getString(++i)));
+                        rp.setPlotType(rs.getInt(++i));
+                        return rp;
+                    }
+                });
+    }
+    
     private static final String REPORT_INSTANCE_DATA_SELECT = "select rd.pointValue, rda.textPointValueShort, " //
             + "  rda.textPointValueLong, rd.ts, rda.sourceMessage "
             + "from reportInstanceData rd "
@@ -713,6 +777,7 @@ public class ReportDao extends BaseDao {
             } //end for all points
             
             //Insert the data into the NoSQL DB
+            //The series name is reportInstanceId_reportPointId
            final String reportId = Integer.toString(instance.getId()) + "_";
            pointValueDao.getPointValuesBetween(pointIds, instance.getReportStartTime(), instance.getReportEndTime(), new MappedRowCallback<IdPointValueTime>(){
 				@Override
@@ -799,5 +864,7 @@ public class ReportDao extends BaseDao {
     		this.count++;
     	}
     }
+
+
     
 }

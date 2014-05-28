@@ -11,65 +11,124 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.DateTime;
 
+import com.serotonin.InvalidArgumentException;
+import com.serotonin.json.JsonException;
+import com.serotonin.json.JsonReader;
+import com.serotonin.json.ObjectWriter;
+import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.json.spi.JsonSerializable;
+import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.DateUtils;
+import com.serotonin.m2m2.util.ExportCodes;
+import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
+import com.serotonin.util.ColorUtils;
 import com.serotonin.util.SerializationHelper;
 
 /**
  * @author Matthew Lohbihler
  */
-public class ReportVO implements Serializable {
+public class ReportVO extends AbstractVO<ReportVO> implements Serializable, JsonSerializable {
+	
+	public static final String XID_PREFIX = "REPORT_";
+	
     public static final int DATE_RANGE_TYPE_RELATIVE = 1;
     public static final int DATE_RANGE_TYPE_SPECIFIC = 2;
+
 
     public static final int EVENTS_NONE = 1;
     public static final int EVENTS_ALARMS = 2;
     public static final int EVENTS_ALL = 3;
-
+    public static final ExportCodes EVENT_CODES = new ExportCodes();
+    static {
+    	EVENT_CODES.addElement(EVENTS_NONE, "NONE");
+    	EVENT_CODES.addElement(EVENTS_ALARMS, "ALARMS");
+    	EVENT_CODES.addElement(EVENTS_ALL, "ALL");
+    }
+    
     public static final int RELATIVE_DATE_TYPE_PREVIOUS = 1;
     public static final int RELATIVE_DATE_TYPE_PAST = 2;
 
+    public static final ExportCodes DATE_TYPES = new ExportCodes();
+    static {
+    	DATE_TYPES.addElement(RELATIVE_DATE_TYPE_PREVIOUS, "PREVIOUS");
+    	DATE_TYPES.addElement(RELATIVE_DATE_TYPE_PAST, "PAST");
+    }
+    
+    
+
     public static final int SCHEDULE_CRON = 0;
 
-    private int id = Common.NEW_ID;
     private int userId;
-    private String name;
+    
     private List<ReportPointVO> points = new ArrayList<ReportPointVO>();
     private int includeEvents = EVENTS_ALARMS;
+    @JsonProperty
     private boolean includeUserComments = true;
+    
     private int dateRangeType = DATE_RANGE_TYPE_RELATIVE;
     private int relativeDateType = RELATIVE_DATE_TYPE_PREVIOUS;
 
+        
     private int previousPeriodCount = 1;
     private int previousPeriodType = Common.TimePeriods.DAYS;
     private int pastPeriodCount = 1;
     private int pastPeriodType = Common.TimePeriods.DAYS;
 
+    @JsonProperty
     private boolean fromNone;
+    @JsonProperty
     private int fromYear;
+    @JsonProperty
     private int fromMonth;
+    @JsonProperty
     private int fromDay;
+    @JsonProperty
     private int fromHour;
+    @JsonProperty
     private int fromMinute;
 
+    @JsonProperty
     private boolean toNone;
+    @JsonProperty
     private int toYear;
+    @JsonProperty
     private int toMonth;
+    @JsonProperty
     private int toDay;
+    @JsonProperty
     private int toHour;
+    @JsonProperty
     private int toMinute;
 
+    @JsonProperty
     private boolean schedule;
     private int schedulePeriod = Common.TimePeriods.DAYS;
+    @JsonProperty
     private int runDelayMinutes;
+    @JsonProperty
     private String scheduleCron;
 
+    @JsonProperty
     private boolean email;
     private List<RecipientListEntryBean> recipients = new ArrayList<RecipientListEntryBean>();
+    @JsonProperty
     private boolean includeData = true;
+    @JsonProperty
     private boolean zipData = false;
 
     public ReportVO() {
@@ -103,14 +162,6 @@ public class ReportVO implements Serializable {
 
     public void setUserId(int userId) {
         this.userId = userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public List<ReportPointVO> getPoints() {
@@ -429,4 +480,98 @@ public class ReportVO implements Serializable {
             zipData = in.readBoolean();
         }
     }
+
+    @Override
+    public void validate(ProcessResult response){
+    	super.validate(response);
+        if (points.isEmpty())
+            response.addContextualMessage("points", "reports.validate.needPoint");
+        if (dateRangeType != ReportVO.DATE_RANGE_TYPE_RELATIVE && dateRangeType != ReportVO.DATE_RANGE_TYPE_SPECIFIC)
+            response.addGenericMessage("reports.validate.invalidDateRangeType");
+        if (relativeDateType != ReportVO.RELATIVE_DATE_TYPE_PAST
+                && relativeDateType != ReportVO.RELATIVE_DATE_TYPE_PREVIOUS)
+            response.addGenericMessage("reports.validate.invalidRelativeDateType");
+        if (previousPeriodCount < 1)
+            response.addContextualMessage("previousPeriodCount", "reports.validate.periodCountLessThan1");
+        if (pastPeriodCount < 1)
+            response.addContextualMessage("pastPeriodCount", "reports.validate.periodCountLessThan1");
+        
+        UserDao dao = new UserDao();
+        User user = dao.getUser(userId);
+        if(user == null){
+            response.addContextualMessage("userId", "reports.validate.userDNE");
+        }
+        
+        DataPointDao dataPointDao = new DataPointDao();
+        for (ReportPointVO point : points) {
+        	DataPointVO vo  = dataPointDao.getDataPoint(point.getPointId());
+        	String pointXid = "unknown";
+        	if(vo != null)
+        		pointXid = vo.getXid();
+        	
+        	try{
+        		Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId()));
+        	}catch(PermissionException e){
+        		
+        		response.addContextualMessage("points", "reports.validate.pointPermissions",user.getUsername(), pointXid);
+        	}
+            try {
+                if (!StringUtils.isBlank(point.getColour()))
+                    ColorUtils.toColor(point.getColour());
+            }
+            catch (InvalidArgumentException e) {
+                response.addContextualMessage("points", "reports.validate.colour", point.getColour(), pointXid);
+            }
+
+            if (point.getWeight() <= 0)
+                response.addContextualMessage("points", "reports.validate.weight");
+        }
+    }
+    
+    
+    
+    @Override
+    public final void addProperties(List<TranslatableMessage> list) {
+    	super.addProperties(list);
+
+        AuditEventType.addPropertyMessage(list, "reports.points", points);
+        AuditEventType.addPropertyMessage(list, "reports.includeEvents", includeEvents);
+ 
+    }
+
+
+    public void addPropertyChanges(List<TranslatableMessage> list, ReportVO from) {
+    	super.addPropertyChanges(list,from);
+    	
+    	//TODO Flesh out
+    }
+
+    
+	/* (non-Javadoc)
+	 * @see com.serotonin.json.spi.JsonSerializable#jsonRead(com.serotonin.json.JsonReader, com.serotonin.json.type.JsonObject)
+	 */
+	@Override
+	public void jsonRead(JsonReader paramJsonReader, JsonObject paramJsonObject)
+			throws JsonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.json.spi.JsonSerializable#jsonWrite(com.serotonin.json.ObjectWriter)
+	 */
+	@Override
+	public void jsonWrite(ObjectWriter paramObjectWriter) throws IOException,
+			JsonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.ChangeComparable#getTypeKey()
+	 */
+	@Override
+	public String getTypeKey() {
+		return "event.audit.report";
+	}
 }

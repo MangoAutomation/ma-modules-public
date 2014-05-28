@@ -54,6 +54,7 @@ public class ReportsDwr extends ModuleDwr {
         ReportVO report;
         if (id == Common.NEW_ID) {
             report = new ReportVO();
+            report.setXid(new ReportDao().generateUniqueXid());
             report.setName(translate("common.newName"));
         }
         else {
@@ -70,7 +71,7 @@ public class ReportsDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult saveReport(int id, String name, List<ReportPointVO> points, int includeEvents,
+    public ProcessResult saveReport(int id, String name, String xid, List<ReportPointVO> points, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
             int fromMonth, int fromDay, int fromHour, int fromMinute, boolean toNone, int toYear, int toMonth,
@@ -116,10 +117,11 @@ public class ReportsDwr extends ModuleDwr {
         }
         else
             report = reportDao.getReport(id);
-
+        
         ReportCommon.ensureReportPermission(user, report);
 
         // Update the new values.
+        report.setXid(xid);
         report.setName(name);
         report.setPoints(points);
         report.setIncludeEvents(includeEvents);
@@ -163,7 +165,7 @@ public class ReportsDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult runReport(String name, List<ReportPointVO> points, int includeEvents,
+    public ProcessResult runReport(String xid, String name, List<ReportPointVO> points, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
             int fromMonth, int fromDay, int fromHour, int fromMinute, boolean toNone, int toYear, int toMonth,
@@ -172,10 +174,12 @@ public class ReportsDwr extends ModuleDwr {
         ProcessResult response = new ProcessResult();
 
         // Basic validation
+        //TODO Replace with vo.validate()
         validateData(response, name, points, dateRangeType, relativeDateType, previousPeriodCount, pastPeriodCount);
 
         if (!response.getHasMessages()) {
             ReportVO report = new ReportVO();
+            report.setXid(xid);
             report.setName(name);
             report.setUserId(Common.getUser().getId());
             report.setPoints(points);

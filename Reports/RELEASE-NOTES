@@ -1,3 +1,7 @@
+*Version 2.0.5
+* Added ability to export/import report configurations
+* Added H2 Support
+
 *Version 2.0.4
 * Adding MangoNoSQL Support
 * Upgraded to work with core version 2.3.x

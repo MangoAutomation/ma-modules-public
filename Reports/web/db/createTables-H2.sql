@@ -4,6 +4,7 @@
 --
 create table reports (
   id int not null auto_increment,
+  xid varchar(50) NOT NULL,
   userId int not null,
   name varchar(100) not null,
   data longblob not null,

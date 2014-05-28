@@ -12,6 +12,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.PurgeDefinition;
 import com.serotonin.m2m2.util.DateUtils;
+import com.serotonin.m2m2.web.dwr.SystemSettingsDwr;
 
 public class ReportPurgeDefinition extends PurgeDefinition {
     private static final Log LOG = LogFactory.getLog(ReportPurgeDefinition.class);
@@ -26,7 +27,7 @@ public class ReportPurgeDefinition extends PurgeDefinition {
                 SystemSettingsDao.getIntValue(REPORT_PURGE_PERIOD_TYPE, Common.TimePeriods.MONTHS),
                 SystemSettingsDao.getIntValue(REPORT_PURGE_PERIODS, 1));
 
-        int deleteCount = new ReportDao().purgeReportsBefore(cutoff.getMillis());
+        int deleteCount = new ReportDao().purgeReportsBefore( System.currentTimeMillis()); //cutoff.getMillis());
         if (deleteCount > 0)
             LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
     }

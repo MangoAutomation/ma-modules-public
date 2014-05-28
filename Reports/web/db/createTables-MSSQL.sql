@@ -8,6 +8,7 @@
 --
 create table reports (
   id int not null identity,
+  xid nvarchar(50) not null,
   userId int not null,
   name nvarchar(100) not null,
   data image not null,
