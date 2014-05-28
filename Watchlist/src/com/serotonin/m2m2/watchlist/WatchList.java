@@ -37,7 +37,7 @@ public class WatchList implements JsonSerializable {
     public static final String XID_PREFIX = "WL_";
 
     private int id = Common.NEW_ID;
-    @JsonProperty(read = false)
+    @JsonProperty
     private String xid;
     private int userId;
     @JsonProperty
