@@ -41,4 +41,10 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	    public ProcessResult savePointLocator(int id, String xid, String name,SerialPointLocatorVO locator) {
 	        return validatePoint(id, xid, name, locator, null);
 	    }
+	    
+	    @DwrPermission(user = true)
+	    public String getSafeTerminator() {
+	    	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
+	    	return StringEscapeUtils.escapeJava(ds.getMessageTerminator());
+	    }
 }
