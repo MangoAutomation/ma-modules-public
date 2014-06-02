@@ -9,14 +9,27 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import com.serotonin.json.JsonException;
+import com.serotonin.json.JsonReader;
+import com.serotonin.json.ObjectWriter;
+import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.json.spi.JsonSerializable;
+import com.serotonin.json.type.JsonObject;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.util.SerializationHelper;
 
-public class ReportPointVO implements Serializable {
-    private int pointId;
+public class ReportPointVO implements Serializable, JsonSerializable {
+    
+	private int pointId;
+	@JsonProperty
     private String colour;
+	@JsonProperty
     private float weight = 1;
+	@JsonProperty
     private boolean consolidatedChart;
+	@JsonProperty
     private int plotType;
 
     public int getPointId() {
@@ -27,7 +40,7 @@ public class ReportPointVO implements Serializable {
         this.pointId = pointId;
     }
 
-    public String getColour() {
+	public String getColour() {
         return colour;
     }
 
@@ -102,4 +115,35 @@ public class ReportPointVO implements Serializable {
             plotType = in.readInt();
         }
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.json.spi.JsonSerializable#jsonRead(com.serotonin.json.JsonReader, com.serotonin.json.type.JsonObject)
+	 */
+	@Override
+	public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
+		
+		String text = jsonObject.getString("pointXid");
+		if(text == null){
+			throw new TranslatableJsonException("reports.emport.point.missingAttr", "pointXid");
+		}else{
+			DataPointVO vo = DataPointDao.instance.getByXid(text);
+			if(vo == null){
+				throw new TranslatableJsonException("reports.emport.pointDNE", text);
+			}
+			this.pointId = vo.getId();
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.json.spi.JsonSerializable#jsonWrite(com.serotonin.json.ObjectWriter)
+	 */
+	@Override
+	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
+		
+		DataPointVO vo = DataPointDao.instance.get(pointId);
+		if(vo != null)
+			writer.writeEntry("pointXid", vo.getXid());
+		
+	}
 }
