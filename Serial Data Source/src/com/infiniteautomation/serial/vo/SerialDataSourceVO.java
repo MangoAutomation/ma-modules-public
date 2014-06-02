@@ -200,7 +200,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         if (parity < 0 || parity > 4)
             response.addContextualMessage("parityBits", "validate.invalidValue");
         
-        if(isBlank(messageTerminator))
+        if(messageTerminator.length() <= 0)
         	response.addContextualMessage("messageTerminator", "validate.required");
         if(StringEscapeUtils.unescapeJava(messageTerminator).length() > 1)
         	response.addContextualMessage("messageTerminator","validate.invalidValue");
@@ -289,7 +289,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             messageRegex = SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
         }
-        if (ver == 1) {
+        if (ver == 2) {
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();
             flowControlIn = in.readInt();

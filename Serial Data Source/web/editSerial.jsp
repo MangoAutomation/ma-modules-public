@@ -5,6 +5,12 @@
 
 <script type="text/javascript">
 
+	function initImpl() {
+		SerialEditDwr.getSafeTerminator(function(messageTerminator) {
+			$set("messageTerminator", messageTerminator);
+		});
+	}
+
 	/**
 	 * Save the DS
 	 */
@@ -59,7 +65,7 @@
 </tr>
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.serial.messageTerminator"/></td>
- <td><input id="messageTerminator" type="text" value="${dataSource.messageTerminator}"></input></td>
+ <td><input id="messageTerminator" type="text"></input></td>
 </tr>
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.serial.messageRegex"/></td>
