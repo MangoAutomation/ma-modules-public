@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,9 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
+import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -37,6 +40,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
+import com.serotonin.timer.CronTimerTrigger;
 import com.serotonin.util.ColorUtils;
 import com.serotonin.util.SerializationHelper;
 
@@ -488,8 +492,10 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     	super.validate(response);
         if (points.isEmpty())
             response.addContextualMessage("points", "reports.validate.needPoint");
+        
         if (dateRangeType != ReportVO.DATE_RANGE_TYPE_RELATIVE && dateRangeType != ReportVO.DATE_RANGE_TYPE_SPECIFIC)
             response.addGenericMessage("reports.validate.invalidDateRangeType");
+
         if (relativeDateType != ReportVO.RELATIVE_DATE_TYPE_PAST
                 && relativeDateType != ReportVO.RELATIVE_DATE_TYPE_PREVIOUS)
             response.addGenericMessage("reports.validate.invalidRelativeDateType");
@@ -531,6 +537,21 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
             if (point.getWeight() <= 0)
                 response.addContextualMessage("points", "reports.validate.weight");
         }
+        
+        //Validate the schedule
+        if(schedule){
+        	if(schedulePeriod == SCHEDULE_CRON){
+        		try {
+                    new CronTimerTrigger(scheduleCron);
+                }catch (ParseException e) {
+                    response.addContextualMessage("scheduleCron", "validate.invalidValue");
+                }
+        	}
+        }
+        
+        
+        
+        
     }
     
     
@@ -680,13 +701,58 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 		
 		schedule = jsonObject.getBoolean("schedule");
 		if(schedule){
-			schedulePeriod = SCHEDULE_CODES.getId(jsonObject.getString("schedulePeriod"));
-			if(schedulePeriod == SCHEDULE_CRON)
-				scheduleCron = jsonObject.getString("scheduleCron");
+			text = jsonObject.getString("schedulePeriod");
+			if(text != null){
+				schedulePeriod = SCHEDULE_CODES.getId(text);
+				if(schedulePeriod == -1)
+					throw new TranslatableJsonException("emport.error.invalid",
+							"schedulePeriod", text,
+							SCHEDULE_CODES.getCodeList());
+				if(schedulePeriod == SCHEDULE_CRON){
+					scheduleCron = jsonObject.getString("scheduleCron");
+					try {
+	                    new CronTimerTrigger(scheduleCron);
+	                }catch (ParseException e) {
+	                	throw new TranslatableJsonException("emport.error.invalid",
+								"scheduleCron", scheduleCron,
+								"cron expressions");
+	                }
+				}
+			}else{
+				throw new TranslatableJsonException("emport.error.invalid",
+						"schedulePeriod", "null",
+						SCHEDULE_CODES.getCodeList());
+			}
 		}
 		
 		email = jsonObject.getBoolean("email");
 		if(email){
+			
+			JsonArray recipientsArray = jsonObject.getJsonArray("recipients");
+			boolean add = true;
+			if(recipientsArray != null){
+				for(JsonValue jv : recipientsArray){
+					RecipientListEntryBean recipient = new RecipientListEntryBean();
+					reader.readInto(recipient, jv);
+					for(RecipientListEntryBean existing : recipients){
+						if(existing.equals(recipient)){
+							reader.readInto(existing, jv);
+							add = false;
+							break;
+						}
+					}
+					if(add){
+						recipients.add(recipient);
+					}else{
+						add = true;
+					}
+				}
+			}else{
+				throw new TranslatableJsonException("emport.error.invalid",
+						"recipients", "null",
+						"valid users, email addresses or mailing lists");
+			}
+			
 			includeData = jsonObject.getBoolean("includeData");
 			if(includeData)
 				zipData = jsonObject.getBoolean("zipData");
