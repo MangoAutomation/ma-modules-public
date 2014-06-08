@@ -6,9 +6,13 @@
  <property file="${coreHome}/build.properties" />
  <property name="core.target" value="${coreHome}/target" />
  <property name="deploy.modules.path" value="${core.target}/web/modules"/>
-    
- <property name="modules" value="ASCII File Data Source,Crowd,EnvCan Data Source,Graphical views,Internal Data Source,JSP Views,Language - de,Language - en,Language - fi,Language - nl,Language - pt,Language - zh,Log4J reset,Maintenance Events,Point Data Import,PointLinks,Reports,Scheduled Events,Serial Data Source,SQL console,Squwk,SST Graphics,SST Theme,Virtual Data Source,VMStat data source,Watchlist"/>
+ 
+ <!-- Master list of modules to use
+ <property name="modules" value="ASCII File Data Source,Crowd,EnvCan Data Source,Graphical views,Internal Data Source,JSP Views,Language - de,Language - en,Language - fi,Language - nl,Language - pt,Language - zh,Log4J reset,Maintenance Events,Point Data Import,PointLinks,Reports,Scheduled Events,Serial Data Source,SQL console,Squwk,SST Graphics,SST Theme,Virtual Data Source,VMStat data source,Watchlist"/> -->
 
+  <property name="modules" value="ASCII File Data Source"/>
+
+  
  <target name="deploy-all-zip" description="Deploy All Public Modules into Core and Zip them" >
     
     <!-- Set the property to force a zip -->
