@@ -1,7 +1,10 @@
 package com.serotonin.m2m2.reports.upgrade;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
@@ -25,7 +28,12 @@ public class Upgrade1 extends DBUpgrade {
     	}
     	
     	//Alter the colum back to have no default
-    	runScript(new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });
+        Map<String, String[]> scripts = new HashMap<String, String[]>();
+        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });
+        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), new String[] { "ALTER TABLE reports CHANGE COLUMN `xid` `xid` VARCHAR(50) NOT NULL;" });
+        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });
+        scripts.put(DatabaseProxy.DatabaseType.H2.name(), new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });
+        runScript(scripts);
     }
 
     @Override
