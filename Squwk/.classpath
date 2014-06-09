@@ -6,8 +6,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/M2M2 Core"/>
 	<classpathentry kind="lib" path="lib/squwk-java-sdk.jar"/>
 	<classpathentry kind="src" output="maven-target/test-classes" path="test">
 		<attributes>

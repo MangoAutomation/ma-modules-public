@@ -6,9 +6,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
 	<classpathentry kind="lib" path="lib/opencsv-2.2.jar" sourcepath="E:/JavaApis/opencsv-2.2/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/M2M2 Core"/>
 	<classpathentry kind="src" output="maven-target/test-classes" path="test">
 		<attributes>
 			<attribute name="optional" value="true"/>
