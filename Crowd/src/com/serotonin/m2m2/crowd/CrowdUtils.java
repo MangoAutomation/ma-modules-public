@@ -64,6 +64,8 @@ public class CrowdUtils {
         }
         catch (InvalidTokenException e) {
             // ignore
+        }catch (IllegalArgumentException e){
+        	LOG.warn(e);
         }
 
         if (LOG.isDebugEnabled())

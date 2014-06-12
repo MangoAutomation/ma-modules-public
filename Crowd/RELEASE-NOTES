@@ -1,3 +1,6 @@
+*Version 2.0.3*
+* Configured to log warning and not crash when Crowd Uri is not valid.
+
 *Version 2.0.2*
 * Upgraded to work with core version 2.4.x
 
