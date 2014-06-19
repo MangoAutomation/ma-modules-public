@@ -10,7 +10,7 @@
 <html>
 <head>
   <title><fmt:message key="header.title"/></title>
-  <c:set var="dojoURI">http://ajax.googleapis.com/ajax/libs/dojo/1.7.2/</c:set>
+  <c:set var="dojoURI">https://ajax.googleapis.com/ajax/libs/dojo/1.7.2/</c:set>
   
   <!-- Style -->
   <link rel="icon" href="images/favicon.ico"/>
