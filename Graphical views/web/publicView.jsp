@@ -25,13 +25,13 @@
   
   <!-- Script -->
   <script type="text/javascript" src="${dojoURI}/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug:true, extraLocale: ['en-us', 'nl', 'nl-nl', 'ja-jp', 'fi-fi', 'sv-se', 'zh-cn', 'zh-tw','xx']"></script>
-  <tag:versionedJavascript  src="dwr/engine.js" />
-  <tag:versionedJavascript  src="dwr/util.js" />
-  <tag:versionedJavascript  src="resources/common.js" />
-  <tag:versionedJavascript  src="dwr/interface/GraphicalViewDwr.js" />
-  <tag:versionedJavascript  src="dwr/interface/MiscDwr.js" />
-  <tag:versionedJavascript  src="resources/view.js" />
-  <tag:versionedJavascript  src="resources/header.js" />
+  <tag:versionedJavascript  src="/dwr/engine.js" />
+  <tag:versionedJavascript  src="/dwr/util.js" />
+  <tag:versionedJavascript  src="/resources/common.js" />
+  <tag:versionedJavascript  src="/dwr/interface/GraphicalViewDwr.js" />
+  <tag:versionedJavascript  src="/dwr/interface/MiscDwr.js" />
+  <tag:versionedJavascript  src="/resources/view.js" />
+  <tag:versionedJavascript  src="/resources/header.js" />
   <tag:versionedJavascript  src="${modulePath}/web/graphicalViews.js" />
   <tag:versionedJavascript  src="${modulePath}/web/wz_jsgraphics.js" />
 <%--   <c:forEach items="<%= Common.applicationScripts %>" var="modScript"> --%>
