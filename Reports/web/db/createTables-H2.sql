@@ -16,6 +16,7 @@ create table reportInstances (
   id int not null auto_increment,
   userId int not null,
   name varchar(100) not null,
+  template varchar(100) not null,
   includeEvents int not null,
   includeUserComments char(1) not null,
   reportStartTime bigint not null,

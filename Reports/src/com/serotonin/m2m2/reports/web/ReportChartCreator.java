@@ -209,7 +209,7 @@ public class ReportChartCreator {
         // Create the template.
         Template template;
         try {
-            template = Common.freemarkerConfiguration.getTemplate("reportChart.ftl");
+            template = Common.freemarkerConfiguration.getTemplate(reportInstance.getTemplateFile());
         }
         catch (IOException e) {
             // Couldn't load the template?

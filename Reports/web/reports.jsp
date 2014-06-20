@@ -35,6 +35,7 @@
             emailRecipients.write("emailRecipBody", "emailRecipients", null, "<fmt:message key="reports.emailRecipients"/>");
             
             updateReportInstancesList(response.data.instances);
+            populateTemplateList(response.data.templates);
             
             for (var i=0; i<response.data.reports.length; i++) {
                 appendReport(response.data.reports[i].id);
@@ -64,6 +65,16 @@
                 }
             }, "pointLookup");        
       });
+    }
+    
+    function populateTemplateList(templates) {
+    	var html = "";
+    	for( var k in templates ) {
+    		t = templates[k];
+    		if(t.substring(t.length-4) == ".ftl")
+    			html += '<option value="' + t + '" label="' + t.substring(0, t.length-4) + '"/>'
+    	}
+    	$(template).innerHTML = html;
     }
     
     function loadReport(reportId, copy) {
@@ -100,6 +111,7 @@
                 report.points[i].weight,
                 report.points[i].plotType,
                 report.points[i].consolidatedChart);
+        $set("template", report.template);
         $set("includeEvents", report.includeEvents);
         $set("includeUserComments", report.includeUserComments);
         $set("dateRangeType", report.dateRangeType);
@@ -488,7 +500,7 @@
     }
     
     function saveReport() {
-        ReportsDwr.saveReport(selectedReport.id, $get("name"), $get("xid"), getReportPointIdsArray(), $get("includeEvents"),
+        ReportsDwr.saveReport(selectedReport.id, $get("name"), $get("xid"), getReportPointIdsArray(), $get("template"), $get("includeEvents"),
                 $get("includeUserComments"), $get("dateRangeType"), $get("relativeType"), $get("prevPeriodCount"),
                 $get("prevPeriodType"), $get("pastPeriodCount"), $get("pastPeriodType"), $get("fromNone"),
                 $get("fromYear"), $get("fromMonth"), $get("fromDay"), $get("fromHour"), $get("fromMinute"),
@@ -558,7 +570,7 @@
         if (hasImageFader("runImg"))
             return;
         
-        ReportsDwr.runReport($get("xid"), $get("name"), getReportPointIdsArray(), $get("includeEvents"),
+        ReportsDwr.runReport($get("xid"), $get("name"), getReportPointIdsArray(), $get("template"), $get("includeEvents"),
                 $get("includeUserComments"), $get("dateRangeType"), $get("relativeType"), $get("prevPeriodCount"),
                 $get("prevPeriodType"), $get("pastPeriodCount"), $get("pastPeriodType"), $get("fromNone"),
                 $get("fromYear"), $get("fromMonth"), $get("fromDay"), $get("fromHour"), $get("fromMinute"),
@@ -690,6 +702,11 @@
                 </table>
                 <span id="pointsError" class="formError"></span>
               </td>
+            </tr>
+            
+            <tr>
+              <td class="formLabelRequired"><fmt:message key="reports.template"/></td>
+              <td class="formField"><select id="template"></select></td>
             </tr>
             
             <tr>

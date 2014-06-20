@@ -23,6 +23,7 @@ public class ReportInstance {
     private int id = Common.NEW_ID;
     private int userId;
     private String name;
+    private String templateFile;
     private int includeEvents;
     private boolean includeUserComments;
     private long reportStartTime = -1;
@@ -41,6 +42,7 @@ public class ReportInstance {
     public ReportInstance(ReportVO template) {
         userId = template.getUserId();
         name = template.getName();
+        templateFile = template.getTemplate();
         includeEvents = template.getIncludeEvents();
         includeUserComments = template.isIncludeUserComments();
 
@@ -163,6 +165,14 @@ public class ReportInstance {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String getTemplateFile() {
+    	return templateFile;
+    }
+    
+    public void setTemplateFile(String templateFile) {
+    	this.templateFile = templateFile;
     }
 
     public int getIncludeEvents() {

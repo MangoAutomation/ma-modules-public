@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.reports.vo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,6 +32,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.util.ExportCodes;
@@ -97,6 +99,9 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     
     @JsonProperty
     private List<ReportPointVO> points = new ArrayList<ReportPointVO>();
+    
+    @JsonProperty
+    private String template = "reportChart.ftl";
     
     private int includeEvents = EVENTS_ALARMS;
     @JsonProperty
@@ -176,6 +181,14 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 
     public void setPoints(List<ReportPointVO> points) {
         this.points = points;
+    }
+    
+    public String getTemplate() {
+    	return template;
+    }
+    
+    public void setTemplate(String template) {
+    	this.template = template;
     }
 
     public int getIncludeEvents() {
@@ -407,12 +420,13 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
 
         out.writeObject(points);
+        SerializationHelper.writeSafeUTF(out, template);
         out.writeInt(includeEvents);
         out.writeBoolean(includeUserComments);
         out.writeInt(dateRangeType);
@@ -453,6 +467,43 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
         // Switch on the version of the class so that version changes can be elegantly handled.
         if (ver == 1) {
             points = (List<ReportPointVO>) in.readObject();
+            template = "reportChart.ftl";
+            includeEvents = in.readInt();
+            includeUserComments = in.readBoolean();
+            dateRangeType = in.readInt();
+            relativeDateType = in.readInt();
+
+            previousPeriodCount = in.readInt();
+            previousPeriodType = in.readInt();
+            pastPeriodCount = in.readInt();
+            pastPeriodType = in.readInt();
+
+            fromNone = in.readBoolean();
+            fromYear = in.readInt();
+            fromMonth = in.readInt();
+            fromDay = in.readInt();
+            fromHour = in.readInt();
+            fromMinute = in.readInt();
+            toNone = in.readBoolean();
+            toYear = in.readInt();
+            toMonth = in.readInt();
+            toDay = in.readInt();
+            toHour = in.readInt();
+            toMinute = in.readInt();
+
+            schedule = in.readBoolean();
+            schedulePeriod = in.readInt();
+            runDelayMinutes = in.readInt();
+            scheduleCron = SerializationHelper.readSafeUTF(in);
+            email = in.readBoolean();
+            recipients = (List<RecipientListEntryBean>) in.readObject();
+            includeData = in.readBoolean();
+            zipData = in.readBoolean();
+        }
+        
+        else if (ver == 2) {
+            points = (List<ReportPointVO>) in.readObject();
+            template = SerializationHelper.readSafeUTF(in);
             includeEvents = in.readInt();
             includeUserComments = in.readBoolean();
             dateRangeType = in.readInt();
@@ -510,6 +561,10 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
             response.addContextualMessage("userId", "reports.validate.userDNE");
         }
         
+        File t = new File(Common.MA_HOME + ModuleRegistry.getModule("reports").getDirectoryPath() + "/web/ftl/" + template);
+        if(!t.isFile())
+        	response.addContextualMessage("template", "reports.validate.template");
+        
         DataPointDao dataPointDao = new DataPointDao();
         for (ReportPointVO point : points) {
         	DataPointVO vo  = dataPointDao.getDataPoint(point.getPointId());
@@ -561,6 +616,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     	super.addProperties(list);
 
         AuditEventType.addPropertyMessage(list, "reports.points", points);
+        AuditEventType.addPropertyMessage(list, "reports.template", template);
         AuditEventType.addExportCodeMessage(list, "reports.includeEvents", EVENT_CODES, includeEvents);
         AuditEventType.addPropertyMessage(list, "reports.comments", includeUserComments);
         AuditEventType.addExportCodeMessage(list, "reports.dateRangeType", DATE_RANGE_TYPES, dateRangeType);
@@ -593,6 +649,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     public void addPropertyChanges(List<TranslatableMessage> list, ReportVO from) {
     	super.addPropertyChanges(list,from);
         AuditEventType.maybeAddPropertyChangeMessage(list, "reports.points", points, from.points);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.template", from.template, template);
         AuditEventType.maybeAddExportCodeChangeMessage(list, "reports.includeEvents", EVENT_CODES, from.includeEvents, includeEvents);
         AuditEventType.maybeAddPropertyChangeMessage(list, "reports.comments", from.includeUserComments, includeUserComments);
         AuditEventType.maybeAddExportCodeChangeMessage(list, "reports.dateRangeType", DATE_RANGE_TYPES, from.dateRangeType, dateRangeType);

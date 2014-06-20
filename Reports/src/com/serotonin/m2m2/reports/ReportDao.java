@@ -127,7 +127,7 @@ public class ReportDao extends BaseDao {
     //
     // Report Instances
     //
-    private static final String REPORT_INSTANCE_SELECT = "select id, userId, name, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
+    private static final String REPORT_INSTANCE_SELECT = "select id, userId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
             + "  runEndTime, recordCount, preventPurge " + "from reportInstances ";
 
     public List<ReportInstance> getReportInstances(int userId) {
@@ -150,6 +150,7 @@ public class ReportDao extends BaseDao {
             ri.setId(rs.getInt(++i));
             ri.setUserId(rs.getInt(++i));
             ri.setName(rs.getString(++i));
+            ri.setTemplateFile(rs.getString(++i));
             ri.setIncludeEvents(rs.getInt(++i));
             ri.setIncludeUserComments(charToBool(rs.getString(++i)));
             ri.setReportStartTime(rs.getLong(++i));
@@ -199,8 +200,8 @@ public class ReportDao extends BaseDao {
      * This method should only be called by the ReportWorkItem.
      */
     private static final String REPORT_INSTANCE_INSERT = "insert into reportInstances "
-            + "  (userId, name, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
-            + "     runEndTime, recordCount, preventPurge) " + "  values (?,?,?,?,?,?,?,?,?,?)";
+            + "  (userId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
+            + "     runEndTime, recordCount, preventPurge) " + "  values (?,?,?,?,?,?,?,?,?,?,?)";
     private static final String REPORT_INSTANCE_UPDATE = "update reportInstances set reportStartTime=?, reportEndTime=?, runStartTime=?, runEndTime=?, recordCount=? "
             + "where id=?";
 
@@ -208,7 +209,7 @@ public class ReportDao extends BaseDao {
         if (instance.getId() == Common.NEW_ID)
             instance.setId(doInsert(
                     REPORT_INSTANCE_INSERT,
-                    new Object[] { instance.getUserId(), instance.getName(), instance.getIncludeEvents(),
+                    new Object[] { instance.getUserId(), instance.getName(), instance.getTemplateFile(), instance.getIncludeEvents(),
                             boolToChar(instance.isIncludeUserComments()), instance.getReportStartTime(),
                             instance.getReportEndTime(), instance.getRunStartTime(), instance.getRunEndTime(),
                             instance.getRecordCount(), boolToChar(instance.isPreventPurge()) }));

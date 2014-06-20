@@ -20,6 +20,7 @@ create table reportInstances (
   id int not null identity,
   userId int not null,
   name nvarchar(100) not null,
+  name nvarchar(40) not null,
   includeEvents int not null,
   includeUserComments char(1) not null,
   reportStartTime bigint not null,

@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.reports.web;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
@@ -45,6 +47,7 @@ public class ReportsDwr extends ModuleDwr {
         response.addData("users", new UserDao().getUsers());
         response.addData("reports", reportDao.getReports(user.getId()));
         response.addData("instances", getReportInstances(user));
+        response.addData("templates", getTemplateList());
 
         return response;
     }
@@ -69,9 +72,15 @@ public class ReportsDwr extends ModuleDwr {
         }
         return report;
     }
+    
+	private String[] getTemplateList() {
+    	File templateDir = new File(Common.MA_HOME + ModuleRegistry.getModule("reports").getDirectoryPath() + "/web/ftl/");
+		String[] list = templateDir.list();
+		return list;
+	}
 
     @DwrPermission(user = true)
-    public ProcessResult saveReport(int id, String name, String xid, List<ReportPointVO> points, int includeEvents,
+    public ProcessResult saveReport(int id, String name, String xid, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
             int fromMonth, int fromDay, int fromHour, int fromMinute, boolean toNone, int toYear, int toMonth,
@@ -124,6 +133,7 @@ public class ReportsDwr extends ModuleDwr {
         report.setXid(xid);
         report.setName(name);
         report.setPoints(points);
+        report.setTemplate(template);
         report.setIncludeEvents(includeEvents);
         report.setIncludeUserComments(includeUserComments);
         report.setDateRangeType(dateRangeType);
@@ -165,7 +175,7 @@ public class ReportsDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult runReport(String xid, String name, List<ReportPointVO> points, int includeEvents,
+    public ProcessResult runReport(String xid, String name, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
             int fromMonth, int fromDay, int fromHour, int fromMinute, boolean toNone, int toYear, int toMonth,
@@ -183,6 +193,7 @@ public class ReportsDwr extends ModuleDwr {
             report.setName(name);
             report.setUserId(Common.getUser().getId());
             report.setPoints(points);
+            report.setTemplate(template);
             report.setIncludeEvents(includeEvents);
             report.setIncludeUserComments(includeUserComments);
             report.setDateRangeType(dateRangeType);
