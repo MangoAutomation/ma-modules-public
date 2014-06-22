@@ -30,7 +30,8 @@ create table reportInstances (
   runEndTime bigint,
   recordCount int,
   preventPurge char(1),
-  primary key (id)
+  primary key (id),
+  mapping blob
 );
 alter table reportInstances add constraint reportInstancesFk1 foreign key (userId) references users(id) on delete cascade;
 
@@ -39,6 +40,7 @@ create table reportInstancePoints (
   reportInstanceId int not null,
   deviceName nvarchar(40) not null,
   pointName nvarchar(100) not null,
+  xid nvarchar(50) not null,
   dataType int not null,
   startValue nvarchar(4000),
   textRenderer image,

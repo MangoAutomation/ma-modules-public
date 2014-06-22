@@ -11,7 +11,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -102,8 +104,6 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     
     @JsonProperty
     private String template = "reportChart.ftl";
-    @JsonProperty
-    private int reportDataVersion = 1;
     
     private int includeEvents = EVENTS_ALARMS;
     @JsonProperty
@@ -415,6 +415,15 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 
     public void setRunDelayMinutes(int runDelayMinutes) {
         this.runDelayMinutes = runDelayMinutes;
+    }
+    
+    public Map<String, String> getXidMapping() {
+    	DataPointDao dpd = new DataPointDao();
+    	Map<String, String> ans = new HashMap<String, String>();
+    	for(ReportPointVO vo : points) {
+    		ans.put(dpd.get(vo.getPointId()).getXid(), vo.getPointKey());
+    	}
+    	return ans;
     }
 
     //

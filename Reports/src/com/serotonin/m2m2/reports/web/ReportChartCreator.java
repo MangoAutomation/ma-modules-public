@@ -92,6 +92,7 @@ public class ReportChartCreator {
     private File commentFile;
     private List<PointStatistics> pointStatistics;
 	private HashMap<String, HashMap<String, PointStatistics>> devices;
+	private HashMap<String, PointStatistics> pointMap;
 
     final Translations translations;
     final TimeZone timeZone;
@@ -118,7 +119,7 @@ public class ReportChartCreator {
         reportInstance.setTranslations(translations);
 
         // Use a stream handler to get the report data from the database.
-        StreamHandler handler = new StreamHandler(reportInstance.getReportStartTime(),
+        StreamHandler handler = new StreamHandler(reportInstance.getXidMap(), reportInstance.getReportStartTime(), 
                 reportInstance.getReportEndTime(), IMAGE_WIDTH, createExportFile, translations);
         // Process the report content with the handler.
         if(Common.databaseProxy.getNoSQLProxy() == null)
@@ -128,6 +129,7 @@ public class ReportChartCreator {
 
         pointStatistics = handler.getPointStatistics();
 		devices = handler.getDevices();
+		pointMap = handler.getStatisticsMap();
         UsedImagesDirective inlineImages = new UsedImagesDirective();
         SubjectDirective subjectDirective = new SubjectDirective(translations);
 
@@ -141,6 +143,7 @@ public class ReportChartCreator {
         model.put("points", pointStatistics);
         model.put("inline", inlinePrefix == null ? "" : "cid:");
 		model.put("devices", devices);
+		model.put("mapped", pointMap);
 
         model.put("ALPHANUMERIC", DataTypes.ALPHANUMERIC);
         model.put("BINARY", DataTypes.BINARY);
@@ -498,14 +501,18 @@ public class ReportChartCreator {
         private NumericTimeSeries numericTimeSeries;
         private DiscreteTimeSeries discreteTimeSeries;
         private AbstractDataQuantizer quantizer;
-		
+        
+        private Map<String, String> xidMapping;
+        private HashMap<String, PointStatistics> statisticsMap;
 		private HashMap<String, HashMap<String, PointStatistics>> devices;
 
-        public StreamHandler(long start, long end, int imageWidth, boolean createExportFile, Translations translations) {
+        public StreamHandler(Map<String, String> xidMapping, long start, long end, int imageWidth, boolean createExportFile, Translations translations) {
             pointStatistics = new ArrayList<PointStatistics>();
             pointTimeSeriesCollection = new PointTimeSeriesCollection(timeZone);
 			
+            this.xidMapping = xidMapping;
 			devices = new HashMap<String, HashMap<String, PointStatistics>>();
+			statisticsMap = new HashMap<String, PointStatistics>();
 
             this.start = start;
             this.end = end;
@@ -532,6 +539,10 @@ public class ReportChartCreator {
 		public HashMap<String, HashMap<String, PointStatistics>> getDevices() {
 			return devices;
 		}
+		
+		public HashMap<String, PointStatistics> getStatisticsMap() {
+			return statisticsMap;
+		}
 
         @Override
         public void startPoint(ExportPointInfo pointInfo) {
@@ -550,6 +561,7 @@ public class ReportChartCreator {
                         TextRenderer.HINT_SPECIFIC));
             pointStatistics.add(point);
             devices.get(point.getDeviceName()).put(point.getName(), point);
+            statisticsMap.put(xidMapping.get(pointInfo.getXid()), point);
 
             Color colour = null;
             try {

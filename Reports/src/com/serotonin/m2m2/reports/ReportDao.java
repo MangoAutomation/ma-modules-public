@@ -128,7 +128,7 @@ public class ReportDao extends BaseDao {
     // Report Instances
     //
     private static final String REPORT_INSTANCE_SELECT = "select id, userId, reportId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
-            + "  runEndTime, recordCount, preventPurge " + "from reportInstances ";
+            + "  runEndTime, recordCount, preventPurge, mapping " + "from reportInstances ";
 
     public List<ReportInstance> getReportInstances(int userId) {
         return query(REPORT_INSTANCE_SELECT + "where userId=? order by runStartTime desc", new Object[] { userId },
@@ -160,6 +160,7 @@ public class ReportDao extends BaseDao {
             ri.setRunEndTime(rs.getLong(++i));
             ri.setRecordCount(rs.getInt(++i));
             ri.setPreventPurge(charToBool(rs.getString(++i)));
+            ri.setXidMap((Map<String, String>)SerializationHelper.readObjectInContext(rs.getBlob(++i).getBinaryStream()));
             return ri;
         }
     }
@@ -202,7 +203,7 @@ public class ReportDao extends BaseDao {
      */
     private static final String REPORT_INSTANCE_INSERT = "insert into reportInstances "
             + "  (userId, reportId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
-            + "     runEndTime, recordCount, preventPurge) " + "  values (?,?,?,?,?,?,?,?,?,?,?,?)";
+            + "     runEndTime, recordCount, preventPurge, mapping) " + "  values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private static final String REPORT_INSTANCE_UPDATE = "update reportInstances set reportStartTime=?, reportEndTime=?, runStartTime=?, runEndTime=?, recordCount=? "
             + "where id=?";
 
@@ -213,7 +214,7 @@ public class ReportDao extends BaseDao {
                     new Object[] { instance.getUserId(), instance.getReportId(), instance.getName(), instance.getTemplateFile(), instance.getIncludeEvents(),
                             boolToChar(instance.isIncludeUserComments()), instance.getReportStartTime(),
                             instance.getReportEndTime(), instance.getRunStartTime(), instance.getRunEndTime(),
-                            instance.getRecordCount(), boolToChar(instance.isPreventPurge()) }));
+                            instance.getRecordCount(), boolToChar(instance.isPreventPurge()), SerializationHelper.writeObject(instance.getXidMap()) }));
         else
             ejt.update(
                     REPORT_INSTANCE_UPDATE,
@@ -226,9 +227,9 @@ public class ReportDao extends BaseDao {
      * This method should only be called by the ReportWorkItem.
      */
     private static final String REPORT_INSTANCE_POINTS_INSERT = "insert into reportInstancePoints " //
-            + "(reportInstanceId, deviceName, pointName, dataType, startValue, textRenderer, colour, weight,"
+            + "(reportInstanceId, deviceName, pointName, xid, dataType, startValue, textRenderer, colour, weight,"
             + " consolidatedChart, plotType) " //
-            + "values (?,?,?,?,?,?,?,?,?,?)";
+            + "values (?,?,?,?,?,?,?,?,?,?,?)";
 
     public static class PointInfo {
         private final DataPointVO point;
@@ -318,11 +319,11 @@ public class ReportDao extends BaseDao {
 
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
-                    new Object[] { instance.getId(), point.getDeviceName(), name, dataType,
+                    new Object[] { instance.getId(), point.getDeviceName(), name, pointInfo.getPoint().getXid(), dataType,
                             DataTypes.valueToString(startValue),
                             SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
                             pointInfo.getWeight(), boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType() },
-                    new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
+                    new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
                             Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
 
             // Insert the reportInstanceData records
@@ -436,7 +437,7 @@ public class ReportDao extends BaseDao {
      * This method guarantees that the data is provided to the setData handler method grouped by point (points are not
      * ordered), and sorted by time ascending.
      */
-    private static final String REPORT_INSTANCE_POINT_SELECT = "select id, deviceName, pointName, dataType, " // 
+    private static final String REPORT_INSTANCE_POINT_SELECT = "select id, deviceName, pointName, xid, dataType, " // 
             + "startValue, textRenderer, colour, weight, consolidatedChart, plotType " //
             + "from reportInstancePoints ";
     
@@ -455,6 +456,7 @@ public class ReportDao extends BaseDao {
                         rp.setReportPointId(rs.getInt(++i));
                         rp.setDeviceName(rs.getString(++i));
                         rp.setPointName(rs.getString(++i));
+                        rp.setXid(rs.getString(++i));
                         rp.setDataType(rs.getInt(++i));
                         String startValue = rs.getString(++i);
                         if (startValue != null)
@@ -487,6 +489,7 @@ public class ReportDao extends BaseDao {
                         rp.setReportPointId(rs.getInt(++i));
                         rp.setDeviceName(rs.getString(++i));
                         rp.setPointName(rs.getString(++i));
+                        rp.setXid(rs.getString(++i));
                         rp.setDataType(rs.getInt(++i));
                         String startValue = rs.getString(++i);
                         if (startValue != null)
@@ -725,7 +728,7 @@ public class ReportDao extends BaseDao {
             
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
-                    new Object[] { instance.getId(), point.getDeviceName(), name, dataType,
+                    new Object[] { instance.getId(), point.getDeviceName(), name, pointInfo.getPoint().getXid(), dataType,
                             DataTypes.valueToString(startValue),
                             SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
                             pointInfo.getWeight(), boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType() },

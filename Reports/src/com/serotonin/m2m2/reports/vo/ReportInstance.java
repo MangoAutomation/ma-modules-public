@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.reports.vo;
 
+import java.util.Map;
+
 import org.joda.time.DateTime;
 
 import com.serotonin.m2m2.Common;
@@ -25,6 +27,7 @@ public class ReportInstance {
     private int reportId;
     private String name;
     private String templateFile;
+    private Map<String, String> xidMap;
     private int includeEvents;
     private boolean includeUserComments;
     private long reportStartTime = -1;
@@ -44,6 +47,7 @@ public class ReportInstance {
         userId = template.getUserId();
         reportId = template.getId();
         name = template.getName();
+        xidMap = template.getXidMapping();
         templateFile = template.getTemplate();
         includeEvents = template.getIncludeEvents();
         includeUserComments = template.isIncludeUserComments();
@@ -175,6 +179,14 @@ public class ReportInstance {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public Map<String, String> getXidMap() {
+    	return xidMap;
+    }
+    
+    public void setXidMap(Map<String, String> xidMap) {
+    	this.xidMap = xidMap;
     }
     
     public String getTemplateFile() {

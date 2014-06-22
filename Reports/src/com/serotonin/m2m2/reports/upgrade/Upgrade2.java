@@ -10,7 +10,10 @@ import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 public class Upgrade2 extends DBUpgrade {
     @Override
     protected void upgrade() throws Exception {
-    	runScript(new String[] { "alter table reportInstances add template varchar(40); alter table reportInstances add reportId int not null;" });
+    	runScript(new String[] { "alter table reportInstances add template varchar(40); " +
+    		    "alter table reportInstances add reportId int not null;" +
+    			"alter table reportInstances add mapping blob;" +
+    			"alter table reportInstancePoints add xid varchar(50) not null"});
     }
 
     @Override
