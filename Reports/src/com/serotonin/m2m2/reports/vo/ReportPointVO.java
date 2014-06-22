@@ -24,6 +24,8 @@ public class ReportPointVO implements Serializable, JsonSerializable {
     
 	private int pointId;
 	@JsonProperty
+	private String pointKey;
+	@JsonProperty
     private String colour;
 	@JsonProperty
     private float weight = 1;
@@ -71,18 +73,27 @@ public class ReportPointVO implements Serializable, JsonSerializable {
     public void setPlotType(int plotType) {
         this.plotType = plotType;
     }
+    
+    public String getPointKey() {
+    	return pointKey;
+    }
+    
+    public void setPointKey(String pointKey) {
+    	this.pointKey = pointKey;
+    }
 
     //
     //
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 3;
+    private static final int version = 4;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
 
         out.writeInt(pointId);
+        SerializationHelper.writeSafeUTF(out, pointKey);
         SerializationHelper.writeSafeUTF(out, colour);
         out.writeFloat(weight);
         out.writeBoolean(consolidatedChart);
@@ -95,6 +106,7 @@ public class ReportPointVO implements Serializable, JsonSerializable {
         // Switch on the version of the class so that version changes can be elegantly handled.
         if (ver == 1) {
             pointId = in.readInt();
+            pointKey = "";
             colour = SerializationHelper.readSafeUTF(in);
             weight = in.readFloat();
             consolidatedChart = true;
@@ -102,6 +114,7 @@ public class ReportPointVO implements Serializable, JsonSerializable {
         }
         else if (ver == 2) {
             pointId = in.readInt();
+            pointKey = "";
             colour = SerializationHelper.readSafeUTF(in);
             weight = in.readFloat();
             consolidatedChart = in.readBoolean();
@@ -109,6 +122,15 @@ public class ReportPointVO implements Serializable, JsonSerializable {
         }
         else if (ver == 3) {
             pointId = in.readInt();
+            pointKey = "";
+            colour = SerializationHelper.readSafeUTF(in);
+            weight = in.readFloat();
+            consolidatedChart = in.readBoolean();
+            plotType = in.readInt();
+        }
+        else if (ver == 4) {
+            pointId = in.readInt();
+            pointKey = SerializationHelper.readSafeUTF(in);
             colour = SerializationHelper.readSafeUTF(in);
             weight = in.readFloat();
             consolidatedChart = in.readBoolean();

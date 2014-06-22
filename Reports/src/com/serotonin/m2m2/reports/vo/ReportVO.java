@@ -102,6 +102,8 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     
     @JsonProperty
     private String template = "reportChart.ftl";
+    @JsonProperty
+    private int reportDataVersion = 1;
     
     private int includeEvents = EVENTS_ALARMS;
     @JsonProperty

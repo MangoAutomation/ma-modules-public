@@ -22,6 +22,7 @@ public class ReportInstance {
 
     private int id = Common.NEW_ID;
     private int userId;
+    private int reportId;
     private String name;
     private String templateFile;
     private int includeEvents;
@@ -41,6 +42,7 @@ public class ReportInstance {
 
     public ReportInstance(ReportVO template) {
         userId = template.getUserId();
+        reportId = template.getId();
         name = template.getName();
         templateFile = template.getTemplate();
         includeEvents = template.getIncludeEvents();
@@ -157,6 +159,14 @@ public class ReportInstance {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+    
+    public int getReportId() {
+    	return reportId;
+    }
+    
+    public void setReportId(int reportId) {
+    	this.reportId = reportId;
     }
 
     public String getName() {

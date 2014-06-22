@@ -19,8 +19,9 @@ alter table reports add constraint reportsFk1 foreign key (userId) references us
 create table reportInstances (
   id int not null identity,
   userId int not null,
+  reportId int not null,
   name nvarchar(100) not null,
-  name nvarchar(40) not null,
+  template nvarchar(40) not null,
   includeEvents int not null,
   includeUserComments char(1) not null,
   reportStartTime bigint not null,
