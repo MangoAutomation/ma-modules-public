@@ -557,6 +557,7 @@ public class ReportDao extends BaseDao {
                         rp.setReportPointId(rs.getInt(++i));
                         rp.setDeviceName(rs.getString(++i));
                         rp.setPointName(rs.getString(++i));
+                        rp.setXid(rs.getString(++i));
                         rp.setDataType(rs.getInt(++i));
                         String startValue = rs.getString(++i);
                         if (startValue != null)
