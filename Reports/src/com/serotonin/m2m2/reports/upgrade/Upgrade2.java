@@ -10,6 +10,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
+import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.export.ExportPointInfo;
 
@@ -27,6 +28,24 @@ public class Upgrade2 extends DBUpgrade {
     			"alter table reportInstances add mapping blob;" +
     			"alter table reportInstancePoints add xid varchar(50);" +
     			"update reportInstancePoints set xid='legacyReport';"});
+    	
+    	ReportDao dao = new ReportDao();
+    	UserDao ud = new UserDao();
+    	List<ReportVO> reports = dao.getReports();
+    	List<ReportInstance> reportInstances;
+    	List<User> users = ud.getUsers();
+    	for(User u : users) {
+    		reportInstances = dao.getReportInstances(u.getId());
+    		for(ReportInstance ri : reportInstances) { 
+		    	for(ReportVO report : reports) {
+		    		if(ri.getName().equals(report.getName())) {
+		    			ri.setReportId(report.getId());
+		    			dao.saveReportInstance(ri);
+		    			break;
+		    		}
+		    	}
+    		}
+    	}
     	
     	//Alter the column back to have no default
         Map<String, String[]> scripts = new HashMap<String, String[]>();
