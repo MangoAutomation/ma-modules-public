@@ -50,8 +50,8 @@ public class Upgrade2 extends DBUpgrade {
     	//Alter the column back to have no default
         Map<String, String[]> scripts = new HashMap<String, String[]>();
         scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), new String[] { 
-        	"alter table reportInstances alter column reportId int NOT NULL;" +
-        	"alter table reportInstancePoints alter column xid varchar(50) NOT NULL;"});
+        	"alter table reportInstances alter column reportId NOT NULL;" +
+        	"alter table reportInstancePoints alter column xid NOT NULL;"});
         scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), new String[] { 
         	"ALTER TABLE reportInstances CHANGE COLUMN `repprtId` `reportId` int NOT NULL;" +
         	"ALTER TABLE reportInstancePoints CHANGE COLUMN `xid` `xid` VARCHAR(50) NOT NULL;"});
