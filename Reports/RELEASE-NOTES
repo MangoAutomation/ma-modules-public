@@ -2,6 +2,7 @@
 * Fixing integration with watchlist module
 * Fixing report instance point insert statement
 * Fixing color selector
+* Fixing Json import functions
 
 *Version 2.0.9*
 * Fixing derby upgrades 1 and 2 syntax.
