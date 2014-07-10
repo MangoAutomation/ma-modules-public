@@ -73,7 +73,7 @@
     	for( var k in templates ) {
     		t = templates[k];
     		if(t.substring(t.length-4) == ".ftl")
-    			html += '<option value="' + t + '" label="' + t.substring(0, t.length-4) + '"/>'
+    			html += '<option value="' + t + '" label="' + t.substring(0, t.length-4) + '">' + t.substring(0, t.length-4) + "</option>";
     	}
     	$(template).innerHTML = html;
     }

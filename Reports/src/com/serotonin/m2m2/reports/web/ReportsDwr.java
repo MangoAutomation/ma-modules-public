@@ -305,6 +305,7 @@ public class ReportsDwr extends ModuleDwr {
         User user = Common.getUser();
 
         report.setName(new TranslatableMessage("common.copyPrefix", name).translate(getTranslations()));
+        report.setXid(Common.generateXid("REP_"));
         DataPointDao dataPointDao = new DataPointDao();
         for (int id : dataPointIds) {
             DataPointVO dp = dataPointDao.getDataPoint(id);
