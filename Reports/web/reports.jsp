@@ -210,9 +210,9 @@
                     						"onblur='updatePointKey(" + data.pointId + ", this.value)'/>";},
                     function(data) { return data.pointType; },
                     function(data) {
-                        return ; //All work done in the cell creator for cell 2
-//                         return "<input type='text' value='"+ data.colour +"' "+
-//                                 "onblur='updatePointColour("+ data.pointId +", this.value)'/>";
+//                         return ; //All work done in the cell creator for cell 2
+                        return "<input type='color' value='"+ data.colour +"' "+
+                                "onblur='updatePointColour("+ data.pointId +", this.value)'/>";
                     },
                     function(data) {
                         return "<input class='formVeryShort' type='text' value='"+ data.weight +"' "+

@@ -733,7 +733,7 @@ public class ReportDao extends BaseDao {
                             DataTypes.valueToString(startValue),
                             SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
                             pointInfo.getWeight(), boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType() },
-                    new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
+                    new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
                             Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
 
             //Keep the info in the map

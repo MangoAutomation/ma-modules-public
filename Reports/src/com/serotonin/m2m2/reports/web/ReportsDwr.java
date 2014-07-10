@@ -313,6 +313,7 @@ public class ReportsDwr extends ModuleDwr {
 
             ReportPointVO rp = new ReportPointVO();
             rp.setPointId(dp.getId());
+            rp.setPointKey("p" + dp.getId());
             rp.setColour(dp.getChartColour());
             rp.setConsolidatedChart(true);
             rp.setPlotType(dp.getPlotType());
