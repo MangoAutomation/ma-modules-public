@@ -25,6 +25,10 @@
   <img src="images/bullet_delete.png"/> icon associated with the point.
 </p>
 <p>
+  <b>Map Key</b> values are used in custom templates to allow the point statistic object to be used in the template.  See
+  custom templates below.
+</p>
+<p>
   <b>Colour</b> values can be an HTML-style hex, or any colour name in the HTML specification. For example, "#2468AC",
   "red", and "dodgerblue" are all valid values.
 </p>
@@ -83,4 +87,10 @@
   information, and so may take a long time to run. As such, all reports are run asynchronously to user interface. When 
   a the icon is clicked, the report instance will be added to the report queue where the user can monitor its progress.
   To make a copy of a report template, click the <img src="modules/reports/web/report_add.png"/> icon.
+</p>
+
+<h1>Custom Templates</h1>
+<p>
+  Custom templates are user defined Freemarker templates.  These templates can use the Map Key for any of the report points.  Any templates 
+  placed in the module's web/ftl directory will show up in the Template drop down list.
 </p>
