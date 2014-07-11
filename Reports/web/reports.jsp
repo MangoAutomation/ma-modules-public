@@ -210,8 +210,7 @@
                     						"onblur='updatePointKey(" + data.pointId + ", this.value)'/>";},
                     function(data) { return data.pointType; },
                     function(data) {
-//                         return ; //All work done in the cell creator for cell 2
-                        return "<input type='color' value='"+ data.colour +"' "+
+                         return "<input type='color' value='"+ data.colour +"' "+
                                 "onblur='updatePointColour("+ data.pointId +", this.value)'/>";
                     },
                     function(data) {
@@ -245,42 +244,8 @@
                     },
                     cellCreator:function(options) {
                         var td = document.createElement("td");
-                        if (options.cellNum == 5)
+                        if (options.cellNum == 6)
                             td.align = "center";
-                        
-                        //Color Picker
-                        if(options.cellNum == 2){
-                            
-                            var myPalette = new dijit.ColorPalette({
-                                palette: "7x10",
-                                pointId: options.rowData.pointId,
-                                whatToColor: null,
-                                onChange: function(colour){
-                                    var item = getElement(reportPointsArray, this.pointId + "", "pointId");
-                                    if (item){
-                                        item["colour"] = colour;
-                                        //Set the button color to show
-                                        this.whatToColor.style.backgroundColor = colour;
-                                    }    
-                                }
-                            });
-                            button = dojo.create("div", null, td);
-                            var myButton = new dijit.form.DropDownButton({
-                                label: colorMsg,
-                                dropDown: myPalette
-                            }, button);
-                            
-                            //Define what we want to change color
-                            myPalette.whatToColor = td;
-                            
-                            //Set any previously known color
-                            var item = getElement(reportPointsArray, options.rowData.pointId+ "", "pointId");
-                            if (item){
-                                myPalette.set('value', item["colour"]);
-                            }
-                            
-                            
-                        }
                         
                         return td;
                     }

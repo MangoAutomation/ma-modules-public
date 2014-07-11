@@ -706,6 +706,8 @@ public class ReportDao extends BaseDao {
         //Map the pointId to the Report PointId
         final Map<Integer,Integer> pointIdMap = new HashMap<Integer,Integer>();
 
+        //Loop over all points, pre-process them and prepare to transfer the data to
+        // the reports table/data store
         for (PointInfo pointInfo : points) {
             DataPointVO point = pointInfo.getPoint();
             pointIds.add(point.getId());
@@ -738,13 +740,6 @@ public class ReportDao extends BaseDao {
 
             //Keep the info in the map
             pointIdMap.put(pointInfo.getPoint().getId(), reportPointId);
-            
-//            // Insert the reportInstanceData records
-//            String insertSQL = "insert into reportInstanceData " //
-//                    + "  select id, " + reportPointId + ", pointValue, ts from pointValues " //
-//                    + "    where dataPointId=? and dataType=? " //
-//                    + StringUtils.replaceMacro(timestampSql, "field", "ts");
-//            count += ejt.update(insertSQL, appendParameters(timestampParams, point.getId(), dataType));
 
             // Insert the reportInstanceDataAnnotations records
             ejt.update(
@@ -780,20 +775,7 @@ public class ReportDao extends BaseDao {
                         eventSQL,
                         appendParameters(timestampParams, instance.getUserId(), EventType.EventTypeNames.DATA_POINT,
                                 point.getId()));
-            } //end for all points
-            
-            //Insert the data into the NoSQL DB
-            //The series name is reportInstanceId_reportPointId
-           final String reportId = Integer.toString(instance.getId()) + "_";
-           pointValueDao.getPointValuesBetween(pointIds, instance.getReportStartTime(), instance.getReportEndTime(), new MappedRowCallback<IdPointValueTime>(){
-				@Override
-				public void row(IdPointValueTime ipvt, int rowId) {
-					dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getDataPointId())),ipvt);
-					count.increment();
-				}
-           });
-           
-            
+            }
 
             // Insert the reportInstanceUserComments records for the point.
             if (instance.isIncludeUserComments()) {
@@ -810,8 +792,19 @@ public class ReportDao extends BaseDao {
                 commentSQL += StringUtils.replaceMacro(timestampSql, "field", "uc.ts");
                 ejt.update(commentSQL, appendParameters(timestampParams, point.getId()));
             }
-        }
+        } //end for all points
 
+        //Insert the data into the NoSQL DB
+        //The series name is reportInstanceId_reportPointId
+       final String reportId = Integer.toString(instance.getId()) + "_";
+       pointValueDao.getPointValuesBetween(pointIds, instance.getReportStartTime(), instance.getReportEndTime(), new MappedRowCallback<IdPointValueTime>(){
+			@Override
+			public void row(final IdPointValueTime ipvt, int rowId) {
+				dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getDataPointId())),ipvt);
+				count.increment();
+			}
+       });
+        
         // Insert the reportInstanceUserComments records for the selected events
         if (instance.isIncludeUserComments()) {
             String commentSQL = "insert into reportInstanceUserComments " //
@@ -870,7 +863,6 @@ public class ReportDao extends BaseDao {
     		this.count++;
     	}
     }
-
 
     
 }
