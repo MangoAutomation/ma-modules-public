@@ -214,6 +214,7 @@ public class ReportsDwr extends ModuleDwr {
             report.setToDay(toDay);
             report.setToHour(toHour);
             report.setToMinute(toMinute);
+            report.setSchedule(false); //Never allow schedule when running from UI
             report.setEmail(email);
             report.setIncludeData(includeData);
             report.setZipData(zipData);

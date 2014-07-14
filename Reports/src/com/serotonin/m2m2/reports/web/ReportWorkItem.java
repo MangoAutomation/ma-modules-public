@@ -218,9 +218,11 @@ public class ReportWorkItem implements WorkItem {
             catch (AddressException e) {
                 LOG.error(e);
             }
-
-            // Delete the report instance.
-            reportDao.deleteReportInstance(reportInstance.getId(), user.getId());
+            
+            if(reportConfig.isSchedule()){
+	            // Delete the report instance.
+	            reportDao.deleteReportInstance(reportInstance.getId(), user.getId());
+            }
         }
 
         LOG.debug("Finished running report with id " + reportConfig.getId() + ", instance id " + reportInstance.getId());
