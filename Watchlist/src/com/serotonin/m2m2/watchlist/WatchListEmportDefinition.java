@@ -19,7 +19,7 @@ import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class WatchListEmportDefinition extends EmportDefinition {
     
-	public static String elementId = "watchlists";
+	public static String elementId = "watchLists";
 	
 	private WatchListDao watchListDao;
     
