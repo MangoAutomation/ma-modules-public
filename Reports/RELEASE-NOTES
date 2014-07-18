@@ -2,6 +2,7 @@
 * Cleaned up errors for accessing reports that no longer exist
 * Changed report instance delete logic to only delete emailed reports that are run off of a schedule
 * Added notes to help about new delete logic
+* Modified it so admins see reports and report instances from all users
 
 *Version 2.0.11*
 * Fixed NoSQL Report Generation to be more efficient and insert in temporal order
