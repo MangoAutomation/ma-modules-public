@@ -46,7 +46,7 @@ public class WatchList implements JsonSerializable {
     private List<ShareUser> watchListUsers = new ArrayList<ShareUser>();
 
     public int getUserAccess(User user) {
-        if (user.getId() == userId)
+        if (user.getId() == userId || user.isAdmin())
             return ShareUser.ACCESS_OWNER;
 
         for (ShareUser wlu : watchListUsers) {

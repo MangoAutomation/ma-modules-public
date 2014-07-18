@@ -37,7 +37,11 @@ public class WatchListHandler implements UrlHandler {
     protected void prepareModel(HttpServletRequest request, Map<String, Object> model, User user) {
         // The user's permissions may have changed since the last session, so make sure the watch lists are correct.
         WatchListDao watchListDao = new WatchListDao();
-        List<WatchList> watchLists = watchListDao.getWatchLists(user.getId());
+        List<WatchList> watchLists;
+        if(user.isAdmin())
+        	watchLists = watchListDao.getWatchLists();
+        else
+        	watchLists = watchListDao.getWatchLists(user.getId());
 
         if (watchLists.size() == 0) {
             // Add a default watch list if none exist.
