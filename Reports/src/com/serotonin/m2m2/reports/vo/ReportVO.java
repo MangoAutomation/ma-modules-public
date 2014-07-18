@@ -698,6 +698,8 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			throws JsonException {
 		super.jsonRead(reader, jsonObject);
 		
+		userId = jsonObject.getInt("userId");
+		
 		String text = jsonObject.getString("includeEvents");
 		if(text != null){
 			includeEvents = EVENT_CODES.getId(text);
@@ -837,6 +839,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			JsonException {
 		super.jsonWrite(writer);
 		
+		writer.writeEntry("userId", userId);
 		writer.writeEntry("includeEvents", EVENT_CODES.getCode(includeEvents));
 		writer.writeEntry("dateRangeType", DATE_RANGE_TYPES.getCode(dateRangeType));
 		

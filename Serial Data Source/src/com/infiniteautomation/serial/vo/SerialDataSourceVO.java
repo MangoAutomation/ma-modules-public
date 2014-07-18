@@ -202,8 +202,6 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         
         if(messageTerminator.length() <= 0)
         	response.addContextualMessage("messageTerminator", "validate.required");
-        if(StringEscapeUtils.unescapeJava(messageTerminator).length() > 1)
-        	response.addContextualMessage("messageTerminator","validate.invalidValue");
         
         if(readTimeout < 100)
         	response.addContextualMessage("readTimeout","validate.invalidValue");

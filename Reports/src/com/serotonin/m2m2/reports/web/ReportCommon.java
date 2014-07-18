@@ -14,20 +14,20 @@ public class ReportCommon {
     //
     // Report access
     //
-    public static void ensureReportPermission(User user, ReportVO report) throws PermissionException {
+    public static void ensureReportPermission(User user, ReportVO report) throws RuntimeException {
         if (user == null)
-            throw new PermissionException("User is null", user);
+            throw new RuntimeException("User does not exist");
         if (report == null)
-            throw new PermissionException("Report is null", user);
+            throw new RuntimeException("Report does not exist");
         if (report.getUserId() != user.getId() && ! user.isAdmin())
             throw new PermissionException("User does not have permission to access the report", user);
     }
 
-    public static void ensureReportInstancePermission(User user, ReportInstance instance) throws PermissionException {
+    public static void ensureReportInstancePermission(User user, ReportInstance instance) throws RuntimeException {
         if (user == null)
-            throw new PermissionException("User is null", user);
+            throw new RuntimeException("User does not exist");
         if (instance == null)
-            throw new PermissionException("Report instance is null", user);
+            throw new RuntimeException("Report instance does not exist");
         if (instance.getUserId() != user.getId() && ! user.isAdmin())
             throw new PermissionException("User does not have permission to access the report instance", user);
     }

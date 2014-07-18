@@ -22,11 +22,11 @@ import com.serotonin.m2m2.vo.export.ExportPointInfo;
 public class Upgrade2 extends DBUpgrade {
     @Override
     protected void upgrade() throws Exception {
-    	runScript(new String[] { "alter table reportInstances add template varchar(40); " +
-    		    "alter table reportInstances add reportId int;" +
-    			"update reportInstances set reportId=-1;" +
-    			"alter table reportInstances add mapping blob;" +
-    			"alter table reportInstancePoints add xid varchar(50);" +
+    	runScript(new String[] { "alter table reportInstances add template varchar(40);",
+    		    "alter table reportInstances add reportId int;",
+    			"update reportInstances set reportId=-1;",
+    			"alter table reportInstances add mapping blob;",
+    			"alter table reportInstancePoints add xid varchar(50);",
     			"update reportInstancePoints set xid='legacyReport';"});
     	
     	ReportDao dao = new ReportDao();
@@ -50,16 +50,16 @@ public class Upgrade2 extends DBUpgrade {
     	//Alter the column back to have no default
         Map<String, String[]> scripts = new HashMap<String, String[]>();
         scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), new String[] { 
-        	"alter table reportInstances alter column reportId int NOT NULL;" +
-        	"alter table reportInstancePoints alter column xid varchar(50) NOT NULL;"});
+        	"alter table reportInstances alter column reportId NOT NULL; ",
+        	"alter table reportInstancePoints alter column xid NOT NULL;"});
         scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), new String[] { 
-        	"ALTER TABLE reportInstances CHANGE COLUMN `repprtId` `reportId` int NOT NULL;" +
+        	"ALTER TABLE reportInstances CHANGE COLUMN `reportId` `reportId` int NOT NULL;",
         	"ALTER TABLE reportInstancePoints CHANGE COLUMN `xid` `xid` VARCHAR(50) NOT NULL;"});
         scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), new String[] { 
-        	"alter table reportInstances alter column reportId int NOT NULL;" +
+        	"alter table reportInstances alter column reportId int NOT NULL;",
     		"alter table reportInstancePoints alter column xid varchar(50) NOT NULL;" });
         scripts.put(DatabaseProxy.DatabaseType.H2.name(), new String[] { 
-        	"alter table reportInstances alter column reportId int NOT NULL;" +
+        	"alter table reportInstances alter column reportId int NOT NULL;",
     		"alter table reportInstancePoints alter column xid varchar(50) NOT NULL;" });
         runScript(scripts);
     }

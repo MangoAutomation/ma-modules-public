@@ -27,9 +27,9 @@ public class Upgrade1 extends DBUpgrade {
     		dao.saveReport(report);
     	}
     	
-    	//Alter the colum back to have no default
+    	//Alter the column back to have no default
         Map<String, String[]> scripts = new HashMap<String, String[]>();
-        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });
+        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), new String[] { "alter table reports alter column xid NOT NULL;" });
         scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), new String[] { "ALTER TABLE reports CHANGE COLUMN `xid` `xid` VARCHAR(50) NOT NULL;" });
         scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });
         scripts.put(DatabaseProxy.DatabaseType.H2.name(), new String[] { "alter table reports alter column xid varchar(50) NOT NULL;" });

@@ -1,3 +1,21 @@
+*Version 2.0.12*
+* Cleaned up errors for accessing reports that no longer exist
+* Changed report instance delete logic to only delete emailed reports that are run off of a schedule
+* Added notes to help about new delete logic
+
+*Version 2.0.11*
+* Fixed NoSQL Report Generation to be more efficient and insert in temporal order
+* Cleaned up report edit view
+
+*Version 2.0.10*
+* Fixing integration with watchlist module
+* Fixing report instance point insert statement
+* Fixing color selector
+* Fixing Json import functions
+
+*Version 2.0.9*
+* Fixing derby upgrades 1 and 2 syntax.
+
 *Version 2.0.8*
 * Fixed bug in MySQL create reportInstances table statement
 

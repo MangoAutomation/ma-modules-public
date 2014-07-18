@@ -1,3 +1,6 @@
+*1.5.8*
+* Change JSON export id from watchlist to watchList for backward compatibility
+
 *Version 1.5.7*
 * Added H2 Support
 * Changed to allow importing XIDs via JSON Imports

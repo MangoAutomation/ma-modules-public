@@ -220,6 +220,7 @@ public class ReportsDwr extends ModuleDwr {
             report.setToDay(toDay);
             report.setToHour(toHour);
             report.setToMinute(toMinute);
+            report.setSchedule(false); //Never allow schedule when running from UI
             report.setEmail(email);
             report.setIncludeData(includeData);
             report.setZipData(zipData);
@@ -319,6 +320,7 @@ public class ReportsDwr extends ModuleDwr {
         User user = Common.getUser();
 
         report.setName(new TranslatableMessage("common.copyPrefix", name).translate(getTranslations()));
+        report.setXid(Common.generateXid("REP_"));
         DataPointDao dataPointDao = new DataPointDao();
         for (int id : dataPointIds) {
             DataPointVO dp = dataPointDao.getDataPoint(id);
@@ -327,6 +329,7 @@ public class ReportsDwr extends ModuleDwr {
 
             ReportPointVO rp = new ReportPointVO();
             rp.setPointId(dp.getId());
+            rp.setPointKey("p" + dp.getId());
             rp.setColour(dp.getChartColour());
             rp.setConsolidatedChart(true);
             rp.setPlotType(dp.getPlotType());
