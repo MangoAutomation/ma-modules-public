@@ -1,3 +1,6 @@
+*1.5.9*
+* Set it such that admins can see and edit all users' watchlists.
+
 *1.5.8*
 * Change JSON export id from watchlist to watchList for backward compatibility
 
