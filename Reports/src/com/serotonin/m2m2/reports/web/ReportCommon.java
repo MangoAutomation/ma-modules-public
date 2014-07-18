@@ -19,7 +19,7 @@ public class ReportCommon {
             throw new PermissionException("User is null", user);
         if (report == null)
             throw new PermissionException("Report is null", user);
-        if (report.getUserId() != user.getId())
+        if (report.getUserId() != user.getId() && ! user.isAdmin())
             throw new PermissionException("User does not have permission to access the report", user);
     }
 
@@ -28,7 +28,7 @@ public class ReportCommon {
             throw new PermissionException("User is null", user);
         if (instance == null)
             throw new PermissionException("Report instance is null", user);
-        if (instance.getUserId() != user.getId())
+        if (instance.getUserId() != user.getId() && ! user.isAdmin())
             throw new PermissionException("User does not have permission to access the report instance", user);
     }
 }

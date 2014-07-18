@@ -129,6 +129,10 @@ public class ReportDao extends BaseDao {
     //
     private static final String REPORT_INSTANCE_SELECT = "select id, userId, reportId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
             + "  runEndTime, recordCount, preventPurge, mapping " + "from reportInstances ";
+    
+    public List<ReportInstance> getReportInstances() {
+    	return query(REPORT_INSTANCE_SELECT, new ReportInstanceRowMapper());
+    }
 
     public List<ReportInstance> getReportInstances(int userId) {
         return query(REPORT_INSTANCE_SELECT + "where userId=? order by runStartTime desc", new Object[] { userId },

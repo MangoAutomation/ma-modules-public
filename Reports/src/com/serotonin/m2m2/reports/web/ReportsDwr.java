@@ -45,8 +45,14 @@ public class ReportsDwr extends ModuleDwr {
         response.addData("points", getReadablePoints());
         response.addData("mailingLists", new MailingListDao().getMailingLists());
         response.addData("users", new UserDao().getUsers());
-        response.addData("reports", reportDao.getReports(user.getId()));
-        response.addData("instances", getReportInstances(user));
+        if(user.isAdmin()) {
+        	response.addData("reports", reportDao.getReports());
+        	response.addData("instances", getAllReportInstances(user));
+    	}
+        else {
+        	response.addData("reports", reportDao.getReports(user.getId()));
+        	response.addData("instances", getReportInstances(user));
+    	}
         response.addData("templates", getTemplateList());
 
         return response;
@@ -284,6 +290,14 @@ public class ReportsDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public List<ReportInstance> getReportInstances() {
         return getReportInstances(Common.getUser());
+    }
+    
+    private List<ReportInstance> getAllReportInstances(User user) {
+        List<ReportInstance> result = new ReportDao().getReportInstances();
+        Translations translations = getTranslations();
+        for (ReportInstance i : result)
+            i.setTranslations(translations);
+        return result;
     }
 
     private List<ReportInstance> getReportInstances(User user) {
