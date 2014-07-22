@@ -1,5 +1,6 @@
 *Version 1.1.3
 * Removed single character restriction on message terminators.
+* Fixed the data type being permanently set to Alphanumeric
 
 *Version 1.1.2*
 * Unescaped message terminator string

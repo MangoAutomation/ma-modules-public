@@ -21,13 +21,10 @@ import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.util.SerializationHelper;
 
 public class SerialPointLocatorVO extends AbstractPointLocatorVO implements JsonSerializable{
-    
-
-	
 	
 	@Override
 	public int getDataTypeId() {
-		return DataTypes.ALPHANUMERIC; //Always for returned string from terminal
+		return dataTypeId;
 	}
 
 	@Override
@@ -69,7 +66,6 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 	private String valueRegex;
 	@JsonProperty
 	private int valueIndex;
-	@JsonProperty
 	private int dataTypeId = DataTypes.ALPHANUMERIC;
 	
 	public String getPointIdentifier() {
@@ -146,11 +142,15 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
     }
 
 	@Override
-	public void jsonRead(JsonReader arg0, JsonObject arg1) throws JsonException {
+	public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
+		Integer value = readDataType(jsonObject, DataTypes.IMAGE);
+        if (value != null)
+            dataTypeId = value;
 	}
 
 	@Override
-	public void jsonWrite(ObjectWriter arg0) throws IOException, JsonException {
+	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
+		writeDataType(writer);
 	}
 
 	
