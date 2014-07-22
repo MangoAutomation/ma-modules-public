@@ -40,6 +40,7 @@ import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.view.stats.ITime;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.UserComment;
 import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
 import com.serotonin.m2m2.vo.export.ExportDataValue;
@@ -131,7 +132,7 @@ public class ReportDao extends BaseDao {
             + "  runEndTime, recordCount, preventPurge, mapping " + "from reportInstances ";
     
     public List<ReportInstance> getReportInstances() {
-    	return query(REPORT_INSTANCE_SELECT, new ReportInstanceRowMapper());
+    	return query(REPORT_INSTANCE_SELECT + "order by runStartTime desc", new ReportInstanceRowMapper());
     }
 
     public List<ReportInstance> getReportInstances(int userId) {
@@ -197,11 +198,32 @@ public class ReportDao extends BaseDao {
     	}
     }
 
-    public void setReportInstancePreventPurge(int id, boolean preventPurge, int userId) {
-        ejt.update("update reportInstances set preventPurge=? where id=? and userId=?", new Object[] {
-                boolToChar(preventPurge), id, userId });
+    /**
+     * Set prevent purge on an instance, if User is Admin allow access to all report instances
+     * if user is not admin restrict to only reports created by that user.
+     * @param id
+     * @param preventPurge
+     * @param user
+     */
+    public void setReportInstancePreventPurge(int id, boolean preventPurge, User user) {
+    	
+    	if(user.isAdmin())
+    		ejt.update("update reportInstances set preventPurge=? where id=?", new Object[] {
+                    boolToChar(preventPurge), id });
+    	else
+    		ejt.update("update reportInstances set preventPurge=? where id=? and userId=?", new Object[] {
+                boolToChar(preventPurge), id, user.getId() });
     }
 
+    /**
+     * Allow admin users to set prevent purge on an instance
+     * @param id
+     * @param preventPurge
+     */
+    public void setReportInstancePreventPurge(int id, boolean preventPurge) {
+        
+    }
+    
     /**
      * This method should only be called by the ReportWorkItem.
      */

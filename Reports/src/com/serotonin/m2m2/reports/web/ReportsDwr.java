@@ -47,7 +47,7 @@ public class ReportsDwr extends ModuleDwr {
         response.addData("users", new UserDao().getUsers());
         if(user.isAdmin()) {
         	response.addData("reports", reportDao.getReports());
-        	response.addData("instances", getAllReportInstances(user));
+        	response.addData("instances", getReportInstances(user));
     	}
         else {
         	response.addData("reports", reportDao.getReports(user.getId()));
@@ -177,6 +177,7 @@ public class ReportsDwr extends ModuleDwr {
 
         // Send back the report id in case this was new.
         response.addData("reportId", report.getId());
+        response.addData("report", report);
         return response;
     }
 
@@ -292,26 +293,36 @@ public class ReportsDwr extends ModuleDwr {
     public List<ReportInstance> getReportInstances() {
         return getReportInstances(Common.getUser());
     }
-    
-    private List<ReportInstance> getAllReportInstances(User user) {
-        List<ReportInstance> result = new ReportDao().getReportInstances();
-        Translations translations = getTranslations();
-        for (ReportInstance i : result)
-            i.setTranslations(translations);
-        return result;
-    }
 
+    /**
+     * Get report Instances and allow Admin users to get all report instances
+     * @param user
+     * @return
+     */
     private List<ReportInstance> getReportInstances(User user) {
-        List<ReportInstance> result = new ReportDao().getReportInstances(user.getId());
+    	//Allow Admin access to all report instances
+    	List<ReportInstance> result;
+    	if(user.isAdmin())
+    		result = new ReportDao().getReportInstances();
+    	else
+    		result = new ReportDao().getReportInstances(user.getId());
         Translations translations = getTranslations();
-        for (ReportInstance i : result)
+        UserDao userDao = new UserDao();
+        for (ReportInstance i : result){
             i.setTranslations(translations);
+            User reportUser = userDao.getUser(i.getUserId());
+            if(reportUser != null)
+            	i.setUsername(reportUser.getUsername());
+            else
+            	i.setUsername(Common.translate("reports.validate.userDNE"));
+            
+        }
         return result;
     }
 
     @DwrPermission(user = true)
     public void setPreventPurge(int instanceId, boolean value) {
-        new ReportDao().setReportInstancePreventPurge(instanceId, value, Common.getUser().getId());
+        new ReportDao().setReportInstancePreventPurge(instanceId, value, Common.getUser());
     }
 
     @DwrPermission(user = true)

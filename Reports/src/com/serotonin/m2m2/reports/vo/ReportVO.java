@@ -426,6 +426,18 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     	return ans;
     }
 
+    //Helper for JSP Page
+    public String getUsername(){
+    	UserDao userDao = new UserDao();
+    	User reportUser = userDao.getUser(this.userId);
+        if(reportUser != null)
+        	return reportUser.getUsername();
+        else
+        	return Common.translate("reports.validate.userDNE");
+    }
+    public void setUsername(String username){
+    	//NoOp
+    }
     //
     //
     // Serialization

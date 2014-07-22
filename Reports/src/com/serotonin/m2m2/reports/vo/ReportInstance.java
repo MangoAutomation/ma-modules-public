@@ -9,8 +9,10 @@ import java.util.Map;
 import org.joda.time.DateTime;
 
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.util.DateUtils;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
@@ -39,6 +41,9 @@ public class ReportInstance {
 
     private Translations translations;
 
+    //For JSP View
+    private String username;
+    
     public ReportInstance() {
         // no op
     }
@@ -52,6 +57,13 @@ public class ReportInstance {
         includeEvents = template.getIncludeEvents();
         includeUserComments = template.isIncludeUserComments();
 
+        UserDao userDao = new UserDao();
+        User reportUser = userDao.getUser(userId);
+        if(reportUser != null)
+        	username = reportUser.getUsername();
+        else
+        	username = Common.translate("reports.validate.userDNE");
+        
         if (template.getDateRangeType() == ReportVO.DATE_RANGE_TYPE_RELATIVE) {
             if (template.getRelativeDateType() == ReportVO.RELATIVE_DATE_TYPE_PREVIOUS) {
                 DateTime date = DateUtils.truncateDateTime(new DateTime(), template.getPreviousPeriodType());
@@ -260,4 +272,14 @@ public class ReportInstance {
     public void setPreventPurge(boolean preventPurge) {
         this.preventPurge = preventPurge;
     }
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+    
+    
 }

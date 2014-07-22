@@ -40,7 +40,7 @@
             
             for (var i=0; i<response.data.reports.length; i++) {
                 appendReport(response.data.reports[i].id);
-                updateReport(response.data.reports[i].id, response.data.reports[i].name);
+                updateReport(response.data.reports[i].id, response.data.reports[i].name + " (" + response.data.reports[i].username + ")");
             }
             
             <c:if test="${!empty param.createName}">
@@ -306,6 +306,7 @@
             dwr.util.addRows("reportInstancesList", instanceArray,
                 [
                     function(ri) { return ri.name; },
+                    function(ri) { return ri.username},
                     function(ri) { return ri.prettyRunStartTime; },
                     function(ri) { return ri.prettyRunDuration; },
                     function(ri) { return ri.prettyReportStartTime; },
@@ -347,9 +348,9 @@
                     },
                     cellCreator: function(options) {
                         var td = document.createElement("td");
-                        if (options.cellNum == 5)
-                            td.align = "right";
                         if (options.cellNum == 6)
+                            td.align = "right";
+                        if (options.cellNum == 7)
                             td.align = "center";
                         return td;
                     }
@@ -501,7 +502,7 @@
                 }
                 else
                     showMessage("userMessage", "<fmt:message key="reports.reportSaved"/>");
-                updateReport(selectedReport.id, $get("name"));
+                updateReport(selectedReport.id, $get("name") + " (" + response.data.report.username + ")");
             }
         });
         startImageFader("saveImg");
@@ -586,6 +587,7 @@
 					<table cellspacing="1">
 						<tr class="rowHeader">
 							<td><fmt:message key="reports.reportName" /></td>
+							<td><fmt:message key="reports.user"/></td>
 							<td><fmt:message key="reports.runTimeStart" /></td>
 							<td><fmt:message key="reports.runDuration" /></td>
 							<td><fmt:message key="common.dateRangeFrom" /></td>
