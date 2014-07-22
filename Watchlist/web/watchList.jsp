@@ -47,7 +47,18 @@
       dojo.require("dojo.store.Memory");
       dojo.require("dijit.form.Select");
       dojo.require("dijit.form.ComboBox");
+      
+      var globalUsername = "${username}"; //Username for new lists
+      var userMap = [
+          <c:forEach items="${watchListUsers}" var="wl">
+          {watchListId: "${wl.key}", watchListUsername: "${wl.value}"},</c:forEach>
+      ];
+      var watchListMap = [
+          <c:forEach items="${watchLists}" var="wl">
+          {watchListId: "${wl.key}", watchListName: "${wl.value}"},</c:forEach>
+      ];
 
+      
       
 	      mango.view.initWatchlist();
 	      mango.share.dwr = WatchListDwr;
@@ -232,7 +243,16 @@
 	          
 	          var select = $("watchListSelect");
 	          var txt = $("newWatchListName");
-	          $set(txt, select.options[select.selectedIndex].text);
+	          
+	          //Get the name of the watchlist without the (user) on the end
+	          var selectedWatchListId =  select.options[select.selectedIndex].value;
+              for(var i=0; i<watchListMap.length; i++){
+                  if(watchListMap[i].watchListId == selectedWatchListId){
+                      $set(txt, watchListMap[i].watchListName);
+                      break;
+                  }
+              }
+	          //$set(txt, select.options[select.selectedIndex].text);
 	          
 	          // Display controls based on access
 	          if (owner) {
@@ -262,7 +282,25 @@
 	      function saveWatchListName() {
 	          var name = $get("newWatchListName");
 	          var select = $("watchListSelect");
-	          select.options[select.selectedIndex].text = name;
+	           var selectedWatchListId =  select.options[select.selectedIndex].value;
+	              
+	          //Set the name in our Map
+	           for(var i=0; i<watchListMap.length; i++){
+                   if(watchListMap[i].watchListId == selectedWatchListId){
+                       watchListMap[i].watchListName = name;
+                       break;
+                   }
+               }
+	          
+	          //Set the name in our drop down (with username)
+	          
+              for(var i=0; i<userMap.length; i++){
+                    if(userMap[i].watchListId == selectedWatchListId){
+                       select.options[select.selectedIndex].text = name + " (" + userMap[i].watchListUsername + ")";
+                       break;
+                   }
+              }
+	          
 	          WatchListDwr.updateWatchListName(name);
 	          hideLayer("wlEdit");
 	      }
@@ -288,8 +326,19 @@
 	              copyId = $get("watchListSelect");
 	          
 	          WatchListDwr.addNewWatchList(copyId, function(watchListData) {
+	              
+	              //Update our maps
+	              userMap[userMap.length] = {
+	                  watchListId: watchListData.key + "",
+	                  watchListUsername: globalUsername,
+	              };
+	              watchListMap[watchListMap.length] = {
+	                  watchListId: watchListData.key + "",
+	                  watchListName: watchListData.value,
+	              };
+	              var watchListName = watchListData.value + " (" + globalUsername + ")";
 	              var wlselect = $("watchListSelect");
-	              wlselect.options[wlselect.options.length] = new Option(watchListData.value, watchListData.key);
+	              wlselect.options[wlselect.options.length] = new Option(watchListName, watchListData.key);
 	              $set(wlselect, watchListData.key);
 	              watchListChanged();
 	              maybeDisplayDeleteImg();
@@ -300,7 +349,7 @@
 	          var wlselect = $("watchListSelect");
 	          var deleteId = $get(wlselect);
 	          wlselect.options[wlselect.selectedIndex] = null;
-	          
+	          //Could update our maps but don't have to
 	          watchListChanged();
 	          WatchListDwr.deleteWatchList(deleteId);
 	          maybeDisplayDeleteImg();
@@ -601,7 +650,7 @@
               <td align="right">
                 <sst:select id="watchListSelect" value="${selectedWatchList}" onchange="watchListChanged()"
                         onmouseover="closeLayers();">
-                  <c:forEach items="${watchLists}" var="wl">
+                  <c:forEach items="${userWatchLists}" var="wl">
                     <sst:option value="${wl.key}">${sst:escapeLessThan(wl.value)}</sst:option>
                   </c:forEach>
                 </sst:select>

@@ -1,4 +1,8 @@
-*1.5.9*
+*Version 1.5.10*
+* Edits for Sharing watchlists now that Admin has access to all watchlists
+* Added (username) to the drop down so Shared lists true owners are known
+
+*Version 1.5.9*
 * Set it such that admins can see and edit all users' watchlists.
 
 *1.5.8*

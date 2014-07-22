@@ -69,7 +69,27 @@ public class WatchListDwr extends ModuleDwr {
 
         return data;
     }
-
+    
+    /**
+     * We need to override this method because Admin users can view all lists,
+     * even lists that are shared with them so for the Shared section to work
+     * we need to allow the Admin to be part of the shared users
+     */
+    @Override
+	protected List<User> getShareUsers(User excludeUser) {
+    	
+    	if(excludeUser.isAdmin()){
+    		return new UserDao().getUsers();
+    	}else{
+			List<User> users = new ArrayList<User>();
+			for (User u : new UserDao().getUsers()) {
+				if (u.getId() != excludeUser.getId())
+					users.add(u);
+			}
+			return users;
+    	}
+	} 
+    
     /**
      * Retrieves point state for all points on the current watch list.
      * 
@@ -124,6 +144,15 @@ public class WatchListDwr extends ModuleDwr {
             watchList = new WatchListDao().getWatchList(getWatchList().getId());
             watchList.setId(Common.NEW_ID);
             watchList.setName(translate(new TranslatableMessage("common.copyPrefix", watchList.getName())));
+            //Check to see if we are a Shared User (we can't share a watchlist with ourselves)
+            List<ShareUser> watchListShared =  new ArrayList<ShareUser>();
+            for(ShareUser shareUser : watchList.getWatchListUsers()){
+            	//Don't add yourself
+            	if(shareUser.getUserId() != user.getId())
+            		watchListShared.add(shareUser); 
+            }
+            watchList.setWatchListUsers(watchListShared);
+            
         }
         watchList.setUserId(user.getId());
         watchList.setXid(watchListDao.generateUniqueXid());
@@ -351,7 +380,8 @@ public class WatchListDwr extends ModuleDwr {
         }
 
         data.put("points", pointIds);
-        data.put("users", watchList.getWatchListUsers());
+        List<ShareUser> watchListUsers = watchList.getWatchListUsers();
+        data.put("users", watchListUsers);
         data.put("access", watchList.getUserAccess(user));
 
         return data;

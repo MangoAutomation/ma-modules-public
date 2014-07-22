@@ -16,6 +16,7 @@ import org.springframework.web.servlet.View;
 
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -26,6 +27,9 @@ import com.serotonin.m2m2.web.mvc.controller.ControllerUtils;
 public class WatchListHandler implements UrlHandler {
     public static final String KEY_WATCHLISTS = "watchLists";
     public static final String KEY_SELECTED_WATCHLIST = "selectedWatchList";
+    public static final String KEY_WATCHLIST_USERS = "watchListUsers";
+    public static final String KEY_USER_WATCHLISTS = "userWatchLists";
+    public static final String KEY_USERNAME = "username";
 
     @Override
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model) {
@@ -67,9 +71,12 @@ public class WatchListHandler implements UrlHandler {
         }
 
         String wlxid = request.getParameter("wlxid");
-
+        
+        UserDao userDao = new UserDao();
         boolean found = false;
         List<IntStringPair> watchListNames = new ArrayList<IntStringPair>(watchLists.size());
+        List<IntStringPair> watchListUsers = new ArrayList<IntStringPair>(watchLists.size());
+        List<IntStringPair> userWatchLists = new ArrayList<IntStringPair>(watchLists.size());
         for (WatchList watchList : watchLists) {
             if (!found) {
                 if (StringUtils.equals(watchList.getXid(), wlxid)) {
@@ -97,6 +104,17 @@ public class WatchListHandler implements UrlHandler {
                     watchListDao.saveWatchList(watchList);
             }
 
+            User watchListUser = userDao.getUser(watchList.getUserId());
+            String username;
+            if(watchListUser == null){
+            	username = Common.translate("watchlist.userDNE");
+            }else{
+            	username = watchListUser.getUsername();
+            }
+            //Add the Username to the name to know who's it is
+            watchListUsers.add(new IntStringPair(watchList.getId(), username));
+            userWatchLists.add(new IntStringPair(watchList.getId(), watchList.getName() + " (" + username + ")"));
+            
             watchListNames.add(new IntStringPair(watchList.getId(), watchList.getName()));
         }
 
@@ -109,5 +127,8 @@ public class WatchListHandler implements UrlHandler {
 
         model.put(KEY_WATCHLISTS, watchListNames);
         model.put(KEY_SELECTED_WATCHLIST, selected);
+        model.put(KEY_WATCHLIST_USERS, watchListUsers);
+        model.put(KEY_USER_WATCHLISTS, userWatchLists);
+       	model.put(KEY_USERNAME, user.getUsername());
     }
 }
