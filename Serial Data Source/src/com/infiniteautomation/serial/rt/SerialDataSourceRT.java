@@ -30,6 +30,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.util.queue.ByteQueue;
 
@@ -198,9 +199,14 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	            while (( data = in.read()) > -1 ){
 	            	index += 1;
 	                buffer.push(data);
-	                if (isTerminatorFound()) {
-	                    break;
+	                if (vo.getUseTerminator()) {
+	                	if(isTerminatorFound())
+	                		break;
 	                }
+	            }
+	            if(!vo.getUseTerminator()) {
+	                String msg = new String(buffer.peekAll());
+	                searchRegex(msg, 0);
 	            }
 	            if(!isTerminatorFound())
 	            	return;
@@ -230,25 +236,8 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	                			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
 	                        	if(pointValueMatcher.matches()){
 		                        	String value = pointValueMatcher.group(plVo.getValueIndex());                	
-		                        	PointValueTime newValue;
-		                        	
-		                        	//Switch on the type
-		                        	switch(plVo.getDataTypeId()){
-		                        	case DataTypes.ALPHANUMERIC:
-		                        		newValue = new PointValueTime(value,new Date().getTime());
-		                        		break;
-		                        	case DataTypes.NUMERIC:
-		                        		newValue = new PointValueTime(Double.parseDouble(value),new Date().getTime());
-		                        		break;
-		                        	case DataTypes.MULTISTATE:
-		                        		newValue = new PointValueTime(Integer.parseInt(value),new Date().getTime());
-		                        		break;
-		                        	case DataTypes.BINARY:
-		                        		newValue = new PointValueTime(Boolean.parseBoolean(value),new Date().getTime());
-		                        		break;
-		                        	default:
-		                        		throw new ShouldNeverHappenException("Uknown Data type for point");
-		                        	}
+		                        	PointValueTime newValue = new PointValueTime(DataValue.stringToValue(value, plVo.getDataTypeId()),
+		                        			Common.timer.currentTimeMillis());
 		                    		dp.updatePointValue(newValue);
 	                        	}//end if value matches
 		                	}//end for this point id
@@ -265,6 +254,27 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 				raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed",e.getMessage()));
 	        }
 		}
+	}
+	
+	private void searchRegex(String msg, int depth) {
+		if(depth > 255)
+			return;
+		for(DataPointRT rt : dataPoints) {
+    		Pattern p = ((SerialPointLocatorRT)rt.getPointLocator()).getPattern();
+    		Matcher m = p.matcher(msg);
+    		if(m.find()) { //Could use length consumed to allow many points to receive values from the same strings
+    			SerialPointLocatorRT pl = rt.getPointLocator();
+        		SerialPointLocatorVO plVo = pl.getVo();
+    			String value = m.group(plVo.getValueIndex());                	
+            	PointValueTime newValue = new PointValueTime(DataValue.stringToValue(value, plVo.getDataTypeId()),
+            			Common.timer.currentTimeMillis());
+        		rt.updatePointValue(newValue);
+    			buffer.pop(m.group(0).length());
+    			index -= m.group(0).length();
+    			searchRegex(new String(buffer.peekAll()), depth+1);
+    			return;
+    		}
+    	}
 	}
 
 	@Override

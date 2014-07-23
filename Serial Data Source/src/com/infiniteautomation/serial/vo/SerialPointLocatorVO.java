@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.infiniteautomation.serial.rt.SerialPointLocatorRT;
 import com.serotonin.json.JsonException;
@@ -50,7 +52,12 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 
 		if (SerialDataSourceVO.isBlank(valueRegex))
             response.addContextualMessage("valueRegex", "validate.required");	
-		//TODO Validate the regex
+		try {
+			if(Pattern.compile(valueRegex).matcher("").find()) // Validate the regex
+				response.addContextualMessage("valueRegex", "serial.validate.emptyMatch");
+		} catch (PatternSyntaxException e) {
+			response.addContextualMessage("valueRegex", "serial.validate.badRegex", e.getMessage());
+		}
 		
 		if(valueIndex < 0)
 			response.addContextualMessage("valueIndex","validate.invalidValue");

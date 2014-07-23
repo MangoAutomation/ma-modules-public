@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -51,6 +53,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private int parity = 0;
     @JsonProperty
     private int readTimeout = 1000; //Timeout in ms
+    @JsonProperty
+    private boolean useTerminator = true;
     @JsonProperty
     private String messageTerminator;
     @JsonProperty
@@ -157,6 +161,14 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
 	}
+	
+	public boolean getUseTerminator() {
+		return useTerminator;
+	}
+	
+	public void setUseTerminator(boolean useTerminator) {
+		this.useTerminator = useTerminator;
+	}
 
 	public String getMessageTerminator() {
 		return messageTerminator;
@@ -200,17 +212,25 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         if (parity < 0 || parity > 4)
             response.addContextualMessage("parityBits", "validate.invalidValue");
         
-        if(messageTerminator.length() <= 0)
-        	response.addContextualMessage("messageTerminator", "validate.required");
+        if(useTerminator) {
+        	if(messageTerminator.length() <= 0)
+        		response.addContextualMessage("messageTerminator", "validate.required");
+        	 if (isBlank(messageRegex))
+                 response.addContextualMessage("messageRegex", "validate.required");
+        	 else {
+        		try {
+          			if(Pattern.compile(messageRegex).matcher("").find()) // Validate the regex
+          				response.addContextualMessage("messageRegex", "serial.validate.emptyMatch");
+          		} catch (PatternSyntaxException e) {
+          			response.addContextualMessage("messageRegex", "serial.validate.badRegex", e.getMessage());
+          		}
+        	 }
+        	 if(pointIdentifierIndex < 0)
+             	response.addContextualMessage("pointIdentifierIndex", "validate.invalidValue");
+        }
         
         if(readTimeout < 100)
-        	response.addContextualMessage("readTimeout","validate.invalidValue");
-        
-        if (isBlank(messageRegex))
-            response.addContextualMessage("messageRegex", "validate.required");
-        //TODO Validate Message Regex by compiling or something...
-        if(pointIdentifierIndex < 0)
-        	response.addContextualMessage("pointIdentifierIndex", "validate.invalidValue");
+        	response.addContextualMessage("readTimeout","validate.invalidValue");        
         
      }
 
@@ -253,7 +273,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 2;
+    private static final int version = 3;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
@@ -268,6 +288,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         out.writeInt(readTimeout);
         SerializationHelper.writeSafeUTF(out, messageRegex);
         out.writeInt(pointIdentifierIndex);
+        out.writeBoolean(useTerminator);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -286,6 +307,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
+            useTerminator = true;
         }
         if (ver == 2) {
             commPortId = SerializationHelper.readSafeUTF(in);
@@ -299,6 +321,21 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
+            useTerminator = true;
+        }
+        if (ver == 3) {
+            commPortId = SerializationHelper.readSafeUTF(in);
+            baudRate = in.readInt();
+            flowControlIn = in.readInt();
+            flowControlOut = in.readInt();
+            dataBits = in.readInt();
+            stopBits = in.readInt();
+            parity = in.readInt();
+            messageTerminator = SerializationHelper.readSafeUTF(in);
+            readTimeout = in.readInt();
+            messageRegex = SerializationHelper.readSafeUTF(in);
+            pointIdentifierIndex = in.readInt();
+            useTerminator = in.readBoolean();
         }
     }
 
