@@ -3,6 +3,28 @@
     @author Matthew Lohbihler
 --%><%@ include file="/WEB-INF/jsp/include/tech.jsp"%>
 
+<style>
+.test-button {
+	box-shadow:inset 0px 1px 0px 0px #dcecfb;
+	background-color:#80b5ea;
+	border:1px solid #53a8fc;
+	color:#000000;
+	font-size:12px;
+	font-weight:bold;
+	height:20px;
+	line-height:17px;
+	width:100px;
+	text-align:center;
+	text-shadow:1px 1px 0px #528ecc;
+}
+.test-button:hover {
+	background-color:#70a5da;
+}.test-button:active {
+	position:relative;
+	top:1px;
+}
+</style>
+
 <script type="text/javascript">
 
 	function initImpl() {
@@ -120,7 +142,7 @@
  <td><input id="pointIdentifierIndex" type="number" value="${dataSource.pointIdentifierIndex}"></input></td>
 </tr>
 <tr>
- <td class="formLabelRequired"><button onclick=submitTestString();><fmt:message key="dsEdit.serial.submitTestString"/></button></td>
+ <td class="formLabelRequired" style="padding-top:0px;"><button class="test-button" onclick=submitTestString();><fmt:message key="dsEdit.serial.submitTestString"/></button></td>
  <td><input id="testString" type="text"></input></td>
 </tr>
 <tr><td id="testMessages" style="color:red;" colspan=2></td>
