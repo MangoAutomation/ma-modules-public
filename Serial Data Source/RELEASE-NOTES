@@ -1,5 +1,7 @@
 *Version 1.1.4
 * Modified to permit a second input mode, one that uses pure regex
+* Added test button
+* Added documentation
 
 *Version 1.1.3
 * Removed single character restriction on message terminators.

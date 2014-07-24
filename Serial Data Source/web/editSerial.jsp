@@ -97,7 +97,7 @@
 	  }
 </script>
 
-<tag:dataSourceAttrs descriptionKey="dsEdit.serial.desc" helpId="serial-ds">
+<tag:dataSourceAttrs descriptionKey="dsEdit.serial.desc" helpId="serialDS">
 <tag:serialSettings/>
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.serial.readTimeout"/></td>
@@ -123,11 +123,11 @@
  <td class="formLabelRequired"><button onclick=submitTestString();><fmt:message key="dsEdit.serial.submitTestString"/></button></td>
  <td><input id="testString" type="text"></input></td>
 </tr>
-<tr id="testMessages" style="color:red;">
+<tr><td id="testMessages" style="color:red;" colspan=2></td>
 </tr>
 </tag:dataSourceAttrs>
 
-<tag:pointList pointHelpId="serial-pp">
+<tag:pointList pointHelpId="serialPP">
   <tr>
     <td class="formLabelRequired"><fmt:message key="dsEdit.pointDataType"/></td>
     <td class="formField"><tag:dataTypeOptions id="dataTypeId" excludeImage="true"/></td>

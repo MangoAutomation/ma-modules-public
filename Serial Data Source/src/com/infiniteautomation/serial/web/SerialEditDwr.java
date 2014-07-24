@@ -63,6 +63,10 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	    public ProcessResult testString(String msg) {
 	    	ProcessResult pr = new ProcessResult();
 	    	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
+	    	if(ds.getId() == -1) {
+	    		pr.addContextualMessage("testString", "serial.test.needsSave");
+	    		return pr;
+	    	}
 	    	DataPointDao dpd = new DataPointDao();
 	    	List<DataPointVO> points = dpd.getDataPoints(ds.getId(), null);
 	    	if(ds.getUseTerminator()) { 

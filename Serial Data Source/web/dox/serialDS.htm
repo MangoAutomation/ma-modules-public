@@ -1,1 +1,13 @@
-Serial Data Source Help.
+<h3>Overview</h3>
+<p>The Serial Data Source is a general purpose serial port reader. It is an event driven data source.</p>
+<h3>Configuration</h3>
+<p>The <b>read timeout</b> specifies the receive timeout of the serial port. <b>use terminator</b>
+toggles between two modes for matching input. Not using a terminator results in regex matching of 
+the points' <i>value regex</i> directly. as opposed to a basic string compare when specifying a <b>message 
+terminator</b>. Once the terminator is discovered, the <b>message regex</b> is applied, the group indexed 
+at the <b>Point Identifier Index</b> is checked against points' <i>point identifiers</i>, and potentially 
+searched for a new value.</p>
+
+<p>If not using a teriminator, know that the implementation is greedy in its match attempts for points, 
+and will pop characters equal to the first match's length and continue looking after. The order of consumption
+for multiple matches should presently be considered undefined. Using a terminator is faster when possible.</p>
