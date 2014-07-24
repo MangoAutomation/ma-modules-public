@@ -60,8 +60,9 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	    }
 	    
 	    @DwrPermission(user = true)
-	    public ProcessResult testString(String msg) {
+	    public ProcessResult testString(String raw) {
 	    	ProcessResult pr = new ProcessResult();
+	    	String msg = StringEscapeUtils.unescapeJava(raw);
 	    	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
 	    	if(ds.getId() == -1) {
 	    		pr.addContextualMessage("testString", "serial.test.needsSave");
