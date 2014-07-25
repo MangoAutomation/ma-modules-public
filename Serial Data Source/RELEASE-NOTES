@@ -1,5 +1,12 @@
+*Version 1.1.4
+* Modified to permit a second input mode, one that uses pure regex
+* Added test button
+* Added documentation
+* Added regex validation, no matching the empty string!
+
 *Version 1.1.3
 * Removed single character restriction on message terminators.
+* Fixed the data type being permanently set to Alphanumeric
 
 *Version 1.1.2*
 * Unescaped message terminator string

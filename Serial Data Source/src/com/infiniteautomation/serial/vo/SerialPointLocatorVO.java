@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.infiniteautomation.serial.rt.SerialPointLocatorRT;
 import com.serotonin.json.JsonException;
@@ -21,13 +23,10 @@ import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.util.SerializationHelper;
 
 public class SerialPointLocatorVO extends AbstractPointLocatorVO implements JsonSerializable{
-    
-
-	
 	
 	@Override
 	public int getDataTypeId() {
-		return DataTypes.ALPHANUMERIC; //Always for returned string from terminal
+		return dataTypeId;
 	}
 
 	@Override
@@ -53,7 +52,12 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 
 		if (SerialDataSourceVO.isBlank(valueRegex))
             response.addContextualMessage("valueRegex", "validate.required");	
-		//TODO Validate the regex
+		try {
+			if(Pattern.compile(valueRegex).matcher("").find()) // Validate the regex
+				response.addContextualMessage("valueRegex", "serial.validate.emptyMatch");
+		} catch (PatternSyntaxException e) {
+			response.addContextualMessage("valueRegex", "serial.validate.badRegex", e.getMessage());
+		}
 		
 		if(valueIndex < 0)
 			response.addContextualMessage("valueIndex","validate.invalidValue");
@@ -69,7 +73,6 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 	private String valueRegex;
 	@JsonProperty
 	private int valueIndex;
-	@JsonProperty
 	private int dataTypeId = DataTypes.ALPHANUMERIC;
 	
 	public String getPointIdentifier() {
@@ -146,11 +149,15 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
     }
 
 	@Override
-	public void jsonRead(JsonReader arg0, JsonObject arg1) throws JsonException {
+	public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
+		Integer value = readDataType(jsonObject, DataTypes.IMAGE);
+        if (value != null)
+            dataTypeId = value;
 	}
 
 	@Override
-	public void jsonWrite(ObjectWriter arg0) throws IOException, JsonException {
+	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
+		writeDataType(writer);
 	}
 
 	

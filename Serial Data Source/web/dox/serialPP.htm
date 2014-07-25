@@ -1,1 +1,8 @@
-Nothing yet.
+<h3>Configuration</h3>
+<p>The <b>data type</b> governs how to interpret the data. Current parsing
+is done with the Integer, Double, and Boolean parse functions. The <b>point 
+identifier</b> is used if a terminator is being used to match the <i>message index</i>
+group as matched by the <i>message regex</i>, which determines if the <b>value regex</b>
+should be applied. If a match is found, the group at <b>value index</b> is sent to the parser.</p>
+<p>If no terminator is being used, the <b>value regex</b> is applied judiciously and, upon 
+finding a match, the group at <b>value index</b> is sent to parsing.</p>
