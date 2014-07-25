@@ -18,25 +18,27 @@ import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
-import com.serotonin.m2m2.rt.maint.work.SetPointWorkItem;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptExecutor;
 
 /**
  * @author Matthew Lohbihler
  */
-public class PointLinkRT implements DataPointListener, SetPointSource {
+public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public static final String CONTEXT_VAR_NAME = "source";
     private final PointLinkVO vo;
     private final SystemEventType eventType;
+    
+    //Added to stop excessive point link calls
+    private volatile Boolean ready;
 
     public PointLinkRT(PointLinkVO vo) {
         this.vo = vo;
         eventType = new SystemEventType(SystemEvent.TYPE_NAME, vo.getId(),
                 EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
+        ready = true;
     }
 
     public void initialize() {
@@ -76,6 +78,14 @@ public class PointLinkRT implements DataPointListener, SetPointSource {
     }
 
     private void execute(PointValueTime newValue) {
+    	
+    	//Bail out if already running a point link operation
+    	synchronized(ready){
+    	if(!ready)
+    		return;
+    	else
+    		ready = false; //Stop anyone else from using this
+    	}
         // Propagate the update to the target point. Validate that the target point is available.
         DataPointRT targetPoint = Common.runtimeManager.getDataPoint(vo.getTargetPointId());
         if (targetPoint == null) {
@@ -121,7 +131,7 @@ public class PointLinkRT implements DataPointListener, SetPointSource {
         }
 
         // Queue a work item to perform the update.
-        Common.backgroundProcessing.addWorkItem(new SetPointWorkItem(vo.getTargetPointId(), newValue, this));
+        Common.backgroundProcessing.addWorkItem(new PointLinkSetPointWorkItem(vo.getTargetPointId(), newValue, this));
         returnToNormal();
     }
 
@@ -186,4 +196,12 @@ public class PointLinkRT implements DataPointListener, SetPointSource {
     public void raiseRecursionFailureEvent() {
         raiseFailureEvent(new TranslatableMessage("event.pointLink.recursionFailure"));
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.pointLinks.PointLinkSetPointSource#pointSetComplete()
+	 */
+	@Override
+	public void pointSetComplete() {
+		this.ready = true;
+	}
 }

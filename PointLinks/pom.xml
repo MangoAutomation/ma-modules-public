@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.infiniteautomation.mango</groupId>
   <artifactId>pointlinks</artifactId>
-  <version>1.4.5</version>
+  <version>1.4.6</version>
   <name>Point Links</name>
   <build>
     <directory>maven-target</directory>
