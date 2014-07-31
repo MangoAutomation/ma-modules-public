@@ -11,7 +11,7 @@
   <!-- Meta -->
   <meta http-equiv="content-type" content="application/xhtml+xml;charset=utf-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css" />
-  <meta name="Copyright" content="&copy;2006-2011 Serotonin Software Technologies Inc."/>
+  <meta name="Copyright" content="&copy; 2014 Infinite Automation Systems Inc. All rights reserved."/>
   
   <!-- Style -->
   <link rel="icon" href="images/favicon.ico"/>
