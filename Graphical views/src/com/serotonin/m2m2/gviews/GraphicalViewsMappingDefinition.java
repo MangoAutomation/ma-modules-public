@@ -4,14 +4,14 @@
  */
 package com.serotonin.m2m2.gviews;
 
-import com.serotonin.m2m2.module.UrlMappingDefinition;
+import com.serotonin.m2m2.module.UriMappingDefinition;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
-public class GraphicalViewsMappingDefinition extends UrlMappingDefinition {
-    @Override
-    public String getUrlPath() {
-        return "/views.shtm";
-    }
+public class GraphicalViewsMappingDefinition extends UriMappingDefinition {
+//    @Override
+//    public String getUrlPath() {
+//        return "/views.shtm";
+//    }
 
     @Override
     public UrlHandler getHandler() {
@@ -23,18 +23,34 @@ public class GraphicalViewsMappingDefinition extends UrlMappingDefinition {
         return "web/views.jsp";
     }
 
-    @Override
-    public String getMenuKey() {
-        return "header.views";
-    }
-
-    @Override
-    public String getMenuImage() {
-        return "web/slide.png";
-    }
+//    @Override
+//    public String getMenuKey() {
+//        return "header.views";
+//    }
+//
+//    @Override
+//    public String getMenuImage() {
+//        return "web/slide.png";
+//    }
 
     @Override
     public Permission getPermission() {
         return Permission.USER;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.UriMappingDefinition#getPath()
+	 */
+	@Override
+	public String getPath() {
+		return "/views.shtm";
+	}
+
+	
+	
+	
+	
+	
+	
+	
 }
