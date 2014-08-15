@@ -1,3 +1,12 @@
+*Version 1.1.5
+* Improved ability to handle to high frequency messaging
+* Added timeout option instead of byte/character matching for message termination
+* Added ability to manage binary protocols via Ascii HEX
+* Added maximum length to messages
+* Revised help files
+* Added I/O Logging via rolling log files
+* Added extensive Log4j DEBUG level messages
+
 *Version 1.1.4
 * Modified to permit a second input mode, one that uses pure regex
 * Added test button

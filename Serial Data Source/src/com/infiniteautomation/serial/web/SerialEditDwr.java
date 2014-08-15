@@ -5,14 +5,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
-import com.serotonin.io.serial.SerialParameters;
-import com.serotonin.io.serial.SerialPortException;
-import com.serotonin.io.serial.SerialPortProxy;
-import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -21,14 +16,13 @@ import com.serotonin.m2m2.vo.dataSource.BasicDataSourceVO;
 import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
-import freemarker.template.utility.StringUtil;
-
 public class SerialEditDwr extends DataSourceEditDwr{
 
 	   @DwrPermission(user = true)
 	    public ProcessResult saveSerialDataSource(BasicDataSourceVO basic, String commPortId, int baudRate, int flowControlIn,
 	            int flowControlOut, int dataBits, int stopBits, int parity, int readTimeout, boolean useTerminator,
-	            String messageTerminator, String messageRegex, int pointIdentifierIndex) {
+	            String messageTerminator, String messageRegex, int pointIdentifierIndex,
+	            boolean hex, boolean logIO, int maxMessageSize, float ioLogFileSizeMBytes, int maxHistoricalIOLogs) {
 	        SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
 
 	        setBasicProps(ds, basic);
@@ -44,6 +38,11 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	        ds.setMessageTerminator(StringEscapeUtils.unescapeJava(messageTerminator));
 	        ds.setMessageRegex(messageRegex);
 	        ds.setPointIdentifierIndex(pointIdentifierIndex);
+	        ds.setHex(hex);
+	        ds.setLogIO(logIO);
+	        ds.setMaxMessageSize(maxMessageSize);
+	        ds.setIoLogFileSizeMBytes(ioLogFileSizeMBytes);
+	        ds.setMaxHistoricalIOLogs(maxHistoricalIOLogs);
 	        
 	        return tryDataSourceSave(ds);
 	    }	
@@ -62,12 +61,27 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	    @DwrPermission(user = true)
 	    public ProcessResult testString(String raw) {
 	    	ProcessResult pr = new ProcessResult();
-	    	String msg = StringEscapeUtils.unescapeJava(raw);
+	    	
+	    	//Message we will work with
+	    	String msg;
+
 	    	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
 	    	if(ds.getId() == -1) {
 	    		pr.addContextualMessage("testString", "serial.test.needsSave");
 	    		return pr;
 	    	}
+	    	
+	    	//Convert the message
+	    	msg = StringEscapeUtils.unescapeJava(raw);
+	    	
+	    	//Are we a hex string
+	    	if(ds.isHex()){
+		    	 if(!msg.matches("[0-9A-Fa-f]+")){
+	    			 pr.addContextualMessage("testString", "serial.validate.notHex");
+	    		 }
+	    	}
+	    	
+	    	
 	    	DataPointDao dpd = new DataPointDao();
 	    	List<DataPointVO> points = dpd.getDataPoints(ds.getId(), null);
 	    	if(ds.getUseTerminator()) { 

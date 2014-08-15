@@ -1,21 +1,22 @@
 package com.infiniteautomation.serial.vo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
@@ -24,6 +25,7 @@ import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
 
 @JsonEntity
@@ -61,6 +63,16 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private String messageRegex;
     @JsonProperty
     private int pointIdentifierIndex;
+    @JsonProperty
+    private boolean hex = false; //Is the setup in Hex Strings?
+    @JsonProperty
+    private boolean logIO = false;
+    @JsonProperty
+    private int maxMessageSize = 1024;
+    @JsonProperty
+    private float ioLogFileSizeMBytes = 1.0f; //1MB
+    @JsonProperty
+    private int maxHistoricalIOLogs = 1;
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
@@ -91,7 +103,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 		eventTypes.add(createEventType(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointWrite")));
 		eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, new TranslatableMessage(
-                "event.serial.patternMismatch")));
+                "event.serial.patternMismatchException")));
 		
 	}
 	public int getFlowControlMode() {
@@ -193,7 +205,52 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	public void setPointIdentifierIndex(int pointIdentifierIndex) {
 		this.pointIdentifierIndex = pointIdentifierIndex;
 	}
+	
+	public boolean isHex() {
+		return hex;
+	}
 
+	public void setHex(boolean hex) {
+		this.hex = hex;
+	}
+
+	public boolean isLogIO() {
+		return logIO;
+	}
+
+	public void setLogIO(boolean logIO) {
+		this.logIO = logIO;
+	}
+	
+	public int getMaxMessageSize() {
+		return maxMessageSize;
+	}
+
+	public void setMaxMessageSize(int maxMessageSize) {
+		this.maxMessageSize = maxMessageSize;
+	}
+    public float getIoLogFileSizeMBytes() {
+		return ioLogFileSizeMBytes;
+	}
+
+	public void setIoLogFileSizeMBytes(float ioLogFileSizeMBytes) {
+		this.ioLogFileSizeMBytes = ioLogFileSizeMBytes;
+	}
+
+	public int getMaxHistoricalIOLogs() {
+		return maxHistoricalIOLogs;
+	}
+
+	public void setMaxHistoricalIOLogs(int maxHistoricalIOLogs) {
+		this.maxHistoricalIOLogs = maxHistoricalIOLogs;
+	}
+
+	
+    public String getIoLogPath() {
+    	return new File(Common.getLogsDir(), SerialDataSourceRT.getIOLogFileName(getId())).getPath();
+    }
+	
+	
 	@Override
     public void validate(ProcessResult response) {
         super.validate(response);
@@ -217,21 +274,29 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         		response.addContextualMessage("messageTerminator", "validate.required");
         	 if (isBlank(messageRegex))
                  response.addContextualMessage("messageRegex", "validate.required");
-        	 else {
-        		try {
-          			if(Pattern.compile(messageRegex).matcher("").find()) // Validate the regex
-          				response.addContextualMessage("messageRegex", "serial.validate.emptyMatch");
-          		} catch (PatternSyntaxException e) {
-          			response.addContextualMessage("messageRegex", "serial.validate.badRegex", e.getMessage());
-          		}
-        	 }
         	 if(pointIdentifierIndex < 0)
              	response.addContextualMessage("pointIdentifierIndex", "validate.invalidValue");
+        	 
+        	 if(hex){
+        		 if(!messageTerminator.matches("[0-9A-Fa-f]+")){
+        			 response.addContextualMessage("messageTerminator", "serial.validate.notHex");
+        		 }
+        	 }
+        	 
         }
         
-        if(readTimeout < 100)
-        	response.addContextualMessage("readTimeout","validate.invalidValue");        
+        if(readTimeout <= 0)
+        	response.addContextualMessage("readTimeout","validate.greaterThanZero");        
         
+        if(maxMessageSize <= 0){
+        	response.addContextualMessage("maxMessageSize","validate.greaterThanZero"); 
+        }
+        
+        if (ioLogFileSizeMBytes <= 0)
+            response.addContextualMessage("ioLogFileSizeMBytes", "validate.greaterThanZero");
+        if (maxHistoricalIOLogs <= 0)
+            response.addContextualMessage("maxHistoricalIOLogs", "validate.greaterThanZero");        
+
      }
 
     @Override
@@ -247,6 +312,13 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         AuditEventType.addPropertyMessage(list, "dsEdit.serial.readTimeout", readTimeout);
         AuditEventType.addPropertyMessage(list, "dsEdit.serial.messageRegex", messageRegex);
         AuditEventType.addPropertyMessage(list, "dsEdit.serial.pointIdentifierIndex", pointIdentifierIndex);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.useTerminator", useTerminator);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.hex", hex);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.logIO", logIO);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.maxMessageSize", maxMessageSize);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.logIOFileSize", ioLogFileSizeMBytes);
+        AuditEventType.addPropertyMessage(list, "dsEdit.serial.logIOFiles", maxHistoricalIOLogs);
+        
     }
 
     @Override
@@ -264,6 +336,12 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.readTimeout", from.readTimeout, readTimeout);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.messageRegex", from.messageRegex, messageRegex);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.pointIdentifierIndex", from.pointIdentifierIndex, pointIdentifierIndex);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.useTerminator", from.useTerminator, useTerminator);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.hex", from.hex, hex);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.logIO", from.logIO, logIO);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.maxMessageSize", from.maxMessageSize, maxMessageSize);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.logIOFileSize", from.ioLogFileSizeMBytes, ioLogFileSizeMBytes);
+        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.logIOFiles", from.maxHistoricalIOLogs, maxHistoricalIOLogs);
 
     }
 
@@ -273,7 +351,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 3;
+    private static final int version = 4;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
@@ -289,6 +367,11 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         SerializationHelper.writeSafeUTF(out, messageRegex);
         out.writeInt(pointIdentifierIndex);
         out.writeBoolean(useTerminator);
+        out.writeBoolean(hex);
+        out.writeBoolean(logIO);
+        out.writeInt(maxMessageSize);
+        out.writeFloat(ioLogFileSizeMBytes);
+        out.writeInt(maxHistoricalIOLogs);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -308,6 +391,11 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             messageRegex = SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             useTerminator = true;
+            hex = false;
+            logIO = false;
+            maxMessageSize = 1024;
+            ioLogFileSizeMBytes = 1;
+            maxHistoricalIOLogs = 1;
         }
         if (ver == 2) {
             commPortId = SerializationHelper.readSafeUTF(in);
@@ -322,6 +410,11 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             messageRegex = SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             useTerminator = true;
+            hex = false;
+            logIO = false;
+            maxMessageSize = 1024;
+            ioLogFileSizeMBytes = 1;
+            maxHistoricalIOLogs = 1;
         }
         if (ver == 3) {
             commPortId = SerializationHelper.readSafeUTF(in);
@@ -336,6 +429,30 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             messageRegex = SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             useTerminator = in.readBoolean();
+            hex = false;
+            logIO = false;
+            maxMessageSize = 1024;
+            ioLogFileSizeMBytes = 1;
+            maxHistoricalIOLogs = 1;
+        }
+        if(ver == 4){
+            commPortId = SerializationHelper.readSafeUTF(in);
+            baudRate = in.readInt();
+            flowControlIn = in.readInt();
+            flowControlOut = in.readInt();
+            dataBits = in.readInt();
+            stopBits = in.readInt();
+            parity = in.readInt();
+            messageTerminator = SerializationHelper.readSafeUTF(in);
+            readTimeout = in.readInt();
+            messageRegex = SerializationHelper.readSafeUTF(in);
+            pointIdentifierIndex = in.readInt();
+            useTerminator = in.readBoolean();
+            hex = in.readBoolean();
+            logIO = in.readBoolean();
+            maxMessageSize = in.readInt();
+            ioLogFileSizeMBytes = in.readFloat();
+            maxHistoricalIOLogs = in.readInt();
         }
     }
 
@@ -360,6 +477,14 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 			}
 		}
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 */
+	@Override
+	public AbstractDataSourceModel<SerialDataSourceVO> getModel() {
+		throw new ShouldNeverHappenException("Unimplemented");
 	}
     
 }

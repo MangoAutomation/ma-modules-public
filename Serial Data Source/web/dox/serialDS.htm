@@ -1,13 +1,82 @@
-<h3>Overview</h3>
-<p>The Serial Data Source is a general purpose serial port reader. It is an event driven data source.</p>
-<h3>Configuration</h3>
-<p>The <b>read timeout</b> specifies the receive timeout of the serial port. <b>use terminator</b>
-toggles between two modes for matching input. Not using a terminator results in regex matching of 
-the points' <i>value regex</i> directly. as opposed to a basic string compare when specifying a <b>message 
-terminator</b>. Once the terminator is discovered, the <b>message regex</b> is applied, the group indexed 
-at the <b>Point Identifier Index</b> is checked against points' <i>point identifiers</i>, and potentially 
-searched for a new value.</p>
+<h1>Overview</h1>
+<p>The Serial Data Source is a general purpose serial port reader. It is an event driven data source that will only process data when it receives a serial message</p>
 
-<p>If not using a teriminator, know that the implementation is greedy in its match attempts for points, 
-and will pop characters equal to the first match's length and continue looking after. The order of consumption
-for multiple matches should presently be considered undefined. Using a terminator is faster when possible.</p>
+<h2>Configuration</h2>
+
+This data source works by sequentially parsing the incoming message and matching/extracting portions of it as point values. For example:<br>
+
+<ul>
+    <li><b>read timeout</b> - is the time the data source will wait before it considers what it has in its buffer to be a message,
+     timeouts of less than 1ms are not currently allowed</li>
+    <li><b>use terminator</b> - does every message end in the same pattern of bytes or chars? (See below)</li>
+    <li><b>message regex</b> - the regular expression used to match the incoming messages, see below</li>
+    <li><b>point identifier group</b> - the group number that the point identifier is matched to</li>
+    <li><b>configuration in hex</b> - when checked this means all regex and matching is done
+     on binary data represented by the Hex string, see below</li>
+    <li><b>Log I/O</b> - when checked all serial communications will be logged to a file</li>
+    <li><b>maximum message size</b> - if the serial input buffer reaches this size, it is discarded in preparation for recieving new messages</li>
+</ul>
+
+<h3>Use Terminator</h3>
+Messages must be completely read before any matching can be performed.  There are 2 ways for this data source to 'know' it has recieved a complete message.  
+The first is to check all incomming bytes for the terminator pattern.  The second way is after data is recieved they line is silent for at least 
+<b>Read Timeout</b>ms.  If not using a terminator then the entire message is given to each point as the point identifier for matching.
+
+
+<h3>Message regex</h3>
+When using regex matching groups it is useful to remember that group 0 is the entire message while group 1 is the first set of ().
+<br>
+<b>Example Modbus Configuration (Hex)</b>
+<ul>
+<li><b>Example Message:</b> 0103020000b844</li>
+<li><b>Read timeout</b> - 5</li>
+<li><b>Use Terminator</b> - no</li>
+<li><b>Message Regex</b> - ([0-9]{2})(.*)</li>
+<li><b>Point identifier group</b> - 1</li>
+<li><b>Configuration in hex</b> - no</li>
+<li><b>Maximum size of message</b> - 1024</li>
+</ul>
+
+<h4>Point</h4>
+<ul>
+<li><b>Point identifier</b> - 01</li>
+<li><b>Value regex</b> - .*</li>
+<li><b>Value group</b> - 2</li>
+</ul>
+
+<b>Example UTF-8 Configuration</b>
+
+<h4>Data Source</h4>
+<ul>
+<li><b>Example Message:</b> 01HelloWorldtrue\r</li>
+<li><b>Read timeout</b> - 1000</li>
+<li><b>Use Terminator</b> - yes</li>
+<li><b>Message Terminator</b> - \r</li>
+<li><b>Message Regex</b> - ([0-9]{2})HelloWorld(.*)\r</li>
+<li><b>Point identifier group</b> - 1</li>
+<li><b>Configuration in hex</b> - no</li>
+<li><b>Maximum size of message</b> - 1024</li>
+</ul>
+
+<h4>Point</h4>
+<ul>
+<li><b>Point identifier</b> - 01</li>
+<li><b>Value regex</b> - .*</li>
+<li><b>Value group</b> - 2</li>
+</ul>
+
+
+<h3>Configuration in Hex</h3>
+A configuration should be in hex when the messages are not representable in the UTF-8 Character set.  This allows all regex patterns 
+to use ASCII Hex in place of the binary data. <br> 
+For example a common modbus response in HEX is: 01030001000b844
+Potential message regex is: (01)(.*) to match 01 as group 1 and (030001000b844) as group 2.
+
+
+<h3>Test String</h3>
+The test utility allows the user to input an expected message and compare it to the current matching configuration of the data source.  
+The output from the matching is displayed in red if there are any errors.
+
+<h3>Logging</h3>
+Extensive Logging has been added to this datasource.  To enable it, add the following to the log4j.xml configuration file: <br>
+<pre><![CDATA[<category name="com.infiniteautomation.serial"><level value="debug"/></category>]]></pre>

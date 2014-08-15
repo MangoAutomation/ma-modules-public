@@ -27,14 +27,18 @@
 
 <script type="text/javascript">
 
+    /* On Page Load */
 	function initImpl() {
-		SerialEditDwr.getSafeTerminator(function(messageTerminator) {
+	    
+	      logIOChanged();
+	    
+	      SerialEditDwr.getSafeTerminator(function(messageTerminator) {
 			$set("messageTerminator", messageTerminator);
 			if(${dataSource.useTerminator}) {
 				dojo.byId("useTerminator").checked = "true";
 			}
 			toggleTerminator();
-		});
+		  });
 	}
 
 	/**
@@ -45,7 +49,8 @@
 		  SerialEditDwr.saveSerialDataSource(basic,
 	              $get("commPortId"),$get("baudRate"),$get("flowControlIn"),$get("flowControlOut"),$get("dataBits"), 
 	              $get("stopBits"),$get("parity"),$get("readTimeout"),$get("useTerminator"),$get("messageTerminator"),
-	              $get("messageRegex"),$get("pointIdentifierIndex"),saveDataSourceCB);
+	              $get("messageRegex"),$get("pointIdentifierIndex"),$get("isHex"),$get("isLogIO"),$get("maxMessageSize"),
+	              $get("ioLogFileSizeMBytes"), $get("maxHistoricalIOLogs"),saveDataSourceCB);
 
 	}
 
@@ -88,12 +93,12 @@
 	  function toggleTerminator() {
 		  if(!dojo.byId("useTerminator").checked) {
 			  $("terminatorRow").style.visibility = "collapse";
-		  	  $("messageRegexRow").style.visibility = "collapse";
-		  	  $("identifierIndexRow").style.visibility = "collapse";
+		  	  //$("messageRegexRow").style.visibility = "collapse";
+		  	  //$("identifierIndexRow").style.visibility = "collapse";
 	  	  } else { 
 			  $("terminatorRow").style.visibility = "visible";
-			  $("messageRegexRow").style.visibility = "visible";
-			  $("identifierIndexRow").style.visibility = "visible";
+			  //$("messageRegexRow").style.visibility = "visible";
+			  //$("identifierIndexRow").style.visibility = "visible";
 		  }
 	  }
 	  
@@ -117,6 +122,19 @@
 			  $("testMessages").style.visibility = "collapse";
 		  }
 	  }
+	  
+	  function logIOChanged() {
+	      if ($get("isLogIO")){
+	          show("ioLogPathMsg");
+	          show("maxHistoricalIOLogs_row");
+	          show("ioLogFileSizeMBytes_row");
+	      }else{
+	          hide("ioLogPathMsg");
+	          hide("ioLogFileSizeMBytes_row");
+	          hide("maxHistoricalIOLogs_row");
+	      }
+	  }
+	  
 </script>
 
 <tag:dataSourceAttrs descriptionKey="dsEdit.serial.desc" helpId="serialDS">
@@ -141,8 +159,37 @@
  <td class="formLabelRequired"><fmt:message key="dsEdit.serial.pointIdentifierIndex"/></td>
  <td><input id="pointIdentifierIndex" type="number" value="${dataSource.pointIdentifierIndex}"></input></td>
 </tr>
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.serial.hex"/></td>
+      <td class="formField"><sst:checkbox id="isHex" selectedValue="${dataSource.hex}"/></td>
+    </tr>
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.serial.maxMessageSize"/></td>
+      <td class="formField"><input type="number" id="maxMessageSize" value="${dataSource.maxMessageSize}"/></td>
+    </tr>
+    
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.serial.logIO"/></td>
+      <td class="formField">
+        <sst:checkbox id="isLogIO" selectedValue="${dataSource.logIO}" onclick="logIOChanged()"/>
+        <div id="ioLogPathMsg">
+          <fmt:message key="dsEdit.serial.log">
+            <fmt:param value="${dataSource.ioLogPath}"/>
+          </fmt:message>
+        </div>
+      </td>
+    </tr>
+    <tr id="ioLogFileSizeMBytes_row">
+      <td class="formLabelRequired"><fmt:message key="dsEdit.serial.logIOFileSize"/></td>
+      <td class="formField"><input id="ioLogFileSizeMBytes" type="number" value="${dataSource.ioLogFileSizeMBytes}"/></td>
+    </tr>
+    <tr id="maxHistoricalIOLogs_row">
+      <td class="formLabelRequired"><fmt:message key="dsEdit.serial.logIOFiles"/></td>
+      <td class="formField"><input id="maxHistoricalIOLogs" type="number" value="${dataSource.maxHistoricalIOLogs}"/></td>
+    </tr>
+    
 <tr>
- <td class="formLabelRequired" style="padding-top:0px;"><button class="test-button" onclick=submitTestString();><fmt:message key="dsEdit.serial.submitTestString"/></button></td>
+ <td class="formLabel" style="padding-top:0px;"><button onclick=submitTestString();><fmt:message key="dsEdit.serial.submitTestString"/></button></td>
  <td><input id="testString" type="text"></input></td>
 </tr>
 <tr><td id="testMessages" style="color:red;" colspan=2></td>
