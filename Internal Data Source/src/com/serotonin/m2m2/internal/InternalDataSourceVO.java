@@ -22,6 +22,7 @@ import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
  * @author Matthew Lohbihler
@@ -128,4 +129,12 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
         if (value != null)
             updatePeriodType = value;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 */
+	@Override
+	public AbstractDataSourceModel<InternalDataSourceVO> getModel() {
+		return new InternalDataSourceModel(this);
+	}
 }

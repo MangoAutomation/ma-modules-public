@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.infiniteautomation.mango</groupId>
   <artifactId>watchlist</artifactId>
-  <version>1.5.10</version>
+  <version>1.6.0</version>
   <name>Watchlists Module</name>
   <build>
     <directory>maven-target</directory>
@@ -23,7 +23,7 @@
       <dependency>
           <groupId>com.infiniteautomation</groupId>
           <artifactId>mango</artifactId>
-          <version>2.4.1</version>
+          <version>2.5.0</version>
           <scope>provided</scope>
       </dependency>
   </dependencies>

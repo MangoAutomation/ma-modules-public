@@ -6,6 +6,7 @@
 * Revised help files
 * Added I/O Logging via rolling log files
 * Added extensive Log4j DEBUG level messages
+* Upgraded to work with core 2.5.x
 
 *Version 1.1.4
 * Modified to permit a second input mode, one that uses pure regex

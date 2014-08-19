@@ -484,7 +484,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	 */
 	@Override
 	public AbstractDataSourceModel<SerialDataSourceVO> getModel() {
-		throw new ShouldNeverHappenException("Unimplemented");
+		return new SerialDataSourceModel(this);
 	}
     
 }

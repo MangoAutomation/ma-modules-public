@@ -19,6 +19,7 @@ import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
  * @author Matthew Lohbihler
@@ -106,4 +107,12 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
             stationId = in.readInt();
         }
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 */
+	@Override
+	public AbstractDataSourceModel<EnvCanDataSourceVO> getModel() {
+		return new EnvCanDataSourceModel(this);
+	}
 }

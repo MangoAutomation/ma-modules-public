@@ -16,25 +16,28 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  */
 public class VirtualDataSourceModel extends AbstractDataSourceModel<VirtualDataSourceVO>{
 
-	private VirtualDataSourceVO vo;
-	
+	public VirtualDataSourceModel(){
+		super(new VirtualDataSourceVO());
+	}
 	/**
 	 * @param data
 	 */
 	public VirtualDataSourceModel(VirtualDataSourceVO data) {
 		super(data);
-		this.vo = data;
 	}
 
 	@JsonGetter(value="pollPeriod")
 	public TimePeriod getPollPeriod(){
-		return new TimePeriod(this.vo.getUpdatePeriods(), TimePeriodType.convertTo(this.vo.getUpdatePeriodType()));
+		VirtualDataSourceVO vo = ((VirtualDataSourceVO) this.data);
+		
+		return new TimePeriod(vo.getUpdatePeriods(), 
+				TimePeriodType.convertTo(vo.getUpdatePeriodType()));
 	}
 
 	@JsonSetter(value="pollPeriod")
 	public void setPollPeriod(TimePeriod pollPeriod){
-		this.vo.setUpdatePeriods(pollPeriod.getPeriods());
-		this.vo.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
+		((VirtualDataSourceVO) this.data).setUpdatePeriods(pollPeriod.getPeriods());
+		((VirtualDataSourceVO) this.data).setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
 	}
 
 	

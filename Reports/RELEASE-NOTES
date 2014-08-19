@@ -1,3 +1,6 @@
+*Version 2.1.0*
+* Upgraded to work with core version 2.5.x
+
 *Version 2.0.13*
 * Added Username in ( ) to the end of the report template display
 * Added User column to the Report Instances list
