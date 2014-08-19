@@ -23,6 +23,7 @@ import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
 
 public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
@@ -331,4 +332,12 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     public void setPhonenumber(String phonenumber) {
         this.phonenumber = phonenumber;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 */
+	@Override
+	public AbstractDataSourceModel<MBusDataSourceVO> getModel() {
+		return new MBusDataSourceModel(this);
+	}
 }
