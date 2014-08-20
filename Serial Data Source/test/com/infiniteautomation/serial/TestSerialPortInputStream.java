@@ -7,19 +7,23 @@ package com.infiniteautomation.serial;
 import java.io.IOException;
 
 import com.serotonin.io.serial.SerialPortInputStream;
+import com.serotonin.util.queue.ByteQueue;
 
 /**
  * @author Terry Packer
  *
  */
 public class TestSerialPortInputStream extends SerialPortInputStream{
-
+	ByteQueue mockStream;
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.io.serial.SerialPortInputStream#read()
 	 */
 	@Override
 	public int read() throws IOException {
-		return 0;
+		if(mockStream.size() <= 0)
+			return -1;
+		return mockStream.pop();
 	}
 
 	/* (non-Javadoc)
@@ -27,7 +31,7 @@ public class TestSerialPortInputStream extends SerialPortInputStream{
 	 */
 	@Override
 	public int available() throws IOException {
-		return 10;
+		return mockStream.size();
 	}
 
 	/* (non-Javadoc)
@@ -35,8 +39,7 @@ public class TestSerialPortInputStream extends SerialPortInputStream{
 	 */
 	@Override
 	public void closeImpl() throws IOException {
-		// TODO Auto-generated method stub
-		
+		mockStream.popAll();
 	}
 
 	/* (non-Javadoc)
@@ -44,7 +47,14 @@ public class TestSerialPortInputStream extends SerialPortInputStream{
 	 */
 	@Override
 	public int peek() {
-		return 0;
+		if(mockStream.size() <= 0)
+			return -1;
+		return mockStream.peek(0);
+	}
+	
+	public void pushToMockStream(String str) {
+		mockStream = new ByteQueue(1024);
+		mockStream.push(str.getBytes());
 	}
 
 }
