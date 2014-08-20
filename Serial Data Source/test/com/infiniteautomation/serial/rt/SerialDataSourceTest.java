@@ -163,13 +163,15 @@ public class SerialDataSourceTest {
 				continue;
 			List<PointValueTime> pvts = Lists.reverse(dprt.getLatestPointValues(stc.getNewValueCount()));
 			
+			boolean found;
 			for(int k = 0; k < stc.getResults().length; k+=1) {
-				try {
-					assertEquals(stc.getResult(k), pvts.get(k).getStringValue());
-				} catch(Exception e) { //catching out of bounds exceptions
-					e.printStackTrace();
-					fail(e.getMessage());
+				found = false;
+				for(int i = 0; i < pvts.size(); i+=1) {
+					if(stc.getResult(k).equals(pvts.get(i).getStringValue()))
+						found = true;
 				}
+				if(!found)
+					fail("No value match found for: '" + stc.getResult(k) + "' point value");
 			}
 		}
 	}
