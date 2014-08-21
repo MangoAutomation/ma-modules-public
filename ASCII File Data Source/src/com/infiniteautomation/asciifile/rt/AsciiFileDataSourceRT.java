@@ -179,10 +179,13 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 					for(DataPointRT dp: this.dataPoints){
 						AsciiFilePointLocatorRT pl = dp.getPointLocator();
 						AsciiFilePointLocatorVO plVo = pl.getVo();
-						Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
+						Pattern pointValuePattern = pl.getValuePattern();
 						Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
 						if(pointValueMatcher.find()){
-							if(plVo.getPointIdentifier().equals(pointValueMatcher.group(plVo.getPointIdentifierIndex()))) {
+							if(plVo.getPointIdentifierIndex() > pointValueMatcher.groupCount() || plVo.getValueIndex() > pointValueMatcher.groupCount()) {
+								raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), false, new TranslatableMessage("file.event.insufficientGroups", dp.getVO().getExtendedName()));
+							}
+							else if(plVo.getPointIdentifier().equals(pointValueMatcher.group(plVo.getPointIdentifierIndex()))) {
 								String value = pointValueMatcher.group(plVo.getValueIndex());                	
 								PointValueTime newValue;
 								Date dt;
