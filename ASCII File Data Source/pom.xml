@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.infiniteautomation.mango</groupId>
   <artifactId>ascii-ds</artifactId>
-  <version>1.1.4</version>
+  <version>1.1.5</version>
   <name>Ascii File Data Source</name>
   <build>
     <directory>maven-target</directory>
