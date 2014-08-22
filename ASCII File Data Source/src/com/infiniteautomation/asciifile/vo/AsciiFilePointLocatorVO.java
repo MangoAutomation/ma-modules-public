@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.infiniteautomation.asciifile.rt.AsciiFilePointLocatorRT;
 import com.serotonin.json.JsonException;
@@ -48,8 +49,11 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 	public void validate(ProcessResult response) {
 
 		if (AsciiFileDataSourceVO.isBlank(valueRegex))
-            response.addContextualMessage("valueRegex", "validate.required");	
-		//TODO Validate the regex
+            response.addContextualMessage("valueRegex", "validate.required");
+		
+		//Validate the regex
+		if(!Pattern.compile("([^\\\\]|^)\\(.*[^\\\\]\\)").matcher(valueRegex).find())
+			response.addContextualMessage("valueRegex", "file.validate.noCaptureGroup");
 		
 		if(pointIdentifierIndex < 0)
 			response.addContextualMessage("pointIdentifierIndex","validate.invalidValue");

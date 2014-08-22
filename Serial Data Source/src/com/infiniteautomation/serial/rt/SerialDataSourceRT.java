@@ -274,12 +274,15 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	            	
 	            	//First check if the previous message timed out
 	            	if(msg != null){
-	            		if(msg.contains(this.vo.getMessageTerminator())){
-                			if(LOG.isDebugEnabled())
-                    			LOG.debug("Matching will use String: " + msg);
-                			matchPointValues(msg, messageRegex, pointIdentifierIndex);
-		            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
-                		}
+	            		String[] messages = msg.split("(?<=" + this.vo.getMessageTerminator() + ")");
+	            		for(String message : messages) {
+		            		if(message.contains(this.vo.getMessageTerminator())){
+	                			if(LOG.isDebugEnabled())
+	                    			LOG.debug("Matching will use String: " + message);
+	                			matchPointValues(message, messageRegex, pointIdentifierIndex);
+			            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+	                		}
+	            		}
 	            	}
 	            	
 	            	
@@ -309,7 +312,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
                    			this.buffer.pop(message.length());
                 			if(LOG.isDebugEnabled())
                     			LOG.debug("Matching will use String: " + message);
-                			matchPointValues(msg, messageRegex, pointIdentifierIndex);
+                			matchPointValues(message, messageRegex, pointIdentifierIndex);
 		            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
                 		}
             		}
@@ -535,6 +538,10 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 			rt.serialEvent(new SerialPortProxyEvent(fireTime));
 		}
     	
+    }
+    
+    void forcePointReload() {
+    	updateChangedPoints();
     }
 	
 }
