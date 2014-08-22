@@ -709,8 +709,18 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 	public void jsonRead(JsonReader reader, JsonObject jsonObject)
 			throws JsonException {
 		super.jsonRead(reader, jsonObject);
-		
-		userId = jsonObject.getInt("userId");
+
+		if(jsonObject.containsKey("userId")){
+			userId = jsonObject.getInt("userId");
+		}else if(jsonObject.containsKey("user")){
+			String username = jsonObject.getString("user");
+	        if (org.apache.commons.lang3.StringUtils.isBlank(username))
+	            throw new TranslatableJsonException("emport.error.missingValue", "user");
+	        User user = new UserDao().getUser(username);
+	        if (user == null)
+	            throw new TranslatableJsonException("emport.error.missingUser", username);
+	        userId = user.getId();
+		}
 		
 		String text = jsonObject.getString("includeEvents");
 		if(text != null){
@@ -851,7 +861,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			JsonException {
 		super.jsonWrite(writer);
 		
-		writer.writeEntry("userId", userId);
+		writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
 		writer.writeEntry("includeEvents", EVENT_CODES.getCode(includeEvents));
 		writer.writeEntry("dateRangeType", DATE_RANGE_TYPES.getCode(dateRangeType));
 		
