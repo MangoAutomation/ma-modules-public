@@ -30,6 +30,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public static final String CONTEXT_VAR_NAME = "source";
     private final PointLinkVO vo;
     private final SystemEventType eventType;
+    private final SystemEventType alreadyRunningEvent;
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -37,6 +38,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public PointLinkRT(PointLinkVO vo) {
         this.vo = vo;
         eventType = new SystemEventType(SystemEvent.TYPE_NAME, vo.getId(),
+                EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
+        alreadyRunningEvent = new SystemEventType(PointLinkAlreadyRunningEvent.TYPE_NAME, vo.getId(),
                 EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
         ready = true;
     }
@@ -80,11 +83,14 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private void execute(PointValueTime newValue) {
     	
     	//Bail out if already running a point link operation
-    	synchronized(ready){
-    	if(!ready)
-    		return;
-    	else
-    		ready = false; //Stop anyone else from using this
+	    synchronized(ready){
+	    	if(!ready){
+	    		SystemEventType.raiseEvent(eventType, newValue.getTime(), true, new TranslatableMessage("event.pointLink.duplicateRuns"));
+	    		return;
+	    	}else{
+	    		ready = false; //Stop anyone else from using this 
+	    		SystemEventType.returnToNormal(alreadyRunningEvent, System.currentTimeMillis());
+	    	}
     	}
         // Propagate the update to the target point. Validate that the target point is available.
         DataPointRT targetPoint = Common.runtimeManager.getDataPoint(vo.getTargetPointId());
