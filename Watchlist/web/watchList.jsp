@@ -729,7 +729,7 @@
                 <tr>
                 <td colspan="5" style="padding-left:16px;" >
                     <!-- Adding scrolling div for messages -->
-                    <div style='max-height:100px; overflow-y: scroll'>
+                    <div style='max-height:100px; overflow-y: auto'>
                        <table>
                        <tr><td id="p_TEMPLATE_Messages"></td></tr>
                        </table>
