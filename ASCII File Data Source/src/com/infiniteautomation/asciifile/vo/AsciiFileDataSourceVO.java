@@ -36,6 +36,7 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
         EVENT_CODES.addElement(AsciiFileDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
         EVENT_CODES.addElement(AsciiFileDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
         EVENT_CODES.addElement(AsciiFileDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, "POINT_READ_PATTERN_MISMATCH_EVENT");
+        EVENT_CODES.addElement(AsciiFileDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
    }
     
     @JsonProperty
@@ -71,8 +72,17 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
                 "event.ds.dataSource")));
 		eventTypes.add(createEventType(AsciiFileDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointRead")));	
+		eventTypes.add(createPollAbortedEventType(AsciiFileDataSourceRT.POLL_ABORTED_EVENT));
 	}
-
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
+	 */
+	@Override
+	public int getPollAbortedExceptionEventId() {
+		return AsciiFileDataSourceRT.POLL_ABORTED_EVENT;
+	}
+	
 	public String getFilePath() {
 		return this.filePath;
 	}

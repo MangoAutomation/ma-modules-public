@@ -1,26 +1,24 @@
 package com.infiniteautomation.asciifile.rt;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.File;
-import java.io.FileReader;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.NumberFormatException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
+import org.apache.commons.io.monitor.FileAlterationListener;
+import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.apache.commons.io.monitor.FileAlterationListener;
 
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -34,10 +32,12 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 
 public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlterationListener{
 	private final Log LOG = LogFactory.getLog(AsciiFileDataSourceRT.class);
+	
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
     public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
+    public static final int POLL_ABORTED_EVENT = 5;
     
 	private File file; //File
 	private FileAlterationObserver fobs;

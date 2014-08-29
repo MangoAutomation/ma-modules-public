@@ -30,12 +30,24 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
     @Override
     protected void addEventTypes(List<EventTypeVO> ets) {
-        // no op
+    	ets.add(createPollAbortedEventType(InternalDataSourceRT.POLL_ABORTED_EVENT));
     }
-
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
+	 */
+	@Override
+	public int getPollAbortedExceptionEventId() {
+		return InternalDataSourceRT.POLL_ABORTED_EVENT;
+	}
+	
+    private static ExportCodes EVENT_CODES = new ExportCodes();
+    static{
+    	EVENT_CODES.addElement(InternalDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
+    }
     @Override
     public ExportCodes getEventCodes() {
-        return null;
+        return EVENT_CODES;
     }
 
     @Override

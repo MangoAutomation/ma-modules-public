@@ -15,6 +15,8 @@ import com.serotonin.monitor.IntegerMonitor;
  * @author Matthew Lohbihler
  */
 public class InternalDataSourceRT extends PollingDataSource {
+    public static final int POLL_ABORTED_EVENT = 1;
+	
     public InternalDataSourceRT(InternalDataSourceVO vo) {
         super(vo);
         setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);

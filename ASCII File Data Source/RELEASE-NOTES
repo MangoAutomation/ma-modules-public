@@ -2,6 +2,7 @@
 * Added validation for missing capture groups
 * Added event handling for out of bounds exceptions on matched regex patterns.
 * Moved Pattern compilation into the Point Locator runtime.
+* Added Poll aborted Event
 
 *Version 1.1.4*
 * Upgraded to work with core version 2.5.x

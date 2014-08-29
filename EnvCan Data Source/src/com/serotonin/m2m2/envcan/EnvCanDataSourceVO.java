@@ -30,12 +30,22 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
         ets.add(createEventType(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, new TranslatableMessage(
                 "event.ds.dataSource"), EventType.DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));
+        ets.add(createPollAbortedEventType(EnvCanDataSourceRT.POLL_ABORTED_EVENT));
     }
-
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
+	 */
+	@Override
+	public int getPollAbortedExceptionEventId() {
+		return EnvCanDataSourceRT.POLL_ABORTED_EVENT;
+	}
+	
     private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
         EVENT_CODES.addElement(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, "DATA_RETRIEVAL_FAILURE_EVENT");
         EVENT_CODES.addElement(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, "PARSE_EXCEPTION");
+        EVENT_CODES.addElement(EnvCanDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
     }
 
     @Override

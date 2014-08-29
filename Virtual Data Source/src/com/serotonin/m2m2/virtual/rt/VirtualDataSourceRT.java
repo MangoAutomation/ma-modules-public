@@ -11,6 +11,9 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 
 public class VirtualDataSourceRT extends PollingDataSource {
+	
+	public static final int POLL_ABORTED_EVENT = 1;
+	
     public VirtualDataSourceRT(VirtualDataSourceVO vo) {
         super(vo);
         setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);

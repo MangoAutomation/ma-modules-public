@@ -33,6 +33,7 @@ import com.serotonin.web.http.HttpUtils4;
 public class EnvCanDataSourceRT extends PollingDataSource {
     public static final int DATA_RETRIEVAL_FAILURE_EVENT = 1;
     public static final int PARSE_EXCEPTION_EVENT = 2;
+    public static final int POLL_ABORTED_EVENT = 3;
 
     private final EnvCanDataSourceVO vo;
     private long nextValueTime = -1;

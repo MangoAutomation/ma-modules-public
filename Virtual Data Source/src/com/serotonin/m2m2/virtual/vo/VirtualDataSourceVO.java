@@ -26,14 +26,31 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
-    @Override
-    protected void addEventTypes(List<EventTypeVO> ets) {
-        // no op
-    }
+    
 
+	private static final ExportCodes EVENT_CODES = new ExportCodes();
+    static {
+        EVENT_CODES.addElement(VirtualDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
+    }
+    
+    
+	@Override
+    protected void addEventTypes(List<EventTypeVO> ets) {
+    	 ets.add(createPollAbortedEventType(VirtualDataSourceRT.POLL_ABORTED_EVENT));
+    }
+    
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
+	 */
+	@Override
+	public int getPollAbortedExceptionEventId() {
+		return VirtualDataSourceRT.POLL_ABORTED_EVENT;
+	}
+	
     @Override
     public ExportCodes getEventCodes() {
-        return null;
+		return EVENT_CODES;
     }
 
     @Override
