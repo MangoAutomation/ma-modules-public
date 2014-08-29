@@ -1,0 +1,6 @@
+<licenseTypes>
+    <licenseType id="paid">
+        <description>No restrictions.</description>
+        <price>50</price>
+    </licenseType>
+</licenseTypes>
