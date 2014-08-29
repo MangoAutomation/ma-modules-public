@@ -28,7 +28,7 @@ import com.wordnik.swagger.annotations.Api;
 @Api(value="Logout", description="Operations For Logout")
 @RestController
 @RequestMapping("/v1/logout")
-public class LogoutRestController extends MangoRestController<UserModel>{
+public class LogoutRestController extends MangoRestController{
 
 
 	/**

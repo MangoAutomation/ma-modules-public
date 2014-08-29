@@ -1,0 +1,46 @@
+/**
+ * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
+ */
+package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * @author Terry Packer
+ *
+ */
+public class PointStatisticsModel {
+	
+	@JsonProperty
+	private PointValueTimeModel startPoint;
+	@JsonProperty
+	private PointValueTimeModel endPoint;
+	
+	@JsonGetter("message")
+	public String getMessage(){
+		return "no data";
+	}
+	
+	public PointValueTimeModel getStartPoint() {
+		return startPoint;
+	}
+	public void setStartPoint(PointValueTimeModel startPoint) {
+		this.startPoint = startPoint;
+	}
+	public PointValueTimeModel getEndPoint() {
+		return endPoint;
+	}
+	public void setEndPoint(PointValueTimeModel endPoint) {
+		this.endPoint = endPoint;
+	}
+
+
+	
+	
+	
+	
+	
+	
+}

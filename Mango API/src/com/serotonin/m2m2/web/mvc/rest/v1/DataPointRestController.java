@@ -47,7 +47,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Data Points", description="Operations on Data points", position=1)
 @RestController(value="DataPointRestControllerV1")
 @RequestMapping("/v1/dataPoints")
-public class DataPointRestController extends MangoRestController<DataPointModel>{
+public class DataPointRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 	

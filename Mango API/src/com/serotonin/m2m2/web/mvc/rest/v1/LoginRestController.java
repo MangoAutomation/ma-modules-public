@@ -44,7 +44,7 @@ import com.wordnik.swagger.annotations.Api;
 @Api(value = "Login", description = "Operations For Login")
 @RestController
 @RequestMapping("/v1/login")
-public class LoginRestController extends MangoRestController<UserModel> {
+public class LoginRestController extends MangoRestController {
 
 	private static final Log LOG = LogFactory.getLog(LoginRestController.class);
 	public static final String LOGIN_DEFAULT_URI_HEADER = "user-home-uri";

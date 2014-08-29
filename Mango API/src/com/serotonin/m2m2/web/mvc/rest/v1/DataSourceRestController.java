@@ -41,7 +41,7 @@ import com.wordnik.swagger.annotations.Api;
 @Api(value="Data Sources", description="Operations on Data Sources", position=2)
 @RestController
 @RequestMapping("/v1/dataSources")
-public class DataSourceRestController extends MangoRestController<AbstractDataSourceModel<?>>{
+public class DataSourceRestController extends MangoRestController{
 
 	public DataSourceRestController(){
 		LOG.info("Creating DS Rest Controller");

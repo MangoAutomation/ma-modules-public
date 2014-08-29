@@ -39,7 +39,7 @@ import com.wordnik.swagger.annotations.Api;
 @Api(value="Realtime Data", description="Operations on Real time data", position=5)
 @RestController
 @RequestMapping("/v1/realtime")
-public class RealTimeDataRestController extends MangoRestController<RealTimeModel>{
+public class RealTimeDataRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(RealTimeDataRestController.class);
 	

@@ -1,2 +1,3 @@
 *Version 1.0.0*
 * Initial Release
+* Added Point Value Statistics API at: /rest/v1/pointValues/{xid}/statistics

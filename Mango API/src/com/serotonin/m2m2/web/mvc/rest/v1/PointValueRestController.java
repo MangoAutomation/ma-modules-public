@@ -38,21 +38,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
+import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
+import com.serotonin.m2m2.view.stats.AnalogStatistics;
+import com.serotonin.m2m2.view.stats.StartsAndRuntime;
+import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
+import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.AnalogStatisticsModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointStatisticsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RollupEnum;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.StartsAndRuntimeListModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.StartsAndRuntimeModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.ValueChangeStatisticsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
@@ -63,13 +75,15 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
+ * TODO Use Point Value Facade for recent data access
+ * 
  * @author Terry Packer
  * 
  */
 @Api(value="Point Values", description="Operations on Point Values")
 @RestController
 @RequestMapping("/v1/pointValues")
-public class PointValueRestController extends MangoRestController<PointValueTimeModel>{
+public class PointValueRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(PointValueRestController.class);
 	private PointValueDao dao = Common.databaseProxy.newPointValueDao();
@@ -200,6 +214,138 @@ public class PointValueRestController extends MangoRestController<PointValueTime
 		    			}
 	    			}
 	    			return result.createResponseEntity(models);
+	    		}else{
+	    	 		result.addRestMessage(getUnauthorizedMessage());
+		    		return result.createResponseEntity();
+		    		}
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+    	}else{
+    		return result.createResponseEntity();
+    	}
+    }
+	
+	@ApiOperation(
+			value = "Get Point Statistics",
+			notes = "From time inclusive, To time exclusive"
+			)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "Query Successful", response=PointStatisticsModel.class),
+		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
+		})
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}/statistics")
+    public ResponseEntity<PointStatisticsModel> getPointStatistics(
+    		HttpServletRequest request, 
+    		
+    		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
+    		@PathVariable String xid,
+    		
+    		@ApiParam(value = "From time", required = false, allowMultiple = false)
+    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00") //Not working yet: defaultValue="2014-08-01 00:00:00.000 -1000" )
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		
+    		@ApiParam(value = "To time", required = false, allowMultiple = false)
+			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")//Not working yet defaultValue="2014-08-11 23:59:59.999 -1000")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to    		
+    		){
+        
+    	RestProcessResult<PointStatisticsModel> result = new RestProcessResult<PointStatisticsModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    	
+	    	DataPointVO vo = DataPointDao.instance.getByXid(xid);
+	    	if(vo == null){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+
+	    	try{
+	    		if(Permissions.hasDataPointReadPermission(user, vo)){
+	    			
+	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId());
+	    	        List<PointValueTime> values = pointValueFacade.getPointValuesBetween(from.getTime(), to.getTime());
+	    			
+	    			
+	    	        if(values.size() == 0)
+	    				return result.createResponseEntity(new PointStatisticsModel());
+	    	        //Collect the first and last points
+	    	        PointValueTime startVT = null;
+	    	        PointValueTime endVT = null;
+    	            startVT = pointValueFacade.getPointValueBefore(from.getTime());
+    	            endVT = pointValueFacade.getPointValueAfter(to.getTime());
+    	            
+	    	        
+	    	        switch(vo.getPointLocator().getDataTypeId()){
+		    			case DataTypes.BINARY:
+		    			case DataTypes.MULTISTATE:
+		                    // Runtime stats
+		                    StartsAndRuntimeList stats = new StartsAndRuntimeList(from.getTime(), to.getTime(), startVT, values, endVT);
+		                    StartsAndRuntimeListModel model = new StartsAndRuntimeListModel();
+		                    if(startVT == null)
+		    	            	startVT = values.get(0);
+		                    model.setStartPoint(new PointValueTimeModel(startVT));
+		                    if(endVT == null)
+		    	            	endVT = values.get(values.size()-1);
+		                    model.setEndPoint(new PointValueTimeModel(endVT));
+		                    List<StartsAndRuntimeModel> srtModels = new ArrayList<StartsAndRuntimeModel>(stats.getData().size());
+		                    for(StartsAndRuntime srt : stats.getData()){
+		                    	srtModels.add(new StartsAndRuntimeModel(srt));
+		                    }
+		                   model.setStartsAndRuntime(srtModels);
+		                   return result.createResponseEntity(model);
+		    			case DataTypes.NUMERIC:
+		                    AnalogStatistics analogStats = new AnalogStatistics(from.getTime(), to.getTime(), startVT, values, endVT);
+		                    AnalogStatisticsModel analogModel = new AnalogStatisticsModel();
+		    	            if(startVT == null)
+		    	            	startVT = values.get(0);
+		                    analogModel.setStartPoint(new PointValueTimeModel(startVT));
+		                    if(endVT == null)
+		    	            	endVT = values.get(values.size()-1);
+		                    analogModel.setEndPoint(new PointValueTimeModel(endVT));
+		                    PointValueTimeModel minimum = new PointValueTimeModel(
+		                    		new PointValueTime(
+		                    				new NumericValue(analogStats.getMinimumValue()),
+		                    				analogStats.getMinimumTime()));
+		                    analogModel.setMinimum(minimum);
+		                    PointValueTimeModel maximum = new PointValueTimeModel(
+		                    		new PointValueTime(
+		                    				new NumericValue(analogStats.getMaximumValue()),
+		                    				analogStats.getMaximumTime()));
+		                    analogModel.setMaximum(maximum);
+		                    PointValueTimeModel first = new PointValueTimeModel(
+		                    		new PointValueTime(
+		                    				new NumericValue(analogStats.getFirstValue()),
+		                    				analogStats.getFirstTime()));
+		                    analogModel.setFirst(first);
+		                    PointValueTimeModel last = new PointValueTimeModel(
+		                    		new PointValueTime(
+		                    				new NumericValue(analogStats.getLastValue()),
+		                    				analogStats.getLastTime()));
+		                    analogModel.setLast(last);
+		                    analogModel.setAverage(analogStats.getAverage());
+		                    analogModel.setSum(analogStats.getSum());
+		                    analogModel.setCount(analogStats.getCount());
+		                    analogModel.setIntegral(analogStats.getIntegral());
+		                    return result.createResponseEntity(analogModel);
+		    			case DataTypes.ALPHANUMERIC:
+		                    ValueChangeCounter vcStats = new ValueChangeCounter(from.getTime(), to.getTime(), startVT, values);
+		                    ValueChangeStatisticsModel vcModel = new ValueChangeStatisticsModel();
+		                    if(startVT == null)
+		    	            	startVT = values.get(0);
+		                    vcModel.setStartPoint(new PointValueTimeModel(startVT));
+		                    if(endVT == null)
+		    	            	endVT = values.get(values.size()-1);
+		                    vcModel.setEndPoint(new PointValueTimeModel(endVT));
+		                    vcModel.setChanges(vcStats.getChanges());
+		                    return result.createResponseEntity(vcModel);
+		    			default:
+		    				return result.createResponseEntity(new PointStatisticsModel());
+	    			}
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());
 		    		return result.createResponseEntity();

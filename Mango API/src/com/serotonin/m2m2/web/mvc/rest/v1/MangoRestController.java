@@ -21,7 +21,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
  * @author Terry Packer
  * 
  */
-public abstract class MangoRestController<T> {
+public abstract class MangoRestController {
 
 
 	/**

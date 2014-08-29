@@ -35,7 +35,7 @@ import com.wordnik.swagger.annotations.Api;
 @Api(value="Point Hierarchy", description="Operations on Point Hierarchy")
 @Controller
 @RequestMapping("/v1/hierarchy")
-public class PointHierarchyRestController extends MangoRestController<PointHierarchyModel>{
+public class PointHierarchyRestController extends MangoRestController{
 
 	
 	private static Log LOG = LogFactory.getLog(PointHierarchyRestController.class);

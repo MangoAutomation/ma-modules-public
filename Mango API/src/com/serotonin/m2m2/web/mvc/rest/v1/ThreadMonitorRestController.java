@@ -36,7 +36,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
 @Api(value="Threads", description="Operations on Threads")
 @RestController
 @RequestMapping("/v1/threads")
-public class ThreadMonitorRestController extends MangoRestController<ThreadModel> {
+public class ThreadMonitorRestController extends MangoRestController {
 
 	private final ThreadGroup root; //The root group, always will be there
 	

@@ -40,7 +40,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Users", description="Operations on Users")
 @RestController
 @RequestMapping("/v1/users")
-public class UserRestController extends MangoRestController<UserModel>{
+public class UserRestController extends MangoRestController{
 	
 	private static Log LOG = LogFactory.getLog(UserRestController.class);
 	
