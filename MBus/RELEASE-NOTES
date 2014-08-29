@@ -1,5 +1,6 @@
 *Version 1.0.5*
 * Upgraded to work with core version 2.5.x
+* Added Poll aborted Event
 
 *Version 1.0.4*
 * Upgraded to work with core version 2.4.x

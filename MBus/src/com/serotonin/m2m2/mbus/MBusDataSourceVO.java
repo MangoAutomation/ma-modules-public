@@ -33,6 +33,8 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         EVENT_CODES.addElement(MBusDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
         EVENT_CODES.addElement(MBusDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
         EVENT_CODES.addElement(MBusDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, "POINT_WRITE_EXCEPTION");
+        EVENT_CODES.addElement(MBusDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
+        
     }
 
     @JsonProperty
@@ -67,8 +69,18 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
                 "event.ds.pointRead")));
         eventTypes.add(createEventType(MBusDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointWrite")));
+        eventTypes.add(createPollAbortedEventType(MBusDataSourceRT.POLL_ABORTED_EVENT));
     }
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
+	 */
+	@Override
+	public int getPollAbortedExceptionEventId() {
+		return MBusDataSourceRT.POLL_ABORTED_EVENT;
+	}
+	
     @Override
     public TranslatableMessage getConnectionDescription() {
         return new TranslatableMessage("common.default", commPortId);
