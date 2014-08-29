@@ -7,7 +7,6 @@ package com.serotonin.m2m2.virtual.rt;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
-import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 
@@ -22,19 +21,20 @@ public class VirtualDataSourceRT extends PollingDataSource {
         for (DataPointRT dataPoint : dataPoints) {
             VirtualPointLocatorRT locator = dataPoint.getPointLocator();
 
-            DataValue oldValue = locator.getCurrentValue();
+            //DataValue oldValue = locator.getCurrentValue();
 
             // Change the point values according to their definitions.
             locator.change();
 
-            DataValue newValue = locator.getCurrentValue();
+            //DataValue newValue = locator.getCurrentValue();
 
             // Update the data image with the new value if necessary.
-            //TP EDIT, let the data point settings in the core choose this for us
+            //TP EDIT, let the data point settings in the core choose the logging settings for us
+            // rather than use only insert changes here
             //TP TODO: this actually causes issues in high polling data sources.  When setting the value from the UI
             // it will set the value once from there and another time from here.
             //if (!DataValue.isEqual(oldValue, newValue))
-                dataPoint.updatePointValue(new PointValueTime(locator.getCurrentValue(), time));
+            dataPoint.updatePointValue(new PointValueTime(locator.getCurrentValue(), time));
         }
     }
 
