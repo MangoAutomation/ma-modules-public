@@ -85,7 +85,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     	//Bail out if already running a point link operation
 	    synchronized(ready){
 	    	if(!ready){
-	    		SystemEventType.raiseEvent(eventType, newValue.getTime(), true, new TranslatableMessage("event.pointLink.duplicateRuns"));
+	    		SystemEventType.raiseEvent(alreadyRunningEvent, newValue.getTime(), true, new TranslatableMessage("event.pointLink.duplicateRuns"));
 	    		return;
 	    	}else{
 	    		ready = false; //Stop anyone else from using this 
