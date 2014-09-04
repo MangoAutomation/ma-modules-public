@@ -268,6 +268,7 @@ public class PointValueRestController extends MangoRestController{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
 	    			
 	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId());
+	    			//TODO Implement streaming via MappedRowCallbacks
 	    	        List<PointValueTime> values = pointValueFacade.getPointValuesBetween(from.getTime(), to.getTime());
 	    			
 	    			
