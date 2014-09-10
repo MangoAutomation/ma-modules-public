@@ -38,30 +38,36 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 
 	@JsonGetter("value")
 	public Object getValue(){
-		switch(this.data.getValue().getDataType()){
-			case DataTypes.ALPHANUMERIC:
-			return this.data.getStringValue();
+		if(data == null)
+			return null;
+		else
+			switch(this.data.getValue().getDataType()){
+				case DataTypes.ALPHANUMERIC:
+				return this.data.getStringValue();
+				
+				case DataTypes.BINARY:
+				return this.data.getBooleanValue();
+				
+				case DataTypes.IMAGE:
+				return null; //Not supporting for now
 			
-			case DataTypes.BINARY:
-			return this.data.getBooleanValue();
-			
-			case DataTypes.IMAGE:
-			return null; //Not supporting for now
-		
-			case DataTypes.MULTISTATE:
-			return this.data.getIntegerValue(); //Not supporting for now
-			
-			case DataTypes.NUMERIC:
-			return this.data.getDoubleValue();
-			
-			default:
-				throw new ShouldNeverHappenException("Unknown Data Type: " + this.data.getValue().getDataType());
-		}
+				case DataTypes.MULTISTATE:
+				return this.data.getIntegerValue(); //Not supporting for now
+				
+				case DataTypes.NUMERIC:
+				return this.data.getDoubleValue();
+				
+				default:
+					throw new ShouldNeverHappenException("Unknown Data Type: " + this.data.getValue().getDataType());
+			}
 	}
 
 	@JsonGetter("time")
 	public Date getDate(){
-		return new Date(this.data.getTime());
+		if(data == null)
+			return null;
+		else
+			return new Date(this.data.getTime());
 	}
 
 	@JsonGetter("annotation")

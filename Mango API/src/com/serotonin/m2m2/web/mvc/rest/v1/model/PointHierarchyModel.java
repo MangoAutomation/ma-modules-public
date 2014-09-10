@@ -70,8 +70,12 @@ public class PointHierarchyModel extends AbstractRestModel<PointFolder>{
 	}
 	
 	@JsonGetter("points")
-	public String getPoints(){
-		return this.data.getName();
+	public List<DataPointSummaryModel> getPoints(){
+		List<DataPointSummaryModel> points = new ArrayList<DataPointSummaryModel>();
+		for(DataPointSummary summary : this.data.getPoints())
+			points.add(new DataPointSummaryModel(summary));
+		
+		return points;
 	}
 	@JsonSetter("points")
 	public void setPoints(List<DataPointSummaryModel> points){

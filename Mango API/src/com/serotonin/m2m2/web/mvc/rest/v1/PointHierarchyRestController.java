@@ -73,7 +73,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/{folderName}")
+	@RequestMapping(method = RequestMethod.GET, value = "/byName/{folderName}")
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable String folderName, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
@@ -94,7 +94,7 @@ public class PointHierarchyRestController extends MangoRestController{
     				result.addRestMessage(getDoesNotExistMessage());
     	            return result.createResponseEntity();
     			}else
-    				return result.createResponseEntity(new PointHierarchyModel(folder)); 
+    				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
 
     		}else{
     			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access point hierarchy");
@@ -106,6 +106,45 @@ public class PointHierarchyRestController extends MangoRestController{
     	return result.createResponseEntity();
     }
 
+	/**
+	 * Get the folder via an Id
+	 * @param folderName
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.GET, value = "/byId/{folderId}")
+    public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable Integer folderId, HttpServletRequest request) {
+		
+    	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		
+    		if(user.isAdmin()){
+    			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+    			PointFolder folder = ph.getRoot();
+    			PointFolder desiredFolder = null;
+    			if(folder.getId() == folderId)
+    				return result.createResponseEntity(new PointHierarchyModel(folder)); 
+    			else{
+    				desiredFolder = recursiveFolderSearch(folder, folderId);
+    			}
+    			
+    			if (desiredFolder == null){
+    				result.addRestMessage(getDoesNotExistMessage());
+    	            return result.createResponseEntity();
+    			}else
+    				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
+
+    		}else{
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access point hierarchy");
+    			result.addRestMessage(this.getUnauthorizedMessage());
+    			return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+    }
+	
 	/**
 	 * Get a path to a folder
 	 * @param xid
@@ -164,6 +203,23 @@ public class PointHierarchyRestController extends MangoRestController{
 		return null;
 	}
 
-	
+	/**
+	 * @param ph
+	 * @param folderName
+	 * @return
+	 */
+	private PointFolder recursiveFolderSearch(PointFolder root,
+			Integer folderId) {
+		if(root.getId() == folderId)
+			return root;
+		
+		for(PointFolder folder : root.getSubfolders()){
+			PointFolder found = recursiveFolderSearch(folder, folderId);
+			if( found != null)
+				return found;
+		}
+		
+		return null;
+	}
 	
 }

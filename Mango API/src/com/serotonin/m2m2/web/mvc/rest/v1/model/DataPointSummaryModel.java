@@ -82,7 +82,7 @@ public class DataPointSummaryModel extends AbstractRestModel<DataPointSummary>{
 	public int getPointFolderId(){
 		return this.data.getPointFolderId();
 	}
-	@JsonSetter("pointFolderXid")
+	@JsonSetter("pointFolderId")
 	public void setPointFolderId(int pointFolderId){
 		this.data.setPointFolderId(pointFolderId);
 	}

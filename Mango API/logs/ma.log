@@ -1,0 +1,62 @@
+ERROR 2014-09-03 10:35:25,510 (com.serotonin.util.properties.ReloadingProperties.checkForReload:132) - (test-env) Property file test-env.properties does not exist 
+INFO  2014-09-03 10:35:25,559 (com.serotonin.m2m2.db.H2Proxy.initializeImpl:40) - Initializing H2 connection manager 
+INFO  2014-09-03 10:35:42,389 (com.serotonin.m2m2.db.H2Proxy.initializeImpl:40) - Initializing H2 connection manager 
+INFO  2014-09-03 10:35:42,427 (com.serotonin.m2m2.db.H2Proxy.initializeImpl:57) - Initializing H2 web server 
+INFO  2014-09-03 10:35:43,068 (com.serotonin.m2m2.db.upgrade.DBUpgrade.checkUpgrade:36) - Starting instance with core version 2.5.0, db 9 
+INFO  2014-09-03 10:35:43,106 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'asciiFile', v1.1.4 by Infinite Automation 
+INFO  2014-09-03 10:35:43,110 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'BACnet', v2.1.2 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,113 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'bonjourBroadcaster', v1.0.5 by Infinite Automation 
+INFO  2014-09-03 10:35:43,116 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'controlcore', v1.0.5 by Infinite Automation 
+INFO  2014-09-03 10:35:43,118 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'dataFile', v1.0.6 by Infinite Automation 
+INFO  2014-09-03 10:35:43,124 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'dataImport', v1.3.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,128 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'dglux', v1.2.0 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,128 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'dnp3', v1.4.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,132 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'envcands', v0.9.7 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,132 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'galil', v1.4.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,134 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'graphicalViews', v1.5.0 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,149 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'http', v1.4.7 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,155 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'internal', v1.4.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,159 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'jmxds', v1.4.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,162 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'jsonFileImport', v1.0.3 by Infinite Automation 
+INFO  2014-09-03 10:35:43,164 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'jspViews', v2.0.4 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,167 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'lang_de', v0.5.1 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,167 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'lang_en', v1.0.1 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,168 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'lang_fi', v0.9.2 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,168 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'lang_nl', v0.5.1 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,168 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'lang_pt', v0.5.1 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,174 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'lang_zh', v0.5.1 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,175 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'log4jDS', v1.0.2 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,177 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'log4JReset', v1.0.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,177 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'loggingConsole', v1.0.2 by Infinite Automation 
+INFO  2014-09-03 10:35:43,178 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'maintenanceEvents', v1.4.8 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,180 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'mangoApi', v1.0.0 by Infinite Automation 
+INFO  2014-09-03 10:35:43,180 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'mangoNoSqlDatabase', v1.0.7 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,183 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'mbus', v1.0.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,183 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'meta', v2.0.9 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,186 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'modbus', v1.5.0 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,189 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'onewire', v1.4.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,191 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'opcda', v1.5.7 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,191 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'openv4j', v1.0.5 by aploese 
+INFO  2014-09-03 10:35:43,192 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'pachube', v1.4.8 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,194 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'persistent', v1.4.9 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,197 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'pid', v1.0.3 by Infinite Automation 
+INFO  2014-09-03 10:35:43,199 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'pointLinks', v1.4.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,201 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'pop3', v1.4.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,203 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'reports', v2.1.0 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,206 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'scheduledEvents', v1.4.7 by (unknown vendor) 
+INFO  2014-09-03 10:35:43,208 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'scripting', v1.0.8 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,210 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'serial', v1.1.5 by Infinite Automation 
+INFO  2014-09-03 10:35:43,212 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'snmp', v1.4.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,214 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'sqlConsole', v1.4.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,216 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'sqlds', v1.5.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,218 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'squwk', v1.0.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,220 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'ssh', v1.0.3 by Infinite Automation 
+INFO  2014-09-03 10:35:43,222 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'sstGlobalScripts', v1.4.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,224 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'sstGraphics', v1.0.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,224 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'sstTheme', v1.0.6 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,225 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'templateConfig', v1.0.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,227 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'twilio', v1.0.4 by (unknown vendor) 
+INFO  2014-09-03 10:35:43,229 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'virtualDS', v1.4.5 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,231 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'vmstat', v1.4.7 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,233 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'watchlists', v1.6.0 by Infinite Automation Software 
+INFO  2014-09-03 10:35:43,237 (com.serotonin.m2m2.Main.loadModules:400) - Loading module 'wibox', v1.0.8 by Infinite Automation Software 

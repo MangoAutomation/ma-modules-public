@@ -30,6 +30,7 @@
    <version>2.5.0</version>
    <scope>provided</scope>
   </dependency>
+  
   <!-- For testing -->
   <dependency>
    <groupId>junit</groupId>
