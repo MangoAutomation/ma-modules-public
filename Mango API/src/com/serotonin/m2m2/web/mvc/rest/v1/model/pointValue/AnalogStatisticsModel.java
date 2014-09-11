@@ -17,10 +17,8 @@ public class AnalogStatisticsModel extends PointStatisticsModel{
 
 	@JsonProperty
 	private PointValueTimeModel minimum;
-	
 	@JsonProperty
     private PointValueTimeModel maximum;
-	
 	@JsonProperty
     private Double average;
 	@JsonProperty
