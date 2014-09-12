@@ -17,6 +17,8 @@ public class PointStatisticsModel {
 	private PointValueTimeModel startPoint;
 	@JsonProperty
 	private PointValueTimeModel endPoint;
+	@JsonProperty
+	private boolean hasData = false; //Does this object have any data
 	
 	@JsonGetter("message")
 	public String getMessage(){
@@ -34,6 +36,14 @@ public class PointStatisticsModel {
 	}
 	public void setEndPoint(PointValueTimeModel endPoint) {
 		this.endPoint = endPoint;
+	}
+
+	public boolean isHasData() {
+		return hasData;
+	}
+
+	public void setHasData(boolean hasData) {
+		this.hasData = hasData;
 	}
 
 

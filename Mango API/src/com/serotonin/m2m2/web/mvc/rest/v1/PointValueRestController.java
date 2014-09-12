@@ -298,6 +298,7 @@ public class PointValueRestController extends MangoRestController{
 		                    	srtModels.add(new StartsAndRuntimeModel(srt));
 		                    }
 		                   model.setStartsAndRuntime(srtModels);
+		                   model.setHasData(true);
 		                   return result.createResponseEntity(model);
 		    			case DataTypes.NUMERIC:
 		                    AnalogStatistics analogStats = new AnalogStatistics(from.getTime(), to.getTime(), startVT, values, endVT);
@@ -332,6 +333,7 @@ public class PointValueRestController extends MangoRestController{
 		                    analogModel.setSum(analogStats.getSum());
 		                    analogModel.setCount(analogStats.getCount());
 		                    analogModel.setIntegral(analogStats.getIntegral());
+		                    analogModel.setHasData(true);
 		                    return result.createResponseEntity(analogModel);
 		    			case DataTypes.ALPHANUMERIC:
 		                    ValueChangeCounter vcStats = new ValueChangeCounter(from.getTime(), to.getTime(), startVT, values);
@@ -343,6 +345,7 @@ public class PointValueRestController extends MangoRestController{
 		    	            	endVT = values.get(values.size()-1);
 		                    vcModel.setEndPoint(new PointValueTimeModel(endVT));
 		                    vcModel.setChanges(vcStats.getChanges());
+		                    vcModel.setHasData(true);
 		                    return result.createResponseEntity(vcModel);
 		    			default:
 		    				return result.createResponseEntity(new PointStatisticsModel());

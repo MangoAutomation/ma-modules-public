@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingProperties;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingType;
@@ -38,7 +39,28 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		super(vo);
 		this.vo = vo;
 	}
-
+	
+	//Data Source XID here?
+	
+	@JsonGetter("deviceName")
+	public String getDeviceName(){
+		return this.vo.getDeviceName();
+	}
+	
+	@JsonSetter("deviceName")
+	public void setDeviceName(String deviceName){
+		this.vo.setDeviceName(deviceName);
+	}
+	
+	@JsonGetter("pointFolderId")
+	public int getPointFolderId(int id){
+		return this.vo.getPointFolderId();
+	}
+	@JsonSetter("pointFolderId")
+	public void setPointFolderId(int id){
+		this.vo.setPointFolderId(id);
+	}
+	
 	@JsonGetter("loggingProperties")
 	public LoggingProperties getLoggingProperties(){
 		
@@ -67,20 +89,20 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	}
 	@JsonSetter("loggingProperties")
 	public void setLoggingProperties(LoggingProperties props){
+		//TODO Finish this
 		System.out.println(props.getType());
 	}
 	
-	@JsonGetter("deviceName")
-	public String getDeviceName(){
-		return this.vo.getDeviceName();
+	//TODO Missing Many Properties HERE
+	@JsonGetter("unit")
+	public String getUnit(){
+		return UnitUtil.formatLocal(this.vo.getUnit());
 	}
-	
-	@JsonSetter("deviceName")
-	public void setDeviceName(String deviceName){
-		this.vo.setDeviceName(deviceName);
+	@JsonSetter("unit")
+	public void setUnit(String unit){
+		this.vo.setUnit(UnitUtil.parseLocal(unit));
 	}
-	
-	
+
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.model.AbstractRestModel#validate(com.serotonin.m2m2.i18n.ProcessResult)
