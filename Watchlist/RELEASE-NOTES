@@ -1,5 +1,6 @@
 *Version 1.6.0*
 * Upgraded to work with core version 2.5.x
+* Add multiple JSON Emport labels of "watchLists" and "watchlists" for compatibility
 
 *Version 1.5.10*
 * Edits for Sharing watchlists now that Admin has access to all watchlists
