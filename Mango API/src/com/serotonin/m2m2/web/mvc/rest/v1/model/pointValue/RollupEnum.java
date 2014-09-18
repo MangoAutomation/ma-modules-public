@@ -10,7 +10,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
  */
 public enum RollupEnum {
 	
-	AVGERAGE(false), 
+	AVERAGE(false), 
 	MINIMUM(false), 
 	MAXIMUM(false), 
 	SUM(false), 

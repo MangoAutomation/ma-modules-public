@@ -55,6 +55,10 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	public void pointInitialized() {
 		
 		try {
+			if(!session.isOpen())
+				this.terminate();
+			
+			
 			if(sendPointInitialized)
 				this.sendMessage(session, new PointValueEventModel(PointValueEventType.INITIALIZE, new PointValueTimeModel(null)));
 
@@ -71,6 +75,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointUpdated(PointValueTime newValue) {
 		try {
+			if(!session.isOpen())
+				this.terminate();
+			
 			if(sendPointUpdated)
 				this.sendMessage(session, new PointValueEventModel(PointValueEventType.UPDATE, new PointValueTimeModel(newValue)));
 
@@ -86,6 +93,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointChanged(PointValueTime oldValue, PointValueTime newValue) {
 		try {
+			if(!session.isOpen())
+				this.terminate();
+			
 			if(sendPointChanged)
 				this.sendMessage(session, new PointValueEventModel(PointValueEventType.CHANGE, new PointValueTimeModel(newValue)));
 
@@ -100,6 +110,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointSet(PointValueTime oldValue, PointValueTime newValue) {
 		try {
+			if(!session.isOpen())
+				this.terminate();
+			
 			if(sendPointSet)
 				this.sendMessage(session, new PointValueEventModel(PointValueEventType.SET, new PointValueTimeModel(newValue)));
 		} catch (IOException e) {
@@ -113,6 +126,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointBackdated(PointValueTime value) {
 		try {
+			if(!session.isOpen())
+				this.terminate();
+			
 			if(sendPointBackdated)
 				this.sendMessage(session, new PointValueEventModel(PointValueEventType.BACKDATE, new PointValueTimeModel(value)));
 		} catch (IOException e) {
@@ -126,6 +142,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointTerminated() {
 		try {
+			if(!session.isOpen())
+				this.terminate();
+			
 			if(sendPointTerminated)
 				this.sendMessage(session, new PointValueEventModel(PointValueEventType.TERMINATE, new PointValueTimeModel(null)));
 		} catch (IOException e) {

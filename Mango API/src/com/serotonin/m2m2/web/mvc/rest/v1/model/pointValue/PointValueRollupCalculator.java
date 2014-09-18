@@ -98,7 +98,7 @@ public class PointValueRollupCalculator {
 
                             if (statisticsGenerator.getCount() > 0 || !done) {
                                 switch(rollup){
-	                                case AVGERAGE:
+	                                case AVERAGE:
 	                                	Double avg = statisticsGenerator.getAverage();
 	                                	if(avg == null)
 	                                		avg = 0.0D;
