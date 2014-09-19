@@ -385,6 +385,7 @@ public class PointValueRestController extends MangoRestController{
 		
 		RestProcessResult<PointValueTimeModel> result = new RestProcessResult<PointValueTimeModel>(HttpStatus.OK);
 		final PointValueTime pvt = model.getData(); 
+			
 		User user = this.checkUser(request, result);
 		if(result.isOk()){
 		
@@ -398,12 +399,13 @@ public class PointValueRestController extends MangoRestController{
 	    		if(Permissions.hasDataPointReadPermission(user, existingDp)){
 	    			
 	    			//Validate this
-	    			model.validate(result);
+	    			//TODO Implement Validation model.validate(result);
 	    			
 	    			//TODO Do we want to use a provided time or let the RTM Decide the time?
 	    	        final int dataSourceId = existingDp.getDataSourceId();
 	    	        SetPointSource source = null;
-	    	        if(pvt instanceof AnnotatedPointValueTime){
+	    	        AnnotatedPointValueTime apvt = ((AnnotatedPointValueTime)pvt);
+	    	        if(model.getAnnotation() != null){
 	    	        	source = new SetPointSource(){
 	
 	    					@Override

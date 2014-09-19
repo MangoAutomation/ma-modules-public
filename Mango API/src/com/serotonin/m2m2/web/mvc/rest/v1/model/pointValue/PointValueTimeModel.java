@@ -9,6 +9,7 @@ import java.util.Date;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
@@ -16,6 +17,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
@@ -61,6 +63,17 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 					throw new ShouldNeverHappenException("Unknown Data Type: " + this.data.getValue().getDataType());
 			}
 	}
+	@JsonSetter("value")
+	public void setValue(Object value){
+		if(this.data == null){
+			this.data = new PointValueTime(DataValue.objectToValue(value), 0);
+		}else{
+			if(this.data instanceof AnnotatedPointValueTime)
+				this.data = new AnnotatedPointValueTime(DataValue.objectToValue(value), this.data.getTime(), ((AnnotatedPointValueTime) this.data).getSourceMessage());
+			else
+				this.data = new PointValueTime(DataValue.objectToValue(value), this.data.getTime());
+		}
+	}
 
 	@JsonGetter("time")
 	public Date getDate(){
@@ -69,7 +82,17 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 		else
 			return new Date(this.data.getTime());
 	}
-
+	@JsonSetter("time")
+	public void setTime(long time){
+		if(this.data == null){
+			this.data = new PointValueTime((DataValue)null,time);
+		}else{
+			if(this.data instanceof AnnotatedPointValueTime)
+				this.data = new AnnotatedPointValueTime(this.data.getValue(), time, ((AnnotatedPointValueTime) this.data).getSourceMessage());
+			else
+				this.data = new PointValueTime(this.data.getValue(), time);
+		}
+	}
 	@JsonGetter("annotation")
 	public String getAnnotation(){
 		if(this.data instanceof AnnotatedPointValueTime){
@@ -78,6 +101,17 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 			return null;
 		}
 	}
+	@JsonSetter("annotation")
+	public void setAnnotation(String annotation){
+		if(this.data == null){
+			this.data = new AnnotatedPointValueTime((DataValue)null, 0, new TranslatableMessage("common.default", annotation));
+		}else{
+			this.data = new AnnotatedPointValueTime(this.data.getValue(),
+					this.data.getTime(),
+					new TranslatableMessage("common.default", annotation));
+		}
+	}
+
 
 	@Override
 	public void validate(RestProcessResult<?> result) throws RestValidationFailedException{
