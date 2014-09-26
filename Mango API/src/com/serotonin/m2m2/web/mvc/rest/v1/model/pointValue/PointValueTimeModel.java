@@ -93,6 +93,11 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 				this.data = new PointValueTime(this.data.getValue(), time);
 		}
 	}
+	@JsonGetter("timestamp")
+	public long getTime(){
+		return this.data.getTime();
+	}
+	
 	@JsonGetter("annotation")
 	public String getAnnotation(){
 		if(this.data instanceof AnnotatedPointValueTime){
