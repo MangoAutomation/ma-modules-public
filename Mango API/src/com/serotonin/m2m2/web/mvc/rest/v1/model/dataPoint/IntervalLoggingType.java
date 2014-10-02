@@ -54,7 +54,7 @@ public enum IntervalLoggingType {
 			return DataPointVO.IntervalLoggingTypes.MINIMUM;
 		default:
 			throw new ShouldNeverHappenException("Unknown Interval Logging Type: " + type);
-	}
+		}
 	}
 	
 }

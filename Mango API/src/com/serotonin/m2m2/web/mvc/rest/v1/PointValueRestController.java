@@ -404,7 +404,6 @@ public class PointValueRestController extends MangoRestController{
 	    			//TODO Do we want to use a provided time or let the RTM Decide the time?
 	    	        final int dataSourceId = existingDp.getDataSourceId();
 	    	        SetPointSource source = null;
-	    	        AnnotatedPointValueTime apvt = ((AnnotatedPointValueTime)pvt);
 	    	        if(model.getAnnotation() != null){
 	    	        	source = new SetPointSource(){
 	

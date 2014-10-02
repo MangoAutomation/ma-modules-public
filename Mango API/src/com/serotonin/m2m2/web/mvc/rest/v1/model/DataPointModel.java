@@ -15,6 +15,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingPropert
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingType;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingProperties;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingType;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
 
 
 /**
@@ -103,6 +104,15 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.vo.setUnit(UnitUtil.parseLocal(unit));
 	}
 
+	@JsonGetter("dataType")
+	public DataTypeEnum getDataType(){
+		return DataTypeEnum.convertTo(this.vo.getPointLocator().getDataTypeId());
+	}
+	
+	@JsonSetter("dataType")
+	public void setDataType(DataTypeEnum type){
+		throw new ShouldNeverHappenException("Can't set a data type yet!");
+	}
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.model.AbstractRestModel#validate(com.serotonin.m2m2.i18n.ProcessResult)
