@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.serotonin.json.spi.JsonEntity;
+import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
@@ -20,7 +21,9 @@ import com.serotonin.m2m2.virtual.rt.IncrementMultistateChangeRT;
 public class IncrementMultistateChangeVO extends ChangeTypeVO {
     public static final TranslatableMessage KEY = new TranslatableMessage("dsEdit.virtual.changeType.increment");
 
+    @JsonProperty
     private int[] values = new int[0];
+    @JsonProperty
     private boolean roll;
 
     @Override

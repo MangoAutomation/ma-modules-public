@@ -1,6 +1,7 @@
 *Version 1.4.5*
 * Upgraded to work with core version 2.5.x
 * Added Poll aborted Event
+* Fixed JSON Export for Multistate Incrementing points
 
 *Version 1.4.4*
 * Upgraded to work with core version 2.4.x

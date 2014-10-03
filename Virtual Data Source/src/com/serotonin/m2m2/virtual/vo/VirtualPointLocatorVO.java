@@ -448,6 +448,7 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 			JsonException {
 		writeDataType(writer);
 		writer.writeEntry("changeType", getChangeType());
+		
 	}
 
 	@Override
