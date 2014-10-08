@@ -4,18 +4,17 @@
  */
 package com.infiniteautomation.serial.rt;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,8 +24,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.collect.Lists;
+import com.infiniteautomation.serial.SerialDataSourceTestCase;
 import com.infiniteautomation.serial.SerialDataSourceTestData;
-import com.infiniteautomation.serial.SerialTestCase;
 import com.infiniteautomation.serial.TestSerialPortInputStream;
 import com.infiniteautomation.serial.TestSerialPortOutputStream;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
@@ -36,7 +35,6 @@ import com.serotonin.io.serial.SerialPortProxy;
 import com.serotonin.io.serial.SerialPortProxyEvent;
 import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.MangoTestInstance;
 import com.serotonin.m2m2.db.H2Proxy;
 import com.serotonin.m2m2.rt.EventManager;
 import com.serotonin.m2m2.rt.RuntimeManager;
@@ -53,15 +51,8 @@ import com.serotonin.util.properties.ReloadingProperties;
 public class SerialDataSourceTest {
 	
 	private static Map<String, DataPointRT> registeredPoints = new HashMap<String, DataPointRT>();
-	private static Map<String, SerialTestCase> testCases = new HashMap<String, SerialTestCase>();
-	static {
-		testCases.put("Hello World!;", new SerialTestCase("matchAll", "terminator", ";", 1, new String[]{"Hello World!;"}));
-		testCases.put("8812;abcf;", new SerialTestCase("matchAll", "terminator", ";", 2, new String[]{"8812;","abcf;"}));
-		testCases.put("", new SerialTestCase("matchAll", "terminator", ";", 0, new String[]{}));
-		testCases.put("testStr\n\nabs", new SerialTestCase("newlineTerminated", "terminator", "\n", 2, new String[]{"testStr", ""}));
-		testCases.put("ok;", new SerialTestCase("matchAll", "terminator", ";", 1, new String[]{"ok;"}));
-//Commented out as requiring more mocks for timers		testCases.put("Hello World!;", new SerialTestCase("timeout", ";", 1, new String[]{"Hello World!;"}));
-	};
+	private static Map<String, SerialDataSourceTestCase> testCases = new HashMap<String, SerialDataSourceTestCase>();
+
 
 	@Mock
 	private SerialUtils serialUtils;
@@ -81,16 +72,154 @@ public class SerialDataSourceTest {
 	@Mock
 	EventManager eventManager;
 	
-   @Before
+    @Before
     public void setup() {
+
+		
     	MockitoAnnotations.initMocks(this);
-    	
-		//Make sure that Common and other classes are properly loaded
+    	//Make sure that Common and other classes are properly loaded
 		mockMangoInternals();
+
+		testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 1, new String[]{"Hello World!;"}));
+		testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
+		testCases.put("", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 0, new String[]{}));
+		testCases.put("testStr\n\nabs", new SerialDataSourceTestCase(SerialDataSourceTestData.getNewlineTerminated(), "terminator", "\n", 2, new String[]{"testStr", ""}));
+		testCases.put("ok;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 1, new String[]{"ok;"}));
+				
+		//Commented out as requiring more mocks for timers		testCases.put("Hello World!;", new SerialTestCase("timeout", ";", 1, new String[]{"Hello World!;"}));
     }
 	
 	
+    /**
+     * TODO Break this into pieces to be re-usable
+     */
 	@Test
+	public void testCustomPoint(){
+		String message = "000005,Fri 11 January 2013 15:18:55,\u0002Q,244,000.03,1017.3,049.2,+021.4,+10.3,+040.50,+000.06,+000.04,0000.000,+11.6,00,\u000277\r\n";
+				
+		String[] expected = {"244","000.03","+000.06"};
+		
+		//Setup Data Source
+		String dataSourceMessageRegex = "()[\\d\\D\\s\\S\\w\\W]*";	
+		int dataSourcePointIdentifierIndex = 1;
+		boolean dataSourceUseTerminator = true;
+		String dataSourceMessageTerminator = "\n";
+		
+		
+		SerialDataSourceVO vo = SerialDataSourceTestData.getStandardDataSourceVO();
+		vo.setMessageRegex(dataSourceMessageRegex);
+		vo.setPointIdentifierIndex(dataSourcePointIdentifierIndex);
+		vo.setUseTerminator(dataSourceUseTerminator);
+		vo.setMessageTerminator(dataSourceMessageTerminator);
+		SerialDataSourceRT rt = (SerialDataSourceRT) vo.createDataSourceRT();
+		
+		//Setup Data Point RTs
+		String pointIdentifier = "";
+		String windDirectionRegex = "[\\d]*,[\\w\\s:]*,[\u0002\\w]*,([\\w]*),[\\d\\D\\s\\S\\w\\W]*"; //"([\\d\\D\\s\\S\\w\\W]*),[\\d\\D\\s\\S\\w\\W]*";
+		String windSpeedRegex = "[\\d]*,[\\w\\s:]*,[\u0002\\w]*,[\\w]*,([\\d\\.]*),[\\d\\D\\s\\S\\w\\W]*"; //"([\\d\\D\\s\\S\\w\\W]*),[\\d\\D\\s\\S\\w\\W]*";
+		String ip1Regex = "[\\d]*,[\\w\\s:]*,[\u0002\\w]*,[\\w]*,[\\d\\.]*,[\\d\\.]*,[\\d\\.]*,[\\d\\.+-]*,[\\d\\.+-]*,[\\d\\.+-]*,([\\d\\.+-]*),[\\d\\D\\s\\S\\w\\W]*"; //"([\\d\\D\\s\\S\\w\\W]*),[\\d\\D\\s\\S\\w\\W]*";
+
+		
+		
+		DataPointRT windDirection = SerialDataSourceTestData.getCustomPoint(
+				"windDirection",
+				"windDirection",
+				windDirectionRegex,
+				1, 
+				"");
+		rt.addDataPoint(windDirection);
+		
+		DataPointRT windSpeed = SerialDataSourceTestData.getCustomPoint(
+				"windSpeed",
+				"windSpeed",
+				windSpeedRegex,
+				1, 
+				"");
+		rt.addDataPoint(windSpeed);
+		
+		DataPointRT ip1 = SerialDataSourceTestData.getCustomPoint(
+				"ip1",
+				"ip1",
+				ip1Regex,
+				1, 
+				"");
+		rt.addDataPoint(ip1);
+		rt.forcePointReload();
+
+		
+		inputStream = new TestSerialPortInputStream();
+		
+		//Mock up the serial port
+		SerialParameters params = new SerialParameters();
+		params.setCommPortId(vo.getCommPortId());
+        params.setPortOwnerName("Mango Serial Data Source");
+        params.setBaudRate(vo.getBaudRate());
+        params.setFlowControlIn(vo.getFlowControlIn());
+        params.setFlowControlOut(vo.getFlowControlOut());
+        params.setDataBits(vo.getDataBits());
+        params.setStopBits(vo.getStopBits());
+        params.setParity(vo.getParity());
+        params.setRecieveTimeout(vo.getReadTimeout());
+		
+        //User Power Mock to mock static classes
+        PowerMockito.mockStatic(SerialUtils.class);
+        
+        //Mock the is port owned call
+		when(SerialUtils.portOwned(vo.getCommPortId())).thenReturn(false);
+		when(serialPort.getInputStream()).thenReturn(inputStream);
+		when(serialPort.getOutputStream()).thenReturn(outputStream);
+		
+		//Mock the Get Port
+		try {
+			when(SerialUtils.openSerialPort(params)).thenReturn(this.serialPort);
+		} catch (SerialPortException e1) {
+			e1.printStackTrace();
+			fail(e1.getMessage());
+		}
+		
+		//Connect
+		try {
+			assertTrue(rt.connect());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+
+		vo.setMessageTerminator("\n");
+		vo.setUseTerminator(true);
+		//load a test input
+		inputStream.pushToMockStream(message);
+		
+		//Create an event to force the Data Source to read the port
+		SerialPortProxyEvent evt = new SerialPortProxyEvent(System.currentTimeMillis());
+		rt.serialEvent(evt);
+		
+		//test the return value(s), reverse list because Mango stores latest value at [0]
+		List<PointValueTime> windSpeedValues = Lists.reverse(windSpeed.getLatestPointValues(1));
+		List<PointValueTime> windDirectionValues = Lists.reverse(windDirection.getLatestPointValues(1));
+		List<PointValueTime> ip1Values = Lists.reverse(ip1.getLatestPointValues(1));
+		
+		List<PointValueTime> received = new ArrayList<PointValueTime>();
+		received.addAll(windSpeedValues);
+		received.addAll(windDirectionValues);
+		received.addAll(ip1Values);
+		
+		
+		boolean found;
+		for(int k = 0; k < expected.length; k+=1) {
+			found = false;
+			for(int i = 0; i < received.size(); i+=1) {
+				if(expected[k].equals(received.get(i).getStringValue()))
+					found = true;
+			}
+			if(!found)
+				fail("No value match found for: '" + expected[k] + "' point value");
+		}
+		
+	}
+	
+	
 	public void testReadPointValue(){
 		
 		SerialDataSourceVO vo = SerialDataSourceTestData.getStandardDataSourceVO();
@@ -142,7 +271,7 @@ public class SerialDataSourceTest {
 		}
 		
 		for(String s : testCases.keySet()) {
-			SerialTestCase stc = testCases.get(s);
+			SerialDataSourceTestCase stc = testCases.get(s);
 			if(stc.getCondition().equals("terminator")) {
 				vo.setMessageTerminator(stc.getTerminator());
 				vo.setUseTerminator(true);

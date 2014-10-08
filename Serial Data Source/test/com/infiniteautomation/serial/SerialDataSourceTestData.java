@@ -35,7 +35,7 @@ public class SerialDataSourceTestData {
 	public static DataPointRT getMatchAllPoint() {
 		DataPointVO vo = new DataPointVO();
 		vo.setName("matchAll");
-		vo.setXid("serialTest_matchAll");
+		vo.setXid("matchAll");
 		vo.setId(currentId++);
 		vo.setUnitString("");
 		SerialPointLocatorVO plVo = new SerialPointLocatorVO();
@@ -49,13 +49,26 @@ public class SerialDataSourceTestData {
 	public static DataPointRT getNewlineTerminated() {
 		DataPointVO vo = new DataPointVO();
 		vo.setName("newlineTerminated");
-		vo.setXid("serialTest_newlineTerminated");
+		vo.setXid("newlineTerminated");
 		vo.setId(currentId++);
 		SerialPointLocatorVO plVo = new SerialPointLocatorVO();
 		plVo.setDataTypeId(DataTypes.ALPHANUMERIC);
 		plVo.setValueRegex(PATTERNS.get(vo.getName()));
 		plVo.setValueIndex(2);
 		plVo.setPointIdentifier("");
+		vo.setPointLocator(plVo);
+		return new DataPointRT(vo, plVo.createRuntime());
+	}
+	public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier) {
+		DataPointVO vo = new DataPointVO();
+		vo.setName(name);
+		vo.setXid(xid);
+		vo.setId(currentId++);
+		SerialPointLocatorVO plVo = new SerialPointLocatorVO();
+		plVo.setDataTypeId(DataTypes.ALPHANUMERIC);
+		plVo.setValueRegex(valueRegex);
+		plVo.setValueIndex(valueIndex);
+		plVo.setPointIdentifier(pointIdentifier);
 		vo.setPointLocator(plVo);
 		return new DataPointRT(vo, plVo.createRuntime());
 	}

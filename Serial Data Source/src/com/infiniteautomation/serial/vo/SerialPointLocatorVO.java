@@ -47,14 +47,13 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 
 	@Override
 	public void validate(ProcessResult response) {
-		if (SerialDataSourceVO.isBlank(pointIdentifier))
-            response.addContextualMessage("pointIdentifier", "validate.required");	
+		if (pointIdentifier == null)
+            response.addContextualMessage("pointIdentifier", "validate.invalidValue");	
 
 		if (SerialDataSourceVO.isBlank(valueRegex))
             response.addContextualMessage("valueRegex", "validate.required");	
 		try {
-			if(Pattern.compile(valueRegex).matcher("").find()) // Validate the regex
-				response.addContextualMessage("valueRegex", "serial.validate.emptyMatch");
+			Pattern.compile(valueRegex).matcher("").find(); // Validate the regex
 		} catch (PatternSyntaxException e) {
 			response.addContextualMessage("valueRegex", "serial.validate.badRegex", e.getMessage());
 		}

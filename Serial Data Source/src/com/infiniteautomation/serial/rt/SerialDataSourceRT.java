@@ -88,16 +88,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
         	try{
                 this.port = SerialUtils.openSerialPort(params);
                 this.port.addEventListener(this);
-                
-                if (this.vo.isLogIO()) {
-                    //PrintWriter log = new PrintWriter(new FileWriter(file, true));
-                	int fileSize = (int)(vo.getIoLogFileSizeMBytes() * 1000000f);
-                	int maxFiles = vo.getMaxHistoricalIOLogs();
-
-                    ioLog = new RollingIOLog(getIOLogFileName(vo.getId()), Common.getLogsDir(), fileSize, maxFiles);
-                    ioLog.log("Data source started");
-                }
-                
                 return true;
               
             }catch(Exception e){
@@ -112,6 +102,14 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     public void initialize() {
     	boolean connected = false;
     	try{
+            if (this.vo.isLogIO()) {
+                //PrintWriter log = new PrintWriter(new FileWriter(file, true));
+            	int fileSize = (int)(vo.getIoLogFileSizeMBytes() * 1000000f);
+            	int maxFiles = vo.getMaxHistoricalIOLogs();
+
+                ioLog = new RollingIOLog(getIOLogFileName(vo.getId()), Common.getLogsDir(), fileSize, maxFiles);
+                ioLog.log("Data source started");
+            }
     		connected = this.connect();
     	}catch(Exception e){
     		LOG.debug("Error while initializing data source", e);
