@@ -30,6 +30,12 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
 	
 	private WatchListDao watchListDao;
     
+
+	@Override
+    public boolean getInView(){
+    	return false; 
+    }
+	
     @Override
     public void postInitialize() {
         super.postInitialize();
