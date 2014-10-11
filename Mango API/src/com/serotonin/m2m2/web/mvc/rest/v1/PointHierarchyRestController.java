@@ -8,8 +8,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -38,7 +36,7 @@ import com.wordnik.swagger.annotations.Api;
 public class PointHierarchyRestController extends MangoRestController{
 
 	
-	private static Log LOG = LogFactory.getLog(PointHierarchyRestController.class);
+	//private static Log LOG = LogFactory.getLog(PointHierarchyRestController.class);
 	
 	/**
 	 * Get the entire Point Hierarchy
@@ -49,18 +47,11 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<PointHierarchyModel> getPointHierarchy(HttpServletRequest request) {
 
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
+    	this.checkUser(request, result);
     	if(result.isOk()){
-    		
-    		if(user.isAdmin()){
-		    	PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-		    	PointHierarchyModel model = new PointHierarchyModel(ph.getRoot());
-		    	return result.createResponseEntity(model);
-    		}else{
-    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access point hierarchy");
-    			result.addRestMessage(this.getUnauthorizedMessage());
-    			return result.createResponseEntity();
-    		}
+	    	PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+	    	PointHierarchyModel model = new PointHierarchyModel(ph.getRoot());
+	    	return result.createResponseEntity(model);
     	}
     	
     	return result.createResponseEntity();
@@ -77,30 +68,24 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable String folderName, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
+    	this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		if(user.isAdmin()){
-    			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-    			PointFolder folder = ph.getRoot();
-    			PointFolder desiredFolder = null;
-    			if(folder.getName().equals(folderName))
-    				return result.createResponseEntity(new PointHierarchyModel(folder)); 
-    			else{
-    				desiredFolder = recursiveFolderSearch(folder, folderName);
-    			}
-    			
-    			if (desiredFolder == null){
-    				result.addRestMessage(getDoesNotExistMessage());
-    	            return result.createResponseEntity();
-    			}else
-    				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
+			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+			PointFolder folder = ph.getRoot();
+			PointFolder desiredFolder = null;
+			if(folder.getName().equals(folderName))
+				return result.createResponseEntity(new PointHierarchyModel(folder)); 
+			else{
+				desiredFolder = recursiveFolderSearch(folder, folderName);
+			}
+			
+			if (desiredFolder == null){
+				result.addRestMessage(getDoesNotExistMessage());
+	            return result.createResponseEntity();
+			}else
+				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
 
-    		}else{
-    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access point hierarchy");
-    			result.addRestMessage(this.getUnauthorizedMessage());
-    			return result.createResponseEntity();
-    		}
     	}
     	
     	return result.createResponseEntity();
@@ -116,30 +101,24 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable Integer folderId, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
+    	this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		if(user.isAdmin()){
-    			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-    			PointFolder folder = ph.getRoot();
-    			PointFolder desiredFolder = null;
-    			if(folder.getId() == folderId)
-    				return result.createResponseEntity(new PointHierarchyModel(folder)); 
-    			else{
-    				desiredFolder = recursiveFolderSearch(folder, folderId);
-    			}
-    			
-    			if (desiredFolder == null){
-    				result.addRestMessage(getDoesNotExistMessage());
-    	            return result.createResponseEntity();
-    			}else
-    				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
+			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+			PointFolder folder = ph.getRoot();
+			PointFolder desiredFolder = null;
+			if(folder.getId() == folderId)
+				return result.createResponseEntity(new PointHierarchyModel(folder)); 
+			else{
+				desiredFolder = recursiveFolderSearch(folder, folderId);
+			}
+			
+			if (desiredFolder == null){
+				result.addRestMessage(getDoesNotExistMessage());
+	            return result.createResponseEntity();
+			}else
+				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
 
-    		}else{
-    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access point hierarchy");
-    			result.addRestMessage(this.getUnauthorizedMessage());
-    			return result.createResponseEntity();
-    		}
     	}
     	
     	return result.createResponseEntity();
