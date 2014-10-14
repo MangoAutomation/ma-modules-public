@@ -4,15 +4,13 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 
-import com.serotonin.ShouldNeverHappenException;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
@@ -23,13 +21,12 @@ import com.serotonin.m2m2.view.quantize2.AbstractDataQuantizer;
 import com.serotonin.m2m2.view.quantize2.AnalogStatisticsQuantizer;
 import com.serotonin.m2m2.view.quantize2.BucketCalculator;
 import com.serotonin.m2m2.view.quantize2.BucketsBucketCalculator;
-import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.quantize2.TimePeriodBucketCalculator;
 import com.serotonin.m2m2.view.quantize2.ValueChangeCounterQuantizer;
-import com.serotonin.m2m2.view.stats.AnalogStatistics;
-import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.pair.LongPair;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NonNumericPointValueStatisticsQuantizerJsonCallback;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NumericPointValueStatisticsQuantizerJsonCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
@@ -37,7 +34,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  * @author Terry Packer
  *
  */
-public class PointValueRollupCalculator {
+public class PointValueRollupCalculator implements PointValueTimeStream{
 
 	private static final Log LOG = LogFactory.getLog(PointValueRollupCalculator.class);
 	
@@ -54,14 +51,14 @@ public class PointValueRollupCalculator {
 		this.from = from;
 		this.to = to;
 	}
+
 	
 	/**
 	 * Calculate statistics, if TimePeriod is null the entire range will be used
 	 * @return
 	 */
-	public List<PointValueTime> calculate(){
+	public void calculate(final JsonGenerator jgen){
 		
-		final List<PointValueTime> pvts = new ArrayList<PointValueTime>();
         // Determine the start and end times.
         if (from == -1) {
             // Get the start and end from the point values table.
@@ -91,109 +88,16 @@ public class PointValueRollupCalculator {
         }
         final AbstractDataQuantizer quantizer;
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
-            quantizer = new AnalogStatisticsQuantizer(bc, startValue,
-                    new StatisticsGeneratorQuantizerCallback<AnalogStatistics>() {
-                        @Override
-                        public void quantizedStatistics(AnalogStatistics statisticsGenerator, boolean done) {
-
-                            if (statisticsGenerator.getCount() > 0 || !done) {
-                                switch(rollup){
-	                                case AVERAGE:
-	                                	Double avg = statisticsGenerator.getAverage();
-	                                	if(avg == null)
-	                                		avg = 0.0D;
-	                                	pvts.add(new PointValueTime(
-	                                			avg,
-	                                			statisticsGenerator.getPeriodEndTime() - 1));
-	                                break;
-	                                case MINIMUM:
-	                                	Double min = statisticsGenerator.getMinimumValue();
-	                                	if(min != null)
-	                                		pvts.add(new PointValueTime(
-	                                			min,
-	                                			statisticsGenerator.getMinimumTime()));
-	                                break;
-	                                case MAXIMUM:
-	                                	Double max = statisticsGenerator.getMaximumValue();
-	                                	if(max != null)
-	                                		pvts.add(new PointValueTime(
-	                                			max,
-	                                			statisticsGenerator.getMaximumTime()));
-	                                break;
-	                                case SUM:
-	                                	Double sum = statisticsGenerator.getSum();
-	                                	if(sum == null)
-	                                		sum = 0.0D;
-	                                	pvts.add(new PointValueTime(
-	                                			sum,
-	                                			statisticsGenerator.getPeriodEndTime() - 1));
-	                                    
-	                                break;
-	                                case FIRST:
-	                                	Double first = statisticsGenerator.getFirstValue();
-	                                	if(first != null)
-	                                		pvts.add(new PointValueTime(
-	                                			first,
-	                                    		statisticsGenerator.getFirstTime()));
-	                                break;
-	                                case LAST:
-	                                	Double last = statisticsGenerator.getLastValue();
-	                                	if(last != null)
-	                                		pvts.add(new PointValueTime(
-	                                			last,
-	                                			statisticsGenerator.getLastTime()));
-	                                break;
-	                                case COUNT:
-	                                	pvts.add(new PointValueTime(
-	                                			statisticsGenerator.getCount(),
-	                                			statisticsGenerator.getPeriodEndTime() - 1));
-	                                break;
-	                                default:
-	                                	throw new ShouldNeverHappenException("Unknown Rollup type" + rollup);
-                                }
-                            }
-                        }
-                    });
-        }
-        else {
+            quantizer = new AnalogStatisticsQuantizer(bc, 
+            		startValue,
+            		new NumericPointValueStatisticsQuantizerJsonCallback(jgen, this.rollup));
+        }else {
             if (!rollup.nonNumericSupport()) {
-                LOG.info("Invalid non-numeric rollup type: " + rollup);
+                LOG.warn("Invalid non-numeric rollup type: " + rollup);
                 rollup = RollupEnum.FIRST; //Default to first
             }
-
-
             quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-                    new StatisticsGeneratorQuantizerCallback<ValueChangeCounter>() {
-                        @Override
-                        public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
-                            if (statisticsGenerator.getCount() > 0 || !done) {
-                                switch(rollup){
-                                case FIRST:
-                                	DataValue first = statisticsGenerator.getFirstValue();
-                                	if(first != null)
-                                		pvts.add(new PointValueTime(
-                                			first,
-                                    		statisticsGenerator.getFirstTime()));
-                                break;
-                                case LAST:
-                                	DataValue last = statisticsGenerator.getLastValue();
-                                	if(last != null)
-                                		pvts.add(new PointValueTime(
-                                			last,
-                                			statisticsGenerator.getLastTime()));
-                                break;
-                                case COUNT:
-                                	pvts.add(new PointValueTime(
-                                			statisticsGenerator.getCount(),
-                                			statisticsGenerator.getPeriodEndTime() - 1));
-                                break;
-                                default:
-                                	throw new ShouldNeverHappenException("Unsupported Non-numerical Rollup type: " + rollup);
-                           
-                                }
-                            }
-                        }
-                    });
+            		new NonNumericPointValueStatisticsQuantizerJsonCallback(jgen, this.rollup));
         }
 
         //Finally Make the call to get the data and quantize it
@@ -207,7 +111,16 @@ public class PointValueRollupCalculator {
         quantizer.done(endValue);
         
         
-        return pvts;
+        return;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream#streamData(java.io.Writer)
+	 */
+	@Override
+	public void streamData(JsonGenerator jgen) {
+		this.calculate(jgen);
 	}
 	
 	

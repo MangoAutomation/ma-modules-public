@@ -28,6 +28,7 @@ import com.serotonin.m2m2.db.H2Proxy;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.web.mvc.rest.v1.ExceptionHandlingController;
 import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
@@ -54,6 +55,8 @@ public class BaseRestTest {
     protected DataSourceDao dataSourceDao;
     @Mock
     protected DataPointDao dataPointDao;
+    @Mock
+    protected PointValueDao pointValueDao;
 	
     /**
      * Setup DAO Layer
@@ -95,6 +98,7 @@ public class BaseRestTest {
     	DaoRegistry.dataPointDao = this.dataPointDao;
     	DaoRegistry.dataSourceDao = this.dataSourceDao;
     	DaoRegistry.userDao = this.userDao;
+    	//DaoRegistry.pointValueDao = this.pointValueDao;
     	
     	this.objectMapper = MangoRestSpringConfiguration.objectMapper;
     	

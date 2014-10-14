@@ -57,14 +57,17 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.AnalogStatisticsModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointStatisticsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RollupEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.StartsAndRuntimeListModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.StartsAndRuntimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.ValueChangeStatisticsModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.AnalogStatisticsModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.PointStatisticsModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StartsAndRuntimeListModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StartsAndRuntimeModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StatisticsStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.ValueChangeStatisticsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
@@ -121,7 +124,9 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			List<PointValueTime> pvts = dao.getLatestPointValues(vo.getId(), limit);
+	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId());
+	    			
+	    			List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
 	    			List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(pvts.size());
 	    			for(PointValueTime pvt : pvts){
 	    				models.add(new PointValueTimeModel(pvt));
@@ -151,19 +156,19 @@ public class PointValueRestController extends MangoRestController{
 		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 		})
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
-    public ResponseEntity<List<PointValueTimeModel>> getPointValues(
+    public ResponseEntity<PointValueTimeStream> getPointValues(
     		HttpServletRequest request, 
     		
     		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
     		@PathVariable String xid,
     		
     		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00") //Not working yet: defaultValue="2014-08-01 00:00:00.000 -1000" )
+    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
     		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
     		
     		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")//Not working yet defaultValue="2014-08-11 23:59:59.999 -1000")
+			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
     		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
     		
@@ -180,7 +185,7 @@ public class PointValueRestController extends MangoRestController{
     		Integer timePeriods    		
     		){
         
-    	RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
+    	RestProcessResult<PointValueTimeStream> result = new RestProcessResult<PointValueTimeStream>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     	
@@ -192,8 +197,6 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			List<PointValueTimeModel> models;
-
 	    			//Are we using rollup
 	    			if(rollup != null){
 	    				TimePeriod timePeriod = null;
@@ -201,19 +204,12 @@ public class PointValueRestController extends MangoRestController{
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
 	    				PointValueRollupCalculator calc = new PointValueRollupCalculator(vo, rollup, timePeriod, from.getTime(), to.getTime());
-	    				List<PointValueTime> pvts = calc.calculate();
-	    				models = new ArrayList<PointValueTimeModel>(pvts.size());
-	    				for(PointValueTime pvt : pvts){
-	    					models.add(new PointValueTimeModel(pvt));
-	    				}
+	    				return result.createResponseEntity(calc);
 	    			}else{
-		    			List<PointValueTime> pvts = dao.getPointValuesBetween(vo.getId(), from.getTime(), to.getTime());
-		    			models = new ArrayList<PointValueTimeModel>(pvts.size());
-		    			for(PointValueTime pvt : pvts){
-		    				models.add(new PointValueTimeModel(pvt));
-		    			}
+	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(vo.getId(), from.getTime(), to.getTime(), this.dao);
+		    			return result.createResponseEntity(pvtDatabaseStream);
 	    			}
-	    			return result.createResponseEntity(models);
+	    			
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());
 		    		return result.createResponseEntity();
@@ -269,6 +265,7 @@ public class PointValueRestController extends MangoRestController{
 	    			
 	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId());
 	    			//TODO Implement streaming via MappedRowCallbacks
+	    			pointValueFacade.getPointValuesBetween(from.getTime(), to.getTime(), true, true);
 	    	        List<PointValueTime> values = pointValueFacade.getPointValuesBetween(from.getTime(), to.getTime());
 	    			
 	    			

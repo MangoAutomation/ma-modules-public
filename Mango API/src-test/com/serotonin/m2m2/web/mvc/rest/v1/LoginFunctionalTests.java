@@ -73,7 +73,7 @@ public class LoginFunctionalTests extends BaseRestTest{
 			assertEquals(standardUser.getUsername(), loggedInUser.getUsername());
 			
 			//Check to see that the Proper URI is in the Response
-			String defaultLoginUri = result.getResponse().getHeader(LoginRestController.LOGIN_DEFAULT_URI_HEADER);
+			String defaultLoginUri = result.getResponse().getHeader(LoginRestController.LOGIN_DEFAULT_URI_HEADER).toString();
 			assertEquals(standardUser.getHomeUrl(), defaultLoginUri);
 			
 			//Ensure the User is in the Session

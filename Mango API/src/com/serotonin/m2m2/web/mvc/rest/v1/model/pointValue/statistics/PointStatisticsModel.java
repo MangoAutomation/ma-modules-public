@@ -2,10 +2,11 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
+package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 
 /**
  * @author Terry Packer
