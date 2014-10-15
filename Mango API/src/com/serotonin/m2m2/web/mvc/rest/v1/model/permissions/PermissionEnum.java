@@ -5,9 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.permissions;
 
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.permission.DataPointAccess;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.AlarmLevel;
 
 /**
  * @author Terry Packer

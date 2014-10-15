@@ -6,12 +6,13 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
 
 /**
  * @author Terry Packer
  *
  */
-public class PointValueTimeDatabaseStream implements PointValueTimeStream{
+public class PointValueTimeDatabaseStream implements JsonArrayStream{
 
 	private int dataPointId;
 	private long from;

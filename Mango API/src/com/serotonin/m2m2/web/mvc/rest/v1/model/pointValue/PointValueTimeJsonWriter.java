@@ -20,7 +20,7 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 public abstract class PointValueTimeJsonWriter {
 	private final Log LOG = LogFactory.getLog(PointValueTimeJsonWriter.class);
 
-	private JsonGenerator jgen;
+	protected JsonGenerator jgen;
 	
 	public PointValueTimeJsonWriter(JsonGenerator jgen){
 		this.jgen = jgen;
@@ -33,7 +33,7 @@ public abstract class PointValueTimeJsonWriter {
     	jgen.writeNumberField("timestamp", timestamp);
     	jgen.writeEndObject();
 	}
-
+	
 	protected void writePointValueTime(int value, long timestamp, String annotation) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);

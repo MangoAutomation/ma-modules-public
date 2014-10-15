@@ -25,6 +25,7 @@ import com.serotonin.m2m2.view.quantize2.TimePeriodBucketCalculator;
 import com.serotonin.m2m2.view.quantize2.ValueChangeCounterQuantizer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.pair.LongPair;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NonNumericPointValueStatisticsQuantizerJsonCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NumericPointValueStatisticsQuantizerJsonCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
@@ -34,7 +35,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  * @author Terry Packer
  *
  */
-public class PointValueRollupCalculator implements PointValueTimeStream{
+public class PointValueRollupCalculator implements JsonArrayStream{
 
 	private static final Log LOG = LogFactory.getLog(PointValueRollupCalculator.class);
 	

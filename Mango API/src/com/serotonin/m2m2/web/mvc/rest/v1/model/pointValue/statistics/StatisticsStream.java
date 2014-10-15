@@ -4,20 +4,13 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
-import com.serotonin.m2m2.view.stats.AnalogStatistics;
-import com.serotonin.m2m2.view.stats.StartsAndRuntime;
-import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
-import com.serotonin.m2m2.view.stats.ValueChangeCounter;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
 
 /**
  * 
@@ -26,7 +19,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream;
  * @author Terry Packer
  *
  */
-public class StatisticsStream implements PointValueTimeStream{
+public class StatisticsStream implements JsonObjectStream{
 	
 	private int dataPointId;
 	private int dataTypeId;
@@ -54,17 +47,21 @@ public class StatisticsStream implements PointValueTimeStream{
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
 	 */
 	@Override
-	public void streamData(JsonGenerator jgen) {
+	public void streamData(JsonGenerator jgen) throws IOException {
 		
-		PointValueFacade pointValueFacade = new PointValueFacade(this.dataPointId);
+		//TODO Can't use the Facade as there is no way to perform the callback integrated with the PointValueCache
+		//PointValueFacade pointValueFacade = new PointValueFacade(this.dataPointId);
 		
-		StatisticsCalculator calculator = new StatisticsCalculator(this.dataTypeId, this.from, this.to);
-		
-		//Do Process the values with Callbacks
-		//TODO Need to implement Callbacks for PointValue Facade
-		//pointValueFacade.getPointValuesBetween(from, to, true, true, calculator);
-		
-		calculator.done(jgen);
+		StatisticsCalculator calculator = new StatisticsCalculator(jgen, this.dataTypeId, this.from, this.to);
+
+		PointValueDao dao = Common.databaseProxy.newPointValueDao();
+		PointValueTime before = dao.getPointValueBefore(dataPointId, from);
+		calculator.row(before, 0);
+		//Do the main work
+		dao.getPointValuesBetween(dataPointId, from, to, calculator);
+		PointValueTime after = dao.getPointValueAfter(dataPointId, to);
+		//Finish
+		calculator.done(after);
 
 		
 	}

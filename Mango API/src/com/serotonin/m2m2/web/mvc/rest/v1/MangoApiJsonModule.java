@@ -6,8 +6,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStreamSerializer;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
 
 /**
  * @author Terry Packer
@@ -22,7 +22,8 @@ public class MangoApiJsonModule extends SimpleModule {
 	public MangoApiJsonModule() {
 		super("MangoApiJson", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation",
 				"mango"));
-		this.addSerializer(PointValueTimeStream.class, new PointValueTimeStreamSerializer());
+		this.addSerializer(JsonArrayStream.class, new JsonArraySerializer());
+		this.addSerializer(JsonObjectStream.class, new JsonObjectSerializer());
 	}
 	
 	@Override

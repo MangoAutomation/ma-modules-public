@@ -4,25 +4,19 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,14 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -46,31 +33,20 @@ import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
-import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
-import com.serotonin.m2m2.view.stats.AnalogStatistics;
-import com.serotonin.m2m2.view.stats.StartsAndRuntime;
-import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
-import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RollupEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.AnalogStatisticsModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.PointStatisticsModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StartsAndRuntimeListModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StartsAndRuntimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StatisticsStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.ValueChangeStatisticsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
-import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -156,7 +132,7 @@ public class PointValueRestController extends MangoRestController{
 		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 		})
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
-    public ResponseEntity<PointValueTimeStream> getPointValues(
+    public ResponseEntity<JsonArrayStream> getPointValues(
     		HttpServletRequest request, 
     		
     		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
@@ -185,7 +161,7 @@ public class PointValueRestController extends MangoRestController{
     		Integer timePeriods    		
     		){
         
-    	RestProcessResult<PointValueTimeStream> result = new RestProcessResult<PointValueTimeStream>(HttpStatus.OK);
+    	RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     	
@@ -229,11 +205,11 @@ public class PointValueRestController extends MangoRestController{
 			notes = "From time inclusive, To time exclusive"
 			)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "Query Successful", response=PointStatisticsModel.class),
+		@ApiResponse(code = 200, message = "Query Successful", response=StatisticsStream.class),
 		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 		})
     @RequestMapping(method = RequestMethod.GET, value="/{xid}/statistics")
-    public ResponseEntity<PointStatisticsModel> getPointStatistics(
+    public ResponseEntity<StatisticsStream> getPointStatistics(
     		HttpServletRequest request, 
     		
     		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
@@ -250,7 +226,7 @@ public class PointValueRestController extends MangoRestController{
     		@DateTimeFormat(iso=ISO.DATE_TIME) Date to    		
     		){
         
-    	RestProcessResult<PointStatisticsModel> result = new RestProcessResult<PointStatisticsModel>(HttpStatus.OK);
+    	RestProcessResult<StatisticsStream> result = new RestProcessResult<StatisticsStream>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     	
@@ -262,91 +238,8 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			
-	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId());
-	    			//TODO Implement streaming via MappedRowCallbacks
-	    			pointValueFacade.getPointValuesBetween(from.getTime(), to.getTime(), true, true);
-	    	        List<PointValueTime> values = pointValueFacade.getPointValuesBetween(from.getTime(), to.getTime());
-	    			
-	    			
-	    	        if(values.size() == 0)
-	    				return result.createResponseEntity(new PointStatisticsModel());
-	    	        //Collect the first and last points
-	    	        PointValueTime startVT = null;
-	    	        PointValueTime endVT = null;
-    	            startVT = pointValueFacade.getPointValueBefore(from.getTime());
-    	            endVT = pointValueFacade.getPointValueAfter(to.getTime());
-    	            
-	    	        
-	    	        switch(vo.getPointLocator().getDataTypeId()){
-		    			case DataTypes.BINARY:
-		    			case DataTypes.MULTISTATE:
-		                    // Runtime stats
-		                    StartsAndRuntimeList stats = new StartsAndRuntimeList(from.getTime(), to.getTime(), startVT, values, endVT);
-		                    StartsAndRuntimeListModel model = new StartsAndRuntimeListModel();
-		                    if(startVT == null)
-		    	            	startVT = values.get(0);
-		                    model.setStartPoint(new PointValueTimeModel(startVT));
-		                    if(endVT == null)
-		    	            	endVT = values.get(values.size()-1);
-		                    model.setEndPoint(new PointValueTimeModel(endVT));
-		                    List<StartsAndRuntimeModel> srtModels = new ArrayList<StartsAndRuntimeModel>(stats.getData().size());
-		                    for(StartsAndRuntime srt : stats.getData()){
-		                    	srtModels.add(new StartsAndRuntimeModel(srt));
-		                    }
-		                   model.setStartsAndRuntime(srtModels);
-		                   model.setHasData(true);
-		                   return result.createResponseEntity(model);
-		    			case DataTypes.NUMERIC:
-		                    AnalogStatistics analogStats = new AnalogStatistics(from.getTime(), to.getTime(), startVT, values, endVT);
-		                    AnalogStatisticsModel analogModel = new AnalogStatisticsModel();
-		    	            if(startVT == null)
-		    	            	startVT = values.get(0);
-		                    analogModel.setStartPoint(new PointValueTimeModel(startVT));
-		                    if(endVT == null)
-		    	            	endVT = values.get(values.size()-1);
-		                    analogModel.setEndPoint(new PointValueTimeModel(endVT));
-		                    PointValueTimeModel minimum = new PointValueTimeModel(
-		                    		new PointValueTime(
-		                    				new NumericValue(analogStats.getMinimumValue()),
-		                    				analogStats.getMinimumTime()));
-		                    analogModel.setMinimum(minimum);
-		                    PointValueTimeModel maximum = new PointValueTimeModel(
-		                    		new PointValueTime(
-		                    				new NumericValue(analogStats.getMaximumValue()),
-		                    				analogStats.getMaximumTime()));
-		                    analogModel.setMaximum(maximum);
-		                    PointValueTimeModel first = new PointValueTimeModel(
-		                    		new PointValueTime(
-		                    				new NumericValue(analogStats.getFirstValue()),
-		                    				analogStats.getFirstTime()));
-		                    analogModel.setFirst(first);
-		                    PointValueTimeModel last = new PointValueTimeModel(
-		                    		new PointValueTime(
-		                    				new NumericValue(analogStats.getLastValue()),
-		                    				analogStats.getLastTime()));
-		                    analogModel.setLast(last);
-		                    analogModel.setAverage(analogStats.getAverage());
-		                    analogModel.setSum(analogStats.getSum());
-		                    analogModel.setCount(analogStats.getCount());
-		                    analogModel.setIntegral(analogStats.getIntegral());
-		                    analogModel.setHasData(true);
-		                    return result.createResponseEntity(analogModel);
-		    			case DataTypes.ALPHANUMERIC:
-		                    ValueChangeCounter vcStats = new ValueChangeCounter(from.getTime(), to.getTime(), startVT, values);
-		                    ValueChangeStatisticsModel vcModel = new ValueChangeStatisticsModel();
-		                    if(startVT == null)
-		    	            	startVT = values.get(0);
-		                    vcModel.setStartPoint(new PointValueTimeModel(startVT));
-		                    if(endVT == null)
-		    	            	endVT = values.get(values.size()-1);
-		                    vcModel.setEndPoint(new PointValueTimeModel(endVT));
-		                    vcModel.setChanges(vcStats.getChanges());
-		                    vcModel.setHasData(true);
-		                    return result.createResponseEntity(vcModel);
-		    			default:
-		    				return result.createResponseEntity(new PointStatisticsModel());
-	    			}
+	    			StatisticsStream stream = new StatisticsStream(vo.getId(), vo.getPointLocator().getDataTypeId(), from.getTime(), to.getTime());
+	    			return result.createResponseEntity(stream);
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());
 		    		return result.createResponseEntity();
@@ -421,7 +314,6 @@ public class PointValueRestController extends MangoRestController{
 	
 	    					@Override
 	    					public void raiseRecursionFailureEvent() {
-	    						//TODO Flesh this out
 	    						LOG.error("Recursive failure while setting point via REST");
 	    					}
 	    	        		
@@ -456,127 +348,7 @@ public class PointValueRestController extends MangoRestController{
 		}
     }
     
-	/**
-	 * Get large amounts of point values by streaming them 
-	 * back in the response.
-	 * @param xid
-	 * @param limit
-	 * @return
-	 */
-	@ApiOperation(
-			value = "Stream large amounts of point values",
-			notes = "Useful when dumping a database",
-			response=PointValueTimeModel.class,
-			responseContainer="Array"
-			
-			)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "Ok", response=PointValueTimeModel.class),
-		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
-		})
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}/stream")
-    public void streamPointValues(
-    		HttpServletRequest request,
-    		HttpServletResponse response,
-    		
-    		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
-    		@PathVariable String xid,
-    		
-    		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00") //Not working yet: defaultValue="2014-08-01 00:00:00.000 -1000" )
-    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
-    		
-    		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")//Not working yet defaultValue="2014-08-11 23:59:59.999 -1000")
-    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to){
-		
-    	RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    	
-	    	DataPointVO vo = DataPointDao.instance.getByXid(xid);
-	    	if(vo == null){
-	    		result.addRestMessage(getDoesNotExistMessage());
-	    		//return result.createResponseEntity();
-	    	}
-
-	    	try{
-	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			
-	    			try {
-	    				final ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
-	    				final ObjectMapper objectMapper = MangoRestSpringConfiguration.objectMapper;
-	    				
-	    				JsonEncoding encoding = getJsonEncoding(outputMessage.getHeaders().getContentType());
-	    				// The following has been deprecated as late as Jackson 2.2 (April 2013);
-	    				// preserved for the time being, for Jackson 2.0/2.1 compatibility.
-	    				@SuppressWarnings("deprecation")
-	    				final JsonGenerator jsonGenerator =
-	    						objectMapper.getJsonFactory().createJsonGenerator(outputMessage.getBody(), encoding);
-
-	    				// A workaround for JsonGenerators not applying serialization features
-	    				// https://github.com/FasterXML/jackson-databind/issues/12
-	    				if (objectMapper.isEnabled(SerializationFeature.INDENT_OUTPUT)) {
-	    					jsonGenerator.useDefaultPrettyPrinter();
-	    				}
-	    				
-	    				jsonGenerator.writeStartArray();
-						dao.getPointValuesBetween(vo.getId(), from.getTime(), to.getTime(), new MappedRowCallback<PointValueTime>(){
-
-							@Override
-							public void row(PointValueTime pvt, int index) {
-			    				try {
-			    					objectMapper.writeValue(jsonGenerator, new PointValueTimeModel(pvt));
-			    				}
-			    				catch (JsonProcessingException ex) {
-			    					throw new HttpMessageNotWritableException("Could not write JSON: " + ex.getMessage(), ex);
-			    				} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-							}
-							
-						});
-						
-						jsonGenerator.writeEndArray();
-						
-						outputMessage.close();
-					} catch (IOException e1) {
-						LOG.error(e1);
-					}
-	    			//return result.createResponseEntity(models);
-	    		}else{
-	    	 		result.addRestMessage(getUnauthorizedMessage());
-	    	 		//return result.createResponseEntity();
-		    	}
-	    	}catch(PermissionException e){
-	    		LOG.error(e.getMessage(), e);
-	    		result.addRestMessage(getUnauthorizedMessage());
-	    		//return result.createResponseEntity();
-	    	}
-    	}else{
-    		//return result.createResponseEntity();
-    	}
-    }
 	
-	/**
-	 * Determine the JSON encoding to use for the given content type.
-	 * @param contentType the media type as requested by the caller
-	 * @return the JSON encoding to use (never {@code null})
-	 */
-	protected JsonEncoding getJsonEncoding(MediaType contentType) {
-		if (contentType != null && contentType.getCharSet() != null) {
-			Charset charset = contentType.getCharSet();
-			for (JsonEncoding encoding : JsonEncoding.values()) {
-				if (charset.name().equals(encoding.getJavaName())) {
-					return encoding;
-				}
-			}
-		}
-		return JsonEncoding.UTF8;
-	}
 
 	
 	
