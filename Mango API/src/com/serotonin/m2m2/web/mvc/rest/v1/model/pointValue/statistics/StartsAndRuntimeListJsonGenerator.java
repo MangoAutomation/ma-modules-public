@@ -40,41 +40,43 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 	public void done(PointValueTime last) throws IOException {
 		this.generator.done(last);
 		
-		this.jgen.writeFieldName("first");
-		this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
-		
-		this.jgen.writeFieldName("last");
-		this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
-
-		this.jgen.writeFieldName("startsAndRuntimes");
-		this.jgen.writeStartArray();
-		for(StartsAndRuntime stat : this.statistics.getData()){
-			this.jgen.writeStartObject();
-			
-			//Write the data value
-			if(stat.getDataValue() != null){
-				if(this.dataTypeId == DataTypes.BINARY)
-					this.jgen.writeBooleanField("value", stat.getDataValue().getBooleanValue());
-				else
-					this.jgen.writeNumberField("value", stat.getDataValue().getIntegerValue());
-			}else{
-				this.jgen.writeNullField("value");
-			}
-			
-			this.jgen.writeNumberField("runtime", stat.getRuntime());
-			this.jgen.writeNumberField("proportion", stat.getProportion());
-			this.jgen.writeNumberField("starts", stat.getStarts());
-			
-			
-			this.jgen.writeEndObject();
-		}
-		this.jgen.writeEndArray();
-		
 		//Do we have any data
 		if(this.statistics.getData().size() > 0){
 			this.jgen.writeBooleanField("hasData", true);
+			this.jgen.writeFieldName("first");
+			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
+			
+			this.jgen.writeFieldName("last");
+			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
+
+			this.jgen.writeFieldName("startsAndRuntimes");
+			this.jgen.writeStartArray();
+			for(StartsAndRuntime stat : this.statistics.getData()){
+				this.jgen.writeStartObject();
+				
+				//Write the data value
+				if(stat.getDataValue() != null){
+					if(this.dataTypeId == DataTypes.BINARY)
+						this.jgen.writeBooleanField("value", stat.getDataValue().getBooleanValue());
+					else
+						this.jgen.writeNumberField("value", stat.getDataValue().getIntegerValue());
+				}else{
+					this.jgen.writeNullField("value");
+				}
+				
+				this.jgen.writeNumberField("runtime", stat.getRuntime());
+				this.jgen.writeNumberField("proportion", stat.getProportion());
+				this.jgen.writeNumberField("starts", stat.getStarts());
+				
+				
+				this.jgen.writeEndObject();
+			}
+			this.jgen.writeEndArray();
 		}else{
 			this.jgen.writeBooleanField("hasData", false);
+			this.jgen.writeNullField("first");
+			this.jgen.writeNullField("last");
+			this.jgen.writeNullField("startsAndRuntimes");
 		}
 	}
 	

@@ -36,20 +36,23 @@ public class ValueChangeCounterJsonGenerator extends StatisticsJsonGenerator{
 	public void done(PointValueTime last) throws IOException {
 		this.generator.done(last);
 		
-		this.jgen.writeFieldName("first");
-		this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
-		
-		this.jgen.writeFieldName("last");
-		this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
-		
-		this.jgen.writeNumberField("count", this.statistics.getCount());
-		this.jgen.writeNumberField("changes",  this.statistics.getChanges());
-		
 		//Do we have any data
 		if(this.statistics.getCount() > 0){
 			this.jgen.writeBooleanField("hasData", true);
+			this.jgen.writeFieldName("first");
+			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
+			
+			this.jgen.writeFieldName("last");
+			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
+			
+			this.jgen.writeNumberField("count", this.statistics.getCount());
+			this.jgen.writeNumberField("changes",  this.statistics.getChanges());
 		}else{
 			this.jgen.writeBooleanField("hasData", false);
+			this.jgen.writeNullField("first");
+			this.jgen.writeNullField("last");
+			this.jgen.writeNullField("count");
+			this.jgen.writeNullField("changes");
 		}
 	}
 	

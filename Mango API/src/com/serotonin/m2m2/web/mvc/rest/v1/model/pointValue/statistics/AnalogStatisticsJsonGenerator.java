@@ -35,27 +35,34 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	public void done(PointValueTime last) throws IOException {
 		this.generator.done(last);
 
-		this.jgen.writeFieldName("first");
-		this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
-		
-		this.jgen.writeFieldName("last");
-		this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
-		
-		this.jgen.writeFieldName("minimum");
-		this.writePointValueTime(this.statistics.getMinimumValue(), this.statistics.getMinimumTime(), null);
-		
-		this.jgen.writeFieldName("maximum");
-		this.writePointValueTime(this.statistics.getMaximumValue(), this.statistics.getMaximumTime(), null);
-		
-		this.jgen.writeNumberField("average", this.statistics.getAverage());
-		this.jgen.writeNumberField("integral", this.statistics.getIntegral());
-		this.jgen.writeNumberField("sum", this.statistics.getSum());
-		this.jgen.writeNumberField("count", this.statistics.getCount());
-		
 		if(this.statistics.getCount() > 0){
 			this.jgen.writeBooleanField("hasData", true);
+			this.jgen.writeFieldName("first");
+			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
+			
+			this.jgen.writeFieldName("last");
+			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
+			
+			this.jgen.writeFieldName("minimum");
+			this.writePointValueTime(this.statistics.getMinimumValue(), this.statistics.getMinimumTime(), null);
+			
+			this.jgen.writeFieldName("maximum");
+			this.writePointValueTime(this.statistics.getMaximumValue(), this.statistics.getMaximumTime(), null);
+			
+			this.jgen.writeNumberField("average", this.statistics.getAverage());
+			this.jgen.writeNumberField("integral", this.statistics.getIntegral());
+			this.jgen.writeNumberField("sum", this.statistics.getSum());
+			this.jgen.writeNumberField("count", this.statistics.getCount());
 		}else{
 			this.jgen.writeBooleanField("hasData", false);
+			this.jgen.writeNullField("first");
+			this.jgen.writeNullField("last");
+			this.jgen.writeNullField("minimum");
+			this.jgen.writeNullField("maximum");
+			this.jgen.writeNullField("average");
+			this.jgen.writeNullField("integral");
+			this.jgen.writeNullField("sum");
+			this.jgen.writeNullField("count");
 		}
 	}
 
