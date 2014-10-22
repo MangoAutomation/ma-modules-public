@@ -2,6 +2,7 @@ package com.serotonin.m2m2.dataImport;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,8 +13,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.web.servlet.View;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -28,6 +27,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.export.ExportCsvStreamer;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 import com.serotonin.m2m2.web.mvc.controller.ControllerUtils;
@@ -49,13 +49,16 @@ public class DataImportController implements UrlHandler {
 
                 for (FileItem item : items) {
                     if ("uploadFile".equals(item.getFieldName())) {
+                    	CSVReader csvReader = new CSVReader(new InputStreamReader(item.getInputStream()));
                         try {
-                            int count = importCsv(item);
+                            int count = importCsv(csvReader);
                             model.put("result", new TranslatableMessage("dataImport.import.imported", count)
                                     .translate(translations));
                         }
                         catch (TranslatableException e) {
                             model.put("error", e.getTranslatableMessage().translate(translations));
+                        }finally{
+                        	csvReader.close();
                         }
                     }
                 }
@@ -69,59 +72,80 @@ public class DataImportController implements UrlHandler {
         return null;
     }
 
-    private int importCsv(FileItem item) throws IOException, TranslatableException {
-        CSVReader csvReader = new CSVReader(new InputStreamReader(item.getInputStream()));
+    /**
+     * The file needs to be in the format:
+     * 
+     * Data Point XID, Device Name, Point name, Time, Value, Rendered, Annotation, Modify(Not used yet)
+     * 
+     * 
+     * @param item
+     * @return
+     * @throws IOException
+     * @throws TranslatableException
+     */
+    private int importCsv(CSVReader csvReader) throws IOException, TranslatableException {
+        
         DataPointDao dataPointDao = new DataPointDao();
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
-        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
 
-        // Basic validation
+        // Basic validation of header
         String[] nextLine = csvReader.readNext();
         if (nextLine == null)
             throw new TranslatableException(new TranslatableMessage("dataImport.import.noData"));
-        if (nextLine.length < 2)
-            throw new TranslatableException(new TranslatableMessage("dataImport.import.noPoints"));
+        if (nextLine.length != ExportCsvStreamer.columns)
+            throw new TranslatableException(new TranslatableMessage("dataImport.import.invalidHeaders", nextLine.length, ExportCsvStreamer.columns));
 
-        // Find the points by XID
-        DataPointVO[] vos = new DataPointVO[nextLine.length - 1];
+        //Map of XIDs to non-running data points
+        Map<String, DataPointVO> voMap = new HashMap<String, DataPointVO>();
+        //Map of XIDs to running data points
+        Map<String, DataPointRT> rtMap = new HashMap<String, DataPointRT>();
+        
+        //Read in all the rows
+        int row = 1;
+        String xid;
+        DataPointVO vo;
+        DataPointRT rt;
+        long time;
+        DataValue value;
+        PointValueTime pvt;
 
-        for (int i = 1; i < nextLine.length; i++) {
-            if (StringUtils.isBlank(nextLine[i]))
-                throw new TranslatableException(new TranslatableMessage("dataImport.import.badXid", i));
-
-            DataPointVO vo = dataPointDao.getDataPoint(nextLine[i]);
-            if (vo == null)
-                throw new TranslatableException(new TranslatableMessage("dataImport.import.xidNotFound", nextLine[i]));
-
-            vos[i - 1] = vo;
-        }
-
-        // Find the RTs for the points if they are enabled
-        DataPointRT[] rts = new DataPointRT[vos.length];
-        for (int i = 0; i < vos.length; i++)
-            rts[i] = Common.runtimeManager.getDataPoint(vos[i].getId());
-
-        // Import the data
-        int count = 0;
         while ((nextLine = csvReader.readNext()) != null) {
-            // The first value is always a date.
-            long time = dtf.parseDateTime(nextLine[0]).getMillis();
+        	//Check XID
+        	xid = nextLine[0];
+        	if (StringUtils.isBlank(xid))
+                throw new TranslatableException(new TranslatableMessage("dataImport.import.badXid", xid, row));
+        	
+        	//First Check to see if we already have a point
+        	vo = voMap.get(xid);
+        	rt = rtMap.get(xid);
+        	
+        	//We will always have the vo in the map but the RT may be null if the point isn't running
+        	if(vo == null){
+        		vo = dataPointDao.getDataPoint(xid);
+	            if (vo == null)
+	                throw new TranslatableException(new TranslatableMessage("dataImport.import.xidNotFound", xid, row));
+	        	rt = Common.runtimeManager.getDataPoint(vo.getId());
+	
+        		rtMap.put(xid, rt);
+        		voMap.put(xid, vo);
+        	}
+        	
+        	//Going to insert some data
+            time = ExportCsvStreamer.dtf.parseDateTime(nextLine[3]).getMillis();
+            value = DataValue.stringToValue(nextLine[4], vo.getPointLocator().getDataTypeId());
+            pvt = new PointValueTime(value, time);
+        	
+        	if(rt == null){
+        		//Insert Via DAO
+        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
+        	}else{
+        		//Insert Via RT
+        		rt.savePointValueDirectToCache(pvt, null, true, true);
+        	}
 
-            // The rest of the values are point samples.
-            for (int i = 1; i < nextLine.length; i++) {
-                DataValue value = DataValue.stringToValue(nextLine[i], vos[i - 1].getPointLocator().getDataTypeId());
-                PointValueTime pvt = new PointValueTime(value, time);
-
-                if (rts[i - 1] != null)
-                    rts[i - 1].savePointValueDirectToCache(pvt, null, true, true);
-                else
-                    // Save directly to the database
-                    pointValueDao.savePointValueAsync(vos[i - 1].getId(), pvt, null);
-            }
-
-            count++;
+        	row++;
         }
-
-        return count;
+ 
+        return row - 2; //Header plus one for loop droput after count
     }
 }
