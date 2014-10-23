@@ -283,7 +283,7 @@
       locator.unitOfMeasurement = $get("unitOfMeasurement");
       locator.siPrefix = $get("siPrefix");
       locator.exponent = $get("exponent");
-      locator.vifeTypess = $get("vifeTypess");
+      locator.vifeTypes = $get("vifeTypes");
       locator.vifeLabels = $get("vifeLabels");
 
       MBusEditDwr.saveMBusPointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
@@ -397,94 +397,94 @@
 <tag:pointList pointHelpId="mbusPP">
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.addressing"/></td>
-      <td class="formField"><input type="text" id="addressing" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="addressing" /></td>
   </tr>
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.addressHex"/></td>
-      <td class="formField"><input type="text" id="addressHex" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="addressHex" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.identNumber"/></td>
-      <td class="formField"><input type="text" id="identNumber" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="identNumber" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.medium"/></td>
-      <td class="formField"><input type="text" id="medium" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="medium" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.manufacturer"/></td>
-      <td class="formField"><input type="text" id="manufacturer" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="manufacturer" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.versionHex"/></td>
-      <td class="formField"><input type="text" id="versionHex" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="versionHex" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.responseFrame"/></td>
-      <td class="formField"><input type="text" id="responseFrame" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="responseFrame" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.difCode"/></td>
-      <td class="formField"><input type="text" id="difCode" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="difCode" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.functionField"/></td>
-      <td class="formField"><input type="text" id="functionField" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="functionField" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.deviceUnit"/></td>
-      <td class="formField"><input type="text" id="deviceUnit" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="deviceUnit" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.tariff"/></td>
-      <td class="formField"><input type="text" id="tariff" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="tariff" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.storageNumber"/></td>
-      <td class="formField"><input type="text" id="storageNumber" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="storageNumber" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifType"/></td>
-      <td class="formField"><input type="text" id="vifType" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="vifType" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifLabel"/></td>
-      <td class="formField"><input type="text" id="vifLabel" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="vifLabel" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.unitOfMeasurement"/></td>
-      <td class="formField"><input type="text" id="unitOfMeasurement" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="unitOfMeasurement" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.siPrefix"/></td>
-      <td class="formField"><input type="text" id="siPrefix" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="siPrefix" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.exponent"/></td>
-      <td class="formField"><input type="text" id="exponent" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="exponent" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifeTypes"/></td>
-      <td class="formField"><input type="text" id="vifeTypes" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="vifeTypes" /></td>
   </tr>
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifeLabels"/></td>
-      <td class="formField"><input type="text" id="vifeLabels" disabled="disabled"/></td>
+      <td class="formField"><input type="text" id="vifeLabels" /></td>
   </tr>
 </tag:pointList>

@@ -1,3 +1,7 @@
+*Verion 1.0.6*
+* Changed UI to enable inputs for creating/editing data points
+* Fixed bug in MBusPointLocator that would not allow creating a new Data Point or Editing an existing data source
+
 *Version 1.0.5*
 * Upgraded to work with core version 2.5.x
 * Added Poll aborted Event

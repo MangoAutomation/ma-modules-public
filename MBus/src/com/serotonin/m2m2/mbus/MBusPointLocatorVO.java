@@ -9,6 +9,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.sf.mbus4j.MBusAddressing;
 import net.sf.mbus4j.MBusConstants;
 import net.sf.mbus4j.dataframes.MBusMedium;
@@ -34,7 +36,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     @JsonProperty
     private byte address;
     @JsonProperty
-    private String difCode;
+    private String difCode = DataFieldCode._8_DIGIT_BCD.getLabel();
     @JsonProperty
     private String functionField;
     @JsonProperty
@@ -110,7 +112,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     public void validate(ProcessResult response) {
         if ((address < MBusConstants.FIRST_REGULAR_PRIMARY_ADDRESS)
                 || (address > MBusConstants.LAST_REGULAR_PRIMARY_ADDRESS)) {
-            response.addContextualMessage("address", "validate.required");
+            response.addContextualMessage("addressHex", "validate.required");
         }
         try {
             DataFieldCode.fromLabel(difCode);
@@ -138,23 +140,36 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
             response.addContextualMessage("storageNumber", "validate.required");
         }
 
+        
+        if(StringUtils.isEmpty(vifType)){
+        	response.addContextualMessage("vifType", "validate.required");
+        }
+        if(StringUtils.isEmpty(vifLabel)){
+        	response.addContextualMessage("vifLabel", "validate.required");
+        }        
+        if(StringUtils.isEmpty(unitOfMeasurement)){
+        	response.addContextualMessage("unitOfMeasurement", "validate.required");
+        }
+        if(StringUtils.isEmpty(siPrefix)){
+        	response.addContextualMessage("siPrefix", "validate.required");
+        }        
         try {
             DataBlock.getVif(vifType, vifLabel, unitOfMeasurement, siPrefix, exponent);
         }
         catch (IllegalArgumentException ex) {
-            response.addContextualMessage("vif", "validate.required");
+            response.addMessage(new TranslatableMessage("mbus.validate.vifInvalid"));
         }
 
         if (vifeLabels.length > 0) {
             if (vifeLabels.length != vifeTypes.length) {
-                response.addContextualMessage("vife and vifetype lenght mismatch", "validate.required");
+                response.addMessage(new TranslatableMessage("mbus.validate.vifeLengthsInvalid"));
             }
             for (int i = 0; i < vifeLabels.length; i++) {
                 try {
                     DataBlock.getVife(vifeTypes[i], vifeLabels[i]);
                 }
                 catch (IllegalArgumentException ex) {
-                    response.addContextualMessage("vife", "validate.required");
+                   response.addMessage(new TranslatableMessage("mbus.validate.vifeInvalid"));
                 }
             }
         }
@@ -174,7 +189,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
             response.addContextualMessage("id", "validate.required");
         }
         if ((manufacturer == null) || (manufacturer.length() != 3)) {
-            response.addContextualMessage("man", "validate.required");
+            response.addContextualMessage("manufacturer", "validate.required");
         }
     }
 
