@@ -3,10 +3,17 @@
     @author Matthew Lohbihler
 --%><%@page import="com.serotonin.m2m2.Common"%>
 <%@page import="com.serotonin.m2m2.reports.ReportPurgeDefinition"%>
+<%@page import="com.serotonin.m2m2.reports.web.ReportWorkItem"%>
+<%@page import="com.serotonin.m2m2.rt.maint.work.WorkItem" %>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <c:set var="reportPurgePeriods"><%= ReportPurgeDefinition.REPORT_PURGE_PERIODS %></c:set>
 <c:set var="reportPurgePeriodType"><%= ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE %></c:set>
+<c:set var="reportWorkItemPriority"><%=ReportWorkItem.REPORT_WORK_ITEM_PRIORITY %></c:set>
+<c:set var="reportWorkItemHighPriority"><%=WorkItem.PRIORITY_HIGH %></c:set>
+<c:set var="reportWorkItemMediumPriority"><%=WorkItem.PRIORITY_MEDIUM %></c:set>
+<c:set var="reportWorkItemLowPriority"><%=WorkItem.PRIORITY_LOW %></c:set>
+
 
 <script type="text/javascript">
   function saveReportSettings() {
@@ -16,6 +23,8 @@
 	  var settings = {};
       settings["${reportPurgePeriods}"] = $get("${reportPurgePeriods}");
       settings["${reportPurgePeriodType}"] = $get("${reportPurgePeriodType}");
+      settings["${reportWorkItemPriority}"] = $get("${reportWorkItemPriority}");
+      
 	  SystemSettingsDwr.saveSettings(settings, function() {
           setDisabled("saveReportSettingsBtn", false);
           setUserMessage("reportsMessage", "<fmt:message key="systemSettings.reportsSettingsSaved"/>");
@@ -32,13 +41,40 @@
       <tag:timePeriods id="${reportPurgePeriodType}" d="true" w="true" mon="true" y="true" value="${periods}"/>
     </td>
   </tr>
-  
+  <tr>
+    <td class="formLabelRequired"><fmt:message key="systemSettings.workItemPriority"/></td>
+    <td class="formField">
+      <c:set var="reportWorkItemPriorityValue"><m2m2:systemSetting key="${reportWorkItemPriority}" defaultValue="${reportWorkItemLowPriority}"/></c:set>
+      <select id="${reportWorkItemPriority}">
+      <c:choose>
+      <c:when test="${reportWorkItemPriorityValue == reportWorkItemLowPriority}">
+        <option value="${reportWorkItemHighPriority}"><fmt:message key="systemSettings.reports.highPriority"/></option>
+        <option value="${reportWorkItemMediumPriority}"><fmt:message key="systemSettings.reports.mediumPriority"/></option>
+        <option value="${reportWorkItemLowPriority}" selected="selected"><fmt:message key="systemSettings.reports.lowPriority"/></option>
+      </c:when>
+      <c:when test="${reportWorkItemPriorityValue == reportWorkItemHighPriority}">
+        <option value="${reportWorkItemHighPriority}" selected="selected"><fmt:message key="systemSettings.reports.highPriority"/></option>
+        <option value="${reportWorkItemMediumPriority}"><fmt:message key="systemSettings.reports.mediumPriority"/></option>
+        <option value="${reportWorkItemLowPriority}" ><fmt:message key="systemSettings.reports.lowPriority"/></option>
+      </c:when>
+      <c:when test="${reportWorkItemPriorityValue == reportWorkItemMediumPriority}">
+        <option value="${reportWorkItemHighPriority}"><fmt:message key="systemSettings.reports.highPriority"/></option>
+        <option value="${reportWorkItemMediumPriority}"  selected="selected"><fmt:message key="systemSettings.reports.mediumPriority"/></option>
+        <option value="${reportWorkItemLowPriority}"><fmt:message key="systemSettings.reports.lowPriority"/></option>
+      </c:when>
+      
+      </c:choose>
+      </select>
+    </td>
+  </tr>  
   <tr>
     <td colspan="2" align="center">
       <input id="saveReportSettingsBtn" type="button" value="<fmt:message key="common.save"/>" onclick="saveReportSettings()"/>
       <tag:help id="reportSettings"/>
     </td>
   </tr>
+  
+
   
   <tr><td colspan="2" id="reportsMessage" class="formError"></td></tr>
 </table>

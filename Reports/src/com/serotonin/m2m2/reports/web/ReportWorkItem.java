@@ -27,6 +27,7 @@ import com.serotonin.io.StreamUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -54,11 +55,15 @@ import com.serotonin.web.mail.EmailInline;
 public class ReportWorkItem implements WorkItem {
     static final Log LOG = LogFactory.getLog(ReportWorkItem.class);
 
+    //Key For Settings
+    public static final String REPORT_WORK_ITEM_PRIORITY = "reports.REPORT_WORK_ITEM_PRIORITY";
+
     //    private static UsageExpiryChecker USAGE_EXPIRY_CHECKER;
 
     @Override
     public int getPriority() {
-        return WorkItem.PRIORITY_LOW;
+    	//Allow User To Choose
+    	return SystemSettingsDao.getIntValue(REPORT_WORK_ITEM_PRIORITY, WorkItem.PRIORITY_LOW);
     }
 
     public static void queueReport(ReportVO report) {

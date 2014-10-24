@@ -8,3 +8,9 @@
   reports can potentially consume a great deal of available storage space. Purging can be prevented by setting the 
   "prevent purge" attribute on the report instance.
 </p>
+
+<p>
+Use the "Report work item priority" setting to set the priority of the report instances when they are run.  High will run at the same priority
+ as the data source polls and will begin almost instantaneously.  Medium will run at the same level as the event handlers.  Low will run in the background. 
+ The High and Low priorities allow for multiple reports to run at the same time.  Low priority will run reports in the order they are scheduled one by one.
+</p>
