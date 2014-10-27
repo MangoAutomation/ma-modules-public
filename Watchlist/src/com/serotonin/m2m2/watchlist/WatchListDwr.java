@@ -334,7 +334,7 @@ public class WatchListDwr extends ModuleDwr {
         DateTime to = createDateTime(toYear, toMonth, toDay, toHour, toMinute, toSecond, toNone, dtz);
 
         StringBuilder htmlData = new StringBuilder();
-        htmlData.append("<img src=\"achart/ft_");
+        htmlData.append("<img src=\"chart/ft_");
         htmlData.append(System.currentTimeMillis());
         htmlData.append('_');
         htmlData.append(fromNone ? -1 : from.getMillis());
