@@ -319,7 +319,8 @@
                     function(ri) { 
                         if (ri.state == <c:out value="<%= ReportInstance.STATE_NOT_STARTED %>"/> ||
                                 ri.state == <c:out value="<%= ReportInstance.STATE_STARTED %>"/>)
-                            return "";
+                            return "<img id='ri"+ ri.id +"DeleteImg' src='images/bullet_delete.png' class='ptr' "+
+                            "onclick='deleteReportInstance("+ ri.id +")'/> ";
                             
                         var result = "<img src='images/bullet_down.png' class='ptr' title='<fmt:message key="reports.export"/>' "+
                                 "onclick='exportData(\""+ encodeQuotes(ri.name) +"\", "+ ri.id +")'/>";

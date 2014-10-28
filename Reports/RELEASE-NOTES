@@ -1,5 +1,6 @@
 *Version 2.1.1*
 * Added system setting for selecting the Report Work Item priority
+* Added ability to delete reports that have not started yet. (Could be dangerous if deleting a report that is currently running...)
 
 *Version 2.1.0*
 * Upgraded to work with core version 2.5.x
