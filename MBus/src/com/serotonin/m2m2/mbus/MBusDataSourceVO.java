@@ -4,8 +4,6 @@
  */
 package com.serotonin.m2m2.mbus;
 
-import gnu.io.SerialPort;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -45,21 +43,25 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     private int updatePeriods = 1;
     @JsonProperty
     private MBusConnectionType connectionType = MBusConnectionType.SERIAL_DIRECT;
+
     @JsonProperty
     private int baudRate = 2400;
     @JsonProperty
-    private int flowControlIn = SerialPort.FLOWCONTROL_RTSCTS_IN;
+    private int flowControlIn = 1;  //RTSCTS
     @JsonProperty
-    private int flowControlOut = SerialPort.FLOWCONTROL_RTSCTS_OUT;
+    private int flowControlOut = 2; //RTSCTS
     @JsonProperty
-    private int dataBits = SerialPort.DATABITS_8;
+    private int dataBits = 8;
     @JsonProperty
-    private int stopBits = SerialPort.STOPBITS_1;
+    private int stopBits = 1;
     @JsonProperty
-    private int parity = SerialPort.PARITY_EVEN;
+    private int parity = 2; //Event Parity
+    
     // TODO implement
     @JsonProperty
     private String phonenumber = "";
+    @JsonProperty
+    private int responseTimeoutOffset = 1000;
 
     @Override
     protected void addEventTypes(List<EventTypeVO> eventTypes) {
@@ -138,7 +140,15 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         this.updatePeriods = updatePeriods;
     }
 
-    @Override
+    public int getResponseTimeoutOffset() {
+		return responseTimeoutOffset;
+	}
+
+	public void setResponseTimeoutOffset(int responseTimeoutOffset) {
+		this.responseTimeoutOffset = responseTimeoutOffset;
+	}
+
+	@Override
     public void validate(ProcessResult response) {
         super.validate(response);
 
@@ -159,7 +169,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 2;
+    private static final int version = 3;
 
     // Serialization for saveDataSource
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -182,14 +192,14 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         out.writeInt(dataBits);
         out.writeInt(stopBits);
         out.writeInt(parity);
+        out.writeInt(responseTimeoutOffset);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
         int ver = in.readInt();
 
         // Switch on the version of the class so that version changes can be elegantly handled.
-        switch (ver) {
-        case 2:
+        if((ver ==2)||(ver == 1)){
             connectionType = MBusConnectionType.valueOf(in.readUTF());
             switch (connectionType) {
             case SERIAL_DIRECT:
@@ -207,8 +217,28 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
             dataBits = in.readInt();
             stopBits = in.readInt();
             parity = in.readInt();
-            break;
+            responseTimeoutOffset = 1000;
+        }else if(ver == 3){
+            connectionType = MBusConnectionType.valueOf(in.readUTF());
+            switch (connectionType) {
+            case SERIAL_DIRECT:
+                commPortId = SerializationHelper.readSafeUTF(in);
+                break;
+            case SERIAL_AT_MODEM:
+                // TODO modem stuff goes here
+                break;
+            }
+            updatePeriodType = in.readInt();
+            updatePeriods = in.readInt();
+            baudRate = in.readInt();
+            flowControlIn = in.readInt();
+            flowControlOut = in.readInt();
+            dataBits = in.readInt();
+            stopBits = in.readInt();
+            parity = in.readInt();
+            responseTimeoutOffset = in.readInt();
         }
+
     }
 
     public void setConnectionType(MBusConnectionType connectionType) {

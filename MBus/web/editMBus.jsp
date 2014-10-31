@@ -32,6 +32,7 @@
 
   function search() {
       searchButtons(true);
+      hide("responseFrames");
       $set("searchMessage", "<fmt:message key='dsEdit.mbus.searching' />");
       dwr.util.removeAllRows("mbusDevices");
       if ($get("addressingType") == "PRIMARY") {
@@ -39,12 +40,12 @@
               $get("baudRate"),  $get("flowControlIn"),  $get("flowControlOut"),
               $get("dataBits"),  $get("stopBits"),  $get("parity"),
               $get("firstPrimaryAddress"), $get("lastPrimaryAddress"),
-              searchCB);
+              $get("responseTimeoutOffset"), searchCB);
       } else if ($get("addressingType") == "SECONDARY") {
           MBusEditDwr.searchMBusBySecondaryAddressing($get("commPortId"), $get("phonenumber"),
               $get("baudRate"),  $get("flowControlIn"),  $get("flowControlOut"),
               $get("dataBits"),  $get("stopBits"),  $get("parity"),
-              searchCB);
+              $get("responseTimeoutOffset"), searchCB);
       } else {
           MBusEditDwr.searchMBusByUnknownAddress();// Dummy for generating Error in log
       }
@@ -52,7 +53,7 @@
 
   function searchCB() {
       searchButtons(true);
-      $set("searchMessage", "Callback searchCB");
+      //$set("searchMessage", "Callback searchCB");
       setTimeout(searchUpdate, 1000);
   }
 
@@ -84,10 +85,10 @@
               }
           });
 
-          hide("responseFrames");
+          
 
           if (result.finished) {
-              $set("searchMessage", "searchUpdateCB");
+              $set("searchMessage", "Finished Search");
               searchButtons(false);
           } else {
               searchCB();
@@ -237,7 +238,20 @@
       MBusEditDwr.addMBusPoint(indicies.addressing, indicies.deviceIndex, indicies.rsIndex, indicies.dbIndex, editPointCB);
   }
   
+  //Save point locator values as reference as null vs "" is  important to differential from
+  // and the inputs on the page do not do this for us.
+  var pointProperties = {};
+  /**
+   * Save the value into our storage
+   */
+  function mbusPointLocatorValueChanged(attribute){
+	  pointProperties[attribute] = $get(attribute);
+  }
+  
   function editPointCBImpl(locator) {
+	  pointProperties = locator; //Save for reference as null vs "" is  important to differential from
+	  // and the inputs on the page do not do this for us.
+	  
       $set("addressing", locator.addressing);
       $set("addressHex", locator.addressHex);
       $set("identNumber", locator.identNumber);
@@ -266,25 +280,29 @@
   }
   
   function savePointImpl(locator) {
-      locator.addressing = $get("addressing");
-      locator.addressHex = $get("addressHex");
-      locator.identNumber = $get("identNumber");
-      locator.medium = $get("medium");
-      locator.manufacturer = $get("manufacturer");
-      locator.versionHex = $get("versionHex");
-      locator.responseFrame = $get("responseFrame");
-      locator.difCode = $get("difCode");
-      locator.functionField = $get("functionField");
-      locator.deviceUnit = $get("deviceUnit");
-      locator.tariff = $get("tariff");
-      locator.storageNumber = $get("storageNumber");
-      locator.vifType = $get("vifType");
-      locator.vifLabel = $get("vifLabel");
-      locator.unitOfMeasurement = $get("unitOfMeasurement");
-      locator.siPrefix = $get("siPrefix");
-      locator.exponent = $get("exponent");
-      locator.vifeTypes = $get("vifeTypes");
-      locator.vifeLabels = $get("vifeLabels");
+      locator.addressing = pointProperties.addressing; //$get("addressing");
+      locator.addressHex = pointProperties.addressHex; //$get("addressHex");
+      locator.identNumber = pointProperties.identNumber; //$get("identNumber");
+      locator.medium = pointProperties.medium; //$get("medium");
+      locator.manufacturer = pointProperties.manufacturer; //$get("manufacturer");
+      locator.versionHex = pointProperties.versionHex; //$get("versionHex");
+      locator.responseFrame = pointProperties.responseFrame; //$get("responseFrame");
+      locator.difCode = pointProperties.difCode; //$get("difCode");
+      locator.functionField = pointProperties.functionField; //$get("functionField");
+      locator.deviceUnit = pointProperties.deviceUnit; //$get("deviceUnit");
+      locator.tariff = pointProperties.tariff; //$get("tariff");
+      locator.storageNumber = pointProperties.storageNumber; //$get("storageNumber");
+      
+      locator.vifType = pointProperties.vifType; //$get("vifType");
+      locator.vifLabel = pointProperties.vifLabel; //$get("vifLabel");
+
+      locator.unitOfMeasurement = pointProperties.unitOfMeasurement;
+      locator.siPrefix = pointProperties.siPrefix;
+      locator.exponent = pointProperties.exponent;
+      
+	  locator.vifeTypes = pointProperties.vifeTypes;
+	  locator.vifeLabels = pointProperties.vifeLabels;
+ 
 
       MBusEditDwr.saveMBusPointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
   }
@@ -366,6 +384,17 @@
   <jsp:body>
     <!-- Disable modem for now-->
     <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
+      <td class="formField">
+        <input type="text" id="updatePeriods" value="${dataSource.updatePeriods}" class="formShort"/>
+        <tag:timePeriods id="updatePeriodType" value="${dataSource.updatePeriodType}" s="true" min="true" h="true" d="true" w="true" mon="true"/>
+      </td>
+    </tr>
+    <tr>
+      <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.responseTimeoutOffset"/></td>
+      <td class="formField"><input type="number" id="responseTimeoutOffset" value="${dataSource.responseTimeoutOffset}" /></td>
+    </tr>
+    <tr>
       <td colspan="2">
         <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="SERIAL_DIRECT" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
         <label class="formLabelRequired" for="useDirectConnection"><fmt:message key="dsEdit.mbus.useDirectConnection"/></label>
@@ -384,107 +413,101 @@
     
     <tag:serialSettings/>
     
-    <tr>
-      <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
-      <td class="formField">
-        <input type="text" id="updatePeriods" value="${dataSource.updatePeriods}" class="formShort"/>
-        <tag:timePeriods id="updatePeriodType" value="${dataSource.updatePeriodType}" s="true" min="true" h="true" d="true" w="true" mon="true"/>
-      </td>
-    </tr>
+
   </jsp:body>
 </tag:dataSourceAttrs>
 
 <tag:pointList pointHelpId="mbusPP">
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.addressing"/></td>
-      <td class="formField"><input type="text" id="addressing" /></td>
+      <td class="formField"><input type="text" id="addressing" onchange="mbusPointLocatorValueChanged('addressing');"/></td>
   </tr>
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.addressHex"/></td>
-      <td class="formField"><input type="text" id="addressHex" /></td>
+      <td class="formField"><input type="text" id="addressHex" onchange="mbusPointLocatorValueChanged('addressHex');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.identNumber"/></td>
-      <td class="formField"><input type="text" id="identNumber" /></td>
+      <td class="formField"><input type="text" id="identNumber" onchange="mbusPointLocatorValueChanged('identNumber');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.medium"/></td>
-      <td class="formField"><input type="text" id="medium" /></td>
+      <td class="formField"><input type="text" id="medium" onchange="mbusPointLocatorValueChanged('medium');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.manufacturer"/></td>
-      <td class="formField"><input type="text" id="manufacturer" /></td>
+      <td class="formField"><input type="text" id="manufacturer" onchange="mbusPointLocatorValueChanged('manufacturer');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.versionHex"/></td>
-      <td class="formField"><input type="text" id="versionHex" /></td>
+      <td class="formField"><input type="text" id="versionHex" onchange="mbusPointLocatorValueChanged('versionHex');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.responseFrame"/></td>
-      <td class="formField"><input type="text" id="responseFrame" /></td>
+      <td class="formField"><input type="text" id="responseFrame" onchange="mbusPointLocatorValueChanged('responseFrame');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.difCode"/></td>
-      <td class="formField"><input type="text" id="difCode" /></td>
+      <td class="formField"><input type="text" id="difCode" onchange="mbusPointLocatorValueChanged('difCode');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.functionField"/></td>
-      <td class="formField"><input type="text" id="functionField" /></td>
+      <td class="formField"><input type="text" id="functionField" onchange="mbusPointLocatorValueChanged('functionField');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.deviceUnit"/></td>
-      <td class="formField"><input type="text" id="deviceUnit" /></td>
+      <td class="formField"><input type="text" id="deviceUnit" onchange="mbusPointLocatorValueChanged('deviceUnit');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.tariff"/></td>
-      <td class="formField"><input type="text" id="tariff" /></td>
+      <td class="formField"><input type="text" id="tariff" onchange="mbusPointLocatorValueChanged('tariff');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.storageNumber"/></td>
-      <td class="formField"><input type="text" id="storageNumber" /></td>
+      <td class="formField"><input type="text" id="storageNumber" onchange="mbusPointLocatorValueChanged('storageNumber');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifType"/></td>
-      <td class="formField"><input type="text" id="vifType" /></td>
+      <td class="formField"><input type="text" id="vifType" onchange="mbusPointLocatorValueChanged('vifType');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifLabel"/></td>
-      <td class="formField"><input type="text" id="vifLabel" /></td>
+      <td class="formField"><input type="text" id="vifLabel" onchange="mbusPointLocatorValueChanged('vifLabel');" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.unitOfMeasurement"/></td>
-      <td class="formField"><input type="text" id="unitOfMeasurement" /></td>
+      <td class="formField"><input type="text" id="unitOfMeasurement" onchange="mbusPointLocatorValueChanged('unitOfMeasurement');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.siPrefix"/></td>
-      <td class="formField"><input type="text" id="siPrefix" /></td>
+      <td class="formField"><input type="text" id="siPrefix" onchange="mbusPointLocatorValueChanged('siPrefix');"/></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.exponent"/></td>
-      <td class="formField"><input type="text" id="exponent" /></td>
+      <td class="formField"><input type="text" id="exponent" onchange="mbusPointLocatorValueChanged('exponent');" /></td>
   </tr>
 
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifeTypes"/></td>
-      <td class="formField"><input type="text" id="vifeTypes" /></td>
+      <td class="formField"><input type="text" id="vifeTypes" onchange="mbusPointLocatorValueChanged('vifeTypes');"/></td>
   </tr>
   <tr>
       <td class="formLabelRequired"><fmt:message key="dsEdit.mbus.vifeLabels"/></td>
-      <td class="formField"><input type="text" id="vifeLabels" /></td>
+      <td class="formField"><input type="text" id="vifeLabels" onchange="mbusPointLocatorValueChanged('vifeLabels');"/></td>
   </tr>
 </tag:pointList>

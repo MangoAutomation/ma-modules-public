@@ -4,16 +4,10 @@
  */
 package com.serotonin.m2m2.mbus.dwr;
 
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
-
 import java.io.IOException;
 import java.util.Map;
 
 import net.sf.mbus4j.MBusAddressing;
-import net.sf.mbus4j.SerialPortTools;
 import net.sf.mbus4j.dataframes.MBusResponseFramesContainer;
 import net.sf.mbus4j.master.MBusMaster;
 import net.sf.mbus4j.master.MasterEventListener;
@@ -21,7 +15,13 @@ import net.sf.mbus4j.master.MasterEventListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.serotonin.io.serial.SerialParameters;
+import com.serotonin.io.serial.SerialPortProxy;
+import com.serotonin.io.serial.SerialUtils;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.mbus.MangoMBusSerialConnection;
 import com.serotonin.m2m2.web.dwr.beans.AutoShutOff;
 import com.serotonin.m2m2.web.dwr.beans.TestingUtility;
 
@@ -31,9 +31,9 @@ import com.serotonin.m2m2.web.dwr.beans.TestingUtility;
 public class MBusDiscovery implements MasterEventListener, TestingUtility {
     public static MBusDiscovery createPrimaryAddressingSearch(Translations translations, String commPortId,
             String phonenumber, int baudrate, int flowControlIn, int flowcontrolOut, int dataBits, int stopBits,
-            int parity, int firstPrimaryAddress, int lastPrimaryAddress) {
+            int parity, int firstPrimaryAddress, int lastPrimaryAddress, int responseTimeoutOffset) {
         MBusDiscovery result = new MBusDiscovery(translations, commPortId, phonenumber, MBusAddressing.PRIMARY,
-                baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity);
+                baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity, responseTimeoutOffset);
         result.firstPrimaryAddress = firstPrimaryAddress;
         result.lastPrimaryAddress = lastPrimaryAddress;
         result.searchThread.start();
@@ -42,9 +42,9 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
 
     public static MBusDiscovery createSecondaryAddressingSearch(Translations translations, String commPortId,
             String phonenumber, int baudrate, int flowControlIn, int flowcontrolOut, int dataBits, int stopBits,
-            int parity) {
+            int parity, int responseTimeoutOffset) {
         MBusDiscovery result = new MBusDiscovery(translations, commPortId, phonenumber, MBusAddressing.SECONDARY,
-                baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity);
+                baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity, responseTimeoutOffset);
         result.searchThread.start();
         return result;
     }
@@ -59,10 +59,11 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
             LOG.info("start search");
             try {
                 if (mBusAddressing == MBusAddressing.PRIMARY) {
-                    master.searchDevicesByPrimaryAddress(firstPrimaryAddress, lastPrimaryAddress);
+                    master.searchDevicesByPrimaryAddress((byte)firstPrimaryAddress, (byte)lastPrimaryAddress);
                 }
                 else {
-                    master.searchDevicesBySecondaryAddressing();
+                	int tries = 2;
+                    master.searchDevicesBySecondaryAddressing(tries);
                 }
             }
             catch (InterruptedException ex) {
@@ -78,9 +79,8 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
             try {
                 finished = true;
                 master.close();
-                sPort.close();
             }
-            catch (InterruptedException ex) {
+            catch (IOException ex) {
                 LOG.info("Interrupted)");
             }
         }
@@ -91,14 +91,12 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
     // private final int removeDeviceIndex = 1;
     final MBusAddressing mBusAddressing;
     final MBusMaster master;
-    SerialPort sPort;
     // private String phonenumber;
     private final AutoShutOff autoShutOff;
     String message;
     boolean finished;
     private final SearchThread searchThread;
-    private String comPortId;
-    private int baudrate;
+
     int lastPrimaryAddress;
     int firstPrimaryAddress;
 
@@ -116,8 +114,8 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
      * @param parity
      */
     private MBusDiscovery(Translations translations, String comPortId, String phonenumber,
-            MBusAddressing mBusAddressing, int baudrate, int flowControlIn, int flowcontrolOut, int dataBits,
-            int stopBits, int parity) {
+            MBusAddressing mBusAddressing, int baudrate, int flowControlIn, int flowControlOut, int dataBits,
+            int stopBits, int parity, int responseTimeoutOffset) {
         if ((phonenumber != null) && (phonenumber.length() > 0)) {
             throw new IllegalArgumentException("Modem with Phonenumber not implemented yet!");
         }
@@ -136,26 +134,46 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
         // Thread starten , der sucht....
         master = new MBusMaster();
         try {
-            this.comPortId = comPortId;
-            this.baudrate = baudrate;
-            sPort = SerialPortTools.openPort(this.comPortId, this.baudrate);
+
+            //Hack to test Device via serial-ethenet converter
+//            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
+//            Connection conn = new MBusSerialPortBridge(bridge, baudrate, responseTimeoutOffset);
+//            
+          SerialParameters params = new SerialParameters();
+          params.setCommPortId(comPortId);
+          params.setPortOwnerName("Mango MBus Serial Test Tool");
+          params.setBaudRate(baudrate);
+          params.setFlowControlIn(flowControlIn);
+          params.setFlowControlOut(flowControlOut);
+          params.setDataBits(dataBits);
+          params.setStopBits(stopBits);
+          params.setParity(parity);
+          SerialPortProxy serialPort = SerialUtils.openSerialPort(params);
+          MangoMBusSerialConnection conn = new MangoMBusSerialConnection(serialPort, responseTimeoutOffset);
+
+            master.setConnection(conn);
+            master.open();
+            
+            
+            
             // sPort.setSerialPortParams(baudrate, dataBits, stopBits, parity);
             // sPort.setFlowControlMode(flowControlIn | flowcontrolOut);
 
-            master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), baudrate);
+            //master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), baudrate);
         }
-        catch (NoSuchPortException ex) {
-            LOG.warn("MBusDiscovery(...)", ex);
-        }
-        catch (PortInUseException ex) {
-            LOG.warn("MBusDiscovery(...)", ex);
-        }
-        catch (UnsupportedCommOperationException ex) {
-            LOG.warn("MBusDiscovery(...)", ex);
-        }
-        catch (IOException ex) {
+//        catch (NoSuchPortException ex) {
+//            LOG.warn("MBusDiscovery(...)", ex);
+//        }
+//        catch (PortInUseException ex) {
+//            LOG.warn("MBusDiscovery(...)", ex);
+//        }
+//        catch (UnsupportedCommOperationException ex) {
+//            LOG.warn("MBusDiscovery(...)", ex);
+//        }
+        catch (Exception ex) {
             // no op
-        }
+        	 LOG.warn("MBusDiscovery(...)", ex);
+        } 
         // TODO master init
         message = translations.translate("dsEdit.mbus.tester.searchingDevices");
         searchThread = new SearchThread();
@@ -170,7 +188,9 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
             MBusResponseFramesContainer dev = master.getDevice(i);
             devs[i] = new MBusDeviceBean(i, dev);
         }
-
+        if(devs.length > 0){
+        	message = new TranslatableMessage("dsEdit.mbus.tester.foundDevices" , devs.length).translate(Common.getTranslations());
+        }
         result.put("addressing", mBusAddressing.getLabel());
         result.put("devices", devs);
         result.put("message", message);
@@ -188,7 +208,13 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
         LOG.info("cleanup()");
         if (!finished) {
             finished = true;
-            master.cancel();
+            try {
+                master.cancel();
+				master.close();
+			} catch (IOException e) {
+				LOG.error(e.getMessage(), e);
+			}
+
             autoShutOff.cancel();
             searchThread.interrupt();
         }

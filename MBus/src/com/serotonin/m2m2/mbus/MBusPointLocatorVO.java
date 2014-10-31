@@ -9,14 +9,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import net.sf.mbus4j.MBusAddressing;
-import net.sf.mbus4j.MBusConstants;
+import net.sf.mbus4j.MBusUtils;
 import net.sf.mbus4j.dataframes.MBusMedium;
 import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
 import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.DataTypes;
@@ -110,10 +110,10 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
 
     @Override
     public void validate(ProcessResult response) {
-        if ((address < MBusConstants.FIRST_REGULAR_PRIMARY_ADDRESS)
-                || (address > MBusConstants.LAST_REGULAR_PRIMARY_ADDRESS)) {
-            response.addContextualMessage("addressHex", "validate.required");
-        }
+//        if ((address < MBusUtils.FIRST_REGULAR_PRIMARY_ADDRESS)
+//                || (address > MBusUtils.LAST_REGULAR_PRIMARY_ADDRESS)) {
+//            response.addContextualMessage("addressHex", "validate.required");
+//        }
         try {
             DataFieldCode.fromLabel(difCode);
         }
@@ -147,17 +147,17 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
         if(StringUtils.isEmpty(vifLabel)){
         	response.addContextualMessage("vifLabel", "validate.required");
         }        
-        if(StringUtils.isEmpty(unitOfMeasurement)){
-        	response.addContextualMessage("unitOfMeasurement", "validate.required");
-        }
-        if(StringUtils.isEmpty(siPrefix)){
-        	response.addContextualMessage("siPrefix", "validate.required");
-        }        
+//        if(StringUtils.isEmpty(unitOfMeasurement)){
+//        	response.addContextualMessage("unitOfMeasurement", "validate.required");
+//        }
+//        if(StringUtils.isEmpty(siPrefix)){
+//        	response.addContextualMessage("siPrefix", "validate.required");
+//        }        
         try {
             DataBlock.getVif(vifType, vifLabel, unitOfMeasurement, siPrefix, exponent);
         }
         catch (IllegalArgumentException ex) {
-            response.addMessage(new TranslatableMessage("mbus.validate.vifInvalid"));
+            response.addMessage(new TranslatableMessage("mbus.validate.vifInvalid", ex.getMessage()));
         }
 
         if (vifeLabels.length > 0) {
@@ -169,7 +169,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
                     DataBlock.getVife(vifeTypes[i], vifeLabels[i]);
                 }
                 catch (IllegalArgumentException ex) {
-                   response.addMessage(new TranslatableMessage("mbus.validate.vifeInvalid"));
+                   response.addMessage(new TranslatableMessage("mbus.validate.vifeInvalid", ex.getMessage()));
                 }
             }
         }

@@ -4,11 +4,8 @@
  */
 package com.serotonin.m2m2.mbus;
 
-import gnu.io.SerialPort;
-
 import java.io.IOException;
 
-import net.sf.mbus4j.SerialPortTools;
 import net.sf.mbus4j.dataframes.datablocks.BigDecimalDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.ByteDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.IntegerDataBlock;
@@ -23,7 +20,9 @@ import net.sf.mbus4j.master.ValueRequestPointLocator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.io.serial.SerialParameters;
+import com.serotonin.io.serial.SerialPortProxy;
+import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -42,25 +41,29 @@ public class MBusDataSourceRT extends PollingDataSource {
     
     private final MBusDataSourceVO vo;
     // private final long nextRescan = 0;
-    private SerialPort sPort;
-    private final MBusMaster master = new MBusMaster();
+    private final MBusMaster master;
 
     public MBusDataSourceRT(MBusDataSourceVO vo) {
         super(vo);
         this.vo = vo;
+        this.master = new MBusMaster();
         setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
     }
 
     @Override
     public void initialize() {
         LOG.info("INITIALIZE");
+        openSerialPort();
         super.initialize();
+
     }
 
     @Override
     public void terminate() {
         LOG.info("TERMINATE");
+        closePort();
         super.terminate();
+
     }
 
     @Override
@@ -78,7 +81,16 @@ public class MBusDataSourceRT extends PollingDataSource {
                     try {
                         if (vr.getDb() == null) {
                             // TODO handle null value properly
-                            throw new ShouldNeverHappenException("Got null value ");
+                        	
+                        	DataPointRT dprt = vr.getReference();
+                        	String msg = dprt.getVO().getName() + " " + dprt.getVO().getXid() + " ";
+                        	if(	vr.getVif()!= null){
+                        		msg = vr.getVif().toString();
+                        	}
+                            LOG.warn("Read null value for: " + msg);
+                            raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                                    new TranslatableMessage("event.exception2", vo.getName(),
+                                            "Dont know how to save value for point with xid : ", dprt.getVO().getXid()));
                         }
                         else if (vr.getDb() instanceof ByteDataBlock) {
                             vr.getReference().updatePointValue(
@@ -149,9 +161,37 @@ public class MBusDataSourceRT extends PollingDataSource {
 
     private boolean openSerialPort() {
         try {
-            LOG.warn("MBus Try open serial port");
-            sPort = SerialPortTools.openPort(vo.getCommPortId(), vo.getBaudRate());
-            master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), vo.getBaudRate());
+        	if(master.getConnection() != null){
+	        	switch(master.getConnection().getConnState()){
+	        		case OPEN:
+	        			return true;
+	        		case CLOSING:
+	        		case OPENING:
+	        			return false;
+	        		default:
+	        	}
+        	}
+            
+            //Hack to allow reading from TCP
+//            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
+//            Connection conn = new MBusSerialPortBridge(bridge, vo.getBaudRate(), 0);
+            
+            SerialParameters params = new SerialParameters();
+            params.setCommPortId(vo.getCommPortId());
+            params.setPortOwnerName("Mango MBus Serial Data Source");
+            params.setBaudRate(vo.getBaudRate());
+            params.setFlowControlIn(vo.getFlowControlIn());
+            params.setFlowControlOut(vo.getFlowControlOut());
+            params.setDataBits(vo.getDataBits());
+            params.setStopBits(vo.getStopBits());
+            params.setParity(vo.getParity());
+            SerialPortProxy serialPort = SerialUtils.openSerialPort(params);
+            MangoMBusSerialConnection conn = new MangoMBusSerialConnection(serialPort, vo.getResponseTimeoutOffset());
+            
+            master.setConnection(conn);
+            master.open();
+            
+            //master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), vo.getBaudRate());
             return true;
         }
         catch (Exception ex) {
@@ -167,14 +207,10 @@ public class MBusDataSourceRT extends PollingDataSource {
         try {
             master.close();
         }
-        catch (InterruptedException ex) {
+        catch (IOException ex) {
             LOG.fatal("Close port", ex);
             raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
                     "event.exception2", vo.getName(), ex.getMessage(), "HALLO3"));
-        }
-        if (sPort != null) {
-            sPort.close();
-            sPort = null;
         }
     }
 }

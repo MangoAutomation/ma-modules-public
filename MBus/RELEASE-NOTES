@@ -1,3 +1,9 @@
+*Version 1.0.7*
+* Cleaned up UI
+* Upgraded MBus4j to 1.5.8
+* Removed dependency on RXTX and replaced with Mango Default Serial library (JSSC Currently)
+* Added empty help files as placeholders
+
 *Verion 1.0.6*
 * Changed UI to enable inputs for creating/editing data points
 * Fixed bug in MBusPointLocator that would not allow creating a new Data Point or Editing an existing data source

@@ -53,24 +53,24 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public void searchMBusByPrimaryAddressing(String commPortId, String phonenumber, int baudrate, int flowControlIn,
             int flowcontrolOut, int dataBits, int stopBits, int parity, String firstPrimaryAddress,
-            String lastPrimaryAddress) {
+            String lastPrimaryAddress, int responseTimeoutOffset) {
         User user = Common.getUser();
         Permissions.ensureDataSourcePermission(user);
 
         MBusDiscovery discovery = MBusDiscovery.createPrimaryAddressingSearch(getTranslations(), commPortId,
                 phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity,
-                Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16));
+                Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16), responseTimeoutOffset);
         user.setTestingUtility(discovery);
     }
 
     @DwrPermission(user = true)
     public void searchMBusBySecondaryAddressing(String commPortId, String phonenumber, int baudrate, int flowControlIn,
-            int flowcontrolOut, int dataBits, int stopBits, int parity) {
+            int flowcontrolOut, int dataBits, int stopBits, int parity, int responseTimeoutOffset) {
         User user = Common.getUser();
         Permissions.ensureDataSourcePermission(user);
 
         MBusDiscovery discovery = MBusDiscovery.createSecondaryAddressingSearch(getTranslations(), commPortId,
-                phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity);
+                phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity, responseTimeoutOffset);
         user.setTestingUtility(discovery);
     }
 
@@ -88,7 +88,9 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public Map<String, Object> getMBusResponseFrames(int deviceIndex) {
         Map<String, Object> result = new HashMap<String, Object>();
-        MBusDiscovery test = Common.getUser().getTestingUtility(MBusDiscovery.class);
+        User user = Common.getUser();
+        
+        MBusDiscovery test = user.getTestingUtility(MBusDiscovery.class);
         if (test == null)
             return null;
 
@@ -100,8 +102,8 @@ public class MBusEditDwr extends DataSourceEditDwr {
     public DataPointVO addMBusPoint(String addressing, int deviceIndex, int rsIndex, int dbIndex) {
         DataPointVO dp = getPoint(Common.NEW_ID, null);
         MBusPointLocatorVO locator = (MBusPointLocatorVO) dp.getPointLocator();
-
-        MBusDiscovery test = Common.getUser().getTestingUtility(MBusDiscovery.class);
+        User user = Common.getUser();
+        MBusDiscovery test = user.getTestingUtility(MBusDiscovery.class);
         if (test == null)
             return null;
 
@@ -144,6 +146,9 @@ public class MBusEditDwr extends DataSourceEditDwr {
                 locator.setVifeLabels(null);
             }
         }
+        
+        user.setEditPoint(dp);
+        
         return dp;
     }
 }
