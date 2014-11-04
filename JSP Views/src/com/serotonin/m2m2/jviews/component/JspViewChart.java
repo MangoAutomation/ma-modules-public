@@ -45,7 +45,7 @@ public class JspViewChart extends JspViewComponent {
         }
 
         StringBuilder htmlData = new StringBuilder();
-        htmlData.append("chart/");
+        htmlData.append("/chart/");
         htmlData.append(maxTs);
         htmlData.append('_');
         htmlData.append(duration);

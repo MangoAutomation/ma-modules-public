@@ -4,16 +4,16 @@
 --%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 <%@ taglib prefix="jview" tagdir="/WEB-INF/tags/jspViews" %>
+
 <html>
 <head>
-  <link href="resources/common.css" type="text/css" rel="stylesheet"/>
+  <link href="/resources/common.css" type="text/css" rel="stylesheet"/>
   
-  <%--
   <!--
     Change the username attribute below to the user under whose permissions this page will run.
   -->
   <jview:init username="changeMe"/>
-  --%>  
+ 
 </head>
 <body>
 <h1>JSP View Example</h1>
@@ -29,7 +29,14 @@
 </p>
 <p>
   You can create as many JSP views as you want. Simply create a new JSP file in the main directory (where the 
-  index.jsp is).
+  index.jsp is).  To access the file point your browser at mangohost:mangoport/jspViewExample.jsp
+</p>
+<p>
+  An alternate approach is to leave the files in the module's web folder and use the URL:
+  mangohost:mangoport/jsp-views/{nameOfJspFile}.shtm
+  
+  For this example {nameOfJspFile} is jspViewExample
+  
 </p>
 
 <!-- This code needs to remain here in order to build the Tags for the JSPs -->
@@ -54,7 +61,7 @@
   </tr>
   <tr>
     <td align="right" style="padding-right:20px">A binary point value:</td>
-    <td><jview:staticPoint xid="changeMe"/></td>
+    <td><jview:staticPoint xid="changeMeBinary"/></td>
   </tr>
 </table>
   
@@ -83,7 +90,7 @@
 </table>
 
 <p>A scripted point. Depending on the value of the binary source point, one of two images is shown.</p>
-<img id="scripted" src="images/hourglass.png"/>
+<img id="scripted" src="/images/hourglass.png"/>
 
 <!--
   A scriptPoint tag accepts similar attributes to the simplePoint, with the addition of one:
@@ -99,12 +106,12 @@
 -->
 <jview:scriptPoint xid="changeMeBinary" raw="true">
   if (value == "0") {
-      $("scripted").src = "graphics/BlinkingLights/light_red.gif";
+      $("scripted").src = "/images/lightbulb_off.png";
       // Set the global variable to false. This value is used in the toggle link.
       binaryValue = false;
   }
   else {
-      $("scripted").src = "graphics/BlinkingLights/light_green.gif";
+      $("scripted").src = "/images/lightbulb.png";
       // Set the global variable to true. This value is used in the toggle link.
       binaryValue = true;
   }
