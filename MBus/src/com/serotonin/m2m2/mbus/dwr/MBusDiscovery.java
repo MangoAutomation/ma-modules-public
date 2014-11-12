@@ -16,8 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.serotonin.io.serial.SerialParameters;
-import com.serotonin.io.serial.SerialPortProxy;
-import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -138,18 +136,16 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
             //Hack to test Device via serial-ethenet converter
 //            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
 //            Connection conn = new MBusSerialPortBridge(bridge, baudrate, responseTimeoutOffset);
-//            
-          SerialParameters params = new SerialParameters();
-          params.setCommPortId(comPortId);
-          params.setPortOwnerName("Mango MBus Serial Test Tool");
-          params.setBaudRate(baudrate);
-          params.setFlowControlIn(flowControlIn);
-          params.setFlowControlOut(flowControlOut);
-          params.setDataBits(dataBits);
-          params.setStopBits(stopBits);
-          params.setParity(parity);
-          SerialPortProxy serialPort = SerialUtils.openSerialPort(params);
-          MangoMBusSerialConnection conn = new MangoMBusSerialConnection(serialPort, responseTimeoutOffset);
+			SerialParameters params = new SerialParameters();
+			params.setCommPortId(comPortId);
+			params.setPortOwnerName("Mango MBus Serial Test Tool");
+			params.setBaudRate(baudrate);
+			params.setFlowControlIn(flowControlIn);
+			params.setFlowControlOut(flowControlOut);
+			params.setDataBits(dataBits);
+			params.setStopBits(stopBits);
+			params.setParity(parity);
+			MangoMBusSerialConnection conn = new MangoMBusSerialConnection(params, responseTimeoutOffset);
 
             master.setConnection(conn);
             master.open();
@@ -161,15 +157,6 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
 
             //master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), baudrate);
         }
-//        catch (NoSuchPortException ex) {
-//            LOG.warn("MBusDiscovery(...)", ex);
-//        }
-//        catch (PortInUseException ex) {
-//            LOG.warn("MBusDiscovery(...)", ex);
-//        }
-//        catch (UnsupportedCommOperationException ex) {
-//            LOG.warn("MBusDiscovery(...)", ex);
-//        }
         catch (Exception ex) {
             // no op
         	 LOG.warn("MBusDiscovery(...)", ex);

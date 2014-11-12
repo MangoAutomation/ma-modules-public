@@ -21,8 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.serotonin.io.serial.SerialParameters;
-import com.serotonin.io.serial.SerialPortProxy;
-import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -185,13 +183,11 @@ public class MBusDataSourceRT extends PollingDataSource {
             params.setDataBits(vo.getDataBits());
             params.setStopBits(vo.getStopBits());
             params.setParity(vo.getParity());
-            SerialPortProxy serialPort = SerialUtils.openSerialPort(params);
-            MangoMBusSerialConnection conn = new MangoMBusSerialConnection(serialPort, vo.getResponseTimeoutOffset());
+            MangoMBusSerialConnection conn = new MangoMBusSerialConnection(params, vo.getResponseTimeoutOffset());
             
             master.setConnection(conn);
             master.open();
             
-            //master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), vo.getBaudRate());
             return true;
         }
         catch (Exception ex) {

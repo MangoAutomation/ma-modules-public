@@ -4,7 +4,7 @@
 * Removed dependency on RXTX and replaced with Mango Default Serial library (JSSC Currently)
 * Added empty help files as placeholders
 
-*Verion 1.0.6*
+*Version 1.0.6*
 * Changed UI to enable inputs for creating/editing data points
 * Fixed bug in MBusPointLocator that would not allow creating a new Data Point or Editing an existing data source
 * Added MBusDeviceBean to DWR Conversion list
