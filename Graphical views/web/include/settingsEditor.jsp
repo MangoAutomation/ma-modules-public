@@ -130,7 +130,8 @@
         };
         
         this.pointSelectChanged = function() {
-            var point = getElement(settingsEditor.pointList, $get("settingsPointList"));
+            //var point = getElement(settingsEditor.pointList, $get("settingsPointList"));
+            var point = getElement(settingsEditor.pointList, pointFilteringSelect.get('value'));
             if (!point || !point.settable) {
                 $set("settingsSettable", false);
                 $("settingsSettable").disabled = true;
