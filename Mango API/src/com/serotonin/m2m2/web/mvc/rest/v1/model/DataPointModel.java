@@ -11,6 +11,7 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingProperties;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingType;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingProperties;
@@ -93,6 +94,18 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		//TODO Finish this
 		System.out.println(props.getType());
 	}
+	
+	//TODO Implement this with subclass JSON Mappings probably
+	@JsonGetter("pointLocator")
+	public PointLocatorVO getPointLocator(){
+		return this.vo.getPointLocator();
+	}
+	@JsonSetter("pointLocator")
+	public void setPointLocator(PointLocatorVO plVo){
+		//TODO This is broken, but the getter is working fine
+		this.vo.setPointLocator(plVo);
+	}
+	
 	
 	//TODO Missing Many Properties HERE
 	@JsonGetter("unit")
