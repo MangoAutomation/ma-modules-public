@@ -52,12 +52,4 @@ public class GraphicalViewMenuItemDefinition extends MenuItemDefinition{
         return "/views.shtm";
     }
     
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.MenuItemDefinition#getTarget(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Override
-    public String getTarget(HttpServletRequest request, HttpServletResponse response) {
-        return "graphical_view";
-    }
 }
