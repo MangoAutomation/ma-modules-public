@@ -1,3 +1,6 @@
+*Version 1.5.2*
+* Fixed bug in public views where links were broken and the page was not able to execute the javascript methods
+
 *Version 1.5.1*
 * Fixed bug where 'Settable override' checkbox was always disabled for Simple Point components.
 * Changing so that clicking on Icon opens the page in the same tab, this is pre 1.5.0 version functionality
