@@ -12,11 +12,13 @@ public enum RollupEnum {
 	
 	AVERAGE(false), 
 	MINIMUM(false), 
-	MAXIMUM(false), 
+	MAXIMUM(false),
+    ACCUMULATOR(false),
 	SUM(false), 
 	FIRST(true), 
 	LAST(true), 
-	COUNT(true);
+	COUNT(true),
+	INTEGRAL(false);
 
 	private boolean nonNumericSupport; //Does this rollup support Non-Numeric point values
 	private RollupEnum(boolean nonNumericSupport){

@@ -47,7 +47,7 @@ public class UserRestController extends MangoRestController{
 	public UserRestController(){
 	}
 
-
+	@ApiOperation(value = "Get all users", notes = "Returns a list of all users")
 	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<UserModel>> getAll(HttpServletRequest request) {
 		RestProcessResult<List<UserModel>> result = new RestProcessResult<List<UserModel>>(HttpStatus.OK);
@@ -72,7 +72,21 @@ public class UserRestController extends MangoRestController{
     	return result.createResponseEntity();
     }
 	
+	@ApiOperation(value = "Get current user", notes = "Returns the logged in user")
+	@RequestMapping(method = RequestMethod.GET, value = "/current")
+	public ResponseEntity<UserModel> getCurrentUser(HttpServletRequest request) {
+	    RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+	    User user = this.checkUser(request, result);
+	    
+	    if (result.isOk()) {
+            UserModel model = new UserModel(user);
+            return result.createResponseEntity(model);
+	    }
+
+	    return result.createResponseEntity();
+	}
 	
+	@ApiOperation(value = "Get user by name", notes = "Returns the user specified by the given username")
 	@RequestMapping(method = RequestMethod.GET, value = "/{username}")
     public ResponseEntity<UserModel> getUser(
     		@ApiParam(value = "Valid username", required = true, allowMultiple = false)
@@ -104,7 +118,7 @@ public class UserRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 
-	
+	@ApiOperation(value = "Updates a user")
 	@RequestMapping(method = RequestMethod.PUT, value = "/{username}")
     public ResponseEntity<UserModel> updateUser(
     		@PathVariable String username,

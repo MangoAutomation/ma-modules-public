@@ -44,38 +44,50 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends PointValue
 	                	Double avg = statisticsGenerator.getAverage();
 	                	if(avg == null)
 	                		avg = 0.0D;
-						this.writePointValueTime(avg, statisticsGenerator.getPeriodEndTime() - 1, null);
+						this.writePointValueTime(avg, statisticsGenerator.getPeriodStartTime(), null);
 	                break;
 	                case MINIMUM:
 	                	Double min = statisticsGenerator.getMinimumValue();
 	                	if(min != null)
-	                		this.writePointValueTime(min, statisticsGenerator.getMinimumTime(), null);
+	                		this.writePointValueTime(min, statisticsGenerator.getPeriodStartTime(), null);
 	                break;
 	                case MAXIMUM:
 	                	Double max = statisticsGenerator.getMaximumValue();
 	                	if(max != null)
-	                		this.writePointValueTime(max, statisticsGenerator.getMaximumTime(), null);
+	                		this.writePointValueTime(max, statisticsGenerator.getPeriodStartTime(), null);
 	                break;
+                    case ACCUMULATOR:
+                        Double accumulatorValue = statisticsGenerator.getLastValue();
+                        if (accumulatorValue == null) {
+                            accumulatorValue = statisticsGenerator.getMaximumValue();
+                        }
+                        if(accumulatorValue != null)
+                            this.writePointValueTime(accumulatorValue, statisticsGenerator.getPeriodStartTime(), null);
+                    break;
 	                case SUM:
 	                	Double sum = statisticsGenerator.getSum();
 	                	if(sum == null)
 	                		sum = 0.0D;
-                		this.writePointValueTime(sum, statisticsGenerator.getPeriodEndTime() - 1, null);
+                		this.writePointValueTime(sum, statisticsGenerator.getPeriodStartTime(), null);
 	                break;
 	                case FIRST:
 	                	Double first = statisticsGenerator.getFirstValue();
 	                	if(first != null)
-	                		this.writePointValueTime(first, statisticsGenerator.getFirstTime(), null);
+	                		this.writePointValueTime(first, statisticsGenerator.getPeriodStartTime(), null);
 	                break;
 	                case LAST:
 	                	Double last = statisticsGenerator.getLastValue();
 	                	if(last != null)
-	                		this.writePointValueTime(last, statisticsGenerator.getLastTime(), null);
+	                		this.writePointValueTime(last, statisticsGenerator.getPeriodStartTime(), null);
 	                break;
 	                case COUNT:
 	                	this.writePointValueTime(statisticsGenerator.getCount(),
-	                			statisticsGenerator.getPeriodEndTime() - 1, null);
+	                			statisticsGenerator.getPeriodStartTime(), null);
 	                break;
+	                case INTEGRAL:
+                        this.writePointValueTime(statisticsGenerator.getIntegral(),
+                                statisticsGenerator.getPeriodStartTime(), null);
+                    break;
 	                default:
 	                	throw new ShouldNeverHappenException("Unknown Rollup type" + rollup);
 	            }

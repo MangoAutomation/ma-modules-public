@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.http.HttpStatus;
 
@@ -169,6 +170,16 @@ public class UserModel extends AbstractRestModel<User> {
 	public void setTimezone(String zone) {
 		data.setTimezone(zone);
 	}
+	
+	@JsonGetter("systemTimezone")
+	public String getSystemTimezone() {
+	    return TimeZone.getDefault().getID();
+	}
+	
+	@JsonSetter("systemTimezone")
+    public void setSystemTimezone(String zone) {
+        // no op
+    }
 	
 	@JsonGetter("muted")
 	public Boolean getMuted() {

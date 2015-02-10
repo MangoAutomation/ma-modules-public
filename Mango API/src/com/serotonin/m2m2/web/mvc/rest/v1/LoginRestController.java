@@ -15,6 +15,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,7 +49,38 @@ public class LoginRestController extends MangoRestController {
 
 	private static final Log LOG = LogFactory.getLog(LoginRestController.class);
 	public static final String LOGIN_DEFAULT_URI_HEADER = "user-home-uri";
+	
+	/**
+	 * TODO dont use plaintext password, use OAuth2 or HMAC etc
+	 * 
+     * GET login action
+     * @param username
+     * @param password
+     * @param logout - logout existing user
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/{username}")
+    public ResponseEntity<UserModel> login(
+            @PathVariable String username,
+            @RequestHeader(value="password", required = false, defaultValue = "") String password,
+            @RequestHeader(value="logout", required = false, defaultValue = "true") boolean logout,
+            HttpServletRequest request, HttpServletResponse response) {
+        // check if user is already logged in, if logout == false just return the current user
+        User user = Common.getUser(request);
+        if (!logout && user != null) {
+            RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+            
+            String defaultUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
+            result.addHeader(LOGIN_DEFAULT_URI_HEADER, defaultUri);
 
+            UserModel model = new UserModel(user);
+            return result.createResponseEntity(model);
+        }
+        return performLogin(username, password, request, response);
+    }
+	
 	/**
 	 * PUT login action
 	 * @param username
@@ -57,6 +89,7 @@ public class LoginRestController extends MangoRestController {
 	 * @param response
 	 * @return
 	 */
+	@Deprecated
 	@RequestMapping(method = RequestMethod.PUT, value = "/{username}")
 	public ResponseEntity<UserModel> loginPut(
 			@PathVariable String username,
@@ -73,6 +106,7 @@ public class LoginRestController extends MangoRestController {
 	 * @param response
 	 * @return
 	 */
+	@Deprecated
 	@RequestMapping(method = RequestMethod.POST, value = "/{username}")
 	public ResponseEntity<UserModel> loginPost(
 			@PathVariable String username,
@@ -166,5 +200,4 @@ public class LoginRestController extends MangoRestController {
 			return result.createResponseEntity();
 		}
 	}
-
 }

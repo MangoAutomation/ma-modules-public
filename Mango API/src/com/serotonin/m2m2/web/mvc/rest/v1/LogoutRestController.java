@@ -29,7 +29,17 @@ import com.wordnik.swagger.annotations.Api;
 @RestController
 @RequestMapping("/v1/logout")
 public class LogoutRestController extends MangoRestController{
-
+    /**
+     * GET Logout action
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<UserModel> logout(HttpServletRequest request,
+            HttpServletResponse response) {
+        return performLogout(request, response);
+    }
 
 	/**
 	 * PUT Logout action
@@ -38,13 +48,14 @@ public class LogoutRestController extends MangoRestController{
 	 * @param response
 	 * @return
 	 */
+    @Deprecated
 	@RequestMapping(method = RequestMethod.PUT, value = "/{username}")
     public ResponseEntity<UserModel> logoutPut(
     		@PathVariable String username,
     		HttpServletRequest request,
     		HttpServletResponse response
     		) {
-		return performLogout(username, request, response);
+		return performLogout(request, response);
 	}
 	
 	/**
@@ -54,13 +65,14 @@ public class LogoutRestController extends MangoRestController{
 	 * @param response
 	 * @return
 	 */
+    @Deprecated
 	@RequestMapping(method = RequestMethod.POST, value = "/{username}")
     public ResponseEntity<UserModel> logoutPost(
     		@PathVariable String username,
     		HttpServletRequest request,
     		HttpServletResponse response
     		) {
-		return performLogout(username, request, response);
+		return performLogout(request, response);
 	}
 
 	/**
@@ -71,8 +83,8 @@ public class LogoutRestController extends MangoRestController{
 	 * @param response
 	 * @return
 	 */
-	private ResponseEntity<UserModel> performLogout(String username,
-			HttpServletRequest request, HttpServletResponse response) {
+	private ResponseEntity<UserModel> performLogout(HttpServletRequest request,
+	        HttpServletResponse response) {
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
 		
 		// Check if the user is logged in.

@@ -121,7 +121,64 @@ public class PointValueRestController extends MangoRestController{
     		return result.createResponseEntity();
     	}
     }
-    
+
+	@ApiOperation(
+	        value = "First and last point values",
+	        notes = "Retrieves the first and last point values within a time range, used to read accumulators"
+	        )
+	@ApiResponses({
+	    @ApiResponse(code = 200, message = "Query Successful", response=PointValueTimeModel.class),
+	    @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
+	})
+	@RequestMapping(method = RequestMethod.GET, value="/{xid}/firstLast")
+	public ResponseEntity<List<PointValueTimeModel>> firstAndLastPointValues(
+	        HttpServletRequest request,
+
+	        @ApiParam(value = "Point xid", required = true, allowMultiple = false)
+	        @PathVariable String xid,
+
+	        @ApiParam(value = "From time", required = false, allowMultiple = false)
+	        @RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+	        @DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+
+	        @ApiParam(value = "To time", required = false, allowMultiple = false)
+	        @RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+	        @DateTimeFormat(iso=ISO.DATE_TIME) Date to
+	        )
+    {
+	    RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
+	    User user = this.checkUser(request, result);
+	    if(result.isOk()){
+	        DataPointVO vo = DataPointDao.instance.getByXid(xid);
+	        if(vo == null){
+	            result.addRestMessage(getDoesNotExistMessage());
+	            return result.createResponseEntity();
+	        }
+
+	        try{
+	            if(Permissions.hasDataPointReadPermission(user, vo)){
+	                PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), false);
+                    PointValueTime first = pointValueFacade.getPointValueAfter(from.getTime());
+                    PointValueTime last = pointValueFacade.getPointValueBefore(to.getTime());
+                    
+                    List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(2);
+                    models.add(new PointValueTimeModel(first));
+                    models.add(new PointValueTimeModel(last));
+	                
+	                return result.createResponseEntity(models);
+	            }else{
+	                result.addRestMessage(getUnauthorizedMessage());
+	                return result.createResponseEntity();
+	            }
+	        }catch(PermissionException e){
+	            LOG.error(e.getMessage(), e);
+	            result.addRestMessage(getUnauthorizedMessage());
+	            return result.createResponseEntity();
+	        }
+	    }else{
+	        return result.createResponseEntity();
+	    }
+	}
 
 	@ApiOperation(
 			value = "Query Time Range",
