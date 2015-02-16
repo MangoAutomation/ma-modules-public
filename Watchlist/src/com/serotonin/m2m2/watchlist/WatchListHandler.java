@@ -17,7 +17,6 @@ import org.springframework.web.servlet.View;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
-import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -41,11 +40,7 @@ public class WatchListHandler implements UrlHandler {
     protected void prepareModel(HttpServletRequest request, Map<String, Object> model, User user) {
         // The user's permissions may have changed since the last session, so make sure the watch lists are correct.
         WatchListDao watchListDao = new WatchListDao();
-        List<WatchList> watchLists;
-        if(user.isAdmin())
-        	watchLists = watchListDao.getWatchLists();
-        else
-        	watchLists = watchListDao.getWatchLists(user.getId());
+        List<WatchList> watchLists = watchListDao.getWatchLists(user);
 
         if (watchLists.size() == 0) {
             // Add a default watch list if none exist.
@@ -71,12 +66,12 @@ public class WatchListHandler implements UrlHandler {
         }
 
         String wlxid = request.getParameter("wlxid");
-        
+
         UserDao userDao = new UserDao();
         boolean found = false;
-        List<IntStringPair> watchListNames = new ArrayList<IntStringPair>(watchLists.size());
-        List<IntStringPair> watchListUsers = new ArrayList<IntStringPair>(watchLists.size());
-        List<IntStringPair> userWatchLists = new ArrayList<IntStringPair>(watchLists.size());
+        List<IntStringPair> watchListNames = new ArrayList<>(watchLists.size());
+        List<IntStringPair> watchListUsers = new ArrayList<>(watchLists.size());
+        List<IntStringPair> userWatchLists = new ArrayList<>(watchLists.size());
         for (WatchList watchList : watchLists) {
             if (!found) {
                 if (StringUtils.equals(watchList.getXid(), wlxid)) {
@@ -87,12 +82,12 @@ public class WatchListHandler implements UrlHandler {
                     found = true;
             }
 
-            if (watchList.getUserAccess(user) == ShareUser.ACCESS_OWNER) {
+            if (watchList.isOwner(user)) {
                 // If this is the owner, check that the user still has access to the points. If not, remove the
                 // unauthorized points, resave, and continue.
                 boolean changed = false;
                 List<DataPointVO> list = watchList.getPointList();
-                List<DataPointVO> copy = new ArrayList<DataPointVO>(list);
+                List<DataPointVO> copy = new ArrayList<>(list);
                 for (DataPointVO point : copy) {
                     if (point == null || !Permissions.hasDataPointReadPermission(user, point)) {
                         list.remove(point);
@@ -106,15 +101,16 @@ public class WatchListHandler implements UrlHandler {
 
             User watchListUser = userDao.getUser(watchList.getUserId());
             String username;
-            if(watchListUser == null){
-            	username = Common.translate("watchlist.userDNE");
-            }else{
-            	username = watchListUser.getUsername();
+            if (watchListUser == null) {
+                username = Common.translate("watchlist.userDNE");
             }
-            //Add the Username to the name to know who's it is
+            else {
+                username = watchListUser.getUsername();
+            }
+
             watchListUsers.add(new IntStringPair(watchList.getId(), username));
+            // Add the Username to the name to know who's it is
             userWatchLists.add(new IntStringPair(watchList.getId(), watchList.getName() + " (" + username + ")"));
-            
             watchListNames.add(new IntStringPair(watchList.getId(), watchList.getName()));
         }
 
@@ -129,6 +125,6 @@ public class WatchListHandler implements UrlHandler {
         model.put(KEY_SELECTED_WATCHLIST, selected);
         model.put(KEY_WATCHLIST_USERS, watchListUsers);
         model.put(KEY_USER_WATCHLISTS, userWatchLists);
-       	model.put(KEY_USERNAME, user.getUsername());
+        model.put(KEY_USERNAME, user.getUsername());
     }
 }

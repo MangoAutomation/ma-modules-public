@@ -25,9 +25,9 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.validation.StringValidation;
 
 /**
@@ -42,18 +42,36 @@ public class WatchList implements JsonSerializable {
     private int userId;
     @JsonProperty
     private String name;
-    private final List<DataPointVO> pointList = new CopyOnWriteArrayList<DataPointVO>();
-    private List<ShareUser> watchListUsers = new ArrayList<ShareUser>();
+    private final List<DataPointVO> pointList = new CopyOnWriteArrayList<>();
+    @JsonProperty
+    private String readPermission;
+    @JsonProperty
+    private String editPermission;
 
-    public int getUserAccess(User user) {
-        if (user.getId() == userId || user.isAdmin())
-            return ShareUser.ACCESS_OWNER;
+    public boolean isOwner(User user) {
+        return user.getId() == userId;
+    }
 
-        for (ShareUser wlu : watchListUsers) {
-            if (wlu.getUserId() == user.getId())
-                return wlu.getAccessType();
-        }
-        return ShareUser.ACCESS_NONE;
+    public boolean isEditor(User user) {
+        if (isOwner(user))
+            return true;
+        if (user.isAdmin()) // Admin
+            return true;
+        return Permissions.hasPermission(user, editPermission); // Edit group
+    }
+
+    public boolean isReader(User user) {
+        if (isEditor(user))
+            return true;
+        return Permissions.hasPermission(user, readPermission); // Read group
+    }
+
+    public String getUserAccess(User user) {
+        if (isEditor(user))
+            return "edit";
+        if (isReader(user))
+            return "read";
+        return null;
     }
 
     public int getId() {
@@ -95,12 +113,20 @@ public class WatchList implements JsonSerializable {
         this.userId = userId;
     }
 
-    public List<ShareUser> getWatchListUsers() {
-        return watchListUsers;
+    public String getReadPermission() {
+        return readPermission;
     }
 
-    public void setWatchListUsers(List<ShareUser> watchListUsers) {
-        this.watchListUsers = watchListUsers;
+    public void setReadPermission(String readPermission) {
+        this.readPermission = readPermission;
+    }
+
+    public String getEditPermission() {
+        return editPermission;
+    }
+
+    public void setEditPermission(String editPermission) {
+        this.editPermission = editPermission;
     }
 
     public void validate(ProcessResult response) {
@@ -125,12 +151,10 @@ public class WatchList implements JsonSerializable {
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
 
-        List<String> dpXids = new ArrayList<String>();
+        List<String> dpXids = new ArrayList<>();
         for (DataPointVO dpVO : pointList)
             dpXids.add(dpVO.getXid());
         writer.writeEntry("dataPoints", dpXids);
-
-        writer.writeEntry("sharingUsers", watchListUsers);
     }
 
     @Override
@@ -153,17 +177,6 @@ public class WatchList implements JsonSerializable {
                 if (dpVO == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
                 pointList.add(dpVO);
-            }
-        }
-
-        JsonArray jsonSharers = jsonObject.getJsonArray("sharingUsers");
-        if (jsonSharers != null) {
-            watchListUsers.clear();
-            for (JsonValue jv : jsonSharers) {
-                ShareUser shareUser = reader.read(ShareUser.class, jv);
-                if (shareUser.getUserId() != userId)
-                    // No need for the owning user to be in this list.
-                    watchListUsers.add(shareUser);
             }
         }
     }

@@ -7,7 +7,6 @@ package com.serotonin.m2m2.watchlist;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.dwr.longPoll.LongPollData;
@@ -20,7 +19,7 @@ public class WatchListCommon {
             synchronized (data) {
                 watchListStates = (List<WatchListState>) data.getState().getAttribute("watchListStates");
                 if (watchListStates == null) {
-                    watchListStates = new ArrayList<WatchListState>();
+                    watchListStates = new ArrayList<>();
                     data.getState().setAttribute("watchListStates", watchListStates);
                 }
             }
@@ -29,12 +28,12 @@ public class WatchListCommon {
     }
 
     public static void ensureWatchListPermission(User user, WatchList watchList) throws PermissionException {
-        if (watchList.getUserAccess(user) == ShareUser.ACCESS_NONE)
+        if (!watchList.isReader(user))
             throw new PermissionException("User does not have permission to the watch list", user);
     }
 
     public static void ensureWatchListEditPermission(User user, WatchList watchList) throws PermissionException {
-        if (watchList.getUserAccess(user) != ShareUser.ACCESS_OWNER)
+        if (!watchList.isEditor(user))
             throw new PermissionException("User does not have permission to edit the watch list", user);
     }
 }

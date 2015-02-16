@@ -7,6 +7,8 @@ CREATE TABLE watchLists (
   xid varchar(50) NOT NULL,
   userId int NOT NULL,
   name varchar(50),
+  readPermission varchar(255),
+  editPermission varchar(255),
   PRIMARY KEY (id)
 ) ;
 ALTER TABLE watchLists add constraint watchListsUn1 unique (xid);
@@ -19,15 +21,6 @@ CREATE TABLE watchListPoints (
 ) ;
 ALTER TABLE watchListPoints add constraint watchListPointsFk1 foreign key (watchListId) references watchLists(id) on delete cascade;
 ALTER TABLE watchListPoints add constraint watchListPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;
-
-CREATE TABLE watchListUsers (
-  watchListId int NOT NULL,
-  userId int NOT NULL,
-  accessType int NOT NULL,
-  PRIMARY KEY (watchListId, userId)
-) ;
-ALTER TABLE watchListUsers add constraint watchListUsersFk1 foreign key (watchListId) references watchLists(id) on delete cascade;
-ALTER TABLE watchListUsers add constraint watchListUsersFk2 foreign key (userId) references users(id) on delete cascade;
 
 CREATE TABLE selectedWatchList (
   userId int NOT NULL,

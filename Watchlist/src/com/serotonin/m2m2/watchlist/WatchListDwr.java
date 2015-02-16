@@ -22,14 +22,12 @@ import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RuntimeManager;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
-import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.DataPointExtendedNameComparator;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -47,7 +45,7 @@ public class WatchListDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public Map<String, Object> init() {
         DataPointDao dataPointDao = new DataPointDao();
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
 
         PointHierarchy ph = dataPointDao.getPointHierarchy(true).copyFoldersOnly();
         User user = Common.getUser();
@@ -64,32 +62,11 @@ public class WatchListDwr extends ModuleDwr {
         setWatchList(user, watchList);
 
         data.put("pointFolder", ph.getRoot());
-        data.put("shareUsers", getShareUsers(user));
         data.put("selectedWatchList", getWatchListData(user, watchList));
 
         return data;
     }
-    
-    /**
-     * We need to override this method because Admin users can view all lists,
-     * even lists that are shared with them so for the Shared section to work
-     * we need to allow the Admin to be part of the shared users
-     */
-    @Override
-	protected List<User> getShareUsers(User excludeUser) {
-    	
-    	if(excludeUser.isAdmin()){
-    		return new UserDao().getUsers();
-    	}else{
-			List<User> users = new ArrayList<User>();
-			for (User u : new UserDao().getUsers()) {
-				if (u.getId() != excludeUser.getId())
-					users.add(u);
-			}
-			return users;
-    	}
-	} 
-    
+
     /**
      * Retrieves point state for all points on the current watch list.
      * 
@@ -103,14 +80,14 @@ public class WatchListDwr extends ModuleDwr {
 
     private List<WatchListState> getPointDataImpl(WatchList watchList) {
         if (watchList == null)
-            return new ArrayList<WatchListState>();
+            return new ArrayList<>();
 
         HttpServletRequest request = WebContextFactory.get().getHttpServletRequest();
         User user = Common.getUser(request);
 
         WatchListState state;
-        List<WatchListState> states = new ArrayList<WatchListState>(watchList.getPointList().size());
-        Map<String, Object> model = new HashMap<String, Object>();
+        List<WatchListState> states = new ArrayList<>(watchList.getPointList().size());
+        Map<String, Object> model = new HashMap<>();
         for (DataPointVO point : watchList.getPointList()) {
             // Create the watch list state.
             state = createWatchListState(request, point, Common.runtimeManager, model, user);
@@ -144,15 +121,6 @@ public class WatchListDwr extends ModuleDwr {
             watchList = new WatchListDao().getWatchList(getWatchList().getId());
             watchList.setId(Common.NEW_ID);
             watchList.setName(translate(new TranslatableMessage("common.copyPrefix", watchList.getName())));
-            //Check to see if we are a Shared User (we can't share a watchlist with ourselves)
-            List<ShareUser> watchListShared =  new ArrayList<ShareUser>();
-            for(ShareUser shareUser : watchList.getWatchListUsers()){
-            	//Don't add yourself
-            	if(shareUser.getUserId() != user.getId())
-            		watchListShared.add(shareUser); 
-            }
-            watchList.setWatchListUsers(watchListShared);
-            
         }
         watchList.setUserId(user.getId());
         watchList.setXid(watchListDao.generateUniqueXid());
@@ -174,15 +142,13 @@ public class WatchListDwr extends ModuleDwr {
         if (watchList == null || watchListId != watchList.getId())
             watchList = watchListDao.getWatchList(watchListId);
 
-        if (watchList == null || watchListDao.getWatchLists(user.getId()).size() == 1)
+        if (watchList == null || watchListDao.getWatchLists(user).size() == 1)
             // Only one watch list left. Leave it.
             return;
 
-        // Allow the delete.
-        if (watchList.getUserAccess(user) == ShareUser.ACCESS_OWNER)
+        // Allow the delete if the user is an editor.
+        if (watchList.isEditor(user))
             watchListDao.deleteWatchList(watchListId);
-        else
-            watchListDao.removeUserFromWatchList(watchListId, user.getId());
     }
 
     @DwrPermission(user = true)
@@ -220,7 +186,7 @@ public class WatchListDwr extends ModuleDwr {
         // Add it to the watch list.
         watchList.getPointList().add(point);
         new WatchListDao().saveWatchList(watchList);
-        updateSetPermission(point, watchList.getUserAccess(user), new UserDao().getUser(watchList.getUserId()));
+        updateSetPermission(point, user);
 
         // Return the watch list state for it.
         return createWatchListState(request, point, Common.runtimeManager, new HashMap<String, Object>(), user);
@@ -368,43 +334,45 @@ public class WatchListDwr extends ModuleDwr {
     }
 
     private Map<String, Object> getWatchListData(User user, WatchList watchList) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         if (watchList == null)
             return data;
 
         List<DataPointVO> points = watchList.getPointList();
-        List<Integer> pointIds = new ArrayList<Integer>(points.size());
+        List<Integer> pointIds = new ArrayList<>(points.size());
         for (DataPointVO point : points) {
             if (Permissions.hasDataPointReadPermission(user, point))
                 pointIds.add(point.getId());
         }
 
         data.put("points", pointIds);
-        List<ShareUser> watchListUsers = watchList.getWatchListUsers();
-        data.put("users", watchListUsers);
         data.put("access", watchList.getUserAccess(user));
+        data.put("readPermission", watchList.getReadPermission());
+        data.put("editPermission", watchList.getEditPermission());
 
         return data;
     }
 
     private void prepareWatchList(WatchList watchList, User user) {
-        int access = watchList.getUserAccess(user);
-        User owner = new UserDao().getUser(watchList.getUserId());
         for (DataPointVO point : watchList.getPointList())
-            updateSetPermission(point, access, owner);
+            updateSetPermission(point, user);
     }
 
-    private void updateSetPermission(DataPointVO point, int access, User owner) {
+    private void updateSetPermission(DataPointVO point, User user) {
         // Point isn't settable
         if (!point.getPointLocator().isSettable())
             return;
 
-        // Read-only access
-        if (access != ShareUser.ACCESS_OWNER && access != ShareUser.ACCESS_SET)
-            return;
+        //        // Read-only access
+        //        if (access != ShareUser.ACCESS_OWNER && access != ShareUser.ACCESS_SET)
+        //            return;
+        //
+        //        // Watch list owner doesn't have set permission
+        //        if (!Permissions.hasDataPointSetPermission(owner, point))
+        //            return;
 
-        // Watch list owner doesn't have set permission
-        if (!Permissions.hasDataPointSetPermission(owner, point))
+        // User doesn't have set permission
+        if (!Permissions.hasDataPointSetPermission(user, point))
             return;
 
         // All good.
@@ -421,49 +389,6 @@ public class WatchListDwr extends ModuleDwr {
                 state.setTime(Functions.getTime(pointValue));
             pointVO.updateLastValue(pointValue);
         }
-    }
-
-    //
-    // Share users
-    //
-    @DwrPermission(user = true)
-    public List<ShareUser> addUpdateSharedUser(int userId, int accessType) {
-        WatchList watchList = getWatchList();
-        boolean found = false;
-        for (ShareUser su : watchList.getWatchListUsers()) {
-            if (su.getUserId() == userId) {
-                found = true;
-                su.setAccessType(accessType);
-                break;
-            }
-        }
-
-        if (!found) {
-            ShareUser su = new ShareUser();
-            su.setUserId(userId);
-            su.setAccessType(accessType);
-            watchList.getWatchListUsers().add(su);
-        }
-
-        new WatchListDao().saveWatchList(watchList);
-
-        return watchList.getWatchListUsers();
-    }
-
-    @DwrPermission(user = true)
-    public List<ShareUser> removeSharedUser(int userId) {
-        WatchList watchList = getWatchList();
-
-        for (ShareUser su : watchList.getWatchListUsers()) {
-            if (su.getUserId() == userId) {
-                watchList.getWatchListUsers().remove(su);
-                break;
-            }
-        }
-
-        new WatchListDao().saveWatchList(watchList);
-
-        return watchList.getWatchListUsers();
     }
 
     private void setWatchList(User user, WatchList watchList) {
@@ -502,23 +427,37 @@ public class WatchListDwr extends ModuleDwr {
         DataExportDefinition def = new DataExportDefinition(pointIds, from, to);
         user.setDataExportDefinition(def);
     }
-    
+
     @DwrPermission(user = true)
-    public ProcessResult exportCurrentWatchlist(){
-    	ProcessResult result = new ProcessResult();
-    	WatchList wl = getWatchList();
-    	
-    	//TODO Could check for null, probably unlikely though
-    	
-    	Map<String, Object> data = new LinkedHashMap<String, Object>();
+    public ProcessResult exportCurrentWatchlist() {
+        ProcessResult result = new ProcessResult();
+        WatchList wl = getWatchList();
+
+        Map<String, Object> data = new LinkedHashMap<>();
         //Get the Full VO for the export
-        List<WatchList> vos = new ArrayList<WatchList>();
-    	vos.add(wl);
+        List<WatchList> vos = new ArrayList<>();
+        vos.add(wl);
         data.put(WatchListEmportDefinition.elementId, vos);
-        
+
         result.addData("json", EmportDwr.export(data, 3));
-        
-    	return result;
+
+        return result;
     }
-    
+
+    @DwrPermission(user = true)
+    public void savePermissions(String readPermission, String editPermission) {
+        WatchList wl = getWatchList();
+        wl.setReadPermission(readPermission);
+        wl.setEditPermission(editPermission);
+        new WatchListDao().saveWatchList(wl);
+    }
+
+    @DwrPermission(user = true)
+    public ProcessResult getPermissions() {
+        WatchList wl = getWatchList();
+        ProcessResult result = new ProcessResult();
+        result.addData("readPermission", wl.getReadPermission());
+        result.addData("editPermission", wl.getEditPermission());
+        return result;
+    }
 }
