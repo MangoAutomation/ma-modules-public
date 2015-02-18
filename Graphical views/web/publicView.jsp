@@ -10,7 +10,7 @@
 <html>
 <head>
   <title><fmt:message key="header.title"/></title>
-  <c:set var="dojoURI">https://ajax.googleapis.com/ajax/libs/dojo/1.7.2/</c:set>
+  <c:set var="dojoURI">resources</c:set>
   
   <!-- Style -->
   <link rel="icon" href="images/favicon.ico"/>
@@ -19,7 +19,7 @@
   <style type="text/css">
     @import "${dojoURI}/dojox/editor/plugins/resources/css/StatusBar.css";
     @import "${dojoURI}/dojox/layout/resources/FloatingPane.css";
-    @import "${dojoURI}/dijit/themes/${theme}/${theme}.css";
+    @import "${dojoURI}/dijit/themes/claro/claro.css";
     @import "${dojoURI}/dojo/resources/dojo.css";
   </style>  
   

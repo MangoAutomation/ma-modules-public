@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.infiniteautomation.mango</groupId>
   <artifactId>gviews</artifactId>
-  <version>1.5.1</version>
+  <version>1.5.2</version>
   <name>Graphical Views Module</name>
   <build>
     <directory>maven-target</directory>

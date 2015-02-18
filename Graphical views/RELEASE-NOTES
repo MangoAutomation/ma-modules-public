@@ -1,5 +1,6 @@
 *Version 1.5.2*
 * Upgrading sharing to use new Mango Permission groups
+* Fixed bug in public views where links were broken and the page was not able to execute the javascript methods
 
 *Version 1.5.1*
 * Fixed bug where 'Settable override' checkbox was always disabled for Simple Point components.
