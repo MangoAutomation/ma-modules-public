@@ -22,6 +22,7 @@
   <script type="text/javascript">
     dojo.require("dojo.dnd.move");
     
+    var permissionUI = new PermissionUI(GraphicalViewDwr);
     mango.view.initEditView();
     mango.share.dwr = GraphicalViewDwr;
     
@@ -34,8 +35,7 @@
         </c:forEach>
         
         GraphicalViewDwr.editInit(function(result) {
-            mango.share.users = result.shareUsers;
-            mango.share.writeSharedUsers(result.viewUsers);
+            
             dwr.util.addOptions($("componentList"), result.componentTypes, "key", "value");
             settingsEditor.setPointList(result.pointList);
             compoundEditor.setPointList(result.pointList);
@@ -305,7 +305,7 @@
     
     function saveView() {
         hideContextualMessages($("viewProperties"));
-        GraphicalViewDwr.saveView($get("name"), $get("xid"), $get("anonymousAccess"), function(result) {
+        GraphicalViewDwr.saveView($get("name"), $get("xid"), $get("anonymousAccess"), $get("readPermission"), $get("editPermission"), function(result) {
             if (result.hasMessages)
                 showDwrMessages(result.messages);
             else {
@@ -326,6 +326,14 @@
             window.location = "/views.shtm";
         else
             window.location = "/views.shtm?viewId="+ ${view.id};
+    }
+      
+    function resetPermissions() {
+      // Reset the permission values.
+      GraphicalViewDwr.getPermissions(function(result) {
+          $set("readPermission", result.data.readPermission);
+          $set("editPermission", result.data.editPermission);
+      });           
     }
   </script>
   
@@ -385,7 +393,28 @@
       
       <td valign="top">
         <div class="borderDiv">
-          <tag:sharedUsers doxId="viewSharing" noUsersKey="share.noViewUsers"/>
+        <table>
+        <tr>
+            <td colspan="2">
+            <span class="smallTitle"><fmt:message key="viewEdit.permissions"/></span>
+            <tag:help id="viewSharing"/>
+            </td>
+        </tr>
+      <tr>
+        <td class="formLabel"><fmt:message key="watchList.permission.read"/></td>
+        <td class="formField">
+          <input type="text" id="readPermission" class="formLong" value="${view.readPermission}"/>
+          <tag:img png="bullet_down" onclick="permissionUI.viewPermissions('readPermission')"/>
+        </td>
+      </tr>
+      <tr>
+        <td class="formLabel"><fmt:message key="watchList.permission.edit"/></td>
+        <td class="formField">
+          <input type="text" id="editPermission" class="formLong" value="${view.editPermission}"/>
+          <tag:img png="bullet_down" onclick="permissionUI.viewPermissions('editPermission')"/>
+        </td>
+      </tr>
+      </table>
         </div>
       </td>
     </tr>

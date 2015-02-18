@@ -15,7 +15,6 @@ import org.springframework.web.servlet.View;
 
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
@@ -25,7 +24,7 @@ public class GraphicalViewHandler implements UrlHandler {
         GraphicalViewDao viewDao = new GraphicalViewDao();
         User user = Common.getUser(request);
 
-        List<IntStringPair> views = viewDao.getViewNames(user.getId());
+        List<IntStringPair> views = viewDao.getViewNames(user);
         model.put("views", views);
 
         // Set the current view.
@@ -57,7 +56,14 @@ public class GraphicalViewHandler implements UrlHandler {
 
             // Add the view to the session for the dwr access stuff.
             model.put("currentView", currentView);
-            model.put("owner", currentView.getUserAccess(user) == ShareUser.ACCESS_OWNER);
+            if(currentView.isOwner(user))
+            	model.put("owner", true);
+            else
+            	model.put("owner", false);
+            if(currentView.isEditor(user))
+            	model.put("canEditCurrentView", true);
+            else
+            	model.put("canEditCurrentView", false);
 
             GraphicalViewsCommon.setUserView(user, currentView);
         }

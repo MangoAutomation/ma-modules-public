@@ -9,17 +9,10 @@ create table graphicalViews (
   background varchar(255),
   userId int not null,
   anonymousAccess int not null,
+  readPermission varchar(255),
+  editPermission varchar(255),
   data longblob not null,
   primary key (id)
 );
 alter table graphicalViews add constraint graphicalViewsUn1 unique (xid);
 alter table graphicalViews add constraint graphicalViewsFk1 foreign key (userId) references users(id) on delete cascade;
-
-create table graphicalViewUsers (
-  graphicalViewId int not null,
-  userId int not null,
-  accessType int not null,
-  primary key (graphicalViewId, userId)
-);
-alter table graphicalViewUsers add constraint graphicalViewUsersFk1 foreign key (graphicalViewId) references graphicalViews(id);
-alter table graphicalViewUsers add constraint graphicalViewUsersFk2 foreign key (userId) references users(id) on delete cascade;

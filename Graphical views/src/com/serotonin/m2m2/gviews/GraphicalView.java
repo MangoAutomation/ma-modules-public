@@ -32,6 +32,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.validation.StringValidation;
 
 public class GraphicalView implements Serializable, JsonSerializable {
@@ -46,8 +47,12 @@ public class GraphicalView implements Serializable, JsonSerializable {
     private int userId;
     private List<ViewComponent> viewComponents = new CopyOnWriteArrayList<ViewComponent>();
     private int anonymousAccess = ShareUser.ACCESS_NONE;
-    private List<ShareUser> viewUsers = new CopyOnWriteArrayList<ShareUser>();
 
+    @JsonProperty
+    private String readPermission;
+    @JsonProperty
+    private String editPermission;
+    
     public void addViewComponent(ViewComponent viewComponent) {
         // Determine an index for the component.
         int min = 0;
@@ -100,19 +105,46 @@ public class GraphicalView implements Serializable, JsonSerializable {
         return null;
     }
 
-    public int getUserAccess(User user) {
-        if (user == null)
-            return anonymousAccess;
-
-        if (userId == user.getId())
-            return ShareUser.ACCESS_OWNER;
-
-        for (ShareUser vu : viewUsers) {
-            if (vu.getUserId() == user.getId())
-                return vu.getAccessType();
-        }
-        return ShareUser.ACCESS_NONE;
+    public boolean isOwner(User user) {
+        return user.getId() == userId;
     }
+
+    public boolean isEditor(User user) {
+        if (isOwner(user))
+            return true;
+        if (user.isAdmin()) // Admin
+            return true;
+        return Permissions.hasPermission(user, editPermission); // Edit group
+    }
+
+    public boolean isReader(User user) {
+        if (isEditor(user))
+            return true;
+        return Permissions.hasPermission(user, readPermission); // Read group
+    }
+
+    public String getUserAccess(User user) {
+        if (isEditor(user))
+            return "edit";
+        if (isReader(user))
+            return "read";
+        return null;
+    }
+
+    
+//    public int getUserAccess(User user) {
+//        if (user == null)
+//            return anonymousAccess;
+//
+//        if (userId == user.getId())
+//            return ShareUser.ACCESS_OWNER;
+//
+//        for (ShareUser vu : viewUsers) {
+//            if (vu.getUserId() == user.getId())
+//                return vu.getAccessType();
+//        }
+//        return ShareUser.ACCESS_NONE;
+//    }
 
     /**
      * This method is used before the view is displayed in order to validate: - that the given user is allowed to access
@@ -177,14 +209,22 @@ public class GraphicalView implements Serializable, JsonSerializable {
         this.userId = userId;
     }
 
-    public List<ShareUser> getViewUsers() {
-        return viewUsers;
+    public String getReadPermission() {
+        return readPermission;
     }
 
-    public void setViewUsers(List<ShareUser> viewUsers) {
-        this.viewUsers = viewUsers;
+    public void setReadPermission(String readPermission) {
+        this.readPermission = readPermission;
     }
 
+    public String getEditPermission() {
+        return editPermission;
+    }
+
+    public void setEditPermission(String editPermission) {
+        this.editPermission = editPermission;
+    }
+    
     public void validate(ProcessResult response) {
         if (StringUtils.isBlank(name))
             response.addMessage("name", new TranslatableMessage("validate.required"));
@@ -229,7 +269,6 @@ public class GraphicalView implements Serializable, JsonSerializable {
         writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
         writer.writeEntry("anonymousAccess", ShareUser.ACCESS_CODES.getCode(anonymousAccess));
         writer.writeEntry("viewComponents", viewComponents);
-        writer.writeEntry("sharingUsers", viewUsers);
     }
 
     @Override
@@ -257,18 +296,6 @@ public class GraphicalView implements Serializable, JsonSerializable {
             if (anonymousAccess == -1)
                 throw new TranslatableJsonException("emport.error.invalid", "anonymousAccess", text,
                         ShareUser.ACCESS_CODES.getCodeList());
-        }
-
-        JsonArray jsonSharers = jsonObject.getJsonArray("sharingUsers");
-        if (jsonSharers != null) {
-            viewUsers.clear();
-
-            for (JsonValue jv : jsonSharers) {
-                ShareUser shareUser = reader.read(ShareUser.class, jv);
-                if (shareUser.getUserId() != userId)
-                    // No need for the owning user to be in this list.
-                    viewUsers.add(shareUser);
-            }
         }
     }
 }

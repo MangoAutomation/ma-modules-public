@@ -10,10 +10,6 @@
     <c:if test="${!empty currentView}">
       mango.view.initNormalView();
     </c:if>
-        
-    function unshare() {
-        GraphicalViewDwr.deleteViewShare(function() { window.location = '/views.shtm'; });
-    }
   </script>
   
   <table class="borderDiv">
@@ -28,12 +24,9 @@
         </sst:select>
         <c:if test="${!empty currentView}">
           <c:choose>
-            <c:when test="${owner}">
+            <c:when test="${canEditCurrentView}">
               <a href="view_edit.shtm?viewId=${currentView.id}"><tag:img png="pencil" title="viewEdit.editView"/></a>
             </c:when>
-            <c:otherwise>
-              <tag:img png="delete" title="viewEdit.deleteView" onclick="unshare()"/>
-            </c:otherwise>
           </c:choose>
           <a href="view_edit.shtm?viewId=${currentView.id}&copy=true"><tag:img png="copy" title="viewEdit.copyView"/></a>
         </c:if>

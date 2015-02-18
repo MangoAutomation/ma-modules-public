@@ -5,22 +5,20 @@
 package com.serotonin.m2m2.gviews;
 
 import java.sql.Blob;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import com.serotonin.db.pair.IntStringPair;
-import com.serotonin.db.pair.IntStringPairRowMapper;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.BaseDao;
-import com.serotonin.m2m2.view.ShareUser;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.util.SerializationHelper;
 
 public class GraphicalViewDao extends BaseDao {
@@ -29,32 +27,46 @@ public class GraphicalViewDao extends BaseDao {
     // Views
     //
     private static final String VIEW_SELECT = //
-    "select data, id, xid, name, background, userId, anonymousAccess from graphicalViews";
-    private static final String USER_ID_COND = //
-    " where userId=? or id in (select graphicalViewId from graphicalViewUsers where userId=?)";
+    "select data, id, xid, name, background, userId, readPermission, editPermission, anonymousAccess from graphicalViews";
 
     public List<GraphicalView> getViews() {
         List<GraphicalView> views = query(VIEW_SELECT, new ViewRowMapper());
-        setViewUsers(views);
         return views;
     }
 
-    public List<GraphicalView> getViews(int userId) {
-        List<GraphicalView> views = query(VIEW_SELECT + USER_ID_COND, new Object[] { userId, userId },
-                new ViewRowMapper());
-        setViewUsers(views);
-        return views;
+    /**
+     * Filter the User allowed views for the provided user
+     * @param user
+     * @return
+     */
+    public List<GraphicalView> getViews(User user) {
+        List<GraphicalView> views = query(VIEW_SELECT, new ViewRowMapper());
+        List<GraphicalView> userViews = new ArrayList<GraphicalView>();
+        //Filtering on user
+        for(GraphicalView view : views){
+        	if(view.isReader(user))
+        		userViews.add(view);
+        }
+        return userViews;
+    }
+    
+    /**
+     * Filter a list of View id-name pairs that a user has read access to
+     * @param user
+     * @return
+     */
+    public List<IntStringPair> getViewNames(User user) {
+        List<GraphicalView> views = query(VIEW_SELECT, new ViewRowMapper());
+        List<IntStringPair> userViews = new ArrayList<IntStringPair>();
+        //Filtering on user
+        for(GraphicalView view : views){
+        	if(view.isReader(user)){
+        		userViews.add(new IntStringPair(view.getId(), view.getName()));
+        	}
+        }
+        return userViews;
     }
 
-    public List<IntStringPair> getViewNames(int userId) {
-        return query("select id, name from graphicalViews" + USER_ID_COND, new Object[] { userId, userId },
-                new IntStringPairRowMapper());
-    }
-
-    private void setViewUsers(List<GraphicalView> views) {
-        for (GraphicalView view : views)
-            setViewUsers(view);
-    }
 
     public GraphicalView getView(int id) {
         return getSingleView(VIEW_SELECT + " where id=?", new Object[] { id });
@@ -69,12 +81,7 @@ public class GraphicalViewDao extends BaseDao {
     }
 
     private GraphicalView getSingleView(String sql, Object[] params) {
-        GraphicalView view = queryForObject(sql, params, new ViewRowMapper(), null);
-        if (view == null)
-            return null;
-
-        setViewUsers(view);
-        return view;
+        return queryForObject(sql, params, new ViewRowMapper(), null);
     }
 
     class ViewRowMapper implements RowMapper<GraphicalView> {
@@ -93,7 +100,9 @@ public class GraphicalViewDao extends BaseDao {
             v.setName(rs.getString(4));
             v.setBackgroundFilename(rs.getString(5));
             v.setUserId(rs.getInt(6));
-            v.setAnonymousAccess(rs.getInt(7));
+            v.setReadPermission(rs.getString(7));
+            v.setEditPermission(rs.getString(8));
+            v.setAnonymousAccess(rs.getInt(9));
 
             return v;
         }
@@ -128,78 +137,30 @@ public class GraphicalViewDao extends BaseDao {
                     insertView(view);
                 else
                     updateView(view);
-
-                saveViewUsers(view);
             }
         });
     }
 
     void insertView(GraphicalView view) {
         view.setId(doInsert(
-                "insert into graphicalViews (xid, name, background, userId, anonymousAccess, data) values (?,?,?,?,?,?)",
+                "insert into graphicalViews (xid, name, background, userId, anonymousAccess, readPermission, editPermission, data) values (?,?,?,?,?,?,?,?)",
                 new Object[] { view.getXid(), view.getName(), view.getBackgroundFilename(), view.getUserId(),
-                        view.getAnonymousAccess(), SerializationHelper.writeObject(view) }, new int[] { Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.BLOB }));
+                        view.getAnonymousAccess(), view.getReadPermission(), view.getEditPermission(), SerializationHelper.writeObject(view) }, new int[] { Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BLOB }));
     }
 
     void updateView(GraphicalView view) {
-        ejt.update("update graphicalViews set xid=?, name=?, background=?, anonymousAccess=?, data=? where id=?",
+        ejt.update("update graphicalViews set xid=?, name=?, background=?, anonymousAccess=?, readPermission=?, editPermission=?, data=? where id=?",
                 new Object[] { view.getXid(), view.getName(), view.getBackgroundFilename(), view.getAnonymousAccess(),
+        				view.getReadPermission(), view.getEditPermission(),
                         SerializationHelper.writeObject(view), view.getId() }, new int[] { Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.BLOB, Types.INTEGER });
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BLOB, Types.INTEGER });
     }
 
     public void removeView(final int viewId) {
-        deleteViewUsers(viewId);
         ejt.update("delete from graphicalViews where id=?", new Object[] { viewId });
     }
 
-    //
-    //
-    // View users
-    //
-    private void setViewUsers(GraphicalView view) {
-        view.setViewUsers(query("select userId, accessType from graphicalViewUsers where graphicalViewId=?",
-                new Object[] { view.getId() }, new ViewUserRowMapper()));
-    }
 
-    class ViewUserRowMapper implements RowMapper<ShareUser> {
-        @Override
-        public ShareUser mapRow(ResultSet rs, int rowNum) throws SQLException {
-            ShareUser vu = new ShareUser();
-            vu.setUserId(rs.getInt(1));
-            vu.setAccessType(rs.getInt(2));
-            return vu;
-        }
-    }
-
-    private void deleteViewUsers(int viewId) {
-        ejt.update("delete from graphicalViewUsers where graphicalViewId=?", new Object[] { viewId });
-    }
-
-    void saveViewUsers(final GraphicalView view) {
-        // Delete anything that is currently there.
-        deleteViewUsers(view.getId());
-
-        // Add in all of the entries.
-        ejt.batchUpdate("insert into graphicalViewUsers values (?,?,?)", new BatchPreparedStatementSetter() {
-            @Override
-            public int getBatchSize() {
-                return view.getViewUsers().size();
-            }
-
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ShareUser vu = view.getViewUsers().get(i);
-                ps.setInt(1, view.getId());
-                ps.setInt(2, vu.getUserId());
-                ps.setInt(3, vu.getAccessType());
-            }
-        });
-    }
-
-    public void removeUserFromView(int viewId, int userId) {
-        ejt.update("delete from graphicalViewUsers where graphicalViewId=? and userId=?",
-                new Object[] { viewId, userId });
-    }
+ 
 }

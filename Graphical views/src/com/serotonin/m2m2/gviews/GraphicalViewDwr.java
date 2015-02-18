@@ -176,8 +176,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
             if (!edit) {
                 if (pointComponent.isSettable()) {
-                    int access = view.getUserAccess(user);
-                    if (access == ShareUser.ACCESS_OWNER || access == ShareUser.ACCESS_SET)
+                	if(view.isEditor(user))
                         setChange(pointComponent.tgetDataPoint(), state, dataPointRT, request, model);
                 }
 
@@ -227,52 +226,6 @@ public class GraphicalViewDwr extends ModuleDwr {
     }
 
     //
-    // View users
-    //
-    @DwrPermission(user = true)
-    public List<ShareUser> addUpdateSharedUser(int userId, int accessType) {
-        GraphicalView view = GraphicalViewsCommon.getUserEditView(Common.getUser());
-        boolean found = false;
-        for (ShareUser su : view.getViewUsers()) {
-            if (su.getUserId() == userId) {
-                found = true;
-                su.setAccessType(accessType);
-                break;
-            }
-        }
-
-        if (!found) {
-            ShareUser su = new ShareUser();
-            su.setUserId(userId);
-            su.setAccessType(accessType);
-            view.getViewUsers().add(su);
-        }
-
-        return view.getViewUsers();
-    }
-
-    @DwrPermission(user = true)
-    public List<ShareUser> removeSharedUser(int userId) {
-        GraphicalView view = GraphicalViewsCommon.getUserEditView(Common.getUser());
-
-        for (ShareUser su : view.getViewUsers()) {
-            if (su.getUserId() == userId) {
-                view.getViewUsers().remove(su);
-                break;
-            }
-        }
-
-        return view.getViewUsers();
-    }
-
-    @DwrPermission(user = true)
-    public void deleteViewShare() {
-        User user = Common.getUser();
-        GraphicalView view = GraphicalViewsCommon.getUserView(user);
-        new GraphicalViewDao().removeUserFromView(view.getId(), user.getId());
-    }
-
-    //
     //
     // View editing
     //
@@ -282,10 +235,10 @@ public class GraphicalViewDwr extends ModuleDwr {
         User user = Common.getUser();
 
         // Users with which to share.
-        result.put("shareUsers", getShareUsers(user));
+        //result.put("shareUsers", getShareUsers(user));
 
         // Users already sharing with.
-        result.put("viewUsers", GraphicalViewsCommon.getUserEditView(user).getViewUsers());
+        //Legacy code, can remove result.put("viewUsers", GraphicalViewsCommon.getUserEditView(user).getViewUsers());
 
         // View component types
         List<StringStringPair> components = new ArrayList<StringStringPair>();
@@ -385,8 +338,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
         if (point != null) {
             // Check that setting is allowed.
-            int access = view.getUserAccess(user);
-            if (!(access == ShareUser.ACCESS_OWNER || access == ShareUser.ACCESS_SET))
+            if(!view.isEditor(user))
                 throw new PermissionException("Not allowed to set this point", user);
 
             // Try setting the point.
@@ -689,7 +641,7 @@ public class GraphicalViewDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult saveView(String name, String xid, int anonymousAccess) {
+    public ProcessResult saveView(String name, String xid, int anonymousAccess, String readPermission, String editPermission) {
         ProcessResult result = new ProcessResult();
 
         User user = Common.getUser();
@@ -698,6 +650,8 @@ public class GraphicalViewDwr extends ModuleDwr {
         view.setName(name);
         view.setXid(xid);
         view.setAnonymousAccess(anonymousAccess);
+        view.setReadPermission(readPermission);
+        view.setEditPermission(editPermission);
         view.validate(result);
 
         if (!result.getHasMessages()) {
@@ -722,5 +676,22 @@ public class GraphicalViewDwr extends ModuleDwr {
 
     private String getFullSnippetName(String snippet) {
         return getModule().getWebPath() + "/web/snippet/" + snippet;
+    }
+    
+    @DwrPermission(user = true)
+    public void savePermissions(String readPermission, String editPermission) {
+    	GraphicalView view = GraphicalViewsCommon.getUserEditView(Common.getUser());
+        view.setReadPermission(readPermission);
+        view.setEditPermission(editPermission);
+        new GraphicalViewDao().saveView(view);
+    }
+
+    @DwrPermission(user = true)
+    public ProcessResult getPermissions() {
+    	GraphicalView view = GraphicalViewsCommon.getUserEditView(Common.getUser());
+        ProcessResult result = new ProcessResult();
+        result.addData("readPermission", view.getReadPermission());
+        result.addData("editPermission", view.getEditPermission());
+        return result;
     }
 }
