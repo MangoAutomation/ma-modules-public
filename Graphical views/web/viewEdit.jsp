@@ -401,14 +401,14 @@
             </td>
         </tr>
       <tr>
-        <td class="formLabel"><fmt:message key="watchList.permission.read"/></td>
+        <td class="formLabel"><fmt:message key="viewEdit.permissions.read"/></td>
         <td class="formField">
           <input type="text" id="readPermission" class="formLong" value="${view.readPermission}"/>
           <tag:img png="bullet_down" onclick="permissionUI.viewPermissions('readPermission')"/>
         </td>
       </tr>
       <tr>
-        <td class="formLabel"><fmt:message key="watchList.permission.edit"/></td>
+        <td class="formLabel"><fmt:message key="viewEdit.permissions.edit"/></td>
         <td class="formField">
           <input type="text" id="editPermission" class="formLong" value="${view.editPermission}"/>
           <tag:img png="bullet_down" onclick="permissionUI.viewPermissions('editPermission')"/>
