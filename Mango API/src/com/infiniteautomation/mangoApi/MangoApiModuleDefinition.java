@@ -13,6 +13,17 @@ import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
  *
  */
 public class MangoApiModuleDefinition extends ModuleElementDefinition{
+	
+	 public static MangoApiReloadingProperties props;
+	
+	
+	@Override
+	public void preInitialize(){
+		props = new MangoApiReloadingProperties("mangoApiHeaders", MangoApiModuleDefinition.class.getClassLoader());
+	}
+	
+	
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.ModuleElementDefinition#postInitialize()
 	 */

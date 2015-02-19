@@ -73,7 +73,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 					if (pub != null) {
 						pub.setEventTypes(model.getEventTypes());
 					} else {
-						pub = new PointValueWebSocketPublisher(vo.getId(), model.getEventTypes(), session, this.jacksonMapper);
+						pub = new PointValueWebSocketPublisher(vo.getId(), vo.getXid(), model.getEventTypes(), session, this.jacksonMapper);
 						pub.initialize();
 						map.put(vo.getId(), pub);
 					}

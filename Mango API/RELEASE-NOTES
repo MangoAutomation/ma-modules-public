@@ -1,3 +1,14 @@
+*Version 1.0.4*
+* Added XID to realtime data web sockets
+* Added basic CORS filter, enabled by editing the web.xml file of Mango Core.  See the classes/mangoApiHeaders.properties file in this module.
+
+*Version 1.0.3
+* Released with core 2.5.2
+* Added GET method for Login/Logout controllers
+
+*Version 1.0.2
+* General bugfixes and improvements
+
 *Version 1.0.0*
 * Initial Release
 * Added Point Value Statistics API at: /rest/v1/pointValues/{xid}/statistics

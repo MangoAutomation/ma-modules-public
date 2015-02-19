@@ -19,7 +19,11 @@ public class PointValueEventModel {
 	@JsonProperty("value")
 	private PointValueTimeModel value;
 	
-	public PointValueEventModel(PointValueEventType type, PointValueTimeModel model){
+	@JsonProperty("xid")
+	private String xid;
+	
+	public PointValueEventModel(String xid, PointValueEventType type, PointValueTimeModel model){
+		this.xid = xid;
 		this.event = type;
 		this.value = model;
 	}
@@ -44,5 +48,12 @@ public class PointValueEventModel {
 		this.value = value;
 	}
 	
+	public String getXid(){
+		return this.xid;
+	}
+	
+	public void setXid(String xid){
+		this.xid = xid;
+	}
 	
 }
