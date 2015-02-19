@@ -1,3 +1,6 @@
+*Version 1.6.1*
+* Added new permissions subsystem to allow finer grained access 
+
 *Version 1.6.0*
 * Upgraded to work with core version 2.5.x
 * Add multiple JSON Emport labels of "watchLists" and "watchlists" for compatibility

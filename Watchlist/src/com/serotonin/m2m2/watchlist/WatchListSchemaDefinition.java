@@ -14,7 +14,7 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
     @Override
     public void newInstallationCheck(ExtendedJdbcTemplate ejt) {
         if (!Common.databaseProxy.tableExists(ejt, "watchLists")) {
-            String path = Common.M2M2_HOME + getModule().getDirectoryPath() + "/web/db/createTables-"
+            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/createTables-"
                     + Common.databaseProxy.getType().name() + ".sql";
             Common.databaseProxy.runScriptFile(path, null);
         }
@@ -34,12 +34,12 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 2;
+        return 3;
     }
 
     @Override
     public void uninstall() {
-        String path = Common.M2M2_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
+        String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
         Common.databaseProxy.runScriptFile(path, null);
     }
 }
