@@ -1,30 +1,31 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.infiniteautomation.mango</groupId>
-  <artifactId>crowd</artifactId>
-  <version>2.0.4</version>
-  <name>Crowd Login Management</name>
-  <build>
-    <directory>maven-target</directory>
-    <sourceDirectory>src</sourceDirectory>
-    <testSourceDirectory>test</testSourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <dependencies>
-      <dependency>
-          <groupId>com.infiniteautomation</groupId>
-          <artifactId>mango</artifactId>
-          <version>2.5.2</version>
-          <scope>provided</scope>
-      </dependency>
-  </dependencies>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.infiniteautomation.mango</groupId>
+    <artifactId>crowd</artifactId>
+    <name>Crowd Login Management</name>
+    <version>2.0.4</version>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
+        <directory>maven-target</directory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>com.infiniteautomation</groupId>
+            <artifactId>mango</artifactId>
+            <version>2.5.3</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
