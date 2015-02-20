@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -69,11 +70,19 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 								new TranslatableMessage("rest.error.noReadPermissionForPoint", user.getUsername(), vo.getXid()));
 						return;
 					}
-					PointValueWebSocketPublisher pub = map.get(vo.getId());
+					int dataPointId = vo.getId();
+					PointValueWebSocketPublisher pub = map.get(dataPointId);
 					if (pub != null) {
-						pub.setEventTypes(model.getEventTypes());
+					    List<PointValueEventType> events = model.getEventTypes();
+					    if (events.isEmpty()) {
+					        pub.terminate();
+					        map.remove(dataPointId);
+					    }
+					    else {
+	                        pub.setEventTypes(events);
+					    }
 					} else {
-						pub = new PointValueWebSocketPublisher(vo.getId(), vo.getXid(), model.getEventTypes(), session, this.jacksonMapper);
+						pub = new PointValueWebSocketPublisher(vo, model.getEventTypes(), session, this.jacksonMapper);
 						pub.initialize();
 						map.put(vo.getId(), pub);
 					}

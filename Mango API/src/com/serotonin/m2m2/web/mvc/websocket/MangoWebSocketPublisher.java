@@ -38,8 +38,9 @@ public abstract class MangoWebSocketPublisher extends TextWebSocketHandler {
 	protected void sendErrorMessage(WebSocketSession session, MangoWebSocketErrorType errorType, TranslatableMessage message) throws JsonProcessingException, IOException{
 		MangoWebSocketErrorModel error = new MangoWebSocketErrorModel(errorType, message.translate(Common.getTranslations()));
 		MangoWebSocketResponseModel model = new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.ERROR, error);
-		
-		session.sendMessage(new TextMessage(this.jacksonMapper.writeValueAsBytes(model)));
+		synchronized (session) {
+	        session.sendMessage(new TextMessage(this.jacksonMapper.writeValueAsBytes(model)));
+		}
 	}
 	
 
@@ -52,8 +53,8 @@ public abstract class MangoWebSocketPublisher extends TextWebSocketHandler {
 	 */
 	protected void sendMessage(WebSocketSession session, Object payload) throws JsonProcessingException, IOException{
 		MangoWebSocketResponseModel model = new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
-		session.sendMessage(new TextMessage(this.jacksonMapper.writeValueAsBytes(model)));
+		synchronized (session) {
+		    session.sendMessage(new TextMessage(this.jacksonMapper.writeValueAsBytes(model)));
+		}
 	}
-	
-	
 }

@@ -27,7 +27,6 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "User", description = "User Data Model", parent = AbstractRestModel.class)
 @JsonPropertyOrder({ "username", "email" })
 public class UserModel extends AbstractRestModel<User> {
-
     public UserModel() {
         super(new User());
     }
@@ -159,5 +158,4 @@ public class UserModel extends AbstractRestModel<User> {
             throw new RestValidationFailedException(this, result);
         }
     }
-
 }

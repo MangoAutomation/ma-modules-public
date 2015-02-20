@@ -1,6 +1,11 @@
+*Version 1.0.5*
+* Fixed blocking on web sockets
+* Terminate point event listener when subscription is empty
+
 *Version 1.0.4*
 * Added XID to realtime data web sockets
 * Added basic CORS filter, enabled by editing the web.xml file of Mango Core.  See the classes/mangoApiHeaders.properties file in this module.
+* Return system timezone with user timezone which may be blank
 
 *Version 1.0.3
 * Released with core 2.5.2

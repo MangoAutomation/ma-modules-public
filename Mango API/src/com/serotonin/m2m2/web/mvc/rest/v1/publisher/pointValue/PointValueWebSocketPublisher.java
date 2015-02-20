@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
@@ -27,8 +28,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	Log LOG = LogFactory.getLog(PointValueWebSocketPublisher.class);
 
 	private WebSocketSession session;
-	private Integer dataPointId;
-	private String dataPointXid;
+	private DataPointVO vo;
 	
 	private boolean sendPointInitialized = false;
 	private boolean sendPointUpdated = false;
@@ -37,19 +37,16 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	private boolean sendPointBackdated = false;
 	private boolean sendPointTerminated = false;
 	
-	public PointValueWebSocketPublisher(Integer dataPointId, String dataPointXid,  List<PointValueEventType> eventTypes,
+	public PointValueWebSocketPublisher(DataPointVO vo,  List<PointValueEventType> eventTypes,
 			WebSocketSession session, ObjectMapper jacksonMapper){
 		super(jacksonMapper);
 
 		this.session = session;
-		this.dataPointId = dataPointId;
-		this.dataPointXid = dataPointXid;
+		this.vo = vo;
 		
 		this.setEventTypes(eventTypes);
-		
 	}
 	
-
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#pointInitialized()
 	 */
@@ -62,7 +59,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			
 			
 			if(sendPointInitialized)
-				this.sendMessage(session, new PointValueEventModel(this.dataPointXid, PointValueEventType.INITIALIZE, new PointValueTimeModel(null)));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.INITIALIZE, new PointValueTimeModel(null)));
 
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -81,7 +78,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 				this.terminate();
 			
 			if(sendPointUpdated)
-				this.sendMessage(session, new PointValueEventModel(this.dataPointXid, PointValueEventType.UPDATE, new PointValueTimeModel(newValue)));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.UPDATE, new PointValueTimeModel(newValue)));
 
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -99,7 +96,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 				this.terminate();
 			
 			if(sendPointChanged)
-				this.sendMessage(session, new PointValueEventModel(this.dataPointXid, PointValueEventType.CHANGE, new PointValueTimeModel(newValue)));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.CHANGE, new PointValueTimeModel(newValue)));
 
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -116,7 +113,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 				this.terminate();
 			
 			if(sendPointSet)
-				this.sendMessage(session, new PointValueEventModel(this.dataPointXid, PointValueEventType.SET, new PointValueTimeModel(newValue)));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.SET, new PointValueTimeModel(newValue)));
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -132,7 +129,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 				this.terminate();
 			
 			if(sendPointBackdated)
-				this.sendMessage(session, new PointValueEventModel(this.dataPointXid, PointValueEventType.BACKDATE, new PointValueTimeModel(value)));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.BACKDATE, new PointValueTimeModel(value)));
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -148,7 +145,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 				this.terminate();
 			
 			if(sendPointTerminated)
-				this.sendMessage(session, new PointValueEventModel(this.dataPointXid, PointValueEventType.TERMINATE, new PointValueTimeModel(null)));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.TERMINATE, new PointValueTimeModel(null)));
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -197,11 +194,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	 * @param session
 	 */
 	public void initialize() {
-		Common.runtimeManager.addDataPointListener(dataPointId, this);
+		Common.runtimeManager.addDataPointListener(vo.getId(), this);
 	}
 
 	public void terminate(){
-		Common.runtimeManager.removeDataPointListener(dataPointId, this);
+		Common.runtimeManager.removeDataPointListener(vo.getId(), this);
 	}
 	
 	public WebSocketSession getSession(){

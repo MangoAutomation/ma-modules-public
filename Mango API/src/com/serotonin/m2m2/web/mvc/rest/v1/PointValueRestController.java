@@ -162,8 +162,8 @@ public class PointValueRestController extends MangoRestController{
                     PointValueTime last = pointValueFacade.getPointValueBefore(to.getTime());
                     
                     List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(2);
-                    models.add(new PointValueTimeModel(first));
-                    models.add(new PointValueTimeModel(last));
+                    models.add(first == null ? null : new PointValueTimeModel(first));
+                    models.add(last == null ? null : new PointValueTimeModel(last));
 	                
 	                return result.createResponseEntity(models);
 	            }else{

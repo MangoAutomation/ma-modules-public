@@ -12,18 +12,17 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
  *
  */
 public class PointValueEventModel {
+    @JsonProperty("xid")
+    private String xid;
 
 	@JsonProperty("event")
 	private PointValueEventType event;
 	
 	@JsonProperty("value")
 	private PointValueTimeModel value;
-	
-	@JsonProperty("xid")
-	private String xid;
-	
+
 	public PointValueEventModel(String xid, PointValueEventType type, PointValueTimeModel model){
-		this.xid = xid;
+	    this.xid = xid;
 		this.event = type;
 		this.value = model;
 	}
@@ -47,13 +46,12 @@ public class PointValueEventModel {
 	public void setValue(PointValueTimeModel value) {
 		this.value = value;
 	}
-	
-	public String getXid(){
-		return this.xid;
-	}
-	
-	public void setXid(String xid){
-		this.xid = xid;
-	}
-	
+
+    public String getXid() {
+        return xid;
+    }
+
+    public void setXid(String xid) {
+        this.xid = xid;
+    }
 }
