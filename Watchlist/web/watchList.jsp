@@ -617,14 +617,13 @@
       <div dojoType="dijit.layout.SplitContainer" orientation="horizontal" sizerWidth="3" activeSizing="true" class="borderDiv"
               id="splitContainer" style="width: 100%; height: 500px;">
         <div dojoType="dijit.layout.ContentPane" sizeMin="20" sizeShare="20" style="overflow:auto;padding:2px;">
-          <div>
+          <div class="clearfix">
             <div style="display:inline;"><span class="smallTitle"><fmt:message key="watchlist.points"/></span> <tag:help id="watchListPoints"/></div>
             <div style="float:right; margin: 3px 3px 0 0;">
               <a id="pointTree" class="choice active"><fmt:message key="watchlist.pointTree"/></a>
               <a id="pointLookup" class="choice"><fmt:message key="watchlist.pointLookup"/></a>
             </div>
           </div>
-          <div class="clearfix"></div>
           <img src="images/hourglass.png" id="loadingImg"/>
           <div id="treeDiv" style="display:none;"><div id="tree"></div></div>
           <div id="pickerDiv" style="display:none; margin: 10px 5px;">
