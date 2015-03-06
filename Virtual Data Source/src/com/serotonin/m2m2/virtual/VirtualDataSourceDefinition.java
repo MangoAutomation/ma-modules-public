@@ -10,9 +10,10 @@ import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 public class VirtualDataSourceDefinition extends DataSourceDefinition {
+	public static final String TYPE_NAME = "VIRTUAL";
     @Override
     public String getDataSourceTypeName() {
-        return "VIRTUAL";
+        return TYPE_NAME;
     }
 
     @Override

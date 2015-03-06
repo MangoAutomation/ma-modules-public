@@ -36,6 +36,7 @@ import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.VirtualPointLocatorRT;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 		JsonSerializable {
@@ -475,5 +476,13 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 					ChangeTypeVO.CHANGE_TYPE_CODES.getCodeList());
 
 		reader.readInto(getChangeType(), ctjson);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
+	 */
+	@Override
+	public PointLocatorModel<?> asModel() {
+		return new VirtualPointLocatorModel(this);
 	}
 }

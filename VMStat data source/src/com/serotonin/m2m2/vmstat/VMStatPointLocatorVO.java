@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -22,6 +23,7 @@ import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 /**
  * @author Matthew Lohbihler
@@ -154,4 +156,12 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO implements Json
             throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
                     ATTRIBUTE_CODES.getCodeList());
     }
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
+	 */
+	@Override
+	public PointLocatorModel<?> asModel() {
+		//TODO Implement when we have a Model
+		throw new ShouldNeverHappenException("Unimplimented!");
+	}
 }

@@ -19,6 +19,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.util.SerializationHelper;
 
 /**
@@ -230,6 +231,14 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 
 	@Override
 	public void jsonWrite(ObjectWriter arg0) throws IOException, JsonException {
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
+	 */
+	@Override
+	public PointLocatorModel<?> asModel() {
+		return new AsciiFilePointLocatorModel(this);
 	}
 
 	

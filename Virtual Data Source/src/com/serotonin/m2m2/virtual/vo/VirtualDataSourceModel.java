@@ -39,7 +39,4 @@ public class VirtualDataSourceModel extends AbstractDataSourceModel<VirtualDataS
 		((VirtualDataSourceVO) this.data).setUpdatePeriods(pollPeriod.getPeriods());
 		((VirtualDataSourceVO) this.data).setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
 	}
-
-	
-	
 }
