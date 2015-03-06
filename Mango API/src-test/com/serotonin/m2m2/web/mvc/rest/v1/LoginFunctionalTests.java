@@ -24,7 +24,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.BaseRestTest;
 import com.serotonin.m2m2.web.mvc.rest.test.data.UserTestData;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.UserModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 
 /**
  * @author Terry Packer

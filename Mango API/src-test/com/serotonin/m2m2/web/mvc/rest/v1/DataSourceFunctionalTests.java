@@ -32,7 +32,7 @@ import com.serotonin.m2m2.web.mvc.rest.test.data.UserTestData;
 import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.MockDataSourceModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.UserModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 
 /**
  * @author Terry Packer

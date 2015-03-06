@@ -27,7 +27,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.BaseRestTest;
 import com.serotonin.m2m2.web.mvc.rest.test.data.UserTestData;
 import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.UserModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 
 /**
  * @See http://spring.io/guides/tutorials/rest/2/

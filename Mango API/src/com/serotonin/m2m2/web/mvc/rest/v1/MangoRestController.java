@@ -76,6 +76,10 @@ public abstract class MangoRestController {
 	public RestMessage getResourceCreatedMessage(URI location){
 		return new ResourceCreatedMessage(HttpStatus.CREATED, new TranslatableMessage("common.default", "Created"), location);
 	}
+	
+	public RestMessage getResourceUpdatedMessage(URI location){
+		return new ResourceCreatedMessage(HttpStatus.OK, new TranslatableMessage("common.default", "Updated"), location);
+	}
 
 	public RestMessage getInternalServerErrorMessage(String content){
 		return new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", content));

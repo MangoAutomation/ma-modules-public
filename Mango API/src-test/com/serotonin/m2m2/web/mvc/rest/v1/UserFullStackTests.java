@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import com.serotonin.m2m2.web.mvc.rest.BaseFullStackRestTest;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.UserModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 
 /**
  * User full stack tests use the full mango instance to test the REST endpoints with no mocking.

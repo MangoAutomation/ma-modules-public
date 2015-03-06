@@ -26,7 +26,7 @@ import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.UserModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -48,7 +48,7 @@ public class UserRestController extends MangoRestController{
 	}
 
 	@ApiOperation(value = "Get all users", notes = "Returns a list of all users")
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"})
     public ResponseEntity<List<UserModel>> getAll(HttpServletRequest request) {
 		RestProcessResult<List<UserModel>> result = new RestProcessResult<List<UserModel>>(HttpStatus.OK);
     	
@@ -73,7 +73,7 @@ public class UserRestController extends MangoRestController{
     }
 	
 	@ApiOperation(value = "Get current user", notes = "Returns the logged in user")
-	@RequestMapping(method = RequestMethod.GET, value = "/current")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/current")
 	public ResponseEntity<UserModel> getCurrentUser(HttpServletRequest request) {
 	    RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
 	    User user = this.checkUser(request, result);
@@ -87,7 +87,7 @@ public class UserRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Get user by name", notes = "Returns the user specified by the given username")
-	@RequestMapping(method = RequestMethod.GET, value = "/{username}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{username}")
     public ResponseEntity<UserModel> getUser(
     		@ApiParam(value = "Valid username", required = true, allowMultiple = false)
     		@PathVariable String username, HttpServletRequest request) {
@@ -119,7 +119,7 @@ public class UserRestController extends MangoRestController{
 	}
 
 	@ApiOperation(value = "Updates a user")
-	@RequestMapping(method = RequestMethod.PUT, value = "/{username}")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{username}")
     public ResponseEntity<UserModel> updateUser(
     		@PathVariable String username,
     		UserModel model,
@@ -172,7 +172,7 @@ public class UserRestController extends MangoRestController{
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 409, message = "User Already Exists")
 			})
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
     public ResponseEntity<UserModel> createNewUser(
     		@ApiParam( value = "User to save", required = true )
     		@RequestBody

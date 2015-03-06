@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.serotonin.m2m2.web.mvc.rest.v1.model;
+package com.serotonin.m2m2.web.mvc.rest.v1.model.user;
 
 import java.util.TimeZone;
 
@@ -14,8 +14,12 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.AlarmLevel;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
@@ -25,6 +29,7 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
  * 
  */
 @ApiModel(value = "User", description = "User Data Model", parent = AbstractRestModel.class)
+@CSVEntity
 @JsonPropertyOrder({ "username", "email" })
 public class UserModel extends AbstractRestModel<User> {
     public UserModel() {
@@ -36,11 +41,13 @@ public class UserModel extends AbstractRestModel<User> {
     }
 
     @ApiModelProperty(value = "Username of User", required = true)
+    @CSVColumnGetter(order=0, header="username")
     @JsonGetter("username")
     public String getUsername() {
         return data.getUsername();
     }
 
+    @CSVColumnSetter(order=0, header="username")
     @JsonSetter("username")
     public void setUsername(String username) {
         data.setUsername(username);
@@ -49,91 +56,108 @@ public class UserModel extends AbstractRestModel<User> {
     //TODO This is not working yet
     // the idea is that the password will only be
     // available in the Test View
+    @CSVColumnGetter(order=1, header="password")
     @JsonGetter("password")
     public String getPassword() {
         return ""; //data.getPassword(); 
     }
-
+    @CSVColumnSetter(order=1, header="password")
     @JsonSetter("password")
     public void setPassword(String password) {
         data.setPassword(password);
     }
 
+    @CSVColumnGetter(order=2, header="email")
     @JsonGetter("email")
     public String getEmail() {
         return data.getEmail();
     }
-
+    
+    @CSVColumnSetter(order=2, header="email")
     @JsonSetter("email")
     public void setEmail(String email) {
         data.setEmail(email);
     }
 
+    @CSVColumnGetter(order=3, header="disabled")
     @JsonGetter("disabled")
     public Boolean getDisabled() {
         return data.isDisabled();
     }
 
+    @CSVColumnSetter(order=3, header="disabled")
     @JsonSetter("disabled")
     public void setDisabled(Boolean disabled) {
         data.setDisabled(disabled);
     }
 
+    @CSVColumnGetter(order=4, header="permissions")
     @JsonGetter("permissions")
     public String getPermissions() {
         return data.getPermissions();
     }
 
+    @CSVColumnSetter(order=4, header="permissions")
     @JsonSetter("permissions")
     public void setPermissions(String permissions) {
         data.setPermissions(permissions);
     }
 
+    @CSVColumnGetter(order=5, header="homeUrl")
     @JsonGetter("homeUrl")
     public String getHomeUrl() {
         return data.getHomeUrl();
     }
 
+    @CSVColumnSetter(order=5, header="homeUrl")
     @JsonSetter("homeUrl")
     public void setHomeUrl(String homeUrl) {
         data.setHomeUrl(homeUrl);
     }
 
+    @CSVColumnGetter(order=6, header="receiveAlarmEmails")
     @JsonGetter("receiveAlarmEmails")
     public AlarmLevel getReceiveAlarmEmails() {
         return AlarmLevel.convertTo(data.getReceiveAlarmEmails());
     }
 
+    @CSVColumnSetter(order=6, header="receiveAlarmEmails")
     @JsonSetter("receiveAlarmEmails")
     public void setReceiveAlarmEmails(AlarmLevel level) {
         data.setReceiveAlarmEmails(AlarmLevel.convertFrom(level));
     }
 
+    @CSVColumnGetter(order=7, header="timezone")
     @JsonGetter("timezone")
     public String getTimezone() {
         return data.getTimezone();
     }
 
+    @CSVColumnSetter(order=7, header="timezone")
     @JsonSetter("timezone")
     public void setTimezone(String zone) {
         data.setTimezone(zone);
     }
 
+    @CSVColumnGetter(order=8, header="systemTimezone")
     @JsonGetter("systemTimezone")
     public String getSystemTimezone() {
         return TimeZone.getDefault().getID();
     }
 
+    @CSVColumnSetter(order=8, header="systemTimezone")
     @JsonSetter("systemTimezone")
     public void setSystemTimezone(String zone) {
         // no op
     }
 
+    @CSVColumnGetter(order=9, header="muted")
     @JsonGetter("muted")
     public Boolean getMuted() {
         return data.isMuted();
     }
 
+    @CSVColumnSetter(order=9, header="muted")
     @JsonSetter("muted")
     public void setMuted(Boolean muted) {
         data.setMuted(muted);

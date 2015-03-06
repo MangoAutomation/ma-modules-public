@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,13 +26,17 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.wordnik.swagger.annotations.Api;
@@ -64,7 +69,7 @@ public class DataPointRestController extends MangoRestController{
 	@ApiResponse(code = 200, message = "Ok"),
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<List<DataPointModel>> getAllDataPoints(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
 
@@ -105,7 +110,7 @@ public class DataPointRestController extends MangoRestController{
 //		    @ApiResponse(code = 404, message = "DataPoint not found")
 //			})
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> getDataPoint(
     		@ApiParam(value = "Valid Data Point XIDs", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -138,16 +143,16 @@ public class DataPointRestController extends MangoRestController{
     }
 	
 	/**
-	 * Put a data point into the system
+	 * Update a data point in the system
 	 * @param vo
 	 * @param xid
 	 * @param builder
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(@PathVariable String xid,
-    		DataPointModel model, 
+    		@RequestBody DataPointModel model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
@@ -178,6 +183,19 @@ public class DataPointRestController extends MangoRestController{
         	}
 	
 	        vo.setId(existingDp.getId());
+	        //Check the Template and see if we need to use it
+	        if(model.getTemplateXid() != null){
+            	
+            	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+            	if(template != null){
+            		template.updateDataPointVO(vo);
+            	}else{
+            		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
+            	}
+            }else{
+                vo.setTextRenderer(new PlainRenderer());
+            }
+	        
 	        ProcessResult validation = new ProcessResult();
 	        vo.validate(validation);
 	        
@@ -215,7 +233,8 @@ public class DataPointRestController extends MangoRestController{
 	        
 	        //Put a link to the updated data in the header?
 	    	URI location = builder.path("/rest/v1/dataPoints/{xid}").buildAndExpand(xid).toUri();
-	    	result.addRestMessage(getResourceCreatedMessage(location));
+	    	
+	    	result.addRestMessage(getResourceUpdatedMessage(location));
 	        return result.createResponseEntity(model);
         }
         //Not logged in
@@ -223,7 +242,88 @@ public class DataPointRestController extends MangoRestController{
     }
 	
 
+	@ApiOperation(
+			value = "Insert new data points",
+			notes = "N/A Yet"
+			)
+	@ApiResponses(value = { 
+	@ApiResponse(code = 200, message = "Ok"),
+	@ApiResponse(code = 403, message = "User does not have access")
+	})
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, value = "/updateOrSave")
+    public ResponseEntity<List<DataPointModel>> saveDataPoints(
+    		@RequestBody List<DataPointModel> models, 
+    		UriComponentsBuilder builder, HttpServletRequest request) {
 
+		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
+		List<DataPointModel> savedPoints = new ArrayList<DataPointModel>();
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	for(DataPointModel model : models){
+				DataPointVO vo = model.getData();
+				
+				
+				
+		        DataPointVO existingDp = DataPointDao.instance.getByXid(vo.getXid());
+		        if (existingDp == null) {
+		    		//TODO Create new Dp
+		        	result.addRestMessage(new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", "Unimplemented!")));
+	        		return result.createResponseEntity();
+		        }
+		        
+		        //Check permissions
+		    	try{
+		    		if(!Permissions.hasDataPointReadPermission(user, vo)){
+		    			//TODO add DP XID TO this message
+		    			result.addRestMessage(getUnauthorizedMessage());
+		    		}else{
+				        vo.setId(existingDp.getId());
+				        ProcessResult validation = new ProcessResult();
+				        vo.validate(validation);
+				        
+				        if(validation.getHasMessages()){
+				        	result.addRestMessage(model.addValidationMessages(validation));
+				        }else{
+				
+				        	//We will always override the DS Info with the one from the XID Lookup
+				            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
+				            
+				            //TODO this implies that we may need to have a different JSON Converter for data points
+				            //Need to set DataSourceId among other things
+				            vo.setDataSourceId(existingDp.getDataSourceId());
+				            
+				            
+				            if (dsvo == null){
+				            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", vo.getXid()));
+				            }else {
+				                //Compare this point to the existing point in DB to ensure
+				                // that we aren't moving a point to a different type of Data Source
+				                DataPointDao dpDao = new DataPointDao();
+				                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
+				                
+				                //Does the old point have a different data source?
+				                if(oldPoint != null&&(oldPoint.getDataSourceId() != dsvo.getId())){
+				                    vo.setDataSourceId(dsvo.getId());
+				                    vo.setDataSourceName(dsvo.getName());
+				                }
+					            Common.runtimeManager.saveDataPoint(vo);
+					            models.add(new DataPointModel(vo));
+				            }
+				
+				        }
+		    		}
+		    	}catch(PermissionException e){
+		    		result.addRestMessage(getUnauthorizedMessage());
+	        	}
+		
+
+        	}
+	        //TODO Put a link to the updated data in the header?
+	        return result.createResponseEntity(models);
+        }
+        //Not logged in
+        return result.createResponseEntity();
+    }
 
 	/**
 	 * Delete one Data Point

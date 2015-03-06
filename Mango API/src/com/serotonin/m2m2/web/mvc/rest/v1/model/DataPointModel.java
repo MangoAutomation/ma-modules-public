@@ -5,18 +5,29 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.serotonin.ShouldNeverHappenException;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingProperties;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.IntervalLoggingType;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingProperties;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingType;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
+import com.serotonin.m2m2.vo.template.BaseTemplateVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumn;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
+import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingPropertiesModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingPropertiesModelFactory;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.BaseChartRendererModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.ChartRendererFactory;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.BaseTextRendererModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRendererFactory;
 
 
 /**
@@ -26,105 +37,231 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
  * @author Terry Packer
  *
  */
+@CSVEntity()
 public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	
-	private DataPointVO vo;
+	@CSVColumn(header="templateXid", order = 7)
+	private String templateXid; //Used for Model Creation/Saving of Data Points
+	
+	@JsonProperty
+	private LoggingPropertiesModel loggingProperties;
+	
+	@JsonProperty 
+	@JsonDeserialize(using = SuperclassModelDeserializer.class)
+	private BaseTextRendererModel<?> textRenderer;
+	
+	@JsonProperty 
+	@JsonDeserialize(using = SuperclassModelDeserializer.class)
+	private BaseChartRendererModel<?> chartRenderer;
 	
 	public DataPointModel(){
-		super(new DataPointVO());
-		this.vo = (DataPointVO) this.data;
+		this(new DataPointVO());
+		this.loggingProperties = LoggingPropertiesModelFactory.createModel(this.data);
 	}
 	/**
 	 * @param vo
 	 */
 	public DataPointModel(DataPointVO vo) {
 		super(vo);
-		this.vo = vo;
+		//We must set the local properties to ensure they are in the model since
+		// this constructor is used in the Mango Rest Controller Code
+		if(vo.getTemplateId() != null){
+			BaseTemplateVO<?> template = TemplateDao.instance.get(vo.getTemplateId());
+			if(template != null)
+				this.templateXid = template.getXid();
+			
+		}
+		this.loggingProperties = LoggingPropertiesModelFactory.createModel(vo);
+		this.textRenderer = TextRendererFactory.createModel(vo);
+		this.chartRenderer = ChartRendererFactory.createModel(vo);
 	}
 	
-	//Data Source XID here?
-	
+	@CSVColumnGetter(order=3, header="deviceName")
 	@JsonGetter("deviceName")
 	public String getDeviceName(){
-		return this.vo.getDeviceName();
+		return this.data.getDeviceName();
 	}
 	
+	@CSVColumnSetter(order=3, header="deviceName")
 	@JsonSetter("deviceName")
 	public void setDeviceName(String deviceName){
-		this.vo.setDeviceName(deviceName);
+		this.data.setDeviceName(deviceName);
+	}
+	
+	@CSVColumnGetter(order=4, header="dataSourceXid")
+	@JsonGetter("dataSourceXid")
+	public String getDataSourceXid(){
+		return this.data.getDataSourceXid();
+	}
+	
+	@CSVColumnSetter(order=4, header="dataSourceXid")
+	@JsonSetter("dataSourceXid")
+	public void setDataSourceXid(String xid){
+		this.data.setDataSourceXid(xid);
+	}
+	
+	@CSVColumnGetter(order=5, header="readPermission")
+	@JsonGetter("readPermission")
+	public String getReadPermission(){
+		return this.data.getReadPermission();
+	}
+	
+	@CSVColumnSetter(order=5, header="readPermission")
+	@JsonSetter("readPermission")
+	public void setReadPermission(String readPermission){
+		this.data.setReadPermission(readPermission);
+	}
+			
+	@CSVColumnGetter(order=6, header="setPermission")
+	@JsonGetter("setPermission")
+	public String getSetPermission(){
+		return this.data.getSetPermission();
+	}
+	
+	@CSVColumnSetter(order=6, header="readPermission")
+	@JsonSetter("setPermission")
+	public void setSetPermission(String setPermission){
+		this.data.setSetPermission(setPermission);
 	}
 	
 	@JsonGetter("pointFolderId")
-	public int getPointFolderId(int id){
-		return this.vo.getPointFolderId();
+	public int getPointFolder(){
+		return this.data.getPointFolderId();
 	}
 	@JsonSetter("pointFolderId")
-	public void setPointFolderId(int id){
-		this.vo.setPointFolderId(id);
+	public void setPointFolder(int id){
+		this.data.setPointFolderId(id);
 	}
 	
-	@JsonGetter("loggingProperties")
-	public LoggingProperties getLoggingProperties(){
-		
-		//Are we interval logging
-		if(this.vo.getLoggingType() == DataPointVO.LoggingTypes.INTERVAL){
-			//What kind of interval?
-			switch(this.vo.getIntervalLoggingType()){
-				case DataPointVO.IntervalLoggingTypes.INSTANT:
-				case DataPointVO.IntervalLoggingTypes.MAXIMUM:
-				case DataPointVO.IntervalLoggingTypes.MINIMUM:
-					return new IntervalLoggingProperties(
-							LoggingType.convertTo(this.vo.getLoggingType()),
-							IntervalLoggingType.convertTo(this.vo.getIntervalLoggingType()));
-				case DataPointVO.IntervalLoggingTypes.AVERAGE:
-					//TODO this needs the sample window size and period
-					return new IntervalLoggingProperties(
-						LoggingType.convertTo(this.vo.getLoggingType()),
-						IntervalLoggingType.convertTo(this.vo.getIntervalLoggingType()));
-				default:
-					throw new ShouldNeverHappenException("Unknown Interval Logigng Type: " + this.vo.getIntervalLoggingType());
-			}
-		}else{
-			return new LoggingProperties(LoggingType.convertTo(this.vo.getLoggingType()));
-		}
-		
+	@JsonGetter("purgeOverride")
+	public boolean isPurgeOverride(){
+		return this.data.isPurgeOverride();
 	}
-	@JsonSetter("loggingProperties")
-	public void setLoggingProperties(LoggingProperties props){
-		//TODO Finish this
-		System.out.println(props.getType());
+	@JsonSetter("purgeOverride")
+	public void setPurgeOverride(boolean purgeOverride){
+		this.data.setPurgeOverride(purgeOverride);
 	}
 	
-	//TODO Implement this with subclass JSON Mappings probably
+	@JsonGetter("purgePeriod")
+	public TimePeriodModel getPurgePeriod(){
+		return new TimePeriodModel(this.data.getPurgePeriod(), this.data.getPurgeType());
+	}
+	@JsonSetter("purgePeriod")
+	public void setPurgePeriod(TimePeriodModel model){
+		this.data.setPurgePeriod(model.getPeriods());
+		this.data.setPurgeType(Common.TIME_PERIOD_CODES.getId(model.getPeriodType()));
+	}
+	
+	public LoggingPropertiesModel getLoggingProperties(){
+		return loggingProperties;
+	}
+
+	public void setLoggingProperties(LoggingPropertiesModel props){
+		this.loggingProperties = props;
+		LoggingPropertiesModelFactory.updateDataPoint(this.data, this.loggingProperties);
+	}
+	
+
+	public String getTemplateXid() {
+		return templateXid;
+	}
+	public void setTemplateXid(String templateXid){
+		this.templateXid = templateXid;
+	}
+	
+	@CSVColumnGetter(header="pointLocatorType", order=8)
 	@JsonGetter("pointLocator")
-	public PointLocatorVO getPointLocator(){
-		return this.vo.getPointLocator();
+	public PointLocatorModel<?> getPointLocator(){
+		return this.data.getPointLocator().asModel();
 	}
+	
+	@CSVColumnSetter(header="pointLocatorType", order=8)
 	@JsonSetter("pointLocator")
-	public void setPointLocator(PointLocatorVO plVo){
-		//TODO This is broken, but the getter is working fine
-		this.vo.setPointLocator(plVo);
+	public void setPointLocator(PointLocatorModel<?> pl){
+		this.data.setPointLocator((PointLocatorVO)pl.getData());
 	}
 	
 	
-	//TODO Missing Many Properties HERE
+	
 	@JsonGetter("unit")
 	public String getUnit(){
-		return UnitUtil.formatLocal(this.vo.getUnit());
+		return UnitUtil.formatLocal(this.data.getUnit());
 	}
 	@JsonSetter("unit")
 	public void setUnit(String unit){
-		this.vo.setUnit(UnitUtil.parseLocal(unit));
-	}
-
-	@JsonGetter("dataType")
-	public DataTypeEnum getDataType(){
-		return DataTypeEnum.convertTo(this.vo.getPointLocator().getDataTypeId());
+		this.data.setUnit(UnitUtil.parseLocal(unit));
 	}
 	
-	@JsonSetter("dataType")
-	public void setDataType(DataTypeEnum type){
-		throw new ShouldNeverHappenException("Can't set a data type yet!");
+	@JsonGetter("useIntegralUnit")
+	public boolean isUseIntegralUnit(){
+		return this.data.isUseIntegralUnit();
+	}
+	@JsonSetter("useIntegralUnit")
+	public void setUseIntegralUnit(boolean useIntegralUnit){
+		this.data.setUseIntegralUnit(useIntegralUnit);
+	}
+	
+	@JsonGetter("integralUnit")
+	public String getIntegralUnit(){
+		return UnitUtil.formatLocal(this.data.getIntegralUnit());
+	}
+	@JsonSetter("integralUnit")
+	public void setIntegralUnit(String unit){
+		this.data.setIntegralUnit(UnitUtil.parseLocal(unit));
+	}
+
+	@JsonGetter("useRenderedUnit")
+	public boolean isUseRenderedUnit(){
+		return this.data.isUseRenderedUnit();
+	}
+	@JsonSetter("useRenderedUnit")
+	public void setUseRenderedUnit(boolean useRenderedUnit){
+		this.data.setUseRenderedUnit(useRenderedUnit);
+	}
+	
+	@JsonGetter("renderedUnit")
+	public String getRenderedUnit(){
+		return UnitUtil.formatLocal(this.data.getRenderedUnit());
+	}
+	@JsonSetter("renderedUnit")
+	public void setRenderedUnit(String unit){
+		this.data.setRenderedUnit(UnitUtil.parseLocal(unit));
+	}
+
+	@JsonGetter("chartColour")
+	public String getChartColour(){
+		return this.data.getChartColour();
+	}
+	@JsonSetter("chartColour")
+	public void setChartColour(String colour){
+		this.data.setChartColour(colour);
+	}
+
+	@JsonGetter("plotType")
+	public String getPlotType(){
+		return DataPointVO.PLOT_TYPE_CODES.getCode(this.data.getPlotType());
+	}
+	@JsonSetter("plotType")
+	public void setPlotType(String plotType){
+		this.data.setPlotType(DataPointVO.PLOT_TYPE_CODES.getId(plotType));
+	}
+	
+	public BaseTextRendererModel<?> getTextRenderer(){
+		return this.textRenderer;
+	}
+	
+	public void setTextRenderer(BaseTextRendererModel<?> renderer){
+		this.textRenderer = renderer;
+		TextRendererFactory.updateDataPoint(this.data, renderer);
+	}
+	
+	public BaseChartRendererModel<?> getChartRenderer(){
+		return this.chartRenderer;
+	}
+	
+	public void setChartRenderer(BaseChartRendererModel<?> renderer){
+		this.chartRenderer = renderer;
+		ChartRendererFactory.updateDataPoint(this.data, renderer);
 	}
 	
 	/* (non-Javadoc)
@@ -132,12 +269,23 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	 */
 	//@Override
 	public void validate(ProcessResult response) {
-		this.vo.validate(response);
+		this.data.validate(response);
 	}
 	
-	@JsonIgnore
+	
+	/**
+	 * Ensure all Complex properties are set in the Data Point prior to returning
+	 */
+	@Override
 	public DataPointVO getData(){
-		return this.vo;
+		
+		if(templateXid != null){
+			BaseTemplateVO<?> template = TemplateDao.instance.getByXid(templateXid);
+			if(template != null)
+				this.data.setTemplateId(template.getId());
+			
+		}
+
+		return this.data;
 	}
-	
 }
