@@ -58,6 +58,8 @@ public class ChartRendererFactory {
 	 */
 	public static void updateDataPoint(DataPointVO vo,
 			BaseChartRendererModel<?> baseRendererModel) {
+		if(baseRendererModel == null)
+			return; //Nothing to do
 
 		if(baseRendererModel.getType().equals(ImageChartRenderer.getDefinition().getName())){
 			ImageChartRendererModel model = (ImageChartRendererModel)baseRendererModel;

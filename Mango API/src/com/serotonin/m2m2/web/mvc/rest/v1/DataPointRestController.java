@@ -161,9 +161,6 @@ public class DataPointRestController extends MangoRestController{
         if(result.isOk()){
 
 			DataPointVO vo = model.getData();
-			
-			
-			
 	        DataPointVO existingDp = DataPointDao.instance.getByXid(xid);
 	        if (existingDp == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
@@ -193,7 +190,7 @@ public class DataPointRestController extends MangoRestController{
             		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
             	}
             }else{
-                vo.setTextRenderer(new PlainRenderer());
+                vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
             }
 	        
 	        ProcessResult validation = new ProcessResult();
@@ -250,75 +247,80 @@ public class DataPointRestController extends MangoRestController{
 	@ApiResponse(code = 200, message = "Ok"),
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, value = "/updateOrSave")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"})
     public ResponseEntity<List<DataPointModel>> saveDataPoints(
     		@RequestBody List<DataPointModel> models, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
-		List<DataPointModel> savedPoints = new ArrayList<DataPointModel>();
 		User user = this.checkUser(request, result);
         if(result.isOk()){
         	for(DataPointModel model : models){
-				DataPointVO vo = model.getData();
-				
-				
-				
-		        DataPointVO existingDp = DataPointDao.instance.getByXid(vo.getXid());
-		        if (existingDp == null) {
-		    		//TODO Create new Dp
-		        	result.addRestMessage(new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", "Unimplemented!")));
-	        		return result.createResponseEntity();
-		        }
-		        
-		        //Check permissions
-		    	try{
-		    		if(!Permissions.hasDataPointReadPermission(user, vo)){
-		    			//TODO add DP XID TO this message
-		    			result.addRestMessage(getUnauthorizedMessage());
-		    		}else{
-				        vo.setId(existingDp.getId());
-				        ProcessResult validation = new ProcessResult();
-				        vo.validate(validation);
-				        
-				        if(validation.getHasMessages()){
-				        	result.addRestMessage(model.addValidationMessages(validation));
-				        }else{
-				
-				        	//We will always override the DS Info with the one from the XID Lookup
-				            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
-				            
-				            //TODO this implies that we may need to have a different JSON Converter for data points
-				            //Need to set DataSourceId among other things
-				            vo.setDataSourceId(existingDp.getDataSourceId());
-				            
-				            
-				            if (dsvo == null){
-				            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", vo.getXid()));
-				            }else {
-				                //Compare this point to the existing point in DB to ensure
-				                // that we aren't moving a point to a different type of Data Source
-				                DataPointDao dpDao = new DataPointDao();
-				                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
-				                
-				                //Does the old point have a different data source?
-				                if(oldPoint != null&&(oldPoint.getDataSourceId() != dsvo.getId())){
-				                    vo.setDataSourceId(dsvo.getId());
-				                    vo.setDataSourceName(dsvo.getName());
-				                }
-					            Common.runtimeManager.saveDataPoint(vo);
-					            models.add(new DataPointModel(vo));
-				            }
-				
-				        }
-		    		}
-		    	}catch(PermissionException e){
-		    		result.addRestMessage(getUnauthorizedMessage());
-	        	}
-		
+    			DataPointVO vo = model.getData();
+    	        DataPointVO existingDp = DataPointDao.instance.getByXid(vo.getXid());
+    	        if (existingDp == null) {
+    	    		result.addRestMessage(getDoesNotExistMessage());
+    	    		return result.createResponseEntity();
+    	        }
+    	        
+    	        //Check permissions
+    	    	try{
+    	    		if(!Permissions.hasDataPointReadPermission(user, vo)){
+    	    			result.addRestMessage(getUnauthorizedMessage()); //TODO add what point
+    	        		continue;
+    	
+    	    		}
+    	    	}catch(PermissionException e){
+    	    		result.addRestMessage(getUnauthorizedMessage()); //TODO add what point
+            		continue;
+            	}
+    	
+    	        vo.setId(existingDp.getId());
+    	        //Check the Template and see if we need to use it
+    	        if(model.getTemplateXid() != null){
+                	
+                	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+                	if(template != null){
+                		template.updateDataPointVO(vo);
+                	}else{
+                		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
+                		continue;
+                	}
+                }else{
+                    vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
+                }
+    	        
+    	        ProcessResult validation = new ProcessResult();
+    	        vo.validate(validation);
+    	        
+    	        if(validation.getHasMessages()){
+    	        	result.addRestMessage(model.addValidationMessages(validation));
+    	        }else{
+    	
+    	        	//We will always override the DS Info with the one from the XID Lookup
+    	            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
+    	            
+    	            //Need to set DataSourceId among other things
+    	            vo.setDataSourceId(existingDp.getDataSourceId());
+    	            if (dsvo == null){
+    	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", existingDp.getDataSourceXid()));
+    	            }else {
+    	                //Compare this point to the existing point in DB to ensure
+    	                // that we aren't moving a point to a different type of Data Source
+    	                DataPointDao dpDao = new DataPointDao();
+    	                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
+    	                
+    	                //Does the old point have a different data source?
+    	                if(oldPoint != null&&(oldPoint.getDataSourceId() != dsvo.getId())){
+    	                    vo.setDataSourceId(dsvo.getId());
+    	                    vo.setDataSourceName(dsvo.getName());
+    	                }
+    	            }
+    	
+    	            Common.runtimeManager.saveDataPoint(vo);
+    	        }
 
         	}
-	        //TODO Put a link to the updated data in the header?
 	        return result.createResponseEntity(models);
         }
         //Not logged in

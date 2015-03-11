@@ -41,21 +41,21 @@ public class ExceptionHandlingController {
     }
 	
 	
-	/**
-	 * Useful when validation fails
-	 * @param e
-	 * @param request
-	 * @return
-	 */
-    @ExceptionHandler({ RestValidationFailedException.class })
-    protected ResponseEntity<RestValidationResponseModel> handleInvalidRequest(RestValidationFailedException e) {
-		
-		ResponseEntity<RestValidationResponseModel> response = new ResponseEntity<RestValidationResponseModel>(e.getModel(),
-				e.getResult().addMessagesToHeaders(new HttpHeaders()),
-				e.getResult().getHighestStatus());
-		
-		return response;
-    }
+//	/**
+//	 * Useful when validation fails
+//	 * @param e
+//	 * @param request
+//	 * @return
+//	 */
+//    @ExceptionHandler({ RestValidationFailedException.class })
+//    protected ResponseEntity<RestValidationResponseModel> handleInvalidRequest(RestValidationFailedException e) {
+//		//TODO Integrate with org.springframework.validation.FieldError class
+//		ResponseEntity<RestValidationResponseModel> response = new ResponseEntity<RestValidationResponseModel>(e.getModel(),
+//				e.getResult().addMessagesToHeaders(new HttpHeaders()),
+//				e.getResult().getHighestStatus());
+//		
+//		return response;
+//    }
 	
 
 	

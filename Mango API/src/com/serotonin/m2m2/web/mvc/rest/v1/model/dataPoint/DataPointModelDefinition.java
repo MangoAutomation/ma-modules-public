@@ -46,7 +46,7 @@ public class DataPointModelDefinition extends ModelDefinition{
 	 */
 	@Override
 	public boolean supportsClass(Class<?> clazz) {
-		return clazz.equals(DataPointModel.class);
+		return DataPointModel.class.equals(clazz);
 	}
 
 }

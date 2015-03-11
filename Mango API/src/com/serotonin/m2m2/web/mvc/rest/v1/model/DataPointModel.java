@@ -172,13 +172,18 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@CSVColumnGetter(header="pointLocatorType", order=8)
 	@JsonGetter("pointLocator")
 	public PointLocatorModel<?> getPointLocator(){
-		return this.data.getPointLocator().asModel();
+		PointLocatorVO vo = this.data.getPointLocator();
+		if(vo == null)
+			return null;
+		else
+			return this.data.getPointLocator().asModel();
 	}
 	
 	@CSVColumnSetter(header="pointLocatorType", order=8)
 	@JsonSetter("pointLocator")
 	public void setPointLocator(PointLocatorModel<?> pl){
-		this.data.setPointLocator((PointLocatorVO)pl.getData());
+		if(pl != null)
+			this.data.setPointLocator((PointLocatorVO)pl.getData());
 	}
 	
 	
