@@ -169,7 +169,6 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
 	 */
 	@Override
 	public PointLocatorModel<?> asModel() {
-		//TODO Implement when we have a Model
-		throw new ShouldNeverHappenException("Unimplimented!");
+		return null;
 	}
 }

@@ -4,10 +4,22 @@
  */
 package com.serotonin.m2m2.virtual.vo;
 
-import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 /**
+ * TODO this class should be removed and we should create
+ * models for all the different types of VOs in the Point Locator.
+ * 
+ * Then the definitions can be matched on type such as:
+ * 
+ * PL.VIRTUAL.AlternateBooleanChange
+ * PL.VIRTUAL.AnalogAttractorChange
+ * PL.VIRTUAL.BrownianChange 
+ * etc.
+ * 
+ * This will greatly simplify the Models and be much clearer on what the point is
+ * 
+ * 
  * @author Terry Packer
  *
  */
@@ -16,7 +28,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 	/**
 	 * @param data
 	 */
-	public VirtualPointLocatorModel(PointLocatorVO data) {
+	public VirtualPointLocatorModel(VirtualPointLocatorVO data) {
 		super(data);
 	}
 

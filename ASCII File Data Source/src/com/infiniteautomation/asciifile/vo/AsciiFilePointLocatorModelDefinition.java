@@ -44,7 +44,7 @@ public class AsciiFilePointLocatorModelDefinition extends ModelDefinition{
 	 */
 	@Override
 	public boolean supportsClass(Class<?> clazz) {
-		return AsciiFilePointLocatorVO.class.equals(clazz);
+		return AsciiFilePointLocatorModel.class.equals(clazz);
 	}
 
 }

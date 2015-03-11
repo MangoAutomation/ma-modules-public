@@ -162,6 +162,6 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO implements Json
 	@Override
 	public PointLocatorModel<?> asModel() {
 		//TODO Implement when we have a Model
-		throw new ShouldNeverHappenException("Unimplimented!");
+		return null;
 	}
 }

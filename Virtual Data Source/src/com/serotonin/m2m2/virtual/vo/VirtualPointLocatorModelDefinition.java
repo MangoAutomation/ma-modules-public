@@ -45,7 +45,7 @@ public class VirtualPointLocatorModelDefinition extends ModelDefinition{
 	 */
 	@Override
 	public boolean supportsClass(Class<?> clazz) {
-		return VirtualPointLocatorVO.class.equals(clazz);
+		return VirtualPointLocatorModel.class.equals(clazz);
 	}
 
 }

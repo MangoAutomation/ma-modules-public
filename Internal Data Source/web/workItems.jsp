@@ -55,8 +55,8 @@
   
   <div>
     <a href="/internal/status.shtm"><fmt:message key="internal.status"/></a> |
-    <fmt:message key="internal.threads"/> |
-    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a>
+    <a href="/internal/threads.shtm"><fmt:message key="internal.threads"/></a> |
+    <fmt:message key="internal.workItems"/>
   </div>
   <br/>
   

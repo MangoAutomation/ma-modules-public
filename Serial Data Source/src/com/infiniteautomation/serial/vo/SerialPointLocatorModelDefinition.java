@@ -45,7 +45,7 @@ public class SerialPointLocatorModelDefinition extends ModelDefinition{
 	 */
 	@Override
 	public boolean supportsClass(Class<?> clazz) {
-		return SerialPointLocatorVO.class.equals(clazz);
+		return SerialPointLocatorModel.class.equals(clazz);
 	}
 
 }
