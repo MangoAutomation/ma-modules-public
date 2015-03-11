@@ -92,7 +92,7 @@ public class DataPointRestController extends MangoRestController{
 	        		if(limit <= 0)
 	        			break;
 	        	}catch(PermissionException e){
-	        		//Munch it
+	        		//Munched
 	        		//TODO maybe don't throw this from check permissions?
 	        	}
 	        }
@@ -104,12 +104,10 @@ public class DataPointRestController extends MangoRestController{
     }
 	
 	
-//	@ApiResponses(value = { 
-//			@ApiResponse(code = 200, message = "Ok", response = ResponseEntity.class),
-//			@ApiResponse(code = 403, message = "User does not have access"),
-//		    @ApiResponse(code = 404, message = "DataPoint not found")
-//			})
-
+	@ApiOperation(
+			value = "Get existing data point",
+			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
+			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> getDataPoint(
     		@ApiParam(value = "Valid Data Point XIDs", required = true, allowMultiple = false)
@@ -150,6 +148,10 @@ public class DataPointRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
+	@ApiOperation(
+			value = "Update an existing data point",
+			notes = "Content may be CSV or JSON"
+			)
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(@PathVariable String xid,
     		@RequestBody DataPointModel model, 
@@ -240,8 +242,8 @@ public class DataPointRestController extends MangoRestController{
 	
 
 	@ApiOperation(
-			value = "Insert new data points",
-			notes = "N/A Yet"
+			value = "Insert/Update multiple data points",
+			notes = "CSV content must be limited to 1 type of data source."
 			)
 	@ApiResponses(value = { 
 	@ApiResponse(code = 200, message = "Ok"),
@@ -333,6 +335,10 @@ public class DataPointRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
+	@ApiOperation(
+			value = "Delete a data point",
+			notes = "The user must have permission to the data source"
+			)
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<DataPointModel> delete(@PathVariable String xid, HttpServletRequest request) {
 		
@@ -370,5 +376,53 @@ public class DataPointRestController extends MangoRestController{
 		return result.createResponseEntity(new DataPointModel(vo));
     }
 	
-	
+	@ApiOperation(
+			value = "Get all data points for data source",
+			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
+			)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/dataSource/{xid}")
+    public ResponseEntity<List<DataPointModel>> getDataPointsForDataSource(
+    		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
+    		@PathVariable String xid, HttpServletRequest request) {
+
+		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	
+        	DataSourceVO<?> dataSource = DaoRegistry.dataSourceDao.getDataSource(xid);
+        	if(dataSource == null){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+        	}
+        	try{
+        		if(!Permissions.hasDataSourcePermission(user, dataSource)){
+        			LOG.warn("User: " + user.getUsername() + " tried to access data source with xid " + xid);
+	    			result.addRestMessage(getUnauthorizedMessage());
+	        		return result.createResponseEntity();
+	    		}
+	    	}catch(PermissionException e){
+	    		LOG.warn(e.getMessage(), e);
+    			result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();	    		
+	    	}
+        	
+           	List<DataPointVO> dataPoints = DaoRegistry.dataPointDao.getDataPoints(dataSource.getId(), null);
+            List<DataPointModel> userDataPoints = new ArrayList<DataPointModel>();
+        	
+	        for(DataPointVO vo : dataPoints){
+	        	try{
+	        		if(Permissions.hasDataPointReadPermission(user, vo)){
+	        			userDataPoints.add(new DataPointModel(vo));
+	        		}
+	        	}catch(PermissionException e){
+	        		//Munched
+	        	}
+	        }
+	        result.addRestMessage(getSuccessMessage());
+	        return result.createResponseEntity(userDataPoints);
+        }
+        
+        return result.createResponseEntity();
+	}
 }

@@ -45,7 +45,8 @@ public class CustomHeadersFilter implements Filter{
 		Iterator<Object> it = headers.keySet().iterator();
 		while(it.hasNext()){
 			String key = (String)it.next();
-			httpResponse.setHeader(key, headers.getProperty(key));
+			//Ensure we check for reload on each request
+			httpResponse.setHeader(key, MangoApiModuleDefinition.props.getString(key));
 		}
 		
 		chain.doFilter(request, response);
