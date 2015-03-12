@@ -191,7 +191,7 @@ public class UserRestController extends MangoRestController{
     				model.validate(result);
 
 		        	DaoRegistry.userDao.saveUser(model.getData());
-    		    	URI location = builder.path("/rest/v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
+    		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
     		    	result.addRestMessage(getResourceCreatedMessage(location));
     		        return result.createResponseEntity(model);
     		        

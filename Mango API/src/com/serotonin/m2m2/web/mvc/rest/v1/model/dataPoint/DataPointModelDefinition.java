@@ -14,6 +14,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
  *
  */
 public class DataPointModelDefinition extends ModelDefinition{
+	
+	public static final String TYPE_NAME = "DATA_POINT";
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.ModelDefinition#getModelKey()
@@ -29,7 +31,7 @@ public class DataPointModelDefinition extends ModelDefinition{
 	 */
 	@Override
 	public String getModelTypeName() {
-		return "API.DATA_POINT";
+		return TYPE_NAME;
 	}
 
 	/* (non-Javadoc)

@@ -231,7 +231,7 @@ public class DataPointRestController extends MangoRestController{
 	        }
 	        
 	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/rest/v1/dataPoints/{xid}").buildAndExpand(xid).toUri();
+	    	URI location = builder.path("/v1/dataPoints/{xid}").buildAndExpand(xid).toUri();
 	    	
 	    	result.addRestMessage(getResourceUpdatedMessage(location));
 	        return result.createResponseEntity(model);

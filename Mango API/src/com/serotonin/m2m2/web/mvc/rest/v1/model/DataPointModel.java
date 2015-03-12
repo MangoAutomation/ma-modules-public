@@ -20,6 +20,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointModelDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingPropertiesModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.LoggingPropertiesModelFactory;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
@@ -40,7 +41,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRende
 @CSVEntity()
 public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	
-	@CSVColumn(header="templateXid", order = 7)
+	@CSVColumn(header="templateXid", order = 8)
 	private String templateXid; //Used for Model Creation/Saving of Data Points
 	
 	@JsonProperty
@@ -76,49 +77,49 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.chartRenderer = ChartRendererFactory.createModel(vo);
 	}
 	
-	@CSVColumnGetter(order=3, header="deviceName")
+	@CSVColumnGetter(order=4, header="deviceName")
 	@JsonGetter("deviceName")
 	public String getDeviceName(){
 		return this.data.getDeviceName();
 	}
 	
-	@CSVColumnSetter(order=3, header="deviceName")
+	@CSVColumnSetter(order=4, header="deviceName")
 	@JsonSetter("deviceName")
 	public void setDeviceName(String deviceName){
 		this.data.setDeviceName(deviceName);
 	}
 	
-	@CSVColumnGetter(order=4, header="dataSourceXid")
+	@CSVColumnGetter(order=5, header="dataSourceXid")
 	@JsonGetter("dataSourceXid")
 	public String getDataSourceXid(){
 		return this.data.getDataSourceXid();
 	}
 	
-	@CSVColumnSetter(order=4, header="dataSourceXid")
+	@CSVColumnSetter(order=5, header="dataSourceXid")
 	@JsonSetter("dataSourceXid")
 	public void setDataSourceXid(String xid){
 		this.data.setDataSourceXid(xid);
 	}
 	
-	@CSVColumnGetter(order=5, header="readPermission")
+	@CSVColumnGetter(order=6, header="readPermission")
 	@JsonGetter("readPermission")
 	public String getReadPermission(){
 		return this.data.getReadPermission();
 	}
 	
-	@CSVColumnSetter(order=5, header="readPermission")
+	@CSVColumnSetter(order=6, header="readPermission")
 	@JsonSetter("readPermission")
 	public void setReadPermission(String readPermission){
 		this.data.setReadPermission(readPermission);
 	}
 			
-	@CSVColumnGetter(order=6, header="setPermission")
+	@CSVColumnGetter(order=7, header="setPermission")
 	@JsonGetter("setPermission")
 	public String getSetPermission(){
 		return this.data.getSetPermission();
 	}
 	
-	@CSVColumnSetter(order=6, header="readPermission")
+	@CSVColumnSetter(order=7, header="readPermission")
 	@JsonSetter("setPermission")
 	public void setSetPermission(String setPermission){
 		this.data.setSetPermission(setPermission);
@@ -169,7 +170,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.templateXid = templateXid;
 	}
 	
-	@CSVColumnGetter(header="pointLocatorType", order=8)
+	@CSVColumnGetter(header="pointLocatorType", order=9)
 	@JsonGetter("pointLocator")
 	public PointLocatorModel<?> getPointLocator(){
 		PointLocatorVO vo = this.data.getPointLocator();
@@ -179,7 +180,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 			return this.data.getPointLocator().asModel();
 	}
 	
-	@CSVColumnSetter(header="pointLocatorType", order=8)
+	@CSVColumnSetter(header="pointLocatorType", order=9)
 	@JsonSetter("pointLocator")
 	public void setPointLocator(PointLocatorModel<?> pl){
 		if(pl != null)
@@ -292,5 +293,12 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		}
 
 		return this.data;
+	}
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
+	 */
+	@Override
+	public String getModelType() {
+		return DataPointModelDefinition.TYPE_NAME;
 	}
 }
