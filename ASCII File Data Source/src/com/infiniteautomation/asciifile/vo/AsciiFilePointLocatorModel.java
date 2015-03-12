@@ -31,87 +31,87 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 	}
 	
 	@JsonGetter()
-	@CSVColumnGetter(order=8, header="pointIdentifier")
+	@CSVColumnGetter(order=10, header="pointIdentifier")
 	public String getPointIdentifier() {
 		return this.data.getPointIdentifier();
 	}
-	@CSVColumnSetter(order=8, header="pointIdentifier")
+	@CSVColumnSetter(order=10, header="pointIdentifier")
 	@JsonSetter()
 	public void setPointIdentifier(String pointIdentifier) {
 		this.data.setPointIdentifier(pointIdentifier);
 	}
 
-	@CSVColumnGetter(order=9, header="valueRegex")
+	@CSVColumnGetter(order=11, header="valueRegex")
 	@JsonGetter()
 	public String getValueRegex() {
 		return this.data.getValueRegex();
 	}
-	@CSVColumnSetter(order=9, header="valueRegex")
+	@CSVColumnSetter(order=11, header="valueRegex")
 	@JsonSetter()
 	public void setValueRegex(String valueRegex) {
 		this.data.setValueRegex(valueRegex);
 	}
 	
-	@CSVColumnGetter(order=10, header="pointIdentifierIndex")
+	@CSVColumnGetter(order=12, header="pointIdentifierIndex")
 	@JsonGetter()
 	public int getPointIdentifierIndex() {
 		return this.data.getPointIdentifierIndex();
 	}
-	@CSVColumnSetter(order=10, header="pointIdentifierIndex")
+	@CSVColumnSetter(order=12, header="pointIdentifierIndex")
 	@JsonSetter()
 	public void setPointIdentifierIndex(int pointIdentifierIndex) {
 		this.data.setPointIdentifierIndex(pointIdentifierIndex);
 	}
 	
-	@CSVColumnGetter(order=11, header="valueIndex")
+	@CSVColumnGetter(order=13, header="valueIndex")
 	@JsonGetter()
 	public int getValueIndex() {
 		return this.data.getValueIndex();
 	}
-	@CSVColumnSetter(order=11, header="valueIndex")
+	@CSVColumnSetter(order=13, header="valueIndex")
 	@JsonSetter()
 	public void setValueIndex(int valueIndex) {
 		this.data.setValueIndex(valueIndex);
 	}
 	
-	@CSVColumnGetter(order=12, header="dataType")
+	@CSVColumnGetter(order=14, header="dataType")
 	@JsonGetter()
 	public String getDataType() {
 		return DataTypes.CODES.getCode(this.data.getDataTypeId());
 	}
-	@CSVColumnSetter(order=12, header="dataType")
+	@CSVColumnSetter(order=14, header="dataType")
 	@JsonSetter()
 	public void setDataType(String dataType) {
 		this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
 	}
 	
-	@CSVColumnGetter(order=13, header="hasTimestamp")
+	@CSVColumnGetter(order=15, header="hasTimestamp")
 	@JsonGetter()
 	public boolean isHasTimestamp() {
 		return this.data.getHasTimestamp();
 	}
-	@CSVColumnSetter(order=13, header="hasTimestamp")
+	@CSVColumnSetter(order=15, header="hasTimestamp")
 	@JsonSetter()
 	public void setHasTimestamp(boolean hasTimestamp) {
 		this.data.setHasTimestamp(hasTimestamp);
 	}
-	@CSVColumnGetter(order=14, header="timestampIndex")
+	@CSVColumnGetter(order=16, header="timestampIndex")
 	@JsonGetter()
 	public int getTimestampIndex() {
 		return this.data.getTimestampIndex();
 	}
-	@CSVColumnSetter(order=14, header="timestampIndex")
+	@CSVColumnSetter(order=16, header="timestampIndex")
 	@JsonSetter()
 	public void setTimestampIndex(int timestampIndex) {
 		this.data.setTimestampIndex(timestampIndex);
 	}
 	
-	@CSVColumnGetter(order=15, header="timestampFormat")
+	@CSVColumnGetter(order=17, header="timestampFormat")
 	@JsonGetter()
 	public String getTimestampFormat() {
 		return this.data.getTimestampFormat();
 	}
-	@CSVColumnSetter(order=15, header="timestampFormat")
+	@CSVColumnSetter(order=17, header="timestampFormat")
 	@JsonSetter()
 	public void setTimestampFormat(String timestampFormat) {
 		this.data.setTimestampFormat(timestampFormat);

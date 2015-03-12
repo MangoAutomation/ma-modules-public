@@ -24,4 +24,13 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 		super(data);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
+	 */
+	@Override
+	public String getModelType() {
+		//TODO Implement when we have a Data Source Model
+		return null;
+	}
+
 }
