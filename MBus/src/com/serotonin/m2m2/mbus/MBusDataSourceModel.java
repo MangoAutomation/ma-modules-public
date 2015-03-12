@@ -24,5 +24,14 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 		super(new MBusDataSourceVO());
 	}
 
-	
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
+	 */
+	@Override
+	public String getModelType() {
+		// TODO Implement when we have a model, should be the TYPE_NAME in the Model Definition
+		return null;
+	}
+
 }
