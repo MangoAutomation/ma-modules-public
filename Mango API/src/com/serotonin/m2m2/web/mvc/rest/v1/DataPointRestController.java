@@ -6,7 +6,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -257,12 +259,40 @@ public class DataPointRestController extends MangoRestController{
 		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
         if(result.isOk()){
+        	DataPointModel first;
+        	DataSourceVO<?> ds = null;
+        	if(models.size() > 0){
+        		first = models.get(0);
+        		ds = DaoRegistry.dataSourceDao.getByXid(first.getDataSourceXid());
+        	}
+        	
         	for(DataPointModel model : models){
     			DataPointVO vo = model.getData();
+    			//Init our messages, we will have some
+    			Map<String,String> messages = new HashMap<String,String>();
+    			model.setMessages(messages);
+    			DataSourceVO<?> myDataSource = DaoRegistry.dataSourceDao.getByXid(vo.getDataSourceXid());
+    			if(myDataSource == null){
+    				//TODO We fail here so put this in the model's messages
+    				messages.put("dataSourceXid", "invalid reference");
+    				continue;
+    			}
+    			//First check to see that the data source types match
+    			if(!ds.getDefinition().getDataSourceTypeName().equals(myDataSource.getDefinition().getDataSourceTypeName())){
+    				//TODO Fail here so add this model's messages
+    				messages.put("dataSourceXid", "invalid type");
+    				continue;
+    			}
+    			//Set the ID for the data source 
+    			vo.setDataSourceId(myDataSource.getId());
+    			
+    			//Are we a new one?
     	        DataPointVO existingDp = DataPointDao.instance.getByXid(vo.getXid());
+    	        boolean updated = true;
     	        if (existingDp == null) {
-    	    		result.addRestMessage(getDoesNotExistMessage());
-    	    		return result.createResponseEntity();
+    	    		updated = false;
+    	        }else{
+    	        	vo.setId(existingDp.getId());  //Must Do this as ID is NOT in the model
     	        }
     	        
     	        //Check permissions
@@ -276,15 +306,15 @@ public class DataPointRestController extends MangoRestController{
     	    		result.addRestMessage(getUnauthorizedMessage()); //TODO add what point
             		continue;
             	}
-    	
-    	        vo.setId(existingDp.getId());
+  
     	        //Check the Template and see if we need to use it
     	        if(model.getTemplateXid() != null){
-                	
                 	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
                 	if(template != null){
                 		template.updateDataPointVO(vo);
                 	}else{
+                		//TODO Deal with this message and give a status...
+                		messages.put("templateXid", "invalidReference");
                 		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
                 		continue;
                 	}
@@ -298,27 +328,10 @@ public class DataPointRestController extends MangoRestController{
     	        if(validation.getHasMessages()){
     	        	result.addRestMessage(model.addValidationMessages(validation));
     	        }else{
-    	
-    	        	//We will always override the DS Info with the one from the XID Lookup
-    	            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
-    	            
-    	            //Need to set DataSourceId among other things
-    	            vo.setDataSourceId(existingDp.getDataSourceId());
-    	            if (dsvo == null){
-    	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", existingDp.getDataSourceXid()));
-    	            }else {
-    	                //Compare this point to the existing point in DB to ensure
-    	                // that we aren't moving a point to a different type of Data Source
-    	                DataPointDao dpDao = new DataPointDao();
-    	                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
-    	                
-    	                //Does the old point have a different data source?
-    	                if(oldPoint != null&&(oldPoint.getDataSourceId() != dsvo.getId())){
-    	                    vo.setDataSourceId(dsvo.getId());
-    	                    vo.setDataSourceName(dsvo.getName());
-    	                }
-    	            }
-    	
+    	        	if(updated)
+    	        		messages.put("all", "updated");
+    	        	else
+    	        		messages.put("all", "saved");
     	            Common.runtimeManager.saveDataPoint(vo);
     	        }
 
