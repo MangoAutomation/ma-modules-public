@@ -6,9 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,7 +27,6 @@ import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -39,6 +36,7 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.wordnik.swagger.annotations.Api;
@@ -197,11 +195,8 @@ public class DataPointRestController extends MangoRestController{
                 vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
             }
 	        
-	        ProcessResult validation = new ProcessResult();
-	        vo.validate(validation);
-	        
-	        if(validation.getHasMessages()){
-	        	result.addRestMessage(model.addValidationMessages(validation));
+	        if(!model.validate()){
+	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
 	
@@ -268,19 +263,14 @@ public class DataPointRestController extends MangoRestController{
         	
         	for(DataPointModel model : models){
     			DataPointVO vo = model.getData();
-    			//Init our messages, we will have some
-    			Map<String,String> messages = new HashMap<String,String>();
-    			model.setMessages(messages);
     			DataSourceVO<?> myDataSource = DaoRegistry.dataSourceDao.getByXid(vo.getDataSourceXid());
     			if(myDataSource == null){
-    				//TODO We fail here so put this in the model's messages
-    				messages.put("dataSourceXid", "invalid reference");
+    				model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "dataSourceXid");
     				continue;
     			}
     			//First check to see that the data source types match
     			if(!ds.getDefinition().getDataSourceTypeName().equals(myDataSource.getDefinition().getDataSourceTypeName())){
-    				//TODO Fail here so add this model's messages
-    				messages.put("dataSourceXid", "invalid type");
+    				model.addValidationMessage("validate.incompatibleDataSourceType", RestMessageLevel.ERROR, "dataSourceXid");
     				continue;
     			}
     			//Set the ID for the data source 
@@ -313,8 +303,7 @@ public class DataPointRestController extends MangoRestController{
                 	if(template != null){
                 		template.updateDataPointVO(vo);
                 	}else{
-                		//TODO Deal with this message and give a status...
-                		messages.put("templateXid", "invalidReference");
+                		model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "templateXid");
                 		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
                 		continue;
                 	}
@@ -322,19 +311,14 @@ public class DataPointRestController extends MangoRestController{
                     vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
                 }
     	        
-    	        ProcessResult validation = new ProcessResult();
-    	        vo.validate(validation);
-    	        
-    	        if(validation.getHasMessages()){
-    	        	result.addRestMessage(model.addValidationMessages(validation));
-    	        }else{
+    	        if(model.validate()){
     	        	if(updated)
-    	        		messages.put("all", "updated");
+    	        		model.addValidationMessage("common.updated", RestMessageLevel.INFORMATION, "all");
     	        	else
-    	        		messages.put("all", "saved");
-    	            Common.runtimeManager.saveDataPoint(vo);
+    	        		model.addValidationMessage("common.saved", RestMessageLevel.INFORMATION, "all");
+    	        	//Save it
+    	        	Common.runtimeManager.saveDataPoint(vo);
     	        }
-
         	}
 	        return result.createResponseEntity(models);
         }

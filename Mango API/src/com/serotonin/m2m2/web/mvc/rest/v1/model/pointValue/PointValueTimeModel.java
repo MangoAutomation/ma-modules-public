@@ -4,12 +4,9 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
-import org.springframework.http.HttpStatus;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -18,8 +15,6 @@ import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
-import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 
 /**
@@ -222,18 +217,14 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 		
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel#validate(com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult)
+	 */
 	@Override
-	public void validate(RestProcessResult<?> result) throws RestValidationFailedException{
-		ProcessResult validation = new ProcessResult();
-		
-		validation.addContextualMessage("Point Value", "common.default", "Validation Not Implemented");
-		
-		
-		if(validation.getHasMessages()){
-			result.addRestMessage(HttpStatus.BAD_REQUEST, new TranslatableMessage("common.default", "Validation failed"));
-			result.addValidationMessages(validation);
-			throw new RestValidationFailedException(this, result);
-		}
+	public boolean validate(){
+		//TODO need to implement this somehow maybe?  Do we really want messages with this?
+		return true;
 	}
 	
 	

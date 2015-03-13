@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.TemplateDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
@@ -269,15 +268,6 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.chartRenderer = renderer;
 		ChartRendererFactory.updateDataPoint(this.data, renderer);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.model.AbstractRestModel#validate(com.serotonin.m2m2.i18n.ProcessResult)
-	 */
-	//@Override
-	public void validate(ProcessResult response) {
-		this.data.validate(response);
-	}
-	
 	
 	/**
 	 * Ensure all Complex properties are set in the Data Point prior to returning

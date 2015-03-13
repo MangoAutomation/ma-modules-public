@@ -135,8 +135,11 @@ public class UserRestController extends MangoRestController{
     	    		return result.createResponseEntity();
     	        }
     			model.getData().setId(u.getId());
-				model.validate(result);
-    			DaoRegistry.userDao.saveUser(model.getData());
+    	        if(!model.validate()){
+    	        	result.addRestMessage(this.getValidationFailedError());
+    	        }else{
+    	        	DaoRegistry.userDao.saveUser(model.getData());
+    	        }
     			return result.createResponseEntity(model);
     		}else{
     			if(u.getId() != user.getId()){
@@ -146,8 +149,11 @@ public class UserRestController extends MangoRestController{
     			}else{
     				//Allow users to update themselves
     				model.getData().setId(u.getId());
-    				model.validate(result);
-        			DaoRegistry.userDao.saveUser(model.getData());
+        	        if(!model.validate()){
+        	        	result.addRestMessage(this.getValidationFailedError());
+        	        }else{
+        	        	DaoRegistry.userDao.saveUser(model.getData());
+        	        }
     				return result.createResponseEntity(model);
     			}
     		}
@@ -188,7 +194,7 @@ public class UserRestController extends MangoRestController{
     			if (u == null) {
     				//Create new user
     				model.getData().setId(Common.NEW_ID);
-    				model.validate(result);
+    				//model.validate(result);
 
 		        	DaoRegistry.userDao.saveUser(model.getData());
     		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();

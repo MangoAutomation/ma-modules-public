@@ -118,14 +118,14 @@ public class DataSourceRestController extends MangoRestController{
         	}
 	
 	        vo.setId(existing.getId());
+	        
 	        ProcessResult validation = new ProcessResult();
 	        vo.validate(validation);
 	        
-	        if(validation.getHasMessages()){
-	        	result.addRestMessage(model.addValidationMessages(validation));
+	        if(!model.validate()){
+	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-	        	LOG.info("Could save DS NOW");
 	            Common.runtimeManager.saveDataSource(vo);
 	        }
 	        

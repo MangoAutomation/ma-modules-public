@@ -4,21 +4,24 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.user;
 
+import java.util.List;
 import java.util.TimeZone;
 
-import org.springframework.http.HttpStatus;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
-import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.AlarmLevel;
 import com.wordnik.swagger.annotations.ApiModel;
@@ -32,6 +35,13 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @CSVEntity
 @JsonPropertyOrder({ "username", "email" })
 public class UserModel extends AbstractRestModel<User> {
+	
+	//TODO Make the JSON Views work, it currently does nothing
+	@ApiModelProperty(value = "Messages for validation of data", required = false)
+	@JsonProperty("validationMessages")
+	@JsonView(JsonViews.Validation.class) //Only show in validation views (NOT WORKING YET)
+	private List<RestValidationMessage> messages;
+	
     public UserModel() {
         super(new User());
     }
@@ -163,23 +173,37 @@ public class UserModel extends AbstractRestModel<User> {
         data.setMuted(muted);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel#validate(com.serotonin.m2m2.web.mvc.rest.v1.message
-     * .RestProcessResult)
-     */
-    @Override
-    public void validate(RestProcessResult<?> result) throws RestValidationFailedException {
-        ProcessResult validation = new ProcessResult();
-        this.data.validate(validation);
+    
+    
+	public List<RestValidationMessage> getMessages() {
+		return messages;
+	}
 
-        if (validation.getHasMessages()) {
-            result.addRestMessage(HttpStatus.BAD_REQUEST,
-                    new TranslatableMessage("common.default", "Validation failed"));
-            result.addValidationMessages(validation);
-            throw new RestValidationFailedException(this, result);
-        }
-    }
+	public void setMessages(List<RestValidationMessage> messages) {
+		this.messages = messages;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel#validate(com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult)
+	 */
+	@Override
+	public boolean validate(){
+		ProcessResult validation = new ProcessResult();
+		this.data.validate(validation);
+		
+		if(validation.getHasMessages()){
+			//Add our messages to the list
+			for(ProcessMessage message : validation.getMessages()){
+				this.messages.add(new RestValidationMessage(
+						message.getContextualMessage().translate(Common.getTranslations()),
+						RestMessageLevel.ERROR,
+						message.getContextKey()
+						));
+			}
+			return false;
+		}else{
+			return true; //Validated ok
+		}
+	}
 }
