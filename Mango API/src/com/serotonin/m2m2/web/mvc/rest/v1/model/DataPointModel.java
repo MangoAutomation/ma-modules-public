@@ -294,10 +294,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 
 		return this.data;
 	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
-	@Override
+	
 	public String getModelType() {
 		return DataPointModelDefinition.TYPE_NAME;
 	}
