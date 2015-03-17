@@ -266,4 +266,12 @@ public class ReportWorkItem implements WorkItem {
             filesToDelete.add(file);
         }
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getDescription()
+	 */
+	@Override
+	public String getDescription() {
+		return "Generating report: " + this.reportInstance.getName();
+	}
 }
