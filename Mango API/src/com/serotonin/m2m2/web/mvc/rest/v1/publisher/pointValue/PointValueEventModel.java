@@ -4,6 +4,9 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 
@@ -20,15 +23,23 @@ public class PointValueEventModel {
 	
 	@JsonProperty("value")
 	private PointValueTimeModel value;
+	
+	@JsonProperty("enabled")
+	private boolean enabled;
+	
+	@JsonProperty("attributes")
+	private Map<String, Object> attributes;
 
-	public PointValueEventModel(String xid, PointValueEventType type, PointValueTimeModel model){
+	public PointValueEventModel(String xid, boolean enabled, Map<String,Object> attributes, PointValueEventType type, PointValueTimeModel model){
 	    this.xid = xid;
 		this.event = type;
 		this.value = model;
+		this.enabled = enabled;
+		this.attributes = attributes;
 	}
 
 	public PointValueEventModel(){
-		
+		this.attributes = new HashMap<String,Object>();
 	}
 	
 	public PointValueEventType getEvent() {
@@ -54,4 +65,22 @@ public class PointValueEventModel {
     public void setXid(String xid) {
         this.xid = xid;
     }
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public Map<String, Object> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, Object> attributes) {
+		this.attributes = attributes;
+	}
+    
+    
 }

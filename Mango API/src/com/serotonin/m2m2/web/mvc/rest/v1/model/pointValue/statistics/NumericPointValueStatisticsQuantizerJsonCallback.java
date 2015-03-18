@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeJsonWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RollupEnum;
 
@@ -28,8 +29,9 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends PointValue
 	/**
 	 * @param jgen
 	 */
-	public NumericPointValueStatisticsQuantizerJsonCallback(JsonGenerator jgen, RollupEnum rollup) {
-		super(jgen);
+	public NumericPointValueStatisticsQuantizerJsonCallback(JsonGenerator jgen, DataPointVO vo, 
+			boolean useRendered,  boolean unitConversion, RollupEnum rollup) {
+		super(jgen, vo, useRendered, unitConversion);
 		this.rollup = rollup;
 	}	
 	
@@ -41,52 +43,36 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends PointValue
 	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){
 	                case AVERAGE:
-	                	Double avg = statisticsGenerator.getAverage();
-	                	if(avg == null)
-	                		avg = 0.0D;
-						this.writePointValueTime(avg, statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNull(statisticsGenerator.getAverage(), statisticsGenerator.getPeriodStartTime());
 	                break;
 	                case MINIMUM:
-	                	Double min = statisticsGenerator.getMinimumValue();
-	                	if(min != null)
-	                		this.writePointValueTime(min, statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNull(statisticsGenerator.getMinimumValue(), statisticsGenerator.getPeriodStartTime());
 	                break;
 	                case MAXIMUM:
-	                	Double max = statisticsGenerator.getMaximumValue();
-	                	if(max != null)
-	                		this.writePointValueTime(max, statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNull(statisticsGenerator.getMaximumValue(), statisticsGenerator.getPeriodStartTime());
 	                break;
                     case ACCUMULATOR:
                         Double accumulatorValue = statisticsGenerator.getLastValue();
                         if (accumulatorValue == null) {
                             accumulatorValue = statisticsGenerator.getMaximumValue();
                         }
-                        if(accumulatorValue != null)
-                            this.writePointValueTime(accumulatorValue, statisticsGenerator.getPeriodStartTime(), null);
-                    break;
+                        this.writeNonNull(accumulatorValue, statisticsGenerator.getPeriodStartTime());
+	                break;
 	                case SUM:
-	                	Double sum = statisticsGenerator.getSum();
-	                	if(sum == null)
-	                		sum = 0.0D;
-                		this.writePointValueTime(sum, statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNull(statisticsGenerator.getSum(), statisticsGenerator.getPeriodStartTime());
 	                break;
 	                case FIRST:
-	                	Double first = statisticsGenerator.getFirstValue();
-	                	if(first != null)
-	                		this.writePointValueTime(first, statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime());
 	                break;
 	                case LAST:
-	                	Double last = statisticsGenerator.getLastValue();
-	                	if(last != null)
-	                		this.writePointValueTime(last, statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNull(statisticsGenerator.getLastValue(), statisticsGenerator.getPeriodStartTime());
 	                break;
 	                case COUNT:
 	                	this.writePointValueTime(statisticsGenerator.getCount(),
 	                			statisticsGenerator.getPeriodStartTime(), null);
 	                break;
 	                case INTEGRAL:
-                        this.writePointValueTime(statisticsGenerator.getIntegral(),
-                                statisticsGenerator.getPeriodStartTime(), null);
+	                	this.writeNonNullIntegral(statisticsGenerator.getIntegral(), statisticsGenerator.getPeriodStartTime());
                     break;
 	                default:
 	                	throw new ShouldNeverHappenException("Unknown Rollup type" + rollup);
@@ -96,7 +82,5 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends PointValue
 			LOG.error(e.getMessage(), e);
 		}
     }
-	
-	
 	
 }

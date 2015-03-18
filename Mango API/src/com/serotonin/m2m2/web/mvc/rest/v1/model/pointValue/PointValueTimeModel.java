@@ -18,6 +18,8 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 
 /**
+ * 
+ * TODO This model needs a cleanup
  * @author Terry Packer
  *
  */
@@ -50,12 +52,10 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 		this.value = data.getValue().getObjectValue();
 		this.timestamp = data.getTime();
 		
-		if(data instanceof AnnotatedPointValueTime)
+		if(data.isAnnotated())
 			this.annotation = ((AnnotatedPointValueTime) data).getAnnotation(Common.getTranslations());
 		
 	}
-
-	
 	
 	
 //	@JsonSetter("dataType")
@@ -223,7 +223,6 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 	 */
 	@Override
 	public boolean validate(){
-		//TODO need to implement this somehow maybe?  Do we really want messages with this?
 		return true;
 	}
 	

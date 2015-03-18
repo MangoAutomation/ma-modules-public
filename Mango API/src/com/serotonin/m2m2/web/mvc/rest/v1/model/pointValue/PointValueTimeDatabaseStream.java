@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
 
 /**
@@ -14,7 +15,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
  */
 public class PointValueTimeDatabaseStream implements JsonArrayStream{
 
-	private int dataPointId;
+	private DataPointVO vo;
+	private boolean useRendered;
+	private boolean unitConversion;
 	private long from;
 	private long to;
 	private PointValueDao dao;
@@ -24,8 +27,10 @@ public class PointValueTimeDatabaseStream implements JsonArrayStream{
 	 * @param from
 	 * @param to
 	 */
-	public PointValueTimeDatabaseStream(int dataPointId, long from, long to, PointValueDao dao) {
-		this.dataPointId = dataPointId;
+	public PointValueTimeDatabaseStream(DataPointVO vo, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao) {
+		this.vo = vo;
+		this.useRendered = useRendered;
+		this.unitConversion = unitConversion;
 		this.from = from;
 		this.to = to;
 		this.dao = dao;
@@ -36,7 +41,7 @@ public class PointValueTimeDatabaseStream implements JsonArrayStream{
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) {
-		this.dao.getPointValuesBetween(dataPointId, from, to, new PointValueTimeJsonStreamCallback(jgen));
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeJsonStreamCallback(jgen, vo, useRendered, unitConversion));
 	}
 
 }

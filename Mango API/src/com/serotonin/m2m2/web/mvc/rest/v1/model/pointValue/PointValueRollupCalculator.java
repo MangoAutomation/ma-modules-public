@@ -40,13 +40,17 @@ public class PointValueRollupCalculator implements JsonArrayStream{
 	private static final Log LOG = LogFactory.getLog(PointValueRollupCalculator.class);
 	
 	private DataPointVO vo;
+	private boolean useRendered;
+	private boolean unitConversion;
 	private RollupEnum rollup;
 	private TimePeriod period;
 	private long from;
 	private long to;
 	
-	public PointValueRollupCalculator(DataPointVO vo, RollupEnum rollup, TimePeriod period, long from, long to){
+	public PointValueRollupCalculator(DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
 		this.vo = vo;
+		this.useRendered = useRendered;
+		this.unitConversion = unitConversion;
 		this.rollup = rollup;
 		this.period = period;
 		this.from = from;
@@ -77,6 +81,9 @@ public class PointValueRollupCalculator implements JsonArrayStream{
         // Determine the start and end values. This is important for
         // properly calculating average.
         PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from);
+        //Try our best to get the closest value
+        if(startPvt == null)
+        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from);
         DataValue startValue = PointValueTime.getValue(startPvt);
         PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
         DataValue endValue = PointValueTime.getValue(endPvt);
@@ -91,14 +98,14 @@ public class PointValueRollupCalculator implements JsonArrayStream{
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
             quantizer = new AnalogStatisticsQuantizer(bc, 
             		startValue,
-            		new NumericPointValueStatisticsQuantizerJsonCallback(jgen, this.rollup));
+            		new NumericPointValueStatisticsQuantizerJsonCallback(jgen, this.vo, this.useRendered, this.unitConversion, this.rollup));
         }else {
             if (!rollup.nonNumericSupport()) {
                 LOG.warn("Invalid non-numeric rollup type: " + rollup);
                 rollup = RollupEnum.FIRST; //Default to first
             }
             quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-            		new NonNumericPointValueStatisticsQuantizerJsonCallback(jgen, this.rollup));
+            		new NonNumericPointValueStatisticsQuantizerJsonCallback(jgen, vo, useRendered, unitConversion, this.rollup));
         }
 
         //Finally Make the call to get the data and quantize it

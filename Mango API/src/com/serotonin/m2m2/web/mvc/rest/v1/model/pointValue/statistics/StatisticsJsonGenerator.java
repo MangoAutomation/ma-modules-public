@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.IValueTime;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * 
@@ -27,8 +28,8 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
 	 * @param periodEnd
 	 * @param startValue
 	 */
-	public StatisticsJsonGenerator(JsonGenerator jgen, StatisticsGenerator generator) {
-		super(jgen);
+	public StatisticsJsonGenerator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator) {
+		super(jgen, vo, useRendered, unitConversion);
 		this.generator = generator;
 	}
 

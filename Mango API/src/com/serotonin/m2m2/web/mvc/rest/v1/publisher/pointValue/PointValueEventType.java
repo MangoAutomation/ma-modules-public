@@ -15,6 +15,7 @@ public enum PointValueEventType {
 	CHANGE, //Value has changed
 	SET,
 	BACKDATE,
-	TERMINATE
+	TERMINATE,
+	REGISTERED //We registered and this is our first response
 
 }

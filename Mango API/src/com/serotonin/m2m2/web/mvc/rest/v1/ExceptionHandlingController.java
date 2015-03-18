@@ -6,16 +6,11 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.RestValidationResponseModel;
 
 /**
  * Controller used to capture errors and 

@@ -9,6 +9,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
@@ -23,8 +24,9 @@ public class ValueChangeCounterJsonGenerator extends StatisticsJsonGenerator{
 	 * @param valueChangeCounter
 	 */
 	public ValueChangeCounterJsonGenerator(JsonGenerator jgen,
+			DataPointVO vo, boolean useRendered, boolean unitConversion,
 			ValueChangeCounter valueChangeCounter) {
-		super(jgen, valueChangeCounter);
+		super(jgen, vo, useRendered, unitConversion, valueChangeCounter);
 		this.statistics = valueChangeCounter;
 	}
 	

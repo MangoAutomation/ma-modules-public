@@ -85,8 +85,9 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 						pub = new PointValueWebSocketPublisher(vo, model.getEventTypes(), session, this.jacksonMapper);
 						pub.initialize();
 						map.put(vo.getId(), pub);
+						//Immediately send the most recent Point Value and the status of the data point
+						pub.sendPointStatus();
 					}
-					//TODO Do we want to immediately send the current value to confirm?
 				} else {
 					this.sendErrorMessage(session,MangoWebSocketErrorType.SERVER_ERROR, 
 							new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
@@ -127,6 +128,6 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	public void handleTransportError(WebSocketSession session,
 			Throwable exception) {
 		// Handle error during transport here
-		LOG.debug("Transport Error.");
+		LOG.debug("Transport Error.", exception);
 	}
 }

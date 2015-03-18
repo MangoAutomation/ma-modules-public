@@ -9,6 +9,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
@@ -23,8 +24,8 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	 * @param generator
 	 */
 	public AnalogStatisticsJsonGenerator(JsonGenerator jgen,
-			AnalogStatistics generator) {
-		super(jgen, generator);
+			DataPointVO vo, boolean useRendered, boolean unitConversion, AnalogStatistics generator) {
+		super(jgen, vo, useRendered, unitConversion, generator);
 		this.statistics = generator;
 	}
 
@@ -38,20 +39,26 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 		if(this.statistics.getCount() > 0){
 			this.jgen.writeBooleanField("hasData", true);
 			this.jgen.writeFieldName("first");
-			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
+			this.writeNonNull(this.statistics.getFirstValue(), this.statistics.getFirstTime());
 			
 			this.jgen.writeFieldName("last");
-			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
+			this.writeNonNull(this.statistics.getLastValue(), this.statistics.getLastTime());
 			
 			this.jgen.writeFieldName("minimum");
-			this.writePointValueTime(this.statistics.getMinimumValue(), this.statistics.getMinimumTime(), null);
+			this.writeNonNull(this.statistics.getMinimumValue(), this.statistics.getMinimumTime());
 			
 			this.jgen.writeFieldName("maximum");
-			this.writePointValueTime(this.statistics.getMaximumValue(), this.statistics.getMaximumTime(), null);
+			this.writeNonNull(this.statistics.getMaximumValue(), this.statistics.getMaximumTime());
 			
-			this.jgen.writeNumberField("average", this.statistics.getAverage());
-			this.jgen.writeNumberField("integral", this.statistics.getIntegral());
-			this.jgen.writeNumberField("sum", this.statistics.getSum());
+			this.jgen.writeFieldName("average");
+			this.writeNonNull(this.statistics.getAverage(), this.statistics.getPeriodEndTime());
+			
+			this.jgen.writeFieldName("integral");
+			this.writeNonNullIntegral(this.statistics.getIntegral(), this.statistics.getPeriodEndTime());
+			
+			this.jgen.writeFieldName("sum");
+			this.writeNonNull(this.statistics.getSum(), this.statistics.getPeriodEndTime());
+
 			this.jgen.writeNumberField("count", this.statistics.getCount());
 		}else{
 			this.jgen.writeBooleanField("hasData", false);

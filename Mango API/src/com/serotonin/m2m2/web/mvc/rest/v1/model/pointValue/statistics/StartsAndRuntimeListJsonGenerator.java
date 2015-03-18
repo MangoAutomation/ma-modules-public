@@ -11,6 +11,7 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.StartsAndRuntime;
 import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
@@ -19,17 +20,15 @@ import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 
 	private StartsAndRuntimeList statistics;
-	private int dataTypeId;
 	
 	/**
 	 * @param jgen
 	 * @param generator
 	 */
-	public StartsAndRuntimeListJsonGenerator(JsonGenerator jgen, int dataTypeId,
-			StartsAndRuntimeList generator) {
-		super(jgen, generator);
+	public StartsAndRuntimeListJsonGenerator(JsonGenerator jgen, DataPointVO vo, boolean useRendered,
+			boolean unitConversion, StartsAndRuntimeList generator) {
+		super(jgen, vo, useRendered, unitConversion, generator);
 		this.statistics = generator;
-		this.dataTypeId = dataTypeId;
 	}
 
 	
@@ -44,10 +43,10 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 		if(this.statistics.getData().size() > 0){
 			this.jgen.writeBooleanField("hasData", true);
 			this.jgen.writeFieldName("first");
-			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
+			this.writeNonNull(this.statistics.getFirstValue(), this.statistics.getFirstTime());
 			
 			this.jgen.writeFieldName("last");
-			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
+			this.writeNonNull(this.statistics.getLastValue(), this.statistics.getLastTime());
 
 			this.jgen.writeFieldName("startsAndRuntimes");
 			this.jgen.writeStartArray();
@@ -56,7 +55,7 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 				
 				//Write the data value
 				if(stat.getDataValue() != null){
-					if(this.dataTypeId == DataTypes.BINARY)
+					if(this.vo.getPointLocator().getDataTypeId() == DataTypes.BINARY)
 						this.jgen.writeBooleanField("value", stat.getDataValue().getBooleanValue());
 					else
 						this.jgen.writeNumberField("value", stat.getDataValue().getIntegerValue());

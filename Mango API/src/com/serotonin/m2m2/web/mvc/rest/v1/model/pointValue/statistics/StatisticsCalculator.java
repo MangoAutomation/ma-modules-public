@@ -14,6 +14,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
 import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
@@ -23,26 +24,24 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 
 	private StatisticsJsonGenerator statsGenerator;
 	
-	
 	/**
 	 * @param jgen
 	 * @param dataTypeId
 	 */
-	public StatisticsCalculator(JsonGenerator jgen, int dataTypeId, long from, long to) {
-		
-		switch(dataTypeId){
+	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to) {
+		switch(vo.getPointLocator().getDataTypeId()){
 			case DataTypes.BINARY:
 			case DataTypes.MULTISTATE:
-				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, dataTypeId, new StartsAndRuntimeList(from, to, null));
+				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, null));
 			break;
 			case DataTypes.ALPHANUMERIC:
-				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, new ValueChangeCounter(from, to, null));
+				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, null));
 			break;
 			case DataTypes.NUMERIC:
-				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, new AnalogStatistics(from, to, null));
+				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, null));
 			break;
 			default:
-				throw new ShouldNeverHappenException("Invalid Data Type: "+ dataTypeId);
+				throw new ShouldNeverHappenException("Invalid Data Type: "+ vo.getPointLocator().getDataTypeId());
 		}
 	}
 

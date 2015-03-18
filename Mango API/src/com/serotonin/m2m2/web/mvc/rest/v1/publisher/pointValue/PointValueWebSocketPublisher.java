@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
@@ -29,6 +31,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 
 	private WebSocketSession session;
 	private DataPointVO vo;
+	private DataPointRT rt;
 	
 	private boolean sendPointInitialized = false;
 	private boolean sendPointUpdated = false;
@@ -47,6 +50,30 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 		this.setEventTypes(eventTypes);
 	}
 	
+	/**
+	 * Initial response upon new registration
+	 */
+	public void sendPointStatus(){
+		try {
+			if(!session.isOpen())
+				this.terminate();
+				
+				rt = Common.runtimeManager.getDataPoint(vo.getId());
+				boolean enabled = false;
+				Map<String,Object> attributes = null;
+				PointValueTime pvt = null;
+				if(rt != null){
+					enabled = true; //We are enabled
+					pvt = rt.getPointValue(); //Get the value
+					attributes = rt.getAttributes();
+				}
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, new PointValueTimeModel(pvt)));
+
+		} catch (IOException e) {
+			LOG.error(e.getMessage(),e);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#pointInitialized()
 	 */
@@ -57,10 +84,19 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			if(!session.isOpen())
 				this.terminate();
 			
+			rt = Common.runtimeManager.getDataPoint(vo.getId()); //Set us up
 			
-			if(sendPointInitialized)
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.INITIALIZE, new PointValueTimeModel(null)));
-
+			if(sendPointInitialized){
+				boolean enabled = false;
+				Map<String,Object> attributes = null;
+				PointValueTime pvt = null;
+				if(rt != null){
+					enabled = true; //We are enabled
+					pvt = rt.getPointValue(); //Get the value
+					attributes = rt.getAttributes();
+				}
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.INITIALIZE, new PointValueTimeModel(pvt)));
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -77,9 +113,17 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			if(!session.isOpen())
 				this.terminate();
 			
-			if(sendPointUpdated)
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.UPDATE, new PointValueTimeModel(newValue)));
-
+			if(sendPointUpdated){
+				boolean enabled = false;
+				Map<String,Object> attributes = null;
+				
+				if(rt != null){
+					enabled = true; //We are enabled
+					attributes = rt.getAttributes();
+				}
+				
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.UPDATE, new PointValueTimeModel(newValue)));
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -95,9 +139,17 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			if(!session.isOpen())
 				this.terminate();
 			
-			if(sendPointChanged)
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.CHANGE, new PointValueTimeModel(newValue)));
-
+			if(sendPointChanged){
+				boolean enabled = false;
+				Map<String,Object> attributes = null;
+				
+				if(rt != null){
+					enabled = true; //We are enabled
+					attributes = rt.getAttributes();
+				}
+				
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(),enabled, attributes, PointValueEventType.CHANGE, new PointValueTimeModel(newValue)));
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -112,8 +164,17 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			if(!session.isOpen())
 				this.terminate();
 			
-			if(sendPointSet)
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.SET, new PointValueTimeModel(newValue)));
+			if(sendPointSet){
+				boolean enabled = false;
+				Map<String,Object> attributes = null;
+				
+				if(rt != null){
+					enabled = true; //We are enabled
+					attributes = rt.getAttributes();
+				}
+				
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(),enabled, attributes, PointValueEventType.SET, new PointValueTimeModel(newValue)));
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -128,8 +189,17 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			if(!session.isOpen())
 				this.terminate();
 			
-			if(sendPointBackdated)
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.BACKDATE, new PointValueTimeModel(value)));
+			if(sendPointBackdated){
+				boolean enabled = false;
+				Map<String,Object> attributes = null;
+				
+				if(rt != null){
+					enabled = true; //We are enabled
+					attributes = rt.getAttributes();
+				}
+				
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.BACKDATE, new PointValueTimeModel(value)));
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -144,8 +214,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			if(!session.isOpen())
 				this.terminate();
 			
-			if(sendPointTerminated)
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), PointValueEventType.TERMINATE, new PointValueTimeModel(null)));
+			this.rt = null;
+			
+			if(sendPointTerminated){
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), false, null, PointValueEventType.TERMINATE, new PointValueTimeModel(null)));
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
 		}
@@ -184,6 +257,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 				break;
 			case UPDATE:
 				sendPointUpdated = true;
+				break;
+			case REGISTERED:
+				//Always send this for now
 				break;
 			}
 		}

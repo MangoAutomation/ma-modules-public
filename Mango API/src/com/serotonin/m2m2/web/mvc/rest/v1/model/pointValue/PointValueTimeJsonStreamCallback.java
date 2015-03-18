@@ -15,6 +15,10 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
+import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
+import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * @author Terry Packer
@@ -29,8 +33,8 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 	/**
 	 * @param jgen
 	 */
-	public PointValueTimeJsonStreamCallback(JsonGenerator jgen) {
-		super(jgen);
+	public PointValueTimeJsonStreamCallback(JsonGenerator jgen, DataPointVO vo, boolean useRendered,  boolean unitConversion) {
+		super(jgen, vo, useRendered, unitConversion);
 		this.translations = Common.getTranslations();
 	}
 
@@ -40,10 +44,21 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 	@Override
 	public void row(PointValueTime pvt, int index) {
 		try{
-		if(pvt instanceof AnnotatedPointValueTime)
-			this.writePointValueTime(pvt.getValue(), pvt.getTime(), ((AnnotatedPointValueTime) pvt).getAnnotation(translations) );
-		else
-			this.writePointValueTime(pvt.getValue(), pvt.getTime(), null);
+			String annotation = null;
+			if(pvt.isAnnotated())
+				annotation = ((AnnotatedPointValueTime) pvt).getAnnotation(translations);
+			if(useRendered){
+				//Convert to Alphanumeric Value
+				String textValue = Functions.getRenderedText(vo, pvt);
+				this.writePointValueTime(new AlphanumericValue(textValue), pvt.getTime(), annotation );
+			}else if(unitConversion){
+				if (pvt.getValue() instanceof NumericValue)
+					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()), pvt.getTime(), annotation);
+				else
+					this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation);
+			}else{
+				this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation);
+			}
 		}catch(IOException e){
 			LOG.error(e.getMessage(), e);
 		}
