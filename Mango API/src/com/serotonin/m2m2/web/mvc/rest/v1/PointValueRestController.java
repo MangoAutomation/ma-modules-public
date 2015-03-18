@@ -267,7 +267,9 @@ public class PointValueRestController extends MangoRestController{
 
 	@ApiOperation(
 			value = "Query Time Range",
-			notes = "From time inclusive, To time exclusive"
+			notes = "From time inclusive, To time exclusive",
+			response=PointValueTimeModel.class,
+			responseContainer="List"
 			)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "Query Successful", response=PointValueTimeModel.class),
@@ -351,6 +353,7 @@ public class PointValueRestController extends MangoRestController{
 	@ApiOperation(
 			value = "Get Point Statistics",
 			notes = "From time inclusive, To time exclusive"
+			//TODO Implement a Statistics Model for the stream and put as response class here
 			)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "Query Successful", response=StatisticsStream.class),

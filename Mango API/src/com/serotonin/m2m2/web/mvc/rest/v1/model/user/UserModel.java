@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
@@ -23,7 +24,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.AlarmLevel;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -127,14 +127,14 @@ public class UserModel extends AbstractRestModel<User> {
 
     @CSVColumnGetter(order=6, header="receiveAlarmEmails")
     @JsonGetter("receiveAlarmEmails")
-    public AlarmLevel getReceiveAlarmEmails() {
-        return AlarmLevel.convertTo(data.getReceiveAlarmEmails());
+    public String getReceiveAlarmEmails() {
+    	return AlarmLevels.CODES.getCode(this.data.getReceiveAlarmEmails());
     }
 
     @CSVColumnSetter(order=6, header="receiveAlarmEmails")
     @JsonSetter("receiveAlarmEmails")
-    public void setReceiveAlarmEmails(AlarmLevel level) {
-        data.setReceiveAlarmEmails(AlarmLevel.convertFrom(level));
+    public void setReceiveAlarmEmails(String level) {
+        data.setReceiveAlarmEmails(AlarmLevels.CODES.getId(level));
     }
 
     @CSVColumnGetter(order=7, header="timezone")
