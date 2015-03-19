@@ -251,6 +251,13 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.data.setPlotType(DataPointVO.PLOT_TYPE_CODES.getId(plotType));
 	}
 	
+	@JsonGetter("id")
+	public int getId(){
+		return this.data.getId();
+	}
+	@JsonSetter("id")
+	public void setId(){ }//No Op 
+	
 	public BaseTextRendererModel<?> getTextRenderer(){
 		return this.textRenderer;
 	}

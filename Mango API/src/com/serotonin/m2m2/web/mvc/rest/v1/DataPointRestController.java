@@ -140,6 +140,45 @@ public class DataPointRestController extends MangoRestController{
         return result.createResponseEntity();
     }
 	
+	
+	@ApiOperation(
+			value = "Get existing data point",
+			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
+			)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{id}")
+    public ResponseEntity<DataPointModel> getDataPointById(
+    		@ApiParam(value = "Valid Data Point ID", required = true, allowMultiple = false)
+    		@PathVariable int id, HttpServletRequest request) {
+
+		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+	        DataPointVO vo = DataPointDao.instance.get(id);
+	        if (vo == null) {
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	        }
+	        //Check permissions
+	    	try{
+	    		if(Permissions.hasDataPointReadPermission(user, vo))
+	    			return result.createResponseEntity(new DataPointModel(vo));
+	    		else{
+	    			LOG.warn("User: " + user.getUsername() + " tried to access data point with xid " + vo.getXid());
+	    			result.addRestMessage(getUnauthorizedMessage());
+	        		return result.createResponseEntity();
+	    		}
+	    	}catch(PermissionException e){
+	    		LOG.warn(e.getMessage(), e);
+    			result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();	    		
+	    	}
+        }
+        return result.createResponseEntity();
+    }
+	
+	
+	
 	/**
 	 * Update a data point in the system
 	 * @param vo
