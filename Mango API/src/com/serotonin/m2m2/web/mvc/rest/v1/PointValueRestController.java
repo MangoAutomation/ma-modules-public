@@ -543,10 +543,7 @@ public class PointValueRestController extends MangoRestController{
 	    	        	LOG.error(e.getMessage(), e);
 	    	        	result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 	    	        	return result.createResponseEntity();
-	    	        	
 	    	        }
-	    			
-	    			
 	    		}else{
 		    		result.addRestMessage(getUnauthorizedMessage());
 		    		return result.createResponseEntity();

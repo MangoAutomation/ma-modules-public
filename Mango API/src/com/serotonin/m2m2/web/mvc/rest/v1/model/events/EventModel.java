@@ -153,7 +153,7 @@ public class EventModel  extends AbstractRestModel<EventInstanceVO>{
 			this.data.setEventComments(comments);
 		}
 		for(UserCommentModel model : commentModels){
-			comments.add(model.getData());
+			comments.add(model.getDataAsComment());
 		}
 	}
 }
