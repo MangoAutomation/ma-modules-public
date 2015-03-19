@@ -27,7 +27,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModelProperty;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiParam;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collections;
 
 /**
  * @author Terry Packer
