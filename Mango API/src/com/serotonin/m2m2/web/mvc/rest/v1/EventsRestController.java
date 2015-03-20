@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.serotonin.m2m2.db.dao.EventInstanceDao;
+import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceDatabaseStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RqlQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -63,8 +65,8 @@ public class EventsRestController extends MangoRestController{
         if(result.isOk()){
         	QueryModel query = new QueryModel();
         	query.setLimit(limit);
-    		EventInstanceDatabaseStream eventDatabaseStream = new EventInstanceDatabaseStream(query);
-    		return result.createResponseEntity(eventDatabaseStream);
+    		RqlQueryStream<EventInstanceVO> stream = new RqlQueryStream<EventInstanceVO>(EventInstanceDao.instance, query);
+    		return result.createResponseEntity(stream);
     	}
         return result.createResponseEntity();
 	}
@@ -90,13 +92,38 @@ public class EventsRestController extends MangoRestController{
 		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
-    		EventInstanceDatabaseStream eventDatabaseStream = new EventInstanceDatabaseStream(query);
-    		return result.createResponseEntity(eventDatabaseStream);
+    		RqlQueryStream<EventInstanceVO> stream = new RqlQueryStream<EventInstanceVO>(EventInstanceDao.instance, query);
+    		return result.createResponseEntity(stream);
     	}
     	
     	return result.createResponseEntity();
 	}
 	
+	@ApiOperation(
+			value = "Query Events",
+			notes = "",
+			response=EventModel.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=EventModel.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
+    public ResponseEntity<JsonArrayStream> queryRQL(HttpServletRequest request) {
+		
+		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+    	
+		this.checkUser(request, result);
+    	if(result.isOk()){
+    		//Parse the RQL Query
+    		QueryModel model = this.parseRQL(request);
+    		RqlQueryStream<EventInstanceVO> stream = new RqlQueryStream<EventInstanceVO>(EventInstanceDao.instance, model);
+    		return result.createResponseEntity(stream);
+    	}
+    	
+    	return result.createResponseEntity();
+	}
 
 
 }

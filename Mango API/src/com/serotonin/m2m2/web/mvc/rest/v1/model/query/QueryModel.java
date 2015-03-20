@@ -4,11 +4,12 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.serotonin.m2m2.db.dao.QueryParameter;
-import com.serotonin.m2m2.db.dao.SortOption;
+import com.infiniteautomation.mango.db.query.QueryComparison;
+import com.infiniteautomation.mango.db.query.SortOption;
 
 /**
  * @author Terry Packer
@@ -17,15 +18,15 @@ import com.serotonin.m2m2.db.dao.SortOption;
 public class QueryModel {
 	
 	@JsonProperty
-	private List<QueryParameter> query;
+	private List<QueryComparison> orComparisons;
+	@JsonProperty
+	private List<QueryComparison> andComparisons;
 	@JsonProperty
 	private List<SortOption> sort;
 	@JsonProperty
 	private Integer offset;
 	@JsonProperty
 	private Integer limit;
-	@JsonProperty
-	private boolean useOr;
 	
 	/**
 	 * @param query
@@ -34,27 +35,36 @@ public class QueryModel {
 	 * @param limit
 	 * @param useOr
 	 */
-	public QueryModel(List<QueryParameter> query, List<SortOption> sort,
-			Integer offset, Integer limit, boolean useOr) {
+	public QueryModel(List<QueryComparison> orComparisons, List<QueryComparison> andComparisons, List<SortOption> sort,
+			Integer offset, Integer limit) {
 		super();
-		this.query = query;
+		this.orComparisons = orComparisons;
+		this.andComparisons = andComparisons;
 		this.sort = sort;
 		this.offset = offset;
 		this.limit = limit;
-		this.useOr = useOr;
 	}
 	
 	public QueryModel(){
 		this.limit = 100;
-		this.useOr = false;
+		this.orComparisons = new ArrayList<QueryComparison>();
+		this.andComparisons = new ArrayList<QueryComparison>();
 	}
 
-	public List<QueryParameter> getQuery() {
-		return query;
+	public List<QueryComparison> getOrComparisons() {
+		return orComparisons;
 	}
 
-	public void setQuery(List<QueryParameter> query) {
-		this.query = query;
+	public void setOrComparisons(List<QueryComparison> orComparisons) {
+		this.orComparisons = orComparisons;
+	}
+	
+	public List<QueryComparison> getAndComparisons() {
+		return andComparisons;
+	}
+
+	public void setAndComparisons(List<QueryComparison> andComparisons) {
+		this.andComparisons = andComparisons;
 	}
 
 	public List<SortOption> getSort() {
@@ -81,12 +91,11 @@ public class QueryModel {
 		this.limit = limit;
 	}
 
-	public boolean isUseOr() {
-		return useOr;
-	}
-
-	public void setUseOr(boolean useOr) {
-		this.useOr = useOr;
+	public List<QueryComparison> getAllComparisons(){
+		List<QueryComparison> all = new ArrayList<QueryComparison>(this.orComparisons.size() + this.andComparisons.size());
+		all.addAll(this.orComparisons);
+		all.addAll(this.andComparisons);
+		return all;
 	}
 	
 }
