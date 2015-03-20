@@ -15,6 +15,8 @@ import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumn;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 
 /**
@@ -23,18 +25,25 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
  * @author Terry Packer
  *
  */
+@CSVEntity
 public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 
+	//TODO Use String and then the DataTypePropertyEditor for CSV
 	@JsonProperty("dataType")
+	@CSVColumn(header="dataType", order = 0)
 	private DataTypeEnum type;
 	
+	//TODO Change this to a DataValue and fix up the PropertyEditor and create a model for a DataValue
 	@JsonProperty("value")
+	@CSVColumn(header="value", order = 1, editor=DataValuePropertyEditor.class)
 	private Object value;
 	
 	@JsonProperty("timestamp")
+	@CSVColumn(header="timestamp", order = 2)
 	private long timestamp;
 	
 	@JsonProperty("annotation")
+	@CSVColumn(header="annotation", order = 3)
 	private String annotation;
 	
 	public PointValueTimeModel(){
@@ -58,113 +67,6 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 	}
 	
 	
-//	@JsonSetter("dataType")
-//	public void setDataType(DataTypeEnum type){
-//		if(this.data == null){
-//			switch(type){
-//			case ALPHANUMERIC:
-//				this.data = new PointValueTime(new AlphanumericValue(null), 0);
-//			case BINARY:
-//				this.data = new PointValueTime(new BinaryValue(true), 0);
-//			case MULTISTATE:
-//				this.data = new PointValueTime(new MultistateValue(0), 0);
-//			case NUMERIC:
-//				this.data = new PointValueTime(new NumericValue(0), 0);
-//			case IMAGE:
-//				try {
-//					this.data = new PointValueTime(new ImageValue(null), 0);
-//				} catch (InvalidArgumentException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}else{
-//			//Set the data type
-//			if(this.data.getValue().getDataType() != DataTypeEnum.convertFrom(type)){
-//				
-//			}
-//		}
-//	}
-	
-	
-//	@JsonGetter("value")
-//	public Object getValue(){
-//		if(data == null)
-//			return null;
-//		else
-//			switch(this.data.getValue().getDataType()){
-//				case DataTypes.ALPHANUMERIC:
-//				return this.data.getStringValue();
-//				
-//				case DataTypes.BINARY:
-//				return this.data.getBooleanValue();
-//				
-//				case DataTypes.IMAGE:
-//				return null; //Not supporting for now
-//			
-//				case DataTypes.MULTISTATE:
-//				return this.data.getIntegerValue(); //Not supporting for now
-//				
-//				case DataTypes.NUMERIC:
-//				return this.data.getDoubleValue();
-//				
-//				default:
-//					throw new ShouldNeverHappenException("Unknown Data Type: " + this.data.getValue().getDataType());
-//			}
-//	}
-//	@JsonSetter("value")
-//	public void setValue(Object value){
-//		if(this.data == null){
-//			this.data = new PointValueTime(DataValue.objectToValue(value), 0);
-//		}else{
-//			if(this.data instanceof AnnotatedPointValueTime)
-//				this.data = new AnnotatedPointValueTime(DataValue.objectToValue(value), this.data.getTime(), ((AnnotatedPointValueTime) this.data).getSourceMessage());
-//			else
-//				this.data = new PointValueTime(DataValue.objectToValue(value), this.data.getTime());
-//		}
-//	}
-//
-//	@JsonGetter("time")
-//	public Date getDate(){
-//		if(data == null)
-//			return null;
-//		else
-//			return new Date(this.data.getTime());
-//	}
-//	@JsonSetter("time")
-//	public void setTime(long time){
-//		if(this.data == null){
-//			this.data = new PointValueTime((DataValue)null,time);
-//		}else{
-//			if(this.data instanceof AnnotatedPointValueTime)
-//				this.data = new AnnotatedPointValueTime(this.data.getValue(), time, ((AnnotatedPointValueTime) this.data).getSourceMessage());
-//			else
-//				this.data = new PointValueTime(this.data.getValue(), time);
-//		}
-//	}
-//	@JsonGetter("timestamp")
-//	public long getTime(){
-//		return this.data.getTime();
-//	}
-//	
-//	@JsonGetter("annotation")
-//	public String getAnnotation(){
-//		if(this.data instanceof AnnotatedPointValueTime){
-//			return ((AnnotatedPointValueTime) this.data).getAnnotation(Common.getTranslations());
-//		}else{
-//			return null;
-//		}
-//	}
-//	@JsonSetter("annotation")
-//	public void setAnnotation(String annotation){
-//		if(this.data == null){
-//			this.data = new AnnotatedPointValueTime((DataValue)null, 0, new TranslatableMessage("common.default", annotation));
-//		}else{
-//			this.data = new AnnotatedPointValueTime(this.data.getValue(),
-//					this.data.getTime(),
-//					new TranslatableMessage("common.default", annotation));
-//		}
-//	}
-
 	public DataTypeEnum getType() {
 		return type;
 	}

@@ -80,10 +80,10 @@ public class PointValueRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(
-			value = "Get Latest Point Values",
-			notes = "Default 100, time descending order"
+			value = "Get Latest Point Values Directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
+			notes = "Default limit 100, time descending order, Default to return cached data"
 			)
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}/latest")
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}/latest", produces={"application/json", "text/csv"})
     public ResponseEntity<List<PointValueTimeModel>> getLatestPointValues(
     		HttpServletRequest request, 
     		
@@ -97,7 +97,11 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
     		
     		@ApiParam(value = "Limit results", allowMultiple = false, defaultValue="100")
-    		@RequestParam(value="limit", defaultValue="100") int limit){
+    		@RequestParam(value="limit", defaultValue="100") int limit,
+
+    		@ApiParam(value = "Return cached data?", allowMultiple = false, defaultValue="true")
+    		@RequestParam(value="useCache", defaultValue="true") boolean useCache
+    		){
         
     	RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -111,7 +115,7 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId());
+	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), useCache);
 	    			
 	    			List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
 	    			List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(pvts.size());
@@ -170,7 +174,7 @@ public class PointValueRestController extends MangoRestController{
 	    @ApiResponse(code = 200, message = "Query Successful", response=PointValueTimeModel.class),
 	    @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 	})
-	@RequestMapping(method = RequestMethod.GET, value="/{xid}/firstLast")
+	@RequestMapping(method = RequestMethod.GET, value="/{xid}/firstLast", produces={"application/json", "text/csv"})
 	public ResponseEntity<List<PointValueTimeModel>> firstAndLastPointValues(
 	        HttpServletRequest request,
 
@@ -190,8 +194,7 @@ public class PointValueRestController extends MangoRestController{
 	        @ApiParam(value = "To time", required = false, allowMultiple = false)
 	        @RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
 	        @DateTimeFormat(iso=ISO.DATE_TIME) Date to
-	        )
-    {
+	        ){
 	    RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
 	    User user = this.checkUser(request, result);
 	    if(result.isOk()){
