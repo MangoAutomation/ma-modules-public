@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
@@ -17,12 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -41,11 +44,13 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="User Comments", description="Operations on User Comments")
 @RestController()
 @RequestMapping("/v1/comments")
-public class UserCommentRestController extends MangoRestController{
+public class UserCommentRestController extends MangoVoRestController<UserCommentVO, UserCommentModel>{
 	
 	private static Log LOG = LogFactory.getLog(UserCommentRestController.class);
 	
-	public UserCommentRestController(){ }
+	public UserCommentRestController(){
+		super(UserCommentDao.instance);
+	}
 
 	@ApiOperation(
 			value = "Get all User Comments",
@@ -68,8 +73,7 @@ public class UserCommentRestController extends MangoRestController{
         if(result.isOk()){
         	QueryModel query = new QueryModel();
         	query.setLimit(limit);
-    		UserCommentDatabaseStream eventDatabaseStream = new UserCommentDatabaseStream(query);
-    		return result.createResponseEntity(eventDatabaseStream);
+    		return result.createResponseEntity(getStream(query));
     	}
         return result.createResponseEntity();
 	}
@@ -95,8 +99,7 @@ public class UserCommentRestController extends MangoRestController{
 		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
-    		UserCommentDatabaseStream eventDatabaseStream = new UserCommentDatabaseStream(query);
-    		return result.createResponseEntity(eventDatabaseStream);
+    		return result.createResponseEntity(getStream(query));
     	}
     	
     	return result.createResponseEntity();
@@ -164,6 +167,28 @@ public class UserCommentRestController extends MangoRestController{
     	}
     	
     	return result.createResponseEntity();
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
+	 */
+	@Override
+	public UserCommentModel createModel(UserCommentVO vo) {
+		return new UserCommentModel(vo);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
+	 */
+	@Override
+	public void mapComparisons(List<QueryComparison> list) {
+		//Check for the attribute commentType
+		for(QueryComparison param : list){
+			if(param.getAttribute().equalsIgnoreCase("commentType")){
+				param.setCondition(Integer.toString(UserCommentVO.COMMENT_TYPE_CODES.getId(param.getCondition())));
+			}
+		}
 	}
 
 	

@@ -5,24 +5,24 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer
  *
  */
-public class RqlQueryStream<T extends AbstractVO<T>> implements JsonArrayStream{
+public class RqlQueryStream<VO extends AbstractVO<VO>, MODEL> implements JsonArrayStream{
 
 	
-	protected AbstractDao<T> dao;
+	protected AbstractDao<VO> dao;
 	protected QueryModel query;
-	protected JsonStreamCallback<T> callback;
+	protected AbstractJsonStreamCallback<VO> callback;
+	protected MangoVoRestController<VO, MODEL> controller;
 	
 	/**
 	 * @param query
@@ -31,31 +31,22 @@ public class RqlQueryStream<T extends AbstractVO<T>> implements JsonArrayStream{
 	 * @param limit
 	 * @param or
 	 */
-	public RqlQueryStream(AbstractDao<T> dao, QueryModel query, JsonStreamCallback<T> callback) {
+	public RqlQueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, AbstractJsonStreamCallback<VO> callback) {
 		this.dao = dao;
+		this.controller = controller;
 		this.query = query;
 		this.callback = callback;
 	}
 
-	public RqlQueryStream(AbstractDao<T> dao, QueryModel query){
-		this.dao = dao;
-		this.query = query;
-		this.callback = new JsonStreamCallback<T>();
-	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) throws IOException {
-		this.mapComparisons(query.getAllComparisons());
+		this.controller.mapComparisons(query.getAllComparisons());
 		this.callback.setJsonGenerator(jgen);
 		this.dao.streamQuery(query.getOrComparisons(), query.getAndComparisons(), query.getSort(), query.getOffset(), query.getLimit(), this.callback);
 	}
-	
-	/**
-	 * Map any values to DB types, override as necessary
-	 * @param list
-	 */
-	public void mapComparisons(List<QueryComparison> list){ }
+
 	
 }

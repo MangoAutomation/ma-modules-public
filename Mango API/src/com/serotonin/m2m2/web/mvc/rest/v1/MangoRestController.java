@@ -30,9 +30,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
  * @author Terry Packer
  * 
  */
-public abstract class MangoRestController {
+public abstract class MangoRestController{
 
-
+	
 	/**
 	 * Check to see if a User is logged in
 	 * 
@@ -129,7 +129,7 @@ public abstract class MangoRestController {
 				Pattern pattern = Pattern.compile("sort\\(([\\+-]{1})(.*)\\)"); //TODO only works for single sort
 				Matcher matcher = pattern.matcher(part);
 				if(matcher.matches()){
-					int groupCount = matcher.groupCount();
+					//int groupCount = matcher.groupCount();
 					boolean desc = false;
 					if(matcher.group(1).equals("-"))
 						desc = true;

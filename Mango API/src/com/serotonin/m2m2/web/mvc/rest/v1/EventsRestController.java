@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
@@ -14,11 +16,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.RqlQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -29,7 +32,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * 
- * TODO Flesh out after we get the events endpoint rest api defined
  * 
  * @author Terry Packer
  *
@@ -37,11 +39,13 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Events", description="Operations on Events")
 @RestController()
 @RequestMapping("/v1/events")
-public class EventsRestController extends MangoRestController{
+public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventModel>{
 	
 	//private static Log LOG = LogFactory.getLog(EventsRestController.class);
 	
-	public EventsRestController(){ }
+	public EventsRestController(){ 
+		super(EventInstanceDao.instance);
+	}
 
 	
 	@ApiOperation(
@@ -65,8 +69,7 @@ public class EventsRestController extends MangoRestController{
         if(result.isOk()){
         	QueryModel query = new QueryModel();
         	query.setLimit(limit);
-    		RqlQueryStream<EventInstanceVO> stream = new RqlQueryStream<EventInstanceVO>(EventInstanceDao.instance, query);
-    		return result.createResponseEntity(stream);
+    		return result.createResponseEntity(getStream(query));
     	}
         return result.createResponseEntity();
 	}
@@ -92,8 +95,7 @@ public class EventsRestController extends MangoRestController{
 		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
-    		RqlQueryStream<EventInstanceVO> stream = new RqlQueryStream<EventInstanceVO>(EventInstanceDao.instance, query);
-    		return result.createResponseEntity(stream);
+    		return result.createResponseEntity(getStream(query));
     	}
     	
     	return result.createResponseEntity();
@@ -117,12 +119,34 @@ public class EventsRestController extends MangoRestController{
 		this.checkUser(request, result);
     	if(result.isOk()){
     		//Parse the RQL Query
-    		QueryModel model = this.parseRQL(request);
-    		RqlQueryStream<EventInstanceVO> stream = new RqlQueryStream<EventInstanceVO>(EventInstanceDao.instance, model);
-    		return result.createResponseEntity(stream);
+    		QueryModel query = this.parseRQL(request);
+    		return result.createResponseEntity(getStream(query));
     	}
     	
     	return result.createResponseEntity();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
+	 */
+	@Override
+	public EventModel createModel(EventInstanceVO vo) {
+		return new EventModel(vo);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
+	 */
+	@Override
+	public void mapComparisons(List<QueryComparison> list) {
+		//Check for the attribute commentType
+		for(QueryComparison param : list){
+			if(param.getAttribute().equalsIgnoreCase("alarmLevel")){
+				param.setCondition(Integer.toString(AlarmLevels.CODES.getId(param.getCondition())));
+			}
+		}
+
 	}
 
 
