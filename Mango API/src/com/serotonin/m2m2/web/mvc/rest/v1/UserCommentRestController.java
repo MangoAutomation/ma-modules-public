@@ -105,6 +105,31 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     	return result.createResponseEntity();
 	}
 	
+	@ApiOperation(
+			value = "Query User Comments",
+			notes = "",
+			response=UserCommentModel.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=UserCommentModel.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
+    public ResponseEntity<JsonArrayStream> queryRQL(
+    		   		   		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+    	this.checkUser(request, result);
+    	if(result.isOk()){
+    		QueryModel query = this.parseRQL(request);
+    		return result.createResponseEntity(getStream(query));
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
 	/**
 	 * Create a new User Comment
 	 * 

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -39,6 +40,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -52,11 +55,12 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Data Points", description="Operations on Data points", position=1)
 @RestController(value="DataPointRestControllerV1")
 @RequestMapping("/v1/dataPoints")
-public class DataPointRestController extends MangoRestController{
+public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel>{
 
 	private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 	
 	public DataPointRestController(){
+		super(DaoRegistry.dataPointDao);
 		LOG.info("Creating Data Point Rest Controller.");
 	}
 
@@ -461,4 +465,76 @@ public class DataPointRestController extends MangoRestController{
         
         return result.createResponseEntity();
 	}
+	
+	@ApiOperation(
+			value = "Query Data Points",
+			notes = "",
+			response=DataPointModel.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=DataPointModel.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
+    public ResponseEntity<JsonArrayStream> query(
+    		
+    		@ApiParam(value="Query", required=true)
+    		@RequestBody(required=true) QueryModel query, 
+    		   		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+    	this.checkUser(request, result);
+    	if(result.isOk()){
+    		return result.createResponseEntity(getStream(query));
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Query Data Points",
+			notes = "",
+			response=DataPointModel.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=DataPointModel.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
+    public ResponseEntity<JsonArrayStream> queryRQL(
+    		   		   		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+    	this.checkUser(request, result);
+    	if(result.isOk()){
+    		QueryModel query = this.parseRQL(request);
+    		return result.createResponseEntity(getStream(query));
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
+	 */
+	@Override
+	public void mapComparisons(List<QueryComparison> list) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
+	 */
+	@Override
+	public DataPointModel createModel(DataPointVO vo) {
+		return new DataPointModel(vo);
+	}
+	
 }
