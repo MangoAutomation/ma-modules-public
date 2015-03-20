@@ -22,6 +22,7 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -85,17 +86,17 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
-    public ResponseEntity<JsonArrayStream> query(
+    public ResponseEntity<JsonDataPageStream> query(
     		
     		@ApiParam(value="Query", required=true)
     		@RequestBody(required=true) QueryModel query, 
     		   		
     		HttpServletRequest request) {
 		
-		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+		RestProcessResult<JsonDataPageStream> result = new RestProcessResult<JsonDataPageStream>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
-    		return result.createResponseEntity(getStream(query));
+    		return result.createResponseEntity(getPageStream(query));
     	}
     	
     	return result.createResponseEntity();
@@ -112,15 +113,15 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
-    public ResponseEntity<JsonArrayStream> queryRQL(HttpServletRequest request) {
+    public ResponseEntity<JsonDataPageStream> queryRQL(HttpServletRequest request) {
 		
-		RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+		RestProcessResult<JsonDataPageStream> result = new RestProcessResult<JsonDataPageStream>(HttpStatus.OK);
     	
 		this.checkUser(request, result);
     	if(result.isOk()){
     		//Parse the RQL Query
     		QueryModel query = this.parseRQL(request);
-    		return result.createResponseEntity(getStream(query));
+    		return result.createResponseEntity(getPageStream(query));
     	}
     	
     	return result.createResponseEntity();

@@ -13,7 +13,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
  * @author Terry Packer
  *
  */
-public class VoJsonStreamCallback<VO extends AbstractVO<VO>, MODEL> extends AbstractJsonStreamCallback<VO> {
+public class VoJsonStreamCallback<VO extends AbstractVO<VO>, MODEL> extends ObjectJsonStreamCallback<VO> {
 
 	private MangoVoRestController<VO, MODEL> controller;
 	

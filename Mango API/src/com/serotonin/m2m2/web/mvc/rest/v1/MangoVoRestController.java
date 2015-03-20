@@ -9,7 +9,8 @@ import java.util.List;
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.RqlQueryStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.VoJsonStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
@@ -43,14 +44,29 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	}
 	
 	/**
-	 * Get the Query Stream
+	 * Get the Query Stream for Streaming an array of data
 	 * @param query
 	 * @return
 	 */
-	protected RqlQueryStream<VO, MODEL> getStream(QueryModel query){
-		 return new RqlQueryStream<VO, MODEL>(dao, this, query, callback);
+	protected QueryStream<VO, MODEL> getStream(QueryModel query){
+
+		QueryStream<VO, MODEL> stream = new QueryStream<VO, MODEL>(dao, this, query, callback);
+		//Ensure its ready
+		stream.setupQuery();
+		return stream;
 	}
 	
+	/**
+	 * Get a Stream that is more like a result set with a count
+	 * @param query
+	 * @return
+	 */
+	protected PageQueryStream<VO, MODEL> getPageStream(QueryModel query){
+		PageQueryStream<VO, MODEL> stream = new PageQueryStream<VO, MODEL>(dao, this, query, callback);
+		//Ensure its ready
+		stream.setupQuery();
+		return stream;
+	}
 
 	/**
 	 * Map any Model members to VO Properties

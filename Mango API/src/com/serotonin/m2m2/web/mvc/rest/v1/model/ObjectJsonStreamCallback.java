@@ -16,9 +16,9 @@ import com.serotonin.db.MappedRowCallback;
  * @author Terry Packer
  *
  */
-public abstract class AbstractJsonStreamCallback<VO> implements MappedRowCallback<VO>{
+public class ObjectJsonStreamCallback<T> implements MappedRowCallback<T>{
 
-	private final Log LOG = LogFactory.getLog(AbstractJsonStreamCallback.class);
+	private final Log LOG = LogFactory.getLog(ObjectJsonStreamCallback.class);
 	
 	protected JsonGenerator jgen;
 	
@@ -30,7 +30,7 @@ public abstract class AbstractJsonStreamCallback<VO> implements MappedRowCallbac
 	 * @see com.serotonin.db.MappedRowCallback#row(java.lang.Object, int)
 	 */
 	@Override
-	public void row(VO vo, int index) {
+	public void row(T vo, int index) {
 		try {
 			this.write(vo);
 		} catch (IOException e) {
@@ -44,7 +44,7 @@ public abstract class AbstractJsonStreamCallback<VO> implements MappedRowCallbac
 	 * @param vo
 	 * @throws IOException
 	 */
-	protected void write(VO vo) throws IOException{
+	protected void write(T vo) throws IOException{
 		this.jgen.writeObject(vo);
 	}
 
