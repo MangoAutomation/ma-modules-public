@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -31,7 +33,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class TranslationsController extends MangoRestController {
     
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"})
-    public ResponseEntity<Map<String, Map<String, String>>> translations(
+    public ResponseEntity<Map<String, ?>> translations(
             
             @RequestParam(value = "language", required = false) String language,
             
@@ -40,7 +42,7 @@ public class TranslationsController extends MangoRestController {
     }
     
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/{namespace}")
-    public ResponseEntity<Map<String, Map<String, String>>> namespacedTranslations(
+    public ResponseEntity<Map<String, ?>> namespacedTranslations(
             
             @ApiParam(value = "Namespace", required = true, allowMultiple = false)
             @PathVariable String namespace,
@@ -49,21 +51,33 @@ public class TranslationsController extends MangoRestController {
             
             HttpServletRequest request) {
         
-        RestProcessResult<Map<String, Map<String, String>>> result =
-                new RestProcessResult<Map<String, Map<String, String>>>(HttpStatus.OK);
+        RestProcessResult<Map<String, ?>> result =
+                new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
         this.checkUser(request, result);
         
         if (result.isOk()) {
+            //User user = Common.getUser();
+            // TODO add user locale setting which can be set to "Browser", "Server" or specific value
+            
             Locale locale;
             if (language == null || language.isEmpty()) {
-                locale = Locale.getDefault();
+                // browser locale
+                locale = RequestContextUtils.getLocale(request);
+                // server locale
+                // locale = Locale.getDefault();
+                // user locale
+                // locale = user.getLocale();
             }
             else {
                 locale = Locale.forLanguageTag(language.replace("_", "-"));
             }
             
             Translations translations = Translations.getTranslations(locale);
-            return result.createResponseEntity(translations.translations(namespace));
+            Map<String, Object> resultMap = new HashMap<String, Object>();
+            resultMap.put("translations", translations.asMap(namespace));
+            resultMap.put("locale", locale.toLanguageTag());
+            
+            return result.createResponseEntity(resultMap);
         }
         
         return result.createResponseEntity();
