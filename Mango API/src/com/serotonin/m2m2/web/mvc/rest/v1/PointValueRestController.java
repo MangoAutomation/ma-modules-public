@@ -473,8 +473,14 @@ public class PointValueRestController extends MangoRestController{
     		        
 	    			//Are we converting from the rendered Unit?
 	    			if(unitConversion){
-	    				if(model.getType() == DataTypeEnum.NUMERIC){
-	    					model.setValue(existingDp.getRenderedUnit().getConverterTo(existingDp.getUnit()).convert((double) model.getValue()));
+	    				if((model.getType() == DataTypeEnum.NUMERIC)&&(model.getValue() instanceof Number)){
+	    					double value;
+	    					if(model.getValue() instanceof Integer){
+	    						value = (double)((Integer)model.getValue());
+	    					}else{
+	    						value = (double)((Double)model.getValue());
+	    					}
+	    					model.setValue(existingDp.getRenderedUnit().getConverterTo(existingDp.getUnit()).convert(value));
 	    				}else{
 	    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Cannot perform unit conversion on Non Numeric data types."));
 	    					return result.createResponseEntity();
