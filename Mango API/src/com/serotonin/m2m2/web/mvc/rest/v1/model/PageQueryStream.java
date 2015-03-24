@@ -22,12 +22,13 @@ public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStre
 	
 	protected QueryStreamCallback<Long> countCallback;
 	
+
 	/**
+	 * 
+	 * @param dao
+	 * @param controller
 	 * @param query
-	 * @param sort
-	 * @param offset
-	 * @param limit
-	 * @param or
+	 * @param queryCallback
 	 */
 	public PageQueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, QueryStreamCallback<VO> queryCallback) {
 		super(dao, controller, query, queryCallback);

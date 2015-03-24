@@ -137,12 +137,24 @@ public abstract class MangoRestController{
 					sorts.add(sort);
 				}
 			}else if(part.startsWith("limit(")){
-				Pattern pattern = Pattern.compile("limit\\((.*)\\)"); //TODO only works for single sort
+				//TODO Create a single regex to match this if it contains a comma instead of using contains.
+				Pattern pattern;
+				if(part.contains(","))
+					pattern = Pattern.compile("limit\\((.*),(.*)\\)");
+				else
+					pattern = Pattern.compile("limit\\((.*)\\)");
 				Matcher matcher = pattern.matcher(part);
 				if(matcher.matches()){
 					String limit = matcher.group(1);
 					if((limit != null)&&(!limit.isEmpty())){
 						model.setLimit(Integer.parseInt(limit));
+					}
+					if(matcher.groupCount() == 2){
+						//Have an offset to use
+						String offset = matcher.group(2);
+						if((offset != null)&&(!offset.isEmpty())){
+							model.setOffset(Integer.parseInt(offset));
+						}
 					}
 				}
 			}else{
