@@ -29,11 +29,11 @@ public class JsonDataPageSerializer<T> extends JsonSerializer<QueryDataPageStrea
 		//jgen.writeStartArray();
 		jgen.writeStartObject();
 		//Write count via callback
-		jgen.writeFieldName("count");
+		jgen.writeFieldName("total");
 		value.streamCount(jgen);
 
 		//Write results start Array Block
-		jgen.writeFieldName("results");
+		jgen.writeFieldName("items");
 		jgen.writeStartArray();
 		value.streamData(jgen);
 		jgen.writeEndArray();
