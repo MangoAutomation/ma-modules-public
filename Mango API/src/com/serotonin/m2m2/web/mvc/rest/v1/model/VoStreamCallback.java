@@ -13,13 +13,16 @@ import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
  * @author Terry Packer
  *
  */
-public class VoJsonStreamCallback<VO extends AbstractVO<VO>, MODEL> extends ObjectJsonStreamCallback<VO> {
+public class VoStreamCallback<VO extends AbstractVO<VO>, MODEL> extends QueryStreamCallback<VO> {
 
 	private MangoVoRestController<VO, MODEL> controller;
 	
-	public VoJsonStreamCallback(MangoVoRestController<VO, MODEL> controller){
+	/**
+	 * 
+	 * @param controller
+	 */
+	public VoStreamCallback(MangoVoRestController<VO, MODEL> controller){
 		this.controller = controller;
-		
 	}
 	
 	/**
@@ -27,9 +30,15 @@ public class VoJsonStreamCallback<VO extends AbstractVO<VO>, MODEL> extends Obje
 	 * @param vo
 	 * @throws IOException
 	 */
-	protected void write(VO vo) throws IOException{
+	@Override
+	protected void writeJson(VO vo) throws IOException{
 		MODEL model = this.controller.createModel(vo);
 		this.jgen.writeObject(model);
+	}
+	@Override
+	protected void writeCsv(VO vo) throws IOException{
+		MODEL model = this.controller.createModel(vo);
+		this.csvWriter.writeNext(model);
 	}
 
 

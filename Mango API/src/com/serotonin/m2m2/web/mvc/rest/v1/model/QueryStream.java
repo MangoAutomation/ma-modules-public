@@ -11,18 +11,19 @@ import com.infiniteautomation.mango.db.query.StreamableQuery;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer
  *
  */
-public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements JsonArrayStream{
+public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArrayStream<VO>{
 
 	
 	protected AbstractDao<VO> dao;
 	protected QueryModel query;
-	protected ObjectJsonStreamCallback<VO> queryCallback;
+	protected QueryStreamCallback<VO> queryCallback;
 	protected MangoVoRestController<VO, MODEL> controller;
 	protected StreamableQuery<VO> results;
 	
@@ -33,7 +34,7 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements JsonArrayS
 	 * @param limit
 	 * @param or
 	 */
-	public QueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, ObjectJsonStreamCallback<VO> queryCallback) {
+	public QueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, QueryStreamCallback<VO> queryCallback) {
 		this.dao = dao;
 		this.controller = controller;
 		this.query = query;
@@ -54,6 +55,15 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements JsonArrayS
 	@Override
 	public void streamData(JsonGenerator jgen) throws IOException {
 		this.queryCallback.setJsonGenerator(jgen);
+		this.results.query();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+	 */
+	@Override
+	public void streamData(CSVPojoWriter<VO> writer) throws IOException {
+		this.queryCallback.setCsvWriter(writer);
 		this.results.query();
 	}
 

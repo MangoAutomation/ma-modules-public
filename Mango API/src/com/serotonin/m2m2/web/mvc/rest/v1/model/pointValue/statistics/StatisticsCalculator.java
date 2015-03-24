@@ -23,10 +23,15 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 
 	private StatisticsJsonGenerator statsGenerator;
-	
+
 	/**
+	 * 
 	 * @param jgen
-	 * @param dataTypeId
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param from
+	 * @param to
 	 */
 	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to) {
 		switch(vo.getPointLocator().getDataTypeId()){

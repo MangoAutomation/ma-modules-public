@@ -25,8 +25,8 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -64,10 +64,10 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
-    public ResponseEntity<JsonArrayStream> getAll(HttpServletRequest request, 
+    public ResponseEntity<QueryStream<UserCommentVO, UserCommentModel>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
-        RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+        RestProcessResult<QueryStream<UserCommentVO, UserCommentModel>> result = new RestProcessResult<QueryStream<UserCommentVO, UserCommentModel>>(HttpStatus.OK);
         
         this.checkUser(request, result);
     	
@@ -90,14 +90,14 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
-    public ResponseEntity<JsonDataPageStream> query(
+    public ResponseEntity<QueryDataPageStream<UserCommentVO>> query(
     		
     		@ApiParam(value="Query", required=true)
     		@RequestBody(required=true) QueryModel query, 
     		   		
     		HttpServletRequest request) {
 		
-		RestProcessResult<JsonDataPageStream> result = new RestProcessResult<JsonDataPageStream>(HttpStatus.OK);
+		RestProcessResult<QueryDataPageStream<UserCommentVO>> result = new RestProcessResult<QueryDataPageStream<UserCommentVO>>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
     		return result.createResponseEntity(getPageStream(query));
@@ -117,11 +117,11 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
-    public ResponseEntity<JsonDataPageStream> queryRQL(
+    public ResponseEntity<QueryDataPageStream<UserCommentVO>> queryRQL(
     		   		   		
     		HttpServletRequest request) {
 		
-		RestProcessResult<JsonDataPageStream> result = new RestProcessResult<JsonDataPageStream>(HttpStatus.OK);
+		RestProcessResult<QueryDataPageStream<UserCommentVO>> result = new RestProcessResult<QueryDataPageStream<UserCommentVO>>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
     		QueryModel query = this.parseRQL(request);

@@ -42,7 +42,7 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
@@ -279,7 +279,7 @@ public class PointValueRestController extends MangoRestController{
 		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 		})
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
-    public ResponseEntity<JsonArrayStream> getPointValues(
+    public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getPointValues(
     		HttpServletRequest request, 
     		
     		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
@@ -314,7 +314,7 @@ public class PointValueRestController extends MangoRestController{
     		Integer timePeriods    		
     		){
         
-    	RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+    	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     	

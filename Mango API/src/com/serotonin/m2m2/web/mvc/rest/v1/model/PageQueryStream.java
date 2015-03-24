@@ -10,16 +10,17 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer
  *
  */
-public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStream<VO,MODEL> implements JsonDataPageStream{
+public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStream<VO,MODEL> implements QueryDataPageStream<VO>{
 
 	
-	protected ObjectJsonStreamCallback<Long> countCallback;
+	protected QueryStreamCallback<Long> countCallback;
 	
 	/**
 	 * @param query
@@ -28,9 +29,9 @@ public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStre
 	 * @param limit
 	 * @param or
 	 */
-	public PageQueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, ObjectJsonStreamCallback<VO> queryCallback) {
+	public PageQueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, QueryStreamCallback<VO> queryCallback) {
 		super(dao, controller, query, queryCallback);
-		this.countCallback = new ObjectJsonStreamCallback<Long>();
+		this.countCallback = new QueryStreamCallback<Long>();
 	}
 
 	/**
@@ -50,6 +51,14 @@ public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStre
 		this.countCallback.setJsonGenerator(jgen);
 		this.results.count();
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream#streamCount(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+	 */
+	@Override
+	public void streamCount(CSVPojoWriter<Long> writer) throws IOException {		
+		//Currently doing nothing as this would create a weird CSV
 	}
 
 	

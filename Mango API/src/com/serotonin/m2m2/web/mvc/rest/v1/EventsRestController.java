@@ -21,8 +21,8 @@ import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -60,10 +60,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
-    public ResponseEntity<JsonArrayStream> getAll(HttpServletRequest request, 
+    public ResponseEntity<QueryArrayStream<EventInstanceVO>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
-        RestProcessResult<JsonArrayStream> result = new RestProcessResult<JsonArrayStream>(HttpStatus.OK);
+        RestProcessResult<QueryArrayStream<EventInstanceVO>> result = new RestProcessResult<QueryArrayStream<EventInstanceVO>>(HttpStatus.OK);
         
         this.checkUser(request, result);
     	
@@ -86,14 +86,14 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
-    public ResponseEntity<JsonDataPageStream> query(
+    public ResponseEntity<QueryDataPageStream<EventInstanceVO>> query(
     		
     		@ApiParam(value="Query", required=true)
     		@RequestBody(required=true) QueryModel query, 
     		   		
     		HttpServletRequest request) {
 		
-		RestProcessResult<JsonDataPageStream> result = new RestProcessResult<JsonDataPageStream>(HttpStatus.OK);
+		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
     		return result.createResponseEntity(getPageStream(query));
@@ -113,9 +113,9 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
-    public ResponseEntity<JsonDataPageStream> queryRQL(HttpServletRequest request) {
+    public ResponseEntity<QueryDataPageStream<EventInstanceVO>> queryRQL(HttpServletRequest request) {
 		
-		RestProcessResult<JsonDataPageStream> result = new RestProcessResult<JsonDataPageStream>(HttpStatus.OK);
+		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
     	
 		this.checkUser(request, result);
     	if(result.isOk()){

@@ -39,25 +39,25 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 		if(this.statistics.getCount() > 0){
 			this.jgen.writeBooleanField("hasData", true);
 			this.jgen.writeFieldName("first");
-			this.writeNonNull(this.statistics.getFirstValue(), this.statistics.getFirstTime());
+			this.writeNonNullDouble(this.statistics.getFirstValue(), this.statistics.getFirstTime());
 			
 			this.jgen.writeFieldName("last");
-			this.writeNonNull(this.statistics.getLastValue(), this.statistics.getLastTime());
+			this.writeNonNullDouble(this.statistics.getLastValue(), this.statistics.getLastTime());
 			
 			this.jgen.writeFieldName("minimum");
-			this.writeNonNull(this.statistics.getMinimumValue(), this.statistics.getMinimumTime());
+			this.writeNonNullDouble(this.statistics.getMinimumValue(), this.statistics.getMinimumTime());
 			
 			this.jgen.writeFieldName("maximum");
-			this.writeNonNull(this.statistics.getMaximumValue(), this.statistics.getMaximumTime());
+			this.writeNonNullDouble(this.statistics.getMaximumValue(), this.statistics.getMaximumTime());
 			
 			this.jgen.writeFieldName("average");
-			this.writeNonNull(this.statistics.getAverage(), this.statistics.getPeriodEndTime());
+			this.writeNonNullDouble(this.statistics.getAverage(), this.statistics.getPeriodEndTime());
 			
 			this.jgen.writeFieldName("integral");
 			this.writeNonNullIntegral(this.statistics.getIntegral(), this.statistics.getPeriodEndTime());
 			
 			this.jgen.writeFieldName("sum");
-			this.writeNonNull(this.statistics.getSum(), this.statistics.getPeriodEndTime());
+			this.writeNonNullDouble(this.statistics.getSum(), this.statistics.getPeriodEndTime());
 
 			this.jgen.writeNumberField("count", this.statistics.getCount());
 		}else{

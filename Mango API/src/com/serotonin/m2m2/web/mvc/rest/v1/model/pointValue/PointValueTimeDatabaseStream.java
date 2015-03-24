@@ -4,16 +4,19 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 
 /**
  * @author Terry Packer
  *
  */
-public class PointValueTimeDatabaseStream implements JsonArrayStream{
+public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValueTimeModel>{
 
 	private DataPointVO vo;
 	private boolean useRendered;
@@ -42,6 +45,15 @@ public class PointValueTimeDatabaseStream implements JsonArrayStream{
 	@Override
 	public void streamData(JsonGenerator jgen) {
 		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeJsonStreamCallback(jgen, vo, useRendered, unitConversion));
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+	 */
+	@Override
+	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
+			throws IOException {
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(writer.getWriter(), vo, useRendered, unitConversion));
 	}
 
 }

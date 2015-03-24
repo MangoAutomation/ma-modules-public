@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 
 /**
  * Wrap any object in JSON { } 
@@ -19,13 +19,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
  * @author Terry Packer
  *
  */
-public class JsonObjectSerializer extends JsonSerializer<JsonObjectStream>{
+public class JsonObjectSerializer<T> extends JsonSerializer<ObjectStream<T>>{
 
 	/* (non-Javadoc)
 	 * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 	 */
 	@Override
-	public void serialize(JsonObjectStream value, JsonGenerator jgen,
+	public void serialize(ObjectStream<T> value, JsonGenerator jgen,
 			SerializerProvider provider) throws IOException,
 			JsonProcessingException {
 

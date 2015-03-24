@@ -6,9 +6,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonDataPageStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 
 /**
  * @author Terry Packer
@@ -20,12 +20,13 @@ public class MangoApiJsonModule extends SimpleModule {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public MangoApiJsonModule() {
 		super("MangoApiJson", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation",
 				"mango"));
-		this.addSerializer(JsonArrayStream.class, new JsonArraySerializer());
-		this.addSerializer(JsonDataPageStream.class, new JsonDataPageSerializer());
-		this.addSerializer(JsonObjectStream.class, new JsonObjectSerializer());
+		this.addSerializer(QueryArrayStream.class, new JsonArraySerializer());
+		this.addSerializer(QueryDataPageStream.class, new JsonDataPageSerializer());
+		this.addSerializer(ObjectStream.class, new JsonObjectSerializer());
 	}
 	
 	@Override

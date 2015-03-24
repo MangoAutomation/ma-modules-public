@@ -7,11 +7,13 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 
 /**
  * 
@@ -20,7 +22,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonObjectStream;
  * @author Terry Packer
  *
  */
-public class StatisticsStream implements JsonObjectStream{
+public class StatisticsStream implements ObjectStream<PointValueTime>{
 	
 	private DataPointVO vo;
 	private final boolean useRendered;
@@ -68,6 +70,19 @@ public class StatisticsStream implements JsonObjectStream{
 		//Finish
 		calculator.done(after);
 
+		
+	}
+
+
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+	 */
+	@Override
+	public void streamData(CSVPojoWriter<PointValueTime> jgen)
+			throws IOException {
+		throw new ShouldNeverHappenException("Un-implemented");
 		
 	}
 

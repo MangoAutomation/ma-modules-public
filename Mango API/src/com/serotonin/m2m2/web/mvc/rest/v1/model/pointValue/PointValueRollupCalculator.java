@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import org.apache.commons.logging.Log;
@@ -25,8 +26,11 @@ import com.serotonin.m2m2.view.quantize2.TimePeriodBucketCalculator;
 import com.serotonin.m2m2.view.quantize2.ValueChangeCounterQuantizer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.pair.LongPair;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NonNumericPointValueStatisticsQuantizerCsvCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NonNumericPointValueStatisticsQuantizerJsonCallback;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NumericPointValueStatisticsQuantizerCsvCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.NumericPointValueStatisticsQuantizerJsonCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
@@ -35,7 +39,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  * @author Terry Packer
  *
  */
-public class PointValueRollupCalculator implements JsonArrayStream{
+public class PointValueRollupCalculator implements QueryArrayStream<PointValueTimeModel>{
 
 	private static final Log LOG = LogFactory.getLog(PointValueRollupCalculator.class);
 	
@@ -62,38 +66,37 @@ public class PointValueRollupCalculator implements JsonArrayStream{
 	 * Calculate statistics, if TimePeriod is null the entire range will be used
 	 * @return
 	 */
-	public void calculate(final JsonGenerator jgen){
+	public void calculate(final AbstractDataQuantizer quantizer, DateTime from, DateTime to){
 		
-        // Determine the start and end times.
-        if (from == -1) {
-            // Get the start and end from the point values table.
-            LongPair lp = DaoRegistry.pointValueDao.getStartAndEndTime(Collections.singletonList(vo.getId()));
-            from = lp.getL1();
-            to = lp.getL2();
-        }
-
-        DateTime startTime = new DateTime(from);
-        //Round off the start period if we are using periodic rollup
-        if(period != null)
-        	startTime = DateUtils.truncateDateTime(startTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
-        DateTime endTime = new DateTime(to);
-
-        // Determine the start and end values. This is important for
-        // properly calculating average.
-        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from);
-        //Try our best to get the closest value
-        if(startPvt == null)
-        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from);
-        DataValue startValue = PointValueTime.getValue(startPvt);
-        PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
-        DataValue endValue = PointValueTime.getValue(endPvt);
+        //Make the call to get the data and quantize it
+        DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from.getMillis(), to.getMillis(),
+                new MappedRowCallback<PointValueTime>() {
+                    @Override
+                    public void row(PointValueTime pvt, int row) {
+                        quantizer.data(pvt);
+                    }
+                });
         
-        BucketCalculator bc;
-        if(this.period == null){
-        	bc = new BucketsBucketCalculator(startTime, endTime, 1);
-        }else{
-        	bc = new TimePeriodBucketCalculator(startTime, endTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
-        }
+        quantizer.done(getEndValue());
+        
+        return;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream#streamData(java.io.Writer)
+	 */
+	@Override
+	public void streamData(JsonGenerator jgen) {
+		
+		this.setupDates();
+
+		DataValue startValue = this.getStartValue();
+		
+		DateTime startTime = this.getStartTime();
+		DateTime endTime = this.getEndTime();
+        BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
+        
         final AbstractDataQuantizer quantizer;
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
             quantizer = new AnalogStatisticsQuantizer(bc, 
@@ -107,29 +110,90 @@ public class PointValueRollupCalculator implements JsonArrayStream{
             quantizer = new ValueChangeCounterQuantizer(bc, startValue,
             		new NonNumericPointValueStatisticsQuantizerJsonCallback(jgen, vo, useRendered, unitConversion, this.rollup));
         }
-
-        //Finally Make the call to get the data and quantize it
-        DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from, to,
-                new MappedRowCallback<PointValueTime>() {
-                    @Override
-                    public void row(PointValueTime pvt, int row) {
-                        quantizer.data(pvt);
-                    }
-                });
-        quantizer.done(endValue);
-        
-        
-        return;
+		
+		this.calculate(quantizer, startTime, endTime);
 	}
 
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream#streamData(java.io.Writer)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
 	 */
 	@Override
-	public void streamData(JsonGenerator jgen) {
-		this.calculate(jgen);
+	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
+			throws IOException {
+		this.setupDates();
+
+		DataValue startValue = this.getStartValue();
+
+		DateTime startTime = this.getStartTime();
+		DateTime endTime = this.getEndTime();
+        BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
+        
+        final AbstractDataQuantizer quantizer;
+        if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
+            quantizer = new AnalogStatisticsQuantizer(bc, 
+            		startValue,
+            		new NumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), this.vo, this.useRendered, this.unitConversion, this.rollup));
+        }else {
+            if (!rollup.nonNumericSupport()) {
+                LOG.warn("Invalid non-numeric rollup type: " + rollup);
+                rollup = RollupEnum.FIRST; //Default to first
+            }
+            quantizer = new ValueChangeCounterQuantizer(bc, startValue,
+            		new NonNumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), vo, useRendered, unitConversion, this.rollup));
+        }
+		
+		this.calculate(quantizer, startTime, endTime);
+	}
+
+	private void setupDates(){
+        // Determine the start and end times.
+        if (from == -1) {
+            // Get the start and end from the point values table.
+            LongPair lp = DaoRegistry.pointValueDao.getStartAndEndTime(Collections.singletonList(vo.getId()));
+            from = lp.getL1();
+            to = lp.getL2();
+        }
+
 	}
 	
+	/**
+	 * Create a Bucket Calculator
+	 * @return
+	 */
+	private BucketCalculator getBucketCalculator(DateTime startTime, DateTime endTime){
+		
+        if(this.period == null){
+        	return  new BucketsBucketCalculator(startTime, endTime, 1);
+        }else{
+        	return new TimePeriodBucketCalculator(startTime, endTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
+        }
+	}
+	
+	private DateTime getStartTime(){
+		DateTime startTime = new DateTime(from);
+		 //Round off the start period if we are using periodic rollup
+        if(period != null)
+        	startTime = DateUtils.truncateDateTime(startTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
+        return startTime;
+
+	}
+	private DateTime getEndTime(){
+        return new DateTime(to);
+	}
+	private DataValue getStartValue(){
+        // Determine the start and end values. This is important for
+        // properly calculating average.
+        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from);
+        //Try our best to get the closest value
+        if(startPvt == null)
+        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from);
+        DataValue startValue = PointValueTime.getValue(startPvt);
+        return startValue;
+	}
+	private DataValue getEndValue(){
+		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
+        return PointValueTime.getValue(endPvt);
+	}
 	
 }

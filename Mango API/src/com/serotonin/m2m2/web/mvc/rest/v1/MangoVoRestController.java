@@ -11,7 +11,7 @@ import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.VoJsonStreamCallback;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
@@ -21,7 +21,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> extends MangoRestController{
 
 	protected AbstractDao<VO> dao;
-	protected VoJsonStreamCallback<VO, MODEL> callback;
+	protected VoStreamCallback<VO, MODEL> callback;
 
 
 	/**
@@ -30,7 +30,7 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	 */
 	public MangoVoRestController(AbstractDao<VO> dao){
 		this.dao = dao;
-		this.callback = new VoJsonStreamCallback<VO, MODEL>(this);
+		this.callback = new VoStreamCallback<VO, MODEL>(this);
 	}
 
 	/**
@@ -38,7 +38,7 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	 * @param dao
 	 * @param callback
 	 */
-	public MangoVoRestController(AbstractDao<VO> dao, VoJsonStreamCallback<VO, MODEL> callback){
+	public MangoVoRestController(AbstractDao<VO> dao, VoStreamCallback<VO, MODEL> callback){
 		this.dao = dao;
 		this.callback = callback;
 	}
