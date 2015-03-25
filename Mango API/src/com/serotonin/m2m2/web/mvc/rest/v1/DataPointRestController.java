@@ -149,7 +149,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get existing data point",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{id}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/byId/{id}")
     public ResponseEntity<DataPointModel> getDataPointById(
     		@ApiParam(value = "Valid Data Point ID", required = true, allowMultiple = false)
     		@PathVariable int id, HttpServletRequest request) {
