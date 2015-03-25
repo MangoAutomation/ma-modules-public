@@ -24,18 +24,27 @@ public class PointValueEventModel {
 	@JsonProperty("value")
 	private PointValueTimeModel value;
 	
+	@JsonProperty("renderedValue")
+	private String renderedValue;
+	
+	//The value converted 
+	@JsonProperty("convertedValue")
+	private Double convertedValue;
+	
 	@JsonProperty("enabled")
 	private boolean enabled;
 	
 	@JsonProperty("attributes")
 	private Map<String, Object> attributes;
 
-	public PointValueEventModel(String xid, boolean enabled, Map<String,Object> attributes, PointValueEventType type, PointValueTimeModel model){
+	public PointValueEventModel(String xid, boolean enabled, Map<String,Object> attributes, PointValueEventType type, PointValueTimeModel model, String renderedValue, Double convertedValue){
 	    this.xid = xid;
 		this.event = type;
 		this.value = model;
 		this.enabled = enabled;
 		this.attributes = attributes;
+		this.renderedValue = renderedValue;
+		this.convertedValue = convertedValue;
 	}
 
 	public PointValueEventModel(){
@@ -80,6 +89,22 @@ public class PointValueEventModel {
 
 	public void setAttributes(Map<String, Object> attributes) {
 		this.attributes = attributes;
+	}
+
+	public String getRenderedValue() {
+		return renderedValue;
+	}
+
+	public void setRenderedValue(String renderedValue) {
+		this.renderedValue = renderedValue;
+	}
+
+	public Double getConvertedValue() {
+		return convertedValue;
+	}
+
+	public void setConvertedValue(Double convertedValue) {
+		this.convertedValue = convertedValue;
 	}
     
     
