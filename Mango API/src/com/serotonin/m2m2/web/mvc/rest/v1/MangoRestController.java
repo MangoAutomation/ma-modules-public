@@ -102,7 +102,10 @@ public abstract class MangoRestController{
 		return new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", content));
 	}
 
-	
+	//TODO only works for single sort
+    private static final Pattern SORT_PATTERN = Pattern.compile("sort\\(([\\+-]{1})(.*)\\)");
+    private static final Pattern LIMIT_PATTERN = Pattern.compile("limit\\((\\d+?)(?:,(\\d+?))?\\)");
+    
 	/**
 	 * @param query
 	 * @return
@@ -126,8 +129,7 @@ public abstract class MangoRestController{
 		
 			if(part.startsWith("sort(")){
 				//Sort starts with sort(
-				Pattern pattern = Pattern.compile("sort\\(([\\+-]{1})(.*)\\)"); //TODO only works for single sort
-				Matcher matcher = pattern.matcher(part);
+				Matcher matcher = SORT_PATTERN.matcher(part);
 				if(matcher.matches()){
 					//int groupCount = matcher.groupCount();
 					boolean desc = false;
@@ -137,24 +139,16 @@ public abstract class MangoRestController{
 					sorts.add(sort);
 				}
 			}else if(part.startsWith("limit(")){
-				//TODO Create a single regex to match this if it contains a comma instead of using contains.
-				Pattern pattern;
-				if(part.contains(","))
-					pattern = Pattern.compile("limit\\((.*),(.*)\\)");
-				else
-					pattern = Pattern.compile("limit\\((.*)\\)");
-				Matcher matcher = pattern.matcher(part);
+				Matcher matcher = LIMIT_PATTERN.matcher(part);
 				if(matcher.matches()){
 					String limit = matcher.group(1);
 					if((limit != null)&&(!limit.isEmpty())){
 						model.setLimit(Integer.parseInt(limit));
 					}
-					if(matcher.groupCount() == 2){
-						//Have an offset to use
-						String offset = matcher.group(2);
-						if((offset != null)&&(!offset.isEmpty())){
-							model.setOffset(Integer.parseInt(offset));
-						}
+					//Have an offset to use
+					String offset = matcher.group(2);
+					if((offset != null)&&(!offset.isEmpty())){
+						model.setOffset(Integer.parseInt(offset));
 					}
 				}
 			}else{
