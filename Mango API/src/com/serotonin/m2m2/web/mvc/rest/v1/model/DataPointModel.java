@@ -100,6 +100,14 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.data.setDataSourceXid(xid);
 	}
 	
+	@JsonGetter("dataSourceId")
+	public int getDataSourceId(){
+		return this.data.getDataSourceId();
+	}
+	@JsonSetter("dataSourceId")
+	public void setDataSourceId(int id){ } // No Op
+	
+	
 	@CSVColumnGetter(order=6, header="readPermission")
 	@JsonGetter("readPermission")
 	public String getReadPermission(){
