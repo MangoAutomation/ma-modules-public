@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.virtual.vo;
 
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 /**
@@ -23,6 +24,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
  * @author Terry Packer
  *
  */
+@CSVEntity()
 public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLocatorVO>{
 
 	/**
