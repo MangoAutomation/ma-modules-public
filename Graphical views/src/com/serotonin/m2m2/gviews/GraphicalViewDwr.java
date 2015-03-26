@@ -82,6 +82,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
         return viewComponentId;
     }
+    
 
     /**
      * Retrieves point state for all points on a given view. This is the monitoring version of the method. See below for
