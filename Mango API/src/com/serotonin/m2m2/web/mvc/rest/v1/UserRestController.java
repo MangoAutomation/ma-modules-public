@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -223,4 +224,113 @@ public class UserRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 	
+	@ApiOperation(value = "Update a user's home url")
+	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json", "text/csv"}, value = "/{username}/homepage")
+    public ResponseEntity<UserModel> updateHomeUrl(
+    		@ApiParam(value = "Username", required = true, allowMultiple = false)
+    		@PathVariable String username,
+    		
+    		@ApiParam(value = "Home Url", required = true, allowMultiple = false)
+    		@RequestParam(required=true)
+    		String homeUrl,
+    		HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		User u = DaoRegistry.userDao.getUser(username);
+    		if(user.isAdmin()){
+    			if (u == null) {
+    				result.addRestMessage(getDoesNotExistMessage());
+    	    		return result.createResponseEntity();
+    	        }
+    			u.setHomeUrl(homeUrl);
+    			UserModel model = new UserModel(u);
+    	        if(!model.validate()){
+    	        	result.addRestMessage(this.getValidationFailedError());
+    	        }else{
+    	        	DaoRegistry.userDao.saveUser(model.getData());
+    	        }
+    			return result.createResponseEntity(model);
+    		}else{
+    			if(u.getId() != user.getId()){
+	    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access user : " + u.getUsername());
+	    			result.addRestMessage(this.getUnauthorizedMessage());
+	    			return result.createResponseEntity();
+    			}else{
+    				u.setHomeUrl(homeUrl);
+    				UserModel model = new UserModel(u);
+    				//Allow users to update themselves
+    				model.getData().setId(u.getId());
+        	        if(!model.validate()){
+        	        	result.addRestMessage(this.getValidationFailedError());
+        	        }else{
+        	        	DaoRegistry.userDao.saveUser(model.getData());
+        	        }
+    				return result.createResponseEntity(model);
+    			}
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(value = "Update a user's audio mute setting")
+	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json", "text/csv"}, value = "/{username}/mute")
+    public ResponseEntity<UserModel> updateMuted(
+    		@ApiParam(value = "Username", required = true, allowMultiple = false)
+    		@PathVariable String username,
+    		
+    		@ApiParam(value = "Mute", required = false, defaultValue="Toggle the current setting", allowMultiple = false)
+    		@RequestParam(required=false)
+    		Boolean mute,
+    		HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		User u = DaoRegistry.userDao.getUser(username);
+    		if(user.isAdmin()){
+    			if (u == null) {
+    				result.addRestMessage(getDoesNotExistMessage());
+    	    		return result.createResponseEntity();
+    	        }
+    			if(mute == null){
+    				u.setMuted(!u.isMuted());
+    			}else{
+    				u.setMuted(mute);
+    			}
+    			UserModel model = new UserModel(u);
+    	        if(!model.validate()){
+    	        	result.addRestMessage(this.getValidationFailedError());
+    	        }else{
+    	        	DaoRegistry.userDao.saveUser(model.getData());
+    	        }
+    			return result.createResponseEntity(model);
+    		}else{
+    			if(u.getId() != user.getId()){
+	    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access user : " + u.getUsername());
+	    			result.addRestMessage(this.getUnauthorizedMessage());
+	    			return result.createResponseEntity();
+    			}else{
+        			if(mute == null){
+        				u.setMuted(!u.isMuted()); //Toggle
+        			}else{
+        				u.setMuted(mute);
+        			}
+    				UserModel model = new UserModel(u);
+    				//Allow users to update themselves
+    				model.getData().setId(u.getId());
+        	        if(!model.validate()){
+        	        	result.addRestMessage(this.getValidationFailedError());
+        	        }else{
+        	        	DaoRegistry.userDao.saveUser(model.getData());
+        	        }
+    				return result.createResponseEntity(model);
+    			}
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
 }
