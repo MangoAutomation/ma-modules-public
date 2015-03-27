@@ -24,7 +24,7 @@
   return script;
  -->
 <script type="text/javascript">
-require(["dojo/parser", "dijit/form/HorizontalSlider", "dijit/form/HorizontalRule", "dijit/form/HorizontalRuleLabels"]);
+require(["dojo/parser", "dijit/form/HorizontalSlider", "dijit/form/HorizontalRule", "dijit/form/HorizontalRuleLabels", "dojo/touch"]);
 
 var sliderViewComponentIdToUse = 1;
 var idRegex = /^\D+(\d+)$/
@@ -66,6 +66,15 @@ function showSlider(element, value, width, min, max, pageIncrement, ruleCount, l
   containerDiv.style.backgroundColor = 'lightgreen';  
 }
 
+/**
+ * value - Number value to set in the slider
+ * width - Number of pixels wide the slider should be
+ * min - minimum Number value of slider
+ * max - maximum Number value of slider 
+ * pageIncrement - number of ticks to move the slider when the buttons are pressed
+ * ruleCount - Number of ticks on slider and will define the only valid positions for the slider
+ * labels - Array of String labels, size should match rule count but doesn't have to
+ */
 function createNewSlider(value, width, min, max, pageIncrement, ruleCount, labels){
   
   destroySlider();
@@ -89,23 +98,42 @@ function createNewSlider(value, width, min, max, pageIncrement, ruleCount, label
     labelsNode.id = 'rulesLabelsNode';
     sliderNode.appendChild(labelsNode);
     var sliderLabels = new dijit.form.HorizontalRuleLabels({
-      container: "bottomDecoration",
-    labels: labels,
+      	container: "bottomDecoration",
+      	style: {
+      	  fontFamily: "courier",
+    	  fontSize: "15pt",
+    	  color: "orange"
+      	},
+    	labels: labels,
     }, labelsNode);
     
     sliderStyle.width = width + "px";
-  slider = new dijit.form.HorizontalSlider({
-    style: sliderStyle,
-    minimum: min,
-    maximum: max,
-    value: value,
-    discreteValues: ruleCount,
-    pageIncrement: pageIncrement, //Number to page up or down with button
-    onChange: function(value){
-        mango.view.setPoint(null, sliderViewComponentIdToUse, value);
-    }
-  }, 'slider');
-  slider.startup();
+  	slider = new dijit.form.HorizontalSlider({
+    	style: sliderStyle,
+    	minimum: min,
+    	maximum: max,
+    	value: value,
+   		discreteValues: ruleCount,
+    	pageIncrement: pageIncrement, //Number to page up or down with button
+    	intermediateChanges: true, //Allow onchange to track while dragging
+    	onMouseUp: function(event){
+    		mango.view.setPoint(null, sliderViewComponentIdToUse, this.value);
+    	},
+    	onChange: function(value){
+    		dojo.byId('sliderDisplay').innerHTML = value;
+    	}
+  	}, 'slider');
+  	
+  	/* Add a touch - release event for dojo touch */
+  	dojo.touch.release(slider, function(event){
+  		mango.view.setPoint(null, sliderViewComponentIdToUse, slider.value);
+	});
+  	
+  	slider.startup();
+  	
+  	//Set the initial value in the display:
+  	dojo.byId('sliderDisplay').innerHTML = value;
+  	
 }
 
 function destroySlider(){
@@ -141,6 +169,7 @@ function setSliderValue(element, value){
       return; //Don't set a value for the slider we aren't using it
     }else{
       slider.set('value', value, false);
+      dojo.byId('sliderDisplay').innerHTML = value;
     }
 }
 
@@ -159,4 +188,6 @@ function generateLabels(ruleCount){
 
 
 </script>
-<div id='sliderContainer' style='display:none'></div>
+<div id='sliderContainer' style='display:none'>
+  <div id='sliderDisplay' style='font-size: 15pt; padding: 2px; text-align:center'></div>
+</div>

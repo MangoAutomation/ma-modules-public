@@ -40,6 +40,12 @@
   means that the point currently has no value, and is likely waiting for its value to be received.
 </p>
 
+<h1>Display Only Graphic View</h1>
+<p>You can display only the graphic view with nothing else on the page by adding the following parameters to your URL:
+ showHeader=false, showToolbar=false, showControls = false, showFooter = false
+ Example: http://{mangoHost:mangoPort}/views.shtm?showControls=false&showHeader=false&showToolbar=false&showFooter=false
+<p>
+
 <h1>Public Views / Anonymous Users</h1>
 <p>The graphical views can expose information and even control elements to anonymous users. To enable, choose an anonymous access level of either read or set. 
 Then, to access the view, go to http://{root URL}/public_view.htm?[viewName=XXX || viewId=XXX || viewXid=XXX] as in http://localhost:1234/public_view.htm?viewId=4</p>

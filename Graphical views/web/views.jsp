@@ -12,6 +12,7 @@
     </c:if>
   </script>
   
+  <c:if test="${empty param.showControls || param.showControls == true}">
   <table class="borderDiv">
     <tr>
       <td class="smallTitle"><fmt:message key="views.title"/> <tag:help id="graphicalViews"/></td>
@@ -34,6 +35,7 @@
       </td>
     </tr>
   </table>
+  </c:if>
   
   <views:displayView view="${currentView}" emptyMessageKey="views.noViews"/>
 </tag:page>

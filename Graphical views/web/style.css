@@ -1,0 +1,27 @@
+/*
+ * Add any custom css styles you want to use to a file in the overrides directory to override this
+ * Place new file at: {maHome}/overrides/web/modules/graphicalViews/web/style.css
+*/
+
+.claro .dijitSliderDecrementIconH {
+	width: 20px;
+	height: 20px;
+	background-color: steelblue; /* Change the background for the button */
+	border-radius: 5px; /* Round off the buttons more */
+}
+
+.claro .dijitSliderIncrementIconH {
+	width: 20px;
+	height: 20px;
+	background-color: steelblue; /* Change the background for the button */
+	border-radius: 5px; /* Round off the buttons more */
+}
+
+.dijitSliderProgressBarH {
+	border-color: grey;
+	background-color: steelblue;
+}
+
+.claro .dijitSlider{
+	/* background-color: green;  Changes entire background to this */
+}
