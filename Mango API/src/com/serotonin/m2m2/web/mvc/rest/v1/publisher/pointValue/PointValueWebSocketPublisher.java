@@ -24,6 +24,11 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
+ * This class should contain some form of synchronization that will allow for the 
+ * Listener events to return without doing any work if the socket is trying to send
+ * a current message.  This way we won't clog up the medium priority level with hung up tasks.
+ * 
+ * 
  * @author Terry Packer
  *
  */
