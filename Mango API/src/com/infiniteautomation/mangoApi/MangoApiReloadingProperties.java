@@ -70,13 +70,13 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 		super(basename);
 		sourceFilename = basename.replace('.', '/') + ".properties";
 		this.classLoader = classLoader;
-		checkForReload();
+		checkForReload(false);
 	}
 
 	public MangoApiReloadingProperties(File file) {
 		super(file.getName());
 		sourceFile = file;
-		checkForReload();
+		checkForReload(false);
 	}
 
 	public void setDefaultValue(String key, String value) {
@@ -121,7 +121,7 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 
 	@Override
 	protected String getStringImpl(String key) {
-		checkForReload();
+		checkForReload(false);
 
 		String value = properties.getProperty(key);
 		if (value == null)
@@ -130,13 +130,20 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 		return value;
 	}
 
-	private void checkForReload() {
-		if (lastRecheck + recheckDeadbandPeriod > System.currentTimeMillis()) {
-			if (LOG.isDebugEnabled())
-				LOG.debug("(" + getDescription()
-						+ ") In do not check period. Not rechecking");
-			// Still in the do not check period.
-			return;
+
+	/**
+	 * 
+	 * @param forceReload
+	 */
+	public void checkForReload(boolean forceReload) {
+		if(!forceReload){
+			if (lastRecheck + recheckDeadbandPeriod > System.currentTimeMillis()) {
+				if (LOG.isDebugEnabled())
+					LOG.debug("(" + getDescription()
+							+ ") In do not check period. Not rechecking");
+				// Still in the do not check period.
+				return;
+			}
 		}
 		lastRecheck = System.currentTimeMillis();
 
