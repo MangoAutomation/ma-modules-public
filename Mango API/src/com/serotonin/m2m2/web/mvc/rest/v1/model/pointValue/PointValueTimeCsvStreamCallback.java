@@ -45,8 +45,6 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	@Override
 	public void row(PointValueTime pvt, int index) {
 		try{
-			if(this.wroteHeaders == false)
-				this.writeHeaders();
 			String annotation = null;
 			if(pvt.isAnnotated())
 				annotation = ((AnnotatedPointValueTime) pvt).getAnnotation(translations);

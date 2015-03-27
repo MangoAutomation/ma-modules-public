@@ -275,7 +275,10 @@ public class UserRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 	
-	@ApiOperation(value = "Update a user's audio mute setting")
+	@ApiOperation(
+			value = "Update a user's audio mute setting",
+			notes = "If you do not provide the mute parameter the current setting will be toggled"
+	)
 	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json", "text/csv"}, value = "/{username}/mute")
     public ResponseEntity<UserModel> updateMuted(
     		@ApiParam(value = "Username", required = true, allowMultiple = false)

@@ -49,6 +49,8 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	@Override
 	public void writePointValueTime(double value, long timestamp,
 			String annotation) throws IOException {
+		if(!wroteHeaders)
+			this.writeHeaders();
 		String[] nextLine = new String[3];
 		nextLine[0] = Double.toString(value);
 		nextLine[1] = Long.toString(timestamp);
@@ -63,6 +65,8 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	@Override
 	public void writePointValueTime(int value, long timestamp,
 			String annotation) throws IOException {
+		if(!wroteHeaders)
+			this.writeHeaders();
 		String[] nextLine = new String[3];
 		nextLine[0] = Integer.toString(value);
 		nextLine[1] = Long.toString(timestamp);
@@ -77,6 +81,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	@Override
 	public void writePointValueTime(DataValue value, long timestamp,
 			String annotation) throws IOException {
+		if(!wroteHeaders)
+			this.writeHeaders();
+		
 		String[] nextLine = new String[3];
 		
 		if(value == null){
