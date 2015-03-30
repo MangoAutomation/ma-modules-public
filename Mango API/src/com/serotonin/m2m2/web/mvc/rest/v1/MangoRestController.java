@@ -112,14 +112,15 @@ public abstract class MangoRestController{
 	 */
 	protected QueryModel parseRQL(HttpServletRequest request) {
 		String query = request.getQueryString();
-		try {
-			query = URLDecoder.decode(query, Common.UTF8);
-			System.out.println("query: " + query);
-		} catch (UnsupportedEncodingException e) {
-			
-			e.printStackTrace();
+		if (query != null) {
+    		try {
+    			query = URLDecoder.decode(query, Common.UTF8);
+    			System.out.println("query: " + query);
+    		} catch (UnsupportedEncodingException e) {
+    			e.printStackTrace();
+    		}
 		}
-		String[] parts = query.split("&");
+		String[] parts = query == null ? new String[]{} : query.split("&");
 		QueryModel model = new QueryModel();
 		List<QueryComparison> orComparisons = new ArrayList<QueryComparison>();
 		List<QueryComparison> andComparisons = new ArrayList<QueryComparison>();
