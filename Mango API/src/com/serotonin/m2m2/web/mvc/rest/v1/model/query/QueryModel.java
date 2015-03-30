@@ -49,6 +49,7 @@ public class QueryModel {
 		this.limit = 100;
 		this.orComparisons = new ArrayList<QueryComparison>();
 		this.andComparisons = new ArrayList<QueryComparison>();
+		this.sort = new ArrayList<SortOption>();
 	}
 
 	public List<QueryComparison> getOrComparisons() {
@@ -98,4 +99,34 @@ public class QueryModel {
 		return all;
 	}
 	
+	public String toString(){
+		StringBuilder builder = new StringBuilder();
+		
+		for(QueryComparison c : andComparisons){
+			builder.append(c.toString());
+			builder.append(" AND ");
+		}
+		
+		for(QueryComparison c : orComparisons){
+			builder.append(c.toString());
+			builder.append(" OR ");
+		}
+		
+		if(sort.size() > 0){
+			builder.append( " SORT ON ");
+			for(SortOption o : sort){
+				builder.append(o.getAttribute());
+				if(o.isDesc()){
+					builder.append(" DESC ");
+				}else{
+					builder.append(" ASC ");
+				}
+			}
+		}
+		if(limit != null){
+			builder.append(" LIMIT ");
+			builder.append(limit);
+		}
+		return builder.toString();
+	}
 }
