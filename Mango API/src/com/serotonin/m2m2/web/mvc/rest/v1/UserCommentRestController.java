@@ -148,8 +148,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			)
 	@ApiResponses({
 			@ApiResponse(code = 201, message = "User Created", response=UserCommentModel.class),
-			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-			@ApiResponse(code = 409, message = "User Already Exists")
+			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 			})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
     public ResponseEntity<UserCommentModel> createNewUserComment(
@@ -159,7 +158,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 
-		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
+		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.CREATED);
 		User user = this.checkUser(request, result);
     	if(result.isOk()){
     			

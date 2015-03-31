@@ -187,7 +187,7 @@ public class UserRestController extends MangoRestController{
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 
-		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.CREATED);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(model.getUsername());
