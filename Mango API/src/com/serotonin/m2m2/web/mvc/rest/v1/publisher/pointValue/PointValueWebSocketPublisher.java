@@ -34,7 +34,7 @@ import com.serotonin.m2m2.web.taglib.Functions;
  */
 public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implements DataPointListener{
 	
-	Log LOG = LogFactory.getLog(PointValueWebSocketPublisher.class);
+	private static final Log LOG = LogFactory.getLog(PointValueWebSocketPublisher.class);
 
 	private WebSocketSession session;
 	private DataPointVO vo;

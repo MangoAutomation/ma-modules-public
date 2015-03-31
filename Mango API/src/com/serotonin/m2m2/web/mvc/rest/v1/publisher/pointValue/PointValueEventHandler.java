@@ -33,9 +33,10 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  * 
  */
 public class PointValueEventHandler extends MangoWebSocketHandler {
-	Log LOG = LogFactory.getLog(PointValueEventHandler.class);
+	
+	private static final Log LOG = LogFactory.getLog(PointValueEventHandler.class);
 
-	Map<Integer, PointValueWebSocketPublisher> map = new HashMap<Integer, PointValueWebSocketPublisher>();
+	private final Map<Integer, PointValueWebSocketPublisher> map = new HashMap<Integer, PointValueWebSocketPublisher>();
 
 
 	

@@ -14,7 +14,10 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 public abstract class MangoWebSocketHandler extends MangoWebSocketPublisher{
-	
+
+	public MangoWebSocketHandler(){
+		super();
+	}
 
 	public MangoWebSocketHandler(ObjectMapper jacksonMapper){
 		super(jacksonMapper);

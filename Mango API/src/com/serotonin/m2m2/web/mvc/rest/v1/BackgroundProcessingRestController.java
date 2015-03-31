@@ -35,14 +35,14 @@ import com.wordnik.swagger.annotations.ApiParam;
  */
 @Api(value="Background Processing", description="Operations on Background Processing")
 @RestController
-@RequestMapping("/v1/backgroundProcessing")
+@RequestMapping("/v1/background-processing")
 public class BackgroundProcessingRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(BackgroundProcessingRestController.class);
 
 	
 	@ApiOperation(value = "Get the Medium Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/mediumPriorityThreadPoolSettings")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/medium-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getMediumPriorityThreadPoolSettings( HttpServletRequest request) {
 		
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
@@ -73,7 +73,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			value = "Update medium priority queue settings",
 			notes = "If you do not provide the mute parameter the current setting will be toggled"
 	)
-	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/mediumPriorityThreadPoolSettings")
+	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/medium-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getMediumPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)
@@ -127,7 +127,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Get the Low Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/lowPriorityThreadPoolSettings")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/low-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getLowPriorityThreadPoolSettings( HttpServletRequest request) {
 		
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
@@ -158,7 +158,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			value = "Update low priority service settings",
 			notes = "Only corePoolSize and maximumPoolSize are used"
 	)
-	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/lowPriorityThreadPoolSettings")
+	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/low-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getLowPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)

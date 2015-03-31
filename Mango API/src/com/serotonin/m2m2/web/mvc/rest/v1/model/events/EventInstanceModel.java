@@ -25,16 +25,16 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
  * @author Terry Packer
  *
  */
-public class EventModel  extends AbstractRestModel<EventInstanceVO>{
+public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 
 	/**
 	 * @param data
 	 */
-	public EventModel(EventInstanceVO data) {
+	public EventInstanceModel(EventInstanceVO data) {
 		super(data);
 	}
 
-	public EventModel(){
+	public EventInstanceModel(){
 		super(new EventInstanceVO());
 	}
 	

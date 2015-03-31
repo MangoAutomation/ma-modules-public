@@ -66,7 +66,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api(value="Point Values", description="Operations on Point Values")
 @RestController
-@RequestMapping("/v1/pointValues")
+@RequestMapping("/v1/point-values")
 public class PointValueRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(PointValueRestController.class);
@@ -174,7 +174,7 @@ public class PointValueRestController extends MangoRestController{
 	    @ApiResponse(code = 200, message = "Query Successful", response=PointValueTimeModel.class),
 	    @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
 	})
-	@RequestMapping(method = RequestMethod.GET, value="/{xid}/firstLast", produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.GET, value="/{xid}/first-last", produces={"application/json", "text/csv"})
 	public ResponseEntity<List<PointValueTimeModel>> firstAndLastPointValues(
 	        HttpServletRequest request,
 

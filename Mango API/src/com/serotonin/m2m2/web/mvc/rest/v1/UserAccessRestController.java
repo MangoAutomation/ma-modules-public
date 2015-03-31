@@ -45,7 +45,7 @@ public class UserAccessRestController extends MangoRestController{
 
 	
 	@ApiOperation(value = "Get Data Point Access List", notes = "Returns a list of users and thier access")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/dataPoint/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/data-point/{xid}")
     public ResponseEntity<List<UserAccessModel>> getDataPointAccess(
     		@ApiParam(value = "Valid data point xid", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -73,7 +73,7 @@ public class UserAccessRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Get Data Source Access List", notes = "Returns a list of users and thier access")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/dataSource/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/data-source/{xid}")
     public ResponseEntity<List<UserAccessModel>> getDataSourceAccess(
     		@ApiParam(value = "Valid data point xid", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {

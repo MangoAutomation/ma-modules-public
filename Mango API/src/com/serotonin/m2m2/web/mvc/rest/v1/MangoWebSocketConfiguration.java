@@ -17,6 +17,7 @@ import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 import org.springframework.web.socket.server.jetty.JettyRequestUpgradeStrategy;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.events.EventEventHandler;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue.PointValueEventHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandshakeInterceptor;
 
@@ -35,16 +36,25 @@ public class MangoWebSocketConfiguration implements WebSocketConfigurer{
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 
-		registry.addHandler(pointValueEventHandler(), "/v1/websocket/pointValue")
+		registry.addHandler(pointValueEventHandler(), "/v1/websocket/point-value")
 		.setHandshakeHandler(handshakeHandler())
 		.addInterceptors(new MangoWebSocketHandshakeInterceptor()
 		);
+		
+		registry.addHandler(mangoEventHandler(), "/v1/websocket/events")
+		.setHandshakeHandler(handshakeHandler())
+		.addInterceptors(new MangoWebSocketHandshakeInterceptor()
+		);		
 	}
 	
 	@Bean
 	public WebSocketHandler pointValueEventHandler(){
-		//return new PointValueEventHandler(MangoRestSpringConfiguration.objectMapper);
 		return new PerConnectionWebSocketHandler(PointValueEventHandler.class);
+	}
+	
+	@Bean
+	public WebSocketHandler mangoEventHandler(){
+		return new PerConnectionWebSocketHandler(EventEventHandler.class);
 	}
 
 	@Bean

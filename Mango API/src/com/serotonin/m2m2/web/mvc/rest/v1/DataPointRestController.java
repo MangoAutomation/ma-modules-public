@@ -54,7 +54,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api(value="Data Points", description="Operations on Data points", position=1)
 @RestController(value="DataPointRestControllerV1")
-@RequestMapping("/v1/dataPoints")
+@RequestMapping("/v1/data-points")
 public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel>{
 
 	private static Log LOG = LogFactory.getLog(DataPointRestController.class);
@@ -73,7 +73,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	@ApiResponse(code = 200, message = "Ok"),
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
     public ResponseEntity<List<DataPointModel>> getAllDataPoints(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
 
@@ -149,7 +149,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get existing data point",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/byId/{id}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/by-id/{id}")
     public ResponseEntity<DataPointModel> getDataPointById(
     		@ApiParam(value = "Valid Data Point ID", required = true, allowMultiple = false)
     		@PathVariable int id, HttpServletRequest request) {
@@ -271,7 +271,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        }
 	        
 	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/dataPoints/{xid}").buildAndExpand(xid).toUri();
+	    	URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(xid).toUri();
 	    	
 	    	result.addRestMessage(getResourceUpdatedMessage(location));
 	        return result.createResponseEntity(model);
@@ -420,7 +420,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get all data points for data source",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/dataSource/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/data-source/{xid}")
     public ResponseEntity<List<DataPointModel>> getDataPointsForDataSource(
     		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -503,7 +503,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			@ApiResponse(code = 200, message = "Ok", response=DataPointModel.class),
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(
     		   		   		
     		HttpServletRequest request) {

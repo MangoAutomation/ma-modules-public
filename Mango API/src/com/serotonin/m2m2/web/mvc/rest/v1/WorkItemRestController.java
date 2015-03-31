@@ -33,7 +33,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  */
 @Api(value="Work Items", description="Operations on Work Items")
 @RestController
-@RequestMapping("/v1/workItems")
+@RequestMapping("/v1/work-items")
 public class WorkItemRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(WorkItemRestController.class);
@@ -73,7 +73,7 @@ public class WorkItemRestController extends MangoRestController{
     }
 	
 	@ApiOperation(value = "Get list of work items by classname", notes = "Returns the Work Item specified by the given classname and priority")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/{priority}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-priority/{priority}")
     public ResponseEntity<List<WorkItemModel>> getUser(
     		@ApiParam(value = "priority", required = true, allowMultiple = false)
     		@PathVariable String priority,

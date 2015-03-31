@@ -12,11 +12,14 @@ import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel;
 
 /**
+ * This class should really JSON ignore xid and name properties
+ * 
  * @author Terry Packer
  *
  */
 public class UserCommentModel extends AbstractVoModel<UserCommentVO>{
 
+	
 	/**
 	 * @param data
 	 */

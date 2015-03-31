@@ -75,7 +75,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	
 	
 	
-	@RequestMapping(method = RequestMethod.GET, value = "/byXid/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-xid/{xid}")
     public ResponseEntity<RealTimeModel> get(@PathVariable String xid, HttpServletRequest request) {
 		
 		RestProcessResult<RealTimeModel> result = new RestProcessResult<RealTimeModel>(HttpStatus.OK);

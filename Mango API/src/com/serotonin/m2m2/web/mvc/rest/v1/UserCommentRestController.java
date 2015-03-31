@@ -63,7 +63,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			@ApiResponse(code = 200, message = "Ok", response=UserCommentModel.class),
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
     public ResponseEntity<QueryStream<UserCommentVO, UserCommentModel>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
@@ -116,7 +116,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			@ApiResponse(code = 200, message = "Ok", response=UserCommentModel.class),
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/queryRQL")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<QueryDataPageStream<UserCommentVO>> queryRQL(
     		   		   		
     		HttpServletRequest request) {

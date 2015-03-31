@@ -40,7 +40,7 @@ import com.wordnik.swagger.annotations.Api;
  */
 @Api(value="Data Sources", description="Operations on Data Sources", position=2)
 @RestController
-@RequestMapping("/v1/dataSources")
+@RequestMapping("/v1/data-sources")
 public class DataSourceRestController extends MangoRestController{
 
 	public DataSourceRestController(){
@@ -48,7 +48,7 @@ public class DataSourceRestController extends MangoRestController{
 	}
 	private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
 	
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<AbstractDataSourceModel<?>> getAllDataSources() {
@@ -130,7 +130,7 @@ public class DataSourceRestController extends MangoRestController{
 	        }
 	        
 	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/dataSources/{xid}").buildAndExpand(xid).toUri();
+	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(xid).toUri();
 	    	result.addRestMessage(getResourceCreatedMessage(location));
 	        return result.createResponseEntity(model);
         }

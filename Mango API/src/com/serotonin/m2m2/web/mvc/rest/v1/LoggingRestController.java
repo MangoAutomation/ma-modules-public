@@ -63,7 +63,7 @@ public class LoggingRestController extends MangoRestController{
 			notes = "Returns a list of recent logs, when adding a file extension end the URL with a slash. i.e. queryRQL/ma.log/?limit(10)\n" + 
 					"Query parameters: \n" + 
 					"")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/queryRQL/{filename}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-filename/{filename}")
     public ResponseEntity<LogQueryArrayStream> getAll(
     		@PathVariable String filename, 
     		HttpServletRequest request) {

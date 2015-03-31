@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
 
 /**
  * @author Terry Packer
@@ -21,7 +22,12 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  */
 public abstract class MangoWebSocketPublisher extends TextWebSocketHandler {
 
+
 	protected ObjectMapper jacksonMapper;
+	
+	public MangoWebSocketPublisher(){
+		this.jacksonMapper = MangoRestSpringConfiguration.objectMapper;
+	}
 	
 	public MangoWebSocketPublisher(ObjectMapper jacksonMapper){
 		this.jacksonMapper = jacksonMapper;

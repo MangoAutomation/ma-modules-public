@@ -49,7 +49,7 @@ public class UserRestController extends MangoRestController{
 	}
 
 	@ApiOperation(value = "Get all users", notes = "Returns a list of all users")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value="list")
     public ResponseEntity<List<UserModel>> getAll(HttpServletRequest request) {
 		RestProcessResult<List<UserModel>> result = new RestProcessResult<List<UserModel>>(HttpStatus.OK);
     	
