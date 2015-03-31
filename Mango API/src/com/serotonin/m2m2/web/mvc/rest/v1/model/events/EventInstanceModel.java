@@ -156,4 +156,13 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 			comments.add(model.getDataAsComment());
 		}
 	}
+	
+	@JsonGetter
+	public EventType getEventType(){
+		return this.data.getEventType();
+	}
+	@JsonSetter
+	public void SetEventType(EventType eventType){
+		this.data.setEventType(eventType);
+	}
 }
