@@ -52,6 +52,8 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 			this.jgen.writeFieldName("last");
 			this.writeNonNull(this.statistics.getLastValue(), this.statistics.getLastTime());
 
+			this.jgen.writeNumberField("count", this.statistics.getCount());
+			
 			this.jgen.writeFieldName("startsAndRuntimes");
 			this.jgen.writeStartArray();
 			for(StartsAndRuntime stat : this.statistics.getData()){
@@ -70,7 +72,6 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 				this.jgen.writeNumberField("runtime", stat.getRuntime());
 				this.jgen.writeNumberField("proportion", stat.getProportion());
 				this.jgen.writeNumberField("starts", stat.getStarts());
-				
 				
 				this.jgen.writeEndObject();
 			}

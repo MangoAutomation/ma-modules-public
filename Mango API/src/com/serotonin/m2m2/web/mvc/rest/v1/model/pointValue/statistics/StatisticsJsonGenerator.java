@@ -50,5 +50,4 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
     public void done(PointValueTime last) throws IOException{
     	this.generator.done(last);
     }
-    
 }
