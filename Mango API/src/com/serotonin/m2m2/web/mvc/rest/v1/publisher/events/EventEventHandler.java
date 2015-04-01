@@ -19,6 +19,7 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventTypeEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventRegistrationModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
@@ -58,15 +59,17 @@ public class EventEventHandler extends MangoWebSocketHandler {
 				EventWebSocketPublisher pub = map.get(user.getId());
 				if (pub != null) {
 				    List<String> levels = model.getLevels();
-				    if (levels.isEmpty()) {
+				    List<EventEventTypeEnum> events = model.getEventTypes();
+				    if (levels.isEmpty() || events.isEmpty()) {
 				        pub.terminate();
 				        map.remove(user.getId());
 				    }
 				    else {
-                        pub.setLevels(levels);
+                        pub.changeLevels(levels);
+                        pub.changeEvents(events);
 				    }
 				} else {
-					pub = new EventWebSocketPublisher(user, model.getLevels(), session, this.jacksonMapper);
+					pub = new EventWebSocketPublisher(user, model.getLevels(), model.getEventTypes(), session, this.jacksonMapper);
 					pub.initialize();
 					map.put(user.getId(), pub);
 				}

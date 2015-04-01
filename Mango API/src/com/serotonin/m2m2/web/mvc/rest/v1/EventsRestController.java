@@ -21,10 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -185,8 +187,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		User user = this.checkUser(request, result);
         if(result.isOk()){
 
-			
-	        EventInstanceVO existingEvent = EventInstanceDao.instance.get(id);
+        	EventDao dao = new EventDao();
+	        EventInstance existingEvent = dao.get(id);
 	        if (existingEvent == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -199,10 +201,12 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	        }
 
 	        EventInstanceModel model = new EventInstanceModel(existingEvent);
-	        EventDao dao = new EventDao();
+	        
 	        TranslatableMessage tlm = null;
 	        if(message != null)
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
+
+	        Common.eventManager.acknowledgeEvent(existingEvent, System.currentTimeMillis(), user.getId(), tlm);
 	        dao.ackEvent(id, System.currentTimeMillis(), user.getId(), tlm);
 	        
 	        model.setAcknowledged(true);

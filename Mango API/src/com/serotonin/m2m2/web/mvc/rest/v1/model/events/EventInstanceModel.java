@@ -14,6 +14,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.EventInstance.RtnCauses;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.UserComment;
@@ -27,6 +28,40 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
  */
 public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 
+	/***
+	 * Current hack to allow this model to hadle event instances and event instance vos.
+	 * @param evt
+	 */
+	public EventInstanceModel(EventInstance evt){
+		this();
+		this.data.setId(evt.getId());
+		this.data.setEventType(evt.getEventType());
+		this.data.setActiveTimestamp(evt.getActiveTimestamp());
+		this.data.setAcknowledgedByUserId(evt.getAcknowledgedByUserId());
+		this.data.setAcknowledgedTimestamp(evt.getAcknowledgedTimestamp());
+		this.data.setRtnApplicable(evt.isRtnApplicable());
+		this.data.setRtnTimestamp(evt.getRtnTimestamp());
+		this.data.setRtnCause(evt.getRtnCause());
+		this.data.setAlarmLevel(evt.getAlarmLevel());
+		this.data.setMessage(evt.getMessage());
+		
+		/*TODO When we need them:
+		List<UserComment> eventComments
+		List<EventHandlerRT> handlers
+	    long acknowledgedTimestamp;
+	    int acknowledgedByUserId;
+	    String acknowledgedByUsername;
+	    private TranslatableMessage alternateAckSource;
+	    private boolean hasComments;
+
+	    These fields are used only in the context of access by a particular user, providing state filled in from
+	    the userEvents table.
+	    boolean userNotified;
+	    boolean silenced;
+	    */
+		
+	}
+	
 	/**
 	 * @param data
 	 */
