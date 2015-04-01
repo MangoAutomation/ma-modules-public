@@ -88,7 +88,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/{id}")
-    public ResponseEntity<EventInstanceModel> getDataPoint(
+    public ResponseEntity<EventInstanceModel> getById(
     		@ApiParam(value = "Valid Event ID", required = true, allowMultiple = false)
     		@PathVariable Integer id, HttpServletRequest request) {
 
