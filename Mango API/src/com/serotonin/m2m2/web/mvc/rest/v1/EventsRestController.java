@@ -30,8 +30,9 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.TranslatableMessageModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -176,7 +177,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/acknowledge/{id}")
     public ResponseEntity<EventInstanceModel> acknowledgeEvent(
     		@PathVariable Integer id,
-    		@RequestBody String message, 
+    		@RequestBody(required=false) TranslatableMessageModel message, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
@@ -190,19 +191,27 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
 	        }
+	        
+	        if(existingEvent.isAcknowledged()){
+	        	//TODO should create a message that says Already Acknowleged..
+	        	//result.addRestMessage(get);
+	    		return result.createResponseEntity();
+	        }
 
 	        EventInstanceModel model = new EventInstanceModel(existingEvent);
 	        EventDao dao = new EventDao();
 	        TranslatableMessage tlm = null;
 	        if(message != null)
-	        	tlm = new TranslatableMessage("common.default", message);
+	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 	        dao.ackEvent(id, System.currentTimeMillis(), user.getId(), tlm);
 	        
+	        model.setAcknowledged(true);
 	        
 	        //Put a link to the updated data in the header?
 	    	URI location = builder.path("/v1/events/{id}").buildAndExpand(id).toUri();
 	    	
 	    	result.addRestMessage(getResourceUpdatedMessage(location));
+	    	//TODO Could get the model from the DB and return it...
 	        return result.createResponseEntity(model);
         }
         //Not logged in

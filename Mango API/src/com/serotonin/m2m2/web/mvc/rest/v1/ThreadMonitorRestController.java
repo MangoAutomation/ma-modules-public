@@ -42,11 +42,12 @@ public class ThreadMonitorRestController extends MangoRestController {
 	
 	public ThreadMonitorRestController(){
 		
-		ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );
+		ThreadGroup tg = Thread.currentThread().getThreadGroup();
 	    ThreadGroup ptg;
 	    while ( (ptg = tg.getParent( )) != null )
 	        tg = ptg;
 	    this.root = tg;
+
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)

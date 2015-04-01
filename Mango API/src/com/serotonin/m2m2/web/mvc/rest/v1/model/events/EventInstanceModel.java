@@ -132,7 +132,7 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
         return null;
 	}
 	@JsonSetter
-	public void setAcknowledgedMessage(){ } //NoOp for now
+	public void setAcknowledgedMessage(String message){ } //NoOp for now
 	
 	@JsonGetter
 	public List<UserCommentModel> getComments(){
