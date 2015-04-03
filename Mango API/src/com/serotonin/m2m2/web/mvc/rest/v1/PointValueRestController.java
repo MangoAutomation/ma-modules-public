@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.view.quantize2.TimePeriodBucketCalculator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -327,7 +329,7 @@ public class PointValueRestController extends MangoRestController{
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
 	    			//Are we using rollup
-	    			if(rollup != null){
+	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
 	    				TimePeriod timePeriod = null;
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
@@ -337,6 +339,85 @@ public class PointValueRestController extends MangoRestController{
 	    			}else{
 	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
 		    			return result.createResponseEntity(pvtDatabaseStream);
+	    			}
+	    			
+	    		}else{
+	    	 		result.addRestMessage(getUnauthorizedMessage());
+		    		return result.createResponseEntity();
+		    		}
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+    	}else{
+    		return result.createResponseEntity();
+    	}
+    }
+	
+	@ApiOperation(
+			value = "Count point values in a Time Range",
+			notes = "From time inclusive, To time exclusive",
+			response=PointValueTimeModel.class,
+			responseContainer="List"
+			)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "Count Successful", response=Integer.class),
+		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
+		})
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}/count")
+    public ResponseEntity<Long> count(
+    		HttpServletRequest request, 
+    		
+    		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
+    		@PathVariable String xid,
+    		
+    		@ApiParam(value = "From time", required = false, allowMultiple = false)
+    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		
+    		@ApiParam(value = "To time", required = false, allowMultiple = false)
+			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		
+    		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+			@RequestParam(value="rollup", required=false)
+    		RollupEnum rollup,
+
+    		@ApiParam(value = "Time Period Type", required = false, allowMultiple = false)
+			@RequestParam(value="timePeriodType", required=false)
+    		TimePeriodType timePeriodType,
+    		
+    		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
+			@RequestParam(value="timePeriods", required=false)
+    		Integer timePeriods    		
+    		){
+        
+    	RestProcessResult<Long> result = new RestProcessResult<Long>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    	
+	    	DataPointVO vo = DataPointDao.instance.getByXid(xid);
+	    	if(vo == null){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+
+	    	try{
+	    		if(Permissions.hasDataPointReadPermission(user, vo)){
+	    			//Are we using rollup
+	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
+	    				long count = new Long(0);
+	    				TimePeriodBucketCalculator calc = new TimePeriodBucketCalculator(new DateTime(from), new DateTime(to), TimePeriodType.convertFrom(timePeriodType), timePeriods);
+	    				while(calc.getNextPeriodTo().isBefore(calc.getEndTime())){
+	    					count++;
+	    				}
+	    				return result.createResponseEntity(count);
+	    			}else{
+		    			long count = Common.databaseProxy.newPointValueDao().dateRangeCount(vo.getId(), from.getTime(), to.getTime());
+		    			return result.createResponseEntity(count);
 	    			}
 	    			
 	    		}else{

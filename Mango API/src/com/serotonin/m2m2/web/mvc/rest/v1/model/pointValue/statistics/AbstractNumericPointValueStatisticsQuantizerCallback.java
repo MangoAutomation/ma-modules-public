@@ -47,6 +47,9 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	                case AVERAGE:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getAverage(), statisticsGenerator.getPeriodStartTime());
 	                break;
+	                case DELTA:
+	                	this.writer.writeNonNullDouble(statisticsGenerator.getDelta(), statisticsGenerator.getPeriodStartTime());
+	                break;
 	                case MINIMUM:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getMinimumValue(), statisticsGenerator.getPeriodStartTime());
 	                break;
