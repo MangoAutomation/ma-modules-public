@@ -5,6 +5,6 @@
 -->
 
 <doxManifest>
-  <item id="mangoApiSettings" key="dox.mangoApiSettings" filename="settings.htm">
+  <item id="mangoApiSettings" key="dox.mangoApiSettings" filename="mangoApiSettings.htm">
   </item>
 </doxManifest>
