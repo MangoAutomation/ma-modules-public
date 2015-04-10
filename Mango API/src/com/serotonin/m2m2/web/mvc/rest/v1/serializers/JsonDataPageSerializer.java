@@ -28,9 +28,6 @@ public class JsonDataPageSerializer<T> extends JsonSerializer<QueryDataPageStrea
 		//Write start Result Set
 		//jgen.writeStartArray();
 		jgen.writeStartObject();
-		//Write count via callback
-		jgen.writeFieldName("total");
-		value.streamCount(jgen);
 
 		//Write results start Array Block
 		jgen.writeFieldName("items");
@@ -38,6 +35,9 @@ public class JsonDataPageSerializer<T> extends JsonSerializer<QueryDataPageStrea
 		value.streamData(jgen);
 		jgen.writeEndArray();
 		
+		//Write count via callback (After the main query in case we just wanted to count the values as they come back)
+		jgen.writeFieldName("total");
+		value.streamCount(jgen);		
 		jgen.writeEndObject();
 		
 	}
