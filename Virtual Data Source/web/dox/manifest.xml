@@ -5,11 +5,11 @@
 -->
 
 <doxManifest>
-  <item id="virtual-pp" key="dox.virtualPP" filename="pp.htm">
+  <item id="virtual-pp" key="dox.virtualPP" filename="virtual-pp.htm">
     <relation id="virtual-ds"/>
   </item>
 
-  <item id="virtual-ds" key="dox.virtualDS" filename="ds.htm">
+  <item id="virtual-ds" key="dox.virtualDS" filename="virtual-ds.htm">
     <relation id="virtual-pp"/>
   </item>
 </doxManifest>
