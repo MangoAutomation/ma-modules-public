@@ -60,9 +60,11 @@ public class LoggingRestController extends MangoRestController{
     }
 	
 	@ApiOperation(value = "Query logs", 
-			notes = "Returns a list of recent logs, when adding a file extension end the URL with a slash. i.e. queryRQL/ma.log/?limit(10)\n" + 
-					"Query parameters: \n" + 
-					"")
+			notes = "Returns a list of recent logs, when adding a file extension end the URL with a slash. i.e. /by-filename/ma.log/?limit(10)\n" + 
+					"Query Examples: \n" + 
+					"by-filename/ma.log/?level=gt=DEBUG\n" + 
+					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
+					"by-filename/ma.log/?methodName=setPointValue\n")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-filename/{filename}")
     public ResponseEntity<LogQueryArrayStream> getAll(
     		@PathVariable String filename, 

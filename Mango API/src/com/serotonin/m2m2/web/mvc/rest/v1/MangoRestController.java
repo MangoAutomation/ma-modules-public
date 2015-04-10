@@ -164,7 +164,7 @@ public abstract class MangoRestController{
 					andComparisons.add(comparison);
 				}else if(part.contains("=gt=")){
 					comparisonParts = part.split("=gt=");
-					QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.GREATER_THAN_EQUAL_TO, comparisonParts[1]);
+					QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.GREATER_THAN, comparisonParts[1]);
 					andComparisons.add(comparison);
 				}else if(part.contains("=lte=")){
 					comparisonParts = part.split("=lte=");

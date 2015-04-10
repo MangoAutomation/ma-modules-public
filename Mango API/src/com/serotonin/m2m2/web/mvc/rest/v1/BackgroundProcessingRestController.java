@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,6 +41,92 @@ public class BackgroundProcessingRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(BackgroundProcessingRestController.class);
 
+	@ApiOperation(value = "Get the High Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/high-priority-thread-pool-settings")
+    public ResponseEntity<ThreadPoolSettingsModel> getHighPriorityThreadPoolSettings( HttpServletRequest request) {
+		
+		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(user.isAdmin()){
+    			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
+    			int corePoolSize = executor.getCorePoolSize();
+    			int maximumPoolSize = executor.getMaximumPoolSize();
+    			int activeCount = executor.getActiveCount();
+    			int largestPoolSize = executor.getLargestPoolSize();
+    			
+    			ThreadPoolSettingsModel model = new ThreadPoolSettingsModel(corePoolSize, maximumPoolSize, activeCount, largestPoolSize);
+    			return result.createResponseEntity(model);
+			}else{
+				//Return invalid input message
+				// TODO Create this type of method in the base class
+				result.addRestMessage(this.getInternalServerErrorMessage("Invalid Priority type"));
+				return result.createResponseEntity();
+			}
+		}else{
+			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access high priority thread pool settings.");
+			result.addRestMessage(this.getUnauthorizedMessage());
+			return result.createResponseEntity();
+		}
+ 	}
+	
+	@ApiOperation(
+			value = "Update high priority queue settings",
+			notes = "The high priority settings do no persist beyond restarts yet."
+	)
+	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/high-priority-thread-pool-settings")
+    public ResponseEntity<ThreadPoolSettingsModel> setHighPrioritySettings(
+    		
+    		@ApiParam(value = "Settings", required = true, allowMultiple = false)
+    		@RequestBody
+    		ThreadPoolSettingsModel model,
+    		HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(user.isAdmin()){
+    			//Validate the settings
+    			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
+    			int currentCorePoolSize = executor.getCorePoolSize();
+    			int currentMaxPoolSize = executor.getMaximumPoolSize();
+    			if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
+    	        	result.addRestMessage(this.getValidationFailedError());
+    	        }else{
+    	        	//SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
+	    			if(model.getCorePoolSize() != null){
+	    				executor.setCorePoolSize(model.getCorePoolSize());
+	        			//systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
+	    			}else{
+	    				//Get the info for the user
+	        			int corePoolSize = executor.getCorePoolSize();
+	        			model.setCorePoolSize(corePoolSize);
+	    			}
+	    			if(model.getMaximumPoolSize() != null){
+	    				executor.setMaximumPoolSize(model.getMaximumPoolSize());
+	    				//systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
+	    			}else{
+	    				//Get the info for the user
+	        			int maximumPoolSize = Common.backgroundProcessing.getMediumPriorityServiceMaximumPoolSize();
+	        			model.setMaximumPoolSize(maximumPoolSize);
+	    			}
+	    			//Get the settings for the model
+	    			int activeCount = executor.getActiveCount();
+	    			int largestPoolSize = executor.getLargestPoolSize();
+	    			model.setActiveCount(activeCount);
+	    			model.setLargestPoolSize(largestPoolSize);
+    	        }
+    			
+    			return result.createResponseEntity(model);
+    		}else{
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to set high priority thread pool settings.");
+    			result.addRestMessage(this.getUnauthorizedMessage());
+    			return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
 	
 	@ApiOperation(value = "Get the Medium Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/medium-priority-thread-pool-settings")
@@ -71,10 +158,10 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	
 	@ApiOperation(
 			value = "Update medium priority queue settings",
-			notes = "If you do not provide the mute parameter the current setting will be toggled"
+			notes = "Only corePoolSize and maximumPoolSize are used"
 	)
 	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/medium-priority-thread-pool-settings")
-    public ResponseEntity<ThreadPoolSettingsModel> getMediumPrioritySettings(
+    public ResponseEntity<ThreadPoolSettingsModel> setMediumPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)
     		@RequestBody
@@ -148,7 +235,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 				return result.createResponseEntity();
 			}
 		}else{
-			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access medium priority thread pool settings.");
+			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access low priority thread pool settings.");
 			result.addRestMessage(this.getUnauthorizedMessage());
 			return result.createResponseEntity();
 		}
@@ -159,7 +246,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			notes = "Only corePoolSize and maximumPoolSize are used"
 	)
 	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/low-priority-thread-pool-settings")
-    public ResponseEntity<ThreadPoolSettingsModel> getLowPrioritySettings(
+    public ResponseEntity<ThreadPoolSettingsModel> setLowPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)
     		@RequestBody
@@ -202,7 +289,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			
     			return result.createResponseEntity(model);
     		}else{
-    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to set medium priority thread pool settings.");
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to set low priority thread pool settings.");
     			result.addRestMessage(this.getUnauthorizedMessage());
     			return result.createResponseEntity();
     		}

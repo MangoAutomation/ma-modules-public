@@ -36,6 +36,8 @@ import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.QueryComparison;
@@ -56,8 +58,11 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	private QueryModel query;
 	private JsonGenerator jgen;
 	//Filtering
-	private String className;
-	private String methodName;
+	private QueryComparison classComparison;
+	private QueryComparison methodComparison;
+	private QueryComparison levelComparison;
+	private QueryComparison timeComparison;
+	private long timeValue;
 	
 	public MangoLogFilePatternReceiver(QueryModel query, JsonGenerator jgen){
 
@@ -68,18 +73,16 @@ public class MangoLogFilePatternReceiver extends Receiver{
 		List<QueryComparison> andComparisons = query.getAndComparisons();
 		for(QueryComparison comparison : andComparisons){
 			if(comparison.getAttribute().equals("level")){
-				if(comparison.getComparisonType() == QueryComparison.GREATER_THAN_EQUAL_TO)
-					this.thresholdLevel = Level.toLevel(comparison.getCondition());
-			}
-
-			if(comparison.getAttribute().equals("classname")){
-				if(comparison.getComparisonType() == QueryComparison.EQUAL_TO)
-					this.className = comparison.getCondition();
-			}
-
-			if(comparison.getAttribute().equals("methodName")){
-				if(comparison.getComparisonType() == QueryComparison.EQUAL_TO)
-					this.methodName = comparison.getCondition();
+				this.levelComparison = comparison;
+				this.thresholdLevel = Level.toLevel(comparison.getCondition());
+			}else if(comparison.getAttribute().equals("classname")){
+				this.classComparison = comparison;
+			}else if(comparison.getAttribute().equals("methodName")){
+				this.methodComparison = comparison;
+			}else if(comparison.getAttribute().equals("time")){
+				this.timeComparison = comparison;
+				DateTimeFormatter parser2 = ISODateTimeFormat.dateTime();
+				this.timeValue = parser2.parseMillis(comparison.getCondition());
 			}
 			
 		}
@@ -111,46 +114,103 @@ public class MangoLogFilePatternReceiver extends Receiver{
      */
 	@Override
     public void doPost(final LoggingEvent event) {
-        // if event does not meet threshold, exit now
-        if (!isAsSevereAsThreshold(event.getLevel())) {
-            return;
+
+        if(levelComparison != null){
+        	switch(levelComparison.getComparisonType()){
+        	case QueryComparison.GREATER_THAN:
+        	case QueryComparison.GREATER_THAN_EQUAL_TO:
+        		if(!event.getLevel().isGreaterOrEqual(thresholdLevel))
+        			return;
+        	break;
+        	case QueryComparison.EQUAL_TO:
+        		if(!event.getLevel().equals(thresholdLevel))
+        			return;
+        	break;
+        	case QueryComparison.NOT_EQUAL_TO:
+        		if(event.getLevel().equals(thresholdLevel))
+        			return;
+        	break;
+        	case QueryComparison.LESS_THAN:
+        	case QueryComparison.LESS_THAN_EQUAL_TO:
+        		if(event.getLevel().isGreaterOrEqual(thresholdLevel))
+        			return;
+        	break;
+        	}
         }
         
-        //TODO Could use the filterExpression to filter
-        //ExpressionRule.getRule(filterExpression);
-        //Perform our querying here
-        Date time = new Date(event.getTimeStamp());
-        
-        //TODO Filter on time here
-        
-        //TODO Filter on Level here
+        if(timeComparison != null){
+        	switch(timeComparison.getComparisonType()){
+        	case QueryComparison.GREATER_THAN:
+        		if(event.getTimeStamp() <= timeValue)
+        			return;
+        	break;
+        	case QueryComparison.GREATER_THAN_EQUAL_TO:
+        		if(event.getTimeStamp() < timeValue)
+        			return;
+        	break;
+        	case QueryComparison.EQUAL_TO:
+        		if(event.getTimeStamp() != timeValue)
+        			return;
+        	break;
+        	case QueryComparison.NOT_EQUAL_TO:
+        		if(event.getTimeStamp() == timeValue)
+        			return;
+        	break;
+        	case QueryComparison.LESS_THAN:
+        		if(event.getTimeStamp() >= timeValue)
+        			return;
+        	break;
+        	case QueryComparison.LESS_THAN_EQUAL_TO:
+        		if(event.getTimeStamp() > timeValue)
+        			return;
+        	break;
+        	}
+        }
         
         String classname = null;
         String method = null;
         Integer lineNumber = null;
         	
         if(event.getLocationInformation() != null){
-        	
+            method = event.getLocationInformation().getMethodName();
         	classname = event.getLocationInformation().getClassName();
-        	if((this.className != null) && (!this.className.equals(classname)))
-        		return;
-        	
-        	method = event.getLocationInformation().getMethodName();
-        	if((this.methodName != null) && (!this.methodName.equals(method)))
-        		return;
-        	
         	lineNumber = Integer.parseInt(event.getLocationInformation().getLineNumber());
+
+            if(classComparison != null){
+            	switch(classComparison.getComparisonType()){
+            	case QueryComparison.EQUAL_TO:
+            		if(!classname.equals(classComparison.getComparison()))
+            			return;
+            	break;
+            	case QueryComparison.NOT_EQUAL_TO:
+            		if(classname.equals(classComparison.getComparison()))
+            			return;
+            	break;
+            	}
+            }
+
+            if(methodComparison != null){
+            	switch(methodComparison.getComparisonType()){
+            	case QueryComparison.EQUAL_TO:
+            		if(!method.equals(methodComparison.getComparison()))
+            			return;
+            	break;
+            	case QueryComparison.NOT_EQUAL_TO:
+            		if(method.equals(methodComparison.getComparison()))
+            			return;
+            	break;
+            	}
+            }
+
         }
+        	
 
         //TODO Filter on Message Here need to implement 'contains' in RQL first
         
         String[] stackTrace = event.getThrowableStrRep();
-//        for(String s : st)      
-        //TODO Filter on stack trace here
+       //TODO Filter on stack trace here
         
-        
-
-        
+        Date time = new Date(event.getTimeStamp());
 		try {
 			jgen.writeObject(new LogMessageModel(
 					event.getLevel().toString(),
