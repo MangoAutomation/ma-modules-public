@@ -9,7 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -42,6 +41,10 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         int MONITOR_DB_ACTIVE_CONNECTIONS = 8;
         int MONITOR_DB_IDLE_CONNECTIONS = 9;
         int BATCH_WRITE_SPEED_MONITOR = 10;
+        int JAVA_FREE_MEMORY = 11;
+        int JAVA_HEAP_MEMORY = 12;
+        int JAVA_MAX_MEMORY = 13;
+        int JAVA_PROCESSORS = 14;
     }
 
     // Values in this array correspond to the attribute ids above.
@@ -56,6 +59,10 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbActiveConnections", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbIdleConnections", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.BATCH_WRITE_SPEED_MONITOR", //
+            "java.lang.Runtime.freeMemory",
+            "java.lang.Runtime.totalMemory",
+            "java.lang.Runtime.maxMemory",
+            "java.lang.Runtime.availableProcessors"
     };
 
     public static ExportCodes ATTRIBUTE_CODES = new ExportCodes();
@@ -76,6 +83,14 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
                 "internal.monitor.DB_IDLE_CONNECTIONS");
         ATTRIBUTE_CODES.addElement(Attributes.BATCH_WRITE_SPEED_MONITOR, "BATCH_WRITE_SPEED_MONITOR",
                 "internal.monitor.BATCH_WRITE_SPEED_MONITOR");
+        ATTRIBUTE_CODES.addElement(Attributes.JAVA_FREE_MEMORY, "JAVA_FREE_MEMORY",
+                "java.monitor.JAVA_FREE_MEMORY");
+        ATTRIBUTE_CODES.addElement(Attributes.JAVA_HEAP_MEMORY, "JAVA_HEAP_MEMORY",
+                "java.monitor.JAVA_HEAP_MEMORY");
+        ATTRIBUTE_CODES.addElement(Attributes.JAVA_MAX_MEMORY, "JAVA_MAX_MEMORY",
+                "java.monitor.JAVA_MAX_MEMORY");
+        ATTRIBUTE_CODES.addElement(Attributes.JAVA_PROCESSORS, "JAVA_PROCESSORS",
+                "java.monitor.JAVA_PROCESSORS");        
         
     };
 

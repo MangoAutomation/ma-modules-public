@@ -32,4 +32,5 @@ public class InternalDataSourceDefinition extends DataSourceDefinition {
     public Class<?> getDwrClass() {
         return InternalEditDwr.class;
     }
+    
 }
