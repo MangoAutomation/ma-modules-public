@@ -759,6 +759,17 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 								"previousPeriodType", text,
 								Common.TIME_PERIOD_CODES.getCodeList());
 					previousPeriodCount = jsonObject.getInt("previousPeriods");
+				}else{
+					//FOR legacy bug where previousPeriodType was misspelled
+					text = jsonObject.getString("perviousPeriodType");
+					if(text != null){
+						previousPeriodType = Common.TIME_PERIOD_CODES.getId(text);
+						if(previousPeriodType == -1)
+							throw new TranslatableJsonException("emport.error.invalid",
+									"previousPeriodType", text,
+									Common.TIME_PERIOD_CODES.getCodeList());
+						previousPeriodCount = jsonObject.getInt("previousPeriods");
+					}
 				}
 			}else if(relativeDateType == RELATIVE_DATE_TYPE_PREVIOUS){
 				text = jsonObject.getString("pastPeriodType");
@@ -868,7 +879,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 		if(dateRangeType == DATE_RANGE_TYPE_RELATIVE){
 			writer.writeEntry("relativeDateType", DATE_RELATIVE_TYPES.getCode(relativeDateType));
 			if(relativeDateType == RELATIVE_DATE_TYPE_PREVIOUS){
-				writer.writeEntry("perviousPeriodType", Common.TIME_PERIOD_CODES.getCode(previousPeriodType));
+				writer.writeEntry("previousPeriodType", Common.TIME_PERIOD_CODES.getCode(previousPeriodType));
 				writer.writeEntry("previousPeriods", previousPeriodCount);
 			}else if(relativeDateType == RELATIVE_DATE_TYPE_PAST){
 				writer.writeEntry("pastPeriodType", Common.TIME_PERIOD_CODES.getCode(pastPeriodType));
