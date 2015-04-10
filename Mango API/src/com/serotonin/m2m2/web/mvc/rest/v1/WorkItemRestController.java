@@ -74,7 +74,7 @@ public class WorkItemRestController extends MangoRestController{
 	
 	@ApiOperation(value = "Get list of work items by classname", notes = "Returns the Work Item specified by the given classname and priority")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-priority/{priority}")
-    public ResponseEntity<List<WorkItemModel>> getUser(
+    public ResponseEntity<List<WorkItemModel>> getWorkItemsByPriority(
     		@ApiParam(value = "priority", required = true, allowMultiple = false)
     		@PathVariable String priority,
     		@RequestParam(value = "classname", required = false, defaultValue="") String classname,
@@ -86,17 +86,17 @@ public class WorkItemRestController extends MangoRestController{
     		if(user.isAdmin()){
     			List<WorkItemModel> modelList = new ArrayList<WorkItemModel>();
     			List<WorkItemModel> list;
-    			if(priority == "HIGH"){
+    			if(priority.equalsIgnoreCase("HIGH")){
     				list = Common.backgroundProcessing.getHighPriorityServiceItems();
 
-    			}else if(priority == "MEDIUM"){
+    			}else if(priority.equalsIgnoreCase("MEDIUM")){
     				list = Common.backgroundProcessing.getMediumPriorityServiceQueueItems();
     				for(WorkItemModel model : list){
     					if(model.getClassname().equalsIgnoreCase(classname)){
     						modelList.add(model);
     					}
     				}
-    			}else if(priority == "LOW"){
+    			}else if(priority.equalsIgnoreCase("LOW")){
     				list = Common.backgroundProcessing.getLowPriorityServiceQueueItems();
     				for(WorkItemModel model : list){
     					if(model.getClassname().equalsIgnoreCase(classname)){

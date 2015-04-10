@@ -72,7 +72,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	
 	@ApiOperation(
 			value = "Update high priority queue settings",
-			notes = "The high priority settings do no persist beyond restarts yet."
+			notes = ""
 	)
 	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/high-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> setHighPrioritySettings(
@@ -93,10 +93,10 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	//SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
+    	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
 	    			if(model.getCorePoolSize() != null){
 	    				executor.setCorePoolSize(model.getCorePoolSize());
-	        			//systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
+	        			systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int corePoolSize = executor.getCorePoolSize();
@@ -104,7 +104,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	    			}
 	    			if(model.getMaximumPoolSize() != null){
 	    				executor.setMaximumPoolSize(model.getMaximumPoolSize());
-	    				//systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
+	    				systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int maximumPoolSize = Common.backgroundProcessing.getMediumPriorityServiceMaximumPoolSize();
