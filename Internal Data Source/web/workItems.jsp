@@ -11,6 +11,7 @@
     
     function getWorkItems() {
         ThreadsDwr.getWorkItems(function(result) {
+        	draw(result.data.highClassCounts, "highList");
             draw(result.data.medClassCounts, "medList");
             draw(result.data.lowClassCounts, "lowList");
             //setTimeout(getStatusVars, 2000);
@@ -59,7 +60,19 @@
     <fmt:message key="internal.workItems"/>
   </div>
   <br/>
-  
+
+  <div>
+    <span class="copyTitle"><fmt:message key="internal.workItems.high"/></span>
+    <table>
+      <thead>
+        <tr class="rowHeader">
+          <td><fmt:message key="internal.workItems.class"/></td>
+          <td><fmt:message key="internal.workItems.count"/></td>
+        </tr>
+      </thead>
+      <tbody id="highList"></tbody>
+    </table>
+  </div>  
   <div>
     <span class="copyTitle"><fmt:message key="internal.workItems.med"/></span>
     <table>

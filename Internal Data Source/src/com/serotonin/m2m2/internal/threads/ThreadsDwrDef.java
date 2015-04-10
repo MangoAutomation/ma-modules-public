@@ -95,6 +95,7 @@ public class ThreadsDwrDef extends DwrDefinition {
         public ProcessResult getWorkItems() {
             ProcessResult result = new ProcessResult();
 
+            result.addData("highClassCounts", Common.backgroundProcessing.getHighPriorityServiceQueueClassCounts());
             result.addData("medClassCounts", Common.backgroundProcessing.getMediumPriorityServiceQueueClassCounts());
             result.addData("lowClassCounts", Common.backgroundProcessing.getLowPriorityServiceQueueClassCounts());
 
