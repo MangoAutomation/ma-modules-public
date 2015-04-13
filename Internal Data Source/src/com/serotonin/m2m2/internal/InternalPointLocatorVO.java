@@ -114,7 +114,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     }
 
     @Override
-    public int getDataType() {
+    public int getDataTypeId() {
         return DataTypes.NUMERIC;
     }
 

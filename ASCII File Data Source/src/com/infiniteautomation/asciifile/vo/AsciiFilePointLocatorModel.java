@@ -81,7 +81,7 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 	@JsonGetter("dataType")
 	@CSVColumnGetter(order=14, header="dataType")
 	public String getDataType() {
-	    return DataTypes.CODES.getCode(this.data.getDataType());
+	    return DataTypes.CODES.getCode(this.data.getDataTypeId());
 	}
 
 	@JsonSetter("dataType")

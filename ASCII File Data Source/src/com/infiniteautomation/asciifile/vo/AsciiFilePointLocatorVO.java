@@ -124,7 +124,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 	}
 	
 	@Override
-	public int getDataType() {
+	public int getDataTypeId() {
 		return dataType;
 	}
 
