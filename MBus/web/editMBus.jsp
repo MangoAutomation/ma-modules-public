@@ -396,13 +396,13 @@
     </tr>
     <tr>
       <td colspan="2">
-        <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="SERIAL_DIRECT" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
+        <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="<fmt:message key='dsEdit.mbus.serialDirect'/>" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
         <label class="formLabelRequired" for="useDirectConnection"><fmt:message key="dsEdit.mbus.useDirectConnection"/></label>
       </td>
     </tr>
     <tr>
       <td colspan="2">
-        <input type="radio" name="useModemOrDirectConnection" id="useModemConnection" value="SERIAL_AT_MODEM" <c:if test="${dataSource.serialAtModem}"> checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
+        <input type="radio" name="useModemOrDirectConnection" id="useModemConnection" value="<fmt:message key='dsEdit.mbus.serialAtModem'/>" <c:if test="${dataSource.serialAtModem}"> checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
         <label class="formLabelRequired" for="useModemConnection"><fmt:message key="dsEdit.mbus.useModemConnection"/></label>
       </td>
     </tr>

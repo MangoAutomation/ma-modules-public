@@ -75,7 +75,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     private String addressing;
 
     @Override
-    public int getDataTypeId() {
+    public int getDataType() {
         switch (DataFieldCode.fromLabel(difCode)) {
         case _12_DIGIT_BCD:
         case _16_BIT_INTEGER:
@@ -642,6 +642,6 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
 	@Override
 	public PointLocatorModel<?> asModel() {
 		//TODO Implement when we have a Model
-		throw new ShouldNeverHappenException("Unimplimented!");
+		return new MBusPointLocatorModel(this);
 	}
 }

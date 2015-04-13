@@ -31,7 +31,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
         MBusDataSourceVO ds = (MBusDataSourceVO) Common.getUser().getEditDataSource();
 
         setBasicProps(ds, basic);
-        ds.setConnectionType(MBusConnectionType.valueOf(connectionType));
+        ds.setConnectionType(MBusDataSourceVO.CONNECTION_TYPE_CODES.getId(connectionType));
         ds.setPhonenumber(phonenumber);
         ds.setCommPortId(commPortId);
         ds.setBaudRate(baudRate);

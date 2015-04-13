@@ -7,6 +7,7 @@ package com.serotonin.m2m2.mbus;
 /**
  * @author aploese
  */
-public enum MBusConnectionType {
-    SERIAL_DIRECT, SERIAL_AT_MODEM;
+public interface MBusConnectionType {
+    public static int SERIAL_DIRECT = 1;
+    public static int SERIAL_AT_MODEM = 2;
 }
