@@ -20,7 +20,7 @@ public class AsciiFilePointLocatorModelDefinition extends ModelDefinition{
 	@Override
 	public String getModelKey() {
 		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	/* (non-Javadoc)

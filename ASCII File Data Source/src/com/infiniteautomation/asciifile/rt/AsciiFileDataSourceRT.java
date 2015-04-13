@@ -201,7 +201,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 								}
 								
 								//Switch on the type
-								switch(plVo.getDataTypeId()){
+								switch(plVo.getDataType()){
 								case DataTypes.ALPHANUMERIC:
 									newValue = new PointValueTime(value, dt.getTime());
 									break;

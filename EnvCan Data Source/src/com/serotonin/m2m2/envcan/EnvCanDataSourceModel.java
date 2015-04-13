@@ -4,7 +4,8 @@
  */
 package com.serotonin.m2m2.envcan;
 
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
@@ -13,18 +14,19 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
  */
 public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSourceVO>{
 
+	private EnvCanDataSourceVO data;
+	
 	public EnvCanDataSourceModel() {
 		super(new EnvCanDataSourceVO());
 	}
-
 	
 	/**
 	 * @param data
 	 */
-	public EnvCanDataSourceModel(DataSourceVO<EnvCanDataSourceVO> data) {
+	public EnvCanDataSourceModel(EnvCanDataSourceVO data) {
 		super(data);
+		this.data = data;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
@@ -34,6 +36,18 @@ public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSou
 		// TODO Implement when we have a model, should be the TYPE_NAME in the Model Definition
 		return null;
 	}
+	
+	@JsonGetter("stationId")
+	public int getStationId() {
+	    return this.data.getStationId();
+	}
+
+	@JsonSetter("stationId")
+	public void setStationId(int stationId) {
+	    this.data.setStationId(stationId);
+	}
+
+
 
 	
 }

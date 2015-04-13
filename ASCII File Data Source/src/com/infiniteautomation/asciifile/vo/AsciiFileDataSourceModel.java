@@ -4,8 +4,11 @@
  */
 package com.infiniteautomation.asciifile.vo;
 
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 /**
  * @author Terry Packer
@@ -13,6 +16,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
  */
 public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileDataSourceVO>{
 
+	private AsciiFileDataSourceVO data;
+	private final static String ASCII_DS_MODEL_TYPE = "DS.ASCII_FILE";
+	
 	public AsciiFileDataSourceModel() {
 		super(new AsciiFileDataSourceVO());
 	}
@@ -20,8 +26,9 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 	/**
 	 * @param data
 	 */
-	public AsciiFileDataSourceModel(DataSourceVO<AsciiFileDataSourceVO> data) {
+	public AsciiFileDataSourceModel(AsciiFileDataSourceVO data) {
 		super(data);
+		this.data = data;
 	}
 
 	/* (non-Javadoc)
@@ -29,8 +36,31 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 	 */
 	@Override
 	public String getModelType() {
-		//TODO Implement when we have a Data Source Model
-		return null;
+		return ASCII_DS_MODEL_TYPE;
 	}
+	
+	@JsonGetter(value="pollPeriod")
+	public TimePeriod getPollPeriod(){
+	    return new TimePeriod(this.data.getUpdatePeriods(), 
+	            TimePeriodType.convertTo(this.data.getUpdatePeriodType()));
+	}
+
+	@JsonSetter(value="pollPeriod")
+	public void setPollPeriod(TimePeriod pollPeriod){
+	    this.data.setUpdatePeriods(pollPeriod.getPeriods());
+	    this.data.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
+	}
+
+	@JsonGetter("filePath")
+	public String getFilePath() {
+	    return this.data.getFilePath();
+	}
+
+	@JsonSetter("filePath")
+	public void setFilePath(String filePath) {
+	    this.data.setFilePath(filePath);
+	}
+
+
 
 }

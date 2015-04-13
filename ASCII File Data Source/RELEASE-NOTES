@@ -1,3 +1,7 @@
+*Version 1.1.6*
+* Adding model support for Mango API
+* Modifying JSON to user data type names
+
 *Version 1.1.5*
 * Added validation for missing capture groups
 * Added event handling for out of bounds exceptions on matched regex patterns.

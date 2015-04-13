@@ -30,92 +30,102 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 		super(new AsciiFilePointLocatorVO());
 	}
 	
-	@JsonGetter()
+	@JsonGetter("pointIdentifier")
 	@CSVColumnGetter(order=10, header="pointIdentifier")
 	public String getPointIdentifier() {
-		return this.data.getPointIdentifier();
-	}
-	@CSVColumnSetter(order=10, header="pointIdentifier")
-	@JsonSetter()
-	public void setPointIdentifier(String pointIdentifier) {
-		this.data.setPointIdentifier(pointIdentifier);
+	    return this.data.getPointIdentifier();
 	}
 
+	@JsonSetter("pointIdentifier")
+	@CSVColumnSetter(order=10, header="pointIdentifier")
+	public void setPointIdentifier(String pointIdentifier) {
+	    this.data.setPointIdentifier(pointIdentifier);
+	}
+
+	@JsonGetter("valueRegex")
 	@CSVColumnGetter(order=11, header="valueRegex")
-	@JsonGetter()
 	public String getValueRegex() {
-		return this.data.getValueRegex();
+	    return this.data.getValueRegex();
 	}
+
+	@JsonSetter("valueRegex")
 	@CSVColumnSetter(order=11, header="valueRegex")
-	@JsonSetter()
 	public void setValueRegex(String valueRegex) {
-		this.data.setValueRegex(valueRegex);
+	    this.data.setValueRegex(valueRegex);
 	}
-	
+
+	@JsonGetter("pointIdentifierIndex")
 	@CSVColumnGetter(order=12, header="pointIdentifierIndex")
-	@JsonGetter()
 	public int getPointIdentifierIndex() {
-		return this.data.getPointIdentifierIndex();
+	    return this.data.getPointIdentifierIndex();
 	}
+
+	@JsonSetter("pointIdentifierIndex")
 	@CSVColumnSetter(order=12, header="pointIdentifierIndex")
-	@JsonSetter()
 	public void setPointIdentifierIndex(int pointIdentifierIndex) {
-		this.data.setPointIdentifierIndex(pointIdentifierIndex);
+	    this.data.setPointIdentifierIndex(pointIdentifierIndex);
 	}
-	
+
+	@JsonGetter("valueIndex")
 	@CSVColumnGetter(order=13, header="valueIndex")
-	@JsonGetter()
 	public int getValueIndex() {
-		return this.data.getValueIndex();
+	    return this.data.getValueIndex();
 	}
+
+	@JsonSetter("valueIndex")
 	@CSVColumnSetter(order=13, header="valueIndex")
-	@JsonSetter()
 	public void setValueIndex(int valueIndex) {
-		this.data.setValueIndex(valueIndex);
+	    this.data.setValueIndex(valueIndex);
 	}
-	
+
+	@JsonGetter("dataType")
 	@CSVColumnGetter(order=14, header="dataType")
-	@JsonGetter()
 	public String getDataType() {
-		return DataTypes.CODES.getCode(this.data.getDataTypeId());
+	    return DataTypes.CODES.getCode(this.data.getDataType());
 	}
+
+	@JsonSetter("dataType")
 	@CSVColumnSetter(order=14, header="dataType")
-	@JsonSetter()
 	public void setDataType(String dataType) {
-		this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
+	    this.data.setDataType(DataTypes.CODES.getId(dataType));
 	}
-	
+
+	@JsonGetter("hasTimestamp")
 	@CSVColumnGetter(order=15, header="hasTimestamp")
-	@JsonGetter()
 	public boolean isHasTimestamp() {
-		return this.data.getHasTimestamp();
+	    return this.data.getHasTimestamp();
 	}
+
+	@JsonSetter("hasTimestamp")
 	@CSVColumnSetter(order=15, header="hasTimestamp")
-	@JsonSetter()
 	public void setHasTimestamp(boolean hasTimestamp) {
-		this.data.setHasTimestamp(hasTimestamp);
+	    this.data.setHasTimestamp(hasTimestamp);
 	}
+
+	@JsonGetter("timestampIndex")
 	@CSVColumnGetter(order=16, header="timestampIndex")
-	@JsonGetter()
 	public int getTimestampIndex() {
-		return this.data.getTimestampIndex();
+	    return this.data.getTimestampIndex();
 	}
+
+	@JsonSetter("timestampIndex")
 	@CSVColumnSetter(order=16, header="timestampIndex")
-	@JsonSetter()
 	public void setTimestampIndex(int timestampIndex) {
-		this.data.setTimestampIndex(timestampIndex);
+	    this.data.setTimestampIndex(timestampIndex);
 	}
-	
+
+	@JsonGetter("timestampFormat")
 	@CSVColumnGetter(order=17, header="timestampFormat")
-	@JsonGetter()
 	public String getTimestampFormat() {
-		return this.data.getTimestampFormat();
+	    return this.data.getTimestampFormat();
 	}
+
+	@JsonSetter("timestampFormat")
 	@CSVColumnSetter(order=17, header="timestampFormat")
-	@JsonSetter()
 	public void setTimestampFormat(String timestampFormat) {
-		this.data.setTimestampFormat(timestampFormat);
+	    this.data.setTimestampFormat(timestampFormat);
 	}
+
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel#getTypeName()
 	 */

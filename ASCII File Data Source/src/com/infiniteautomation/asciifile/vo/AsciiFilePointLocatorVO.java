@@ -15,6 +15,7 @@ import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
@@ -62,7 +63,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 		if(valueIndex < 0)
 			response.addContextualMessage("valueIndex","validate.invalidValue");
 		
-		if (!DataTypes.CODES.isValidId(dataTypeId))
+		if (!DataTypes.CODES.isValidId(dataType))
             response.addContextualMessage("dataTypeId", "validate.invalidValue");
 		
 		if(hasTimestamp) {
@@ -82,8 +83,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 	private int pointIdentifierIndex;
 	@JsonProperty
 	private int valueIndex;
-	@JsonProperty
-	private int dataTypeId;
+	private int dataType;
 	@JsonProperty
 	private boolean hasTimestamp;
 	@JsonProperty
@@ -123,12 +123,13 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 		this.valueIndex = valueIndex;
 	}
 	
-	public int getDataTypeId() {
-		return dataTypeId;
+	@Override
+	public int getDataType() {
+		return dataType;
 	}
 
-	public void setDataTypeId(int dataTypeId) {
-		this.dataTypeId = dataTypeId;
+	public void setDataType(int dataType) {
+		this.dataType = dataType;
 	}
 	
 	public boolean getHasTimestamp() {
@@ -161,7 +162,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
         AuditEventType.addPropertyMessage(list, "dsEdit.file.valueRegex", valueRegex);
 		AuditEventType.addPropertyMessage(list, "dsEdit.file.pointIdentifierIndex", pointIdentifierIndex);
         AuditEventType.addPropertyMessage(list, "dsEdit.file.valueIndex", valueIndex);
-        AuditEventType.addDataTypeMessage(list, "dsEdit.pointDataType", dataTypeId);
+        AuditEventType.addDataTypeMessage(list, "dsEdit.pointDataType", dataType);
         AuditEventType.addPropertyMessage(list, "dsEdit.file.hasTimestamp", hasTimestamp);
         AuditEventType.addPropertyMessage(list, "dsEdit.file.timestampIndex", timestampIndex);
         AuditEventType.addPropertyMessage(list, "dsEdit.file.timestampFormat", timestampFormat);
@@ -175,7 +176,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.valueRegex", from.valueRegex, valueRegex);
 		AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.pointIdentifierIndex", from.pointIdentifierIndex, pointIdentifierIndex);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.valueIndex", from.valueIndex, valueIndex);
-        AuditEventType.maybeAddDataTypeChangeMessage(list, "dsEdit.pointDataType", from.dataTypeId, dataTypeId);
+        AuditEventType.maybeAddDataTypeChangeMessage(list, "dsEdit.pointDataType", from.dataType, dataType);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.hasTimestamp", from.hasTimestamp, hasTimestamp);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.timestampIndex", from.timestampIndex, timestampIndex);
         AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.timestampFormat", from.timestampFormat, timestampFormat);
@@ -194,7 +195,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
         SerializationHelper.writeSafeUTF(out, valueRegex);
 		out.writeInt(pointIdentifierIndex);
         out.writeInt(valueIndex);
-        out.writeInt(dataTypeId);
+        out.writeInt(dataType);
         out.writeBoolean(hasTimestamp);
         out.writeInt(timestampIndex);
         SerializationHelper.writeSafeUTF(out, timestampFormat);
@@ -208,7 +209,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
         	valueRegex= SerializationHelper.readSafeUTF(in);
 			pointIdentifierIndex = in.readInt();
         	valueIndex = in.readInt();
-        	dataTypeId = in.readInt();
+        	dataType = in.readInt();
         	hasTimestamp = false;
         	timestampIndex = 0;
         	timestampFormat = "";
@@ -218,7 +219,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
         	valueRegex= SerializationHelper.readSafeUTF(in);
 			pointIdentifierIndex = in.readInt();
         	valueIndex = in.readInt();
-        	dataTypeId = in.readInt();
+        	dataType = in.readInt();
         	hasTimestamp = in.readBoolean();
         	timestampIndex = in.readInt();
         	timestampFormat = SerializationHelper.readSafeUTF(in);
@@ -226,11 +227,16 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
     }
 
 	@Override
-	public void jsonRead(JsonReader arg0, JsonObject arg1) throws JsonException {
+	public void jsonRead(JsonReader reader, JsonObject jo) throws JsonException {
+		if(jo.containsKey("dataType"))
+			dataType = DataTypes.CODES.getId(jo.getString("dataType"));
+		else
+			throw new TranslatableJsonException("emport.error.missing", "dataType");
 	}
 
 	@Override
-	public void jsonWrite(ObjectWriter arg0) throws IOException, JsonException {
+	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
+		writer.writeEntry("dataType", DataTypes.CODES.getCode(dataType));
 	}
 
 	/* (non-Javadoc)
