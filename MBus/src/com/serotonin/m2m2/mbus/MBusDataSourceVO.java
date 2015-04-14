@@ -404,10 +404,10 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     }
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<MBusDataSourceVO> getModel() {
+	public AbstractDataSourceModel<MBusDataSourceVO> asModel() {
 		return new MBusDataSourceModel(this);
 	}
 }

@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import net.sf.mbus4j.MBusAddressing;
-import net.sf.mbus4j.MBusUtils;
 import net.sf.mbus4j.dataframes.MBusMedium;
 import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
@@ -18,7 +17,6 @@ import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;

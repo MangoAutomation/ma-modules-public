@@ -35,8 +35,7 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 	 */
 	@Override
 	public String getModelType() {
-		// TODO Implement when we have a model, should be the TYPE_NAME in the Model Definition
-		return null;
+		return MBusDataSourceDefinition.DATA_SOURCE_TYPE;
 	}
 	
 	@JsonGetter(value="pollPeriod")
