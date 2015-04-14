@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint;
 
 import com.serotonin.m2m2.module.ModelDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 
@@ -49,6 +50,14 @@ public class DataPointModelDefinition extends ModelDefinition{
 	@Override
 	public boolean supportsClass(Class<?> clazz) {
 		return DataPointModel.class.equals(clazz);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.ModelDefinition#getModelClass()
+	 */
+	@Override
+	public Class<? extends AbstractRestModel<?>> getModelClass() {
+		return DataPointModel.class;
 	}
 
 }

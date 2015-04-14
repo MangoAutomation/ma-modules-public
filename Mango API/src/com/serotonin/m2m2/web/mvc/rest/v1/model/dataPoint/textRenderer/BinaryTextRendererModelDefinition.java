@@ -47,4 +47,12 @@ public class BinaryTextRendererModelDefinition extends ModelDefinition{
 		return BinaryTextRendererModel.class.equals(clazz);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.ModelDefinition#getModelClass()
+	 */
+	@Override
+	public Class<? extends AbstractRestModel<?>> getModelClass() {
+		return BinaryTextRendererModel.class;
+	}
+
 }

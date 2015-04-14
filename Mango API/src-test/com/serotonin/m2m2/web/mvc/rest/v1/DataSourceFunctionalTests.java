@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.dataSource.mock.MockDataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.BaseRestTest;
 import com.serotonin.m2m2.web.mvc.rest.test.data.DataSourceTestData;
 import com.serotonin.m2m2.web.mvc.rest.test.data.UserTestData;
@@ -69,7 +70,7 @@ public class DataSourceFunctionalTests extends BaseRestTest{
 			AbstractDataSourceModel model = this.objectMapper.readValue(
 					result.getResponse().getContentAsString(),
 					MockDataSourceModel.class);
-			assertEquals(model.getName(), ds.getModel().getName());
+			assertEquals(model.getName(), ds.asModel().getName());
 			//Check the size
 		}catch(Exception e){
 			fail(e.getMessage());
@@ -93,7 +94,7 @@ public class DataSourceFunctionalTests extends BaseRestTest{
 		
 		
 		try{
-			String userJson = writer.writeValueAsString(new MockDataSourceModel(ds));
+			String userJson = writer.writeValueAsString(new MockDataSourceModel((MockDataSourceVO) ds));
 			this.mockMvc.perform(
 	            post("/v1/dataSources/")
 	            .content(userJson)
@@ -125,7 +126,7 @@ public class DataSourceFunctionalTests extends BaseRestTest{
 		
 		
 		try{
-			String userJson = writer.writeValueAsString(new MockDataSourceModel(ds));
+			String userJson = writer.writeValueAsString(new MockDataSourceModel((MockDataSourceVO) ds));
 			this.mockMvc.perform(
 	            put("/v1/dataSources/" + ds.getXid())
 	            .content(userJson)

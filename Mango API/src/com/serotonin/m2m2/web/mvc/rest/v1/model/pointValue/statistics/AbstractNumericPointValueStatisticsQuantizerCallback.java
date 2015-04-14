@@ -56,6 +56,7 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	                case MAXIMUM:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getMaximumValue(), statisticsGenerator.getPeriodStartTime());
 	                break;
+	                //TODO This should be removed after discussion with Jared
                     case ACCUMULATOR:
                         Double accumulatorValue = statisticsGenerator.getLastValue();
                         if (accumulatorValue == null) {

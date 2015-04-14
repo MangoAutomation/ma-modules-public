@@ -48,4 +48,12 @@ public class UserModelDefinition extends ModelDefinition{
 		return UserModel.class.equals(clazz);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.ModelDefinition#getModelClass()
+	 */
+	@Override
+	public Class<? extends AbstractRestModel<?>> getModelClass() {
+		return UserModel.class;
+	}
+
 }

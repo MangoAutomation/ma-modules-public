@@ -57,7 +57,7 @@ public class DataSourceRestController extends MangoRestController{
         List<DataSourceVO<?>> dataSources = DaoRegistry.dataSourceDao.getAll();
         List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
         for(DataSourceVO<?> ds : dataSources)
-        	models.add(ds.getModel());
+        	models.add(ds.asModel());
         return models;
     }
 	
@@ -71,7 +71,7 @@ public class DataSourceRestController extends MangoRestController{
             return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<AbstractDataSourceModel<?>>(vo.getModel(), HttpStatus.OK);
+        return new ResponseEntity<AbstractDataSourceModel<?>>(vo.asModel(), HttpStatus.OK);
     }
 	
 	
