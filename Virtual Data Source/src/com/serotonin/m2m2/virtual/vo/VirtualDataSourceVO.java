@@ -150,10 +150,10 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     }
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<VirtualDataSourceVO> getModel() {
+	public AbstractDataSourceModel<VirtualDataSourceVO> asModel() {
 		return new VirtualDataSourceModel(this);
 	}
 }

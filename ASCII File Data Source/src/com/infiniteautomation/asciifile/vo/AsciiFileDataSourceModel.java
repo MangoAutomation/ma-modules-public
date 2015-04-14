@@ -4,7 +4,7 @@
  */
 package com.infiniteautomation.asciifile.vo;
 
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.infiniteautomation.asciifile.AsciiFileDataSourceDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
@@ -20,7 +20,7 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 	/**
 	 * @param data
 	 */
-	public AsciiFileDataSourceModel(DataSourceVO<AsciiFileDataSourceVO> data) {
+	public AsciiFileDataSourceModel(AsciiFileDataSourceVO data) {
 		super(data);
 	}
 
@@ -29,8 +29,7 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 	 */
 	@Override
 	public String getModelType() {
-		//TODO Implement when we have a Data Source Model
-		return null;
+		return AsciiFileDataSourceDefinition.DATA_SOURCE_TYPE;
 	}
 
 }

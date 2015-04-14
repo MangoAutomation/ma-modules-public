@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.internal;
 
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
@@ -16,7 +15,7 @@ public class InternalDataSourceModel extends AbstractDataSourceModel<InternalDat
 	/**
 	 * @param data
 	 */
-	public InternalDataSourceModel(DataSourceVO<InternalDataSourceVO> data) {
+	public InternalDataSourceModel(InternalDataSourceVO data) {
 		super(data);
 	}
 

@@ -26,7 +26,7 @@
 <script type="text/javascript">
 require(["dojo/parser", "dijit/form/HorizontalSlider", "dijit/form/HorizontalRule", "dijit/form/HorizontalRuleLabels", "dojo/touch"]);
 
-var sliderViewComponentIdToUse = 1;
+var sliderViewComponentIdToUse = 0;
 var idRegex = /^\D+(\d+)$/
 var sliderStyle = {
   width: "200px",

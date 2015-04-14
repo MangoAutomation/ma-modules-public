@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.envcan;
 
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
@@ -21,7 +20,7 @@ public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSou
 	/**
 	 * @param data
 	 */
-	public EnvCanDataSourceModel(DataSourceVO<EnvCanDataSourceVO> data) {
+	public EnvCanDataSourceModel(EnvCanDataSourceVO data) {
 		super(data);
 	}
 

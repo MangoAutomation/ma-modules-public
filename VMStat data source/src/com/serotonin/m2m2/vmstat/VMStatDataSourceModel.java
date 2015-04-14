@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.vmstat;
 
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
@@ -16,7 +15,7 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
 	/**
 	 * @param data
 	 */
-	public VMStatDataSourceModel(DataSourceVO<VMStatDataSourceVO> data) {
+	public VMStatDataSourceModel(VMStatDataSourceVO data) {
 		super(data);
 	}
 	
@@ -29,8 +28,7 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
 	 */
 	@Override
 	public String getModelType() {
-		// TODO Implement when we have a model, should be the TYPE_NAME in the Model Definition
-		return null;
+		return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;
 	}
 
 }

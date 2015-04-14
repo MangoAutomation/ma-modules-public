@@ -6,6 +6,7 @@ package com.serotonin.m2m2.virtual.vo;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.serotonin.m2m2.virtual.VirtualDataSourceDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
@@ -45,8 +46,7 @@ public class VirtualDataSourceModel extends AbstractDataSourceModel<VirtualDataS
 	 */
 	@Override
 	public String getModelType() {
-		// TODO Implement when we have a model, should be the TYPE_NAME in the Model Definition
-		return null;
+		return VirtualDataSourceDefinition.TYPE_NAME;
 	}
 
 }

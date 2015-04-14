@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -480,10 +479,10 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	}
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<SerialDataSourceVO> getModel() {
+	public AbstractDataSourceModel<SerialDataSourceVO> asModel() {
 		return new SerialDataSourceModel(this);
 	}
     
