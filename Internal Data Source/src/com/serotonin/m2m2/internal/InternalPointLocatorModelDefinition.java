@@ -26,4 +26,9 @@ public class InternalPointLocatorModelDefinition extends ModelDefinition{
 		return InternalPointLocatorModel.class.equals(clazz);
 	}
 
+	@Override
+	public Class<? extends AbstractRestModel<?>> getModelClass() {
+		return InternalPointLocatorModel.class;
+	}
+
 }

@@ -67,10 +67,10 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
 
     public static ExportCodes ATTRIBUTE_CODES = new ExportCodes();
     static {
-        ATTRIBUTE_CODES.addElement(Attributes.BATCH_ENTRIES, "BATCH_ENTRIES", "internal.monitor.BATCH_ENTRIES");
-        ATTRIBUTE_CODES.addElement(Attributes.BATCH_INSTANCES, "BATCH_INSTANCES", "internal.monitor.BATCH_INSTANCES");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH, "MONITOR_HIGH", "internal.monitor.MONITOR_HIGH");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_MEDIUM, "MONITOR_MEDIUM", "internal.monitor.MONITOR_MEDIUM");
+        ATTRIBUTE_CODES.addElement(Attributes.BATCH_ENTRIES, "BATCH_ENTRIES", "BATCH_ENTRIES");
+        ATTRIBUTE_CODES.addElement(Attributes.BATCH_INSTANCES, "BATCH_INSTANCES", "BATCH_INSTANCES");
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH, "MONITOR_HIGH", "MONITOR_HIGH");
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_MEDIUM, "MONITOR_MEDIUM", "MONITOR_MEDIUM");
         ATTRIBUTE_CODES.addElement(Attributes.MONITOR_SCHEDULED, "MONITOR_SCHEDULED",
                 "internal.monitor.MONITOR_SCHEDULED");
         ATTRIBUTE_CODES.addElement(Attributes.MONITOR_STACK_HEIGHT, "MONITOR_STACK_HEIGHT",

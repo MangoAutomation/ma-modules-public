@@ -146,7 +146,7 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<InternalDataSourceVO> getModel() {
+	public AbstractDataSourceModel<InternalDataSourceVO> asModel() {
 		return new InternalDataSourceModel(this);
 	}
 }
