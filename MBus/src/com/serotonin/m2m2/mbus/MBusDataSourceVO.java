@@ -37,8 +37,8 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     
     public static final ExportCodes CONNECTION_TYPE_CODES = new ExportCodes();
     static {
-    	CONNECTION_TYPE_CODES.addElement(MBusConnectionType.SERIAL_DIRECT, "dsEdit.mbus.serialDirect");
-    	CONNECTION_TYPE_CODES.addElement(MBusConnectionType.SERIAL_AT_MODEM, "dsEdit.mbus.serialAtModem");
+    	CONNECTION_TYPE_CODES.addElement(MBusConnectionType.SERIAL_DIRECT, "SERIAL_DIRECT");
+    	CONNECTION_TYPE_CODES.addElement(MBusConnectionType.SERIAL_AT_MODEM, "SERIAL_AT_MODEM");
     }
 
     @JsonProperty
