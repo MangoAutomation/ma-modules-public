@@ -143,7 +143,7 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
     }
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
 	public AbstractDataSourceModel<InternalDataSourceVO> asModel() {

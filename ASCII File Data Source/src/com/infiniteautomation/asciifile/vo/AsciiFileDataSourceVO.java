@@ -186,7 +186,7 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<AsciiFileDataSourceVO> getModel() {
+	public AbstractDataSourceModel<AsciiFileDataSourceVO> asModel() {
 		return new AsciiFileDataSourceModel(this);
 	}
     

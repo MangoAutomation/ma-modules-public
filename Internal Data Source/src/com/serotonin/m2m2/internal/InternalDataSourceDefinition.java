@@ -34,6 +34,9 @@ public class InternalDataSourceDefinition extends DataSourceDefinition {
         return InternalEditDwr.class;
     }
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.DataSourceDefinition#getModelClass()
+	 */
 	@Override
 	public Class<? extends AbstractDataSourceModel<?>> getModelClass() {
 		return InternalDataSourceModel.class;

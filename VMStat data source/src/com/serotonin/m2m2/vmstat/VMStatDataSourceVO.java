@@ -167,10 +167,10 @@ public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
     }
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<VMStatDataSourceVO> getModel() {
+	public AbstractDataSourceModel<VMStatDataSourceVO> asModel() {
 		return new VMStatDataSourceModel(this);
 	}
 }

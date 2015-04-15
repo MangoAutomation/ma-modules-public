@@ -4,8 +4,11 @@
  */
 package com.serotonin.m2m2.internal;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+=======
+>>>>>>> branch 'development' of https://github.com/infiniteautomation/ma-modules-public.git
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;

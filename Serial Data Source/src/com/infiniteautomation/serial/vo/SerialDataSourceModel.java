@@ -7,6 +7,7 @@ package com.infiniteautomation.serial.vo;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.infiniteautomation.serial.SerialDataSourceDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 /**
@@ -82,8 +83,7 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
 	 */
 	@Override
 	public String getModelType() {
-		// TODO Implement when we have a model, should be the TYPE_NAME in the Model Definition
-		return null;
+		return SerialDataSourceDefinition.DATA_SOURCE_TYPE;
 	}
 
 	
