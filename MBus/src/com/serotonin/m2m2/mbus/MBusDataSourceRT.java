@@ -160,6 +160,11 @@ public class MBusDataSourceRT extends PollingDataSource {
         // no op
     }
 
+    /**
+     * For future use
+     * @return
+     */
+	@SuppressWarnings("unused")
 	private boolean openTcpIpPort() {
 		try {
 			if (master.getConnection() != null) {
@@ -182,7 +187,7 @@ public class MBusDataSourceRT extends PollingDataSource {
 
 			return true;
 		} catch (Exception ex) {
-			LOG.fatal("MBus Open serial port exception", ex);
+			LOG.fatal("MBus Open tcpip exception", ex);
 			// Raise an event.
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(),
 					true, getSerialExceptionMessage(ex, vo.getCommPortId()));
@@ -191,7 +196,12 @@ public class MBusDataSourceRT extends PollingDataSource {
 	}
 
     
-    private boolean openSerialBridge(){
+	/**
+	 * For future use
+	 * @return
+	 */
+    @SuppressWarnings("unused")
+	private boolean openSerialBridge(){
     	 try {
          	if(master.getConnection() != null){
  	        	switch(master.getConnection().getConnState()){

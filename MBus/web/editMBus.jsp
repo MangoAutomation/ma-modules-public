@@ -37,6 +37,10 @@
       $set("searchMessage", "<fmt:message key='dsEdit.mbus.searching' />");
       dwr.util.removeAllRows("mbusDevices");
       if ($get("addressingType") == "PRIMARY") {
+    	  //For testing and perhaps future implementation
+//     	  MBusEditDwr.searchMBusByPrimaryAddressingTcp("localhost",8100,
+//                   $get("firstPrimaryAddress"), $get("lastPrimaryAddress"),
+//                   $get("responseTimeoutOffset"), searchCB);
           MBusEditDwr.searchMBusByPrimaryAddressing($get("commPortId"), $get("phonenumber"),
               $get("baudRate"),  $get("flowControlIn"),  $get("flowControlOut"),
               $get("dataBits"),  $get("stopBits"),  $get("parity"),

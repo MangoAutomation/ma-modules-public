@@ -63,7 +63,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
     }
 
     @DwrPermission(user = true)
-    public void searchMBusByPrimaryAddressing(String host, int port,
+    public void searchMBusByPrimaryAddressingTcp(String host, int port,
             String firstPrimaryAddress,
             String lastPrimaryAddress, int responseTimeoutOffset) {
         User user = Common.getUser();
