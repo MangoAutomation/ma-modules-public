@@ -25,4 +25,9 @@ public class EnvCanPointLocatorModelDefinition extends ModelDefinition {
 	public boolean supportsClass(Class<?> clazz) {
 		return EnvCanPointLocatorModel.class.equals(clazz);
 	}
+
+	@Override
+	public Class<? extends AbstractRestModel<?>> getModelClass() {
+		return EnvCanPointLocatorModel.class;
+	}
 }

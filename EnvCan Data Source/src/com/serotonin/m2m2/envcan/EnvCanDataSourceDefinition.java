@@ -5,9 +5,11 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 
 public class EnvCanDataSourceDefinition extends DataSourceDefinition {
-    @Override
+    public static final String DATA_SOURCE_TYPE = "EnvCan";
+	
+	@Override
     public String getDataSourceTypeName() {
-        return "EnvCan";
+        return DATA_SOURCE_TYPE;
     }
 
     @Override
