@@ -35,6 +35,17 @@ import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.VirtualPointLocatorRT;
+import com.serotonin.m2m2.virtual.vo.model.AlternateBooleanChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.AnalogAttractorChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.BrownianChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.IncrementAnalogChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.IncrementMultistateChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.NoChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.RandomAnalogChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.RandomBooleanChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.RandomMultistateChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.SinusoidalChangeModel;
+import com.serotonin.m2m2.virtual.vo.model.VirtualPointLocatorModel;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
@@ -483,6 +494,29 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 	 */
 	@Override
 	public PointLocatorModel<?> asModel() {
-		return new VirtualPointLocatorModel(this);
+		switch(changeTypeId) {
+		case ChangeTypeVO.Types.ALTERNATE_BOOLEAN :
+			return new AlternateBooleanChangeModel(this);
+		case ChangeTypeVO.Types.ANALOG_ATTRACTOR :
+			return new AnalogAttractorChangeModel(this);
+		case ChangeTypeVO.Types.BROWNIAN :
+			return new BrownianChangeModel(this);
+		case ChangeTypeVO.Types.INCREMENT_ANALOG :
+			return new IncrementAnalogChangeModel(this);
+		case ChangeTypeVO.Types.INCREMENT_MULTISTATE :
+			return new IncrementMultistateChangeModel(this);
+		case ChangeTypeVO.Types.NO_CHANGE :
+			return new NoChangeModel(this);
+		case ChangeTypeVO.Types.RANDOM_ANALOG :
+			return new RandomAnalogChangeModel(this);
+		case ChangeTypeVO.Types.RANDOM_BOOLEAN :
+			return new RandomBooleanChangeModel(this);
+		case ChangeTypeVO.Types.RANDOM_MULTISTATE :
+			return new RandomMultistateChangeModel(this);
+		case ChangeTypeVO.Types.SINUSOIDAL :
+			return new SinusoidalChangeModel(this);
+		default:
+			throw new ShouldNeverHappenException("unknown change type");
+		}
 	}
 }
