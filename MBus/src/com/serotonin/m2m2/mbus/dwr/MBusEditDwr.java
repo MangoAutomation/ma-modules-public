@@ -63,6 +63,18 @@ public class MBusEditDwr extends DataSourceEditDwr {
     }
 
     @DwrPermission(user = true)
+    public void searchMBusByPrimaryAddressing(String host, int port,
+            String firstPrimaryAddress,
+            String lastPrimaryAddress, int responseTimeoutOffset) {
+        User user = Common.getUser();
+        Permissions.ensureDataSourcePermission(user);
+
+        MBusDiscovery discovery = MBusDiscovery.createPrimaryAddressingSearch(getTranslations(), host, port,
+                Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16), responseTimeoutOffset);
+        user.setTestingUtility(discovery);
+    }
+    
+    @DwrPermission(user = true)
     public void searchMBusBySecondaryAddressing(String commPortId, String phonenumber, int baudrate, int flowControlIn,
             int flowcontrolOut, int dataBits, int stopBits, int parity, int responseTimeoutOffset) {
         User user = Common.getUser();

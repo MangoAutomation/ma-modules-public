@@ -7,7 +7,9 @@ package com.serotonin.m2m2.mbus.dwr;
 import java.io.IOException;
 import java.util.Map;
 
+import net.sf.mbus4j.Connection;
 import net.sf.mbus4j.MBusAddressing;
+import net.sf.mbus4j.TcpIpConnection;
 import net.sf.mbus4j.dataframes.MBusResponseFramesContainer;
 import net.sf.mbus4j.master.MBusMaster;
 import net.sf.mbus4j.master.MasterEventListener;
@@ -38,6 +40,16 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
         return result;
     }
 
+    public static MBusDiscovery createPrimaryAddressingSearch(Translations translations, String host,
+            int port, int firstPrimaryAddress, int lastPrimaryAddress, int responseTimeoutOffset) {
+        MBusDiscovery result = new MBusDiscovery(translations, host, port, MBusAddressing.PRIMARY,
+                responseTimeoutOffset);
+        result.firstPrimaryAddress = firstPrimaryAddress;
+        result.lastPrimaryAddress = lastPrimaryAddress;
+        result.searchThread.start();
+        return result;
+    }
+    
     public static MBusDiscovery createSecondaryAddressingSearch(Translations translations, String commPortId,
             String phonenumber, int baudrate, int flowControlIn, int flowcontrolOut, int dataBits, int stopBits,
             int parity, int responseTimeoutOffset) {
@@ -222,4 +234,35 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
         }
         result.put("responseFrames", responseFrames);
     }
+    
+    private MBusDiscovery(Translations translations, String host, int port,
+            MBusAddressing mBusAddressing, int responseTimeoutOffset) {
+        LOG.info("MBusDiscovery(...)");
+        this.translations = translations;
+
+        autoShutOff = new AutoShutOff(AutoShutOff.DEFAULT_TIMEOUT * 4) {
+            @Override
+            public void shutOff() {
+                message = MBusDiscovery.this.translations.translate("dsEdit.mbus.tester.autoShutOff");
+                MBusDiscovery.this.cleanup();
+            }
+        };
+
+        this.mBusAddressing = mBusAddressing;
+        // Thread starten , der sucht....
+        master = new MBusMaster();
+        try {
+			Connection conn = new TcpIpConnection(host, port);
+            master.setConnection(conn);
+            master.open();
+        }
+        catch (Exception ex) {
+            // no op
+        	 LOG.warn("MBusDiscovery(...)", ex);
+        } 
+        // TODO master init
+        message = translations.translate("dsEdit.mbus.tester.searchingDevices");
+        searchThread = new SearchThread();
+    }
+    
 }
