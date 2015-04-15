@@ -20,8 +20,7 @@ public class SerialPointLocatorModelDefinition extends ModelDefinition{
 	 */
 	@Override
 	public String getModelKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";//TODO
 	}
 
 	/* (non-Javadoc)

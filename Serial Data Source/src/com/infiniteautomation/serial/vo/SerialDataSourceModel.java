@@ -28,55 +28,165 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
 		super(data);
 	}
 
-	@JsonGetter("commPort")
-	public String getCommPortId(){
-		return ((SerialDataSourceVO) this.data).getCommPortId();
-	}
-	@JsonSetter("commPort")
-	public void setCommPortId(String id){
-		((SerialDataSourceVO) this.data).setCommPortId(id);
-	}
-	
-	@JsonGetter("baudRate")
-	public int getBaudRate(){
-		return ((SerialDataSourceVO) this.data).getBaudRate();
-	}
-	@JsonSetter("baudRate")
-	public void setBaudRate(int rate){
-		((SerialDataSourceVO) this.data).setBaudRate(rate);
+	@JsonGetter("commPortId")
+	public String getCommPortId() {
+	    return this.data.getCommPortId();
 	}
 
-//    @JsonProperty
-//    private int flowControlIn = 0;
-//    @JsonProperty
-//    private int flowControlOut = 0;
-//    @JsonProperty
-//    private int dataBits = 8;
-//    @JsonProperty
-//    private int stopBits = 1;
-//    @JsonProperty
-//    private int parity = 0;
-//    @JsonProperty
-//    private int readTimeout = 1000; //Timeout in ms
-//    @JsonProperty
-//    private boolean useTerminator = true;
-//    @JsonProperty
-//    private String messageTerminator;
-//    @JsonProperty
-//    private String messageRegex;
-//    @JsonProperty
-//    private int pointIdentifierIndex;
-//    @JsonProperty
-//    private boolean hex = false; //Is the setup in Hex Strings?
-//    @JsonProperty
-//    private boolean logIO = false;
-//    @JsonProperty
-//    private int maxMessageSize = 1024;
-//    @JsonProperty
-//    private float ioLogFileSizeMBytes = 1.0f; //1MB
-//    @JsonProperty
-//    private int maxHistoricalIOLogs = 1;
-	
+	@JsonSetter("commPortId")
+	public void setCommPortId(String commPortId) {
+	    this.data.setCommPortId(commPortId);
+	}
+
+	@JsonGetter("baudRate")
+	public int getBaudRate() {
+	    return this.data.getBaudRate();
+	}
+
+	@JsonSetter("baudRate")
+	public void setBaudRate(int baudRate) {
+	    this.data.setBaudRate(baudRate);
+	}
+
+	@JsonGetter("flowControlIn")
+	public int getFlowControlIn() {
+	    return this.data.getFlowControlIn();
+	}
+
+	@JsonSetter("flowControlIn")
+	public void setFlowControlIn(int flowControlIn) {
+	    this.data.setFlowControlIn(flowControlIn);
+	}
+
+	@JsonGetter("flowControlOut")
+	public int getFlowControlOut() {
+	    return this.data.getFlowControlOut();
+	}
+
+	@JsonSetter("flowControlOut")
+	public void setFlowControlOut(int flowControlOut) {
+	    this.data.setFlowControlOut(flowControlOut);
+	}
+
+	@JsonGetter("dataBits")
+	public int getDataBits() {
+	    return this.data.getDataBits();
+	}
+
+	@JsonSetter("dataBits")
+	public void setDataBits(int dataBits) {
+	    this.data.setDataBits(dataBits);
+	}
+
+	@JsonGetter("stopBits")
+	public int getStopBits() {
+	    return this.data.getStopBits();
+	}
+
+	@JsonSetter("stopBits")
+	public void setStopBits(int stopBits) {
+	    this.data.setStopBits(stopBits);
+	}
+
+	@JsonGetter("readTimeout")
+	public int getReadTimeout() {
+	    return this.data.getReadTimeout();
+	}
+
+	@JsonSetter("readTimeout")
+	public void setReadTimeout(int readTimeout) {
+	    this.data.setReadTimeout(readTimeout);
+	}
+
+	@JsonGetter("useTerminator")
+	public boolean isUseTerminator() {
+	    return this.data.getUseTerminator();
+	}
+
+	@JsonSetter("useTerminator")
+	public void setUseTerminator(boolean useTerminator) {
+	    this.data.setUseTerminator(useTerminator);
+	}
+
+	@JsonGetter("messageTerminator")
+	public String getMessageTerminator() {
+	    return this.data.getMessageTerminator();
+	}
+
+	@JsonSetter("messageTerminator")
+	public void setMessageTerminator(String messageTerminator) {
+	    this.data.setMessageTerminator(messageTerminator);
+	}
+
+	@JsonGetter("messageRegex")
+	public String getMessageRegex() {
+	    return this.data.getMessageRegex();
+	}
+
+	@JsonSetter("messageRegex")
+	public void setMessageRegex(String messageRegex) {
+	    this.data.setMessageRegex(messageRegex);
+	}
+
+	@JsonGetter("pointIdentifierIndex")
+	public int getPointIdentifierIndex() {
+	    return this.data.getPointIdentifierIndex();
+	}
+
+	@JsonSetter("pointIdentifierIndex")
+	public void setPointIdentifierIndex(int pointIdentifierIndex) {
+	    this.data.setPointIdentifierIndex(pointIdentifierIndex);
+	}
+
+	@JsonGetter("hex")
+	public boolean isHex() {
+	    return this.data.isHex();
+	}
+
+	@JsonSetter("hex")
+	public void setHex(boolean hex) {
+	    this.data.setHex(hex);
+	}
+
+	@JsonGetter("logIO")
+	public boolean isLogIO() {
+	    return this.data.isLogIO();
+	}
+
+	@JsonSetter("logIO")
+	public void setLogIO(boolean logIO) {
+	    this.data.setLogIO(logIO);
+	}
+
+	@JsonGetter("maxMessageSize")
+	public int getMaxMessageSize() {
+	    return this.data.getMaxMessageSize();
+	}
+
+	@JsonSetter("maxMessageSize")
+	public void setMaxMessageSize(int maxMessageSize) {
+	    this.data.setMaxMessageSize(maxMessageSize);
+	}
+
+	@JsonGetter("ioLogFileSizeMBytes")
+	public float getIoLogFileSizeMBytes() {
+	    return this.data.getIoLogFileSizeMBytes();
+	}
+
+	@JsonSetter("ioLogFileSizeMBytes")
+	public void setIoLogFileSizeMBytes(float ioLogFileSizeMBytes) {
+	    this.data.setIoLogFileSizeMBytes(ioLogFileSizeMBytes);
+	}
+
+	@JsonGetter("maxHistoricalIOLogs")
+	public int getMaxHistoricalIOLogs() {
+	    return this.data.getMaxHistoricalIOLogs();
+	}
+
+	@JsonSetter("maxHistoricalIOLogs")
+	public void setMaxHistoricalIOLogs(int maxHistoricalIOLogs) {
+	    this.data.setMaxHistoricalIOLogs(maxHistoricalIOLogs);
+	}
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()

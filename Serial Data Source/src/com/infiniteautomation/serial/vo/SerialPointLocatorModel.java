@@ -30,50 +30,54 @@ public class SerialPointLocatorModel extends PointLocatorModel<SerialPointLocato
 		super(new SerialPointLocatorVO());
 	}
 
-	@JsonGetter()
-	@CSVColumnGetter(order=8, header="pointIdentifier")
+	@JsonGetter("pointIdentifier")
+	@CSVColumnGetter(order=10, header="pointIdentifier")
 	public String getPointIdentifier() {
-		return this.data.getPointIdentifier();
+	    return this.data.getPointIdentifier();
 	}
-	@CSVColumnSetter(order=8, header="pointIdentifier")
-	@JsonSetter()
+
+	@JsonSetter("pointIdentifier")
+	@CSVColumnSetter(order=10, header="pointIdentifier")
 	public void setPointIdentifier(String pointIdentifier) {
-		this.data.setPointIdentifier(pointIdentifier);
+	    this.data.setPointIdentifier(pointIdentifier);
 	}
 
-
-	@CSVColumnGetter(order=9, header="valueRegex")
-	@JsonGetter()
+	@JsonGetter("valueRegex")
+	@CSVColumnGetter(order=11, header="valueRegex")
 	public String getValueRegex() {
-		return this.data.getValueRegex();
+	    return this.data.getValueRegex();
 	}
-	@CSVColumnSetter(order=9, header="valueRegex")
-	@JsonSetter()
+
+	@JsonSetter("valueRegex")
+	@CSVColumnSetter(order=11, header="valueRegex")
 	public void setValueRegex(String valueRegex) {
-		this.data.setValueRegex(valueRegex);
+	    this.data.setValueRegex(valueRegex);
 	}
 
-	@CSVColumnGetter(order=10, header="valueIndex")
-	@JsonGetter()
+	@JsonGetter("valueIndex")
+	@CSVColumnGetter(order=12, header="valueIndex")
 	public int getValueIndex() {
-		return this.data.getValueIndex();
-	}
-	@CSVColumnSetter(order=10, header="valueIndex")
-	@JsonSetter()
-	public void setValueIndex(int valueIndex) {
-		this.data.setValueIndex(valueIndex);
+	    return this.data.getValueIndex();
 	}
 
-	@CSVColumnGetter(order=11, header="dataType")
-	@JsonGetter()
+	@JsonSetter("valueIndex")
+	@CSVColumnSetter(order=12, header="valueIndex")
+	public void setValueIndex(int valueIndex) {
+	    this.data.setValueIndex(valueIndex);
+	}
+
+	@JsonGetter("dataType")
+	@CSVColumnGetter(order=13, header="dataType")
 	public String getDataType() {
-		return DataTypes.CODES.getCode(this.data.getDataTypeId());
+	    return DataTypes.CODES.getCode(this.data.getDataTypeId());
 	}
-	@CSVColumnSetter(order=11, header="dataType")
-	@JsonSetter()
+
+	@JsonSetter("dataType")
+	@CSVColumnSetter(order=13, header="dataType")
 	public void setDataType(String dataType) {
-		this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
+	    this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
 	}
+
 
 
 	/* (non-Javadoc)
