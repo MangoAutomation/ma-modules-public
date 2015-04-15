@@ -8,7 +8,7 @@
  green: #699D2E
 */
 
-*, html, body, td, th { font-family: Tahoma; }
+html, body, td, th { font-family: Tahoma; }
 #subHeader { background-color: #f6f6f6; }
 .smallTitle { color: #699D2E; font-family: Tahoma; }
 select, input, textarea { border-color: #804000; }
