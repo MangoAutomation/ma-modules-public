@@ -397,7 +397,7 @@
     </tr>
     <tr>
       <td colspan="2">
-        <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="<%= MBusConnectionType.SERIAL_DIRECT %>"/>" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
+        <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="<c:out value="<%= MBusConnectionType.SERIAL_DIRECT %>"/>" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
         <label class="formLabelRequired" for="useDirectConnection"><fmt:message key="dsEdit.mbus.useDirectConnection"/></label>
       </td>
     </tr>
