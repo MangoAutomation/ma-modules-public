@@ -6,6 +6,8 @@ package com.serotonin.m2m2.mbus;
 
 import java.io.IOException;
 
+import net.sf.mbus4j.Connection;
+import net.sf.mbus4j.TcpIpConnection;
 import net.sf.mbus4j.dataframes.datablocks.BigDecimalDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.ByteDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.IntegerDataBlock;
@@ -26,6 +28,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
+import com.serotonin.m2m2.rt.serial.EthernetComBridge;
 
 /**
  * TODO datatype NUMERIC_INT is missing TODO Starttime for timpepoints ???
@@ -157,6 +160,67 @@ public class MBusDataSourceRT extends PollingDataSource {
         // no op
     }
 
+	private boolean openTcpIpPort() {
+		try {
+			if (master.getConnection() != null) {
+				switch (master.getConnection().getConnState()) {
+				case OPEN:
+					return true;
+				case CLOSING:
+				case OPENING:
+					return false;
+				default:
+				}
+			}
+			// Hack to allow reading from TCP
+			int port = 8100;
+			String host = "localhost";
+			Connection conn = new TcpIpConnection(host, port);
+
+			master.setConnection(conn);
+			master.open();
+
+			return true;
+		} catch (Exception ex) {
+			LOG.fatal("MBus Open serial port exception", ex);
+			// Raise an event.
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(),
+					true, getSerialExceptionMessage(ex, vo.getCommPortId()));
+			return false;
+		}
+	}
+
+    
+    private boolean openSerialBridge(){
+    	 try {
+         	if(master.getConnection() != null){
+ 	        	switch(master.getConnection().getConnState()){
+ 	        		case OPEN:
+ 	        			return true;
+ 	        		case CLOSING:
+ 	        		case OPENING:
+ 	        			return false;
+ 	        		default:
+ 	        	}
+         	}
+            //Hack to allow reading from TCP
+            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
+            Connection conn = new MBusSerialPortBridge(bridge, vo.getBaudRate(), 0);
+            
+            master.setConnection(conn);
+            master.open();
+            
+            return true;
+        }
+        catch (Exception ex) {
+            LOG.fatal("MBus Open serial port bridge exception", ex);
+            // Raise an event.
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                    getSerialExceptionMessage(ex, vo.getCommPortId()));
+            return false;
+        }
+    }
+    
     private boolean openSerialPort() {
         try {
         	if(master.getConnection() != null){
@@ -169,10 +233,6 @@ public class MBusDataSourceRT extends PollingDataSource {
 	        		default:
 	        	}
         	}
-            
-            //Hack to allow reading from TCP
-//            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
-//            Connection conn = new MBusSerialPortBridge(bridge, vo.getBaudRate(), 0);
             
             SerialParameters params = new SerialParameters();
             params.setCommPortId(vo.getCommPortId());

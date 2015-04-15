@@ -37,5 +37,12 @@
             <artifactId>mbus4j-master</artifactId>
             <version>0.1.5</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.mbus4j</groupId>
+            <artifactId>mbus4j-slaves</artifactId>
+            <version>0.1.5</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>
