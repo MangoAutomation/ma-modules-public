@@ -8,7 +8,7 @@ public class InternalPointLocatorModelDefinition extends ModelDefinition{
 	public static final String TYPE_NAME = "PL.INTERNAL";
 	@Override
 	public String getModelKey() {
-		return "";//TODO
+		return "internal.point.desc";
 	}
 
 	@Override
