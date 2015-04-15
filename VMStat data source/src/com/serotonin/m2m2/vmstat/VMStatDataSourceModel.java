@@ -6,10 +6,7 @@ package com.serotonin.m2m2.vmstat;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 /**
  * @author Terry Packer
@@ -36,14 +33,14 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
 		return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;
 	}
 	
-	@JsonGetter(value="pollPeriod")
-	public TimePeriod getPollPeriod(){
-	    return new TimePeriod(this.data.getPollSeconds(), TimePeriodType.convertTo(Common.TimePeriods.SECONDS));
+	@JsonGetter(value="pollSeconds")
+	public int getPollSeconds(){
+	    return this.data.getPollSeconds();
 	}
 
-	@JsonSetter(value="pollPeriod")
-	public void setPollPeriod(TimePeriod pollPeriod){ //Cannot change from seconds
-	    this.data.setPollSeconds(pollPeriod.getPeriods());
+	@JsonSetter(value="pollSeconds")
+	public void setPollSeconds(int pollSeconds){ //Cannot change from seconds
+	    this.data.setPollSeconds(pollSeconds);
 	}
 
 	@JsonGetter("outputScale")
