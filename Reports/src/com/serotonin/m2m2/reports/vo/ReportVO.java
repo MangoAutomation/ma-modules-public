@@ -421,7 +421,10 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     	DataPointDao dpd = new DataPointDao();
     	Map<String, String> ans = new HashMap<String, String>();
     	for(ReportPointVO vo : points) {
-    		ans.put(dpd.get(vo.getPointId()).getXid(), vo.getPointKey());
+    		//Check to see if point exists
+    		DataPointVO dp = dpd.get(vo.getPointId());
+    		if(dp != null)
+    			ans.put(dp.getXid(), vo.getPointKey());
     	}
     	return ans;
     }

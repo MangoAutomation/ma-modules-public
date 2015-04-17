@@ -4,8 +4,6 @@
  */
 package com.serotonin.m2m2.reports;
 
-import java.nio.ByteBuffer;
-
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.nosql.ByteArrayBuilder;
