@@ -504,7 +504,7 @@ public class PointValueRestController extends MangoRestController{
      * @throws RestValidationFailedException 
      */
 	@ApiOperation(
-			value = "Updatae an existing data point's value",
+			value = "Update an existing data point's value",
 			notes = "Data point must exist and be enabled"
 			)
 	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
