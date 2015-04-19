@@ -3,7 +3,6 @@
     @author Arne Ploese
 --%>
 <%@page import="com.serotonin.m2m2.Common"%>
-<%@page import="com.serotonin.m2m2.mbus.MBusConnectionType" %>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <script type="text/javascript">
@@ -41,6 +40,7 @@
 //     	  MBusEditDwr.searchMBusByPrimaryAddressingTcp("localhost",8100,
 //                   $get("firstPrimaryAddress"), $get("lastPrimaryAddress"),
 //                   $get("responseTimeoutOffset"), searchCB);
+
           MBusEditDwr.searchMBusByPrimaryAddressing($get("commPortId"), $get("phonenumber"),
               $get("baudRate"),  $get("flowControlIn"),  $get("flowControlOut"),
               $get("dataBits"),  $get("stopBits"),  $get("parity"),
@@ -401,13 +401,13 @@
     </tr>
     <tr>
       <td colspan="2">
-        <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="<c:out value="<%= MBusConnectionType.SERIAL_DIRECT %>"/>" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
+        <input type="radio" name="useModemOrDirectConnection" id="useDirectConnection" value="SERIAL_DIRECT" <c:if test="${dataSource.serialDirect}">checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
         <label class="formLabelRequired" for="useDirectConnection"><fmt:message key="dsEdit.mbus.useDirectConnection"/></label>
       </td>
     </tr>
     <tr>
       <td colspan="2">
-        <input type="radio" name="useModemOrDirectConnection" id="useModemConnection" value="<c:out value="<%= MBusConnectionType.SERIAL_AT_MODEM %>"/>" <c:if test="${dataSource.serialAtModem}"> checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
+        <input type="radio" name="useModemOrDirectConnection" id="useModemConnection" value="SERIAL_AT_MODEM" <c:if test="${dataSource.serialAtModem}"> checked="checked"</c:if> onclick="updateModemOrDirect()" disabled="disabled">
         <label class="formLabelRequired" for="useModemConnection"><fmt:message key="dsEdit.mbus.useModemConnection"/></label>
       </td>
     </tr>

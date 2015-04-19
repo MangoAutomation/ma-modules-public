@@ -13,6 +13,7 @@ import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.mbus.MBusConnectionType;
 import com.serotonin.m2m2.mbus.MBusDataSourceVO;
 import com.serotonin.m2m2.mbus.MBusPointLocatorVO;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -24,13 +25,13 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
-    public ProcessResult saveMBusDataSourceConnection(BasicDataSourceVO basic, int connectionType,
+    public ProcessResult saveMBusDataSourceConnection(BasicDataSourceVO basic, String connectionType,
             String commPortId, String phonenumber, int baudRate, int flowControlIn, int flowControlOut, int dataBits,
             int stopBits, int parity, int updatePeriodType, int updatePeriods) {
         MBusDataSourceVO ds = (MBusDataSourceVO) Common.getUser().getEditDataSource();
 
         setBasicProps(ds, basic);
-        ds.setConnectionType(connectionType);
+        ds.setConnectionType(MBusConnectionType.valueOf(connectionType));
         ds.setPhonenumber(phonenumber);
         ds.setCommPortId(commPortId);
         ds.setBaudRate(baudRate);

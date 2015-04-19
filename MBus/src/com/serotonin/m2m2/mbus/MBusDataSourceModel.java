@@ -61,13 +61,13 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 	}
 
 	@JsonGetter("connectionType")
-	public int getConnectionType() {
-	    return this.data.getConnectionType();
+	public String getConnectionType() {
+		return this.data.getConnectionType().name();
 	}
 
 	@JsonSetter("connectionType")
-	public void setConnectionType(int connectionType) {
-	    this.data.setConnectionType(connectionType);
+	public void setConnectionType(String connectionType) {
+	   this.data.setConnectionType(MBusConnectionType.valueOf(connectionType));
 	}
 
 	@JsonGetter("baudRate")

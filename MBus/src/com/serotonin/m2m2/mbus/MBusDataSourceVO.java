@@ -34,12 +34,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         EVENT_CODES.addElement(MBusDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
         
     }
-    
-    public static final ExportCodes CONNECTION_TYPE_CODES = new ExportCodes();
-    static {
-    	CONNECTION_TYPE_CODES.addElement(MBusConnectionType.SERIAL_DIRECT, "SERIAL_DIRECT");
-    	CONNECTION_TYPE_CODES.addElement(MBusConnectionType.SERIAL_AT_MODEM, "SERIAL_AT_MODEM");
-    }
 
     @JsonProperty
     private String commPortId;
@@ -48,7 +42,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     @JsonProperty
     private int updatePeriods = 1;
     @JsonProperty
-    private int connectionType = MBusConnectionType.SERIAL_DIRECT;
+    private MBusConnectionType connectionType = MBusConnectionType.SERIAL_DIRECT;
 
     @JsonProperty
     private int baudRate = 2400;
@@ -175,17 +169,18 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 4;
+    private static final int version = 3;
 
     // Serialization for saveDataSource
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
-        out.writeInt(connectionType);
+        out.writeUTF(connectionType.name());
         switch (connectionType) {
-        case MBusConnectionType.SERIAL_DIRECT:
+        case SERIAL_DIRECT:
             SerializationHelper.writeSafeUTF(out, commPortId);
             break;
-        case MBusConnectionType.SERIAL_AT_MODEM:
+        default:
+        case SERIAL_AT_MODEM:
             // TODO Modem stuff goes here
             break;
         }
@@ -206,13 +201,13 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
 
         // Switch on the version of the class so that version changes can be elegantly handled.
         if((ver ==2)||(ver == 1)){
-        	in.readUTF();
-            connectionType = MBusConnectionType.SERIAL_DIRECT;
+            connectionType = MBusConnectionType.valueOf(in.readUTF());
             switch (connectionType) {
-            case MBusConnectionType.SERIAL_DIRECT:
+            case SERIAL_DIRECT:
                 commPortId = SerializationHelper.readSafeUTF(in);
                 break;
-            case MBusConnectionType.SERIAL_AT_MODEM:
+            default:
+            case SERIAL_AT_MODEM:
                 // TODO modem stuff goes here
                 break;
             }
@@ -226,33 +221,13 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
             parity = in.readInt();
             responseTimeoutOffset = 1000;
         }else if(ver == 3){
-        	in.readUTF();
-            connectionType = MBusConnectionType.SERIAL_DIRECT;
+            connectionType = MBusConnectionType.valueOf(in.readUTF());
             switch (connectionType) {
-            case MBusConnectionType.SERIAL_DIRECT:
+            case SERIAL_DIRECT:
                 commPortId = SerializationHelper.readSafeUTF(in);
                 break;
-            case MBusConnectionType.SERIAL_AT_MODEM:
-                // TODO modem stuff goes here
-                break;
-            }
-            updatePeriodType = in.readInt();
-            updatePeriods = in.readInt();
-            baudRate = in.readInt();
-            flowControlIn = in.readInt();
-            flowControlOut = in.readInt();
-            dataBits = in.readInt();
-            stopBits = in.readInt();
-            parity = in.readInt();
-            responseTimeoutOffset = in.readInt();
-        }
-        else if(ver == 4){
-            connectionType = in.readInt();
-            switch (connectionType) {
-            case MBusConnectionType.SERIAL_DIRECT:
-                commPortId = SerializationHelper.readSafeUTF(in);
-                break;
-            case MBusConnectionType.SERIAL_AT_MODEM:
+            default:
+            case SERIAL_AT_MODEM:
                 // TODO modem stuff goes here
                 break;
             }
@@ -269,14 +244,14 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
 
     }
 
-    public void setConnectionType(int connectionType) {
+    public void setConnectionType(MBusConnectionType connectionType) {
         this.connectionType = connectionType;
     }
 
     /**
      * @return the connectionType
      */
-    public int getConnectionType() {
+    public MBusConnectionType getConnectionType() {
         return connectionType;
     }
 
@@ -286,7 +261,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
      * @return
      */
     public boolean isSerialDirect() {
-        return MBusConnectionType.SERIAL_DIRECT == connectionType;
+        return MBusConnectionType.SERIAL_DIRECT.equals(connectionType);
     }
 
     /**
@@ -295,7 +270,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
      * @return
      */
     public boolean isSerialAtModem() {
-        return MBusConnectionType.SERIAL_AT_MODEM == connectionType;
+        return MBusConnectionType.SERIAL_AT_MODEM.equals(connectionType);
     }
 
     /**
@@ -404,7 +379,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     }
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
+	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
 	 */
 	@Override
 	public AbstractDataSourceModel<MBusDataSourceVO> asModel() {
