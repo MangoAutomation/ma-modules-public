@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -511,8 +512,14 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
-    		QueryModel query = this.parseRQL(request);
-    		return result.createResponseEntity(getPageStream(query));
+    		try{
+	    		QueryModel query = this.parseRQL(request);
+	    		return result.createResponseEntity(getPageStream(query));
+    		}catch(UnsupportedEncodingException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
     	}
     	
     	return result.createResponseEntity();

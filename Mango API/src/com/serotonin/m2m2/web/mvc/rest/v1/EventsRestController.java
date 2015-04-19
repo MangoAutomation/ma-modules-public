@@ -4,12 +4,15 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +56,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping("/v1/events")
 public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel>{
 	
-	//private static Log LOG = LogFactory.getLog(EventsRestController.class);
+	private static Log LOG = LogFactory.getLog(EventsRestController.class);
 	
 	public EventsRestController(){ 
 		super(EventInstanceDao.instance);
@@ -156,9 +159,15 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     	
 		this.checkUser(request, result);
     	if(result.isOk()){
-    		//Parse the RQL Query
-    		QueryModel query = this.parseRQL(request);
-    		return result.createResponseEntity(getPageStream(query));
+    		try{
+    			//Parse the RQL Query
+	    		QueryModel query = this.parseRQL(request);
+	    		return result.createResponseEntity(getPageStream(query));
+    		}catch(UnsupportedEncodingException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
     	}
     	
     	return result.createResponseEntity();

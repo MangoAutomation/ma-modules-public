@@ -46,7 +46,6 @@ public class QueryModel {
 	}
 	
 	public QueryModel(){
-		this.limit = 100;
 		this.orComparisons = new ArrayList<QueryComparison>();
 		this.andComparisons = new ArrayList<QueryComparison>();
 		this.sort = new ArrayList<SortOption>();

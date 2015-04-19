@@ -5,11 +5,14 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +37,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @RequestMapping("/v1/logging")
 public class LoggingRestController extends MangoRestController{
 
-//	private static Log LOG = LogFactory.getLog(LoggingRestController.class);
+	private static Log LOG = LogFactory.getLog(LoggingRestController.class);
 	
 	@ApiOperation(value = "List Log Files", notes = "Returns a list of logfile names")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/files")
@@ -75,9 +78,15 @@ public class LoggingRestController extends MangoRestController{
 		
 		this.checkUser(request, result);
     	if(result.isOk()){
-    		QueryModel query = this.parseRQL(request);
-			LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
-			return result.createResponseEntity(stream);
+    		try{
+	    		QueryModel query = this.parseRQL(request);
+				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
+				return result.createResponseEntity(stream);
+    		}catch(UnsupportedEncodingException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
     	}
     	
     	return result.createResponseEntity();

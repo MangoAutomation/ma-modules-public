@@ -14,6 +14,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
@@ -32,6 +34,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
  */
 public abstract class MangoRestController{
 
+	private static final Log LOG = LogFactory.getLog(MangoRestController.class);
 	
 	/**
 	 * Check to see if a User is logged in
@@ -110,15 +113,13 @@ public abstract class MangoRestController{
 	 * @param query
 	 * @return
 	 */
-	protected QueryModel parseRQL(HttpServletRequest request) {
+	protected QueryModel parseRQL(HttpServletRequest request) throws UnsupportedEncodingException{
 		String query = request.getQueryString();
 		if (query != null) {
-    		try {
-    			query = URLDecoder.decode(query, Common.UTF8);
-    			System.out.println("query: " + query);
-    		} catch (UnsupportedEncodingException e) {
-    			e.printStackTrace();
-    		}
+			query = URLDecoder.decode(query, Common.UTF8);
+			if(LOG.isDebugEnabled()){
+				LOG.debug("query: " + query);
+			}
 		}
 		String[] parts = query == null ? new String[]{} : query.split("&");
 		QueryModel model = new QueryModel();
