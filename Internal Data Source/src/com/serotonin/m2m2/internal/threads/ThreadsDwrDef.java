@@ -30,7 +30,7 @@ public class ThreadsDwrDef extends DwrDefinition {
 
         private final Map<Long, ThreadInfoBean> threadInfos = new HashMap<>();
 
-        @DwrPermission(admin = true)
+        @DwrPermission(custom = "internal.status")
         public ProcessResult getStatusVars() {
             ProcessResult result = new ProcessResult();
 
@@ -44,7 +44,7 @@ public class ThreadsDwrDef extends DwrDefinition {
             return result;
         }
 
-        @DwrPermission(admin = true)
+        @DwrPermission(custom = "internal.status")
         public ProcessResult getThreadInfo() {
             synchronized (threadInfos) {
                 ProcessResult result = new ProcessResult();
@@ -91,7 +91,7 @@ public class ThreadsDwrDef extends DwrDefinition {
             }
         }
 
-        @DwrPermission(admin = true)
+        @DwrPermission(custom = "internal.status")
         public ProcessResult getWorkItems() {
             ProcessResult result = new ProcessResult();
 
