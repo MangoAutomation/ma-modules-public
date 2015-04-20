@@ -1,6 +1,7 @@
 package com.serotonin.m2m2.internal.threads;
 
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.internal.StatusPermissionDef;
 import com.serotonin.m2m2.module.UriMappingDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -14,7 +15,7 @@ public class ThreadsUriMapping extends UriMappingDefinition {
     
     @Override
     public boolean hasCustomPermission(User user){
-    	return Permissions.hasPermission(user, SystemSettingsDao.getValue("internal.status"));
+    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
     }
 
     @Override

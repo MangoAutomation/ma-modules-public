@@ -14,6 +14,7 @@ import java.util.Set;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.internal.StatusPermissionDef;
 import com.serotonin.m2m2.module.DwrDefinition;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
@@ -44,7 +45,7 @@ public class ThreadsDwrDef extends DwrDefinition {
             return result;
         }
 
-        @DwrPermission(custom = "internal.status")
+        @DwrPermission(custom = StatusPermissionDef.PERMISSION)
         public ProcessResult getThreadInfo() {
             synchronized (threadInfos) {
                 ProcessResult result = new ProcessResult();
@@ -91,7 +92,7 @@ public class ThreadsDwrDef extends DwrDefinition {
             }
         }
 
-        @DwrPermission(custom = "internal.status")
+        @DwrPermission(custom = StatusPermissionDef.PERMISSION)
         public ProcessResult getWorkItems() {
             ProcessResult result = new ProcessResult();
 
