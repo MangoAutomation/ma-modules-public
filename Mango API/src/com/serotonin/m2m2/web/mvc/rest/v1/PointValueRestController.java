@@ -32,6 +32,7 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.RTException;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -43,6 +44,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
@@ -629,6 +631,10 @@ public class PointValueRestController extends MangoRestController{
 	    		    	result.addRestMessage(getResourceCreatedMessage(location));
 	    		        return result.createResponseEntity(new PointValueTimeModel(pvt));
 	
+	    	        }catch(RTException e){
+	    	        	//Ok its probably not enabled or settable
+	    	        	result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", e.getMessage())));
+	    	        	return result.createResponseEntity();
 	    	        }catch(Exception e){
 	    	        	LOG.error(e.getMessage(), e);
 	    	        	result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
