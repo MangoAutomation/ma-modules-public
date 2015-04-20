@@ -4,37 +4,59 @@
  */
 package com.serotonin.m2m2.reports;
 
-import com.serotonin.m2m2.module.UrlMappingDefinition;
-import com.serotonin.m2m2.web.mvc.UrlHandler;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-public class ReportMappingDefinition extends UrlMappingDefinition {
-    @Override
-    public String getUrlPath() {
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.module.MenuItemDefinition;
+import com.serotonin.m2m2.vo.permission.Permissions;
+
+public class ReportMappingDefinition extends MenuItemDefinition {
+    
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.MenuItemDefinition#getVisibility()
+	 */
+	@Override
+	public Visibility getVisibility() {
+		return Visibility.USER;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.MenuItemDefinition#getTextKey(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	@Override
+	public String getTextKey(HttpServletRequest request,
+			HttpServletResponse response) {
+		return "header.reports";
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.MenuItemDefinition#getImage(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	@Override
+	public String getImage(HttpServletRequest request,
+			HttpServletResponse response) {
+		return "web/report.png";
+	}
+	
+
+    /**
+     * The value of the HTML href attribute to use in the menu item. If null, no attribute will be written.
+     * 
+     * @param request
+     *            the current request
+     * @param response
+     *            the current response
+     * @return the href value to use
+     */
+	@Override
+    public String getHref(HttpServletRequest request, HttpServletResponse response) {
         return "/reports.shtm";
     }
-
+	
     @Override
-    public UrlHandler getHandler() {
-        return null;
-    }
-
-    @Override
-    public String getJspPath() {
-        return "web/reports.jsp";
-    }
-
-    @Override
-    public String getMenuKey() {
-        return "header.reports";
-    }
-
-    @Override
-    public String getMenuImage() {
-        return "web/report.png";
-    }
-
-    @Override
-    public Permission getPermission() {
-        return Permission.USER;
+    public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
+        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(ReportPermissionDefinition.PERMISSION));
     }
 }

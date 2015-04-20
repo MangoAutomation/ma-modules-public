@@ -19,6 +19,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
+import com.serotonin.m2m2.reports.ReportPermissionDefinition;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
 import com.serotonin.m2m2.reports.vo.ReportVO;
@@ -36,7 +37,8 @@ import com.serotonin.validation.StringValidation;
  * @author Matthew Lohbihler
  */
 public class ReportsDwr extends ModuleDwr {
-    @DwrPermission(user = true)
+	
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult init() {
         ProcessResult response = new ProcessResult();
         ReportDao reportDao = new ReportDao();
@@ -58,7 +60,7 @@ public class ReportsDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ReportVO getReport(int id, boolean copy) {
         ReportVO report;
         if (id == Common.NEW_ID) {
@@ -85,7 +87,7 @@ public class ReportsDwr extends ModuleDwr {
 		return list;
 	}
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult saveReport(int id, String name, String xid, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
@@ -181,7 +183,7 @@ public class ReportsDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult runReport(String xid, String name, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
@@ -233,7 +235,7 @@ public class ReportsDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public void deleteReport(int id) {
         ReportDao reportDao = new ReportDao();
 
@@ -281,7 +283,7 @@ public class ReportsDwr extends ModuleDwr {
         }
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public List<ReportInstance> deleteReportInstance(int instanceId) {
         User user = Common.getUser();
         ReportDao reportDao = new ReportDao();
@@ -289,7 +291,7 @@ public class ReportsDwr extends ModuleDwr {
         return getReportInstances(user);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public List<ReportInstance> getReportInstances() {
         return getReportInstances(Common.getUser());
     }
@@ -320,12 +322,12 @@ public class ReportsDwr extends ModuleDwr {
         return result;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public void setPreventPurge(int instanceId, boolean value) {
         new ReportDao().setReportInstancePreventPurge(instanceId, value, Common.getUser());
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ReportVO createReportFromWatchlist(String name, int[] dataPointIds) {
         ReportVO report = new ReportVO();
         User user = Common.getUser();
