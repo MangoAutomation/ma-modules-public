@@ -4,15 +4,14 @@
  */
 package com.serotonin.m2m2.gviews;
 
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.UriMappingDefinition;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
 public class GraphicalViewsMappingDefinition extends UriMappingDefinition {
-//    @Override
-//    public String getUrlPath() {
-//        return "/views.shtm";
-//    }
-
+	
     @Override
     public UrlHandler getHandler() {
         return new GraphicalViewHandler();
@@ -23,21 +22,16 @@ public class GraphicalViewsMappingDefinition extends UriMappingDefinition {
         return "web/views.jsp";
     }
 
-//    @Override
-//    public String getMenuKey() {
-//        return "header.views";
-//    }
-//
-//    @Override
-//    public String getMenuImage() {
-//        return "web/slide.png";
-//    }
-
     @Override
     public Permission getPermission() {
-        return Permission.USER;
+        return Permission.CUSTOM;
     }
-
+    
+    @Override
+    public boolean hasCustomPermission(User user){
+    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewPermissionDefinition.PERMISSION));
+    }
+    
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.UriMappingDefinition#getPath()
 	 */

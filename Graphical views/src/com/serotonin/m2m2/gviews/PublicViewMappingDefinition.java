@@ -4,12 +4,12 @@
  */
 package com.serotonin.m2m2.gviews;
 
-import com.serotonin.m2m2.module.UrlMappingDefinition;
+import com.serotonin.m2m2.module.UriMappingDefinition;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
-public class PublicViewMappingDefinition extends UrlMappingDefinition {
+public class PublicViewMappingDefinition extends UriMappingDefinition {
     @Override
-    public String getUrlPath() {
+    public String getPath() {
         return "/public_view.htm";
     }
 
@@ -21,16 +21,6 @@ public class PublicViewMappingDefinition extends UrlMappingDefinition {
     @Override
     public String getJspPath() {
         return "web/publicView.jsp";
-    }
-
-    @Override
-    public String getMenuKey() {
-        return null;
-    }
-
-    @Override
-    public String getMenuImage() {
-        return null;
     }
 
     @Override

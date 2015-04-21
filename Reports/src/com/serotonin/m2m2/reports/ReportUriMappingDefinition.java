@@ -40,6 +40,4 @@ public class ReportUriMappingDefinition extends UriMappingDefinition{
     public String getJspPath() {
         return "web/reports.jsp";
     }
-
-	
 }

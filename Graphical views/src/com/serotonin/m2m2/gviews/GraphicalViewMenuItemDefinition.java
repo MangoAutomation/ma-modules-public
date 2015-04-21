@@ -7,7 +7,10 @@ package com.serotonin.m2m2.gviews;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.MenuItemDefinition;
+import com.serotonin.m2m2.vo.permission.Permissions;
 /**
  * @author Terry Packer
  *
@@ -21,6 +24,11 @@ public class GraphicalViewMenuItemDefinition extends MenuItemDefinition{
 		return Visibility.USER;
 	}
 
+    @Override
+    public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
+    	return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(GraphicalViewPermissionDefinition.PERMISSION));
+    }
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.MenuItemDefinition#getTextKey(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
