@@ -23,14 +23,14 @@ public class VMStatPointLocatorModel extends PointLocatorModel<VMStatPointLocato
 		return VMStatPointLocatorModelDefinition.TYPE_NAME;
 	}
 	
-	@JsonGetter("attributeId")
-	@CSVColumnGetter(order=10, header="attributeId")
+	@JsonGetter("attribute")
+	@CSVColumnGetter(order=13, header="attribute")
 	public String getAttributeId() {
 	    return VMStatPointLocatorVO.ATTRIBUTE_CODES.getCode(this.data.getAttributeId());
 	}
 
-	@JsonSetter("attributeId")
-	@CSVColumnSetter(order=10, header="attributeId")
+	@JsonSetter("attribute")
+	@CSVColumnSetter(order=13, header="attribute")
 	public void setAttributeId(String attributeId) {
 	    this.data.setAttributeId(VMStatPointLocatorVO.ATTRIBUTE_CODES.getId(attributeId));
 	}
