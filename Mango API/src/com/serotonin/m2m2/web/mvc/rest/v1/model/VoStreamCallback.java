@@ -15,7 +15,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
  */
 public class VoStreamCallback<VO extends AbstractVO<VO>, MODEL> extends QueryStreamCallback<VO> {
 
-	private MangoVoRestController<VO, MODEL> controller;
+	protected MangoVoRestController<VO, MODEL> controller;
 	
 	/**
 	 * 

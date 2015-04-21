@@ -42,6 +42,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -486,9 +487,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		return result.createResponseEntity(getPageStream(query));
+    		DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+    		return result.createResponseEntity(getPageStream(query, callback));
     	}
     	
     	return result.createResponseEntity();
@@ -510,11 +512,12 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
 	    		QueryModel query = this.parseRQL(request);
-	    		return result.createResponseEntity(getPageStream(query));
+	    		DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+	    		return result.createResponseEntity(getPageStream(query, callback));
     		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));

@@ -49,6 +49,15 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	 * @return
 	 */
 	protected QueryStream<VO, MODEL> getStream(QueryModel query){
+		return this.getStream(query, this.callback);
+	}
+	
+	/**
+	 * Get the Query Stream for Streaming an array of data
+	 * @param query
+	 * @return
+	 */
+	protected QueryStream<VO, MODEL> getStream(QueryModel query, VoStreamCallback<VO, MODEL> callback){
 
 		QueryStream<VO, MODEL> stream = new QueryStream<VO, MODEL>(dao, this, query, callback);
 		//Ensure its ready
@@ -62,12 +71,19 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	 * @return
 	 */
 	protected PageQueryStream<VO, MODEL> getPageStream(QueryModel query){
+		return getPageStream(query, this.callback);
+	}
+	/**
+	 * Get a Stream that is more like a result set with a count
+	 * @param query
+	 * @return
+	 */
+	protected PageQueryStream<VO, MODEL> getPageStream(QueryModel query, VoStreamCallback<VO, MODEL> callback){
 		PageQueryStream<VO, MODEL> stream = new PageQueryStream<VO, MODEL>(dao, this, query, callback);
 		//Ensure its ready
 		stream.setupQuery();
 		return stream;
 	}
-
 	/**
 	 * Map any Model members to VO Properties
 	 * @param list
