@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -50,28 +49,55 @@ public class DataSourceRestController extends MangoRestController{
 	
     @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public List<AbstractDataSourceModel<?>> getAllDataSources() {
-    	if(LOG.isDebugEnabled())
-    		LOG.debug("Getting all data sources");
-        List<DataSourceVO<?>> dataSources = DaoRegistry.dataSourceDao.getAll();
-        List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
-        for(DataSourceVO<?> ds : dataSources)
-        	models.add(ds.asModel());
-        return models;
+    public ResponseEntity<List<AbstractDataSourceModel<?>>> getAllDataSources(HttpServletRequest request) {
+    	
+    	RestProcessResult<List<AbstractDataSourceModel<?>>> result = new RestProcessResult<List<AbstractDataSourceModel<?>>>(HttpStatus.OK);
+    	
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+	        List<DataSourceVO<?>> dataSources = DaoRegistry.dataSourceDao.getAll();
+	        List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
+	        for(DataSourceVO<?> ds : dataSources){
+	        	try{
+	        		if(Permissions.hasDataSourcePermission(user, ds))
+	        			models.add(ds.asModel());
+	        	}catch(PermissionException e){
+	        		//Munch Munch
+	        	}
+	        	
+	        }
+	        return result.createResponseEntity(models);
+    	}
+    	return result.createResponseEntity();
     }
 	
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
-    public ResponseEntity<AbstractDataSourceModel<?>> getDataSource(@PathVariable String xid) {
+    public ResponseEntity<AbstractDataSourceModel<?>> getDataSource(HttpServletRequest request, @PathVariable String xid) {
+		
+		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+    	if(result.isOk()){
+            DataSourceVO<?> vo = DaoRegistry.dataSourceDao.getByXid(xid);
 
-        DataSourceVO<?> vo = DaoRegistry.dataSourceDao.getByXid(xid);
-
-        if (vo == null) {
-            return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<AbstractDataSourceModel<?>>(vo.asModel(), HttpStatus.OK);
+            if (vo == null) {
+                return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
+            }else{
+            	try{
+	        		if(Permissions.hasDataSourcePermission(user, vo))
+	        			return result.createResponseEntity(vo.asModel());
+	        		else{
+	    	    		result.addRestMessage(getUnauthorizedMessage());
+	            		return result.createResponseEntity();
+	        		}
+	        	}catch(PermissionException e){
+	        		LOG.warn(e.getMessage(), e);
+		    		result.addRestMessage(getUnauthorizedMessage());
+	        		return result.createResponseEntity();
+	        	}
+            }
+    	}
+        return result.createResponseEntity();
     }
 	
 	
@@ -95,7 +121,6 @@ public class DataSourceRestController extends MangoRestController{
 
 		User user = this.checkUser(request, result);
         if(result.isOk()){
-        	
 			DataSourceVO<?> vo = model.getData();
 			
 	        DataSourceVO<?> existing = DaoRegistry.dataSourceDao.getByXid(xid);
@@ -109,7 +134,6 @@ public class DataSourceRestController extends MangoRestController{
 	    		if(!Permissions.hasDataSourcePermission(user, existing.getId())){
 	    			result.addRestMessage(getUnauthorizedMessage());
 	        		return result.createResponseEntity();
-	
 	    		}
 	    	}catch(PermissionException e){
 	    		LOG.warn(e.getMessage(), e);

@@ -108,7 +108,7 @@ public abstract class MangoRestController{
 	//TODO only works for single sort
     private static final Pattern SORT_PATTERN = Pattern.compile("sort\\(([\\+-]{1})(.*)\\)");
     private static final Pattern LIMIT_PATTERN = Pattern.compile("limit\\((\\d+?)(?:,(\\d+?))?\\)");
-    
+    //private static final Pattern LIKE_PATTERN = Pattern.compile("match\\((?*),(?*)?\\)");
 	/**
 	 * @param query
 	 * @return
@@ -152,6 +152,15 @@ public abstract class MangoRestController{
 					if((offset != null)&&(!offset.isEmpty())){
 						model.setOffset(Integer.parseInt(offset));
 					}
+				}
+			}else if(part.startsWith("like(")){
+				Pattern LIKE_PATTERN = Pattern.compile("like\\((.*),(.*)?\\)");
+				Matcher matcher = LIKE_PATTERN.matcher(part);
+				if(matcher.matches()){
+					String attribute = matcher.group(1);
+					String condition = matcher.group(2);
+					QueryComparison comparison = new QueryComparison(attribute, QueryComparison.LIKE, condition);
+					andComparisons.add(comparison);
 				}
 			}else{
 				//Must be Comparison
