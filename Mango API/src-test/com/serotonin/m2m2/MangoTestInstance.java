@@ -5,13 +5,9 @@
 package com.serotonin.m2m2;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.CoreLicenseDefinition;
-import com.serotonin.m2m2.ICoreLicense;
-import com.serotonin.m2m2.ILifecycle;
-import com.serotonin.m2m2.Lifecycle;
-import com.serotonin.m2m2.Main;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.provider.Providers;
 import com.serotonin.util.properties.ReloadingProperties;
@@ -42,8 +38,8 @@ public class MangoTestInstance extends Main{
 
         // Ensure the environment profile is available.
         Common.envProps = new ReloadingProperties(envPropertiesName);
-
-        openZipFiles();
+        Map<String, Boolean> installMap = new HashMap<String, Boolean>();
+        openZipFiles(installMap);
         ClassLoader moduleClassLoader = loadModules();
 
         //Reload the translations here because we will have more from the modules now
@@ -61,7 +57,7 @@ public class MangoTestInstance extends Main{
         });
 
         try {
-            lifecycle.initialize(moduleClassLoader);
+            lifecycle.initialize(moduleClassLoader, installMap);
             //Moved Browser open into Lifecycle.initialize
         }
         catch (Exception e) {
