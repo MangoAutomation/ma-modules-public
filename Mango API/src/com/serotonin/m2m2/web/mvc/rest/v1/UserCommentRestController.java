@@ -24,6 +24,7 @@ import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
@@ -175,7 +176,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     			model.setUsername(user.getUsername());
     		}
     		//Don't let non admin users create notes from other people
-    		if((model.getUserId() != user.getId()) && !user.isAdmin()){
+    		if((model.getUserId() != user.getId()) && !Permissions.hasAdmin(user)){
     			result.addRestMessage(this.getUnauthorizedMessage());
     			return result.createResponseEntity();
     		}

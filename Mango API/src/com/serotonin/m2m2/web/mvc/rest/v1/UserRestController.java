@@ -25,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
@@ -56,7 +57,7 @@ public class UserRestController extends MangoRestController{
 		User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     	    	List<UserModel> userModelList = new ArrayList<UserModel>();
     	    	List<User> users = DaoRegistry.userDao.getUsers();
     	    	for(User u : users){
@@ -97,7 +98,7 @@ public class UserRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(username);
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
@@ -130,7 +131,7 @@ public class UserRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(username);
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
@@ -191,7 +192,7 @@ public class UserRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(model.getUsername());
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				//Create new user
     				model.getData().setId(Common.NEW_ID);
@@ -239,7 +240,7 @@ public class UserRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(username);
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
@@ -293,7 +294,7 @@ public class UserRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(username);
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();

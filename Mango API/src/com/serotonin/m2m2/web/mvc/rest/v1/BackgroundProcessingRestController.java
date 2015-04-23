@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -48,7 +49,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
     			int corePoolSize = executor.getCorePoolSize();
     			int maximumPoolSize = executor.getMaximumPoolSize();
@@ -85,7 +86,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			//Validate the settings
     			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
     			int currentCorePoolSize = executor.getCorePoolSize();
@@ -135,7 +136,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			int corePoolSize = Common.backgroundProcessing.getMediumPriorityServiceCorePoolSize();
     			int maximumPoolSize = Common.backgroundProcessing.getMediumPriorityServiceMaximumPoolSize();
     			int activeCount = Common.backgroundProcessing.getMediumPriorityServiceActiveCount();
@@ -171,7 +172,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			//Validate the settings
     			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE);
     			int currentMaxPoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_MAX_POOL_SIZE);
@@ -220,7 +221,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			int corePoolSize = Common.backgroundProcessing.getLowPriorityServiceCorePoolSize();
     			int maximumPoolSize = Common.backgroundProcessing.getLowPriorityServiceMaximumPoolSize();
     			int activeCount = Common.backgroundProcessing.getLowPriorityServiceActiveCount();
@@ -256,7 +257,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			//Validate the settings
     			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE);
     			int currentMaxPoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_MAX_POOL_SIZE);

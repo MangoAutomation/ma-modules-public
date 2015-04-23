@@ -34,7 +34,6 @@ public class UserTestData {
         user.setPassword(Common.encrypt(standardPassword));
         user.setEmail("email@address.com");
         user.setPhone("808-000-0000");
-        user.setAdmin(false);
         user.setDisabled(false);
         user.setHomeUrl("/home.shtm");
         user.setLastLogin(new Date().getTime() - 10000);
@@ -59,7 +58,6 @@ public class UserTestData {
         user.setPassword(Common.encrypt(standardPassword));
         user.setEmail("email@address.com");
         user.setPhone("808-000-0000");
-        user.setAdmin(false);
         user.setDisabled(false);
         user.setHomeUrl("/home.shtm");
         user.setLastLogin(0); //Never logged in before
@@ -84,7 +82,6 @@ public class UserTestData {
         user.setPassword(Common.encrypt(adminPassword));
         user.setEmail("email@address.com");
         user.setPhone("808-000-0000");
-        user.setAdmin(true);
         user.setDisabled(true);
         user.setHomeUrl("/home.shtm");
         user.setLastLogin(0); //Never logged in before
@@ -109,7 +106,6 @@ public class UserTestData {
         user.setPassword(Common.encrypt(adminPassword));
         user.setEmail("email@address.com");
         user.setPhone("808-000-0000");
-        user.setAdmin(true);
         user.setDisabled(false);
         user.setHomeUrl("/home.shtm");
         user.setLastLogin(0); //Never logged in before
@@ -134,7 +130,7 @@ public class UserTestData {
         user.setPassword(Common.encrypt(adminPassword));
         user.setEmail("email@address.com");
         user.setPhone("808-000-0000");
-        user.setAdmin(true);
+
         user.setDisabled(false);
         user.setHomeUrl("/home.shtm");
         user.setLastLogin(new Date().getTime() - 1000);

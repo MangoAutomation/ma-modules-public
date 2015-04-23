@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WorkItemModel;
 import com.wordnik.swagger.annotations.Api;
@@ -47,7 +48,7 @@ public class WorkItemRestController extends MangoRestController{
 		User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     	    	List<WorkItemModel> modelList = new ArrayList<WorkItemModel>();
     	    	modelList.addAll(Common.backgroundProcessing.getHighPriorityServiceItems());
     	    	modelList.addAll(Common.backgroundProcessing.getMediumPriorityServiceQueueItems());
@@ -83,7 +84,7 @@ public class WorkItemRestController extends MangoRestController{
 		RestProcessResult<List<WorkItemModel>> result = new RestProcessResult<List<WorkItemModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(user.isAdmin()){
+    		if(Permissions.hasAdmin(user)){
     			List<WorkItemModel> modelList = new ArrayList<WorkItemModel>();
     			List<WorkItemModel> list;
     			if(priority.equalsIgnoreCase("HIGH")){
