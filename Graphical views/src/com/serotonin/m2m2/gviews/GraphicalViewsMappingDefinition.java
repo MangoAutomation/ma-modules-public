@@ -4,10 +4,7 @@
  */
 package com.serotonin.m2m2.gviews;
 
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.UriMappingDefinition;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
 public class GraphicalViewsMappingDefinition extends UriMappingDefinition {
@@ -24,12 +21,7 @@ public class GraphicalViewsMappingDefinition extends UriMappingDefinition {
 
     @Override
     public Permission getPermission() {
-        return Permission.CUSTOM;
-    }
-    
-    @Override
-    public boolean hasCustomPermission(User user){
-    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewPermissionDefinition.PERMISSION));
+        return Permission.USER;
     }
     
 	/* (non-Javadoc)
