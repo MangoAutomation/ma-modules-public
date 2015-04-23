@@ -177,7 +177,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
             if (!edit) {
                 if (pointComponent.isSettable()) {
-                	if(view.isEditor(user))
+                	if(view.isEditor(user) || view.isSetter(user))
                         setChange(pointComponent.tgetDataPoint(), state, dataPointRT, request, model);
                 }
 
@@ -642,7 +642,7 @@ public class GraphicalViewDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult saveView(String name, String xid, int anonymousAccess, String readPermission, String editPermission) {
+    public ProcessResult saveView(String name, String xid, int anonymousAccess, String readPermission, String setPermission, String editPermission) {
         ProcessResult result = new ProcessResult();
 
         User user = Common.getUser();
@@ -652,6 +652,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         view.setXid(xid);
         view.setAnonymousAccess(anonymousAccess);
         view.setReadPermission(readPermission);
+        view.setSetPermission(setPermission);
         view.setEditPermission(editPermission);
         view.validate(result);
 
@@ -693,6 +694,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         ProcessResult result = new ProcessResult();
         result.addData("readPermission", view.getReadPermission());
         result.addData("editPermission", view.getEditPermission());
+        result.addData("setPermission", view.getSetPermission());
         return result;
     }
 }

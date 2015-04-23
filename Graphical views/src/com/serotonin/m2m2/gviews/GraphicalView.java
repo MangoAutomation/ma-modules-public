@@ -52,6 +52,8 @@ public class GraphicalView implements Serializable, JsonSerializable {
     private String readPermission;
     @JsonProperty
     private String editPermission;
+    @JsonProperty
+    private String setPermission;
     
     public void addViewComponent(ViewComponent viewComponent) {
         // Determine an index for the component.
@@ -122,12 +124,20 @@ public class GraphicalView implements Serializable, JsonSerializable {
             return true;
         return Permissions.hasPermission(user, readPermission); // Read group
     }
+    
+    public boolean isSetter(User user){
+    	if(isEditor(user))
+    		return true;
+    	return Permissions.hasPermission(user, setPermission);
+    }
 
     public String getUserAccess(User user) {
         if (isEditor(user))
             return "edit";
         if (isReader(user))
             return "read";
+        if(isSetter(user))
+        	return "set";
         return null;
     }
 
@@ -223,6 +233,14 @@ public class GraphicalView implements Serializable, JsonSerializable {
 
     public void setEditPermission(String editPermission) {
         this.editPermission = editPermission;
+    }
+
+    public String getSetPermission() {
+        return setPermission;
+    }
+
+    public void setSetPermission(String setPermission) {
+        this.setPermission = setPermission;
     }
     
     public void validate(ProcessResult response) {

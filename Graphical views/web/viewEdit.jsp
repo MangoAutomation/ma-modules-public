@@ -305,7 +305,7 @@
     
     function saveView() {
         hideContextualMessages($("viewProperties"));
-        GraphicalViewDwr.saveView($get("name"), $get("xid"), $get("anonymousAccess"), $get("readPermission"), $get("editPermission"), function(result) {
+        GraphicalViewDwr.saveView($get("name"), $get("xid"), $get("anonymousAccess"), $get("readPermission"), $get("setPermission"), $get("editPermission"), function(result) {
             if (result.hasMessages)
                 showDwrMessages(result.messages);
             else {
@@ -333,6 +333,7 @@
       GraphicalViewDwr.getPermissions(function(result) {
           $set("readPermission", result.data.readPermission);
           $set("editPermission", result.data.editPermission);
+          $set("setPermission", result.data.setPermission);
       });           
     }
   </script>
@@ -408,6 +409,12 @@
         </td>
       </tr>
       <tr>
+        <td class="formLabel"><fmt:message key="viewEdit.permissions.set"/></td>
+        <td class="formField">
+          <input type="text" id="setPermission" class="formLong" value="${view.setPermission}"/>
+          <tag:img png="bullet_down" onclick="permissionUI.viewPermissions('setPermission')"/>
+        </td>
+      </tr>      <tr>
         <td class="formLabel"><fmt:message key="viewEdit.permissions.edit"/></td>
         <td class="formField">
           <input type="text" id="editPermission" class="formLong" value="${view.editPermission}"/>

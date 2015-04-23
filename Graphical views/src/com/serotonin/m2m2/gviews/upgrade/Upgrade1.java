@@ -37,6 +37,7 @@ public class Upgrade1 extends DBUpgrade {
         // Convert existing permissions data.
         final Map<Integer, String> readPermission = new HashMap<>();
         final Map<Integer, String> editPermission = new HashMap<>();
+        final Map<Integer, String> setPermission = new HashMap<>();
         ejt.query("SELECT g.graphicalViewId, g.accessType, u.username FROM graphicalViewUsers g JOIN users u ON g.userId=u.id",
                 new RowCallbackHandler() {
                     @Override
@@ -47,8 +48,10 @@ public class Upgrade1 extends DBUpgrade {
 
                         if (permission == 1) // Read
                             updatePermissionString(readPermission, gvId, username);
-                        else if (permission > 1) // Read, owner
+                        else if (permission == 2) // Read, set
                             updatePermissionString(editPermission, gvId, username);
+                        else if(permission == 3) // Read, set, owner
+                        	updatePermissionString(setPermission, gvId, username);
                         else
                             LOG.warn("Unknown permission type in dataPointUsers: " + permission + ", ignored");
                     }
@@ -58,7 +61,9 @@ public class Upgrade1 extends DBUpgrade {
             ejt.update("UPDATE graphicalViews SET readPermission=? WHERE id=?", e.getValue(), e.getKey());
         for (Map.Entry<Integer, String> e : editPermission.entrySet())
             ejt.update("UPDATE graphicalViews SET editPermission=? WHERE id=?", e.getValue(), e.getKey());
-
+        for (Map.Entry<Integer, String> e : setPermission.entrySet())
+            ejt.update("UPDATE graphicalViews SET setPermission=? WHERE id=?", e.getValue(), e.getKey());
+        
         // Goodbye share table.
         scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), dropScript);
         scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), dropScript);
@@ -84,12 +89,14 @@ public class Upgrade1 extends DBUpgrade {
     }
 
     private final String[] mssqlScript = { //
-    "ALTER TABLE graphicalViews ADD COLUMN readPermission NVARCHAR(255);", //
+    		"ALTER TABLE graphicalViews ADD COLUMN readPermission NVARCHAR(255);", //
+    		"ALTER TABLE graphicalViews ADD COLUMN setPermission NVARCHAR(255);",
             "ALTER TABLE graphicalViews ADD COLUMN editPermission NVARCHAR(255);", //
     };
 
     private final String[] mysqlScript = { //
-    "ALTER TABLE graphicalViews ADD COLUMN readPermission VARCHAR(255);", //
+    		"ALTER TABLE graphicalViews ADD COLUMN readPermission VARCHAR(255);", //
+    		"ALTER TABLE graphicalViews ADD COLUMN setPermission VARCHAR(255);", //
             "ALTER TABLE graphicalViews ADD COLUMN editPermission VARCHAR(255);", //
     };
 

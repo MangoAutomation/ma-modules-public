@@ -10,6 +10,7 @@ create table graphicalViews (
   userId int not null,
   anonymousAccess int not null,
   readPermission varchar(255),
+  setPermission varchar(255),
   editPermission varchar(255),
   data blob not null
 );

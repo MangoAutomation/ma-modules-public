@@ -48,7 +48,7 @@ public class GraphicalViewsCommon {
     }
 
     public static void ensureViewPermission(User user, GraphicalView view) throws PermissionException {
-        if(!view.isReader(user))
+        if(!view.isReader(user)&&!view.isSetter(user))
             throw new PermissionException("User does not have permission to the view", user);
     }
 

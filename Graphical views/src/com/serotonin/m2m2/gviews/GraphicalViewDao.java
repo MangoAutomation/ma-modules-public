@@ -27,7 +27,7 @@ public class GraphicalViewDao extends BaseDao {
     // Views
     //
     private static final String VIEW_SELECT = //
-    "select data, id, xid, name, background, userId, readPermission, editPermission, anonymousAccess from graphicalViews";
+    "select data, id, xid, name, background, userId, readPermission, setPermission, editPermission, anonymousAccess from graphicalViews";
 
     public List<GraphicalView> getViews() {
         List<GraphicalView> views = query(VIEW_SELECT, new ViewRowMapper());
@@ -44,7 +44,7 @@ public class GraphicalViewDao extends BaseDao {
         List<GraphicalView> userViews = new ArrayList<GraphicalView>();
         //Filtering on user
         for(GraphicalView view : views){
-        	if(view.isReader(user))
+        	if(view.isReader(user)||view.isSetter(user))
         		userViews.add(view);
         }
         return userViews;
@@ -60,7 +60,7 @@ public class GraphicalViewDao extends BaseDao {
         List<IntStringPair> userViews = new ArrayList<IntStringPair>();
         //Filtering on user
         for(GraphicalView view : views){
-        	if(view.isReader(user)){
+        	if(view.isReader(user)||view.isSetter(user)){
         		userViews.add(new IntStringPair(view.getId(), view.getName()));
         	}
         }
@@ -101,8 +101,9 @@ public class GraphicalViewDao extends BaseDao {
             v.setBackgroundFilename(rs.getString(5));
             v.setUserId(rs.getInt(6));
             v.setReadPermission(rs.getString(7));
-            v.setEditPermission(rs.getString(8));
-            v.setAnonymousAccess(rs.getInt(9));
+            v.setSetPermission(rs.getString(8));
+            v.setEditPermission(rs.getString(9));
+            v.setAnonymousAccess(rs.getInt(10));
 
             return v;
         }
@@ -143,18 +144,18 @@ public class GraphicalViewDao extends BaseDao {
 
     void insertView(GraphicalView view) {
         view.setId(doInsert(
-                "insert into graphicalViews (xid, name, background, userId, anonymousAccess, readPermission, editPermission, data) values (?,?,?,?,?,?,?,?)",
+                "insert into graphicalViews (xid, name, background, userId, anonymousAccess, readPermission, setPermission, editPermission, data) values (?,?,?,?,?,?,?,?,?)",
                 new Object[] { view.getXid(), view.getName(), view.getBackgroundFilename(), view.getUserId(),
-                        view.getAnonymousAccess(), view.getReadPermission(), view.getEditPermission(), SerializationHelper.writeObject(view) }, new int[] { Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BLOB }));
+                        view.getAnonymousAccess(), view.getReadPermission(), view.getSetPermission(), view.getEditPermission(), SerializationHelper.writeObject(view) }, new int[] { Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BLOB }));
     }
 
     void updateView(GraphicalView view) {
-        ejt.update("update graphicalViews set xid=?, name=?, background=?, anonymousAccess=?, readPermission=?, editPermission=?, data=? where id=?",
+        ejt.update("update graphicalViews set xid=?, name=?, background=?, anonymousAccess=?, readPermission=?, setPermission=?, editPermission=?, data=? where id=?",
                 new Object[] { view.getXid(), view.getName(), view.getBackgroundFilename(), view.getAnonymousAccess(),
-        				view.getReadPermission(), view.getEditPermission(),
+        				view.getReadPermission(), view.getSetPermission(), view.getEditPermission(),
                         SerializationHelper.writeObject(view), view.getId() }, new int[] { Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BLOB, Types.INTEGER });
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BLOB, Types.INTEGER });
     }
 
     public void removeView(final int viewId) {

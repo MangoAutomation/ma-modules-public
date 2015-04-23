@@ -10,6 +10,7 @@ create table graphicalViews (
   userId int not null,
   anonymousAccess int not null,
   readPermission nvarchar(255),
+  setPermission nvarchar(255),
   editPermission nvarchar(255),
   data image not null,
   primary key (id)
