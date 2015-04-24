@@ -43,7 +43,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, value = "/full")
     public ResponseEntity<PointHierarchyModel> getPointHierarchy(HttpServletRequest request) {
 
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);

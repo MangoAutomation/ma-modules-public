@@ -37,7 +37,7 @@ public class RealTimeModel extends AbstractRestModel<RealTimeDataPointValue>{
 	
 	@JsonGetter("value")
 	public Object getValue(){
-		return this.data.getPointValue();
+		return this.data.getValue();
 	}
 	
 	@JsonGetter("type")
