@@ -8,6 +8,7 @@ import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportJob;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.servlet.BaseInfoServlet;
 
 public class ReportLaunchServlet extends BaseInfoServlet{
@@ -25,7 +26,7 @@ public class ReportLaunchServlet extends BaseInfoServlet{
 			String xid = request.getParameter("reportXid");
 			if(xid != null)
 				report = dao.getReport(xid);
-			if(report != null && (user.getId() == report.getUserId() || user.isAdmin())) {
+			if(report != null && (user.getId() == report.getUserId() || Permissions.hasAdmin(user))) {
 				ReportJob.scheduleReportJob(report);
 				try {
 					response.getWriter().write("Report " + report.getName() + " scheduled");

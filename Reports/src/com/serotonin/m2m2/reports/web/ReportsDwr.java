@@ -47,7 +47,7 @@ public class ReportsDwr extends ModuleDwr {
         response.addData("points", getReadablePoints());
         response.addData("mailingLists", new MailingListDao().getMailingLists());
         response.addData("users", new UserDao().getUsers());
-        if(user.isAdmin()) {
+        if(Permissions.hasAdmin(user)) {
         	response.addData("reports", reportDao.getReports());
         	response.addData("instances", getReportInstances(user));
     	}
@@ -304,7 +304,7 @@ public class ReportsDwr extends ModuleDwr {
     private List<ReportInstance> getReportInstances(User user) {
     	//Allow Admin access to all report instances
     	List<ReportInstance> result;
-    	if(user.isAdmin())
+    	if(Permissions.hasAdmin(user))
     		result = new ReportDao().getReportInstances();
     	else
     		result = new ReportDao().getReportInstances(user.getId());

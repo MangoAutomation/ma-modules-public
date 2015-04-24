@@ -55,7 +55,7 @@ public class WatchList implements JsonSerializable {
     public boolean isEditor(User user) {
         if (isOwner(user))
             return true;
-        if (user.isAdmin()) // Admin
+        if (Permissions.hasAdmin(user)) // Admin
             return true;
         return Permissions.hasPermission(user, editPermission); // Edit group
     }

@@ -8,6 +8,7 @@ import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 public class ReportCommon {
     //
@@ -19,7 +20,7 @@ public class ReportCommon {
             throw new RuntimeException("User does not exist");
         if (report == null)
             throw new RuntimeException("Report does not exist");
-        if (report.getUserId() != user.getId() && ! user.isAdmin())
+        if (report.getUserId() != user.getId() && ! Permissions.hasAdmin(user))
             throw new PermissionException("User does not have permission to access the report", user);
     }
 
@@ -28,7 +29,7 @@ public class ReportCommon {
             throw new RuntimeException("User does not exist");
         if (instance == null)
             throw new RuntimeException("Report instance does not exist");
-        if (instance.getUserId() != user.getId() && ! user.isAdmin())
+        if (instance.getUserId() != user.getId() && ! Permissions.hasAdmin(user))
             throw new PermissionException("User does not have permission to access the report instance", user);
     }
 }

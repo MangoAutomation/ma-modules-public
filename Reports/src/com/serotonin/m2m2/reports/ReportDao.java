@@ -45,6 +45,7 @@ import com.serotonin.m2m2.vo.UserComment;
 import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
 import com.serotonin.m2m2.vo.export.ExportDataValue;
 import com.serotonin.m2m2.vo.export.ExportPointInfo;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.util.SerializationHelper;
 import com.serotonin.util.StringUtils;
 import com.serotonin.web.taglib.Functions;
@@ -207,7 +208,7 @@ public class ReportDao extends BaseDao {
      */
     public void setReportInstancePreventPurge(int id, boolean preventPurge, User user) {
     	
-    	if(user.isAdmin())
+    	if(Permissions.hasAdmin(user))
     		ejt.update("update reportInstances set preventPurge=? where id=?", new Object[] {
                     boolToChar(preventPurge), id });
     	else
