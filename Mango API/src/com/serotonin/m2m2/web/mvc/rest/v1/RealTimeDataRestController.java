@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
+import com.infiniteautomation.mango.db.query.QueryModel;
 import com.infiniteautomation.mango.db.query.SortOption;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
@@ -28,7 +29,6 @@ import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValueCache;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RealTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 import com.wordnik.swagger.annotations.Api;
 
 /**

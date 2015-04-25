@@ -7,12 +7,12 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.util.List;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
+import com.infiniteautomation.mango.db.query.QueryModel;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer

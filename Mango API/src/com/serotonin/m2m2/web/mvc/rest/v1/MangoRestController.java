@@ -6,35 +6,27 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 
-import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.SortOption;
+import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.RqlQueryParser;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.ResourceCreatedMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer
  * 
  */
-public abstract class MangoRestController{
+public abstract class MangoRestController extends RqlQueryParser{
 
-	private static final Log LOG = LogFactory.getLog(MangoRestController.class);
+	//private static final Log LOG = LogFactory.getLog(MangoRestController.class);
 	
 	/**
 	 * Check to see if a User is logged in
@@ -104,113 +96,10 @@ public abstract class MangoRestController{
 	public RestMessage getInternalServerErrorMessage(String content){
 		return new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", content));
 	}
-
-	//TODO only works for single sort
-    private static final Pattern SORT_PATTERN = Pattern.compile("sort\\(([\\+-]{1})(.*)\\)");
-    private static final Pattern LIMIT_PATTERN = Pattern.compile("limit\\((\\d+?)(?:,(\\d+?))?\\)");
-    //private static final Pattern LIKE_PATTERN = Pattern.compile("match\\((?*),(?*)?\\)");
-	/**
-	 * @param query
-	 * @return
-	 */
+	
 	protected QueryModel parseRQL(HttpServletRequest request) throws UnsupportedEncodingException{
-		String query = request.getQueryString();
-		if (query != null) {
-			query = URLDecoder.decode(query, Common.UTF8);
-			if(LOG.isDebugEnabled()){
-				LOG.debug("query: " + query);
-			}
-		}
-		String[] parts = query == null ? new String[]{} : query.split("&");
-		QueryModel model = new QueryModel();
-		List<QueryComparison> orComparisons = new ArrayList<QueryComparison>();
-		List<QueryComparison> andComparisons = new ArrayList<QueryComparison>();
-		List<SortOption> sorts = new ArrayList<SortOption>();
-		for(String part : parts){
-			System.out.println("part: " + part);
-		
-			if(part.startsWith("sort(")){
-				//Sort starts with sort(
-				Matcher matcher = SORT_PATTERN.matcher(part);
-				if(matcher.matches()){
-					//int groupCount = matcher.groupCount();
-					boolean desc = false;
-					if(matcher.group(1).equals("-"))
-						desc = true;
-					SortOption sort = new SortOption(matcher.group(2), desc);
-					sorts.add(sort);
-				}
-			}else if(part.startsWith("limit(")){
-				Matcher matcher = LIMIT_PATTERN.matcher(part);
-				if(matcher.matches()){
-					String limit = matcher.group(1);
-					if((limit != null)&&(!limit.isEmpty())){
-						model.setLimit(Integer.parseInt(limit));
-					}
-					//Have an offset to use
-					String offset = matcher.group(2);
-					if((offset != null)&&(!offset.isEmpty())){
-						model.setOffset(Integer.parseInt(offset));
-					}
-				}
-			}else if(part.startsWith("like(")){
-				Pattern LIKE_PATTERN = Pattern.compile("like\\((.*),(.*)?\\)");
-				Matcher matcher = LIKE_PATTERN.matcher(part);
-				if(matcher.matches()){
-					String attribute = matcher.group(1);
-					String condition = matcher.group(2);
-					QueryComparison comparison = new QueryComparison(attribute, QueryComparison.LIKE, condition);
-					andComparisons.add(comparison);
-				}
-			}else{
-				//Must be Comparison
-				String [] currentComparisons;
-				String[] comparisonParts;
-				
-				if(part.contains("=gte=")){
-					//Greater than
-					comparisonParts = part.split("=gte=");
-					QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.GREATER_THAN_EQUAL_TO, comparisonParts[1]);
-					andComparisons.add(comparison);
-				}else if(part.contains("=gt=")){
-					comparisonParts = part.split("=gt=");
-					QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.GREATER_THAN, comparisonParts[1]);
-					andComparisons.add(comparison);
-				}else if(part.contains("=lte=")){
-					comparisonParts = part.split("=lte=");
-					QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.LESS_THAN_EQUAL_TO, comparisonParts[1]);
-					andComparisons.add(comparison);
-				}else if(part.contains("=lt=")){
-					comparisonParts = part.split("=lt=");
-					QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.LESS_THAN, comparisonParts[1]);
-					andComparisons.add(comparison);
-				}else{
-					//Simple Equals
-					if(part.contains("|")){
-						//Going to use OR
-						currentComparisons = part.split("\\|");
-						for(String currentComparison : currentComparisons){
-							comparisonParts = currentComparison.split("=");
-							QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.EQUAL_TO, comparisonParts[1]);
-							orComparisons.add(comparison);
-						}
-					}else{
-						comparisonParts = part.split("=");
-						if(comparisonParts.length == 2){
-							//Must be simple equals
-							QueryComparison comparison = new QueryComparison(comparisonParts[0], QueryComparison.EQUAL_TO, comparisonParts[1]);
-							andComparisons.add(comparison);
-						}
-					}
-				}
-			}
-		}
-		
-		model.setSort(sorts);
-		model.setOrComparisons(orComparisons);
-		model.setAndComparisons(andComparisons);
-		
-		return model;
+		return parseRQL(request.getQueryString());
 	}
+	
 	
 }

@@ -7,12 +7,12 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.db.query.StreamableQuery;
+import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer
@@ -25,7 +25,7 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArray
 	protected QueryModel query;
 	protected QueryStreamCallback<VO> queryCallback;
 	protected MangoVoRestController<VO, MODEL> controller;
-	protected StreamableQuery<VO> results;
+	protected StreamableSqlQuery<VO> results;
 	
 	/**
 	 * @param query

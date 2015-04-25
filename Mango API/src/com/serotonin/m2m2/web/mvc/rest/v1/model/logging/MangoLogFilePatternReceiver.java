@@ -41,7 +41,7 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
+import com.infiniteautomation.mango.db.query.QueryModel;
 
 /**
  * 

@@ -8,10 +8,10 @@ import java.io.File;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.infiniteautomation.mango.db.query.QueryModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.query.QueryModel;
 
 /**
  * @author Terry Packer
