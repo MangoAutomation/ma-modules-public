@@ -5,5 +5,8 @@
 -->
 
 <doxManifest>
-  <item id="pointLinks" key="dox.pointLinks" filename="pointLinks.htm"/>
+  <item id="pointLinks" key="dox.pointLinks" filename="pointLinks.htm">
+  	<relation id="scriptPermissions"/>
+  	<relation id="mangoJavaScript"/>
+  </item>
 </doxManifest>

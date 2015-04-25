@@ -19,6 +19,8 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
+import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.util.ChangeComparable;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -49,6 +51,9 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
     private boolean writeAnnotation;
     @JsonProperty
     private boolean disabled;
+    private int logLevel = ScriptLog.LogLevel.NONE;
+    @JsonProperty
+    private ScriptPermissions scriptPermissions = new ScriptPermissions(Common.getUser());
 
     public boolean isNew() {
         return id == Common.NEW_ID;
@@ -118,8 +123,24 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
+    
+    public int getLogLevel() {
+        return logLevel;
+    }
 
-    @Override
+    public void setLogLevel(int logLevel) {
+        this.logLevel = logLevel;
+    }
+    
+    public ScriptPermissions getScriptPermissions() {
+		return scriptPermissions;
+	}
+
+	public void setScriptPermissions(ScriptPermissions scriptPermissions) {
+		this.scriptPermissions = scriptPermissions;
+	}
+
+	@Override
     public String getTypeKey() {
         return "event.audit.pointLink";
     }
@@ -131,6 +152,7 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
             response.addContextualMessage("targetPointId", "pointLinks.validate.targetRequired");
         if (sourcePointId == targetPointId)
             response.addContextualMessage("targetPointId", "pointLinks.validate.samePoint");
+        this.scriptPermissions.validate(response, Common.getUser());
     }
 
     @Override
@@ -143,6 +165,8 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
         AuditEventType.addExportCodeMessage(list, "pointLinks.event", EVENT_CODES, event);
         AuditEventType.addPropertyMessage(list, "pointLinks.writeAnnotation", writeAnnotation);
         AuditEventType.addPropertyMessage(list, "common.disabled", disabled);
+        AuditEventType.addExportCodeMessage(list, "dsEdit.script.logLevel", ScriptLog.LOG_LEVEL_CODES, logLevel);
+        AuditEventType.addPropertyMessage(list, "scripting.permission", scriptPermissions);
     }
 
     @Override
@@ -162,6 +186,10 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
         AuditEventType.maybeAddPropertyChangeMessage(list, "pointLinks.writeAnnotation", from.writeAnnotation,
                 writeAnnotation);
         AuditEventType.maybeAddPropertyChangeMessage(list, "common.disabled", from.disabled, disabled);
+        AuditEventType.maybeAddExportCodeChangeMessage(list, "pointLinks.logLevel", ScriptLog.LOG_LEVEL_CODES, from.logLevel,
+                logLevel);
+       AuditEventType.maybeAddPropertyChangeMessage(list, "scripting.permission", from.scriptPermissions, scriptPermissions);
+
     }
 
     //
@@ -183,6 +211,8 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
             writer.writeEntry("targetPointId", dp.getXid());
 
         writer.writeEntry("event", EVENT_CODES.getCode(event));
+        writer.writeEntry("logLevel", ScriptLog.LOG_LEVEL_CODES.getCode(logLevel));
+
     }
 
     @Override
@@ -212,5 +242,15 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
                 throw new TranslatableJsonException("emport.error.link.invalid", "event", text,
                         EVENT_CODES.getCodeList());
         }
+        text = jsonObject.getString("logLevel");
+        if (text != null) {
+            logLevel = ScriptLog.LOG_LEVEL_CODES.getId(text);
+            if (logLevel == -1)
+                throw new TranslatableJsonException("emport.error.invalid", "logLevel", text,
+                		ScriptLog.LOG_LEVEL_CODES.getCodeList());
+        }else{
+        	logLevel = ScriptLog.LogLevel.NONE;
+        }
+
     }
 }

@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.pointLinks;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,8 @@ import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptExecutor;
+import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.DataPointExtendedNameComparator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -90,7 +94,7 @@ public class PointLinksDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult savePointLink(int id, String xid, int sourcePointId, int targetPointId, String script,
-            int event, boolean writeAnnotation, boolean disabled) {
+            int event, boolean writeAnnotation, boolean disabled, ScriptPermissions permissions, int logLevel) {
         // Validate the given information. If there is a problem, return an appropriate error message.
         PointLinkVO vo = new PointLinkVO();
         vo.setId(id);
@@ -101,6 +105,8 @@ public class PointLinksDwr extends ModuleDwr {
         vo.setEvent(event);
         vo.setWriteAnnotation(writeAnnotation);
         vo.setDisabled(disabled);
+        vo.setScriptPermissions(permissions);
+        vo.setLogLevel(logLevel);
 
         ProcessResult response = new ProcessResult();
         PointLinkDao pointLinkDao = new PointLinkDao();
@@ -127,7 +133,7 @@ public class PointLinksDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult validateScript(String script, int sourcePointId, int targetPointId) {
+    public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, ScriptPermissions permissions, int logLevel) {
         ProcessResult response = new ProcessResult();
         TranslatableMessage message;
         ScriptExecutor scriptExecutor = new ScriptExecutor();
@@ -140,9 +146,13 @@ public class PointLinksDwr extends ModuleDwr {
             context.put(PointLinkRT.CONTEXT_VAR_NAME, point);
             int targetDataType = new DataPointDao().getDataPoint(targetPointId).getPointLocator().getDataTypeId();
 
+            final StringWriter scriptOut = new StringWriter();
+            final PrintWriter scriptWriter = new PrintWriter(scriptOut);
+            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
+
             try {
-                PointValueTime pvt = scriptExecutor.execute(script, context, System.currentTimeMillis(),
-                        targetDataType, -1);
+                PointValueTime pvt = scriptExecutor.execute(script, context, null, System.currentTimeMillis(),
+                        targetDataType, -1, permissions ,scriptWriter, scriptLog);
                 if (pvt.getValue() == null)
                     message = new TranslatableMessage("event.pointLink.nullResult");
                 else if (pvt.getTime() == -1)
@@ -150,6 +160,8 @@ public class PointLinksDwr extends ModuleDwr {
                 else
                     message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
                             Functions.getTime(pvt.getTime()));
+            	//Add the script logging output
+                response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
             }
             catch (ScriptException e) {
                 message = new TranslatableMessage("common.default", e.getMessage());
@@ -162,4 +174,10 @@ public class PointLinksDwr extends ModuleDwr {
         response.addMessage("script", message);
         return response;
     }
+    
+    @DwrPermission(user = true)
+    public String getLogPath(int pointId) {
+    	return PointLinkRT.getLogFile(pointId).getAbsolutePath();
+    }
+    
 }

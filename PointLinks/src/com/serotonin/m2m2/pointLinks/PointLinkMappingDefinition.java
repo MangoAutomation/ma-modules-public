@@ -4,12 +4,16 @@
  */
 package com.serotonin.m2m2.pointLinks;
 
-import com.serotonin.m2m2.module.UrlMappingDefinition;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.module.UriMappingDefinition;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
-public class PointLinkMappingDefinition extends UrlMappingDefinition {
-    @Override
-    public String getUrlPath() {
+public class PointLinkMappingDefinition extends UriMappingDefinition {
+    
+	@Override
+    public String getPath() {
         return "/point_links.shtm";
     }
 
@@ -24,17 +28,11 @@ public class PointLinkMappingDefinition extends UrlMappingDefinition {
     }
 
     @Override
-    public String getMenuKey() {
-        return "header.pointLinks";
-    }
-
-    @Override
-    public String getMenuImage() {
-        return "web/link.png";
-    }
-
-    @Override
     public Permission getPermission() {
-        return Permission.DATA_SOURCE;
+        return Permission.CUSTOM;
+    }
+    @Override
+    public boolean hasCustomPermission(User user){
+    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(PointLinkPermissionDefinition.PERMISSION));
     }
 }

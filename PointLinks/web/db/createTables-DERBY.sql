@@ -10,7 +10,11 @@ create table pointLinks (
   script clob,
   eventType int not null,
   writeAnnotation char(1) not null,
-  disabled char(1) not null
+  disabled char(1) not null,
+  logLevel int not null,
+  scriptDataSourcePermission varchar(255) not null,
+  scriptDataPointSetPermission varchar(255) not null,
+  scriptDataPointReadPermission varchar(255) not null,
 );
 alter table pointLinks add constraint pointLinksPk primary key (id);
 alter table pointLinks add constraint pointLinksUn1 unique (xid);

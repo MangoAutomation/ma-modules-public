@@ -4,11 +4,15 @@
  */
 package com.serotonin.m2m2.pointLinks;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.script.ScriptException;
 
+import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.m2m2.Common;
@@ -22,6 +26,7 @@ import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptExecutor;
+import com.serotonin.m2m2.rt.script.ScriptLog;
 
 /**
  * @author Matthew Lohbihler
@@ -31,6 +36,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private final PointLinkVO vo;
     private final SystemEventType eventType;
     private final SystemEventType alreadyRunningEvent;
+    private ScriptLog scriptLog;
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -47,6 +53,18 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public void initialize() {
         Common.runtimeManager.addDataPointListener(vo.getSourcePointId(), this);
         checkSource();
+        File file = getLogFile(this.vo.getId());
+        PrintWriter out;
+        try {
+            out = new PrintWriter(file);
+        }
+        catch (IOException e) {
+            raiseFailureEvent( new TranslatableMessage(
+                    "event.pointLink.logError.open", file.getPath(), e.getMessage()));
+            out = new PrintWriter(new NullWriter());
+        }
+        scriptLog = new ScriptLog(out, vo.getLogLevel());
+        scriptLog.info("Data point started");
     }
 
     public void terminate() {
@@ -113,8 +131,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             context.put(CONTEXT_VAR_NAME, source);
 
             try {
-                PointValueTime pvt = scriptExecutor.execute(vo.getScript(), context, newValue.getTime(),
-                        targetDataType, newValue.getTime());
+                PointValueTime pvt = scriptExecutor.execute(vo.getScript(), context, null, newValue.getTime(),
+                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     return;
@@ -210,4 +228,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 	public void pointSetComplete() {
 		this.ready = true;
 	}
+	
+    public static File getLogFile(int pointId) {
+        return new File(Common.getLogsDir(), "pointLink-" + pointId + ".log");
+    }
 }

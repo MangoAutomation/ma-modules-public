@@ -4,9 +4,10 @@
 --%>
 <%@page import="com.serotonin.m2m2.Common"%>
 <%@page import="com.serotonin.m2m2.pointLinks.PointLinkVO"%>
+<%@page import="com.serotonin.m2m2.rt.script.ScriptLog"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 <c:set var="NEW_ID"><%= Common.NEW_ID %></c:set>
-
+<c:set var="NONE_LOG"><%= ScriptLog.LogLevel.NONE %></c:set>
 <tag:page dwr="PointLinksDwr" onload="init">
   <script type="text/javascript">
     dojo.require("dojo.store.Memory");
@@ -28,7 +29,7 @@
                 style: "width: 100%",
                 queryExpr: "*\${0}*",
                 highlightMatch: "all",
-                required: true
+                required: true,
             }, "sourcePointId");
          	targetPointSelector = new dijit.form.FilteringSelect({
                 store: new dojo.store.Memory({idProperty: 'key', data: response.targetPoints }),
@@ -53,6 +54,7 @@
     }
     
     function showPointLink(plId) {
+    	hide("scriptValidationOutput");
         if (editingPointLink)
             stopImageFader($("pl"+ editingPointLink.id +"Img"));
         PointLinksDwr.getPointLink(plId, function(pl) {
@@ -75,20 +77,25 @@
             else
             	targetPointSelector.reset();
             
-            $set("script", pl.script);
+            editor.setValue(pl.script);
             $set("event", pl.event);
             $set("writeAnnotation", pl.writeAnnotation);
             $set("disabled", pl.disabled);
             
+            setScriptPermissions(pl.scriptPermissions);
+            $set("logLevel", pl.logLevel);
+            
             startImageFader($("pl"+ plId +"Img"));
             display("deletePointLinkImg", plId != ${NEW_ID});
             setUserMessage();
+            logLevelChanged();
         });
     }
     
     function savePointLink() {
         setUserMessage();
         hideContextualMessages("pointLinkDetails")
+        hide("scriptValidationOutput");
         //Since the Filtering Select has issues with the IntStringPair objects
         // we can't use .value directly so we need to confirm there is a value set
         var targetPointId=0,sourcePointId=0;
@@ -100,7 +107,10 @@
         }
         PointLinksDwr.savePointLink(editingPointLink.id, $get("xid"), 
         		sourcePointId, targetPointId,
-                $get("script"), $get("event"), $get("writeAnnotation"), $get("disabled"), function(response) {
+        		editor.getValue(), $get("event"), $get("writeAnnotation"), $get("disabled"),
+                getScriptPermissions(),
+                $get("logLevel"),
+                function(response) {
             if (response.hasMessages)
                 showDwrMessages(response.messages);
             else {
@@ -114,6 +124,7 @@
                 }
                 else
                     setUserMessage("<fmt:message key="pointLinks.pointLinkSaved"/>");
+                logLevelChanged();
                 PointLinksDwr.getPointLink(editingPointLink.id, updatePointLink);
             }
         });
@@ -150,6 +161,7 @@
             stopImageFader($("pl"+ editingPointLink.id +"Img"));
             $("pointLinksTable").removeChild($("pl"+ editingPointLink.id));
             hide("pointLinkDetails");
+            hide("scriptValidationOutput");
             editingPointLink = null;
         });
     }
@@ -162,9 +174,16 @@
         if(sourcePointSelector.item != null){
         	sourcePointId = sourcePointSelector.item.key;
         }
-        PointLinksDwr.validateScript($get("script"), sourcePointId, targetPointId,
+        PointLinksDwr.validateScript(editor.getValue(), sourcePointId, targetPointId,
+        		getScriptPermissions(), $get("logLevel"),
                 function(response) {
             showDwrMessages(response.messages);
+            hide("scriptValidationOutput");
+            if (response.data.out){
+                output = response.data.out;
+                $set("scriptValidationOutput", output);
+                show("scriptValidationOutput");
+            }
         });
     }
     
@@ -173,6 +192,21 @@
             updateImg(imgNode, "${modulePath}/web/link_break.png", "<m2m2:translate key="js.disabledPointLink" escapeDQuotes="true"/>", true);
         else
             updateImg(imgNode, "${modulePath}/web/link.png", "<m2m2:translate key="pointLinks.pointLink" escapeDQuotes="true"/>", true);
+    }
+    
+    function logLevelChanged() {
+      
+      PointLinksDwr.getLogPath(editingPointLink.id, function(response){
+          var logLevelPath = dojo.byId("logPathMsg");
+          logLevelPath.innerHTML = response;
+    
+          if ($get("logLevel") == ${NONE_LOG})
+              hide("logPathMsg");
+          else
+              show("logPathMsg")			  
+      });
+      
+    
     }
   </script>
   
@@ -218,15 +252,15 @@
               <td class="formLabelRequired"><fmt:message key="common.xid"/></td>
               <td class="formField"><input type="text" id="xid"/></td>
             </tr>
-            
+            <tag:scriptPermissions></tag:scriptPermissions>
             <tr>
               <td class="formLabelRequired"><fmt:message key="pointLinks.source"/></td>
-              <td class="formField"><select id="sourcePointId"></select></td>
+              <td class="formField"><div class="formLong"><select id="sourcePointId"></select></div></td>
             </tr>
             
             <tr>
               <td class="formLabelRequired"><fmt:message key="pointLinks.target"/></td>
-              <td class="formField"><select id="targetPointId"></select></td>
+              <td class="formField"><div class="formLong"><select id="targetPointId"></select></div></td>
             </tr>
             
             <tr>
@@ -235,10 +269,19 @@
                 <tag:img png="accept" onclick="validateScript();" title="common.validate"/>
               </td>
               <td class="formField">
-                <textarea id="script" rows="10" cols="50"/></textarea>
+                <div id="script" style="font-family: Courier New !important; position: relative; height:400px; width:700px"></div>
+                <div id="scriptValidationOutput" style="display:none;color:green; width: 100%px; overflow: auto"></div>
               </td>
             </tr>
-            
+            <tr>
+              <td class="formLabelRequired"><fmt:message key="dsEdit.script.logLevel"/></td>
+              <td class="formField">
+                <tag:exportCodesOptions id="logLevel" optionList="<%= ScriptLog.LOG_LEVEL_CODES.getIdKeys() %>"
+                        onchange="logLevelChanged()"/>
+                <div id="logPathMsg">
+                </div>
+              </td>
+            </tr> 
             <tr>
               <td class="formLabelRequired"><fmt:message key="pointLinks.event"/></td>
               <td class="formField">
@@ -269,4 +312,15 @@
       </td>
     </tr>
   </table>
+<script src="/resources/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/resources/ace/theme-tomorrow_night_bright.js" type="text/javascript" charset="utf-8"></script>
+<script src="/resources/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+<script src="/resources/ace/worker-javascript.js" type="text/javascript" charset="utf-8"></script>
+<script>
+  ace.config.set("basePath", "/resources/ace");
+    var editor = ace.edit("script");
+    editor.setTheme("ace/theme/tomorrow_night_bright");
+    var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+    editor.getSession().setMode(new JavaScriptMode());
+</script>
 </tag:page>
