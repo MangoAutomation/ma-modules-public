@@ -27,25 +27,25 @@ public class IncrementMultistateChangeModel extends VirtualPointLocatorModel {
 	}
 	
 	@JsonGetter("values")
-	@CSVColumnGetter(order=13, header="values")
+	@CSVColumnGetter(order=14, header="values")
 	public int[] getValues() {
 	    return this.data.getIncrementMultistateChange().getValues();
 	}
 
 	@JsonSetter("values")
-	@CSVColumnSetter(order=13, header="values")
+	@CSVColumnSetter(order=14, header="values")
 	public void setValues(int[] values) {
 	    this.data.getIncrementMultistateChange().setValues(values);
 	}
 
 	@JsonGetter("roll")
-	@CSVColumnGetter(order=14, header="roll")
+	@CSVColumnGetter(order=15, header="roll")
 	public boolean isRoll() {
 	    return this.data.getIncrementMultistateChange().isRoll();
 	}
 
 	@JsonSetter("roll")
-	@CSVColumnSetter(order=14, header="roll")
+	@CSVColumnSetter(order=15, header="roll")
 	public void setRoll(boolean roll) {
 	    this.data.getIncrementMultistateChange().setRoll(roll);
 	}

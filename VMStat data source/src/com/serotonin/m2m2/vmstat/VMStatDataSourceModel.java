@@ -25,13 +25,6 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
 		super(new VMStatDataSourceVO());
 	}
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
-	@Override
-	public String getModelType() {
-		return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;
-	}
 	
 	@JsonGetter(value="pollSeconds")
 	public int getPollSeconds(){

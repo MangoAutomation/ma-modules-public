@@ -45,7 +45,6 @@ import com.serotonin.m2m2.virtual.vo.model.RandomAnalogChangeModel;
 import com.serotonin.m2m2.virtual.vo.model.RandomBooleanChangeModel;
 import com.serotonin.m2m2.virtual.vo.model.RandomMultistateChangeModel;
 import com.serotonin.m2m2.virtual.vo.model.SinusoidalChangeModel;
-import com.serotonin.m2m2.virtual.vo.model.VirtualPointLocatorModel;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 

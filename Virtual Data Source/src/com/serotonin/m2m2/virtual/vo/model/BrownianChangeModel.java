@@ -26,37 +26,37 @@ public class BrownianChangeModel extends VirtualPointLocatorModel {
 	}
 	
 	@JsonGetter("min")
-	@CSVColumnGetter(order=13, header="min")
+	@CSVColumnGetter(order=14, header="min")
 	public double getMin() {
 	    return this.data.getBrownianChange().getMin();
 	}
 
 	@JsonSetter("min")
-	@CSVColumnSetter(order=13, header="min")
+	@CSVColumnSetter(order=14, header="min")
 	public void setMin(double min) {
 	    this.data.getBrownianChange().setMin(min);
 	}
 
 	@JsonGetter("max")
-	@CSVColumnGetter(order=14, header="max")
+	@CSVColumnGetter(order=15, header="max")
 	public double getMax() {
 	    return this.data.getBrownianChange().getMax();
 	}
 
 	@JsonSetter("max")
-	@CSVColumnSetter(order=14, header="max")
+	@CSVColumnSetter(order=15, header="max")
 	public void setMax(double max) {
 	    this.data.getBrownianChange().setMax(max);
 	}
 
 	@JsonGetter("maxChange")
-	@CSVColumnGetter(order=15, header="maxChange")
+	@CSVColumnGetter(order=16, header="maxChange")
 	public double getMaxChange() {
 	    return this.data.getBrownianChange().getMaxChange();
 	}
 
 	@JsonSetter("maxChange")
-	@CSVColumnSetter(order=15, header="maxChange")
+	@CSVColumnSetter(order=16, header="maxChange")
 	public void setMaxChange(double maxChange) {
 	    this.data.getBrownianChange().setMaxChange(maxChange);
 	}

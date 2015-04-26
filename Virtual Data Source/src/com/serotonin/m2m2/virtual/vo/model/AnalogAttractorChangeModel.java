@@ -28,31 +28,31 @@ public class AnalogAttractorChangeModel extends VirtualPointLocatorModel {
 	}
 	
 	@JsonGetter("maxChange")
-	@CSVColumnGetter(order=13, header="maxChange")
+	@CSVColumnGetter(order=14, header="maxChange")
 	public double getMaxChange() {
 	    return this.data.getAnalogAttractorChange().getMaxChange();
 	}
 
 	@JsonSetter("maxChange")
-	@CSVColumnSetter(order=13, header="maxChange")
+	@CSVColumnSetter(order=14, header="maxChange")
 	public void setMaxChange(double maxChange) {
 	    this.data.getAnalogAttractorChange().setMaxChange(maxChange);
 	}
 
 	@JsonGetter("volatility")
-	@CSVColumnGetter(order=14, header="volatility")
+	@CSVColumnGetter(order=15, header="volatility")
 	public double getVolatility() {
 	    return this.data.getAnalogAttractorChange().getVolatility();
 	}
 
 	@JsonSetter("volatility")
-	@CSVColumnSetter(order=14, header="volatility")
+	@CSVColumnSetter(order=15, header="volatility")
 	public void setVolatility(double volatility) {
 	    this.data.getAnalogAttractorChange().setVolatility(volatility);
 	}
 
 	@JsonGetter("attractionPointXid")
-	@CSVColumnGetter(order=15, header="attractionPointXid")
+	@CSVColumnGetter(order=16, header="attractionPointXid")
 	public String getAttractionPointXid() {
 		DataPointVO dpvo = DataPointDao.instance.get(this.data.getAnalogAttractorChange().getAttractionPointId());
 		if(dpvo != null)
@@ -61,7 +61,7 @@ public class AnalogAttractorChangeModel extends VirtualPointLocatorModel {
 	}
 
 	@JsonSetter("attractionPointXid")
-	@CSVColumnSetter(order=15, header="attractionPointXid")
+	@CSVColumnSetter(order=16, header="attractionPointXid")
 	public void setAttractionPointXid(String attractionPointXid) {
 		DataPointVO dpvo = DataPointDao.instance.getByXid(attractionPointXid);
 		if(dpvo != null)

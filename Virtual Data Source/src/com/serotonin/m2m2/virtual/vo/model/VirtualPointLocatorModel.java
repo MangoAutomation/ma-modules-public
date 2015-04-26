@@ -45,42 +45,30 @@ abstract public class VirtualPointLocatorModel extends PointLocatorModel<Virtual
 		super(new VirtualPointLocatorVO());
 	}
 
-	@JsonGetter("dataType")
-	@CSVColumnGetter(order=10, header="dataType")
-	public String getDataType() {
-	    return DataTypes.CODES.getCode(this.data.getDataTypeId());
-	}
-
-	@JsonSetter("dataType")
-	@CSVColumnSetter(order=10, header="dataType")
-	public void setDataType(String dataType) {
-	    this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
-	}
-
 	@JsonGetter("changeType")
-	@CSVColumnGetter(order=11, header="changeType")
+	@CSVColumnGetter(order=13, header="changeType")
 	public String getChangeType() {
 	    return ChangeTypeVO.CHANGE_TYPE_CODES.getCode(this.data.getChangeTypeId());
 	}
 
 	@JsonSetter("changeType")
-	@CSVColumnSetter(order=11, header="changeType")
+	@CSVColumnSetter(order=13, header="changeType")
 	public void setChangeType(String changeType) {
 	    this.data.setChangeTypeId(ChangeTypeVO.CHANGE_TYPE_CODES.getId(changeType));
 	}
 
-	@JsonGetter("settable")
-	@CSVColumnGetter(order=12, header="settable")
-	public boolean isSettable() {
-	    return this.data.isSettable();
+
+	@JsonSetter("dataType")
+	@CSVColumnSetter(order=10, header="dataType")
+	@Override
+	public void setDataTypeId(String dataType) {
+	    this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
 	}
 
 	@JsonSetter("settable")
-	@CSVColumnSetter(order=12, header="settable")
-	public void setSettable(boolean settable) {
-	    this.data.setSettable(settable);
-	}
-
-
-	
+	@CSVColumnSetter(order=11, header="settable")
+	@Override
+	public void setSettable(boolean settable) { 
+		this.data.setSettable(settable);
+	}	
 }

@@ -26,25 +26,25 @@ public class RandomAnalogChangeModel extends VirtualPointLocatorModel {
 	}
 	
 	@JsonGetter("min")
-	@CSVColumnGetter(order=13, header="min")
+	@CSVColumnGetter(order=14, header="min")
 	public double getMin() {
 	    return this.data.getRandomAnalogChange().getMin();
 	}
 
 	@JsonSetter("min")
-	@CSVColumnSetter(order=13, header="min")
+	@CSVColumnSetter(order=14, header="min")
 	public void setMin(double min) {
 	    this.data.getRandomAnalogChange().setMin(min);
 	}
 
 	@JsonGetter("max")
-	@CSVColumnGetter(order=14, header="max")
+	@CSVColumnGetter(order=15, header="max")
 	public double getMax() {
 	    return this.data.getRandomAnalogChange().getMax();
 	}
 
 	@JsonSetter("max")
-	@CSVColumnSetter(order=14, header="max")
+	@CSVColumnSetter(order=15, header="max")
 	public void setMax(double max) {
 	    this.data.getRandomAnalogChange().setMax(max);
 	}

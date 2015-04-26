@@ -6,7 +6,6 @@ package com.serotonin.m2m2.virtual.vo;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.serotonin.m2m2.virtual.VirtualDataSourceDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
@@ -29,24 +28,14 @@ public class VirtualDataSourceModel extends AbstractDataSourceModel<VirtualDataS
 
 	@JsonGetter(value="pollPeriod")
 	public TimePeriod getPollPeriod(){
-		VirtualDataSourceVO vo = ((VirtualDataSourceVO) this.data);
-		
-		return new TimePeriod(vo.getUpdatePeriods(), 
-				TimePeriodType.convertTo(vo.getUpdatePeriodType()));
+		return new TimePeriod(this.data.getUpdatePeriods(), 
+				TimePeriodType.convertTo(this.data.getUpdatePeriodType()));
 	}
 
 	@JsonSetter(value="pollPeriod")
 	public void setPollPeriod(TimePeriod pollPeriod){
-		((VirtualDataSourceVO) this.data).setUpdatePeriods(pollPeriod.getPeriods());
-		((VirtualDataSourceVO) this.data).setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
-	@Override
-	public String getModelType() {
-		return VirtualDataSourceDefinition.TYPE_NAME;
+		this.data.setUpdatePeriods(pollPeriod.getPeriods());
+		this.data.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
 	}
 
 }

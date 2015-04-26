@@ -27,13 +27,13 @@ public class RandomMultistateChangeModel extends VirtualPointLocatorModel {
 	}
 
 	@JsonGetter("values")
-	@CSVColumnGetter(order=13, header="values")
+	@CSVColumnGetter(order=14, header="values")
 	public int[] getValues() {
 	    return this.data.getRandomMultistateChange().getValues();
 	}
 
 	@JsonSetter("values")
-	@CSVColumnSetter(order=13, header="values")
+	@CSVColumnSetter(order=14, header="values")
 	public void setValues(int[] values) {
 	    this.data.getRandomMultistateChange().setValues(values);
 	}

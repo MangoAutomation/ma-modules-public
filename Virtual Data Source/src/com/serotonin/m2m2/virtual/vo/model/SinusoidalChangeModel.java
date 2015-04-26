@@ -27,53 +27,51 @@ public class SinusoidalChangeModel extends VirtualPointLocatorModel {
 	}
 	
 	@JsonGetter("amplitude")
-	@CSVColumnGetter(order=13, header="amplitude")
+	@CSVColumnGetter(order=14, header="amplitude")
 	public double getAmplitude() {
 	    return this.data.getSinusoidalChange().getAmplitude();
 	}
 
 	@JsonSetter("amplitude")
-	@CSVColumnSetter(order=13, header="amplitude")
+	@CSVColumnSetter(order=14, header="amplitude")
 	public void setAmplitude(double amplitude) {
 	    this.data.getSinusoidalChange().setAmplitude(amplitude);
 	}
 
 	@JsonGetter("offset")
-	@CSVColumnGetter(order=14, header="offset")
+	@CSVColumnGetter(order=15, header="offset")
 	public double getOffset() {
 	    return this.data.getSinusoidalChange().getOffset();
 	}
 
 	@JsonSetter("offset")
-	@CSVColumnSetter(order=14, header="offset")
+	@CSVColumnSetter(order=15, header="offset")
 	public void setOffset(double offset) {
 	    this.data.getSinusoidalChange().setOffset(offset);
 	}
 
 	@JsonGetter("period")
-	@CSVColumnGetter(order=15, header="period")
+	@CSVColumnGetter(order=16, header="period")
 	public double getPeriod() {
 	    return this.data.getSinusoidalChange().getPeriod();
 	}
 
 	@JsonSetter("period")
-	@CSVColumnSetter(order=15, header="period")
+	@CSVColumnSetter(order=16, header="period")
 	public void setPeriod(double period) {
 	    this.data.getSinusoidalChange().setPeriod(period);
 	}
 
 	@JsonGetter("phaseShift")
-	@CSVColumnGetter(order=16, header="phaseShift")
+	@CSVColumnGetter(order=17, header="phaseShift")
 	public double getPhaseShift() {
 	    return this.data.getSinusoidalChange().getPhaseShift();
 	}
 
 	@JsonSetter("phaseShift")
-	@CSVColumnSetter(order=16, header="phaseShift")
+	@CSVColumnSetter(order=17, header="phaseShift")
 	public void setPhaseShift(double phaseShift) {
 	    this.data.getSinusoidalChange().setPhaseShift(phaseShift);
 	}
-
-
 
 }

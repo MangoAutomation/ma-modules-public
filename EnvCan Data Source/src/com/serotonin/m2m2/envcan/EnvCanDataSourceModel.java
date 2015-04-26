@@ -25,13 +25,6 @@ public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSou
 		super(data);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
-	@Override
-	public String getModelType() {
-		return EnvCanDataSourceDefinition.DATA_SOURCE_TYPE;
-	}
 	
 	@JsonGetter("stationId")
 	public int getStationId() {

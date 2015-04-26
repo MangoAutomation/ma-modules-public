@@ -3,8 +3,6 @@
  * @author Terry Packer
  */
 package com.infiniteautomation.asciifile.vo;
-import com.infiniteautomation.asciifile.AsciiFileDataSourceDefinition;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
@@ -17,8 +15,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  */
 public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileDataSourceVO>{
 
-	private AsciiFileDataSourceVO data;
-	
 	public AsciiFileDataSourceModel() {
 		super(new AsciiFileDataSourceVO());
 	}
@@ -30,14 +26,6 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 		super(data);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
-	@Override
-	public String getModelType() {
-		return AsciiFileDataSourceDefinition.DATA_SOURCE_TYPE;
-	}
-	
 	@JsonGetter(value="pollPeriod")
 	public TimePeriod getPollPeriod(){
 	    return new TimePeriod(this.data.getUpdatePeriods(), 
@@ -59,7 +47,5 @@ public class AsciiFileDataSourceModel extends AbstractDataSourceModel<AsciiFileD
 	public void setFilePath(String filePath) {
 	    this.data.setFilePath(filePath);
 	}
-
-
 
 }

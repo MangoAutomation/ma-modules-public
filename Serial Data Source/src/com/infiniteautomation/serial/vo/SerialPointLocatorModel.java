@@ -31,54 +31,47 @@ public class SerialPointLocatorModel extends PointLocatorModel<SerialPointLocato
 	}
 
 	@JsonGetter("pointIdentifier")
-	@CSVColumnGetter(order=10, header="pointIdentifier")
+	@CSVColumnGetter(order=13, header="pointIdentifier")
 	public String getPointIdentifier() {
 	    return this.data.getPointIdentifier();
 	}
 
 	@JsonSetter("pointIdentifier")
-	@CSVColumnSetter(order=10, header="pointIdentifier")
+	@CSVColumnSetter(order=13, header="pointIdentifier")
 	public void setPointIdentifier(String pointIdentifier) {
 	    this.data.setPointIdentifier(pointIdentifier);
 	}
 
 	@JsonGetter("valueRegex")
-	@CSVColumnGetter(order=11, header="valueRegex")
+	@CSVColumnGetter(order=14, header="valueRegex")
 	public String getValueRegex() {
 	    return this.data.getValueRegex();
 	}
 
 	@JsonSetter("valueRegex")
-	@CSVColumnSetter(order=11, header="valueRegex")
+	@CSVColumnSetter(order=14, header="valueRegex")
 	public void setValueRegex(String valueRegex) {
 	    this.data.setValueRegex(valueRegex);
 	}
 
 	@JsonGetter("valueIndex")
-	@CSVColumnGetter(order=12, header="valueIndex")
+	@CSVColumnGetter(order=15, header="valueIndex")
 	public int getValueIndex() {
 	    return this.data.getValueIndex();
 	}
 
 	@JsonSetter("valueIndex")
-	@CSVColumnSetter(order=12, header="valueIndex")
+	@CSVColumnSetter(order=15, header="valueIndex")
 	public void setValueIndex(int valueIndex) {
 	    this.data.setValueIndex(valueIndex);
 	}
 
-	@JsonGetter("dataType")
-	@CSVColumnGetter(order=13, header="dataType")
-	public String getDataType() {
-	    return DataTypes.CODES.getCode(this.data.getDataTypeId());
-	}
-
 	@JsonSetter("dataType")
-	@CSVColumnSetter(order=13, header="dataType")
-	public void setDataType(String dataType) {
+	@CSVColumnSetter(order=10, header="dataType")
+	@Override
+	public void setDataTypeId(String dataType) {
 	    this.data.setDataTypeId(DataTypes.CODES.getId(dataType));
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel#getTypeName()

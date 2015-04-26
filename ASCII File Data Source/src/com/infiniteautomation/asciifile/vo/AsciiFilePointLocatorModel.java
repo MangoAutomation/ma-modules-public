@@ -126,6 +126,13 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 	    this.data.setTimestampFormat(timestampFormat);
 	}
 
+	@JsonSetter("dataType")
+	@CSVColumnSetter(order=10, header="dataType")
+	@Override
+	public void setDataTypeId(String dataType) {
+	    this.data.setDataType(DataTypes.CODES.getId(dataType));
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel#getTypeName()
 	 */
