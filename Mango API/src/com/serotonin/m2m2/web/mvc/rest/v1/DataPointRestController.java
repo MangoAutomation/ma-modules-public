@@ -379,7 +379,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	 */
 	@ApiOperation(
 			value = "Delete a data point",
-			notes = "The user must have permission to the data source"
+			notes = "The user must have permission to the data point"
 			)
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<DataPointModel> delete(@PathVariable String xid, HttpServletRequest request) {
