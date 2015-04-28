@@ -258,6 +258,12 @@ public class GraphicalView implements Serializable, JsonSerializable {
 
         for (ViewComponent vc : viewComponents)
             vc.validate(response);
+        
+        //Validate the permissions
+        User user = Common.getUser();
+		Permissions.validateAddedPermissions(this.readPermission, user, response, "readPermission");
+		Permissions.validateAddedPermissions(this.setPermission, user, response, "setPermission");
+		Permissions.validateAddedPermissions(this.editPermission, user, response, "editPermission");
     }
 
     //

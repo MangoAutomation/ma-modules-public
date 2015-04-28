@@ -445,11 +445,16 @@ public class WatchListDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public void savePermissions(String readPermission, String editPermission) {
+    public ProcessResult savePermissions(String readPermission, String editPermission) {
         WatchList wl = getWatchList();
         wl.setReadPermission(readPermission);
         wl.setEditPermission(editPermission);
-        new WatchListDao().saveWatchList(wl);
+        
+        ProcessResult response = new ProcessResult();
+        wl.validate(response);
+        if(!response.getHasMessages())
+        	new WatchListDao().saveWatchList(wl);
+        return response;
     }
 
     @DwrPermission(user = true)

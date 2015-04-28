@@ -597,8 +597,13 @@
       }
 	  
 	  function savePermissions() {
-		  WatchListDwr.savePermissions($get("readPermission"), $get("editPermission"), function() {
-			  hideLayer('usersEdit');			  
+		  hideContextualMessages($('usersEdit'));
+		  WatchListDwr.savePermissions($get("readPermission"), $get("editPermission"), function(response) {
+			  if(response.hasMessages)
+				  showDwrMessages(response.messages);
+			  else{
+			  	hideLayer('usersEdit');		
+			  }
 		  });
 	  }
 	  

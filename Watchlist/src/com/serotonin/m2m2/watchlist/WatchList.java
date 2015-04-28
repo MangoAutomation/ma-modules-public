@@ -141,6 +141,11 @@ public class WatchList implements JsonSerializable {
             response.addMessage("xid", new TranslatableMessage("validate.notLongerThan", 50));
         else if (!new WatchListDao().isXidUnique(xid, id))
             response.addMessage("xid", new TranslatableMessage("validate.xidUsed"));
+        
+        //Validate the permissions
+        User user = Common.getUser();
+		Permissions.validateAddedPermissions(this.readPermission, user, response, "readPermission");
+		Permissions.validateAddedPermissions(this.editPermission, user, response, "editPermission");
     }
 
     //

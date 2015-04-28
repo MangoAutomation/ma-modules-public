@@ -305,6 +305,8 @@
     
     function saveView() {
         hideContextualMessages($("viewProperties"));
+        hideContextualMessages($("permissionsDiv"));
+        
         GraphicalViewDwr.saveView($get("name"), $get("xid"), $get("anonymousAccess"), $get("readPermission"), $get("setPermission"), $get("editPermission"), function(result) {
             if (result.hasMessages)
                 showDwrMessages(result.messages);
@@ -393,7 +395,7 @@
       </td>
       
       <td valign="top">
-        <div class="borderDiv">
+        <div id="permissionsDiv" class="borderDiv">
         <table>
         <tr>
             <td colspan="2">
