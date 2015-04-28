@@ -1,5 +1,6 @@
 *Version 2.1.3*
 * Fixed bug where Reports that referenced deleted data points would make the UI un-usable.
+* Added M2M Report Importer at /m2m_report_import.shtm
 
 *Version 2.1.2*
 * Fixed bug where importing the previousPeriodType was not working.

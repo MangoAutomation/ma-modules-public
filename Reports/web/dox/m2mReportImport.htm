@@ -1,0 +1,55 @@
+<!--
+    Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+<h1>Overview</h1>
+<p>
+  M2M Report instances can be migrated into Mango using this tool.  Any settings that were not included in the M2M reports
+  will use the default values.  Reports depend on Users, Mailing Lists and Data Points and as such any references by a 
+  report must be present in Mango for the report to be imported.
+  
+  There are 2 ways to migrate reports across: <b>Migrate Now</b> or <b>Generate JSON</b>.
+  
+  Both methods require a connection to the M2M database.
+</p>
+<p>
+  The <b>Driver class name</b> specifies the Java class that implements the JDBC Driver interface within your JDBC 
+  driver. This value can be found in the documentation for your driver. The following is a list of driver class names 
+  for the given database, and is provided as convenience only. Note that connectivity typically requires the 
+  installation of driver software on the Mango server.
+</p>
+<ul>
+  <li><b>MySQL</b>: com.mysql.jdbc.Driver</li>
+  <li><b>Oracle thin driver</b>: oracle.jdbc.driver.OracleDriver</li>
+  <li><b>Derby</b>: org.apache.derby.jdbc.EmbeddedDriver</li>
+  <li><b>H2</b>: org.h2.Driver</li>
+</ul>
+<p>The <b>Connection string</b> depends both upon the database you are using and the specifics of its installation. 
+Your JDBC driver documentation will explain how to derive the value for your database. 
+The <b>Username</b> and <b>Password</b> fields provide the necessary credentials for your 
+database to accept connections from this application.</p>
+
+
+<p><b>Username</b> and <b>Password</b> are the database user's login credentials.</p>
+
+
+<h1>Migrate Now</h1>
+<p>
+  Migrate now requires that all Users referenced by reports exist in Mango.  This means that the username must be the same 
+  in both M2M and Mango.  Migrate now also requires that all Data Points referenced by the reports be present in Mango.  This means that 
+  the XIDs for the points be the same in both M2M and Mango.
+</p>
+<p>  
+  Migrate now extracts the reports from M2M and the converts them by cross checking the references in Mango.  If everything checks out 
+  the reports will be saved into Mango.  If there are any problems then no reports will be imported into Mango and a list of problems will be displayed.
+</p>
+
+<h1>Generate JSON</h1>
+<p>
+  Generate JSON does not verify any links for the Users or Data Points and makes it easier to extract the reports.  The user is then expected to manually 
+  ensure that all Users, Mailing Lists and Data Points exist in Mango prior to importing the JSON.
+</p>
+<p>  
+  Generate JSON outputs JSON formatted like the current Mango reports module expects but only uses the information 
+  available from the M2M instance.  So all XIDs and Usernames are pulled directly from the M2M instance.  
+</p>
