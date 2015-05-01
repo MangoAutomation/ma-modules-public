@@ -98,10 +98,12 @@ public abstract class MangoRestController extends RqlQueryParser{
 		return new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", content));
 	}
 	
-	protected QueryModel parseRQL(HttpServletRequest request) throws UnsupportedEncodingException{
-		UrlPathHelper helper = new UrlPathHelper();
-		return parseRQL(helper.decodeRequestString(request, request.getQueryString()));
+	protected QueryModel parseRQL(HttpServletRequest request) throws UnsupportedEncodingException {
+		String queryString = request.getQueryString();
+		if (queryString != null) {
+		    UrlPathHelper helper = new UrlPathHelper();
+		    queryString = helper.decodeRequestString(request, queryString);
+		}
+		return parseRQL(queryString);
 	}
-	
-	
 }
