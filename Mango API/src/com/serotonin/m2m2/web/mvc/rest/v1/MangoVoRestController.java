@@ -6,13 +6,25 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.TableModel;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
@@ -84,6 +96,46 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 		stream.setupQuery();
 		return stream;
 	}
+
+	@ApiOperation(
+			value = "Get Explaination For Query",
+			notes = "What is Query-able on this model"
+			)
+	@ApiResponses(value = { 
+	@ApiResponse(code = 200, message = "Ok"),
+	@ApiResponse(code = 403, message = "User does not have access")
+	})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/explain-query")
+    public ResponseEntity<TableModel> getTableModel(HttpServletRequest request) {
+        
+        RestProcessResult<TableModel> result = new RestProcessResult<TableModel>(HttpStatus.OK);
+        
+        this.checkUser(request, result);
+        if(result.isOk()){
+ 	        result.addRestMessage(getSuccessMessage());
+	        return result.createResponseEntity(this.getQueryAttributeModel());
+        }
+        
+        return result.createResponseEntity();
+    }
+	
+	/**
+	 * Get the Table Model
+	 * @return
+	 */
+	protected TableModel getQueryAttributeModel(){
+		TableModel model = this.dao.getTableModel();
+		this.fillTableModel(model);
+		return model;
+	}
+	
+	/**
+	 * Fill out any additional Aliases for the Table that may exist
+	 * in the Resulting Model for this class
+	 * @param model
+	 */
+	protected abstract void fillTableModel(TableModel model);
+	
 	/**
 	 * Map any Model members to VO Properties
 	 * @param list

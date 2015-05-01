@@ -25,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.TableModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
@@ -313,6 +314,16 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			}
 		}
 
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
+	 */
+	@Override
+	protected void fillTableModel(TableModel model) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

@@ -25,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.TableModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -545,6 +546,17 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	@Override
 	public DataPointModel createModel(DataPointVO vo) {
 		return new DataPointModel(vo);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
+	 */
+	@Override
+	protected void fillTableModel(TableModel model) {
+		
+		//
+		
 	}
 	
 }

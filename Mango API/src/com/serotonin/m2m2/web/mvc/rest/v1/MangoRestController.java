@@ -10,6 +10,7 @@ import java.net.URI;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.util.UrlPathHelper;
 
 import com.infiniteautomation.mango.db.query.QueryModel;
 import com.infiniteautomation.mango.db.query.RqlQueryParser;
@@ -98,7 +99,8 @@ public abstract class MangoRestController extends RqlQueryParser{
 	}
 	
 	protected QueryModel parseRQL(HttpServletRequest request) throws UnsupportedEncodingException{
-		return parseRQL(request.getQueryString());
+		UrlPathHelper helper = new UrlPathHelper();
+		return parseRQL(helper.decodeRequestString(request, request.getQueryString()));
 	}
 	
 	

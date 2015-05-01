@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.TableModel;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
@@ -222,6 +223,15 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 				param.setCondition(Integer.toString(UserCommentVO.COMMENT_TYPE_CODES.getId(param.getCondition())));
 			}
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
+	 */
+	@Override
+	protected void fillTableModel(TableModel model) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	
