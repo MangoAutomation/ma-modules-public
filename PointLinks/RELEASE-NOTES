@@ -1,3 +1,6 @@
+*Version 1.4.7*
+* Upgraded to work with core version 2.6.x
+
 *Version 1.4.6*
 * Added lock to ensure only 1 point link per point can run at once and Alarm event to notify user of this condition
 * Upgraded to work with core version 2.5.x

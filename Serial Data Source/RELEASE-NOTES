@@ -1,3 +1,6 @@
+*Version 1.1.6*
+* Upgraded to work with core version 2.6.x
+
 *Version 1.1.5
 * Improved ability to handle to high frequency messaging
 * Added timeout option instead of byte/character matching for message termination

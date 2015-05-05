@@ -1,3 +1,6 @@
+*Version 1.5.3*
+* Upgraded to work with core version 2.6.x
+
 *Version 1.5.2*
 * Upgrading sharing to use new Mango Permission groups
 * Fixed bug in public views where links were broken and the page was not able to execute the javascript methods
