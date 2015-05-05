@@ -64,7 +64,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/byName/{folderName}")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}")
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable String folderName, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
