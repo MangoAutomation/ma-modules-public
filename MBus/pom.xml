@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>mbus-ds</artifactId>
     <name>MBus Data Source</name>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.infiniteautomation</groupId>
             <artifactId>mango</artifactId>
-            <version>2.5.3</version>
+            <version>2.6.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -43,6 +43,5 @@
             <version>0.1.5</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>
