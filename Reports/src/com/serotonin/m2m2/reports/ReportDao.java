@@ -170,8 +170,25 @@ public class ReportDao extends BaseDao {
         }
     }
 
+    /**
+     * Delete the instance from the system
+     * @param id
+     * @param userId
+     */
     public void deleteReportInstance(int id, int userId) {
         ejt.update("delete from reportInstances where id=? and userId=?", new Object[] { id, userId });
+        
+		
+        if(Common.databaseProxy.getNoSQLProxy() != null){
+            //Delete the NoSQL Data
+            final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
+
+        	List<ExportPointInfo> points = this.getReportInstancePoints(id);
+			//Drop the series for these
+			for(ExportPointInfo point : points){
+				dao.deleteStore(id + "_" + point.getReportPointId());
+			}
+        }
     }
 
     public int purgeReportsBefore(final long time) {
