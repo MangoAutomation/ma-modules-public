@@ -1,12 +1,14 @@
-*Version 2.1.4*
-* Upgraded to work with core version 2.6.x
-
 *Version 2.1.3*
+* Upgraded to work with core version 2.6.x
 * Fixed bug where Reports that referenced deleted data points would make the UI un-usable.
 * Added M2M Report Importer at /m2m_report_import.shtm
+* Fixed bug where importing the previousPeriodType was not working.
 
 *Version 2.1.2*
-* Fixed bug where importing the previousPeriodType was not working.
+* Adding Purge now option in system settings
+* Deleting NoSQL data when Report Instance is deleted.
+* Deleting NoSQL data when emailing scheduled report. 
+
 
 *Version 2.1.1*
 * Added system setting for selecting the Report Work Item priority
