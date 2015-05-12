@@ -411,6 +411,10 @@ public class PointValueRestController extends MangoRestController{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
 	    			//Are we using rollup
 	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
+	    				//First check to see if there are any values in the range
+	    				long pointValueCount = Common.databaseProxy.newPointValueDao().dateRangeCount(vo.getId(), from.getTime(), to.getTime());
+	    				if(pointValueCount == 0)
+	    					return result.createResponseEntity(pointValueCount);
 	    				long count = new Long(0);
 	    				TimePeriodBucketCalculator calc = new TimePeriodBucketCalculator(new DateTime(from), new DateTime(to), TimePeriodType.convertFrom(timePeriodType), timePeriods);
 	    				while(calc.getNextPeriodTo().isBefore(calc.getEndTime())){
