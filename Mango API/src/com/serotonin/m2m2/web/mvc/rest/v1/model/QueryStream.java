@@ -45,7 +45,8 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArray
 	 * Setup the Query
 	 */
 	public void setupQuery(){
-		this.controller.mapComparisons(this.query.getAllComparisons());
+		this.controller.mapComparisons(this.query.getAndComparisons());
+		this.controller.mapComparisons(this.query.getOrComparisons());
 		this.results = this.dao.createQuery(query.getOrComparisons(), query.getAndComparisons(), query.getSort(), query.getOffset(), query.getLimit(), this.queryCallback, null);
 	}
 	

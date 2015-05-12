@@ -135,8 +135,15 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     		HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
+    		if(!user.isAdmin()){
+    			QueryComparison userRestrict = new QueryComparison();
+    			userRestrict.setAttribute("ue.userId");
+    			userRestrict.setComparisonType(QueryComparison.EQUAL_TO);
+    			userRestrict.setCondition(Integer.toString(user.getId()));
+    			query.getAndComparisons().add(userRestrict);
+    		}
     		return result.createResponseEntity(getPageStream(query));
     	}
     	
@@ -158,11 +165,18 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		
 		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
     	
-		this.checkUser(request, result);
+		User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
     			//Parse the RQL Query
 	    		QueryModel query = this.parseRQL(request);
+	    		if(!user.isAdmin()){
+	    			QueryComparison userRestrict = new QueryComparison();
+	    			userRestrict.setAttribute("ue.userId");
+	    			userRestrict.setComparisonType(QueryComparison.EQUAL_TO);
+	    			userRestrict.setCondition(Integer.toString(user.getId()));
+	    			query.getAndComparisons().add(userRestrict);
+	    		}
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
@@ -307,11 +321,49 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	 */
 	@Override
 	public void mapComparisons(List<QueryComparison> list) {
+		
+		List<QueryComparison> additional = new ArrayList<QueryComparison>();
+		
 		//Check for the attribute commentType
 		for(QueryComparison param : list){
 			if(param.getAttribute().equalsIgnoreCase("alarmLevel")){
 				param.setCondition(Integer.toString(AlarmLevels.CODES.getId(param.getCondition())));
+			}else if(param.getAttribute().equalsIgnoreCase("eventType")){
+				param.setAttribute("typeName");
+			}else if(param.getAttribute().equalsIgnoreCase("referenceId1")){
+				param.setAttribute("typeRef1");
+			}else if(param.getAttribute().equalsIgnoreCase("referenceId2")){
+				param.setAttribute("typeRef2");
+			}else if(param.getAttribute().equalsIgnoreCase("dataPointId")){
+				param.setAttribute("typeRef1");
+			}else if(param.getAttribute().equalsIgnoreCase("dataSourceId")){
+				param.setAttribute("typeRef2");
+			}else if(param.getAttribute().equalsIgnoreCase("active")){
+				//TODO need to replace this one attribute with 
+				// comparisons for rtnApplicable and RtnTimestamp == 0
+				QueryComparison comparison = new QueryComparison();
+				additional.add(comparison);
+				comparison.setAttribute("rtnTs");
+				
+				if(param.getCondition().equals("true")){
+					comparison.setComparisonType(QueryComparison.EQUAL_TO);
+					comparison.setCondition("null");
+				}else{
+					comparison.setComparisonType(QueryComparison.GREATER_THAN);
+					comparison.setCondition("0");
+				}
+				//Modify the one we already have
+				param.setAttribute("rtnApplicable");
+				param.setComparisonType(QueryComparison.EQUAL_TO);
+				param.setCondition("true");
+
+				
 			}
+		}
+		
+		//Add any remaning conditions
+		for(QueryComparison param : additional){
+			list.add(param);
 		}
 
 	}

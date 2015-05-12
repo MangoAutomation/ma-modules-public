@@ -101,6 +101,15 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 	}
 	
 	@JsonGetter
+	public long getReturnToNormalTimestamp(){
+		return this.data.getRtnTimestamp();
+	}
+	@JsonSetter
+	public void setReturnToNormalTimestamp(long timestamp){
+		this.data.setRtnTimestamp(timestamp);
+	}
+	
+	@JsonGetter
 	public String getMessage(){
 		if(this.data.getMessage() != null){
 			return this.data.getMessage().translate(Common.getTranslations());
@@ -118,26 +127,30 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 	@JsonGetter
 	public String getStatus(){
         TranslatableMessage rtnKey = null;
-        if (!this.data.isActive()) {
-            if (this.data.getRtnCause() == RtnCauses.RETURN_TO_NORMAL)
-                rtnKey = new TranslatableMessage("event.rtn.rtn");
-            else if (this.data.getRtnCause() == RtnCauses.SOURCE_DISABLED) {
-                if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.DATA_POINT))
-                    rtnKey = new TranslatableMessage("event.rtn.pointDisabled");
-                else if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.DATA_SOURCE))
-                    rtnKey = new TranslatableMessage("event.rtn.dsDisabled");
-                else if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.PUBLISHER))
-                    rtnKey = new TranslatableMessage("event.rtn.pubDisabled");
-                else {
-                    EventTypeDefinition def = ModuleRegistry.getEventTypeDefinition(this.data.getEventType().getEventType());
-                    if (def != null)
-                        rtnKey = def.getSourceDisabledMessage();
-                    if (rtnKey == null)
-                        rtnKey = new TranslatableMessage("event.rtn.shutdown");
-                }
-            }
-            else
-                rtnKey = new TranslatableMessage("event.rtn.unknown");
+        if(this.data.isRtnApplicable()){
+	        if (!this.data.isActive()) {
+	            if (this.data.getRtnCause() == RtnCauses.RETURN_TO_NORMAL)
+	                rtnKey = new TranslatableMessage("event.rtn.rtn");
+	            else if (this.data.getRtnCause() == RtnCauses.SOURCE_DISABLED) {
+	                if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.DATA_POINT))
+	                    rtnKey = new TranslatableMessage("event.rtn.pointDisabled");
+	                else if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.DATA_SOURCE))
+	                    rtnKey = new TranslatableMessage("event.rtn.dsDisabled");
+	                else if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.PUBLISHER))
+	                    rtnKey = new TranslatableMessage("event.rtn.pubDisabled");
+	                else {
+	                    EventTypeDefinition def = ModuleRegistry.getEventTypeDefinition(this.data.getEventType().getEventType());
+	                    if (def != null)
+	                        rtnKey = def.getSourceDisabledMessage();
+	                    if (rtnKey == null)
+	                        rtnKey = new TranslatableMessage("event.rtn.shutdown");
+	                }
+	            }
+	            else
+	                rtnKey = new TranslatableMessage("event.rtn.unknown");
+	        }
+        }else{
+        	rtnKey = new TranslatableMessage("common.nortn");
         }
         if(rtnKey != null)
         	return rtnKey.translate(Common.getTranslations());
@@ -199,5 +212,14 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 	@JsonSetter
 	public void SetEventType(EventType eventType){
 		this.data.setEventType(eventType);
+	}
+	
+	@JsonGetter
+	public boolean isActive(){
+		return this.data.isActive();
+	}
+	@JsonSetter
+	public void setActive(boolean active){
+		//No op for now
 	}
 }

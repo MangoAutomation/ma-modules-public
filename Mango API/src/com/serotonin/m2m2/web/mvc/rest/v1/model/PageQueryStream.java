@@ -40,7 +40,8 @@ public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStre
 	 */
 	@Override
 	public void setupQuery(){
-		this.controller.mapComparisons(this.query.getAllComparisons());
+		this.controller.mapComparisons(this.query.getOrComparisons());
+		this.controller.mapComparisons(this.query.getAndComparisons());
 		this.results = this.dao.createQuery(query.getOrComparisons(), query.getAndComparisons(), query.getSort(), query.getOffset(), query.getLimit(), this.queryCallback, this.countCallback);
 	}
 
