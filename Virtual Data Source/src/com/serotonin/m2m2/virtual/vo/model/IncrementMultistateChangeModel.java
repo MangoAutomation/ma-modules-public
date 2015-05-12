@@ -4,11 +4,9 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
-import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 
-@CSVEntity(typeName=IncrementMultistateChangeModelDefinition.TYPE_NAME)
+@CSVEntity()
 public class IncrementMultistateChangeModel extends VirtualPointLocatorModel {
 	
 	public IncrementMultistateChangeModel(VirtualPointLocatorVO data) {
@@ -27,25 +25,21 @@ public class IncrementMultistateChangeModel extends VirtualPointLocatorModel {
 	}
 	
 	@JsonGetter("values")
-	@CSVColumnGetter(order=14, header="values")
 	public int[] getValues() {
 	    return this.data.getIncrementMultistateChange().getValues();
 	}
 
 	@JsonSetter("values")
-	@CSVColumnSetter(order=14, header="values")
 	public void setValues(int[] values) {
 	    this.data.getIncrementMultistateChange().setValues(values);
 	}
 
 	@JsonGetter("roll")
-	@CSVColumnGetter(order=15, header="roll")
 	public boolean isRoll() {
 	    return this.data.getIncrementMultistateChange().isRoll();
 	}
 
 	@JsonSetter("roll")
-	@CSVColumnSetter(order=15, header="roll")
 	public void setRoll(boolean roll) {
 	    this.data.getIncrementMultistateChange().setRoll(roll);
 	}

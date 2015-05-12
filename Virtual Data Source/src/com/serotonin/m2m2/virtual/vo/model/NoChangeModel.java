@@ -4,7 +4,7 @@ import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 
-@CSVEntity(typeName=NoChangeModelDefinition.TYPE_NAME)
+@CSVEntity()
 public class NoChangeModel extends VirtualPointLocatorModel {
 	
 	public NoChangeModel(VirtualPointLocatorVO data) {

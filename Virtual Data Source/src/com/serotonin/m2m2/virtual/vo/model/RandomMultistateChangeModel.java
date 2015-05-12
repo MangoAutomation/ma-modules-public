@@ -4,11 +4,9 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
-import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 
-@CSVEntity(typeName=RandomMultistateChangeModelDefinition.TYPE_NAME)
+@CSVEntity()
 public class RandomMultistateChangeModel extends VirtualPointLocatorModel {
 	
 	public RandomMultistateChangeModel(VirtualPointLocatorVO data) {
@@ -27,13 +25,11 @@ public class RandomMultistateChangeModel extends VirtualPointLocatorModel {
 	}
 
 	@JsonGetter("values")
-	@CSVColumnGetter(order=14, header="values")
 	public int[] getValues() {
 	    return this.data.getRandomMultistateChange().getValues();
 	}
 
 	@JsonSetter("values")
-	@CSVColumnSetter(order=14, header="values")
 	public void setValues(int[] values) {
 	    this.data.getRandomMultistateChange().setValues(values);
 	}

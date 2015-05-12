@@ -4,7 +4,7 @@ import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 
-@CSVEntity(typeName=AlternateBooleanChangeModelDefinition.TYPE_NAME)
+@CSVEntity()
 public class AlternateBooleanChangeModel extends VirtualPointLocatorModel {
 	
 	public AlternateBooleanChangeModel(VirtualPointLocatorVO data) {
