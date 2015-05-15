@@ -177,7 +177,62 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		this.templateXid = templateXid;
 	}
 	
-	@CSVColumnGetter(header="pointLocatorType", order=9)
+	@CSVColumnGetter(header="unit", order=9)
+	@JsonGetter("unit")
+	public String getUnit(){
+		return UnitUtil.formatLocal(this.data.getUnit());
+	}
+	@CSVColumnSetter(header="unit", order=9)
+	@JsonSetter("unit")
+	public void setUnit(String unit){
+		this.data.setUnit(UnitUtil.parseLocal(unit));
+	}
+	
+	@CSVColumnGetter(header="useIntegralUnit", order=10)
+	@JsonGetter("useIntegralUnit")
+	public boolean isUseIntegralUnit(){
+		return this.data.isUseIntegralUnit();
+	}
+	@CSVColumnSetter(header="useIntegralUnit", order=10)
+	@JsonSetter("useIntegralUnit")
+	public void setUseIntegralUnit(boolean useIntegralUnit){
+		this.data.setUseIntegralUnit(useIntegralUnit);
+	}
+	
+	@CSVColumnGetter(header="integralUnit", order=11)
+	@JsonGetter("integralUnit")
+	public String getIntegralUnit(){
+		return UnitUtil.formatLocal(this.data.getIntegralUnit());
+	}
+	@CSVColumnSetter(header="integralUnit", order=11)
+	@JsonSetter("integralUnit")
+	public void setIntegralUnit(String unit){
+		this.data.setIntegralUnit(UnitUtil.parseLocal(unit));
+	}
+
+	@CSVColumnGetter(header="useRenderedUnit", order=12)
+	@JsonGetter("useRenderedUnit")
+	public boolean isUseRenderedUnit(){
+		return this.data.isUseRenderedUnit();
+	}
+	@CSVColumnSetter(header="useRenderedUnit", order=12)
+	@JsonSetter("useRenderedUnit")
+	public void setUseRenderedUnit(boolean useRenderedUnit){
+		this.data.setUseRenderedUnit(useRenderedUnit);
+	}
+	
+	@CSVColumnGetter(header="renderedUnit", order=13)
+	@JsonGetter("renderedUnit")
+	public String getRenderedUnit(){
+		return UnitUtil.formatLocal(this.data.getRenderedUnit());
+	}
+	@CSVColumnSetter(header="useRenderedUnit", order=13)
+	@JsonSetter("renderedUnit")
+	public void setRenderedUnit(String unit){
+		this.data.setRenderedUnit(UnitUtil.parseLocal(unit));
+	}
+
+	@CSVColumnGetter(header="pointLocatorType", order=14)
 	@JsonGetter("pointLocator")
 	public PointLocatorModel<?> getPointLocator(){
 		PointLocatorVO vo = this.data.getPointLocator();
@@ -187,60 +242,13 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 			return this.data.getPointLocator().asModel();
 	}
 	
-	@CSVColumnSetter(header="pointLocatorType", order=9)
+	@CSVColumnSetter(header="pointLocatorType", order=14)
 	@JsonSetter("pointLocator")
 	public void setPointLocator(PointLocatorModel<?> pl){
 		if(pl != null)
 			this.data.setPointLocator((PointLocatorVO)pl.getData());
 	}
 	
-	
-	
-	@JsonGetter("unit")
-	public String getUnit(){
-		return UnitUtil.formatLocal(this.data.getUnit());
-	}
-	@JsonSetter("unit")
-	public void setUnit(String unit){
-		this.data.setUnit(UnitUtil.parseLocal(unit));
-	}
-	
-	@JsonGetter("useIntegralUnit")
-	public boolean isUseIntegralUnit(){
-		return this.data.isUseIntegralUnit();
-	}
-	@JsonSetter("useIntegralUnit")
-	public void setUseIntegralUnit(boolean useIntegralUnit){
-		this.data.setUseIntegralUnit(useIntegralUnit);
-	}
-	
-	@JsonGetter("integralUnit")
-	public String getIntegralUnit(){
-		return UnitUtil.formatLocal(this.data.getIntegralUnit());
-	}
-	@JsonSetter("integralUnit")
-	public void setIntegralUnit(String unit){
-		this.data.setIntegralUnit(UnitUtil.parseLocal(unit));
-	}
-
-	@JsonGetter("useRenderedUnit")
-	public boolean isUseRenderedUnit(){
-		return this.data.isUseRenderedUnit();
-	}
-	@JsonSetter("useRenderedUnit")
-	public void setUseRenderedUnit(boolean useRenderedUnit){
-		this.data.setUseRenderedUnit(useRenderedUnit);
-	}
-	
-	@JsonGetter("renderedUnit")
-	public String getRenderedUnit(){
-		return UnitUtil.formatLocal(this.data.getRenderedUnit());
-	}
-	@JsonSetter("renderedUnit")
-	public void setRenderedUnit(String unit){
-		this.data.setRenderedUnit(UnitUtil.parseLocal(unit));
-	}
-
 	@JsonGetter("chartColour")
 	public String getChartColour(){
 		return this.data.getChartColour();
