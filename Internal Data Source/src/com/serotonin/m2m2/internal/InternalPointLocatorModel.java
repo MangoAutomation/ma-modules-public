@@ -24,13 +24,13 @@ public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLo
 	}
 	
 	@JsonGetter("attribute")
-	@CSVColumnGetter(order=13, header="attribute")
+	@CSVColumnGetter(order=18, header="attribute")
 	public String getAttributeId() {
 	    return InternalPointLocatorVO.ATTRIBUTE_CODES.getCode(this.data.getAttributeId());
 	}
 
 	@JsonSetter("attribute")
-	@CSVColumnSetter(order=13, header="attribute")
+	@CSVColumnSetter(order=18, header="attribute")
 	public void setAttributeId(String attributeId) {
 	    this.data.setAttributeId(InternalPointLocatorVO.ATTRIBUTE_CODES.getId(attributeId));
 	}

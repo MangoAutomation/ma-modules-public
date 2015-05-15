@@ -24,13 +24,13 @@ public class EnvCanPointLocatorModel extends PointLocatorModel<EnvCanPointLocato
 	}
 
 	@JsonGetter("attribute")
-	@CSVColumnGetter(order=13, header="attribute")
+	@CSVColumnGetter(order=18, header="attribute")
 	public String getAttributeId() {
 	    return EnvCanPointLocatorVO.ATTRIBUTE_CODES.getCode(this.data.getAttributeId());
 	}
 
 	@JsonSetter("attribute")
-	@CSVColumnSetter(order=13, header="attribute")
+	@CSVColumnSetter(order=18, header="attribute")
 	public void setAttributeId(String attributeId) {
 	    this.data.setAttributeId(EnvCanPointLocatorVO.ATTRIBUTE_CODES.getId(attributeId));
 	}

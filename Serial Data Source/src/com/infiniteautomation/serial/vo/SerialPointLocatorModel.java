@@ -31,43 +31,43 @@ public class SerialPointLocatorModel extends PointLocatorModel<SerialPointLocato
 	}
 
 	@JsonGetter("pointIdentifier")
-	@CSVColumnGetter(order=13, header="pointIdentifier")
+	@CSVColumnGetter(order=18, header="pointIdentifier")
 	public String getPointIdentifier() {
 	    return this.data.getPointIdentifier();
 	}
 
 	@JsonSetter("pointIdentifier")
-	@CSVColumnSetter(order=13, header="pointIdentifier")
+	@CSVColumnSetter(order=18, header="pointIdentifier")
 	public void setPointIdentifier(String pointIdentifier) {
 	    this.data.setPointIdentifier(pointIdentifier);
 	}
 
 	@JsonGetter("valueRegex")
-	@CSVColumnGetter(order=14, header="valueRegex")
+	@CSVColumnGetter(order=19, header="valueRegex")
 	public String getValueRegex() {
 	    return this.data.getValueRegex();
 	}
 
 	@JsonSetter("valueRegex")
-	@CSVColumnSetter(order=14, header="valueRegex")
+	@CSVColumnSetter(order=19, header="valueRegex")
 	public void setValueRegex(String valueRegex) {
 	    this.data.setValueRegex(valueRegex);
 	}
 
 	@JsonGetter("valueIndex")
-	@CSVColumnGetter(order=15, header="valueIndex")
+	@CSVColumnGetter(order=20, header="valueIndex")
 	public int getValueIndex() {
 	    return this.data.getValueIndex();
 	}
 
 	@JsonSetter("valueIndex")
-	@CSVColumnSetter(order=15, header="valueIndex")
+	@CSVColumnSetter(order=20, header="valueIndex")
 	public void setValueIndex(int valueIndex) {
 	    this.data.setValueIndex(valueIndex);
 	}
 
 	@JsonSetter("dataType")
-	@CSVColumnSetter(order=10, header="dataType")
+	@CSVColumnSetter(order=15, header="dataType")
 	@Override
 	public void setDataTypeId(String dataType) {
 	    this.data.setDataTypeId(DataTypes.CODES.getId(dataType));

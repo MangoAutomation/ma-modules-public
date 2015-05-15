@@ -74,7 +74,7 @@
 		  delete locator.valueRegex;
 		  delete locator.pointIdentifierIndex;
 		  delete locator.valueIndex;
-		  delete locator.dataTypeId;
+		  delete locator.dataType;
 		  delete locator.hasTimestamp;
 		  delete locator.timestampIndex;
 		  delete locator.timestampFormat;
@@ -83,7 +83,7 @@
 		  locator.valueRegex = $get("valueRegex");
 		  locator.pointIdentifierIndex = $get("pointIdentifierIndex");
 		  locator.valueIndex = $get("valueIndex");
-		  locator.dataTypeId = $get("dataTypeId");
+		  locator.dataType = $get("dataTypeId");
 		  locator.hasTimestamp = $get("hasTimestamp");
 		  locator.timestampIndex = $get("timestampIndex");
 		  locator.timestampFormat = $get("timestampFormat");
