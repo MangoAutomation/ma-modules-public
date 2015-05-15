@@ -11,6 +11,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.jazdw.rql.parser.ASTNode;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -79,7 +81,7 @@ public class LoggingRestController extends MangoRestController{
 		this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		QueryModel query = this.parseRQL(request);
+	    		ASTNode query = this.parseRQLtoAST(request);
 				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
 				return result.createResponseEntity(stream);
     		}catch(UnsupportedEncodingException e){

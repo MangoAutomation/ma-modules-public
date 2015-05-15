@@ -25,6 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.jazdw.rql.parser.ASTNode;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -36,12 +38,12 @@ import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.RQLToLimitVisitor;
+import com.infiniteautomation.mango.db.query.pojo.RQLToQueryComparisonVisitor;
 
 /**
  * 
@@ -55,38 +57,43 @@ import com.infiniteautomation.mango.db.query.QueryModel;
 public class MangoLogFilePatternReceiver extends Receiver{
 
 	private static final Log LOG = LogFactory.getLog(MangoLogFilePatternReceiver.class);
-	private QueryModel query;
+	
+	private Integer limit;
+	private int count; //Number we have matched
+	
+	//Wait for file?
+	private long waitMillis = 100; //2000; //default 2 seconds
+	  
+	  
 	private JsonGenerator jgen;
 	//Filtering
 	private QueryComparison classComparison;
 	private QueryComparison methodComparison;
 	private QueryComparison levelComparison;
 	private QueryComparison timeComparison;
+	private QueryComparison messageComparison;
+	
 	private long timeValue;
 	
-	public MangoLogFilePatternReceiver(QueryModel query, JsonGenerator jgen){
+	
+	public MangoLogFilePatternReceiver(ASTNode query, JsonGenerator jgen){
 
-		this.query = query;
+		this.limit = query.accept(new RQLToLimitVisitor());
 		this.jgen = jgen;
 		
-		//Setup Query
-		List<QueryComparison> andComparisons = query.getAndComparisons();
-		for(QueryComparison comparison : andComparisons){
-			if(comparison.getAttribute().equals("level")){
-				this.levelComparison = comparison;
-				this.thresholdLevel = Level.toLevel(comparison.getCondition());
-			}else if(comparison.getAttribute().equals("classname")){
-				this.classComparison = comparison;
-			}else if(comparison.getAttribute().equals("methodName")){
-				this.methodComparison = comparison;
-			}else if(comparison.getAttribute().equals("time")){
-				this.timeComparison = comparison;
-				DateTimeFormatter parser2 = ISODateTimeFormat.dateTime();
-				this.timeValue = parser2.parseMillis(comparison.getCondition());
-			}
-			
+		this.levelComparison = query.accept(new RQLToQueryComparisonVisitor(), "level");
+		if(levelComparison != null){
+			this.thresholdLevel = Level.toLevel((String)levelComparison.getArgument(0));
 		}
 		
+		this.classComparison = query.accept(new RQLToQueryComparisonVisitor(), "classname");
+		this.methodComparison = query.accept(new RQLToQueryComparisonVisitor(), "method");
+		this.timeComparison = query.accept(new RQLToQueryComparisonVisitor(), "time");
+		if(this.timeComparison != null){
+			this.timeValue = ((DateTime)this.timeComparison.getArgument(0)).getMillis();
+		}
+		
+		this.messageComparison = query.accept(new RQLToQueryComparisonVisitor(), "message");
 		
 		//setup
 	    keywords.add(TIMESTAMP);
@@ -116,53 +123,61 @@ public class MangoLogFilePatternReceiver extends Receiver{
     public void doPost(final LoggingEvent event) {
 
         if(levelComparison != null){
-        	switch(levelComparison.getComparisonType()){
-        	case QueryComparison.GREATER_THAN:
-        	case QueryComparison.GREATER_THAN_EQUAL_TO:
+        	switch(levelComparison.getComparison()){
+        	case GREATER_THAN:
+        		if(event.getLevel().toInt() <= thresholdLevel.toInt())
+        			return;
+        	case GREATER_THAN_EQUAL_TO:
         		if(!event.getLevel().isGreaterOrEqual(thresholdLevel))
         			return;
         	break;
-        	case QueryComparison.EQUAL_TO:
+        	case EQUAL_TO:
         		if(!event.getLevel().equals(thresholdLevel))
         			return;
         	break;
-        	case QueryComparison.NOT_EQUAL_TO:
+        	case NOT_EQUAL_TO:
         		if(event.getLevel().equals(thresholdLevel))
         			return;
         	break;
-        	case QueryComparison.LESS_THAN:
-        	case QueryComparison.LESS_THAN_EQUAL_TO:
+        	case LESS_THAN:
+        		if(event.getLevel().toInt() >= thresholdLevel.toInt())
+        			return;
+        	case LESS_THAN_EQUAL_TO:
         		if(event.getLevel().isGreaterOrEqual(thresholdLevel))
         			return;
+        	break;
+        	default:
         	break;
         	}
         }
         
         if(timeComparison != null){
-        	switch(timeComparison.getComparisonType()){
-        	case QueryComparison.GREATER_THAN:
+        	switch(timeComparison.getComparison()){
+        	case GREATER_THAN:
         		if(event.getTimeStamp() <= timeValue)
         			return;
         	break;
-        	case QueryComparison.GREATER_THAN_EQUAL_TO:
+        	case GREATER_THAN_EQUAL_TO:
         		if(event.getTimeStamp() < timeValue)
         			return;
         	break;
-        	case QueryComparison.EQUAL_TO:
+        	case EQUAL_TO:
         		if(event.getTimeStamp() != timeValue)
         			return;
         	break;
-        	case QueryComparison.NOT_EQUAL_TO:
+        	case NOT_EQUAL_TO:
         		if(event.getTimeStamp() == timeValue)
         			return;
         	break;
-        	case QueryComparison.LESS_THAN:
+        	case LESS_THAN:
         		if(event.getTimeStamp() >= timeValue)
         			return;
         	break;
-        	case QueryComparison.LESS_THAN_EQUAL_TO:
+        	case LESS_THAN_EQUAL_TO:
         		if(event.getTimeStamp() > timeValue)
         			return;
+        	break;
+        	default:
         	break;
         	}
         }
@@ -170,42 +185,75 @@ public class MangoLogFilePatternReceiver extends Receiver{
         String classname = null;
         String method = null;
         Integer lineNumber = null;
-        	
+        String message = event.getMessage().toString();
+        
         if(event.getLocationInformation() != null){
             method = event.getLocationInformation().getMethodName();
         	classname = event.getLocationInformation().getClassName();
         	lineNumber = Integer.parseInt(event.getLocationInformation().getLineNumber());
-
+        	
+        	
             if(classComparison != null){
-            	switch(classComparison.getComparisonType()){
-            	case QueryComparison.EQUAL_TO:
-            		if(!classname.equals(classComparison.getComparison()))
+            	switch(classComparison.getComparison()){
+            	case EQUAL_TO:
+            		if(!classname.equals((String)classComparison.getArgument(0)))
             			return;
             	break;
-            	case QueryComparison.NOT_EQUAL_TO:
-            		if(classname.equals(classComparison.getComparison()))
+            	case NOT_EQUAL_TO:
+            		if(classname.equals((String)classComparison.getArgument(0)))
             			return;
             	break;
+            	case LIKE:
+            		if(!classname.matches((String)classComparison.getArgument(0)))
+            			return;
+            	break;
+            	default:
+            		break;
+            		
             	}
             }
 
             if(methodComparison != null){
-            	switch(methodComparison.getComparisonType()){
-            	case QueryComparison.EQUAL_TO:
-            		if(!method.equals(methodComparison.getComparison()))
+            	switch(methodComparison.getComparison()){
+            	case EQUAL_TO:
+            		if(!method.equals(methodComparison.getArgument(0)))
             			return;
             	break;
-            	case QueryComparison.NOT_EQUAL_TO:
-            		if(method.equals(methodComparison.getComparison()))
+            	case NOT_EQUAL_TO:
+            		if(method.equals(methodComparison.getArgument(0)))
             			return;
             	break;
+            	case LIKE:
+            		if(!method.matches((String)methodComparison.getArgument(0)))
+            			return;
+            	break;
+            	default:
+            		return;
+            	}
+            }
+            
+            //TODO Filter on Message Here need to implement 'contains' in RQL first
+            if(messageComparison != null){
+            	switch(messageComparison.getComparison()){
+            	case EQUAL_TO:
+            		if(!message.equals(messageComparison.getArgument(0)))
+            			return;
+            	break;
+            	case NOT_EQUAL_TO:
+            		if(message.equals(messageComparison.getArgument(0)))
+            			return;
+            	break;
+            	case LIKE:
+            		if(!message.matches((String)messageComparison.getArgument(0)))
+            			return;
+            	break;
+            	default:
+            		return;
             	}
             }
 
         }
-        	
 
-        //TODO Filter on Message Here need to implement 'contains' in RQL first
         
         String[] stackTrace = event.getThrowableStrRep();
        //TODO Filter on stack trace here
@@ -217,16 +265,17 @@ public class MangoLogFilePatternReceiver extends Receiver{
 					classname,
 					method,
 					lineNumber,
-					event.getMessage().toString(), 
-					stackTrace, 
+					message, 
+					stackTrace,
 					time));
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
+		this.count++;
   }
-	
-	
-	  private final List<String> keywords = new ArrayList<String>();
+
+
+	private final List<String> keywords = new ArrayList<String>();
 
 	  private static final String PROP_START = "PROP(";
 	  private static final String PROP_END = ")";
@@ -266,7 +315,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	  private String path;
 	  private boolean tailing;
 	  private String filterExpression;
-	  private long waitMillis = 2000; //default 2 seconds
+
 
 	  private static final String VALID_DATEFORMAT_CHARS = "GyMwWDdFEaHkKhmsSzZ";
 	  private static final String VALID_DATEFORMAT_CHAR_PATTERN = "[" + VALID_DATEFORMAT_CHARS + "]";
@@ -565,12 +614,11 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	        Matcher eventMatcher;
 	        Matcher exceptionMatcher;
 	        String line;
-	        int count = 0; //Control Limits
 	        
 	        while ((line = bufferedReader.readLine()) != null) {
 	        	
 	        	//Finish when we hit our count
-	        	if((this.query.getLimit() != null)&&(this.query.getLimit() < count))
+	        	if((this.limit != null)&&(this.limit < this.count))
 	        		return;
 	        	
 	            //skip empty line entries
@@ -614,7 +662,6 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	                    additionalLines.add(line);
 	                }
 	            }
-	            count++;
 	        }
 
 	        //process last event if one exists

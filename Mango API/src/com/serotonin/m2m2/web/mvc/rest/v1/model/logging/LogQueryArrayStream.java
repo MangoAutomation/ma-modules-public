@@ -7,8 +7,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.logging;
 import java.io.File;
 import java.io.IOException;
 
+import net.jazdw.rql.parser.ASTNode;
+
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.db.query.QueryModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
@@ -20,9 +21,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 public class LogQueryArrayStream implements QueryArrayStream<LogMessageModel>{
 
 	private String filename;
-	private QueryModel query;
+	private ASTNode query;
 	
-	public LogQueryArrayStream(String filename, QueryModel query){
+	public LogQueryArrayStream(String filename, ASTNode query){
 		this.filename = filename;
 		this.query = query;
 	}

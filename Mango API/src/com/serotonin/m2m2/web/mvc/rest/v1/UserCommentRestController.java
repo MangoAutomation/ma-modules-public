@@ -5,9 +5,10 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,9 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.QueryModel;
-import com.infiniteautomation.mango.db.query.TableModel;
+import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
@@ -54,6 +53,9 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	
 	public UserCommentRestController(){
 		super(UserCommentDao.instance);
+		
+		this.appenders.put("commentType", new ExportCodeColumnQueryAppender(UserCommentVO.COMMENT_TYPE_CODES));
+		
 	}
 
 	@ApiOperation(
@@ -75,9 +77,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
         this.checkUser(request, result);
     	
         if(result.isOk()){
-        	QueryModel query = new QueryModel();
-        	query.setLimit(limit);
-    		return result.createResponseEntity(getStream(query));
+        	return result.createResponseEntity(getStream(new ASTNode("limit", limit)));
     	}
         return result.createResponseEntity();
 	}
@@ -96,7 +96,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     public ResponseEntity<QueryDataPageStream<UserCommentVO>> query(
     		
     		@ApiParam(value="Query", required=true)
-    		@RequestBody(required=true) QueryModel query, 
+    		@RequestBody(required=true) ASTNode query, 
     		   		
     		HttpServletRequest request) {
 		
@@ -128,7 +128,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     	this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		QueryModel query = this.parseRQL(request);
+	    		ASTNode query = this.parseRQLtoAST(request);
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
@@ -211,28 +211,5 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	public UserCommentModel createModel(UserCommentVO vo) {
 		return new UserCommentModel(vo);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
-	 */
-	@Override
-	public void mapComparisons(List<QueryComparison> list) {
-		//Check for the attribute commentType
-		for(QueryComparison param : list){
-			if(param.getAttribute().equalsIgnoreCase("commentType")){
-				param.setCondition(Integer.toString(UserCommentVO.COMMENT_TYPE_CODES.getId(param.getCondition())));
-			}
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
-	 */
-	@Override
-	protected void fillTableModel(TableModel model) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	
 }

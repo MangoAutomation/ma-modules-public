@@ -4,11 +4,12 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,9 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.QueryModel;
-import com.infiniteautomation.mango.db.query.SortOption;
+import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValueCache;
@@ -63,20 +62,17 @@ public class RealTimeDataRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	
     	if(result.isOk()){
-    		QueryModel model;
-			try {
-				model = this.parseRQL(request);
-		    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.query(
-		    			model.getAndComparisons(),
-		    			model.getOrComparisons(),
-		    			model.getSort(),
-		    			model.getLimit(), user.getPermissions());
+    		ASTNode model;
+			try{
+				model = this.parseRQLtoAST(request);
+		    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
+		    	values = model.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 		    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
 		    	for(RealTimeDataPointValue value : values){
 		    		models.add(new RealTimeModel(value));
 		    	}
 		    	return result.createResponseEntity(models);
-			} catch (UnsupportedEncodingException e) {
+			} catch (Exception e) {
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -101,12 +97,11 @@ public class RealTimeDataRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	
     	if(result.isOk()){
-    		List<QueryComparison> andComparisons = new ArrayList<QueryComparison>();
-    		List<QueryComparison> orComparisons = new ArrayList<QueryComparison>();
-    		List<SortOption> sorts = new ArrayList<SortOption>();
-	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.query(
-	    			andComparisons, orComparisons, sorts, limit, user.getPermissions());
+	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
+	    	ASTNode root = new ASTNode("limit", limit);
+	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 	    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
+	    	//TODO Fix up Visitor to be able to create models on the fly?
 	    	for(RealTimeDataPointValue value : values){
 	    		models.add(new RealTimeModel(value));
 	    	}
@@ -127,13 +122,11 @@ public class RealTimeDataRestController extends MangoRestController{
 		
 		//If no messages then go for it
 		if(result.isOk()){
-    		List<QueryComparison> andComparisons = new ArrayList<QueryComparison>();
-    		andComparisons.add(new QueryComparison("xid", QueryComparison.EQUAL_TO, xid));
-    		List<QueryComparison> orComparisons = new ArrayList<QueryComparison>();
-    		List<SortOption> sorts = new ArrayList<SortOption>();
-	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.query(
-	    			andComparisons, orComparisons, sorts, 1, user.getPermissions());
-	
+	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
+	    	ASTNode root = new ASTNode("xid", xid);
+
+	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
+	    	
 	        if (values.size() == 0) {
 	        	LOG.debug("Attempted access of Real time point that is not enabled or DNE.");
 	        	result.addRestMessage(HttpStatus.NOT_FOUND, new TranslatableMessage("common.default", "Point doesn't exist or is not enabled."));

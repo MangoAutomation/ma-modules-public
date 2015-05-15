@@ -11,6 +11,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.jazdw.rql.parser.ASTNode;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -23,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.QueryModel;
-import com.infiniteautomation.mango.db.query.TableModel;
+import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -65,6 +65,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	public DataPointRestController(){
 		super(DaoRegistry.dataPointDao);
 		LOG.info("Creating Data Point Rest Controller.");
+		
+		//Fill in any model mappings
+		//TODO this.modelMap.put("", "");
+		
+		
 	}
 
 	
@@ -483,7 +488,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     public ResponseEntity<QueryDataPageStream<DataPointVO>> query(
     		
     		@ApiParam(value="Query", required=true)
-    		@RequestBody(required=true) QueryModel query, 
+    		@RequestBody(required=true) ASTNode root, 
     		   		
     		HttpServletRequest request) {
 		
@@ -491,7 +496,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-    		return result.createResponseEntity(getPageStream(query, callback));
+    		return result.createResponseEntity(getPageStream(root, callback));
     	}
     	
     	return result.createResponseEntity();
@@ -516,10 +521,15 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		QueryModel query = this.parseRQL(request);
-	    		DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-	    		return result.createResponseEntity(getPageStream(query, callback));
-    		}catch(UnsupportedEncodingException e){
+    			ASTNode node = this.parseRQLtoAST(request);
+    			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+    			return result.createResponseEntity(getPageStream(node, callback));
+    			
+    			
+	    		//QueryModel query = this.parseRQL(request);
+	    		//DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+	    		//return result.createResponseEntity(getPageStream(query, callback));
+    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -531,32 +541,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 
 
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
-	 */
-	@Override
-	public void mapComparisons(List<QueryComparison> list) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
 	 */
 	@Override
 	public DataPointModel createModel(DataPointVO vo) {
 		return new DataPointModel(vo);
-	}
-
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
-	 */
-	@Override
-	protected void fillTableModel(TableModel model) {
-		
-		//
-		
 	}
 	
 }

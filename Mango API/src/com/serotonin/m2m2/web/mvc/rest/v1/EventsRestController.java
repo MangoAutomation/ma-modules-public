@@ -11,6 +11,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.jazdw.rql.parser.ASTNode;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -23,9 +25,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.QueryModel;
-import com.infiniteautomation.mango.db.query.TableModel;
+import com.infiniteautomation.mango.db.query.ComparisonEnum;
+import com.infiniteautomation.mango.db.query.SQLQueryColumn;
+import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
+import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
@@ -61,6 +64,41 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	
 	public EventsRestController(){ 
 		super(EventInstanceDao.instance);
+		
+		//Add in our mappings
+		this.modelMap.put("eventType", "typeName");
+		this.modelMap.put("referenceId1", "typeRef1");
+		this.modelMap.put("referenceId2", "typeRef2");
+		this.modelMap.put("dataPointId", "typeRef1");
+		this.modelMap.put("dataSourceId", "typeRef2");
+		this.modelMap.put("active", "rtnTs");
+		
+		this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
+		this.appenders.put("active", new GenericSQLColumnQueryAppender(){
+
+			@Override
+			public void appendSQL(SQLQueryColumn column,
+					StringBuilder selectSql, StringBuilder countSql,
+					List<Object> selectArgs, List<Object> columnArgs,
+					ComparisonEnum comparison) {
+				
+				if(columnArgs.size() == 0)
+					return;
+				
+				String condition = (String)columnArgs.get(0);
+				if(condition.equals("true")){
+					appendSQL(column.getName(), EQUAL_TO_SQL, selectSql, countSql);
+					selectArgs.add(NULL);
+				}else{
+					appendSQL(column.getName(), GREATER_THAN_SQL, selectSql, countSql);
+					selectArgs.add(0);
+				}
+				
+				appendSQL("rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
+				selectArgs.add(true);
+			}
+		
+		});		
 	}
 
 	
@@ -83,9 +121,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         this.checkUser(request, result);
     	
         if(result.isOk()){
-        	QueryModel query = new QueryModel();
-        	query.setLimit(limit);
-    		return result.createResponseEntity(getStream(query));
+    		return result.createResponseEntity(getStream(new ASTNode("limit", limit)));
     	}
         return result.createResponseEntity();
 	}
@@ -130,7 +166,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> query(
     		
     		@ApiParam(value="Query", required=true)
-    		@RequestBody(required=true) QueryModel query, 
+    		@RequestBody(required=true) ASTNode query, 
     		   		
     		HttpServletRequest request) {
 		
@@ -138,11 +174,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		if(!user.isAdmin()){
-    			QueryComparison userRestrict = new QueryComparison();
-    			userRestrict.setAttribute("ue.userId");
-    			userRestrict.setComparisonType(QueryComparison.EQUAL_TO);
-    			userRestrict.setCondition(Integer.toString(user.getId()));
-    			query.getAndComparisons().add(userRestrict);
+    			query.createChildNode("eq", "ue.userId", user.getId());
     		}
     		return result.createResponseEntity(getPageStream(query));
     	}
@@ -169,13 +201,9 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     	if(result.isOk()){
     		try{
     			//Parse the RQL Query
-	    		QueryModel query = this.parseRQL(request);
+	    		ASTNode query = this.parseRQLtoAST(request);
 	    		if(!user.isAdmin()){
-	    			QueryComparison userRestrict = new QueryComparison();
-	    			userRestrict.setAttribute("ue.userId");
-	    			userRestrict.setComparisonType(QueryComparison.EQUAL_TO);
-	    			userRestrict.setCondition(Integer.toString(user.getId()));
-	    			query.getAndComparisons().add(userRestrict);
+	    			query.createChildNode("eq", "ue.userId", user.getId());
 	    		}
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){
@@ -313,69 +341,6 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	@Override
 	public EventInstanceModel createModel(EventInstanceVO vo) {
 		return new EventInstanceModel(vo);
-	}
-
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
-	 */
-	@Override
-	public void mapComparisons(List<QueryComparison> list) {
-		
-		List<QueryComparison> additional = new ArrayList<QueryComparison>();
-		
-		//Check for the attribute commentType
-		for(QueryComparison param : list){
-			if(param.getAttribute().equalsIgnoreCase("alarmLevel")){
-				param.setCondition(Integer.toString(AlarmLevels.CODES.getId(param.getCondition())));
-			}else if(param.getAttribute().equalsIgnoreCase("eventType")){
-				param.setAttribute("typeName");
-			}else if(param.getAttribute().equalsIgnoreCase("referenceId1")){
-				param.setAttribute("typeRef1");
-			}else if(param.getAttribute().equalsIgnoreCase("referenceId2")){
-				param.setAttribute("typeRef2");
-			}else if(param.getAttribute().equalsIgnoreCase("dataPointId")){
-				param.setAttribute("typeRef1");
-			}else if(param.getAttribute().equalsIgnoreCase("dataSourceId")){
-				param.setAttribute("typeRef2");
-			}else if(param.getAttribute().equalsIgnoreCase("active")){
-				//TODO need to replace this one attribute with 
-				// comparisons for rtnApplicable and RtnTimestamp == 0
-				QueryComparison comparison = new QueryComparison();
-				additional.add(comparison);
-				comparison.setAttribute("rtnTs");
-				
-				if(param.getCondition().equals("true")){
-					comparison.setComparisonType(QueryComparison.EQUAL_TO);
-					comparison.setCondition("null");
-				}else{
-					comparison.setComparisonType(QueryComparison.GREATER_THAN);
-					comparison.setCondition("0");
-				}
-				//Modify the one we already have
-				param.setAttribute("rtnApplicable");
-				param.setComparisonType(QueryComparison.EQUAL_TO);
-				param.setCondition("true");
-
-				
-			}
-		}
-		
-		//Add any remaning conditions
-		for(QueryComparison param : additional){
-			list.add(param);
-		}
-
-	}
-
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
-	 */
-	@Override
-	protected void fillTableModel(TableModel model) {
-		// TODO Auto-generated method stub
-		
 	}
 
 

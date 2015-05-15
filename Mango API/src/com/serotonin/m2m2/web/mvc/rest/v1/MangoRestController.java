@@ -9,11 +9,11 @@ import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.util.UrlPathHelper;
+import net.jazdw.rql.parser.ASTNode;
+import net.jazdw.rql.parser.RQLParser;
 
-import com.infiniteautomation.mango.db.query.QueryModel;
-import com.infiniteautomation.mango.db.query.RqlQueryParser;
+import org.springframework.http.HttpStatus;
+
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -25,7 +25,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
  * @author Terry Packer
  * 
  */
-public abstract class MangoRestController extends RqlQueryParser{
+public abstract class MangoRestController{
 
 	//private static final Log LOG = LogFactory.getLog(MangoRestController.class);
 	
@@ -98,12 +98,8 @@ public abstract class MangoRestController extends RqlQueryParser{
 		return new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", content));
 	}
 	
-	protected QueryModel parseRQL(HttpServletRequest request) throws UnsupportedEncodingException {
-		String queryString = request.getQueryString();
-		if (queryString != null) {
-		    UrlPathHelper helper = new UrlPathHelper();
-		    queryString = helper.decodeRequestString(request, queryString);
-		}
-		return parseRQL(queryString);
+	protected ASTNode parseRQLtoAST(HttpServletRequest request) throws UnsupportedEncodingException {
+		RQLParser parser = new RQLParser();
+        return parser.parse(request.getQueryString());
 	}
 }

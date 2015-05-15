@@ -5,9 +5,10 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,9 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.db.query.QueryComparison;
-import com.infiniteautomation.mango.db.query.QueryModel;
-import com.infiniteautomation.mango.db.query.TableModel;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -61,7 +59,7 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
     public ResponseEntity<QueryDataPageStream<DataPointVO>> query(
     		@ApiParam(value="Query", required=true)
-    		@RequestBody(required=true) QueryModel query, 
+    		@RequestBody(required=true) ASTNode query, 
     		HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
@@ -91,7 +89,7 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		QueryModel query = this.parseRQL(request);
+	    		ASTNode query = this.parseRQLtoAST(request);
 	    		DataPointSummaryStreamCallback callback = new DataPointSummaryStreamCallback(this, user);
 	    		
 	    		return result.createResponseEntity(getPageStream(query,callback));
@@ -105,24 +103,6 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
     	return result.createResponseEntity();
 	}
 
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#fillTableModel(com.infiniteautomation.mango.db.query.TableModel)
-	 */
-	@Override
-	protected void fillTableModel(TableModel model) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#mapComparisons(java.util.List)
-	 */
-	@Override
-	public void mapComparisons(List<QueryComparison> list) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)

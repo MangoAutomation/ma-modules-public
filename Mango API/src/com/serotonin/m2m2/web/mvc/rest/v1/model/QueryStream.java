@@ -6,8 +6,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.io.IOException;
 
+import net.jazdw.rql.parser.ASTNode;
+
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.db.query.QueryModel;
 import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
@@ -22,7 +23,7 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArray
 
 	
 	protected AbstractDao<VO> dao;
-	protected QueryModel query;
+	protected ASTNode root;
 	protected QueryStreamCallback<VO> queryCallback;
 	protected MangoVoRestController<VO, MODEL> controller;
 	protected StreamableSqlQuery<VO> results;
@@ -34,10 +35,10 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArray
 	 * @param limit
 	 * @param or
 	 */
-	public QueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, QueryModel query, QueryStreamCallback<VO> queryCallback) {
+	public QueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode root, QueryStreamCallback<VO> queryCallback) {
 		this.dao = dao;
 		this.controller = controller;
-		this.query = query;
+		this.root = root;
 		this.queryCallback = queryCallback;
 	}
 
@@ -45,9 +46,7 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArray
 	 * Setup the Query
 	 */
 	public void setupQuery(){
-		this.controller.mapComparisons(this.query.getAndComparisons());
-		this.controller.mapComparisons(this.query.getOrComparisons());
-		this.results = this.dao.createQuery(query.getOrComparisons(), query.getAndComparisons(), query.getSort(), query.getOffset(), query.getLimit(), this.queryCallback, null);
+		this.results = this.dao.createQuery(this.root, this.queryCallback, null, this.controller.getModelMap(), this.controller.getAppenders());
 	}
 	
 	/* (non-Javadoc)
