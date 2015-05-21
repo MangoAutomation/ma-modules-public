@@ -6,14 +6,13 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.io.IOException;
 
-import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
 
 /**
  * @author Terry Packer
  *
  */
-public class VoStreamCallback<VO extends AbstractVO<VO>, MODEL> extends QueryStreamCallback<VO> {
+public class VoStreamCallback<VO, MODEL> extends QueryStreamCallback<VO> {
 
 	protected MangoVoRestController<VO, MODEL> controller;
 	

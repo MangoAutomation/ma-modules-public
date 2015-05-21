@@ -78,7 +78,7 @@ public class LoginRestController extends MangoRestController {
             UserModel model = new UserModel(user);
             return result.createResponseEntity(model);
         }
-        return performLogin(username, password, request, response);
+        return performLogin(username, password, request, response, false);
     }
 	
 	/**
@@ -95,7 +95,7 @@ public class LoginRestController extends MangoRestController {
 			@PathVariable String username,
 			@RequestParam(value = "password", required = true, defaultValue = "") String password,
 			HttpServletRequest request, HttpServletResponse response) {
-		return performLogin(username, password, request, response);
+		return performLogin(username, password, request, response, false);
 	}
 
 	/**
@@ -112,7 +112,7 @@ public class LoginRestController extends MangoRestController {
 			@PathVariable String username,
 			@RequestParam(value = "password", required = true, defaultValue = "") String password,
 			HttpServletRequest request, HttpServletResponse response) {
-		return performLogin(username, password, request, response);
+		return performLogin(username, password, request, response, false);
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class LoginRestController extends MangoRestController {
 	 * @return
 	 */
 	private ResponseEntity<UserModel> performLogin(String username, String password,
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest request, HttpServletResponse response, boolean passwordEncrypted) {
 		
 		DataBinder binder = new DataBinder(User.class);
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
@@ -151,11 +151,15 @@ public class LoginRestController extends MangoRestController {
 			}
 
 			if (!authenticated) {
-				String passwordHash = Common.encrypt(password);
+				
+				String passwordHash;
+				if(!passwordEncrypted)
+					passwordHash = Common.encrypt(password);
+				else
+					passwordHash = password;
 
 				// Validating the password against the database.
 				if (!passwordHash.equals(user.getPassword())) {
-					// Removed logging of failed password
 					LOG.warn("Failed login attempt on user '"
 							+ user.getUsername() + "' from IP +"
 							+ request.getRemoteAddr());
@@ -200,4 +204,40 @@ public class LoginRestController extends MangoRestController {
 			return result.createResponseEntity();
 		}
 	}
+	
+	
+	/**
+	 * TODO dont use plaintext password, use OAuth2 or HMAC etc
+	 * 
+     * GET login action to switch user if we are an admin
+     * @param username
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/su/{username}")
+    public ResponseEntity<UserModel> su(
+            @PathVariable String username,
+            HttpServletRequest request, HttpServletResponse response) {
+    	RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+    	// check if user is already logged in, if logout == false just return the current user
+    	User user = this.checkUser(request, result);
+    	
+        if (result.isOk()) {
+        	if(user.isAdmin()){
+	        	User newUser = DaoRegistry.userDao.getUser(username);
+	        	
+	        	if(newUser == null){
+	        		result.addRestMessage(this.getDoesNotExistMessage());
+	        		return result.createResponseEntity();
+	        	}
+	        	String password = newUser.getPassword();
+	        	return performLogin(username, password, request, response, true);
+        	}else{
+    			result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User Not Admin"));
+        	}
+        }
+        
+        return result.createResponseEntity();
+        
+    }
+	
 }

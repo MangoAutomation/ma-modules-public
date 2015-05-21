@@ -20,8 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.TableModel;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
-import com.serotonin.m2m2.db.dao.AbstractDao;
-import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
@@ -34,9 +33,9 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> extends MangoRestController{
+public abstract class MangoVoRestController<VO, MODEL> extends MangoRestController{
 
-	protected AbstractDao<VO> dao;
+	protected AbstractBasicDao<VO> dao;
 	protected VoStreamCallback<VO, MODEL> callback;
 	
 	//Map of keys -> model members to value -> Vo member/sql column
@@ -48,7 +47,7 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	 * Construct a Controller using the default callback
 	 * @param dao
 	 */
-	public MangoVoRestController(AbstractDao<VO> dao){
+	public MangoVoRestController(AbstractBasicDao<VO> dao){
 		this.dao = dao;
 		this.callback = new VoStreamCallback<VO, MODEL>(this);
 		this.modelMap = new HashMap<String,String>();
@@ -60,7 +59,7 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL> ex
 	 * @param dao
 	 * @param callback
 	 */
-	public MangoVoRestController(AbstractDao<VO> dao, VoStreamCallback<VO, MODEL> callback){
+	public MangoVoRestController(AbstractBasicDao<VO> dao, VoStreamCallback<VO, MODEL> callback){
 		this.dao = dao;
 		this.callback = callback;
 		this.modelMap = new HashMap<String,String>();

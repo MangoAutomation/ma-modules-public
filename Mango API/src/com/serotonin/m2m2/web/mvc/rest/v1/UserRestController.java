@@ -4,11 +4,14 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,10 +27,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -42,11 +47,12 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Users", description="Operations on Users")
 @RestController
 @RequestMapping("/v1/users")
-public class UserRestController extends MangoRestController{
+public class UserRestController extends MangoVoRestController<User, UserModel>{
 	
 	private static Log LOG = LogFactory.getLog(UserRestController.class);
 	
 	public UserRestController(){
+		super(UserDao.instance);
 	}
 
 	@ApiOperation(value = "Get all users", notes = "Returns a list of all users")
@@ -120,11 +126,24 @@ public class UserRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 
+	@ApiOperation(value = "Get new user", notes = "Returns a new user with default values")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/new/user")
+    public ResponseEntity<UserModel> getNewUser(HttpServletRequest request) {
+		
+		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+    	this.checkUser(request, result);
+    	if(result.isOk()){
+    		return result.createResponseEntity(new UserModel(new User()));
+    	}
+    	return result.createResponseEntity();
+	}
+	
+	
 	@ApiOperation(value = "Updates a user")
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{username}")
     public ResponseEntity<UserModel> updateUser(
     		@PathVariable String username,
-    		UserModel model,
+    		@RequestBody UserModel model,
     		HttpServletRequest request) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
@@ -137,6 +156,8 @@ public class UserRestController extends MangoRestController{
     	    		return result.createResponseEntity();
     	        }
     			model.getData().setId(u.getId());
+    			model.getData().setPassword(u.getPassword());
+    			
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
@@ -199,6 +220,7 @@ public class UserRestController extends MangoRestController{
     				
     				if(model.validate()){
 	    				try{
+	    					model.setPassword(Common.encrypt(model.getPassword()));
 	    		        	DaoRegistry.userDao.saveUser(model.getData());
 	        		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
 	        		    	result.addRestMessage(getResourceCreatedMessage(location));
@@ -208,6 +230,7 @@ public class UserRestController extends MangoRestController{
 	        				return result.createResponseEntity();
 	        			}
     				}else{
+    				
     		        	result.addRestMessage(this.getValidationFailedError());
     		        	return result.createResponseEntity(model); 
     				}
@@ -336,5 +359,49 @@ public class UserRestController extends MangoRestController{
     	}
     	
     	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Query Users",
+			notes = "",
+			response=UserModel.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=UserModel.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    public ResponseEntity<QueryDataPageStream<User>> queryRQL(HttpServletRequest request) {
+		
+		RestProcessResult<QueryDataPageStream<User>> result = new RestProcessResult<QueryDataPageStream<User>>(HttpStatus.OK);
+    	
+		User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		try{
+    			//Parse the RQL Query
+	    		ASTNode query = this.parseRQLtoAST(request);
+	    		if(!user.isAdmin()){
+	    			query.createChildNode("eq", "id", user.getId());
+	    		}
+	    		return result.createResponseEntity(getPageStream(query));
+    		}catch(UnsupportedEncodingException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
+	 */
+	@Override
+	public UserModel createModel(User vo) {
+		return new UserModel(vo);
 	}
 }

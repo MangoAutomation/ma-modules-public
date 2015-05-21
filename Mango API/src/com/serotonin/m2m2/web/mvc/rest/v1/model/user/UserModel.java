@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -173,7 +174,11 @@ public class UserModel extends AbstractRestModel<User> {
         data.setMuted(muted);
     }
 
-    
+    @CSVColumnGetter(order=10, header="admin")
+    @JsonGetter("admin")
+    public Boolean isAdmin() {
+        return data.isAdmin();
+    }
     
 	public List<RestValidationMessage> getMessages() {
 		return messages;
@@ -193,6 +198,8 @@ public class UserModel extends AbstractRestModel<User> {
 		this.data.validate(validation);
 		
 		if(validation.getHasMessages()){
+			if(this.messages == null)
+				this.messages = new ArrayList<RestValidationMessage>();
 			//Add our messages to the list
 			for(ProcessMessage message : validation.getMessages()){
 				this.messages.add(new RestValidationMessage(

@@ -10,8 +10,7 @@ import net.jazdw.rql.parser.ASTNode;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
-import com.serotonin.m2m2.db.dao.AbstractDao;
-import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 
@@ -19,10 +18,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
  * @author Terry Packer
  *
  */
-public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArrayStream<VO>{
+public class QueryStream<VO, MODEL> implements QueryArrayStream<VO>{
 
 	
-	protected AbstractDao<VO> dao;
+	protected AbstractBasicDao<VO> dao;
 	protected ASTNode root;
 	protected QueryStreamCallback<VO> queryCallback;
 	protected MangoVoRestController<VO, MODEL> controller;
@@ -35,7 +34,7 @@ public class QueryStream<VO extends AbstractVO<VO>, MODEL> implements QueryArray
 	 * @param limit
 	 * @param or
 	 */
-	public QueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode root, QueryStreamCallback<VO> queryCallback) {
+	public QueryStream(AbstractBasicDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode root, QueryStreamCallback<VO> queryCallback) {
 		this.dao = dao;
 		this.controller = controller;
 		this.root = root;

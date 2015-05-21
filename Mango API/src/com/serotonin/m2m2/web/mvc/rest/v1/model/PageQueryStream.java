@@ -9,8 +9,7 @@ import java.io.IOException;
 import net.jazdw.rql.parser.ASTNode;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.m2m2.db.dao.AbstractDao;
-import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 
@@ -18,7 +17,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
  * @author Terry Packer
  *
  */
-public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStream<VO,MODEL> implements QueryDataPageStream<VO>{
+public class PageQueryStream<VO, MODEL> extends QueryStream<VO,MODEL> implements QueryDataPageStream<VO>{
 
 	protected QueryStreamCallback<Long> countCallback;
 
@@ -29,7 +28,7 @@ public class PageQueryStream<VO extends AbstractVO<VO>, MODEL> extends QueryStre
 	 * @param query
 	 * @param queryCallback
 	 */
-	public PageQueryStream(AbstractDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode node, QueryStreamCallback<VO> queryCallback) {
+	public PageQueryStream(AbstractBasicDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode node, QueryStreamCallback<VO> queryCallback) {
 		super(dao, controller, node, queryCallback);
 		this.countCallback = new QueryStreamCallback<Long>();
 	}
