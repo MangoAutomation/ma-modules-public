@@ -68,9 +68,12 @@ public class UserModel extends AbstractRestModel<User> {
     // the idea is that the password will only be
     // available in the Test View
     @CSVColumnGetter(order=1, header="password")
-    @JsonGetter("password")
+    public String getPasswordForCsv(){
+    	return "";
+    }
+
     public String getPassword() {
-        return ""; //data.getPassword(); 
+        return data.getPassword(); 
     }
     @CSVColumnSetter(order=1, header="password")
     @JsonSetter("password")

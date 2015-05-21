@@ -155,13 +155,15 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
     	        }
-    			model.getData().setId(u.getId());
-    			model.getData().setPassword(u.getPassword());
+    			
     			
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	DaoRegistry.userDao.saveUser(model.getData());
+    	        	User newUser = model.getData();
+        			newUser.setId(u.getId());
+        			newUser.setPassword(Common.encrypt(model.getPassword()));
+    	        	DaoRegistry.userDao.saveUser(newUser);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -220,8 +222,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     				
     				if(model.validate()){
 	    				try{
-	    					model.setPassword(Common.encrypt(model.getPassword()));
-	    		        	DaoRegistry.userDao.saveUser(model.getData());
+	    					User newUser = model.getData();
+	    					user.setPassword(Common.encrypt(model.getPassword()));
+	    		        	DaoRegistry.userDao.saveUser(newUser);
 	        		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
 	        		    	result.addRestMessage(getResourceCreatedMessage(location));
 	        		        return result.createResponseEntity(model);
