@@ -8,11 +8,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
 import net.jazdw.rql.parser.ASTNode;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -28,7 +31,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.i18n.ProcessMessage;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionDetails;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -150,34 +156,77 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		User u = DaoRegistry.userDao.getUser(username);
+    		
     		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
     	        }
+
+                // Cannot make yourself disabled or not admin
+                if (user.getId() == u.getId()) {
+                	boolean failed = false;
+                    if (!model.isAdmin()){
+                    	model.addValidationMessage(new ProcessMessage("permissions", new TranslatableMessage("users.validate.adminInvalid")));
+                    	failed = true;
+                    }
+                    if (model.getDisabled()){
+                    	model.addValidationMessage(new ProcessMessage("disabled", new TranslatableMessage("users.validate.adminDisable")));
+                    	failed = true;
+                    }
+                    if(failed){
+                    	result.addRestMessage(getValidationFailedError());
+                    	return result.createResponseEntity(model);
+                    }
+                }
+
     			
-    			
+    			//Set the ID for the user for validation
+    			model.getData().setId(u.getId());
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
     	        	User newUser = model.getData();
         			newUser.setId(u.getId());
-        			newUser.setPassword(Common.encrypt(model.getPassword()));
+        			if (!StringUtils.isBlank(model.getPassword()))
+        				newUser.setPassword(Common.encrypt(model.getPassword()));
+        			else
+        				newUser.setPassword(u.getPassword());
+        			
     	        	DaoRegistry.userDao.saveUser(newUser);
     	        }
     			return result.createResponseEntity(model);
     		}else{
     			if(u.getId() != user.getId()){
-	    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access user : " + u.getUsername());
+	    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to update user : " + u.getUsername());
 	    			result.addRestMessage(this.getUnauthorizedMessage());
 	    			return result.createResponseEntity();
     			}else{
     				//Allow users to update themselves
-    				model.getData().setId(u.getId());
+    				User newUser = model.getData();
+        			newUser.setId(u.getId());
+    				if (!StringUtils.isBlank(model.getPassword()))
+        				newUser.setPassword(Common.encrypt(model.getPassword()));
+        			else
+        				newUser.setPassword(u.getPassword());
         	        if(!model.validate()){
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
-        	        	DaoRegistry.userDao.saveUser(model.getData());
+        	        	
+            			// Cannot make yourself disabled or not admin
+            			boolean failed = false;
+                        if (user.getId() == u.getId()) {
+                            if (model.getDisabled()){
+                            	model.addValidationMessage(new ProcessMessage("disabled", new TranslatableMessage("users.validate.adminDisable")));
+                            	failed = true;
+                            }
+                            if(failed){
+                            	result.addRestMessage(getValidationFailedError());
+                            	return result.createResponseEntity(model);
+                            }
+                        }
+        	        	
+        	        	DaoRegistry.userDao.saveUser(newUser);
         	        }
     				return result.createResponseEntity(model);
     			}
@@ -219,7 +268,6 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     			if (u == null) {
     				//Create new user
     				model.getData().setId(Common.NEW_ID);
-    				
     				if(model.validate()){
 	    				try{
 	    					User newUser = model.getData();
@@ -398,8 +446,111 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     	return result.createResponseEntity();
 	}
 	
-	
+	@ApiOperation(
+			value = "Get User Permissions Information for all users",
+			notes = "",
+			response=PermissionDetails.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=PermissionDetails.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions/{query}")
+    public ResponseEntity<List<PermissionDetails>> getUserPermissions(
+    		@ApiParam(value = "Query of permissions to show as already added", required = true, allowMultiple = false)
+    		@PathVariable String query,
+    		HttpServletRequest request) {
+		
+		RestProcessResult<List<PermissionDetails>> result = new RestProcessResult<List<PermissionDetails>>(HttpStatus.OK);
+    	
+		User currentUser = this.checkUser(request, result);
+    	if(result.isOk()){
 
+	        List<PermissionDetails> ds = new ArrayList<>();
+	        for (User user : new UserDao().getActiveUsers()){
+	        	PermissionDetails deets = Permissions.getPermissionDetails(currentUser, query, user);
+	        	if(deets != null)
+	        		ds.add(deets);
+	        }
+    		return result.createResponseEntity(ds);
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Get All User Groups",
+			notes = "",
+			response=String.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=String.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions-groups/{exclude}")
+    public ResponseEntity<Set<String>> getAllUserGroups(
+    		@ApiParam(value = "Exclude Groups comma separated", required = true, allowMultiple = false)
+    		@PathVariable String exclude,
+    		HttpServletRequest request) {
+		
+		RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
+    	
+		this.checkUser(request, result);
+    	if(result.isOk()){
+
+            Set<String> groups = new TreeSet<>();
+
+            for (User user : new UserDao().getActiveUsers())
+                groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
+
+            if (!StringUtils.isEmpty(exclude)) {
+                for (String part : exclude.split(","))
+                    groups.remove(part);
+            }
+    		return result.createResponseEntity(groups);
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(value = "Delete A User")
+	@RequestMapping(method = RequestMethod.DELETE,  produces={"application/json", "text/csv"}, value = "/{username}")
+    public ResponseEntity<UserModel> deleteUser(
+    		@ApiParam(value = "Username", required = true, allowMultiple = false)
+    		@PathVariable String username,
+    		HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+		
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		User u = DaoRegistry.userDao.getUser(username);
+			if (u == null) {
+				result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	        }
+    		
+    		UserModel model = new UserModel(u);
+    		if(Permissions.hasAdmin(user)){
+    			if(u.getId() == user.getId()){
+                	model.addValidationMessage(new ProcessMessage("username", new TranslatableMessage("users.validate.badDelete")));
+                	result.addRestMessage(getValidationFailedError());
+                	return result.createResponseEntity(model);
+    			}
+    			DaoRegistry.userDao.deleteUser(u.getId());
+    			return result.createResponseEntity(model);
+    		}else{
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to delete user : " + u.getUsername());
+    			result.addRestMessage(this.getUnauthorizedMessage());
+    		}
+    	}
+		
+		return result.createResponseEntity();
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
 	 */

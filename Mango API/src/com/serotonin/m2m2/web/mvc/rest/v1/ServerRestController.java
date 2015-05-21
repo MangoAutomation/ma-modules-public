@@ -5,7 +5,9 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,11 +19,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.email.MangoEmailContent;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.rt.maint.work.EmailWorkItem;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
@@ -86,5 +95,38 @@ public class ServerRestController extends MangoRestController{
     	
     	return result.createResponseEntity();
 	}
+	
+	@ApiOperation(value = "Send a test email")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/email/test")
+    public ResponseEntity<String> sendTestEmail(
+    		@RequestParam(value = "email", required = true, defaultValue = "") String email,
+    		@RequestParam(value = "username", required = true, defaultValue = "") String username,
+    		HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(Permissions.hasAdmin(user)){
+    			try{
+		            Translations translations = Common.getTranslations();
+		            Map<String, Object> model = new HashMap<>();
+		            model.put("message", new TranslatableMessage("ftl.userTestEmail", username));
+		            MangoEmailContent cnt = new MangoEmailContent("testEmail", model, translations,
+		                    translations.translate("ftl.testEmail"), Common.UTF8);
+		            EmailWorkItem.queueEmail(email, cnt);
+		            return result.createResponseEntity(new TranslatableMessage("common.testEmailSent", email).translate(Common.getTranslations()));
+    			}catch(Exception e){
+    				result.addRestMessage(this.getInternalServerErrorMessage(e.getMessage()));
+    			}
+    		}else{
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to send a test email.");
+    			result.addRestMessage(this.getUnauthorizedMessage());
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	
 
 }

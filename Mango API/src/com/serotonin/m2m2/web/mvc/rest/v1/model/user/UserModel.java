@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -64,10 +65,9 @@ public class UserModel extends AbstractRestModel<User> {
         data.setUsername(username);
     }
 
-    //TODO This is not working yet
-    // the idea is that the password will only be
-    // available in the Test View
+    //TODO Fix up the CSV Stuff so we can have only Setters
     @CSVColumnGetter(order=1, header="password")
+    @JsonIgnore
     public String getPasswordForCsv(){
     	return "";
     }
@@ -183,6 +183,18 @@ public class UserModel extends AbstractRestModel<User> {
         return data.isAdmin();
     }
     
+    @CSVColumnGetter(order=11, header="receiveOwnAuditEvents")
+    @JsonGetter("receiveOwnAuditEvents")
+    public Boolean getReceiveOwnAuditEvents() {
+        return data.isReceiveOwnAuditEvents();
+    }
+
+    @CSVColumnSetter(order=11, header="receiveOwnAuditEvents")
+    @JsonSetter("receiveOwnAuditEvents")
+    public void setReceiveOwnAuditEvents(Boolean receiveOwnAuditEvents) {
+        data.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
+    }
+    
 	public List<RestValidationMessage> getMessages() {
 		return messages;
 	}
@@ -215,5 +227,15 @@ public class UserModel extends AbstractRestModel<User> {
 		}else{
 			return true; //Validated ok
 		}
+	}
+
+	public void addValidationMessage(ProcessMessage message){
+		if(this.messages == null)
+			this.messages = new ArrayList<RestValidationMessage>();
+		this.messages.add((new RestValidationMessage(
+				message.getContextualMessage().translate(Common.getTranslations()),
+				RestMessageLevel.ERROR,
+				message.getContextKey()
+				)));
 	}
 }
