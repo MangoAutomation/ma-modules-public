@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.BaseSqlQuery;
 import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
@@ -58,7 +59,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Data Points", description="Operations on Data points", position=1)
 @RestController(value="DataPointRestControllerV1")
 @RequestMapping("/v1/data-points")
-public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel>{
+public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel, DataPointDao>{
 
 	private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 	
@@ -539,7 +540,87 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	return result.createResponseEntity();
 	}
 
-
+	@ApiOperation(
+			value = "Bulk Update Set Permissions",
+			notes = "",
+			response=Long.class
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=String.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-apply-set-permissions")
+    public ResponseEntity<Long> bulkApplySetPermissions(
+    		
+    		@ApiParam(value="Permissions", required=true)
+    		@RequestBody(required=true) String permissions, 
+    		   		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<Long> result = new RestProcessResult<Long>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(!user.isAdmin()){
+    			LOG.warn("User " + user.getUsername() + " attempted to set bulk permissions");
+    			result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+    		}
+    	
+    		try{
+    			ASTNode node = this.parseRQLtoAST(request);
+    			
+    			long changed = this.dao.bulkUpdatePermissions(node, permissions, true);
+    			return result.createResponseEntity(changed);
+    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Bulk Update Read Permissions",
+			notes = "",
+			response=Long.class
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=String.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-apply-read-permissions")
+    public ResponseEntity<Long> bulkApplyReadPermissions(
+    		
+    		@ApiParam(value="Permissions", required=true)
+    		@RequestBody(required=true) String permissions, 
+    		   		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<Long> result = new RestProcessResult<Long>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(!user.isAdmin()){
+    			LOG.warn("User " + user.getUsername() + " attempted to set bulk permissions");
+    			result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+    		}
+    	
+    		try{
+    			ASTNode node = this.parseRQLtoAST(request);
+    			
+    			long changed = this.dao.bulkUpdatePermissions(node, permissions, false);
+    			return result.createResponseEntity(changed);
+    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
 	 */

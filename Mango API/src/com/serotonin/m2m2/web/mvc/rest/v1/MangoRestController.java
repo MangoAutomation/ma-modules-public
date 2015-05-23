@@ -100,6 +100,9 @@ public abstract class MangoRestController{
 	
 	protected ASTNode parseRQLtoAST(HttpServletRequest request) throws UnsupportedEncodingException {
 		RQLParser parser = new RQLParser();
-        return parser.parse(request.getQueryString());
+		String query = request.getQueryString();
+		if(query == null)
+			return null;
+        return parser.parse(query);
 	}
 }

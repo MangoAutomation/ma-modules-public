@@ -39,7 +39,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Data Point Summary", description="Access to Data Point Summary in the situations where a Full Data Point is not necessary", position=2)
 @RestController(value="DataPointSummaryRestControllerV1")
 @RequestMapping("/v1/data-point-summaries")
-public class DataPointSummaryRestController extends MangoVoRestController<DataPointVO, DataPointSummary>{
+public class DataPointSummaryRestController extends MangoVoRestController<DataPointVO, DataPointSummary, DataPointDao>{
 
 	private static Log LOG = LogFactory.getLog(DataPointSummaryRestController.class);
 	public DataPointSummaryRestController(){

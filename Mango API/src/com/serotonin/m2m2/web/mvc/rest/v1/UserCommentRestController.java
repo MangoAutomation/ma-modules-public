@@ -47,7 +47,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="User Comments", description="Operations on User Comments")
 @RestController()
 @RequestMapping("/v1/comments")
-public class UserCommentRestController extends MangoVoRestController<UserCommentVO, UserCommentModel>{
+public class UserCommentRestController extends MangoVoRestController<UserCommentVO, UserCommentModel, UserCommentDao>{
 	
 	private static Log LOG = LogFactory.getLog(UserCommentRestController.class);
 	
@@ -69,10 +69,10 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
-    public ResponseEntity<QueryStream<UserCommentVO, UserCommentModel>> getAll(HttpServletRequest request, 
+    public ResponseEntity<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
-        RestProcessResult<QueryStream<UserCommentVO, UserCommentModel>> result = new RestProcessResult<QueryStream<UserCommentVO, UserCommentModel>>(HttpStatus.OK);
+        RestProcessResult<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>> result = new RestProcessResult<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>>(HttpStatus.OK);
         
         this.checkUser(request, result);
     	

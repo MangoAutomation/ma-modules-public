@@ -18,13 +18,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
  * @author Terry Packer
  *
  */
-public class QueryStream<VO, MODEL> implements QueryArrayStream<VO>{
+public class QueryStream<VO, MODEL, DAO extends AbstractBasicDao<VO>> implements QueryArrayStream<VO>{
 
 	
-	protected AbstractBasicDao<VO> dao;
+	protected DAO dao;
 	protected ASTNode root;
 	protected QueryStreamCallback<VO> queryCallback;
-	protected MangoVoRestController<VO, MODEL> controller;
+	protected MangoVoRestController<VO, MODEL, DAO> controller;
 	protected StreamableSqlQuery<VO> results;
 	
 	/**
@@ -34,7 +34,7 @@ public class QueryStream<VO, MODEL> implements QueryArrayStream<VO>{
 	 * @param limit
 	 * @param or
 	 */
-	public QueryStream(AbstractBasicDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode root, QueryStreamCallback<VO> queryCallback) {
+	public QueryStream(DAO dao, MangoVoRestController<VO, MODEL, DAO> controller, ASTNode root, QueryStreamCallback<VO> queryCallback) {
 		this.dao = dao;
 		this.controller = controller;
 		this.root = root;

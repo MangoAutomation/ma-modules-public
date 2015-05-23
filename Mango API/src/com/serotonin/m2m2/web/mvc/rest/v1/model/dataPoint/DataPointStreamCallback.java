@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint;
 
 import java.io.IOException;
 
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -20,7 +21,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
  * @author Terry Packer
  *
  */
-public class DataPointStreamCallback extends VoStreamCallback<DataPointVO, DataPointModel>{
+public class DataPointStreamCallback extends VoStreamCallback<DataPointVO, DataPointModel, DataPointDao>{
 
 	private final User user;
 	
@@ -28,7 +29,7 @@ public class DataPointStreamCallback extends VoStreamCallback<DataPointVO, DataP
 	 * @param controller
 	 */
 	public DataPointStreamCallback(
-			MangoVoRestController<DataPointVO, DataPointModel> controller,
+			MangoVoRestController<DataPointVO, DataPointModel, DataPointDao> controller,
 			User user) {
 		super(controller);
 		this.user = user;

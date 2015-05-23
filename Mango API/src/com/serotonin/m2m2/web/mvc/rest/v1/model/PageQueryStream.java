@@ -17,7 +17,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
  * @author Terry Packer
  *
  */
-public class PageQueryStream<VO, MODEL> extends QueryStream<VO,MODEL> implements QueryDataPageStream<VO>{
+public class PageQueryStream<VO, MODEL, DAO extends AbstractBasicDao<VO>> extends QueryStream<VO,MODEL, DAO> implements QueryDataPageStream<VO>{
 
 	protected QueryStreamCallback<Long> countCallback;
 
@@ -28,7 +28,7 @@ public class PageQueryStream<VO, MODEL> extends QueryStream<VO,MODEL> implements
 	 * @param query
 	 * @param queryCallback
 	 */
-	public PageQueryStream(AbstractBasicDao<VO> dao, MangoVoRestController<VO, MODEL> controller, ASTNode node, QueryStreamCallback<VO> queryCallback) {
+	public PageQueryStream(DAO dao, MangoVoRestController<VO, MODEL, DAO> controller, ASTNode node, QueryStreamCallback<VO> queryCallback) {
 		super(dao, controller, node, queryCallback);
 		this.countCallback = new QueryStreamCallback<Long>();
 	}

@@ -33,10 +33,10 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-public abstract class MangoVoRestController<VO, MODEL> extends MangoRestController{
+public abstract class MangoVoRestController<VO, MODEL, DAO extends AbstractBasicDao<VO>> extends MangoRestController{
 
-	protected AbstractBasicDao<VO> dao;
-	protected VoStreamCallback<VO, MODEL> callback;
+	protected DAO dao;
+	protected VoStreamCallback<VO, MODEL, DAO> callback;
 	
 	//Map of keys -> model members to value -> Vo member/sql column
 	protected Map<String,String> modelMap;
@@ -47,9 +47,9 @@ public abstract class MangoVoRestController<VO, MODEL> extends MangoRestControll
 	 * Construct a Controller using the default callback
 	 * @param dao
 	 */
-	public MangoVoRestController(AbstractBasicDao<VO> dao){
+	public MangoVoRestController(DAO dao){
 		this.dao = dao;
-		this.callback = new VoStreamCallback<VO, MODEL>(this);
+		this.callback = new VoStreamCallback<VO, MODEL, DAO>(this);
 		this.modelMap = new HashMap<String,String>();
 		this.appenders = new HashMap<String, SQLColumnQueryAppender>();
 	}
@@ -59,7 +59,7 @@ public abstract class MangoVoRestController<VO, MODEL> extends MangoRestControll
 	 * @param dao
 	 * @param callback
 	 */
-	public MangoVoRestController(AbstractBasicDao<VO> dao, VoStreamCallback<VO, MODEL> callback){
+	public MangoVoRestController(DAO dao, VoStreamCallback<VO, MODEL, DAO> callback){
 		this.dao = dao;
 		this.callback = callback;
 		this.modelMap = new HashMap<String,String>();
@@ -71,7 +71,7 @@ public abstract class MangoVoRestController<VO, MODEL> extends MangoRestControll
 	 * @param query
 	 * @return
 	 */
-	protected QueryStream<VO, MODEL> getStream(ASTNode root){
+	protected QueryStream<VO, MODEL, DAO> getStream(ASTNode root){
 		return this.getStream(root, this.callback);
 	}
 	
@@ -80,9 +80,9 @@ public abstract class MangoVoRestController<VO, MODEL> extends MangoRestControll
 	 * @param query
 	 * @return
 	 */
-	protected QueryStream<VO, MODEL> getStream(ASTNode root, VoStreamCallback<VO, MODEL> callback){
+	protected QueryStream<VO, MODEL, DAO> getStream(ASTNode root, VoStreamCallback<VO, MODEL, DAO> callback){
 
-		QueryStream<VO, MODEL> stream = new QueryStream<VO, MODEL>(dao, this, root, callback);
+		QueryStream<VO, MODEL, DAO> stream = new QueryStream<VO, MODEL, DAO>(dao, this, root, callback);
 		//Ensure its ready
 		stream.setupQuery();
 		return stream;
@@ -93,7 +93,7 @@ public abstract class MangoVoRestController<VO, MODEL> extends MangoRestControll
 	 * @param query
 	 * @return
 	 */
-	protected PageQueryStream<VO, MODEL> getPageStream(ASTNode root){
+	protected PageQueryStream<VO, MODEL, DAO> getPageStream(ASTNode root){
 		return getPageStream(root, this.callback);
 	}
 
@@ -102,8 +102,8 @@ public abstract class MangoVoRestController<VO, MODEL> extends MangoRestControll
 	 * @param query
 	 * @return
 	 */
-	protected PageQueryStream<VO, MODEL> getPageStream(ASTNode node, VoStreamCallback<VO, MODEL> callback){
-		PageQueryStream<VO, MODEL> stream = new PageQueryStream<VO, MODEL>(dao, this, node, callback);
+	protected PageQueryStream<VO, MODEL, DAO> getPageStream(ASTNode node, VoStreamCallback<VO, MODEL, DAO> callback){
+		PageQueryStream<VO, MODEL, DAO> stream = new PageQueryStream<VO, MODEL, DAO>(dao, this, node, callback);
 		//Ensure its ready
 		stream.setupQuery();
 		return stream;

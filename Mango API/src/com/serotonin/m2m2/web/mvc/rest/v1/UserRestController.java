@@ -53,7 +53,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Users", description="Operations on Users")
 @RestController
 @RequestMapping("/v1/users")
-public class UserRestController extends MangoVoRestController<User, UserModel>{
+public class UserRestController extends MangoVoRestController<User, UserModel, UserDao>{
 	
 	private static Log LOG = LogFactory.getLog(UserRestController.class);
 	
@@ -307,7 +307,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     		
     		@ApiParam(value = "Home Url", required = true, allowMultiple = false)
     		@RequestParam(required=true)
-    		String homeUrl,
+    		String url,
     		HttpServletRequest request) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
@@ -319,12 +319,16 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
     	        }
-    			u.setHomeUrl(homeUrl);
+    			u.setHomeUrl(url);
     			UserModel model = new UserModel(u);
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	DaoRegistry.userDao.saveUser(model.getData());
+    	        	//Check to see if we are the user that was updated
+    	            User theUser = Common.getUser();
+    	            if(u.getId() == theUser.getId())
+    	            	theUser.setHomeUrl(url);
+    	            DaoRegistry.userDao.saveHomeUrl(u.getId(), url);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -333,14 +337,17 @@ public class UserRestController extends MangoVoRestController<User, UserModel>{
 	    			result.addRestMessage(this.getUnauthorizedMessage());
 	    			return result.createResponseEntity();
     			}else{
-    				u.setHomeUrl(homeUrl);
+    				u.setHomeUrl(url);
     				UserModel model = new UserModel(u);
     				//Allow users to update themselves
     				model.getData().setId(u.getId());
         	        if(!model.validate()){
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
-        	        	DaoRegistry.userDao.saveUser(model.getData());
+        	        	//We have confirmed that we are the user
+        	        	User theUser = Common.getUser();
+         	            theUser.setHomeUrl(url);
+         	            DaoRegistry.userDao.saveHomeUrl(u.getId(), url);
         	        }
     				return result.createResponseEntity(model);
     			}

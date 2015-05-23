@@ -58,7 +58,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value="Events", description="Operations on Events")
 @RestController()
 @RequestMapping("/v1/events")
-public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel>{
+public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
 	
 	private static Log LOG = LogFactory.getLog(EventsRestController.class);
 	
