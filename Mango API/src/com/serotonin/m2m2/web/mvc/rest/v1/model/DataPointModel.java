@@ -292,6 +292,11 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		ChartRendererFactory.updateDataPoint(this.data, renderer);
 	}
 	
+	@JsonGetter("dataSourceName")
+	public String getDataSourceName(){
+		return this.data.getDataSourceName();
+	}
+	
 	/**
 	 * Ensure all Complex properties are set in the Data Point prior to returning
 	 */

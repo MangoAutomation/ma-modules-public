@@ -621,6 +621,80 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	
     	return result.createResponseEntity();
 	}
+	
+	@ApiOperation(
+			value = "Bulk Clear Set Permissions",
+			notes = "",
+			response=Long.class
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=String.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-clear-set-permissions")
+    public ResponseEntity<Long> bulkClearSetPermissions(HttpServletRequest request) {
+		
+		RestProcessResult<Long> result = new RestProcessResult<Long>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(!user.isAdmin()){
+    			LOG.warn("User " + user.getUsername() + " attempted to clear bulk permissions");
+    			result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+    		}
+    	
+    		try{
+    			ASTNode node = this.parseRQLtoAST(request);
+    			
+    			long changed = this.dao.bulkClearPermissions(node, true);
+    			return result.createResponseEntity(changed);
+    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Bulk Clear Read Permissions",
+			notes = "",
+			response=Long.class
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=String.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-clear-read-permissions")
+    public ResponseEntity<Long> bulkClearReadPermissions(HttpServletRequest request) {
+		
+		RestProcessResult<Long> result = new RestProcessResult<Long>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(!user.isAdmin()){
+    			LOG.warn("User " + user.getUsername() + " attempted to clear bulk permissions");
+    			result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+    		}
+    	
+    		try{
+    			ASTNode node = this.parseRQLtoAST(request);
+    			
+    			long changed = this.dao.bulkClearPermissions(node, false);
+    			return result.createResponseEntity(changed);
+    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
 	 */
