@@ -11,6 +11,7 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
 import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
@@ -33,17 +34,17 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 	 * @param from
 	 * @param to
 	 */
-	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to) {
+	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, DataValue startValue) {
 		switch(vo.getPointLocator().getDataTypeId()){
 			case DataTypes.BINARY:
 			case DataTypes.MULTISTATE:
-				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, null));
+				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue));
 			break;
 			case DataTypes.ALPHANUMERIC:
-				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, null));
+				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue));
 			break;
 			case DataTypes.NUMERIC:
-				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, null));
+				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()));
 			break;
 			default:
 				throw new ShouldNeverHappenException("Invalid Data Type: "+ vo.getPointLocator().getDataTypeId());

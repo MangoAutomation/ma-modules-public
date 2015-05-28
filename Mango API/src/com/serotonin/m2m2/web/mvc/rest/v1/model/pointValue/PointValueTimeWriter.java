@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import javax.measure.converter.ConversionException;
 
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -80,6 +81,10 @@ public abstract class PointValueTimeWriter {
 	 * @throws IOException
 	 */
 	public void writeNonNull(DataValue value, Long time) throws ConversionException, IOException{
+		
+		if(time == null)
+			throw new ShouldNeverHappenException("Time cannot be null");
+		
 		if(value == null){
 			if(useRendered){
 				this.writePointValueTime(new AlphanumericValue(""), time, this.noDataMessage);
