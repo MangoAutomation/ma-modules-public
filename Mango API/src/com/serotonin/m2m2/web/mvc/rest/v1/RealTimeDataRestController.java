@@ -123,7 +123,7 @@ public class RealTimeDataRestController extends MangoRestController{
 		//If no messages then go for it
 		if(result.isOk()){
 	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
-	    	ASTNode root = new ASTNode("xid", xid);
+	    	ASTNode root = new ASTNode("eq", "xid", xid);
 
 	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 	    	
