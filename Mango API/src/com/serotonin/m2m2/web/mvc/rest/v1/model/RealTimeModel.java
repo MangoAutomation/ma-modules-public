@@ -50,8 +50,8 @@ public class RealTimeModel extends AbstractRestModel<RealTimeDataPointValue>{
 		return this.data.getUnit();
 	}
 	
-	@JsonGetter("time")
-	public long getTime(){
+	@JsonGetter("timestamp")
+	public long getTimestamp(){
 		return this.data.getTimestamp();
 	}
 	
