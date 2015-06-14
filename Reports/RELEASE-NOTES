@@ -4,6 +4,9 @@
 * Added M2M Report Importer at /m2m_report_import.shtm
 * Fixed bug where importing the previousPeriodType was not working.
 
+*Version 2.1.3*
+* Changed so individual point charts are displayed in selected color
+
 *Version 2.1.2*
 * Adding Purge now option in system settings
 * Deleting NoSQL data when Report Instance is deleted.
