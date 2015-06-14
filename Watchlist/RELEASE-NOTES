@@ -1,3 +1,8 @@
+*Version 1.6.1*
+* Added filter by user
+* Added filter for watchlist names
+* Increased height of watchlist area
+
 *Version 1.6.0*
 * Upgraded to work with core version 2.5.x
 * Add multiple JSON Emport labels of "watchLists" and "watchlists" for compatibility
