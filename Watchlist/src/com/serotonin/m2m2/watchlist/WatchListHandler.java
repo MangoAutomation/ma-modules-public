@@ -5,8 +5,13 @@
 package com.serotonin.m2m2.watchlist;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -69,9 +74,11 @@ public class WatchListHandler implements UrlHandler {
 
         UserDao userDao = new UserDao();
         boolean found = false;
-        List<IntStringPair> watchListNames = new ArrayList<>(watchLists.size());
+        List<Map<String,String>> watchListsData = new ArrayList<Map<String,String>>(watchLists.size());
         List<IntStringPair> watchListUsers = new ArrayList<>(watchLists.size());
         List<IntStringPair> userWatchLists = new ArrayList<>(watchLists.size());
+        Set<String> users = new HashSet<String>();
+        
         for (WatchList watchList : watchLists) {
             if (!found) {
                 if (StringUtils.equals(watchList.getXid(), wlxid)) {
@@ -106,12 +113,17 @@ public class WatchListHandler implements UrlHandler {
             }
             else {
                 username = watchListUser.getUsername();
+                users.add(watchListUser.getUsername());
             }
 
             watchListUsers.add(new IntStringPair(watchList.getId(), username));
             // Add the Username to the name to know who's it is
             userWatchLists.add(new IntStringPair(watchList.getId(), watchList.getName() + " (" + username + ")"));
-            watchListNames.add(new IntStringPair(watchList.getId(), watchList.getName()));
+            Map<String,String> wlData = new HashMap<String,String>();
+            wlData.put("id", Integer.toString(watchList.getId()));
+            wlData.put("name", watchList.getName());
+            wlData.put("username", username);
+            watchListsData.add(wlData);
         }
 
         if (!found) {
@@ -121,10 +133,20 @@ public class WatchListHandler implements UrlHandler {
             new WatchListDao().saveSelectedWatchList(user.getId(), selected);
         }
 
-        model.put(KEY_WATCHLISTS, watchListNames);
+        Collections.sort(watchListsData, new Comparator<Map<String,String>>(){
+	        	@Override
+	        		public int compare(Map<String, String> o1, Map<String, String> o2) {
+	        		return o1.get("name").compareTo(o2.get("name"));
+	        	}
+        	});
+      	model.put(KEY_WATCHLISTS, watchListsData);
         model.put(KEY_SELECTED_WATCHLIST, selected);
         model.put(KEY_WATCHLIST_USERS, watchListUsers);
         model.put(KEY_USER_WATCHLISTS, userWatchLists);
         model.put(KEY_USERNAME, user.getUsername());
+            	
+        List<String> sortedUsers = new ArrayList<String>(users);
+        Collections.sort(sortedUsers);
+        model.put("usernames", sortedUsers);
     }
 }

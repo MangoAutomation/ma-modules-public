@@ -1,8 +1,11 @@
 *Version 1.7.0*
 * Upgraded to work with core version 2.6.x
+* Added new permissions subsystem to allow finer grained access 
 
 *Version 1.6.1*
-* Added new permissions subsystem to allow finer grained access 
+* Added filter by user
+* Added filter for watchlist names
+* Increased height of watchlist area
 
 *Version 1.6.0*
 * Upgraded to work with core version 2.5.x

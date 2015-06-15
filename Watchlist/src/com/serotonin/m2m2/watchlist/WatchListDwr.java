@@ -134,7 +134,7 @@ public class WatchListDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public void deleteWatchList(int watchListId) {
+    public boolean deleteWatchList(int watchListId) {
         User user = Common.getUser();
 
         WatchListDao watchListDao = new WatchListDao();
@@ -144,11 +144,14 @@ public class WatchListDwr extends ModuleDwr {
 
         if (watchList == null || watchListDao.getWatchLists(user).size() == 1)
             // Only one watch list left. Leave it.
-            return;
+        	return false;
 
         // Allow the delete if the user is an editor.
-        if (watchList.isEditor(user))
+        if (watchList.isEditor(user)){
             watchListDao.deleteWatchList(watchListId);
+        	return true;
+        }
+        return false;
     }
 
     @DwrPermission(user = true)

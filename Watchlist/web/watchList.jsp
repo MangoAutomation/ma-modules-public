@@ -49,16 +49,31 @@
       dojo.require("dojo.store.Memory");
       dojo.require("dijit.form.Select");
       dojo.require("dijit.form.ComboBox");
+      dojo.require("dijit.form.FilteringSelect");
       
       var globalUsername = "${username}"; //Username for new lists
-      var userMap = [
-          <c:forEach items="${watchListUsers}" var="wl">
-          {watchListId: "${wl.key}", watchListUsername: "${wl.value}"},</c:forEach>
-      ];
+
       var watchListMap = [
           <c:forEach items="${watchLists}" var="wl">
-          {watchListId: "${wl.key}", watchListName: "${wl.value}"},</c:forEach>
+          {   id: ${wl.id},
+        	  watchListName: "${wl.name}",
+        	  watchListUsername: "${wl.username}",
+        	  htmlName: "<b>${wl.name}</b>&nbsp-&nbsp${wl.username}"
+          },</c:forEach>
       ];
+	
+      var users = [
+		<c:forEach items="${usernames}" var="username">
+		{
+			id: "${username}", 
+			username: "${username}", 
+		},</c:forEach>
+      ];
+      
+      var userStore = new dojo.store.Memory({data: users});
+      
+      var watchlistStore = new dojo.store.Memory({data: watchListMap});
+      var watchlistFilter;
 
       mango.view.initWatchlist();
       var editor;
@@ -68,8 +83,68 @@
       var iconSrc = "images/bullet_go.png";
       //Hack to allow filter to remain on display
       var pointLookupText = "";
+      var selectedWatchlistId = ${selectedWatchList};
       
       dojo.ready(function() {
+    	  //Setup the User Filter
+    	  watchlistFilter = new dijit.form.FilteringSelect({
+    		    style: 'width: 50ch',
+                store: watchlistStore,
+                searchAttr: "watchListName",
+
+                fetchProperties : {
+                	sort: [{attribute: 'watchListName'}]
+                },
+                labelAttr: "htmlName",
+                labelType: "html",
+                autoComplete: false,
+                placeholder: '<fmt:message key="watchlist.selectWatchlist"/>',
+                highlightMatch: "all",
+                queryExpr: "*\${0}*",
+                required: true,
+                invalidMessage: '<fmt:message key="watchlist.noMatchingWatchlists"/>',
+                value: ${selectedWatchList},
+                onChange: function(watchlist){
+                	if(watchlist !== ''){
+                		selectedWatchlistId = watchlist;
+            			watchListChanged();
+                	}else{
+                		this.set('value', selectedWatchlistId, false);
+                	}
+                },
+                onSearch: function(results, query, options){
+                	if(results.total === 0)
+                		this.set('value', selectedWatchlistId, false);
+                }
+          }, "watchlistFilter"); 
+    	  
+    	  //Setup the User Filter
+    	  var userFilter = new dijit.form.FilteringSelect({
+                store: userStore,
+                searchAttr: "username",                  
+                autoComplete: false,
+                placeholder: '<fmt:message key="watchlist.filterByUser"/>',
+                highlightMatch: "all",
+                queryExpr: "*\${0}*",
+                query: /.*/,
+                fetchProperties : {
+                	sort: [{attribute: 'username'}]
+                },
+                required: false,
+                invalidMessage: '<fmt:message key="watchlist.noMatchingUsers"/>',
+                onChange: function(username){
+                	if(username === '')
+	                	watchlistFilter.query.watchListUsername = /.*/;
+                	else{
+                		watchlistFilter.query.watchListUsername = username;
+                		var list = watchlistStore.query({watchListUsername: username}, {sort: [{attribute: 'watchListName'}]});
+                		if(list.length > 0)
+                			watchlistFilter.set('item', list[0]);
+                	}
+                	
+                }
+          }, "userFilter"); 
+    	  
           //Setup the File Download Selector
           var uploadTypeChoice = new dijit.form.Select({
               name: "downloadTypeSelect",
@@ -221,19 +296,12 @@
           fixRowFormatting();
           mango.view.watchList.reset();
           
-          var select = $("watchListSelect");
           var txt = $("newWatchListName");
           
           //Get the name of the watchlist without the (user) on the end
-          var selectedWatchListId =  select.options[select.selectedIndex].value;
-          for (var i=0; i<watchListMap.length; i++){
-              if (watchListMap[i].watchListId == selectedWatchListId){
-                  $set(txt, watchListMap[i].watchListName);
-                  break;
-              }
-          }
-          //$set(txt, select.options[select.selectedIndex].text);
-          
+		  var selectedWl =  watchlistFilter.get('item');
+		  $set(txt, selectedWl.watchListName);
+		  
           // Display controls based on access
           if (editor) {
               show("wlEditDiv", "inline");
@@ -261,24 +329,16 @@
 	  
       function saveWatchListName() {
           var name = $get("newWatchListName");
-          var select = $("watchListSelect");
-          var selectedWatchListId =  select.options[select.selectedIndex].value;
-              
-          //Set the name in our Map
-          for (var i=0; i<watchListMap.length; i++){
-              if (watchListMap[i].watchListId == selectedWatchListId){
-                  watchListMap[i].watchListName = name;
-                  break;
-              }
-          }
           
           //Set the name in our drop down (with username)
-          for (var i=0; i<userMap.length; i++){
-              if (userMap[i].watchListId == selectedWatchListId){
-                  select.options[select.selectedIndex].text = name + " (" + userMap[i].watchListUsername + ")";
-                  break;
-              }
-          }
+          var selectedWatchlist =  watchlistFilter.get('item');
+          selectedWatchlist.watchListName = name;
+          selectedWatchlist.htmlName = '<b>' + selectedWatchlist.watchListName + '</b>&nbsp-&nbsp' + selectedWatchlist.watchListUsername;
+          //Set the name in our Stores
+          watchlistStore.put(selectedWatchlist, {overwrite: true});
+          
+          //Update the selection
+          watchlistFilter.set('item', selectedWatchlist);
           
           WatchListDwr.updateWatchListName(name);
           hideLayer("wlEdit");
@@ -292,7 +352,10 @@
           
           watchlistChangeId++;
           var id = watchlistChangeId;
-          WatchListDwr.setSelectedWatchList($get("watchListSelect"), function(data) {
+          var wlId = watchlistFilter.get('value');
+          if(wlId === '')
+          	return; //Nothing selected
+		  WatchListDwr.setSelectedWatchList(wlId, function(data) {
               // Ensure that the data received is the latest data that was requested.
               if (id == watchlistChangeId)
                   displayWatchList(data);
@@ -302,40 +365,46 @@
       function addWatchList(copy) {
           var copyId = ${NEW_ID};
           if (copy)
-              copyId = $get("watchListSelect");
+        	  copyId = watchlistFilter.get('value');
           
           WatchListDwr.addNewWatchList(copyId, function(watchListData) {
-              //Update our maps
-              userMap[userMap.length] = {
-                  watchListId: watchListData.key + "",
-                  watchListUsername: globalUsername,
-              };
-              watchListMap[watchListMap.length] = {
-                  watchListId: watchListData.key + "",
-                  watchListName: watchListData.value,
-              };
-              var watchListName = watchListData.value + " (" + globalUsername + ")";
-              var wlselect = $("watchListSelect");
-              wlselect.options[wlselect.options.length] = new Option(watchListName, watchListData.key);
-              $set(wlselect, watchListData.key);
+        	//Add the new watchlist into the global memory store and select
+        	  var newWl = {
+        	  	id: watchListData.key,
+        	  	watchListName: watchListData.value,
+        	  	watchListUsername: globalUsername,
+        	  	htmlName: '<b>' + watchListData.value + '</b>&nbsp-&nbsp' + globalUsername
+        	  };
+        	  watchlistStore.put(newWl);
+        	  
               watchListChanged();
               maybeDisplayDeleteImg();
           });
       }
       
       function deleteWatchList() {
-          var wlselect = $("watchListSelect");
-          var deleteId = $get(wlselect);
-          wlselect.options[wlselect.selectedIndex] = null;
-          //Could update our maps but don't have to
-          watchListChanged();
-          WatchListDwr.deleteWatchList(deleteId);
-          maybeDisplayDeleteImg();
+    	  var deleteId = watchlistFilter.get('value');
+
+          WatchListDwr.deleteWatchList(deleteId, function(deleted){
+        	  if(deleted === true){
+		          //Remove from stores
+		          watchlistStore.remove(deleteId);
+		          
+		          //Set selected item to first in list
+		          watchlistFilter.set('item', watchlistFilter.store.data[0]);
+	        	  
+	        	  maybeDisplayDeleteImg();
+		          
+		          watchListChanged();
+        	  }else{
+        		  alert('<fmt:message key="watchlist.unableToDelete"/>');
+        	  }
+
+          });
       }
       
       function maybeDisplayDeleteImg() {
-          var wlselect = $("watchListSelect");
-          display("watchListDeleteImg", editor && wlselect.options.length > 1);
+    	  display("watchListDeleteImg", watchlistFilter.store.data.length > 1);
       }
       
       function showWatchListUsers() {
@@ -476,7 +545,6 @@
               hide("emptyListMessage");
               for (var i=0; i<rows.length; i++) {
                   if (i == 0) {
-                      hide(rows[i].id +"BreakRow");
                       hide(rows[i].id +"MoveUp");
                   }
                   else {
@@ -579,9 +647,8 @@
                 pointList += pointIds[i];
             }
 
-            var select = $("watchListSelect");
-            var name = escape(select.options[select.selectedIndex].text);
-            window.location='reports.shtm?createName='+ name +'&createPoints='+ pointList;
+            var wl = watchlistFilter.get('item');
+            window.location='reports.shtm?createName='+ wl.watchListName +'&createPoints='+ pointList;
         }
       </m2m2:moduleExists>
 
@@ -620,7 +687,7 @@
     <table class="wide">
     <tr><td>
       <div dojoType="dijit.layout.SplitContainer" orientation="horizontal" sizerWidth="3" activeSizing="true" class="borderDiv"
-              id="splitContainer" style="width: 100%; height: 500px;">
+              id="splitContainer" style="width: 100%; height: 75vh;">
         <div dojoType="dijit.layout.ContentPane" sizeMin="20" sizeShare="20" style="overflow:auto;padding:2px;">
           <div class="clearfix">
             <div style="display:inline;"><span class="smallTitle"><fmt:message key="watchlist.points"/></span> <tag:help id="watchListPoints"/></div>
@@ -641,13 +708,8 @@
             <tr>
               <td class="smallTitle"><fmt:message key="watchlist.watchlist"/> <tag:help id="watchList"/></td>
               <td align="right">
-                <sst:select id="watchListSelect" value="${selectedWatchList}" onchange="watchListChanged()"
-                        onmouseover="closeLayers();">
-                  <c:forEach items="${userWatchLists}" var="wl">
-                    <sst:option value="${wl.key}">${sst:escapeLessThan(wl.value)}</sst:option>
-                  </c:forEach>
-                </sst:select>
-                
+                <div id="userFilter"></div>
+                <div id="watchlistFilter"></div>
                 <div id="wlEditDiv" style="display:inline;" onmouseover="showWatchListEdit()">
                   <tag:img id="wlEditImg" png="pencil" title="watchlist.editListName"/>
                   <div id="wlEdit" style="visibility:hidden;right:0px;top:15px;" class="labelDiv"
@@ -753,7 +815,7 @@
                 <tr>
                 <td colspan="5" style="padding-left:16px;" >
                     <!-- Adding scrolling div for messages -->
-                    <div style='max-height:100px; overflow-y: auto'>
+                    <div id="p_TEMPLATE_MessagesDiv" style='max-height:100px; overflow-y: auto; display:none;'>
                        <table>
                        <tr><td id="p_TEMPLATE_Messages"></td></tr>
                        </table>
@@ -762,7 +824,7 @@
                 </tr>
               </tbody>
             </table>
-            <table id="watchListTable" class="wide"></table>
+            <table id="watchListTable" class="wide" style="border-collapse: collapse"></table>
             <div id="emptyListMessage" style="color:#888888;padding:10px;text-align:center;">
               <fmt:message key="watchlist.emptyList"/>
             </div>
