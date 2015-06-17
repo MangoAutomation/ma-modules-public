@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.hierarchy.PointFolder;
@@ -47,10 +49,12 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<PointHierarchyModel> getPointHierarchy(HttpServletRequest request) {
 
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
 	    	PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-	    	PointHierarchyModel model = new PointHierarchyModel(ph.getRoot());
+	    	//Clean out based on permissions
+	    	PointFolder root = prune(ph.getRoot(), user);
+	    	PointHierarchyModel model = new PointHierarchyModel(root);
 	    	return result.createResponseEntity(model);
     	}
     	
@@ -58,6 +62,7 @@ public class PointHierarchyRestController extends MangoRestController{
     
     }
     
+
 	/**
 	 * Get the folder via a name
 	 * @param folderName
@@ -68,23 +73,26 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable String folderName, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
 			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
 			PointFolder folder = ph.getRoot();
 			PointFolder desiredFolder = null;
 			if(folder.getName().equals(folderName))
-				return result.createResponseEntity(new PointHierarchyModel(folder)); 
-			else{
+		    	desiredFolder = folder; 
+			else
 				desiredFolder = recursiveFolderSearch(folder, folderName);
-			}
+			
 			
 			if (desiredFolder == null){
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
-			}else
-				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
+			}else{
+		    	//Clean out based on permissions
+				PointFolder root = prune(desiredFolder, user);
+				return result.createResponseEntity(new PointHierarchyModel(root)); 
+			}
 
     	}
     	
@@ -101,23 +109,25 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable Integer folderId, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
 			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
 			PointFolder folder = ph.getRoot();
 			PointFolder desiredFolder = null;
 			if(folder.getId() == folderId)
-				return result.createResponseEntity(new PointHierarchyModel(folder)); 
-			else{
+				desiredFolder = folder;
+			else
 				desiredFolder = recursiveFolderSearch(folder, folderId);
-			}
 			
 			if (desiredFolder == null){
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
-			}else
-				return result.createResponseEntity(new PointHierarchyModel(desiredFolder)); 
+			}else{
+				//Clean out based on permissions
+				PointFolder root = prune(desiredFolder, user);
+				return result.createResponseEntity(new PointHierarchyModel(root)); 
+			}
 
     	}
     	
@@ -162,6 +172,85 @@ public class PointHierarchyRestController extends MangoRestController{
 		}
     }
 	
+	
+	/**
+	 * Remove any data points that are not readable by user and remove empty folders that result
+	 * 
+	 * Caution not to edit the folders in place as they are the real cached point hierarchy
+	 * 
+	 * @param ph
+	 * @param user
+	 * @return PointFolder as a copy
+	 */
+	private PointFolder prune(PointFolder root, User user) {
+		
+		//Make a copy from the highest level down
+		PointFolder copy = copyFolder(root);
+		
+		//Always prune the base folder's points but don't remove it.
+		List<DataPointSummary> points = copy.getPoints();
+		List<DataPointSummary> pointsToKeep = new ArrayList<DataPointSummary>();
+		for(DataPointSummary summary : points){
+			if(Permissions.hasDataPointReadPermission(user, summary))
+				pointsToKeep.add(summary);
+		}
+		copy.setPoints(pointsToKeep);
+		
+		List<PointFolder> folders = copy.getSubfolders();
+		List<PointFolder> foldersToKeep = new ArrayList<PointFolder>();
+
+		for(PointFolder folder : folders)
+			if((pruneFolder(folder, user) > 0) || (folder.getSubfolders().size() > 0))
+				foldersToKeep.add(folder);
+		
+		copy.setSubfolders(foldersToKeep);
+		
+		return copy;
+	}
+	
+	/**
+	 * Recursively check all sub-folders and remove points based on Data Point Read Permission
+	 * @param folder
+	 * @param user
+	 * @return
+	 */
+	private int pruneFolder(PointFolder folder, User user){
+		List<DataPointSummary> points = folder.getPoints();
+		List<DataPointSummary> pointsToKeep = new ArrayList<DataPointSummary>();
+		for(DataPointSummary summary : points){
+			if(Permissions.hasDataPointReadPermission(user, summary))
+				pointsToKeep.add(summary);
+		}
+		
+		folder.setPoints(pointsToKeep);
+		
+		List<PointFolder> foldersToKeep = new ArrayList<PointFolder>();
+		for(PointFolder f : folder.getSubfolders())
+			if((pruneFolder(f, user) > 0) || (f.getSubfolders().size() > 0))
+				foldersToKeep.add(f);
+
+		folder.setSubfolders(foldersToKeep);
+		
+		return pointsToKeep.size();
+	}
+	
+	/**
+	 * Make a copy of the folder and copies of its subfolders
+	 * @param folder
+	 * @return
+	 */
+	private PointFolder copyFolder(PointFolder folder){
+		PointFolder copy = new PointFolder(folder.getId(), folder.getName());
+		copy.setPoints(new ArrayList<DataPointSummary>(folder.getPoints()));
+		
+		//Copy the subfolders
+		List<PointFolder> folderCopies = new ArrayList<PointFolder>();
+		for(PointFolder f : folder.getSubfolders())
+			folderCopies.add(copyFolder(f));
+		
+		copy.setSubfolders(folderCopies);
+		return copy;
+	}
 	
 	/**
 	 * @param ph
