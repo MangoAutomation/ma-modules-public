@@ -13,7 +13,7 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RollupEnum;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  * @author Terry Packer

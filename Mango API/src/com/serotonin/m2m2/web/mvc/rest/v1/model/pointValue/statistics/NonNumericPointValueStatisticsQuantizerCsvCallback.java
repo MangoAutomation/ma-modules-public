@@ -8,7 +8,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeCsvWriter;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RollupEnum;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  * @author Terry Packer

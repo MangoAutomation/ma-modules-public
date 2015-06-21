@@ -486,6 +486,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	return result.createResponseEntity();
 	}
 	
+	
 	@ApiOperation(
 			value = "Get All User Groups",
 			notes = "",
