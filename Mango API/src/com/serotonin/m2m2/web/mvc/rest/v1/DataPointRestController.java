@@ -333,6 +333,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	        if (existingDp == null) {
     	    		updated = false;
     	        }else{
+    	        	DataPointDao.instance.setEventDetectors(existingDp);
     	        	vo.setId(existingDp.getId());  //Must Do this as ID is NOT in the model
     	        }
     	        
@@ -359,7 +360,20 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 		continue;
                 	}
                 }else{
-                    vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
+                	//We need to update the various pieces
+                	if(updated){
+                		DataPointPropertiesTemplateVO tempTemplate = new DataPointPropertiesTemplateVO();
+                		tempTemplate.updateTemplate(existingDp);
+                		tempTemplate.updateDataPointVO(vo);
+
+                		//Kludge to allow this template to not be our real template
+                		vo.setTemplateId(null);
+                		
+                		vo.setEventDetectors(existingDp.getEventDetectors());
+                	}else{
+                		vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
+                	}
+                    
                 }
     	        
     	        if(model.validate()){
