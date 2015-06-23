@@ -29,6 +29,7 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.email.PostEmailRunnable;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.reports.ReportDao;
@@ -198,10 +199,10 @@ public class ReportWorkItem implements WorkItem {
                 addFileAttachment(emailContent, reportInstance.getName() + "Comments.csv", creator.getCommentFile());
             }
 
-            Runnable[] postEmail = null;
+            PostEmailRunnable[] postEmail = null;
             if (reportConfig.isIncludeData()) {
                 // See that the temp file(s) gets deleted after the email is sent.
-                Runnable deleteTempFile = new Runnable() {
+            	PostEmailRunnable deleteTempFile = new PostEmailRunnable() {
                     @Override
                     public void run() {
                         for (File file : filesToDelete) {
@@ -210,7 +211,7 @@ public class ReportWorkItem implements WorkItem {
                         }
                     }
                 };
-                postEmail = new Runnable[] { deleteTempFile };
+                postEmail = new PostEmailRunnable[] { deleteTempFile };
             }
 
             try {
