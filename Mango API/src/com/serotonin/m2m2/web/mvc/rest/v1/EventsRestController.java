@@ -259,7 +259,6 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
 	        Common.eventManager.acknowledgeEvent(existingEvent, System.currentTimeMillis(), user.getId(), tlm);
-	        dao.ackEvent(id, System.currentTimeMillis(), user.getId(), tlm);
 	        
 	        model.setAcknowledged(true);
 	        
@@ -288,47 +287,86 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         if(result.isOk()){
         	List<EventLevelSummaryModel> list = new ArrayList<EventLevelSummaryModel>();
             
-            int total = EventInstanceDao.instance.countUnsilencedEvents(user.getId(),AlarmLevels.LIFE_SAFETY);
-            EventInstanceVO event = EventInstanceDao.instance.getHighestUnsilencedEvent(user.getId(), AlarmLevels.LIFE_SAFETY);
+            List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
+            int lifeSafetyTotal = 0;
+            EventInstance lifeSafetyEvent = null;
+            int criticalTotal = 0;
+            EventInstance criticalEvent = null;
+            int urgentTotal = 0;
+            EventInstance urgentEvent = null;
+            int informationTotal = 0;
+            EventInstance informationEvent = null;
+            int noneTotal = 0;
+            EventInstance noneEvent = null;
+            int doNotLogTotal = 0;
+            EventInstance doNotLogEvent = null;
+            
+            for(EventInstance event : events){
+            	switch(event.getAlarmLevel()){
+            	case AlarmLevels.LIFE_SAFETY:
+            		lifeSafetyTotal++;
+            		lifeSafetyEvent = event;
+            		break;
+            	case AlarmLevels.CRITICAL:
+            		criticalTotal++;
+            		criticalEvent = event;
+            		break;
+            	case AlarmLevels.URGENT:
+            		urgentTotal++;
+            		urgentEvent = event;
+            		break;
+            	case AlarmLevels.INFORMATION:
+            		informationTotal++;
+            		informationEvent = event;
+            		break;
+            	case AlarmLevels.NONE:
+            		noneTotal++;
+            		noneEvent = event;
+            		break;
+            	case AlarmLevels.DO_NOT_LOG:
+            		doNotLogTotal++;
+            		doNotLogEvent = event;
+            		break;
+            	}
+            }
             EventInstanceModel model;
-            if(event != null)
-            	 model = new EventInstanceModel(event);
+            //Life Safety
+            if(lifeSafetyEvent != null)
+            	model = new EventInstanceModel(lifeSafetyEvent);
             else
             	model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.LIFE_SAFETY), total, model));
-
-            total = EventInstanceDao.instance.countUnsilencedEvents(user.getId(), AlarmLevels.CRITICAL);
-            event = EventInstanceDao.instance.getHighestUnsilencedEvent(user.getId(), AlarmLevels.CRITICAL);
-            if(event != null)
-            	model = new EventInstanceModel(event);
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.LIFE_SAFETY), lifeSafetyTotal, model));
+            //Critical Events
+            if(criticalEvent != null)
+            	model = new EventInstanceModel(criticalEvent);
             else
             	model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.CRITICAL), total, model));
-
-            total = EventInstanceDao.instance.countUnsilencedEvents(user.getId(), AlarmLevels.URGENT);
-            event = EventInstanceDao.instance.getHighestUnsilencedEvent(user.getId(), AlarmLevels.URGENT);
-            if(event != null)
-            	model = new EventInstanceModel(event);
-            else
-            	model = null;            
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.URGENT), total, model));
-            
-            total = EventInstanceDao.instance.countUnsilencedEvents(user.getId(), AlarmLevels.INFORMATION);
-            event = EventInstanceDao.instance.getHighestUnsilencedEvent(user.getId(), AlarmLevels.INFORMATION);
-            if(event != null)
-            	model = new EventInstanceModel(event);
-            else
-            	model = null;           
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.INFORMATION), total, model));
-            
-            total = EventInstanceDao.instance.countUnsilencedEvents(user.getId(), AlarmLevels.NONE);
-            event = EventInstanceDao.instance.getHighestUnsilencedEvent(user.getId(), AlarmLevels.NONE);
-            if(event != null)
-            	model = new EventInstanceModel(event);
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.CRITICAL), criticalTotal, model));
+            //Urgent Events
+            if(urgentEvent != null)
+            	model = new EventInstanceModel(urgentEvent);
             else
             	model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.NONE), total, model));
-             
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.URGENT), urgentTotal, model));
+            //Information Events
+            if(informationEvent != null)
+            	model = new EventInstanceModel(informationEvent);
+            else
+            	model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.INFORMATION), informationTotal, model));
+            //None Events
+            if(noneEvent != null)
+            	model = new EventInstanceModel(noneEvent);
+            else
+            	model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.NONE), noneTotal, model));
+            //Do Not Log Events
+            if(doNotLogEvent != null)
+            	model = new EventInstanceModel(doNotLogEvent);
+            else
+            	model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.NONE), doNotLogTotal, model));
+	            
 	        return result.createResponseEntity(list);
         }
         return result.createResponseEntity();
