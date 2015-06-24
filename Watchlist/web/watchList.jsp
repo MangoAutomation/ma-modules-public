@@ -376,7 +376,8 @@
         	  	htmlName: '<b>' + watchListData.value + '</b>&nbsp-&nbsp' + globalUsername
         	  };
         	  watchlistStore.put(newWl);
-        	  
+        	  //Set selected item to our new list
+	          watchlistFilter.set('item', newWl);
               watchListChanged();
               maybeDisplayDeleteImg();
           });

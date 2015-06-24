@@ -65,6 +65,8 @@ mango.view.watchList.setDataImpl = function(state) {
         if ((state.messages != null)&&(state.messages !== '')){
             $("p"+ state.id +"Messages").innerHTML = state.messages;
             show($("p"+ state.id +"MessagesDiv"));
+        }else{
+        	hide($("p" + state.id + "MessagesDiv"));
         }
     }
 };

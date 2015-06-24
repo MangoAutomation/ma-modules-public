@@ -1,6 +1,8 @@
 *Version 1.7.0*
 * Upgraded to work with core version 2.6.x
 * Added new permissions subsystem to allow finer grained access 
+* Fix bug where state information was not changing for points
+* Improved efficiency when refreshing point events
 
 *Version 1.6.1*
 * Added filter by user
