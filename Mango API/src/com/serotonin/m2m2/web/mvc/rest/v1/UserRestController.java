@@ -194,6 +194,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         				newUser.setPassword(u.getPassword());
         			
     	        	DaoRegistry.userDao.saveUser(newUser);
+    	        	//If we are they then update the Session user
+    	        	 if (user.getId() == u.getId()) 
+    	        		 Common.setUser(request, newUser);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -227,6 +230,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                         }
         	        	
         	        	DaoRegistry.userDao.saveUser(newUser);
+        	        	//Update the session user to keep any changes around
+       	        	 	Common.setUser(request, newUser);
         	        }
     				return result.createResponseEntity(model);
     			}
