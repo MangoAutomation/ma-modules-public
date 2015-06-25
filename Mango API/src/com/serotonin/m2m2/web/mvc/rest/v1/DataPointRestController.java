@@ -297,7 +297,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	@ApiResponse(code = 200, message = "Ok"),
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json;charset=UTF-8", "text/csv;charset=UTF-8"})
     public ResponseEntity<List<DataPointModel>> saveDataPoints(
     		@RequestBody List<DataPointModel> models, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
@@ -369,6 +369,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 		//Kludge to allow this template to not be our real template
                 		vo.setTemplateId(null);
                 		
+                		//Set all properties that are not in the template or the spreadsheet
+                		//TODO probably move these into one or the other
+                		vo.setPointFolderId(existingDp.getPointFolderId());
+
                 		vo.setEventDetectors(existingDp.getEventDetectors());
                 	}else{
                 		vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here

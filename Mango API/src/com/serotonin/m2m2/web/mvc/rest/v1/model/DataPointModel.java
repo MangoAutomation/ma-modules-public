@@ -180,12 +180,21 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@CSVColumnGetter(header="unit", order=9)
 	@JsonGetter("unit")
 	public String getUnit(){
-		return UnitUtil.formatLocal(this.data.getUnit());
+		String unit = null;
+		try{
+			unit = UnitUtil.formatLocal(this.data.getUnit());
+		}catch(Exception e){ /*munch*/ }
+		
+		return unit;
 	}
 	@CSVColumnSetter(header="unit", order=9)
 	@JsonSetter("unit")
 	public void setUnit(String unit){
-		this.data.setUnit(UnitUtil.parseLocal(unit));
+		try{
+			this.data.setUnit(UnitUtil.parseLocal(unit));
+		}catch(IllegalArgumentException e){
+			this.data.setUnit(null); //So we catch this on validation
+		}
 	}
 	
 	@CSVColumnGetter(header="useIntegralUnit", order=10)
@@ -202,12 +211,22 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@CSVColumnGetter(header="integralUnit", order=11)
 	@JsonGetter("integralUnit")
 	public String getIntegralUnit(){
-		return UnitUtil.formatLocal(this.data.getIntegralUnit());
+		String unit = null;
+		try{
+			unit = UnitUtil.formatLocal(this.data.getIntegralUnit());
+		}catch(Exception e){ /* munch */ }
+		
+		return unit;
 	}
 	@CSVColumnSetter(header="integralUnit", order=11)
 	@JsonSetter("integralUnit")
 	public void setIntegralUnit(String unit){
-		this.data.setIntegralUnit(UnitUtil.parseLocal(unit));
+		try{
+			this.data.setIntegralUnit(UnitUtil.parseLocal(unit));
+		}catch(Exception e){ 
+			this.data.setIntegralUnit(null);
+		}
+
 	}
 
 	@CSVColumnGetter(header="useRenderedUnit", order=12)
@@ -224,12 +243,20 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@CSVColumnGetter(header="renderedUnit", order=13)
 	@JsonGetter("renderedUnit")
 	public String getRenderedUnit(){
-		return UnitUtil.formatLocal(this.data.getRenderedUnit());
+		String unit = null;
+		try{
+			unit = UnitUtil.formatLocal(this.data.getRenderedUnit());
+		}catch(Exception e){ /* munch */}
+		return unit;
 	}
 	@CSVColumnSetter(header="useRenderedUnit", order=13)
 	@JsonSetter("renderedUnit")
 	public void setRenderedUnit(String unit){
-		this.data.setRenderedUnit(UnitUtil.parseLocal(unit));
+		try{
+			this.data.setRenderedUnit(UnitUtil.parseLocal(unit));
+		}catch(Exception e){
+			this.data.setRenderedUnit(null);
+		}
 	}
 
 	@CSVColumnGetter(header="pointLocatorType", order=14)
