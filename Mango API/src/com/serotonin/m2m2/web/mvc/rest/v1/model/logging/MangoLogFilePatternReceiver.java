@@ -78,22 +78,26 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	
 	public MangoLogFilePatternReceiver(ASTNode query, JsonGenerator jgen){
 
-		this.limit = query.accept(new RQLToLimitVisitor());
 		this.jgen = jgen;
 		
-		this.levelComparison = query.accept(new RQLToQueryComparisonVisitor(), "level");
-		if(levelComparison != null){
-			this.thresholdLevel = Level.toLevel((String)levelComparison.getArgument(0));
+		if(query != null){
+			this.limit = query.accept(new RQLToLimitVisitor());
+	
+			
+			this.levelComparison = query.accept(new RQLToQueryComparisonVisitor(), "level");
+			if(levelComparison != null){
+				this.thresholdLevel = Level.toLevel((String)levelComparison.getArgument(0));
+			}
+			
+			this.classComparison = query.accept(new RQLToQueryComparisonVisitor(), "classname");
+			this.methodComparison = query.accept(new RQLToQueryComparisonVisitor(), "method");
+			this.timeComparison = query.accept(new RQLToQueryComparisonVisitor(), "time");
+			if(this.timeComparison != null){
+				this.timeValue = ((DateTime)this.timeComparison.getArgument(0)).getMillis();
+			}
+			
+			this.messageComparison = query.accept(new RQLToQueryComparisonVisitor(), "message");
 		}
-		
-		this.classComparison = query.accept(new RQLToQueryComparisonVisitor(), "classname");
-		this.methodComparison = query.accept(new RQLToQueryComparisonVisitor(), "method");
-		this.timeComparison = query.accept(new RQLToQueryComparisonVisitor(), "time");
-		if(this.timeComparison != null){
-			this.timeValue = ((DateTime)this.timeComparison.getArgument(0)).getMillis();
-		}
-		
-		this.messageComparison = query.accept(new RQLToQueryComparisonVisitor(), "message");
 		
 		//setup
 	    keywords.add(TIMESTAMP);
@@ -316,6 +320,8 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	  private boolean tailing;
 	  private String filterExpression;
 
+	  private static final int MISSING_FILE_RETRY_ATTEMPTS = 3;
+	  private int missingFileRetries;
 
 	  private static final String VALID_DATEFORMAT_CHARS = "GyMwWDdFEaHkKhmsSzZ";
 	  private static final String VALID_DATEFORMAT_CHAR_PATTERN = "[" + VALID_DATEFORMAT_CHARS + "]";
@@ -1136,7 +1142,12 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	                    getLogger().info("file not available - will try again");
 	                    synchronized (this) {
 	                        try {
-	                            wait(MISSING_FILE_RETRY_MILLIS);
+	                        	if(missingFileRetries > MISSING_FILE_RETRY_ATTEMPTS)
+	                        		return;
+	                        	else{
+	                        		missingFileRetries++;
+	                        		wait(MISSING_FILE_RETRY_MILLIS);
+	                        	}
 	                        } catch (InterruptedException ie) {}
 	                    }
 	                } catch (IOException ioe) {
