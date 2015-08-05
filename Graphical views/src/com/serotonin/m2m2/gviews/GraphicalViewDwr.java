@@ -339,7 +339,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
         if (point != null) {
             // Check that setting is allowed.
-            if(!view.isEditor(user))
+        	if(!view.isSetter(user))
                 throw new PermissionException("Not allowed to set this point", user);
 
             // Try setting the point.
