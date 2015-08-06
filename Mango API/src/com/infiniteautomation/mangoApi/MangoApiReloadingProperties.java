@@ -6,26 +6,16 @@ package com.infiniteautomation.mangoApi;
 
 /**
  * 
- * A modified version of the Reloading properties.
+ * A modified version of the Reloading properties that uses 1 Overriding File Resource
  * 
- * These changes should be merged back into ReloadingProperties in serotonin-utils
- * on the next major core release.  And then this file removed from 
- * this module.
  * 
  * @author Terry Packer
  *
  */
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,10 +26,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.serotonin.m2m2.web.OverridingFileResource;
 import com.serotonin.util.properties.AbstractProperties;
 import com.serotonin.util.properties.PropertyChangeCallback;
 import com.serotonin.util.properties.ReloadCallback;
-import com.serotonin.util.properties.ReloadingProperties;
 
 /**
  * @author Matthew Lohbihler
@@ -47,13 +37,9 @@ import com.serotonin.util.properties.ReloadingProperties;
 public class MangoApiReloadingProperties extends AbstractProperties {
 	private final Log LOG = LogFactory.getLog(this.getClass());
 
-	private ClassLoader classLoader;
-
 	private Object propertiesLock = new Object(); //For locking them while being reloaded
 	private Properties properties = new Properties();
-	private String sourceFilename;
-	private File sourceFile;
-	private File[] sourceFiles;
+	private OverridingFileResource sourceFile;
 	private long lastTimestamp = 0;
 	private long lastRecheck = 0;
 	private long recheckDeadbandPeriod = 5000; // 5 seconds
@@ -62,22 +48,13 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 
 	private final Map<String, String> defaultValues = new HashMap<String, String>();
 
-	public MangoApiReloadingProperties(String basename) {
-		this(basename, ReloadingProperties.class.getClassLoader());
+	public MangoApiReloadingProperties(OverridingFileResource propertiesResource) {
+		super("mangoApiHeaders");
+		checkForReload(false);
+		sourceFile = propertiesResource;
 	}
 
-	public MangoApiReloadingProperties(String basename, ClassLoader classLoader) {
-		super(basename);
-		sourceFilename = basename.replace('.', '/') + ".properties";
-		this.classLoader = classLoader;
-		checkForReload(false);
-	}
 
-	public MangoApiReloadingProperties(File file) {
-		super(file.getName());
-		sourceFile = file;
-		checkForReload(false);
-	}
 
 	public void setDefaultValue(String key, String value) {
 		defaultValues.put(key, value);
@@ -150,57 +127,47 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 		if (LOG.isDebugEnabled())
 			LOG.debug("(" + getDescription() + ") Checking for updated files");
 
-		findFiles();
-		if (sourceFiles == null)
+		if (sourceFile == null)
 			return;
 
 		// Determine the latest time stamp of all of the source files.
 		long latestTimestamp = -1;
-		for (File sourceFile : sourceFiles) {
-			if (!sourceFile.exists())
-				LOG.error("(" + getDescription() + ") Property file "
-						+ sourceFile + " does not exist");
-			else {
-				if (latestTimestamp < sourceFile.lastModified())
-					latestTimestamp = sourceFile.lastModified();
-			}
+		if (!sourceFile.exists())
+			LOG.error("(" + getDescription() + ") Property file "
+					+ sourceFile + " does not exist");
+		else {
+			if (latestTimestamp < sourceFile.lastModified())
+				latestTimestamp = sourceFile.lastModified();
 		}
 
 		// Check if we need to reload.
 		if (latestTimestamp > lastTimestamp) {
 			if (LOG.isInfoEnabled())
-				LOG.info("(" + getDescription() + ") Found updated file(s) at "
-						+ Arrays.toString(sourceFiles)
+				LOG.info("(" + getDescription() + ") Found updated file at "
+						+ sourceFile.getName()
 						+ ". Reloading properties");
 
 			// Time to reload. Create the new backing properties file.
 			Properties newProps = new Properties();
 
-			for (File sourceFile : sourceFiles) {
-				Properties fileProps = new Properties();
-
-				InputStream in = null;
+			InputStream in = null;
+			try {
+				// Load the properties in.
+				in = sourceFile.getInputStream();
+				newProps.load(in);
+			} catch (IOException e) {
+				LOG.error("(" + getDescription()
+						+ ") Exception while loading property file "
+						+ sourceFile, e);
+			} finally {
 				try {
-					// Load the properties in.
-					in = new FileInputStream(sourceFile);
-					fileProps.load(in);
-
-					// Overwrite previous values with these values.
-					for (Map.Entry<Object, Object> entry : fileProps.entrySet())
-						newProps.put(entry.getKey(), entry.getValue());
+					if (in != null)
+						in.close();
 				} catch (IOException e) {
-					LOG.error("(" + getDescription()
-							+ ") Exception while loading property file "
-							+ sourceFile, e);
-				} finally {
-					try {
-						if (in != null)
-							in.close();
-					} catch (IOException e) {
-						// ignore
-					}
+					// ignore
 				}
 			}
+
 
 			if (reloadCallback != null)
 				reloadCallback.propertiesReload(properties, newProps);
@@ -225,39 +192,6 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 			}
 
 			lastTimestamp = latestTimestamp;
-		}
-	}
-
-	private void findFiles() {
-		if (sourceFile != null)
-			sourceFiles = new File[] { sourceFile };
-		else {
-			try {
-				Enumeration<URL> urls = classLoader
-						.getResources(sourceFilename);
-				if (!urls.hasMoreElements())
-					sourceFiles = new File[] { new File(sourceFilename) };
-				else {
-					List<File> files = new ArrayList<File>();
-					while (urls.hasMoreElements()) {
-						URL url = urls.nextElement();
-						String uri = url.toString();
-						uri = uri.replaceAll(" ", "%20");
-						if (uri != null) {
-							try {
-								files.add(new File(new URI(uri)));
-							} catch (URISyntaxException e) {
-								LOG.error("(" + getDescription() + ") ", e);
-							}
-						}
-					}
-
-					sourceFiles = files.toArray(new File[files.size()]);
-				}
-			} catch (IOException e) {
-				LOG.error("(" + getDescription()
-						+ ") Error while finding properties files", e);
-			}
 		}
 	}
 

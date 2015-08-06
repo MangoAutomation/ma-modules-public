@@ -4,7 +4,15 @@
  */
 package com.infiniteautomation.mangoApi;
 
+import java.io.File;
+import java.net.MalformedURLException;
+
+import org.eclipse.jetty.util.resource.Resource;
+
+import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ModuleElementDefinition;
+import com.serotonin.m2m2.web.OverridingFileResource;
 import com.serotonin.m2m2.web.mvc.rest.v1.serializers.MangoApiJsonModule;
 import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
 
@@ -19,7 +27,18 @@ public class MangoApiModuleDefinition extends ModuleElementDefinition{
 	
 	@Override
 	public void preInitialize(){
-		props = new MangoApiReloadingProperties("mangoApiHeaders", MangoApiModuleDefinition.class.getClassLoader());
+		
+
+		try {
+			//Base Property File
+			Resource base = Resource.newResource(Common.MA_HOME + getModule().getDirectoryPath() + File.separator + "classes" + File.separator + "mangoApiHeaders.properties");
+			//Overriden Property File
+			Resource override = Resource.newResource(Common.MA_HOME + File.separator + "overrides" + File.separator + "classes" + File.separator + "mangoApiHeaders.properties");
+	        OverridingFileResource propertiesFile = new OverridingFileResource(override,base);
+			props = new MangoApiReloadingProperties(propertiesFile);
+		} catch (MalformedURLException e) {
+			throw new ShouldNeverHappenException(e);
+		}
 	}
 	
 	

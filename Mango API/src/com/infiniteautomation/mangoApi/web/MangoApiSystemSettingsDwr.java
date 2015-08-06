@@ -65,7 +65,7 @@ public class MangoApiSystemSettingsDwr extends ModuleDwr{
 			comments += user.getUsername();
 		else
 			comments += "unknown";		
-		File file = new File(Common.MA_HOME + this.getModulePath() + "/classes/mangoApiHeaders.properties");
+		File file = new File(Common.MA_HOME + File.separator + "overrides" + File.separator + "classes" + File.separator + "mangoApiHeaders.properties");
 		try{
 			FileWriter writer = new FileWriter(file);
 			newHeaders.store(writer, comments);
@@ -102,7 +102,7 @@ public class MangoApiSystemSettingsDwr extends ModuleDwr{
 			comments += user.getUsername();
 		else
 			comments += "unknown";
-		File file = new File(Common.MA_HOME + this.getModulePath() + "/classes/mangoApiHeaders.properties");
+		File file = new File(Common.MA_HOME + File.separator + "overrides" + File.separator + "classes" + File.separator + "mangoApiHeaders.properties");
 		try{
 			FileWriter writer = new FileWriter(file);
 			newHeaders.store(writer, comments);
