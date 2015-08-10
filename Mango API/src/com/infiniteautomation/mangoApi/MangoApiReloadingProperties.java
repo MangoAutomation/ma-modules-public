@@ -50,8 +50,8 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 
 	public MangoApiReloadingProperties(OverridingFileResource propertiesResource) {
 		super("mangoApiHeaders");
-		checkForReload(false);
 		sourceFile = propertiesResource;
+		checkForReload(false);
 	}
 
 
