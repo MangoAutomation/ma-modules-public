@@ -7,8 +7,11 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,8 +29,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModelProperty;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiParam;
-
-import java.util.Collections;
 
 /**
  * TODO Move this into the Server Rest Controller
@@ -119,9 +120,13 @@ public class ThreadMonitorRestController extends MangoRestController {
 				});
 			}
 			
-			if(asFile)
+			if(asFile){
+				
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss_'threads.json'");
+				String filename = sdf.format(new Date());
+				result.addHeader("Content-Disposition", "inline;filename=" + filename);
 				return result.createResponseEntity(models, MediaType.APPLICATION_OCTET_STREAM);
-			else
+			}else
 				return result.createResponseEntity(models);
     	}
     	return result.createResponseEntity();
