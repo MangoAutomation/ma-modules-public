@@ -108,7 +108,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	    				systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
 	    			}else{
 	    				//Get the info for the user
-	        			int maximumPoolSize = Common.backgroundProcessing.getMediumPriorityServiceMaximumPoolSize();
+	        			int maximumPoolSize = executor.getMaximumPoolSize();
 	        			model.setMaximumPoolSize(maximumPoolSize);
 	    			}
 	    			//Get the settings for the model
