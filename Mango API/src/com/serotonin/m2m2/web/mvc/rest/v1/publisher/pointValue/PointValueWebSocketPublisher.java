@@ -76,10 +76,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvt = rt.getPointValue(); //Get the value
 					attributes = rt.getAttributes();
 					renderedValue = Functions.getRenderedText(vo, pvt);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)
+					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(pvt != null))
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
 				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, new PointValueTimeModel(pvt), renderedValue, convertedValue));
+				PointValueTimeModel pvtModel = null;
+				if(pvt != null)
+					pvtModel = new PointValueTimeModel(pvt);
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, pvtModel, renderedValue, convertedValue));
 
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -109,10 +112,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvt = rt.getPointValue(); //Get the value
 					attributes = rt.getAttributes();
 					renderedValue = Functions.getRenderedText(vo, pvt);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)
+					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(pvt != null))
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
 				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.INITIALIZE, new PointValueTimeModel(pvt), renderedValue, convertedValue));
+				PointValueTimeModel pvtModel = null;
+				if(pvt != null)
+					pvtModel = new PointValueTimeModel(pvt);
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.INITIALIZE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -139,10 +145,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					enabled = true; //We are enabled
 					attributes = rt.getAttributes();
 					renderedValue = Functions.getRenderedText(vo, newValue);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)
+					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(newValue != null))
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(newValue.getValue().getDoubleValue());
 				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.UPDATE, new PointValueTimeModel(newValue), renderedValue, convertedValue));
+				PointValueTimeModel pvtModel = null;
+				if(newValue != null)
+					pvtModel = new PointValueTimeModel(newValue);
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.UPDATE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -168,10 +177,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					enabled = true; //We are enabled
 					attributes = rt.getAttributes();
 					renderedValue = Functions.getRenderedText(vo, newValue);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)
+					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(newValue != null))
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(newValue.getValue().getDoubleValue());
 				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.CHANGE, new PointValueTimeModel(newValue), renderedValue, convertedValue));
+				PointValueTimeModel pvtModel = null;
+				if(newValue != null)
+					pvtModel = new PointValueTimeModel(newValue);
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.CHANGE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -196,10 +208,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					enabled = true; //We are enabled
 					attributes = rt.getAttributes();
 					renderedValue = Functions.getRenderedText(vo, newValue);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)
+					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(newValue != null))
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(newValue.getValue().getDoubleValue());
 				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.SET, new PointValueTimeModel(newValue), renderedValue, convertedValue));
+				PointValueTimeModel pvtModel = null;
+				if(newValue != null)
+					pvtModel = new PointValueTimeModel(newValue);
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.SET, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
@@ -224,10 +239,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					enabled = true; //We are enabled
 					attributes = rt.getAttributes();
 					renderedValue = Functions.getRenderedText(vo, value);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)
+					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(value != null))
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getValue().getDoubleValue());
 				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.BACKDATE, new PointValueTimeModel(value), renderedValue, convertedValue));
+				PointValueTimeModel pvtModel = null;
+				if(value != null)
+					pvtModel = new PointValueTimeModel(value);
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.BACKDATE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage(),e);
