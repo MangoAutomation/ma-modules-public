@@ -468,6 +468,36 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 			@ApiResponse(code = 200, message = "Ok", response=PermissionDetails.class),
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions")
+    public ResponseEntity<List<PermissionDetails>> getUserPermissions(HttpServletRequest request) {
+		
+		RestProcessResult<List<PermissionDetails>> result = new RestProcessResult<List<PermissionDetails>>(HttpStatus.OK);
+    	
+		User currentUser = this.checkUser(request, result);
+    	if(result.isOk()){
+
+	        List<PermissionDetails> ds = new ArrayList<>();
+	        for (User user : new UserDao().getActiveUsers()){
+	        	PermissionDetails deets = Permissions.getPermissionDetails(currentUser, null, user);
+	        	if(deets != null)
+	        		ds.add(deets);
+	        }
+    		return result.createResponseEntity(ds);
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Get User Permissions Information for all users, exclude provided groups in query",
+			notes = "",
+			response=PermissionDetails.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=PermissionDetails.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions/{query}")
     public ResponseEntity<List<PermissionDetails>> getUserPermissions(
     		@ApiParam(value = "Query of permissions to show as already added", required = true, allowMultiple = false)
@@ -502,9 +532,38 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 			@ApiResponse(code = 200, message = "Ok", response=String.class),
 			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
 		})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions-groups")
+    public ResponseEntity<Set<String>> getAllUserGroups(HttpServletRequest request) {
+		
+		RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
+    	
+		this.checkUser(request, result);
+    	if(result.isOk()){
+
+            Set<String> groups = new TreeSet<>();
+
+            for (User user : new UserDao().getActiveUsers())
+                groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
+            
+    		return result.createResponseEntity(groups);
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Get All User Groups, Optionally excluding groups",
+			notes = "",
+			response=String.class,
+			responseContainer="Array"
+			)
+	@ApiResponses(value = { 
+			@ApiResponse(code = 200, message = "Ok", response=String.class),
+			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
+		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions-groups/{exclude}")
     public ResponseEntity<Set<String>> getAllUserGroups(
-    		@ApiParam(value = "Exclude Groups comma separated", required = true, allowMultiple = false)
+    		@ApiParam(value = "Exclude Groups comma separated", required = false, allowMultiple = false, defaultValue="")
     		@PathVariable String exclude,
     		HttpServletRequest request) {
 		
@@ -527,6 +586,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	
     	return result.createResponseEntity();
 	}
+	
 	
 	@ApiOperation(value = "Delete A User")
 	@RequestMapping(method = RequestMethod.DELETE,  produces={"application/json", "text/csv"}, value = "/{username}")
