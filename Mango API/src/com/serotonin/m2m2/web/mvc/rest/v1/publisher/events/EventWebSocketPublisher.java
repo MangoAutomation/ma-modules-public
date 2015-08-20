@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.events;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,7 +146,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 		
 		try{
 			this.sendMessage(session, new EventEventModel(EventEventTypeEnum.RAISED, evt));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 		
@@ -169,7 +168,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 		
 		try{
 			this.sendMessage(session, new EventEventModel(EventEventTypeEnum.RETURN_TO_NORMAL, evt));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}
@@ -190,7 +189,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 		
 		try{
 			this.sendMessage(session, new EventEventModel(EventEventTypeEnum.DEACTIVATED, evt));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}
@@ -212,7 +211,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 		
 		try{
 			this.sendMessage(session, new EventEventModel(EventEventTypeEnum.ACKNOWLEDGED, evt));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}

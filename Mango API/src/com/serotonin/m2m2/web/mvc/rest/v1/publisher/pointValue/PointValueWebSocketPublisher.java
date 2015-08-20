@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +83,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvtModel = new PointValueTimeModel(pvt);
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, pvtModel, renderedValue, convertedValue));
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}
@@ -120,7 +119,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvtModel = new PointValueTimeModel(pvt);
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.INITIALIZE, pvtModel, renderedValue, convertedValue));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 		
@@ -153,7 +152,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvtModel = new PointValueTimeModel(newValue);
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.UPDATE, pvtModel, renderedValue, convertedValue));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 		
@@ -185,7 +184,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvtModel = new PointValueTimeModel(newValue);
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.CHANGE, pvtModel, renderedValue, convertedValue));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}
@@ -216,7 +215,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvtModel = new PointValueTimeModel(newValue);
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.SET, pvtModel, renderedValue, convertedValue));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}
@@ -247,7 +246,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 					pvtModel = new PointValueTimeModel(value);
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.BACKDATE, pvtModel, renderedValue, convertedValue));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}
@@ -264,9 +263,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			this.rt = null;
 			
 			if(sendPointTerminated){
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), false, null, PointValueEventType.TERMINATE, new PointValueTimeModel(null), null, null));
+				this.sendMessage(session, new PointValueEventModel(vo.getXid(), false, null, PointValueEventType.TERMINATE, null, null, null));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
 		}
 	}

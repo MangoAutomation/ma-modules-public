@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.events;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventTypeEnum;
@@ -78,9 +76,7 @@ public class EventEventHandler extends MangoWebSocketHandler {
 		} catch (Exception e) {
 			try {
 				this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR, new TranslatableMessage("rest.error.serverError", e.getMessage()));
-			} catch (JsonProcessingException e1) {
-				LOG.error(e.getMessage(), e);
-			} catch (IOException e1) {
+			} catch (Exception e1) {
 				LOG.error(e.getMessage(), e);
 			}
 		} 
