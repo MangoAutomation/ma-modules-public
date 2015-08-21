@@ -9,7 +9,7 @@ import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
 import com.infiniteautomation.mango.io.serial.SerialPortInputStream;
 import com.infiniteautomation.mango.io.serial.SerialPortOutputStream;
 import com.infiniteautomation.mango.io.serial.SerialPortProxy;
-import com.infiniteautomation.mango.io.serial.SerialPortType;
+import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig.SerialPortTypes;
 
 /**
  * @author Terry Packer
@@ -24,7 +24,7 @@ public class TestSerialPortProxy extends SerialPortProxy{
 	 * @param name
 	 */
 	public TestSerialPortProxy(String name, TestSerialPortInputStream input, TestSerialPortOutputStream output) {
-		super(new SerialPortIdentifier("test", SerialPortType.JSSC));
+		super(new SerialPortIdentifier("test", SerialPortTypes.JSSC));
 		this.inputStream = input;
 		this.outputStream = output;
 	}
