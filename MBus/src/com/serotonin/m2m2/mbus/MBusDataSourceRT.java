@@ -22,13 +22,11 @@ import net.sf.mbus4j.master.ValueRequestPointLocator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.serotonin.io.serial.SerialParameters;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
-import com.serotonin.m2m2.rt.serial.EthernetComBridge;
 
 /**
  * TODO datatype NUMERIC_INT is missing TODO Starttime for timpepoints ???
@@ -194,42 +192,6 @@ public class MBusDataSourceRT extends PollingDataSource {
 			return false;
 		}
 	}
-
-    
-	/**
-	 * For future use
-	 * @return
-	 */
-    @SuppressWarnings("unused")
-	private boolean openSerialBridge(){
-    	 try {
-         	if(master.getConnection() != null){
- 	        	switch(master.getConnection().getConnState()){
- 	        		case OPEN:
- 	        			return true;
- 	        		case CLOSING:
- 	        		case OPENING:
- 	        			return false;
- 	        		default:
- 	        	}
-         	}
-            //Hack to allow reading from TCP
-            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
-            Connection conn = new MBusSerialPortBridge(bridge, vo.getBaudRate(), 0);
-            
-            master.setConnection(conn);
-            master.open();
-            
-            return true;
-        }
-        catch (Exception ex) {
-            LOG.fatal("MBus Open serial port bridge exception", ex);
-            // Raise an event.
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-                    getSerialExceptionMessage(ex, vo.getCommPortId()));
-            return false;
-        }
-    }
     
     private boolean openSerialPort() {
         try {
@@ -243,17 +205,17 @@ public class MBusDataSourceRT extends PollingDataSource {
 	        		default:
 	        	}
         	}
+
+            MangoMBusSerialConnection conn = new MangoMBusSerialConnection("MBus " + this.vo.getXid(), 
+            		vo.getCommPortId(),
+            		vo.getBaudRate(), 
+            		vo.getFlowControlIn(), 
+            		vo.getFlowControlOut(),
+            		vo.getDataBits(), 
+            		vo.getStopBits(), 
+            		vo.getParity(),
+            		vo.getResponseTimeoutOffset());
             
-            SerialParameters params = new SerialParameters();
-            params.setCommPortId(vo.getCommPortId());
-            params.setPortOwnerName("Mango MBus Serial Data Source");
-            params.setBaudRate(vo.getBaudRate());
-            params.setFlowControlIn(vo.getFlowControlIn());
-            params.setFlowControlOut(vo.getFlowControlOut());
-            params.setDataBits(vo.getDataBits());
-            params.setStopBits(vo.getStopBits());
-            params.setParity(vo.getParity());
-            MangoMBusSerialConnection conn = new MangoMBusSerialConnection(params, vo.getResponseTimeoutOffset());
             
             master.setConnection(conn);
             master.open();

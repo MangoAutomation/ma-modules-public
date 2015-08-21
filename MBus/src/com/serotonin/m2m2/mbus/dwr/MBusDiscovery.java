@@ -17,7 +17,6 @@ import net.sf.mbus4j.master.MasterEventListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.serotonin.io.serial.SerialParameters;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -144,30 +143,22 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
         // Thread starten , der sucht....
         master = new MBusMaster();
         try {
-
-            //Hack to test Device via serial-ethenet converter
-//            EthernetComBridge bridge = new EthernetComBridge("99.225.170.204", 10001, 1000);
-//            Connection conn = new MBusSerialPortBridge(bridge, baudrate, responseTimeoutOffset);
-			SerialParameters params = new SerialParameters();
-			params.setCommPortId(comPortId);
-			params.setPortOwnerName("Mango MBus Serial Test Tool");
-			params.setBaudRate(baudrate);
-			params.setFlowControlIn(flowControlIn);
-			params.setFlowControlOut(flowControlOut);
-			params.setDataBits(dataBits);
-			params.setStopBits(stopBits);
-			params.setParity(parity);
-			MangoMBusSerialConnection conn = new MangoMBusSerialConnection(params, responseTimeoutOffset);
+			
+			String owner = "Mango MBus Serial Test Tool by " + Common.getUser().getUsername();
+			
+			MangoMBusSerialConnection conn = new MangoMBusSerialConnection(
+					owner,
+					comPortId,
+					baudrate,
+					flowControlIn,
+					flowControlOut,
+					dataBits,
+					stopBits,
+					parity,
+					responseTimeoutOffset);
 
             master.setConnection(conn);
             master.open();
-            
-            
-            
-            // sPort.setSerialPortParams(baudrate, dataBits, stopBits, parity);
-            // sPort.setFlowControlMode(flowControlIn | flowcontrolOut);
-
-            //master.setStreams(sPort.getInputStream(), sPort.getOutputStream(), baudrate);
         }
         catch (Exception ex) {
             // no op
