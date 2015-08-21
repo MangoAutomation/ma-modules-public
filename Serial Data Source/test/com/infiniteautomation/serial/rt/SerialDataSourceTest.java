@@ -24,16 +24,14 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.collect.Lists;
+import com.infiniteautomation.mango.io.serial.SerialPortException;
+import com.infiniteautomation.mango.io.serial.SerialPortProxy;
+import com.infiniteautomation.mango.io.serial.SerialPortProxyEvent;
 import com.infiniteautomation.serial.SerialDataSourceTestCase;
 import com.infiniteautomation.serial.SerialDataSourceTestData;
 import com.infiniteautomation.serial.TestSerialPortInputStream;
 import com.infiniteautomation.serial.TestSerialPortOutputStream;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
-import com.serotonin.io.serial.SerialParameters;
-import com.serotonin.io.serial.SerialPortException;
-import com.serotonin.io.serial.SerialPortProxy;
-import com.serotonin.io.serial.SerialPortProxyEvent;
-import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.H2Proxy;
 import com.serotonin.m2m2.rt.EventManager;
@@ -47,15 +45,12 @@ import com.serotonin.util.properties.ReloadingProperties;
  *
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SerialUtils.class, Common.class})
+@PrepareForTest({Common.class})
 public class SerialDataSourceTest {
 	
 	private static Map<String, DataPointRT> registeredPoints = new HashMap<String, DataPointRT>();
 	private static Map<String, SerialDataSourceTestCase> testCases = new HashMap<String, SerialDataSourceTestCase>();
 
-
-	@Mock
-	private SerialUtils serialUtils;
 	
 	@Mock
 	private SerialPortProxy serialPort;
@@ -114,7 +109,7 @@ public class SerialDataSourceTest {
 		SerialDataSourceRT rt = (SerialDataSourceRT) vo.createDataSourceRT();
 		
 		//Setup Data Point RTs
-		String pointIdentifier = "";
+		//String pointIdentifier = "";
 		String windDirectionRegex = "[\\d]*,[\\w\\s:]*,[\u0002\\w]*,([\\w]*),[\\d\\D\\s\\S\\w\\W]*"; //"([\\d\\D\\s\\S\\w\\W]*),[\\d\\D\\s\\S\\w\\W]*";
 		String windSpeedRegex = "[\\d]*,[\\w\\s:]*,[\u0002\\w]*,[\\w]*,([\\d\\.]*),[\\d\\D\\s\\S\\w\\W]*"; //"([\\d\\D\\s\\S\\w\\W]*),[\\d\\D\\s\\S\\w\\W]*";
 		String ip1Regex = "[\\d]*,[\\w\\s:]*,[\u0002\\w]*,[\\w]*,[\\d\\.]*,[\\d\\.]*,[\\d\\.]*,[\\d\\.+-]*,[\\d\\.+-]*,[\\d\\.+-]*,([\\d\\.+-]*),[\\d\\D\\s\\S\\w\\W]*"; //"([\\d\\D\\s\\S\\w\\W]*),[\\d\\D\\s\\S\\w\\W]*";
@@ -150,28 +145,24 @@ public class SerialDataSourceTest {
 		inputStream = new TestSerialPortInputStream();
 		
 		//Mock up the serial port
-		SerialParameters params = new SerialParameters();
-		params.setCommPortId(vo.getCommPortId());
-        params.setPortOwnerName("Mango Serial Data Source");
-        params.setBaudRate(vo.getBaudRate());
-        params.setFlowControlIn(vo.getFlowControlIn());
-        params.setFlowControlOut(vo.getFlowControlOut());
-        params.setDataBits(vo.getDataBits());
-        params.setStopBits(vo.getStopBits());
-        params.setParity(vo.getParity());
-        params.setRecieveTimeout(vo.getReadTimeout());
-		
-        //User Power Mock to mock static classes
-        PowerMockito.mockStatic(SerialUtils.class);
         
         //Mock the is port owned call
-		when(SerialUtils.portOwned(vo.getCommPortId())).thenReturn(false);
+		when(Common.serialPortManager.portOwned(vo.getCommPortId())).thenReturn(false);
 		when(serialPort.getInputStream()).thenReturn(inputStream);
 		when(serialPort.getOutputStream()).thenReturn(outputStream);
 		
 		//Mock the Get Port
 		try {
-			when(SerialUtils.openSerialPort(params)).thenReturn(this.serialPort);
+			when(Common.serialPortManager.open(
+					"test", 
+					vo.getCommPortId(),
+					vo.getBaudRate(),
+					vo.getFlowControlIn(),
+					vo.getFlowControlOut(),
+					vo.getDataBits(),
+					vo.getStopBits(),
+					vo.getParity()
+					)).thenReturn(this.serialPort);
 		} catch (SerialPortException e1) {
 			e1.printStackTrace();
 			fail(e1.getMessage());
@@ -234,29 +225,23 @@ public class SerialDataSourceTest {
 		
 		inputStream = new TestSerialPortInputStream();
 		
-		//Mock up the serial port
-		SerialParameters params = new SerialParameters();
-		params.setCommPortId(vo.getCommPortId());
-        params.setPortOwnerName("Mango Serial Data Source");
-        params.setBaudRate(vo.getBaudRate());
-        params.setFlowControlIn(vo.getFlowControlIn());
-        params.setFlowControlOut(vo.getFlowControlOut());
-        params.setDataBits(vo.getDataBits());
-        params.setStopBits(vo.getStopBits());
-        params.setParity(vo.getParity());
-        params.setRecieveTimeout(vo.getReadTimeout());
-		
-        //User Power Mock to mock static classes
-        PowerMockito.mockStatic(SerialUtils.class);
-        
         //Mock the is port owned call
-		when(SerialUtils.portOwned(vo.getCommPortId())).thenReturn(false);
+		when(Common.serialPortManager.portOwned(vo.getCommPortId())).thenReturn(false);
 		when(serialPort.getInputStream()).thenReturn(inputStream);
 		when(serialPort.getOutputStream()).thenReturn(outputStream);
 		
 		//Mock the Get Port
 		try {
-			when(SerialUtils.openSerialPort(params)).thenReturn(this.serialPort);
+			when(Common.serialPortManager.open(
+					"test", 
+					vo.getCommPortId(),
+					vo.getBaudRate(),
+					vo.getFlowControlIn(),
+					vo.getFlowControlOut(),
+					vo.getDataBits(),
+					vo.getStopBits(),
+					vo.getParity()
+					)).thenReturn(this.serialPort);
 		} catch (SerialPortException e1) {
 			e1.printStackTrace();
 			fail(e1.getMessage());

@@ -6,7 +6,7 @@ package com.infiniteautomation.serial;
 
 import java.io.IOException;
 
-import com.serotonin.io.serial.SerialPortOutputStream;
+import com.infiniteautomation.mango.io.serial.SerialPortOutputStream;
 
 /**
  * @author Terry Packer

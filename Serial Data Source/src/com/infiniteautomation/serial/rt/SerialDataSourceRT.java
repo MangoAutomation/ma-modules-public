@@ -11,16 +11,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.infiniteautomation.mango.io.serial.SerialPortException;
+import com.infiniteautomation.mango.io.serial.SerialPortProxy;
+import com.infiniteautomation.mango.io.serial.SerialPortProxyEvent;
+import com.infiniteautomation.mango.io.serial.SerialPortProxyEventListener;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.io.StreamUtils;
-import com.serotonin.io.serial.SerialParameters;
-import com.serotonin.io.serial.SerialPortException;
-import com.serotonin.io.serial.SerialPortProxy;
-import com.serotonin.io.serial.SerialPortProxyEvent;
-import com.serotonin.io.serial.SerialPortProxyEventListener;
-import com.serotonin.io.serial.SerialUtils;
 import com.serotonin.log.RollingIOLog;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
@@ -70,23 +68,20 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	 */
 	public boolean connect () throws Exception{
 		
-		SerialParameters params = new SerialParameters();
-		params.setCommPortId(vo.getCommPortId());
-        params.setPortOwnerName("Mango Serial Data Source");
-        params.setBaudRate(vo.getBaudRate());
-        params.setFlowControlIn(vo.getFlowControlIn());
-        params.setFlowControlOut(vo.getFlowControlOut());
-        params.setDataBits(vo.getDataBits());
-        params.setStopBits(vo.getStopBits());
-        params.setParity(vo.getParity());
-        params.setRecieveTimeout(vo.getReadTimeout());
-		
-        if ( SerialUtils.portOwned(vo.getCommPortId()) ){
+        if (Common.serialPortManager.portOwned(vo.getCommPortId())){
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
 			return false;
         }else{
         	try{
-                this.port = SerialUtils.openSerialPort(params);
+                this.port = Common.serialPortManager.open(
+                		"Mango Serial Data Source",
+                		vo.getCommPortId(),
+                		vo.getBaudRate(),
+                		vo.getFlowControlIn(),
+                		vo.getFlowControlOut(),
+                		vo.getDataBits(),
+                		vo.getStopBits(),
+                		vo.getParity());
                 this.port.addEventListener(this);
                 return true;
               
@@ -132,10 +127,10 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
         super.terminate();
         if(this.port != null)
 			try {
-				SerialUtils.close(this.port);
+				Common.serialPortManager.close(this.port);
 			} catch (SerialPortException e) {
 	    		LOG.debug("Error while closing serial port", e);
-				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",this.port.getParameters().getCommPortId(),e.getLocalizedMessage()));
+				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",this.port.getCommPortId(),e.getLocalizedMessage()));
 
 			}
 
@@ -166,7 +161,32 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	        if(this.vo.isHex()){
 	        	//Convert to Hex
 	        	try{
-	        		data = convertToHex(valueTime.getStringValue());
+	        		switch(dataPoint.getDataTypeId()){
+	        		case DataTypes.ALPHANUMERIC:
+	        			data = convertToHex(valueTime.getStringValue());
+	        			break;
+	        		case DataTypes.BINARY:
+	        			if(valueTime.getBooleanValue())
+	        				data = convertToHex("00");
+	        			else
+	        				data = convertToHex("01");
+	        			break;
+	        		case DataTypes.MULTISTATE:
+	        			String intValue = Integer.toString(valueTime.getIntegerValue());
+	        			if(intValue.length()%2 != 0)
+	        				intValue = "0" + intValue;
+	        			data = convertToHex(intValue);
+	        			break;
+	        		case DataTypes.NUMERIC:
+	        			String numValue = Integer.toString(valueTime.getIntegerValue());
+	        			if(numValue.length()%2 != 0)
+	        				numValue = "0" + numValue;
+	        			data = convertToHex(numValue);
+	        			break;
+	        		default:
+	        			throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataTypeId());
+	        		}
+	        		
 	        	}catch(Exception e){
 	        		LOG.error(e.getMessage(),e);
 	    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));

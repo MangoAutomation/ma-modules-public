@@ -6,7 +6,7 @@ package com.infiniteautomation.serial;
 
 import java.io.IOException;
 
-import com.serotonin.io.serial.SerialPortInputStream;
+import com.infiniteautomation.mango.io.serial.SerialPortInputStream;
 import com.serotonin.util.queue.ByteQueue;
 
 /**

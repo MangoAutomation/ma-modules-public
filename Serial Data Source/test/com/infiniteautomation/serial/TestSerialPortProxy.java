@@ -4,10 +4,12 @@
  */
 package com.infiniteautomation.serial;
 
-import com.serotonin.io.serial.SerialPortException;
-import com.serotonin.io.serial.SerialPortInputStream;
-import com.serotonin.io.serial.SerialPortOutputStream;
-import com.serotonin.io.serial.SerialPortProxy;
+import com.infiniteautomation.mango.io.serial.SerialPortException;
+import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
+import com.infiniteautomation.mango.io.serial.SerialPortInputStream;
+import com.infiniteautomation.mango.io.serial.SerialPortOutputStream;
+import com.infiniteautomation.mango.io.serial.SerialPortProxy;
+import com.infiniteautomation.mango.io.serial.SerialPortType;
 
 /**
  * @author Terry Packer
@@ -22,7 +24,7 @@ public class TestSerialPortProxy extends SerialPortProxy{
 	 * @param name
 	 */
 	public TestSerialPortProxy(String name, TestSerialPortInputStream input, TestSerialPortOutputStream output) {
-		super("Test");
+		super(new SerialPortIdentifier("test", SerialPortType.JSSC));
 		this.inputStream = input;
 		this.outputStream = output;
 	}
