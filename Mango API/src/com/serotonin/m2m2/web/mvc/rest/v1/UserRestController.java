@@ -276,7 +276,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     				if(model.validate()){
 	    				try{
 	    					User newUser = model.getData();
-	    					user.setPassword(Common.encrypt(model.getPassword()));
+	    					newUser.setPassword(Common.encrypt(model.getPassword()));
 	    		        	DaoRegistry.userDao.saveUser(newUser);
 	        		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
 	        		    	result.addRestMessage(getResourceCreatedMessage(location));
