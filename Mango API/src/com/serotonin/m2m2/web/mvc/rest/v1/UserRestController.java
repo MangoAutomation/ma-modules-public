@@ -395,6 +395,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
     	        	DaoRegistry.userDao.saveUser(model.getData());
+    	        	User theUser = Common.getUser();
+    	            if(u.getId() == theUser.getId())
+    	            	theUser.setMuted(mute);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -415,6 +418,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
         	        	DaoRegistry.userDao.saveUser(model.getData());
+            			User theUser = Common.getUser();
+            			theUser.setMuted(mute);
         	        }
     				return result.createResponseEntity(model);
     			}
