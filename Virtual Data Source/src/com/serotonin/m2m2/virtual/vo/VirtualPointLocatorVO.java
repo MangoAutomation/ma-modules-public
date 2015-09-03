@@ -138,9 +138,9 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 					.getMax())
 				response.addContextualMessage("incrementAnalogChange.max",
 						"validate.maxGreaterThanMin");
-			if (incrementAnalogChange.getChange() <= 0)
-				response.addContextualMessage("incrementAnalogChange.change",
-						"validate.greaterThanZero");
+//			if (incrementAnalogChange.getChange() <= 0)
+//				response.addContextualMessage("incrementAnalogChange.change",
+//						"validate.greaterThanZero");
 			if (StringUtils.isBlank(incrementAnalogChange.getStartValue()))
 				response.addContextualMessage(
 						"incrementAnalogChange.startValue", "validate.required");
