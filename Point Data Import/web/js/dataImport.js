@@ -17,15 +17,14 @@ function(Select,domStyle,html,put,when,on,
 	  on(uploadTypeChoice,"change",function(value){
 		 
 		  if(value === ".xlsx"){
-			  hide("csv-upload");
-			  showPointValueEmport();
+			  showPointValueEmport('/upload.shtm');
 		  }else if(value === ".csv"){
-			  hide("pointValueEmport");
-			  show("csv-upload");
+			  showPointValueEmport('/csvDataImport.shtm');
 		  }
 	  });
 	
-	
+	//Finally show the div
+	show('dataImportDiv');
 	
 	
 });
