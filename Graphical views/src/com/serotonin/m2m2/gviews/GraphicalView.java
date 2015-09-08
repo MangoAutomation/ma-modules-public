@@ -112,6 +112,8 @@ public class GraphicalView implements Serializable, JsonSerializable {
     }
 
     public boolean isEditor(User user) {
+    	if(user == null)
+    		return false; //Anonymous never edits
         if (isOwner(user))
             return true;
         if (user.isAdmin()) // Admin
@@ -120,12 +122,16 @@ public class GraphicalView implements Serializable, JsonSerializable {
     }
 
     public boolean isReader(User user) {
+    	if(anonymousAccess == ShareUser.ACCESS_READ)
+    		return true;
         if (isEditor(user))
             return true;
         return Permissions.hasPermission(user, readPermission); // Read group
     }
     
     public boolean isSetter(User user){
+    	if(anonymousAccess == ShareUser.ACCESS_SET)
+    		return true;
     	if(isEditor(user))
     		return true;
     	return Permissions.hasPermission(user, setPermission);
