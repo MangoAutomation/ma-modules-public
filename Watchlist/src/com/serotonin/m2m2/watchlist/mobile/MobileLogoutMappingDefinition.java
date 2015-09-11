@@ -11,9 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.View;
 
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.UrlMappingDefinition;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
-import com.serotonin.m2m2.web.mvc.controller.ControllerUtils;
 
 public class MobileLogoutMappingDefinition extends UrlMappingDefinition {
     @Override
@@ -27,7 +27,7 @@ public class MobileLogoutMappingDefinition extends UrlMappingDefinition {
             @Override
             public View handleRequest(HttpServletRequest request, HttpServletResponse response,
                     Map<String, Object> model) {
-                ControllerUtils.doLogout(request);
+                Common.loginManager.performLogout(request, response);
                 return null;
             }
         };

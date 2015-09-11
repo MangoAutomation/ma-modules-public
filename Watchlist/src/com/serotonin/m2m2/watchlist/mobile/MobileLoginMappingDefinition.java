@@ -9,12 +9,16 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.validation.BindException;
+import org.springframework.validation.DataBinder;
 import org.springframework.web.servlet.View;
 
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.UrlMappingDefinition;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
-import com.serotonin.m2m2.web.mvc.controller.ControllerUtils;
 
 public class MobileLoginMappingDefinition extends UrlMappingDefinition {
     @Override
@@ -30,12 +34,20 @@ public class MobileLoginMappingDefinition extends UrlMappingDefinition {
                     Map<String, Object> model) {
                 if ("POST".equals(request.getMethod())) {
                     // Form submission
-                    String username = request.getParameter("username");
-                    String password = request.getParameter("password");
 
-                    ProcessResult loginResult = ControllerUtils.tryLogin(request, username, password);
-
-                    model.put("loginResult", loginResult);
+                    ProcessResult result = new ProcessResult();
+                	try{
+                		DataBinder binder = new DataBinder(User.class);
+                		// Hack for now to get a BindException object so we can use the Auth
+                		// Defs to login.
+                		BindException errors = new BindException(binder.getBindingResult());
+                		User user = Common.loginManager.performLogin(request.getParameter("username"), request.getParameter("password"), request, response, null, errors, false, false);
+                		result.addData("user", user);
+                		
+                	}catch(TranslatableException e){
+                		result.addMessage(e.getTranslatableMessage());
+                	}
+                    model.put("loginResult", result);
                 }
 
                 return null;

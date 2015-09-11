@@ -23,6 +23,9 @@ public class CrowdAuthenticationDefinition extends AuthenticationDefinition {
     @Override
     public User preLoginForm(HttpServletRequest request, HttpServletResponse response, LoginForm loginForm,
             BindException errors) {
+    	if(loginForm == null)
+    		return null;
+    	
         String username = CrowdUtils.getCrowdUsername(request);
 
         if (username != null) {
