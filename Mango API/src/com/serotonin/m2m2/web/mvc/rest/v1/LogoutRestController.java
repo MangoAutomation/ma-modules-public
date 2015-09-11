@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.serotonin.m2m2.module.AuthenticationDefinition;
-import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
@@ -90,13 +89,7 @@ public class LogoutRestController extends MangoRestController{
 		// Check if the user is logged in.
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            // The user is in fact logged in. Invalidate the session.
-            request.getSession().invalidate();
-
-            // Notify any authentication modules of the logout.
-            for (AuthenticationDefinition def : ModuleRegistry.getDefinitions(AuthenticationDefinition.class))
-                def.logout(request, response, user);
-        
+            Common.loginManager.performLogout(request, response);
             //Return an OK
             UserModel model = new UserModel(user);
             return result.createResponseEntity(model);

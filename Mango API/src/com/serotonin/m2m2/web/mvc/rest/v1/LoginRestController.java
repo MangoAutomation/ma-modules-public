@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AuthenticationDefinition;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
@@ -67,18 +68,8 @@ public class LoginRestController extends MangoRestController {
             @RequestHeader(value="password", required = false, defaultValue = "") String password,
             @RequestHeader(value="logout", required = false, defaultValue = "true") boolean logout,
             HttpServletRequest request, HttpServletResponse response) {
-        // check if user is already logged in, if logout == false just return the current user
-        User user = Common.getUser(request);
-        if (!logout && user != null) {
-            RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
-            
-            String defaultUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
-            result.addHeader(LOGIN_DEFAULT_URI_HEADER, defaultUri);
 
-            UserModel model = new UserModel(user);
-            return result.createResponseEntity(model);
-        }
-        return performLogin(username, password, request, response, false);
+        return performLogin(username, password, request, response, logout, false);
     }
 	
 	/**
@@ -95,7 +86,7 @@ public class LoginRestController extends MangoRestController {
 			@PathVariable String username,
 			@RequestParam(value = "password", required = true, defaultValue = "") String password,
 			HttpServletRequest request, HttpServletResponse response) {
-		return performLogin(username, password, request, response, false);
+		return performLogin(username, password, request, response, false, false);
 	}
 
 	/**
@@ -112,7 +103,7 @@ public class LoginRestController extends MangoRestController {
 			@PathVariable String username,
 			@RequestParam(value = "password", required = true, defaultValue = "") String password,
 			HttpServletRequest request, HttpServletResponse response) {
-		return performLogin(username, password, request, response, false);
+		return performLogin(username, password, request, response, false, false);
 	}
 
 	/**
@@ -124,83 +115,24 @@ public class LoginRestController extends MangoRestController {
 	 * @return
 	 */
 	private ResponseEntity<UserModel> performLogin(String username, String password,
-			HttpServletRequest request, HttpServletResponse response, boolean passwordEncrypted) {
+			HttpServletRequest request, HttpServletResponse response, boolean logout, boolean passwordEncrypted) {
 		
 		DataBinder binder = new DataBinder(User.class);
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
-		boolean authenticated = false;
-		User user = DaoRegistry.userDao.getUser(username);
+		
+		// Hack for now to get a BindException object so we can use the Auth
+		// Defs to login.
+		BindException errors = new BindException(binder.getBindingResult());
 
-		if (user == null)
-			result.addRestMessage(this.getDoesNotExistMessage());
-		else if (user.isDisabled())
-			result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
-					"login.validation.accountDisabled"));
-		else {
-
-			// Hack for now to get a BindException object so we can use the Auth
-			// Defs to login.
-			BindException errors = new BindException(binder.getBindingResult());
-
-			for (AuthenticationDefinition def : ModuleRegistry
-					.getDefinitions(AuthenticationDefinition.class)) {
-				authenticated = def.authenticate(request, response, user,
-						password, errors);
-				if (authenticated)
-					break;
-			}
-
-			if (!authenticated) {
-				
-				String passwordHash;
-				if(!passwordEncrypted)
-					passwordHash = Common.encrypt(password);
-				else
-					passwordHash = password;
-
-				// Validating the password against the database.
-				if (!passwordHash.equals(user.getPassword())) {
-					LOG.warn("Failed login attempt on user '"
-							+ user.getUsername() + "' from IP +"
-							+ request.getRemoteAddr());
-					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
-							"login.validation.invalidLogin"));
-				} else {
-					authenticated = true;
-				}
-
-				if (errors.hasErrors()) {
-					for (ObjectError error : errors.getAllErrors()) {
-						result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
-								"common.default", error.getDefaultMessage()));
-					}
-				}
-			}
-		}
-
-		if (authenticated) {
-			// Perform the Login and return the default login URI for the user
-			// Update the last login time.
-			DaoRegistry.userDao.recordLogin(user.getId());
-
-			// Set the IP Address for the session
-			user.setRemoteAddr(request.getRemoteAddr());
-
-			// Add the user object to the session. This indicates to the rest of
-			// the application whether the user is logged
-			// in or not. Will replace any existing user object.
-			Common.setUser(request, user);
-
-			for (AuthenticationDefinition def : ModuleRegistry
-					.getDefinitions(AuthenticationDefinition.class))
-				def.postLogin(user);
-
+		try{
+			User user = Common.loginManager.performLogin(username, password, request, response, null, errors, logout, passwordEncrypted);
 			String uri = DefaultPagesDefinition.getDefaultUri(request,
 					response, user);
 			UserModel model = new UserModel(user);
 			result.addHeader(LOGIN_DEFAULT_URI_HEADER, uri);
 			return result.createResponseEntity(model);
-		} else {
+		}catch(TranslatableException e){
+			result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, e.getTranslatableMessage());
 			return result.createResponseEntity();
 		}
 	}
@@ -230,7 +162,7 @@ public class LoginRestController extends MangoRestController {
 	        		return result.createResponseEntity();
 	        	}
 	        	String password = newUser.getPassword();
-	        	return performLogin(username, password, request, response, true);
+	        	return performLogin(username, password, request, response, false, true);
         	}else{
     			result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User Not Admin"));
         	}
