@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.apache.commons.math3.complex.Complex;
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -28,11 +29,19 @@ public class PointValueFftCalculator implements QueryArrayStream<PointValueTimeM
 	private DataPointVO vo;
 	private long from;
 	private long to;
-	
-	public PointValueFftCalculator(DataPointVO vo, long from, long to){
+	private boolean returnFrequency;
+	/**
+	 * 
+	 * @param vo
+	 * @param from
+	 * @param to
+	 * @param returnFreqency - Return data as Period (s) or Frequency (Hz)
+	 */
+	public PointValueFftCalculator(DataPointVO vo, long from, long to, boolean returnFreqency){
 		this.vo = vo;
 		this.from = from;
 		this.to = to;
+		this.returnFrequency = returnFreqency;
 	}
 
 	
@@ -51,18 +60,100 @@ public class PointValueFftCalculator implements QueryArrayStream<PointValueTimeM
 		double sampleRateHz = 1000d / generator.getAverageSamplePeriodMs();
 		double dataLength = (double)fftData.length;
 		
-		for(int i=0; i<fftData.length; i++){
+		/**
+		 * Depending on if fftData.length is even or odd we need to pull out 
+		 * the values of interest.
+		 * 
+		 * fftData[0] is the steady state Real Value
+		 * 
+		 * if length is even
+		 *  fftData[2*i] = Re[i], 0<=i<length/2
+		 *  fftData[2*i+1] = Im[i], 0<i<length/2 
+		 *  fftData[1] = Re[n/2]
+		 * 
+		 * if length is odd 
+		 *  fftData[2*i] = Re[i], 0<=i<(length+1)/2 
+		 *  fftData[2*i+1] = Im[i], 0<i<(length-1)/2
+		 *  fftData[1] = Im[(length-1)/2]
+		 * 
+		 */
+		//Output The Real Steady State Mangitude
+		try {
+			jgen.writeStartObject();
+			jgen.writeNumberField("value", fftData[0]); //Amplitude
+			double frequency = 0;
+			jgen.writeNumberField("frequency", frequency);
+			jgen.writeEndObject();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		double realComponent, imaginaryComponent, frequency;
+		
+		if(fftData.length % 2 == 0){
+			for(int i=2; i<fftData.length/2; i++){
+				try {
+					realComponent = fftData[i*2];
+					imaginaryComponent = fftData[2*i+1];
+					Complex c = new Complex(realComponent, imaginaryComponent);
+					jgen.writeStartObject();
+					jgen.writeNumberField("value", c.abs()); //Amplitude
+					
+					if(this.returnFrequency)
+						frequency = (double)i * sampleRateHz / dataLength;
+					else
+						frequency = 1d/((double)i * sampleRateHz / dataLength);
+					
+					jgen.writeNumberField("frequency", frequency);
+					jgen.writeEndObject();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}else{
+			
+			for(int i=2; i<(fftData.length-1)/2; i++){
+				try {
+					realComponent = fftData[i*2];
+					imaginaryComponent = fftData[2*i+1];
+					Complex c = new Complex(realComponent, imaginaryComponent);
+					jgen.writeStartObject();
+					jgen.writeNumberField("value", c.abs()); //Amplitude
+					if(this.returnFrequency)
+						frequency = (double)i * sampleRateHz / dataLength;
+					else
+						frequency = 1d/((double)i * sampleRateHz / dataLength);
+
+					jgen.writeNumberField("frequency", frequency);
+					jgen.writeEndObject();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			//Write the last value out as it isn't in order in the array
 			try {
+				realComponent = fftData[fftData.length/2];
+				imaginaryComponent = fftData[1];
+				Complex c = new Complex(realComponent, imaginaryComponent);
 				jgen.writeStartObject();
-				jgen.writeNumberField("value", fftData[i]); //Amplitude
-				double frequency = (double)i * sampleRateHz / dataLength;
+				jgen.writeNumberField("value", c.abs()); //Amplitude
+
+				if(this.returnFrequency)
+					frequency = (double)(((fftData.length-1)/2)-1) * sampleRateHz / dataLength;
+				else
+					frequency = 1d/((double)(((fftData.length-1)/2)-1) * sampleRateHz / dataLength);
+
 				jgen.writeNumberField("frequency", frequency);
 				jgen.writeEndObject();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
 		
 	}
 	

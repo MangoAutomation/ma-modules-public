@@ -335,7 +335,8 @@ public class PointValueRestController extends MangoRestController{
 	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
 	    				if(rollup == RollupEnum.FFT){
 	    					//Special Rollup for FFT's with no time rollup action
-	    					PointValueFftCalculator calc = new PointValueFftCalculator(vo, from.getTime(), to.getTime());
+	    					//TODO Need a way to return frequency or period values
+	    					PointValueFftCalculator calc = new PointValueFftCalculator(vo, from.getTime(), to.getTime(), true);
 	    					return result.createResponseEntity(calc);
 	    				}else{
 		    				TimePeriod timePeriod = null;
