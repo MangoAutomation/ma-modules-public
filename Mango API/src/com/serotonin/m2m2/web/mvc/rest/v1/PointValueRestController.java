@@ -48,6 +48,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueFftCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
@@ -332,12 +333,18 @@ public class PointValueRestController extends MangoRestController{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
 	    			//Are we using rollup
 	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
-	    				TimePeriod timePeriod = null;
-	    				if((timePeriodType != null)&&(timePeriods != null)){
-	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
+	    				if(rollup == RollupEnum.FFT){
+	    					//Special Rollup for FFT's with no time rollup action
+	    					PointValueFftCalculator calc = new PointValueFftCalculator(vo, from.getTime(), to.getTime());
+	    					return result.createResponseEntity(calc);
+	    				}else{
+		    				TimePeriod timePeriod = null;
+		    				if((timePeriodType != null)&&(timePeriods != null)){
+		    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
+		    				}
+		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(vo, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+		    				return result.createResponseEntity(calc);
 	    				}
-	    				PointValueRollupCalculator calc = new PointValueRollupCalculator(vo, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
-	    				return result.createResponseEntity(calc);
 	    			}else{
 	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
 		    			return result.createResponseEntity(pvtDatabaseStream);

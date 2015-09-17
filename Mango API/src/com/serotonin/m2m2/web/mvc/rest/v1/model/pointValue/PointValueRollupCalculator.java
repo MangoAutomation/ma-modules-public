@@ -192,6 +192,7 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
         DataValue startValue = PointValueTime.getValue(startPvt);
         return startValue;
 	}
+	
 	private DataValue getEndValue(){
 		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
         return PointValueTime.getValue(endPvt);
