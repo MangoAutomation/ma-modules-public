@@ -7,13 +7,10 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.DataBinder;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +22,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.AuthenticationDefinition;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
@@ -48,7 +43,7 @@ import com.wordnik.swagger.annotations.Api;
 @RequestMapping("/v1/login")
 public class LoginRestController extends MangoRestController {
 
-	private static final Log LOG = LogFactory.getLog(LoginRestController.class);
+	//private static final Log LOG = LogFactory.getLog(LoginRestController.class);
 	public static final String LOGIN_DEFAULT_URI_HEADER = "user-home-uri";
 	
 	/**
