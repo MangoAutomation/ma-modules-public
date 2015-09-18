@@ -559,7 +559,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     }
     
     void forcePointReload() {
-    	updateChangedPoints();
+    	updateChangedPoints(System.currentTimeMillis());
     }
 	
 }
