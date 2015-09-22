@@ -20,9 +20,12 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.serotonin.io.StreamUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.GraphicalView;
+import com.serotonin.m2m2.gviews.GraphicalViewUploadPermissionDefinition;
 import com.serotonin.m2m2.gviews.GraphicalViewsCommon;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 public class ImageUploadServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -36,6 +39,12 @@ public class ImageUploadServlet extends HttpServlet {
 
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
+            //Fail if we don't have permissions for this
+            if(!Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewUploadPermissionDefinition.PERMISSION))){
+            	//The GraphicalViewDwr.clearBackground() method will notify the user of a failure so we can ignore them here
+            	return;
+            }
+            
             List<FileItem> items;
             try {
                 items = upload.parseRequest(request);

@@ -35,7 +35,6 @@
         </c:forEach>
         
         GraphicalViewDwr.editInit(function(result) {
-            
             dwr.util.addOptions($("componentList"), result.componentTypes, "key", "value");
             settingsEditor.setPointList(result.pointList);
             compoundEditor.setPointList(result.pointList);
@@ -270,15 +269,27 @@
         if (!$get("backgroundImage"))
             alert("<m2m2:translate key="viewEdit.chooseImage" escapeDQuotes="true"/>");
         else {
-            GraphicalViewDwr.clearBackground(function() {
-                document.getElementById("daform").submit();
-                bgUploadCheck();
+            GraphicalViewDwr.clearBackground(function(response) {
+            	if(response.data.hasPermission === true){
+                	document.getElementById("daform").submit();
+                	bgUploadCheck();
+            	}else{
+            		alert("<m2m2:translate key="graphic.permission.noUploadAccess" escapeDQuotes="true"/>");
+            	}
+            		
+                
             });
         }
     }
     
     function bgClear() {
-        GraphicalViewDwr.clearBackground(function() { imageUpdate("images/spacer.gif", 740, 500); });
+        GraphicalViewDwr.clearBackground(function(response) { 
+        	if(response.data.hasPermission === true){
+        		imageUpdate("images/spacer.gif", 740, 500); 
+        	}else{
+        		alert("<m2m2:translate key="graphic.permission.noUploadAccess" escapeDQuotes="true"/>");
+        	}
+        });
     }
     
     function bgUploadCheck() {

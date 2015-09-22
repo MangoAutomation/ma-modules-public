@@ -20,6 +20,7 @@ import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.component.AnalogGraphicComponent;
 import com.serotonin.m2m2.gviews.component.BinaryGraphicComponent;
 import com.serotonin.m2m2.gviews.component.CompoundChild;
@@ -635,10 +636,19 @@ public class GraphicalViewDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public void clearBackground() {
-        GraphicalView view = GraphicalViewsCommon.getUserEditView(Common.getUser());
-        GraphicalViewsCommon.deleteImage(view.getBackgroundFilename());
-        view.setBackgroundFilename(null);
+    public ProcessResult clearBackground() {
+    	User user = Common.getUser();
+    	ProcessResult result = new ProcessResult();
+    	if(Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewUploadPermissionDefinition.PERMISSION))){
+	    	GraphicalView view = GraphicalViewsCommon.getUserEditView(user);
+	        GraphicalViewsCommon.deleteImage(view.getBackgroundFilename());
+	        view.setBackgroundFilename(null);
+	        result.addData("hasPermission", true);
+    	}else{
+    		result.addData("hasPermission", false);
+    	}
+        
+        return result;
     }
 
     @DwrPermission(user = true)
