@@ -156,9 +156,9 @@ public class ReportChartCreator {
             PointTimeSeriesCollection ptsc = new PointTimeSeriesCollection(timeZone);
 
             if (pointStat.getNumericTimeSeries() != null)
-                ptsc.addNumericTimeSeries(pointStat.getNumericTimeSeries().plainCopy());
+                ptsc.addNumericTimeSeries(pointStat.getNumericTimeSeries());
             else if (pointStat.getDiscreteTimeSeries() != null)
-                ptsc.addDiscreteTimeSeries(pointStat.getDiscreteTimeSeries().plainCopy());
+                ptsc.addDiscreteTimeSeries(pointStat.getDiscreteTimeSeries());
 
             if (ptsc.hasData()) {
                 if (inlinePrefix != null)

@@ -4,8 +4,6 @@
  */
 package com.serotonin.m2m2.reports;
 
-import java.nio.ByteBuffer;
-
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.nosql.ByteArrayBuilder;
@@ -28,14 +26,12 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 	
 	public static final ReportPointValueTimeSerializer instance = new ReportPointValueTimeSerializer();
 
-
 	/**
 	 * @return
 	 */
 	public static ReportPointValueTimeSerializer get() {
 		return instance;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer#getObject(byte[], long)
@@ -134,6 +130,5 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 		
 		return bytes;
 	}
-
 
 }

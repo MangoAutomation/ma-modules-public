@@ -16,5 +16,6 @@
     <relation id="colours"/>
   </item>
   
+  <item id="m2mReportImport" key="dox.m2mReportImport" filename="m2mReportImport.htm"/>
   <item id="reportSettings" key="dox.reportSettings" filename="reportSettings.htm"/>
 </doxManifest>

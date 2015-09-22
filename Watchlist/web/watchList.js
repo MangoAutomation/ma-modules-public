@@ -62,10 +62,10 @@ mango.view.watchList.setDataImpl = function(state) {
             $set("p"+ state.id +"Chart", state.chart);
         }
         
-        if (state.messages != null)
+        if ((state.messages != null)&&(state.messages !== '')){
             $("p"+ state.id +"Messages").innerHTML = state.messages;
-        //else
-        //    $("p"+ state.id +"Messages").innerHTML = "";
+            show($("p"+ state.id +"MessagesDiv"));
+        }
     }
 };
 

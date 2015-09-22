@@ -12,7 +12,7 @@
     function getWorkItems() {
         ThreadsDwr.getWorkItems(function(result) {
             draw(result.data.medClassCounts, "medList");
-            draw(result.data.medClassCounts, "lowList");
+            draw(result.data.lowClassCounts, "lowList");
             //setTimeout(getStatusVars, 2000);
         });            
     }
@@ -30,7 +30,7 @@
             {
                 rowCreator: function(options) {
                     var tr = document.createElement("tr");
-                    if (options.rowData.value == null)
+                    if (options.rowData.name == null)
                         tr.className = "rowHeader";
                     else
                         tr.className = "row"+ (options.rowIndex % 2 == 0 ? "" : "Alt");
@@ -38,7 +38,7 @@
                 },
                 cellCreator: function(options) {
                     var td = document.createElement("td");
-                    if (options.rowData.value == null) {
+                    if (options.rowData.name == null) {
                         if (options.cellNum == 0)
                             td.colSpan = 2;                                
                         else
@@ -55,8 +55,8 @@
   
   <div>
     <a href="/internal/status.shtm"><fmt:message key="internal.status"/></a> |
-    <fmt:message key="internal.threads"/> |
-    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a>
+    <a href="/internal/threads.shtm"><fmt:message key="internal.threads"/></a> |
+    <fmt:message key="internal.workItems"/>
   </div>
   <br/>
   

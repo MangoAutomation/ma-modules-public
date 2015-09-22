@@ -14,7 +14,7 @@
 <c:set var="reportWorkItemMediumPriority"><%=WorkItem.PRIORITY_MEDIUM %></c:set>
 <c:set var="reportWorkItemLowPriority"><%=WorkItem.PRIORITY_LOW %></c:set>
 
-
+<tag:versionedJavascript src="/dwr/interface/ReportsDwr.js" />
 <script type="text/javascript">
   function saveReportSettings() {
       setUserMessage("reportsMessage");
@@ -30,6 +30,28 @@
           setUserMessage("reportsMessage", "<fmt:message key="systemSettings.reportsSettingsSaved"/>");
 	  });
   }
+  
+  /**
+   * Purge All reports now
+   */
+  function purgeAllReportsNow(){
+	  if(confirm('<fmt:message key="systemSettings.reports.purgeAll"/>')){
+    	  setUserMessage("reportsMessage", "<fmt:message key='systemSettings.reports.purging'/>");
+    	  ReportsDwr.purgeAllNow(function(response){
+    		  setUserMessage("reportsMessage", response.data.purgeMessage);
+    	  });
+	  }
+  }
+
+  
+  function purgeReportsNow(){
+	  if(confirm('<fmt:message key="systemSettings.reports.purgeUsingSettings"/>')){
+    	  setUserMessage("reportsMessage", "<fmt:message key='systemSettings.reports.purging'/>");
+    	  ReportsDwr.purgeNow(function(response){
+    		  setUserMessage("reportsMessage", response.data.purgeMessage);
+    	  });
+	  }
+  }
 </script>
 <table>
   <tr>
@@ -39,6 +61,8 @@
       <c:set var="type"><%= Common.TimePeriods.MONTHS %></c:set>
       <c:set var="periods"><m2m2:systemSetting key="${reportPurgePeriodType}" defaultValue="${type}"/></c:set>
       <tag:timePeriods id="${reportPurgePeriodType}" d="true" w="true" mon="true" y="true" value="${periods}"/>
+      <button type="button" onclick="purgeReportsNow()"><fmt:message key="dsEdit.purge.purgeNow"/></button>
+      <button type="button" onclick="purgeAllReportsNow()"><fmt:message key="systemSettings.reports.purgeAllNow"/></button>
     </td>
   </tr>
   <tr>
@@ -66,6 +90,10 @@
       </c:choose>
       </select>
     </td>
+  </tr>
+  <tr>
+    <td class="formLabelRequired"><a href="/m2m_report_import.shtm" target="import_reports"><fmt:message key="reports.import"/></a></td>
+    <td></td>
   </tr>  
   <tr>
     <td colspan="2" align="center">

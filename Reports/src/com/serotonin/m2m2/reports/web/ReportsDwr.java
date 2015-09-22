@@ -8,20 +8,26 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
 
 import com.serotonin.InvalidArgumentException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
+import com.serotonin.m2m2.reports.ReportPurgeDefinition;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
 import com.serotonin.m2m2.reports.vo.ReportVO;
+import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -36,6 +42,9 @@ import com.serotonin.validation.StringValidation;
  * @author Matthew Lohbihler
  */
 public class ReportsDwr extends ModuleDwr {
+	
+	 private static final Log LOG = LogFactory.getLog(ReportsDwr.class);
+	
     @DwrPermission(user = true)
     public ProcessResult init() {
         ProcessResult response = new ProcessResult();
@@ -181,6 +190,43 @@ public class ReportsDwr extends ModuleDwr {
         return response;
     }
 
+    /**
+     * Purge Reports using settings
+     * @param reportPurgePeriods
+     * @param reportPurgePeriodType
+     * @return
+     */
+    @DwrPermission(user = true)
+    public ProcessResult purgeNow(){
+    	ProcessResult response = new ProcessResult();
+        DateTime cutoff = DateUtils.truncateDateTime(new DateTime(), Common.TimePeriods.DAYS);
+        cutoff = DateUtils.minus(cutoff,
+                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE, Common.TimePeriods.MONTHS),
+                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS, 1));
+
+        int deleteCount = new ReportDao().purgeReportsBefore(cutoff.getMillis());
+        LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
+    	
+    	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
+    	return response;
+    }
+    
+    /**
+     * Purge all Reports Now
+     * @return
+     */
+    @DwrPermission(user = true)
+    public ProcessResult purgeAllNow(){
+    	ProcessResult response = new ProcessResult();
+
+        int deleteCount = new ReportDao().purgeReportsBefore(System.currentTimeMillis());
+        LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
+
+    	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
+    	return response;
+    }
+    
+    
     @DwrPermission(user = true)
     public ProcessResult runReport(String xid, String name, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
