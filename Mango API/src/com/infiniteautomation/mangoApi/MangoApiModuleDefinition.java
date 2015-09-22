@@ -27,14 +27,22 @@ public class MangoApiModuleDefinition extends ModuleElementDefinition{
 	
 	@Override
 	public void preInitialize(){
-		
 
 		try {
 			//Base Property File
 			Resource base = Resource.newResource(Common.MA_HOME + getModule().getDirectoryPath() + File.separator + "classes" + File.separator + "mangoApiHeaders.properties");
-			//Overriden Property File
-			Resource override = Resource.newResource(Common.MA_HOME + File.separator + "overrides" + File.separator + "classes" + File.separator + "mangoApiHeaders.properties");
-	        OverridingFileResource propertiesFile = new OverridingFileResource(override,base);
+			
+			File overrideClasses = new File(Common.MA_HOME + File.separator + "overrides" + File.separator + "classes" + File.separator);
+			
+			//Overridden Property File
+			Resource override = Resource.newResource(new File(overrideClasses, "mangoApiHeaders.properties"));
+	        
+			//We must have an overrides/classes folder for the Overrides to work properly even if the file isn't present.
+			if(!overrideClasses.exists()){
+				overrideClasses.mkdirs();
+			}
+			
+			OverridingFileResource propertiesFile = new OverridingFileResource(override,base);
 			props = new MangoApiReloadingProperties(propertiesFile);
 		} catch (MalformedURLException e) {
 			throw new ShouldNeverHappenException(e);
