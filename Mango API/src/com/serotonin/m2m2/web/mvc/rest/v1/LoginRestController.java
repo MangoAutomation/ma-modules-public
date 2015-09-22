@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -102,7 +103,11 @@ public class LoginRestController extends MangoRestController {
 	}
 
 	/**
-	 * Shared work for the login process
+	 * Shared work for the login process.
+	 * 
+	 * The end result for a logged in user is to have the header user-home-url set 
+	 * as well as the homeUrl for the user model.
+	 * 
 	 * @param username
 	 * @param password
 	 * @param request
@@ -124,6 +129,8 @@ public class LoginRestController extends MangoRestController {
 			String uri = DefaultPagesDefinition.getDefaultUri(request,
 					response, user);
 			UserModel model = new UserModel(user);
+			if(StringUtils.isEmpty(model.getHomeUrl()))
+				model.setHomeUrl(uri);
 			result.addHeader(LOGIN_DEFAULT_URI_HEADER, uri);
 			return result.createResponseEntity(model);
 		}catch(TranslatableException e){
