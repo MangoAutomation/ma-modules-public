@@ -28,6 +28,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModelProperty;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
@@ -35,7 +36,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * @author Terry Packer
  *
  */
-@Api(value="Threads", description="Operations on Threads")
+@Api(value="Threads", description="Mango Application Threads")
 @RestController
 @RequestMapping("/v1/threads")
 public class ThreadMonitorRestController extends MangoRestController {
@@ -52,7 +53,8 @@ public class ThreadMonitorRestController extends MangoRestController {
 
 	}
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@ApiOperation(value = "Get all threads", notes = "Larger stack depth will slow this request")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
 	public ResponseEntity<List<ThreadModel>> getThreads(HttpServletRequest request,
 			@ApiParam(value = "Limit size of stack trace", allowMultiple = false, defaultValue="10")
 			@RequestParam(value="stackDepth", defaultValue="10") int stackDepth,

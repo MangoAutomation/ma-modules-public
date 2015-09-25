@@ -29,14 +29,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointSummaryStream
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
  * 
  */
-@Api(value="Data Point Summary", description="Access to Data Point Summary in the situations where a Full Data Point is not necessary", position=2)
+@Api(value="Data Point Summary", description="Data Point Summaries")
 @RestController(value="DataPointSummaryRestControllerV1")
 @RequestMapping("/v1/data-point-summaries")
 public class DataPointSummaryRestController extends MangoVoRestController<DataPointVO, DataPointSummary, DataPointDao>{
@@ -52,10 +50,6 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
 			response=DataPointSummary.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=DataPointSummary.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
     public ResponseEntity<QueryDataPageStream<DataPointVO>> query(
     		@ApiParam(value="Query", required=true)
@@ -73,15 +67,11 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
 	}
 	
 	@ApiOperation(
-			value = "Query Data Points For Summary",
+			value = "Query Data Points",
 			notes = "",
 			response=DataPointSummary.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=DataPointSummary.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(HttpServletRequest request) {
 		

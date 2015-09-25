@@ -35,7 +35,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * @author Terry Packer
  *
  */
-@Api(value="Background Processing", description="Operations on Background Processing")
+@Api(value="Background Processing", description="Background Processing Settings")
 @RestController
 @RequestMapping("/v1/background-processing")
 public class BackgroundProcessingRestController extends MangoRestController{
@@ -59,14 +59,11 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			ThreadPoolSettingsModel model = new ThreadPoolSettingsModel(corePoolSize, maximumPoolSize, activeCount, largestPoolSize);
     			return result.createResponseEntity(model);
 			}else{
-				//Return invalid input message
-				// TODO Create this type of method in the base class
-				result.addRestMessage(this.getInternalServerErrorMessage("Invalid Priority type"));
+				LOG.warn("Non admin user: " + user.getUsername() + " attempted to access high priority thread pool settings.");
+				result.addRestMessage(this.getUnauthorizedMessage());
 				return result.createResponseEntity();
 			}
 		}else{
-			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access high priority thread pool settings.");
-			result.addRestMessage(this.getUnauthorizedMessage());
 			return result.createResponseEntity();
 		}
  	}
@@ -145,16 +142,12 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			ThreadPoolSettingsModel model = new ThreadPoolSettingsModel(corePoolSize, maximumPoolSize, activeCount, largestPoolSize);
     			return result.createResponseEntity(model);
 			}else{
-				//Return invalid input message
-				// TODO Create this type of method in the base class
-				result.addRestMessage(this.getInternalServerErrorMessage("Invalid Priority type"));
+				LOG.warn("Non admin user: " + user.getUsername() + " attempted to access medium priority thread pool settings.");
+				result.addRestMessage(this.getUnauthorizedMessage());
 				return result.createResponseEntity();
 			}
-		}else{
-			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access medium priority thread pool settings.");
-			result.addRestMessage(this.getUnauthorizedMessage());
-			return result.createResponseEntity();
 		}
+		return result.createResponseEntity();
  	}
 	
 	@ApiOperation(
@@ -230,16 +223,12 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			ThreadPoolSettingsModel model = new ThreadPoolSettingsModel(corePoolSize, maximumPoolSize, activeCount, largestPoolSize);
     			return result.createResponseEntity(model);
 			}else{
-				//Return invalid input message
-				// TODO Create this type of method in the base class
-				result.addRestMessage(this.getInternalServerErrorMessage("Invalid Priority type"));
+				LOG.warn("Non admin user: " + user.getUsername() + " attempted to access low priority thread pool settings.");
+				result.addRestMessage(this.getUnauthorizedMessage());
 				return result.createResponseEntity();
 			}
-		}else{
-			LOG.warn("Non admin user: " + user.getUsername() + " attempted to access low priority thread pool settings.");
-			result.addRestMessage(this.getUnauthorizedMessage());
-			return result.createResponseEntity();
 		}
+		return result.createResponseEntity();
  	}
 	
 	@ApiOperation(
@@ -300,6 +289,13 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	}
 	
 	
+	/**
+	 * Helper for validation
+	 * @param model
+	 * @param currentCorePoolSize
+	 * @param currentMaximumPoolSize
+	 * @return
+	 */
 	protected boolean validate(ThreadPoolSettingsModel model, int currentCorePoolSize, int currentMaximumPoolSize){
 		boolean passed = true;
 		model.setMessages(new ArrayList<RestValidationMessage>());

@@ -22,31 +22,32 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * @author Jared Wiltshire
  */
-@Api(value="Translations", description="Retrieves translations of messages")
+@Api(value="Translations", description="Translations")
 @RestController
 @RequestMapping("/v1/translations")
 public class TranslationsController extends MangoRestController {
     
+	@ApiOperation(value = "Get all translations", notes = "Kitchen sink of translations")
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"})
     public ResponseEntity<Map<String, ?>> translations(
-            
+    		@ApiParam(value = "Language for translations", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
-            
             HttpServletRequest request) {
         return namespacedTranslations(null, language, request);
     }
     
+	@ApiOperation(value = "Get translations based on a namespance", notes = "Returns sub-namespaces too")
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/{namespace}")
     public ResponseEntity<Map<String, ?>> namespacedTranslations(
-            
-            @ApiParam(value = "Namespace", required = true, allowMultiple = false)
+            @ApiParam(value = "Message Namespace, simmilar to java package structure", allowMultiple = false)
             @PathVariable String namespace,
-            
+            @ApiParam(value = "Language for translation (must have language pack installed)", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
             
             HttpServletRequest request) {

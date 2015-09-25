@@ -28,7 +28,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * @author Terry Packer
  *
  */
-@Api(value="Mailing List Access", description="Operations on Mailing Lists")
+@Api(value="Mailing Lists", description="Mailing Lists")
 @RestController
 @RequestMapping("/v1/mailing-lists")
 public class MailingListRestController extends MangoRestController{
@@ -40,7 +40,7 @@ public class MailingListRestController extends MangoRestController{
 	}
 
 	
-	@ApiOperation(value = "Get Mailing List", notes = "Returns a Mailing List")
+	@ApiOperation(value = "Get Mailing List by XID", notes = "Returns a Mailing List")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<MailingListModel> get(
     		@ApiParam(value = "Valid mailing list xid", required = true, allowMultiple = false)

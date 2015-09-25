@@ -32,12 +32,13 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * @author Terry Packer
  * 
  */
-@Api(value="Data Sources", description="Operations on Data Sources", position=2)
+@Api(value="Data Sources", description="Data Sources")
 @RestController
 @RequestMapping("/v1/data-sources")
 public class DataSourceRestController extends MangoRestController{
@@ -47,6 +48,10 @@ public class DataSourceRestController extends MangoRestController{
 	}
 	private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
 	
+	@ApiOperation(
+			value = "Get all data sources",
+			notes = "Only returns data sources available to logged in user"
+			)
     @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<AbstractDataSourceModel<?>>> getAllDataSources(HttpServletRequest request) {
@@ -71,8 +76,11 @@ public class DataSourceRestController extends MangoRestController{
     	return result.createResponseEntity();
     }
 	
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
+	@ApiOperation(
+			value = "Get data source by xid",
+			notes = "Only returns data sources available to logged in user"
+			)
+	@RequestMapping(method = RequestMethod.GET, value = "/{xid}", produces={"application/json"})
     public ResponseEntity<AbstractDataSourceModel<?>> getDataSource(HttpServletRequest request, @PathVariable String xid) {
 		
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
@@ -110,7 +118,11 @@ public class DataSourceRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
+	@ApiOperation(
+			value = "Add data source",
+			notes = "Not fully implemented"
+			)
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"})
     public ResponseEntity<AbstractDataSourceModel<?>> updateDataPoint(
     		@PathVariable String xid,
     		@RequestBody AbstractDataSourceModel<?> model, 

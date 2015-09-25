@@ -60,8 +60,6 @@ import com.serotonin.m2m2.web.taglib.Functions;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * TODO Use Point Value Facade for recent data access
@@ -69,7 +67,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  * 
  */
-@Api(value="Point Values", description="Operations on Point Values")
+@Api(value="Point Values", description="Point Values")
 @RestController
 @RequestMapping("/v1/point-values")
 public class PointValueRestController extends MangoRestController{
@@ -175,10 +173,6 @@ public class PointValueRestController extends MangoRestController{
 	        value = "First and last point values",
 	        notes = "Retrieves the first and last point values within a time range, used to read accumulators"
 	        )
-	@ApiResponses({
-	    @ApiResponse(code = 200, message = "Query Successful", response=PointValueTimeModel.class),
-	    @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
-	})
 	@RequestMapping(method = RequestMethod.GET, value="/{xid}/first-last", produces={"application/json", "text/csv"})
 	public ResponseEntity<List<PointValueTimeModel>> firstAndLastPointValues(
 	        HttpServletRequest request,
@@ -279,11 +273,7 @@ public class PointValueRestController extends MangoRestController{
 			response=PointValueTimeModel.class,
 			responseContainer="List"
 			)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "Query Successful", response=PointValueTimeModel.class),
-		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
-		})
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}")
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}", produces={"application/json","text/csv"})
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getPointValues(
     		HttpServletRequest request, 
     		
@@ -371,11 +361,7 @@ public class PointValueRestController extends MangoRestController{
 			response=PointValueTimeModel.class,
 			responseContainer="List"
 			)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "Count Successful", response=Integer.class),
-		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
-		})
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}/count")
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}/count", produces={"application/json"})
     public ResponseEntity<Long> count(
     		HttpServletRequest request, 
     		
@@ -453,11 +439,7 @@ public class PointValueRestController extends MangoRestController{
 			notes = "From time inclusive, To time exclusive"
 			//TODO Implement a Statistics Model for the stream and put as response class here
 			)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "Query Successful", response=StatisticsStream.class),
-		@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
-		})
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}/statistics")
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}/statistics", produces={"application/json"})
     public ResponseEntity<StatisticsStream> getPointStatistics(
     		HttpServletRequest request, 
     		
@@ -521,7 +503,7 @@ public class PointValueRestController extends MangoRestController{
 			value = "Update an existing data point's value",
 			notes = "Data point must exist and be enabled"
 			)
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"}, consumes={"application/json"})
     public ResponseEntity<PointValueTimeModel> putPointValue(
     		HttpServletRequest request, 
     		@RequestBody PointValueTimeModel model, 
@@ -665,9 +647,4 @@ public class PointValueRestController extends MangoRestController{
 			return result.createResponseEntity();
 		}
     }
-    
-	
-
-	
-	
 }

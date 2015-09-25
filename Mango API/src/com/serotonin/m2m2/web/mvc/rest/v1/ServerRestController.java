@@ -37,14 +37,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
  *
  */
-@Api(value="Users", description="Operations on Server")
+@Api(value="Server Information", description="Server Information")
 @RestController
 @RequestMapping("/v1/server")
 public class ServerRestController extends MangoRestController{
@@ -67,10 +65,6 @@ public class ServerRestController extends MangoRestController{
 			response=TimezoneModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=TimezoneModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(HttpServletRequest request) {
 		
@@ -96,7 +90,7 @@ public class ServerRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 	
-	@ApiOperation(value = "Send a test email")
+	@ApiOperation(value = "Send a test email", notes="Sends email to supplied address")
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/email/test")
     public ResponseEntity<String> sendTestEmail(
     		@RequestParam(value = "email", required = true, defaultValue = "") String email,

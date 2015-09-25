@@ -35,14 +35,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.help.HelpModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.help.RelatedHelpItemModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
  *
  */
-@Api(value="Help", description="Load the Help Information")
+@Api(value="Help", description="Mango Help")
 @RestController
 @RequestMapping("/v1/help")
 public class HelpRestController extends MangoRestController{
@@ -51,14 +49,10 @@ public class HelpRestController extends MangoRestController{
 
 	@ApiOperation(
 			value = "Get Help",
-			notes = "",
+			notes = "request help via the internal Mango help id",
 			response=HelpModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=HelpModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-id/{helpId}")
     public ResponseEntity<HelpModel> getHelp(
     		@PathVariable String helpId,

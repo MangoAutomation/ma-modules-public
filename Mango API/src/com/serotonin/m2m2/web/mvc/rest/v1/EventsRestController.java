@@ -46,8 +46,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * 
@@ -55,7 +53,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-@Api(value="Events", description="Operations on Events")
+@Api(value="Events", description="Events")
 @RestController()
 @RequestMapping("/v1/events")
 public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
@@ -108,10 +106,6 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			response=EventInstanceModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=EventInstanceModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
     public ResponseEntity<QueryArrayStream<EventInstanceVO>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
@@ -127,8 +121,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	}
 	
 	@ApiOperation(
-			value = "Get existing event by ID",
-			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
+			value = "Get event by ID",
+			notes = ""
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/{id}")
     public ResponseEntity<EventInstanceModel> getById(
@@ -154,14 +148,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	
 	@ApiOperation(
 			value = "Query Events",
-			notes = "",
+			notes = "Query by posting AST Model",
 			response=EventInstanceModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=EventInstanceModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> query(
     		
@@ -184,14 +174,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	
 	@ApiOperation(
 			value = "Query Events",
-			notes = "",
+			notes = "Query via rql in url",
 			response=EventInstanceModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=EventInstanceModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> queryRQL(HttpServletRequest request) {
 		

@@ -34,8 +34,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * 
@@ -44,7 +42,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-@Api(value="User Comments", description="Operations on User Comments")
+@Api(value="User Comments", description="User Comments")
 @RestController()
 @RequestMapping("/v1/comments")
 public class UserCommentRestController extends MangoVoRestController<UserCommentVO, UserCommentModel, UserCommentDao>{
@@ -64,10 +62,6 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			response=UserCommentModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=UserCommentModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
     public ResponseEntity<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
@@ -88,10 +82,6 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			response=UserCommentModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=UserCommentModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
     public ResponseEntity<QueryDataPageStream<UserCommentVO>> query(
     		
@@ -115,10 +105,6 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			response=UserCommentModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=UserCommentModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<QueryDataPageStream<UserCommentVO>> queryRQL(
     		   		   		
@@ -155,10 +141,6 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			value = "Create New User Comment",
 			notes = ""
 			)
-	@ApiResponses({
-			@ApiResponse(code = 201, message = "User Created", response=UserCommentModel.class),
-			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
-			})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
     public ResponseEntity<UserCommentModel> createNewUserComment(
     		@ApiParam( value = "User Comment to save", required = true )

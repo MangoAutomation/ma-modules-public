@@ -19,12 +19,13 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * @author Terry Packer
  *
  */
-@Api(value="Logout", description="Operations For Logout")
+@Api(value="Logout", description="Logout")
 @RestController
 @RequestMapping("/v1/logout")
 public class LogoutRestController extends MangoRestController{
@@ -34,7 +35,8 @@ public class LogoutRestController extends MangoRestController{
      * @param response
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET)
+	@ApiOperation(value = "Logout", notes = "Logout current user")
+    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<UserModel> logout(HttpServletRequest request,
             HttpServletResponse response) {
         return performLogout(request, response);
@@ -47,8 +49,9 @@ public class LogoutRestController extends MangoRestController{
 	 * @param response
 	 * @return
 	 */
+	@ApiOperation(value = "Logout", notes = "Deprecated, use GET method")
     @Deprecated
-	@RequestMapping(method = RequestMethod.PUT, value = "/{username}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/{username}", produces={"application/json"})
     public ResponseEntity<UserModel> logoutPut(
     		@PathVariable String username,
     		HttpServletRequest request,
@@ -64,8 +67,9 @@ public class LogoutRestController extends MangoRestController{
 	 * @param response
 	 * @return
 	 */
+	@ApiOperation(value = "Logout", notes = "Deprecated, use GET method")
     @Deprecated
-	@RequestMapping(method = RequestMethod.POST, value = "/{username}")
+	@RequestMapping(method = RequestMethod.POST, value = "/{username}", produces={"application/json"})
     public ResponseEntity<UserModel> logoutPost(
     		@PathVariable String username,
     		HttpServletRequest request,

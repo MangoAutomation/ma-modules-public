@@ -28,6 +28,8 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Rest Login endpoint
@@ -39,7 +41,7 @@ import com.wordnik.swagger.annotations.Api;
  * @author Terry Packer
  * 
  */
-@Api(value = "Login", description = "Operations For Login")
+@Api(value = "Login", description = "Login")
 @RestController
 @RequestMapping("/v1/login")
 public class LoginRestController extends MangoRestController {
@@ -58,10 +60,13 @@ public class LoginRestController extends MangoRestController {
      * @param response
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{username}")
+	@ApiOperation(value = "Login", notes = "Login a user")
+    @RequestMapping(method = RequestMethod.GET, value = "/{username}",  produces={"application/json"})
     public ResponseEntity<UserModel> login(
             @PathVariable String username,
+            @ApiParam(value="User's password")
             @RequestHeader(value="password", required = false, defaultValue = "") String password,
+            @ApiParam(value="Logout this session's current user, prior to logging in")
             @RequestHeader(value="logout", required = false, defaultValue = "true") boolean logout,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -76,8 +81,9 @@ public class LoginRestController extends MangoRestController {
 	 * @param response
 	 * @return
 	 */
+	@ApiOperation(value = "Login", notes = "Deprecated, use GET method")
 	@Deprecated
-	@RequestMapping(method = RequestMethod.PUT, value = "/{username}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/{username}",  produces={"application/json"})
 	public ResponseEntity<UserModel> loginPut(
 			@PathVariable String username,
 			@RequestParam(value = "password", required = true, defaultValue = "") String password,
@@ -93,8 +99,9 @@ public class LoginRestController extends MangoRestController {
 	 * @param response
 	 * @return
 	 */
+	@ApiOperation(value = "Login", notes = "Deprecated, use GET method")
 	@Deprecated
-	@RequestMapping(method = RequestMethod.POST, value = "/{username}")
+	@RequestMapping(method = RequestMethod.POST, value = "/{username}",  produces={"application/json"})
 	public ResponseEntity<UserModel> loginPost(
 			@PathVariable String username,
 			@RequestParam(value = "password", required = true, defaultValue = "") String password,
@@ -102,6 +109,42 @@ public class LoginRestController extends MangoRestController {
 		return performLogin(username, password, request, response, false, false);
 	}
 
+	/**
+	 * TODO dont use plaintext password, use OAuth2 or HMAC etc
+	 * 
+     * GET login action to switch user if we are an admin
+     * @param username
+     * @return
+     */
+	@ApiOperation(value = "Switch User", notes = "Must be have Administrator priviledges to switch users")
+    @RequestMapping(method = RequestMethod.GET, value = "/su/{username}",  produces={"application/json"})
+    public ResponseEntity<UserModel> su(
+    		@ApiParam(value="Username of user to switch to")
+            @PathVariable String username,
+            HttpServletRequest request, HttpServletResponse response) {
+    	RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
+    	// check if user is already logged in, if logout == false just return the current user
+    	User user = this.checkUser(request, result);
+    	
+        if (result.isOk()) {
+        	if(user.isAdmin()){
+	        	User newUser = DaoRegistry.userDao.getUser(username);
+	        	
+	        	if(newUser == null){
+	        		result.addRestMessage(this.getDoesNotExistMessage());
+	        		return result.createResponseEntity();
+	        	}
+	        	String password = newUser.getPassword();
+	        	return performLogin(username, password, request, response, false, true);
+        	}else{
+    			result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User Not Admin"));
+        	}
+        }
+        
+        return result.createResponseEntity();
+        
+    }
+	
 	/**
 	 * Shared work for the login process.
 	 * 
@@ -138,40 +181,5 @@ public class LoginRestController extends MangoRestController {
 			return result.createResponseEntity();
 		}
 	}
-	
-	
-	/**
-	 * TODO dont use plaintext password, use OAuth2 or HMAC etc
-	 * 
-     * GET login action to switch user if we are an admin
-     * @param username
-     * @return
-     */
-    @RequestMapping(method = RequestMethod.GET, value = "/su/{username}")
-    public ResponseEntity<UserModel> su(
-            @PathVariable String username,
-            HttpServletRequest request, HttpServletResponse response) {
-    	RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
-    	// check if user is already logged in, if logout == false just return the current user
-    	User user = this.checkUser(request, result);
-    	
-        if (result.isOk()) {
-        	if(user.isAdmin()){
-	        	User newUser = DaoRegistry.userDao.getUser(username);
-	        	
-	        	if(newUser == null){
-	        		result.addRestMessage(this.getDoesNotExistMessage());
-	        		return result.createResponseEntity();
-	        	}
-	        	String password = newUser.getPassword();
-	        	return performLogin(username, password, request, response, false, true);
-        	}else{
-    			result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User Not Admin"));
-        	}
-        }
-        
-        return result.createResponseEntity();
-        
-    }
 	
 }

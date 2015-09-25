@@ -48,14 +48,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointStreamCallbac
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
  * 
  */
-@Api(value="Data Points", description="Operations on Data points", position=1)
+@Api(value="Data Points", description="Data points")
 @RestController(value="DataPointRestControllerV1")
 @RequestMapping("/v1/data-points")
 public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel, DataPointDao>{
@@ -65,11 +63,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	public DataPointRestController(){
 		super(DaoRegistry.dataPointDao);
 		LOG.info("Creating Data Point Rest Controller.");
-		
 		//Fill in any model mappings
 		//TODO this.modelMap.put("", "");
-		
-		
 	}
 
 	
@@ -77,15 +72,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get all data points",
 			notes = "Only returns points available to logged in user"
 			)
-	@ApiResponses(value = { 
-	@ApiResponse(code = 200, message = "Ok"),
-	@ApiResponse(code = 403, message = "User does not have access")
-	})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
     public ResponseEntity<List<DataPointModel>> getAllDataPoints(HttpServletRequest request, 
+    		@ApiParam(value = "Limit the number of results", required=false)
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
-
-        
         RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
         
         User user = this.checkUser(request, result);
@@ -117,14 +107,13 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	
 	
 	@ApiOperation(
-			value = "Get existing data point",
+			value = "Get data point by XID",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> getDataPoint(
-    		@ApiParam(value = "Valid Data Point XIDs", required = true, allowMultiple = false)
+    		@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
-
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
 
 		User user = this.checkUser(request, result);
@@ -154,7 +143,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	
 	
 	@ApiOperation(
-			value = "Get existing data point",
+			value = "Get data point by ID",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/by-id/{id}")
@@ -204,7 +193,9 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "Content may be CSV or JSON"
 			)
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{xid}")
-    public ResponseEntity<DataPointModel> updateDataPoint(@PathVariable String xid,
+    public ResponseEntity<DataPointModel> updateDataPoint(
+    		@PathVariable String xid,
+    		@ApiParam(value = "Updated data point model", required = true)
     		@RequestBody DataPointModel model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
@@ -293,12 +284,9 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Insert/Update multiple data points",
 			notes = "CSV content must be limited to 1 type of data source."
 			)
-	@ApiResponses(value = { 
-	@ApiResponse(code = 200, message = "Ok"),
-	@ApiResponse(code = 403, message = "User does not have access")
-	})
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json;charset=UTF-8", "text/csv;charset=UTF-8"})
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json;charset=UTF-8", "text/csv;charset=UTF-8"}, produces={"application/json"})
     public ResponseEntity<List<DataPointModel>> saveDataPoints(
+    		@ApiParam(value = "List of updated data point models", required = true)
     		@RequestBody List<DataPointModel> models, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
@@ -405,7 +393,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Delete a data point",
 			notes = "The user must have permission to the data point"
 			)
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv"})
     public ResponseEntity<DataPointModel> delete(@PathVariable String xid, HttpServletRequest request) {
 		
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>();
@@ -498,10 +486,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			response=DataPointModel.class,
 			responseContainer="Array"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=DataPointModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
     public ResponseEntity<QueryDataPageStream<DataPointVO>> query(
     		
@@ -522,14 +506,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	
 	@ApiOperation(
 			value = "Query Data Points",
-			notes = "",
+			notes = "Use RQL formatted query",
 			response=DataPointModel.class,
-			responseContainer="Array"
+			responseContainer="List"
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=DataPointModel.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(
     		   		   		
@@ -562,10 +542,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "",
 			response=Long.class
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=String.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-apply-set-permissions")
     public ResponseEntity<Long> bulkApplySetPermissions(
     		
@@ -603,10 +579,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "",
 			response=Long.class
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=String.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-apply-read-permissions")
     public ResponseEntity<Long> bulkApplyReadPermissions(
     		
@@ -644,10 +616,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "",
 			response=Long.class
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=String.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-clear-set-permissions")
     public ResponseEntity<Long> bulkClearSetPermissions(HttpServletRequest request) {
 		
@@ -680,10 +648,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "",
 			response=Long.class
 			)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Ok", response=String.class),
-			@ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
-		})
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/bulk-clear-read-permissions")
     public ResponseEntity<Long> bulkClearReadPermissions(HttpServletRequest request) {
 		

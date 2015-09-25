@@ -29,6 +29,8 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RealTimeModel;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * 
@@ -39,9 +41,7 @@ import com.wordnik.swagger.annotations.Api;
  * @author Terry Packer
  * 
  */
-@Api(value="Realtime Data", 
-	description="Operations on Real time data for active points in the point hierarchy. Note that recently enabled points will not be available until the point hierarchy is saved.",
-	position=5)
+@Api(value="Realtime Data", description="Realtime Data")
 @RestController
 @RequestMapping("/v1/realtime")
 public class RealTimeDataRestController extends MangoRestController{
@@ -55,9 +55,10 @@ public class RealTimeDataRestController extends MangoRestController{
 	 * @param limit
 	 * @return
 	 */
-    @RequestMapping(method = RequestMethod.GET)
+	@ApiOperation(value = "Query realtime values", 
+				  notes = "Note that recently enabled points will not be available until the point hierarchy is saved.")
+    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<List<RealTimeModel>> query(HttpServletRequest request) {
-    	
     	RestProcessResult<List<RealTimeModel>> result = new RestProcessResult<List<RealTimeModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	
@@ -89,8 +90,11 @@ public class RealTimeDataRestController extends MangoRestController{
 	 * @param limit
 	 * @return
 	 */
-    @RequestMapping(method = RequestMethod.GET, value = "/list")
+	@ApiOperation(value = "List realtime values", 
+			  notes = "Note that recently enabled points will not be available until the point hierarchy is saved.")
+    @RequestMapping(method = RequestMethod.GET, value = "/list", produces={"application/json"})
     public ResponseEntity<List<RealTimeModel>> getAll(HttpServletRequest request, 
+    		@ApiParam(value = "Limit the number of results", required=false)
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
     	
     	RestProcessResult<List<RealTimeModel>> result = new RestProcessResult<List<RealTimeModel>>(HttpStatus.OK);
@@ -113,8 +117,9 @@ public class RealTimeDataRestController extends MangoRestController{
     }
 	
 	
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/by-xid/{xid}")
+	@ApiOperation(value = "Get realtime value of point based on XID", 
+			  notes = "Note that recently enabled points will not be available until the point hierarchy is saved.")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-xid/{xid}", produces={"application/json"})
     public ResponseEntity<RealTimeModel> get(@PathVariable String xid, HttpServletRequest request) {
 		
 		RestProcessResult<RealTimeModel> result = new RestProcessResult<RealTimeModel>(HttpStatus.OK);

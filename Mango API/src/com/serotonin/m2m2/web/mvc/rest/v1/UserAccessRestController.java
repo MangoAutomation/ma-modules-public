@@ -33,7 +33,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * @author Terry Packer
  *
  */
-@Api(value="User Access", description="Operations on User Access")
+@Api(value="User Access", description="User Access")
 @RestController
 @RequestMapping("/v1/access")
 public class UserAccessRestController extends MangoRestController{

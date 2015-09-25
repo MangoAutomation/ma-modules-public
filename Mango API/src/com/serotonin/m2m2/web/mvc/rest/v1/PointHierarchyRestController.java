@@ -27,12 +27,13 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PointHierarchyModel;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * @author Terry Packer
  *
  */
-@Api(value="Point Hierarchy", description="Operations on Point Hierarchy")
+@Api(value="Point Hierarchy", description="Point Hierarchy")
 @Controller
 @RequestMapping("/v1/hierarchy")
 public class PointHierarchyRestController extends MangoRestController{
@@ -45,7 +46,8 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-    @RequestMapping(method = RequestMethod.GET, value = "/full")
+	@ApiOperation(value = "Get full point hierarchy", notes = "Hierarchy based on user priviledges")
+    @RequestMapping(method = RequestMethod.GET, value = "/full", produces={"application/json"})
     public ResponseEntity<PointHierarchyModel> getPointHierarchy(HttpServletRequest request) {
 
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
@@ -69,7 +71,8 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}")
+	@ApiOperation(value = "Get point hierarchy folder by name", notes = "Points returned based on user priviledges")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}", produces={"application/json"})
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable String folderName, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
@@ -105,7 +108,8 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{folderId}")
+	@ApiOperation(value = "Get point hierarchy folder by ID", notes = "Points returned based on user priviledges")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{folderId}", produces={"application/json"})
     public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable Integer folderId, HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
@@ -140,7 +144,8 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/path/{xid}")
+	@ApiOperation(value = "Get path to a point using point's XID", notes = "Points returned based on user priviledges")
+	@RequestMapping(method = RequestMethod.GET, value = "/path/{xid}", produces={"application/json"})
     public ResponseEntity<List<String>> getPath(@PathVariable String xid, HttpServletRequest request) {
 
     	RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);

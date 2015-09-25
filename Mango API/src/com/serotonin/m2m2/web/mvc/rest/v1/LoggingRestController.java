@@ -34,7 +34,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
  * @author Terry Packer
  *
  */
-@Api(value="Logging", description="Operations on Work Items")
+@Api(value="Logging", description="Logging")
 @RestController
 @RequestMapping("/v1/logging")
 public class LoggingRestController extends MangoRestController{
@@ -66,7 +66,7 @@ public class LoggingRestController extends MangoRestController{
 	
 	@ApiOperation(value = "Query logs", 
 			notes = "Returns a list of recent logs, when adding a file extension end the URL with a slash. i.e. /by-filename/ma.log/?limit(10)\n" + 
-					"Query Examples: \n" + 
+					"<br>Query Examples: \n" + 
 					"by-filename/ma.log/?level=gt=DEBUG\n" + 
 					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
 					"by-filename/ma.log/?methodName=setPointValue\n")

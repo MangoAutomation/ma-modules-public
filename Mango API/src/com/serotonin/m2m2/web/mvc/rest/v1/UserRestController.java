@@ -50,7 +50,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-@Api(value="Users", description="Operations on Users")
+@Api(value="Users", description="Users")
 @RestController
 @RequestMapping("/v1/users")
 public class UserRestController extends MangoVoRestController<User, UserModel, UserDao>{

@@ -32,7 +32,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * @author Terry Packer
  *
  */
-@Api(value="Work Items", description="Operations on Work Items")
+@Api(value="Work Items", description="Mango Work Items")
 @RestController
 @RequestMapping("/v1/work-items")
 public class WorkItemRestController extends MangoRestController{
@@ -89,21 +89,10 @@ public class WorkItemRestController extends MangoRestController{
     			List<WorkItemModel> list;
     			if(priority.equalsIgnoreCase("HIGH")){
     				list = Common.backgroundProcessing.getHighPriorityServiceItems();
-
     			}else if(priority.equalsIgnoreCase("MEDIUM")){
     				list = Common.backgroundProcessing.getMediumPriorityServiceQueueItems();
-    				for(WorkItemModel model : list){
-    					if(model.getClassname().equalsIgnoreCase(classname)){
-    						modelList.add(model);
-    					}
-    				}
     			}else if(priority.equalsIgnoreCase("LOW")){
     				list = Common.backgroundProcessing.getLowPriorityServiceQueueItems();
-    				for(WorkItemModel model : list){
-    					if(model.getClassname().equalsIgnoreCase(classname)){
-    						modelList.add(model);
-    					}
-    				}
     			}else{
     				//Return invalid input message
     				// TODO Create this type of method in the base class
@@ -117,6 +106,10 @@ public class WorkItemRestController extends MangoRestController{
     					if(model.getClassname().equalsIgnoreCase(classname)){
     						modelList.add(model);
     					}
+    				}
+    			}else{
+    				for(WorkItemModel model : list){
+   						modelList.add(model);
     				}
     			}
     			
