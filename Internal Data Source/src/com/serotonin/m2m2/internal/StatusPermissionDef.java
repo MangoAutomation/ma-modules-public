@@ -8,7 +8,7 @@ public class StatusPermissionDef extends PermissionDefinition {
 	
     @Override
     public String getPermissionKey() {
-        return "internal.status";
+        return "internal.metrics.permissions";
     }
 
     @Override
