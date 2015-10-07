@@ -1,5 +1,6 @@
 *Version 1.6.0*
 * Upgraded to work with core version 2.6.x
+* Restrict background file types to only work with BMP, GIF, JPG or PNG
 
 *Version 1.5.2*
 * Upgrading sharing to use new Mango Permission groups

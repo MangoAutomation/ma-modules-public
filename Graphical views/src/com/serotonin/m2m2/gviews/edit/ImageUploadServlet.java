@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,19 +57,30 @@ public class ImageUploadServlet extends HttpServlet {
             for (FileItem item : items) {
                 if ("backgroundImage".equals(item.getFieldName())) {
                     final DiskFileItem diskItem = (DiskFileItem) item;
+                    
+                    try{
+                    	//Test the file for Image of type: BMP, GIF, JPG or PNG
+                    	// will throw IOException if not supported or null if not an image
+                    	if(ImageIO.read(diskItem.getInputStream()) != null){
+	                        // Create the path to the upload directory.
+	                        File dir = GraphicalViewsCommon.getUploadDir();
+	
+	                        // Create the image file name.
+	                        String filename = GraphicalViewsCommon.getNextImageFilename(dir, diskItem.getName());
+	
+	                        // Save the file.
+	                        FileOutputStream fos = new FileOutputStream(new File(dir, filename));
+	                        StreamUtils.transfer(diskItem.getInputStream(), fos);
+	                        fos.close();
+	
+	                        view.setBackgroundFilename(ImageUploadServletDefinition.IMAGE_DIR + "/" + filename);
+                    	}else{
+                    		//Unsupported File Type
+                    	}
+                    }catch(Exception e){
+                    	//Unsupported Image Type
+                    }
 
-                    // Create the path to the upload directory.
-                    File dir = GraphicalViewsCommon.getUploadDir();
-
-                    // Create the image file name.
-                    String filename = GraphicalViewsCommon.getNextImageFilename(dir, diskItem.getName());
-
-                    // Save the file.
-                    FileOutputStream fos = new FileOutputStream(new File(dir, filename));
-                    StreamUtils.transfer(diskItem.getInputStream(), fos);
-                    fos.close();
-
-                    view.setBackgroundFilename(ImageUploadServletDefinition.IMAGE_DIR + "/" + filename);
                 }
             }
         }
