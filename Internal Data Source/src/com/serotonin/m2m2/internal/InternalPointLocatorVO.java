@@ -184,6 +184,6 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
 	 */
 	@Override
 	public PointLocatorModel<?> asModel() {
-		return null;
+		return new InternalPointLocatorModel(this);
 	}
 }
