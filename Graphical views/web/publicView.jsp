@@ -39,8 +39,14 @@
 </head>
 
 <body style="background-color:transparent">
-  <views:displayView view="${view}" emptyMessageKey="publicView.notFound"/>
-  
+  <%-- This table is here so that the styles are the same from the editor to the view --%>
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td>
+        <views:displayView view="${view}" emptyMessageKey="publicView.notFound"/>
+      </td>
+    </tr>
+  </table>  
   <c:if test="${!empty view}">
     <script type="text/javascript">
       mango.i18n = <sst:convert obj="${clientSideMessages}"/>;

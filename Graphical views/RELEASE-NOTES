@@ -1,3 +1,6 @@
+*Version 1.6.1*
+* Fixed style bug where during editing the font family was different than during viewing, this caused the layout to be slightly out of alignment
+
 *Version 1.6.0*
 * Upgraded to work with core version 2.6.x
 * Restrict background file types to only work with BMP, GIF, JPG or PNG
