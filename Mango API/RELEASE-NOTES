@@ -1,3 +1,6 @@
+*Version 1.1.1*
+* Changing cost of module to $0.00
+
 *Version 1.1.0*
 * Adding RQL endpoints
 * Adding CORS Filter configuration and help in system settings
