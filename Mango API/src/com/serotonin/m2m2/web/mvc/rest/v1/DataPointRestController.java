@@ -224,6 +224,12 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         	}
 	
 	        vo.setId(existingDp.getId());
+    		//Set all properties that are not in the template or the spreadsheet
+    		//TODO probably move these into one or the other
+	        DataPointDao.instance.setEventDetectors(vo); //Use ID to get detectors
+    		vo.setPointFolderId(existingDp.getPointFolderId());
+    		vo.setEventDetectors(existingDp.getEventDetectors());
+    		
 	        //Check the Template and see if we need to use it
 	        if(model.getTemplateXid() != null){
             	
@@ -321,8 +327,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	        if (existingDp == null) {
     	    		updated = false;
     	        }else{
-    	        	DataPointDao.instance.setEventDetectors(existingDp);
     	        	vo.setId(existingDp.getId());  //Must Do this as ID is NOT in the model
+            		//Set all properties that are not in the template or the spreadsheet
+            		//TODO probably move these into one or the other
+            		vo.setPointFolderId(existingDp.getPointFolderId());
+    	        	DataPointDao.instance.setEventDetectors(vo); //Use ID to get detectors
     	        }
     	        
     	        //Check permissions
@@ -356,12 +365,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 
                 		//Kludge to allow this template to not be our real template
                 		vo.setTemplateId(null);
-                		
-                		//Set all properties that are not in the template or the spreadsheet
-                		//TODO probably move these into one or the other
-                		vo.setPointFolderId(existingDp.getPointFolderId());
 
-                		vo.setEventDetectors(existingDp.getEventDetectors());
                 	}else{
                 		vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
                 	}
