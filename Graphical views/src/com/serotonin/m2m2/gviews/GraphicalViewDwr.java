@@ -58,6 +58,9 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
  * @author mlohbihler
  */
 public class GraphicalViewDwr extends ModuleDwr {
+	
+	private static final int pointEventsLimit = 10; //10 most recent events
+	
     //
     //
     // Anonymous views
@@ -206,7 +209,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
         model.put("pointComponent", pointComponent);
         if (pointComponent.isValid())
-            setEvents(pointComponent.tgetDataPoint(), user, model);
+            setEvents(pointComponent.tgetDataPoint(), user, model, pointEventsLimit);
 
         pointComponent.addDataToModel(model, pointValue);
 

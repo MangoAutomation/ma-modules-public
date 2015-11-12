@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>gviews</artifactId>
     <name>Graphical Views Module</name>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>

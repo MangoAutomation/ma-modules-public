@@ -55,7 +55,7 @@ public class GraphicalViewLongPollDefinition extends LongPollDefinition implemen
                     newStates = graphicalViewDwr.getViewPointData(viewEdit);
 
                 List<ViewComponentState> differentStates = new ArrayList<ViewComponentState>();
-
+                
                 for (ViewComponentState newState : newStates) {
                     ViewComponentState oldState = getGraphicalViewState(newState.getId(), graphicalViewStates);
                     if (oldState == null)
