@@ -42,6 +42,9 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 public class WatchListDwr extends ModuleDwr {
+	
+	private static final int pointEventsLimit = 10; //10 most recent events
+	
     @DwrPermission(user = true)
     public Map<String, Object> init() {
         DataPointDao dataPointDao = new DataPointDao();
@@ -263,7 +266,7 @@ public class WatchListDwr extends ModuleDwr {
 
         PointValueTime pointValue = prepareBasePointState(Integer.toString(pointVO.getId()), state, pointVO, point,
                 model);
-        setEvents(pointVO, user, model);
+        setEvents(pointVO, user, model, pointEventsLimit);
         if (pointValue != null && pointValue.getValue() instanceof ImageValue) {
             // Text renderers don't help here. Create a thumbnail.
             setImageText(request, state, pointVO, model, pointValue);
