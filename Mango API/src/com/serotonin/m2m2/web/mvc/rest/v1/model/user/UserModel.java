@@ -93,103 +93,115 @@ public class UserModel extends AbstractRestModel<User> {
         data.setEmail(email);
     }
 
-    @CSVColumnGetter(order=3, header="disabled")
+    @CSVColumnGetter(order=3, header="phone")
+    @JsonGetter("phone")
+    public String getPhone() {
+        return data.getPhone();
+    }
+    
+    @CSVColumnSetter(order=3, header="phone")
+    @JsonSetter("phone")
+    public void setPhone(String phone) {
+        data.setPhone(phone);
+    }
+    
+    @CSVColumnGetter(order=4, header="disabled")
     @JsonGetter("disabled")
     public Boolean getDisabled() {
         return data.isDisabled();
     }
 
-    @CSVColumnSetter(order=3, header="disabled")
+    @CSVColumnSetter(order=4, header="disabled")
     @JsonSetter("disabled")
     public void setDisabled(Boolean disabled) {
         data.setDisabled(disabled);
     }
 
-    @CSVColumnGetter(order=4, header="permissions")
+    @CSVColumnGetter(order=5, header="permissions")
     @JsonGetter("permissions")
     public String getPermissions() {
         return data.getPermissions();
     }
 
-    @CSVColumnSetter(order=4, header="permissions")
+    @CSVColumnSetter(order=5, header="permissions")
     @JsonSetter("permissions")
     public void setPermissions(String permissions) {
         data.setPermissions(permissions);
     }
 
-    @CSVColumnGetter(order=5, header="homeUrl")
+    @CSVColumnGetter(order=6, header="homeUrl")
     @JsonGetter("homeUrl")
     public String getHomeUrl() {
         return data.getHomeUrl();
     }
 
-    @CSVColumnSetter(order=5, header="homeUrl")
+    @CSVColumnSetter(order=6, header="homeUrl")
     @JsonSetter("homeUrl")
     public void setHomeUrl(String homeUrl) {
         data.setHomeUrl(homeUrl);
     }
 
-    @CSVColumnGetter(order=6, header="receiveAlarmEmails")
+    @CSVColumnGetter(order=7, header="receiveAlarmEmails")
     @JsonGetter("receiveAlarmEmails")
     public String getReceiveAlarmEmails() {
     	return AlarmLevels.CODES.getCode(this.data.getReceiveAlarmEmails());
     }
 
-    @CSVColumnSetter(order=6, header="receiveAlarmEmails")
+    @CSVColumnSetter(order=7, header="receiveAlarmEmails")
     @JsonSetter("receiveAlarmEmails")
     public void setReceiveAlarmEmails(String level) {
         data.setReceiveAlarmEmails(AlarmLevels.CODES.getId(level));
     }
 
-    @CSVColumnGetter(order=7, header="timezone")
+    @CSVColumnGetter(order=8, header="timezone")
     @JsonGetter("timezone")
     public String getTimezone() {
         return data.getTimezone();
     }
 
-    @CSVColumnSetter(order=7, header="timezone")
+    @CSVColumnSetter(order=8, header="timezone")
     @JsonSetter("timezone")
     public void setTimezone(String zone) {
         data.setTimezone(zone);
     }
 
-    @CSVColumnGetter(order=8, header="systemTimezone")
+    @CSVColumnGetter(order=9, header="systemTimezone")
     @JsonGetter("systemTimezone")
     public String getSystemTimezone() {
         return TimeZone.getDefault().getID();
     }
 
-    @CSVColumnSetter(order=8, header="systemTimezone")
+    @CSVColumnSetter(order=9, header="systemTimezone")
     @JsonSetter("systemTimezone")
     public void setSystemTimezone(String zone) {
         // no op
     }
 
-    @CSVColumnGetter(order=9, header="muted")
+    @CSVColumnGetter(order=10, header="muted")
     @JsonGetter("muted")
     public Boolean getMuted() {
         return data.isMuted();
     }
 
-    @CSVColumnSetter(order=9, header="muted")
+    @CSVColumnSetter(order=10, header="muted")
     @JsonSetter("muted")
     public void setMuted(Boolean muted) {
         data.setMuted(muted);
     }
 
-    @CSVColumnGetter(order=10, header="admin")
+    @CSVColumnGetter(order=11, header="admin")
     @JsonGetter("admin")
     public Boolean isAdmin() {
         return data.isAdmin();
     }
     
-    @CSVColumnGetter(order=11, header="receiveOwnAuditEvents")
+    @CSVColumnGetter(order=12, header="receiveOwnAuditEvents")
     @JsonGetter("receiveOwnAuditEvents")
     public Boolean getReceiveOwnAuditEvents() {
         return data.isReceiveOwnAuditEvents();
     }
 
-    @CSVColumnSetter(order=11, header="receiveOwnAuditEvents")
+    @CSVColumnSetter(order=12, header="receiveOwnAuditEvents")
     @JsonSetter("receiveOwnAuditEvents")
     public void setReceiveOwnAuditEvents(Boolean receiveOwnAuditEvents) {
         data.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
