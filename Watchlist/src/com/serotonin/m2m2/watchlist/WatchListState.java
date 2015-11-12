@@ -40,7 +40,12 @@ public class WatchListState extends BasePointState {
     }
 
     public void removeEqualValue(WatchListState that) {
-        super.removeEqualValue(that);
+    	//Don't call super removeEqualValue as we want to always keep the messages
+        if (StringUtils.equals(getChange(), that.getChange()))
+            setChange(null);
+        if (StringUtils.equals(getChart(), that.getChart()))
+            setChart(null);
+        
         if (StringUtils.equals(value, that.value))
             value = null;
         if (StringUtils.equals(time, that.time))
