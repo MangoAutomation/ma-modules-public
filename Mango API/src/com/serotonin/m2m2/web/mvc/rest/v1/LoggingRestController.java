@@ -65,7 +65,7 @@ public class LoggingRestController extends MangoRestController{
     }
 	
 	@ApiOperation(value = "Query logs", 
-			notes = "Returns a list of recent logs, when adding a file extension end the URL with a slash. i.e. /by-filename/ma.log/?limit(10)\n" + 
+			notes = "Returns a list of recent logs, ie. /by-filename/ma.log?limit(10)\n" + 
 					"<br>Query Examples: \n" + 
 					"by-filename/ma.log/?level=gt=DEBUG\n" + 
 					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
