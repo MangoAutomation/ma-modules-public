@@ -97,7 +97,8 @@ public class EventEventHandler extends MangoWebSocketHandler {
 				}
 		}
 		// Handle closing connection here
-		LOG.debug("Sesssion closed");
+		if(LOG.isDebugEnabled())
+			LOG.debug("Sesssion closed: " + status.getReason());
 	}
 
 }

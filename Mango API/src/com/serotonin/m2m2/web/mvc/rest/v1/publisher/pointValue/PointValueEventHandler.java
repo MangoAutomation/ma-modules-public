@@ -118,13 +118,20 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 				}
 		}
 		// Handle closing connection here
-		LOG.debug("Sesssion closed");
+		if(LOG.isDebugEnabled())
+			LOG.debug("Sesssion closed: " + status.getReason());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#handleTransportError(org.springframework.web.socket.WebSocketSession, java.lang.Throwable)
+	 */
 	@Override
 	public void handleTransportError(WebSocketSession session,
-			Throwable exception) {
+			Throwable e) throws Exception{
 		// Handle error during transport here
-		LOG.debug("Transport Error.", exception);
+		LOG.error("Websocket Transport Error:", e);
+		session.close(CloseStatus.SERVER_ERROR);
 	}
+	
 }

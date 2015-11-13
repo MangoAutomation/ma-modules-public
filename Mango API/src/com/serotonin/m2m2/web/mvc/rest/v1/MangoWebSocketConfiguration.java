@@ -63,6 +63,7 @@ public class MangoWebSocketConfiguration implements WebSocketConfigurer{
         WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
         policy.setInputBufferSize(8192);
         policy.setIdleTimeout(Integer.MAX_VALUE); //We don't want timeouts..
+        //policy.setAsyncWriteTimeout(2000); //Default 60s
 
         return new DefaultHandshakeHandler(
                 new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
