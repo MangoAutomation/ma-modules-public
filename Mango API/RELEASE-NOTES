@@ -2,6 +2,7 @@
 * Changing cost of module to $0.00
 * Fixing bug where event detectors and point folder were not being transferred when a data point is being updated 
 * Fixing bug where UserModel was missing the Phone Number
+* Fixing bug where Switching User didn't end up changing the user.
 
 *Version 1.1.0*
 * Adding RQL endpoints

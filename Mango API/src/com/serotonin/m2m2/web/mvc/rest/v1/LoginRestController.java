@@ -135,7 +135,7 @@ public class LoginRestController extends MangoRestController {
 	        		return result.createResponseEntity();
 	        	}
 	        	String password = newUser.getPassword();
-	        	return performLogin(username, password, request, response, false, true);
+	        	return performLogin(username, password, request, response, true, true);
         	}else{
     			result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User Not Admin"));
         	}
