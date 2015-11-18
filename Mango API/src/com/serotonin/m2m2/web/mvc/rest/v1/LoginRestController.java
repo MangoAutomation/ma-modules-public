@@ -175,6 +175,8 @@ public class LoginRestController extends MangoRestController {
 			if(StringUtils.isEmpty(model.getHomeUrl()))
 				model.setHomeUrl(uri);
 			result.addHeader(LOGIN_DEFAULT_URI_HEADER, uri);
+			//Assign new SessionId to thwart Session Hijacking attempts for pre-login sniffed requests
+        	request.changeSessionId();
 			return result.createResponseEntity(model);
 		}catch(TranslatableException e){
 			result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, e.getTranslatableMessage());
