@@ -5,7 +5,9 @@
 package com.serotonin.m2m2.reports.web;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -54,15 +56,29 @@ public class ReportsDwr extends ModuleDwr {
         User user = Common.getUser();
 
         response.addData("points", getReadablePoints());
+
         response.addData("mailingLists", new MailingListDao().getMailingLists());
-        response.addData("users", new UserDao().getUsers());
+
         if(Permissions.hasAdmin(user)) {
+        	response.addData("users", new UserDao().getUsers());   
         	response.addData("reports", reportDao.getReports());
         	response.addData("instances", getReportInstances(user));
     	}
         else {
         	response.addData("reports", reportDao.getReports(user.getId()));
         	response.addData("instances", getReportInstances(user));
+        	
+        	//Filter User's available to Email on User Permissions
+        	List<User> users = new UserDao().getUsers();
+        	List<User> availableForEmail = new ArrayList<User>();
+        	String currentUserPermissions = user.getPermissions();
+        	for(User u : users){
+        		//Check to see if there are any overlapping privs, if so then add them to the view
+        		Set<String> permissions = Permissions.findMatchingPermissions(u.getPermissions(),currentUserPermissions);
+        		if(permissions.size() > 0)
+        			availableForEmail.add(u);
+        	}
+	        response.addData("users", availableForEmail);
     	}
         response.addData("templates", getTemplateList());
 

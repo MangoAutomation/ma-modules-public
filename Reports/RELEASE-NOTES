@@ -1,3 +1,6 @@
+*Version 2.2.1*
+* Limited view of Users available for emailing a report.  User must have 1 common group to report creator.
+
 *Version 2.2.0*
 * Upgraded to work with core version 2.6.x
 * Fixed bug where Reports that referenced deleted data points would make the UI un-usable.
