@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.maint.BackgroundProcessing;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
@@ -88,7 +90,15 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
     			int currentCorePoolSize = executor.getCorePoolSize();
     			int currentMaxPoolSize = executor.getMaximumPoolSize();
-    			if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
+    			
+    			if((model.getMaximumPoolSize() != null)&&(model.getMaximumPoolSize() < BackgroundProcessing.HIGH_PRI_MAX_POOL_SIZE_MIN)){
+    				//Test to ensure we aren't setting too low
+    				model.getMessages().add(new RestValidationMessage(
+    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.HIGH_PRI_MAX_POOL_SIZE_MIN).translate(Common.getTranslations()),
+    						RestMessageLevel.ERROR,
+    						"corePoolSize"));
+    				result.addRestMessage(this.getValidationFailedError());
+    			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
     	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
@@ -169,7 +179,14 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			//Validate the settings
     			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE);
     			int currentMaxPoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_MAX_POOL_SIZE);
-    			if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
+    			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN)){
+    				//Test to ensure we aren't setting too low
+    				model.getMessages().add(new RestValidationMessage(
+    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN).translate(Common.getTranslations()),
+    						RestMessageLevel.ERROR,
+    						"corePoolSize"));
+    				result.addRestMessage(this.getValidationFailedError());
+    			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
     	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
@@ -250,7 +267,16 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			//Validate the settings
     			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE);
     			int currentMaxPoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_MAX_POOL_SIZE);
-    			if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
+    			
+    			
+    			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN)){
+    				//Test to ensure we aren't setting too low
+    				model.getMessages().add(new RestValidationMessage(
+    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN).translate(Common.getTranslations()),
+    						RestMessageLevel.ERROR,
+    						"corePoolSize"));
+    				result.addRestMessage(this.getValidationFailedError());
+    			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
     	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
@@ -306,7 +332,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 					"corePoolSize"));
 			passed = false;
 		}
-		//Compare both if the are being added
+		//Compare both if they are being added
 		if((model.getMaximumPoolSize() != null)&&(model.getCorePoolSize() != null)&&(model.getMaximumPoolSize() < model.getCorePoolSize())){
 			model.getMessages().add(new RestValidationMessage(
 					"Must be >= than core pool size",
