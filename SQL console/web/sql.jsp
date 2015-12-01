@@ -35,6 +35,8 @@
                 <input type="submit" value="<fmt:message key="sql.tableList"/>" name="tables"/>
                 <input type="submit" value="<fmt:message key="sql.query"/>" name="query"/>
                 <input type="submit" value="<fmt:message key="sql.update"/>" name="update"/>
+                <%-- for Spring Security --%>
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> 
               </td>
             </tr>
           </table>
