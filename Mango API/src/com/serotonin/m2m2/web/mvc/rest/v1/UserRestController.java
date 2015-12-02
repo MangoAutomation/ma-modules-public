@@ -180,6 +180,15 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     }
                 }
 
+                //Cannot Rename a User to an existing Username
+                if(!model.getUsername().equals(username)){
+                	User existingUser = DaoRegistry.userDao.getUser(model.getUsername());
+                	if(existingUser != null){
+                		model.addValidationMessage(new ProcessMessage("username", new TranslatableMessage("users.validate.usernameInUse")));
+                		result.addRestMessage(getValidationFailedError());
+                    	return result.createResponseEntity(model);
+                	}
+                }
     			
     			//Set the ID for the user for validation
     			model.getData().setId(u.getId());
@@ -291,8 +300,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     		        	return result.createResponseEntity(model); 
     				}
     	        }else{
-    	        	result.addRestMessage(getAlreadyExistsMessage());
-    	        	return result.createResponseEntity();
+    	        	model.addValidationMessage(new ProcessMessage("username", new TranslatableMessage("users.validate.usernameInUse")));
+            		result.addRestMessage(getValidationFailedError());
+    	        	return result.createResponseEntity(model);
     	        }
     		}else{
     			LOG.warn("Non admin user: " + user.getUsername() + " attempted to create user : " + model.getUsername());
