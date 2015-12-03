@@ -38,13 +38,11 @@ public class MangoWebSocketConfiguration implements WebSocketConfigurer{
 
 		registry.addHandler(pointValueEventHandler(), "/v1/websocket/point-value")
 		.setHandshakeHandler(handshakeHandler())
-		.addInterceptors(new MangoWebSocketHandshakeInterceptor()
-		);
+		.addInterceptors(new MangoWebSocketHandshakeInterceptor());
 		
 		registry.addHandler(mangoEventHandler(), "/v1/websocket/events")
 		.setHandshakeHandler(handshakeHandler())
-		.addInterceptors(new MangoWebSocketHandshakeInterceptor()
-		);		
+		.addInterceptors(new MangoWebSocketHandshakeInterceptor());		
 	}
 	
 	@Bean
@@ -64,8 +62,10 @@ public class MangoWebSocketConfiguration implements WebSocketConfigurer{
         policy.setInputBufferSize(8192);
         policy.setIdleTimeout(Integer.MAX_VALUE); //We don't want timeouts..
         //policy.setAsyncWriteTimeout(2000); //Default 60s
-
+        WebSocketServerFactory factory = new WebSocketServerFactory(policy);
+        
         return new DefaultHandshakeHandler(
-                new JettyRequestUpgradeStrategy(new WebSocketServerFactory(policy)));
+                new JettyRequestUpgradeStrategy(factory));
     }
+	
 }
