@@ -7,7 +7,6 @@ package com.serotonin.m2m2.virtual.vo.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
@@ -93,9 +92,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			return 0;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			return 0;
 		}
 	}
 
@@ -117,9 +115,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			break;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			break;
 		}
 	}
 
@@ -170,9 +167,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			return 0;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			return 0;
 		}
 	}
 
@@ -196,9 +192,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			break;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			break;
 		}
 	}
 
@@ -219,9 +214,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			return 0;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			return 0;
 		}
 	}
 
@@ -245,9 +239,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			break;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			break;
 		}
 	}
 	
@@ -279,9 +272,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			return false;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			return false;
 		}
 	}
 
@@ -303,9 +295,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_BOOLEAN:
 		case Types.RANDOM_MULTISTATE:
 		case Types.SINUSOIDAL:
-			break;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			break;
 		}
 	}
 	
@@ -325,10 +316,10 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_ANALOG:
 		case Types.RANDOM_BOOLEAN:
 		case Types.SINUSOIDAL:
-			return new int[0];
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
-		}	}
+			return new int[0];
+		}	
+	}
 
 	@JsonIgnore
 	@CSVColumnSetter(order=26, header="values",  editor=IntArrayPropertyEditor.class)
@@ -348,9 +339,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.RANDOM_ANALOG:
 		case Types.RANDOM_BOOLEAN:
 		case Types.SINUSOIDAL:
-			break;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			break;
 		}
 	}
 	
@@ -427,7 +417,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		case Types.SINUSOIDAL:
 			return this.data.getSinusoidalChange().getStartValue();
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
+			return "0";
 		}
 		
 	}
@@ -467,8 +457,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 			this.data.getSinusoidalChange().setStartValue(startValue);
 			break;
 		default:
-			throw new ShouldNeverHappenException("Unsupported change type:" + this.data.getChangeTypeId());
-
+			break;
 		}
 	}
 
