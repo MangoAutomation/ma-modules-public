@@ -313,6 +313,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     				model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "dataSourceXid");
     				continue;
     			}
+            	//If we don't have a reference data source we need to set one
+            	if(ds == null){
+            		ds = myDataSource;
+            	}
+    			
     			//First check to see that the data source types match
     			if(!ds.getDefinition().getDataSourceTypeName().equals(myDataSource.getDefinition().getDataSourceTypeName())){
     				model.addValidationMessage("validate.incompatibleDataSourceType", RestMessageLevel.ERROR, "dataSourceXid");
