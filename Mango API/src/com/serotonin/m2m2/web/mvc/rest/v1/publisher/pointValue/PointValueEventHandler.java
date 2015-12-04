@@ -36,14 +36,14 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 
 	private final Map<Integer, PointValueWebSocketPublisher> map = new HashMap<Integer, PointValueWebSocketPublisher>();
 
-
-	
 	public PointValueEventHandler(){
 		super(MangoRestSpringConfiguration.objectMapper);
 	}
 	
 	@Override
-	public void afterConnectionEstablished(WebSocketSession session) { }
+	public void afterConnectionEstablished(WebSocketSession session) throws Exception{
+		super.afterConnectionEstablished(session);
+	}
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {

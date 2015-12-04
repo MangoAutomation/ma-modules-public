@@ -36,9 +36,6 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	public EventEventHandler(){
 		super();
 	}
-	
-	@Override
-	public void afterConnectionEstablished(WebSocketSession session) { }
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
