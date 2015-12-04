@@ -42,7 +42,7 @@ public class TranslationsController extends MangoRestController {
         return namespacedTranslations(null, language, request);
     }
     
-	@ApiOperation(value = "Get translations based on a namespance", notes = "Returns sub-namespaces too")
+	@ApiOperation(value = "Get translations based on a namespance", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too")
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/{namespace}")
     public ResponseEntity<Map<String, ?>> namespacedTranslations(
             @ApiParam(value = "Message Namespace, simmilar to java package structure", allowMultiple = false)
