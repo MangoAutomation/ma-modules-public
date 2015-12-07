@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 
 import com.serotonin.m2m2.Common;
@@ -53,12 +54,13 @@ public class ReportChartHandler implements UrlHandler {
 
         @Override
         public String getContentType() {
-            return null;
+        	return MediaType.TEXT_HTML_VALUE;
         }
 
         @Override
         public void render(@SuppressWarnings("rawtypes") Map model, HttpServletRequest request,
                 HttpServletResponse response) throws Exception {
+        	response.setContentType(getContentType());
             response.getWriter().write(content);
         }
     }
