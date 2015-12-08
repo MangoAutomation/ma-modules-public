@@ -1,5 +1,6 @@
 *Version 2.2.1*
 * Limited view of Users available for emailing a report.  User must have 1 common group to report creator.
+* Upgraded to work with core version 2.7.x
 
 *Version 2.2.0*
 * Upgraded to work with core version 2.6.x

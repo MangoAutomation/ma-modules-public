@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>pointdataimport</artifactId>
     <name>Point Data Import</name>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>

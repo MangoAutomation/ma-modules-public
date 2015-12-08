@@ -1,5 +1,6 @@
 *Version 1.6.2*
 * Fixed bug where large number of events would slow page loading, now latest 10 un-acknowledged events for a point are shown
+* Upgraded to work with core version 2.7.x
 
 *Version 1.6.1*
 * Fixed style bug where during editing the font family was different than during viewing, this caused the layout to be slightly out of alignment

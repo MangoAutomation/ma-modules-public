@@ -1,6 +1,7 @@
 *Version 1.7.1*
 * Bugfix for disappearing events
 * Trim events to only show 10 most recent for each point
+* Upgraded to work with core version 2.7.x
 
 *Version 1.7.0*
 * Upgraded to work with core version 2.6.x
