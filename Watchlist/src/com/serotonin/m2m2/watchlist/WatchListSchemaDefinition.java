@@ -24,7 +24,6 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
     public void addConversionTableNames(List<String> tableNames) {
         tableNames.add("watchLists");
         tableNames.add("watchListPoints");
-        tableNames.add("watchListUsers");
     }
 
     @Override
