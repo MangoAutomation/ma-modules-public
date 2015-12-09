@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +27,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * @author Terry Packer
@@ -45,7 +47,9 @@ public class RuntimeManagerRestController extends MangoRestController{
 			response=Void.class
 			)
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, value = "/force-refresh/{xid}")
-	public ResponseEntity<Void> forceRefreshDataPoint(String xid, HttpServletRequest request){
+	public ResponseEntity<Void> forceRefreshDataPoint(
+			@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
+			@PathVariable String xid, HttpServletRequest request){
 		RestProcessResult<Void> result = new RestProcessResult<Void>(HttpStatus.OK);
 
 		try{
