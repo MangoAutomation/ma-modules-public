@@ -76,7 +76,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 	}
 	
 	//Hack to allow all values in a CSV
-	@JsonIgnore
 	@CSVColumnGetter(order=19, header="maxChange")
 	public double getMaxChange() {
 		switch(this.data.getChangeTypeId()){
@@ -97,7 +96,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=19, header="maxChange")
 	public void setMaxChange(double maxChange) {
 		switch(this.data.getChangeTypeId()){
@@ -120,19 +118,16 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=20, header="volatility")
 	public double getVolatility() {
 	    return this.data.getAnalogAttractorChange().getVolatility();
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=20, header="volatility")
 	public void setVolatility(double volatility) {
 	    this.data.getAnalogAttractorChange().setVolatility(volatility);
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=21, header="attractionPointXid")
 	public String getAttractionPointXid() {
 		DataPointVO dpvo = DataPointDao.instance.get(this.data.getAnalogAttractorChange().getAttractionPointId());
@@ -141,7 +136,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		return "";
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=21, header="attractionPointXid")
 	public void setAttractionPointXid(String attractionPointXid) {
 		DataPointVO dpvo = DataPointDao.instance.getByXid(attractionPointXid);
@@ -149,8 +143,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 			this.data.getAnalogAttractorChange().setAttractionPointId(dpvo.getId());
 	}
 	
-	
-	@JsonIgnore
 	@CSVColumnGetter(order=22, header="min")
 	public double getMin() {
 		switch(this.data.getChangeTypeId()){
@@ -172,7 +164,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=222, header="min")
 	public void setMin(double min) {
 		switch(this.data.getChangeTypeId()){
@@ -197,7 +188,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=23, header="max")
 	public double getMax() {
 		switch(this.data.getChangeTypeId()){
@@ -219,7 +209,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=23, header="max")
 	public void setMax(double max) {
 		switch(this.data.getChangeTypeId()){
@@ -244,19 +233,16 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 	
-	@JsonIgnore
 	@CSVColumnGetter(order=24, header="change")
 	public double getChange() {
 	    return this.data.getIncrementAnalogChange().getChange();
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=24, header="change")
 	public void setChange(double change) {
 	    this.data.getIncrementAnalogChange().setChange(change);
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=25, header="roll")
 	public boolean isRoll() {
 		switch(this.data.getChangeTypeId()){
@@ -277,7 +263,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=25, header="roll")
 	public void setRoll(boolean roll) {
 		switch(this.data.getChangeTypeId()){
@@ -299,8 +284,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 			break;
 		}
 	}
-	
-	@JsonIgnore
+
 	@CSVColumnGetter(order=26, header="values", editor=IntArrayPropertyEditor.class)
 	public int[] getValues() {
 		switch(this.data.getChangeTypeId()){
@@ -321,7 +305,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}	
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=26, header="values",  editor=IntArrayPropertyEditor.class)
 	public void setValues(int[] values) {
 		switch(this.data.getChangeTypeId()){
@@ -344,37 +327,31 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		}
 	}
 	
-	@JsonIgnore
 	@CSVColumnGetter(order=27, header="amplitude")
 	public double getAmplitude() {
 	    return this.data.getSinusoidalChange().getAmplitude();
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=27, header="amplitude")
 	public void setAmplitude(double amplitude) {
 	    this.data.getSinusoidalChange().setAmplitude(amplitude);
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=28, header="offset")
 	public double getOffset() {
 	    return this.data.getSinusoidalChange().getOffset();
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=28, header="offset")
 	public void setOffset(double offset) {
 	    this.data.getSinusoidalChange().setOffset(offset);
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=29, header="period")
 	public double getPeriod() {
 	    return this.data.getSinusoidalChange().getPeriod();
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=29, header="period")
 	public void setPeriod(double period) {
 	    this.data.getSinusoidalChange().setPeriod(period);
@@ -386,13 +363,11 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 	    return this.data.getSinusoidalChange().getPhaseShift();
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=30, header="phaseShift")
 	public void setPhaseShift(double phaseShift) {
 	    this.data.getSinusoidalChange().setPhaseShift(phaseShift);
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=31, header="startValue")
 	public String getStartValue() {
 		switch(this.data.getChangeTypeId()){
@@ -422,7 +397,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 		
 	}
 
-	@JsonIgnore
 	@CSVColumnSetter(order=31, header="startValue")
 	public void setStartValue(String startValue) {
 		switch(this.data.getChangeTypeId()){
