@@ -228,7 +228,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		//TODO probably move these into one or the other
 	        DataPointDao.instance.setEventDetectors(vo); //Use ID to get detectors
     		vo.setPointFolderId(existingDp.getPointFolderId());
-    		vo.setEventDetectors(existingDp.getEventDetectors());
     		
 	        //Check the Template and see if we need to use it
 	        if(model.getTemplateXid() != null){
