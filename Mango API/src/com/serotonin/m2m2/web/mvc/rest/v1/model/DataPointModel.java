@@ -4,9 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -16,7 +13,6 @@ import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
-import com.serotonin.m2m2.vo.event.PointEventDetectorVO;
 import com.serotonin.m2m2.vo.template.BaseTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumn;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
@@ -328,17 +324,18 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		return this.data.getDataSourceName();
 	}
 	
-	@JsonGetter("eventDetectors")
-	public List<PointEventDetectorVO> getEventDetectors(){
-		if(this.data.getEventDetectors() == null)
-			return new ArrayList<PointEventDetectorVO>();
-		else
-			return this.data.getEventDetectors();
-	}
-	@JsonSetter("eventDetectors")
-	public void setEventDetectors(List<PointEventDetectorVO> eventDetectors){
-		this.data.setEventDetectors(eventDetectors);
-	}
+	//Removing until we have models (And decide if we are going to use a separate end point to set these)
+//	@JsonGetter("eventDetectors")
+//	public List<PointEventDetectorVO> getEventDetectors(){
+//		if(this.data.getEventDetectors() == null)
+//			return new ArrayList<PointEventDetectorVO>();
+//		else
+//			return this.data.getEventDetectors();
+//	}
+//	@JsonSetter("eventDetectors")
+//	public void setEventDetectors(List<PointEventDetectorVO> eventDetectors){
+//		this.data.setEventDetectors(eventDetectors);
+//	}
 	
 	/**
 	 * Ensure all Complex properties are set in the Data Point prior to returning
