@@ -42,7 +42,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         int MONITOR_DB_IDLE_CONNECTIONS = 9;
         int BATCH_WRITE_SPEED_MONITOR = 10;
         int JAVA_FREE_MEMORY = 11;
-        int JAVA_HEAP_MEMORY = 12;
+        int JAVA_USED_MEMORY = 12;
         int JAVA_MAX_MEMORY = 13;
         int JAVA_PROCESSORS = 14;
     }
@@ -85,8 +85,8 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
                 "internal.monitor.BATCH_WRITE_SPEED_MONITOR");
         ATTRIBUTE_CODES.addElement(Attributes.JAVA_FREE_MEMORY, "JAVA_FREE_MEMORY",
                 "java.monitor.JAVA_FREE_MEMORY");
-        ATTRIBUTE_CODES.addElement(Attributes.JAVA_HEAP_MEMORY, "JAVA_HEAP_MEMORY",
-                "java.monitor.JAVA_HEAP_MEMORY");
+        ATTRIBUTE_CODES.addElement(Attributes.JAVA_USED_MEMORY, "JAVA_USED_MEMORY",
+                "java.monitor.JAVA_USED_MEMORY");
         ATTRIBUTE_CODES.addElement(Attributes.JAVA_MAX_MEMORY, "JAVA_MAX_MEMORY",
                 "java.monitor.JAVA_MAX_MEMORY");
         ATTRIBUTE_CODES.addElement(Attributes.JAVA_PROCESSORS, "JAVA_PROCESSORS",

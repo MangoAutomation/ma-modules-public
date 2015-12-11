@@ -7,9 +7,15 @@
 <doxManifest>
   <item id="internalDS" key="dox.internalDS" filename="internalDS.htm">
     <relation id="internalPP"/>
+    <relation id="internalMetrics"/>
   </item>
   
   <item id="internalPP" key="dox.internalPP" filename="internalPP.htm">
     <relation id="internalDS"/>
+    <relation id="internalMetrics"/>
+  </item>
+  <item id="internalMetrics" key="dox.internalMetrics" filename="internalMetrics.htm">
+    <relation id="internalDS"/>
+  	<relation id="internalPP"/>
   </item>
 </doxManifest>

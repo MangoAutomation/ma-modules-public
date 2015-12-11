@@ -61,6 +61,7 @@
     <fmt:message key="internal.status"/> |
     <a href="/internal/threads.shtm"><fmt:message key="internal.threads"/></a> |
     <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a>
+    <tag:help id="internalMetrics"/>
   </div>
   <br/>
   

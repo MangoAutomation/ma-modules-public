@@ -1,0 +1,101 @@
+<!--
+    Copyright (C) 2015 Infinite Automation Systems Inc. All rights reserved.
+    @author Terry Packer
+-->
+<h1>Overview</h1>
+
+<h3>Point values to be written</h3>
+<p>
+ This value represents the number of point values queued up waiting to be dumped to the database by the Batch Write Behind sub-system.
+</p>
+
+<h3>Point value write threads</h3>
+<p>
+ This value represents the number of threads concurrently writing point values from the queue.
+</p>
+
+<h3>High priority work items currently running</h3>
+<p>
+This value represents the number of <b>currently executing</b> high priority tasks.
+The following is a list of some high priority work items that Mango has:
+</p>
+<ul>
+  <li>Database batch write behind - writing point values from the queue</li>
+  <li>Process Work Item - Event handlers that run a process use this</li>
+  <li>Set Point Work Item - Setting a point value from outside of the data source runtime, for example a Point Link uses this.</li>
+  <li>HttpImageRetriever - This data source uses a work item to retrieve the images.</li>
+  <li>BACnet Device Poller - BACnet data source device polling</li>
+</ul>
+
+<h3>Medium priority work items</h3>
+<p>
+This value represents the number of queued Medium priority work items that will be executed when a free thread from the medium priority pool is available.  
+The queue for this pool has no bounds and can grow indefinitely.  The following is a list of some medium priority work items that Mango has:
+</p>
+<ul>
+<li>Event Notify Work Item - When a data point is saved or updated anything in Mango that needs to know is notified in a separate thread.</li>
+<li>Backups - Backups happen from this pool.</li>
+</ul>
+
+<h4>Low priority work items</h4>
+<p>Low priority work items run in a separate pool that is not monitored for size. The following is a list of low priority tasks:</p>
+<ul>
+<li>Reports</li>
+<li>Excel Reports</li>
+<li>Email</li>
+<li>Event Notify Work Item - Anything listening for events/alarms</li>
+<li>
+</ul>
+
+<h3>Currently scheduled high priority work items</h3>
+<p>
+This value represents the number of High priority tasks that are scheduled to run in the future.
+</p>
+
+<h3>Maximum thread stack height</h3>
+<p>
+This value represents the largest thread stack of any thread within Mango.
+</p>
+
+<h3>Active thread count</h3>
+<p>
+This value represents the total number of active threads.
+</p>
+
+<h3>Active database connections</h3>
+<p>
+This value represents the active connections in the pool and is only useful if using JDBC Pooling.
+</p>
+
+
+<h3>Idle database connections</h3>
+<p>
+This value represents the idle connections in the pool and is only useful if using JDBC Pooling.
+</p>
+
+
+<h3>Writes per second during database batches</h3>
+<p>
+This value represents the number of point values going into the database per second if there are values queued.
+</p>
+
+<h3>JVM free memory</h3>
+<p>
+This value represents the amount of memory left before the heap will attempt to grow.
+</p>
+
+<h3>JVM used memory</h3>
+<p>
+This value represents the current amount of memory being used by the JVM.
+</p>
+
+<h3>JVM max memory</h3>
+<p>
+This value represents the maximum amount of memory that the heap can potentially acquire.
+</p>
+
+
+<h3>JVM available processors</h3>
+<p>
+This value represents the number of CPU cores that the JVM can access.
+</p>

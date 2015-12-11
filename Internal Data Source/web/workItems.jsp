@@ -60,7 +60,6 @@
     <fmt:message key="internal.workItems"/>
   </div>
   <br/>
-
   <div>
     <span class="copyTitle"><fmt:message key="internal.workItems.high"/></span>
     <table>
