@@ -235,7 +235,9 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
             	if(template != null){
             		template.updateDataPointVO(vo);
+            		template.updateDataPointVO(model.getData());
             	}else{
+            		model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "templateXid");
             		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
             	}
             }else{
@@ -355,6 +357,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
                 	if(template != null){
                 		template.updateDataPointVO(vo);
+                		template.updateDataPointVO(model.getData());
                 	}else{
                 		model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "templateXid");
                 		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
