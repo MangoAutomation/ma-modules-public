@@ -1,6 +1,7 @@
 *Version 1.1.2*
 * Better validation for saving data points via CSV
 * Fixing bug in toggle user mute endpoint
+* Adding force-refresh endpoint to new /runtime-manager/ endpoint
 
 *Version 1.1.1*
 * Changing cost of module to $0.00
