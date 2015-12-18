@@ -203,7 +203,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 
 		User user = this.checkUser(request, result);
         if(result.isOk()){
-
+        	boolean contentTypeCsv = false;
+        	if(request.getContentType().toLowerCase().contains("text/csv"))
+        		contentTypeCsv = true;
+        	
 			DataPointVO vo = model.getData();
 	        DataPointVO existingDp = DataPointDao.instance.getByXid(xid);
 	        if (existingDp == null) {
@@ -241,7 +244,14 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
             	}
             }else{
+        		if(contentTypeCsv){
+            		model.addValidationMessage("validate.required", RestMessageLevel.ERROR, "templateXid");
+            		result.addRestMessage(this.getValidationFailedError());
+            		return result.createResponseEntity(model);
+        		}
                 vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
+                if(vo.getChartColour() == null)
+                	vo.setChartColour(""); //Can happen when CSV comes in without template       
             }
 	        
 	        if(!model.validate()){
@@ -300,6 +310,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
         if(result.isOk()){
+        	boolean contentTypeCsv = false;
+        	if(request.getContentType().toLowerCase().contains("text/csv"))
+        		contentTypeCsv = true;
+        	
         	DataPointModel first;
         	DataSourceVO<?> ds = null;
         	if(models.size() > 0){
@@ -374,7 +388,14 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 		vo.setTemplateId(null);
 
                 	}else{
+                		if(contentTypeCsv){
+                    		model.addValidationMessage("validate.required", RestMessageLevel.ERROR, "templateXid");
+                    		result.addRestMessage(this.getValidationFailedError());
+                    		continue;
+                		}
                 		vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
+                		if(vo.getChartColour() == null)
+                        	vo.setChartColour(""); //Can happen when CSV comes in without template
                 	}
                     
                 }
