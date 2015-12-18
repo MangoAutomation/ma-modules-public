@@ -554,11 +554,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			ASTNode node = this.parseRQLtoAST(request);
     			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
     			return result.createResponseEntity(getPageStream(node, callback));
-    			
-    			
-	    		//QueryModel query = this.parseRQL(request);
-	    		//DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-	    		//return result.createResponseEntity(getPageStream(query, callback));
     		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
