@@ -392,11 +392,11 @@
 		          watchlistStore.remove(deleteId);
 		          
 		          //Set selected item to first in list
-		          watchlistFilter.set('item', watchlistFilter.store.data[0]);
-	        	  
+		          if(typeof watchlistFilter.store.data[0] !== 'undefined')
+		              watchlistFilter.set('item', watchlistFilter.store.data[0]);
+		          else
+		        	  watchListChanged();  
 	        	  maybeDisplayDeleteImg();
-		          
-		          watchListChanged();
         	  }else{
         		  alert('<fmt:message key="watchlist.unableToDelete"/>');
         	  }

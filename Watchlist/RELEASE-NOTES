@@ -1,3 +1,6 @@
+*Version 1.7.3*
+* Bugfix for SQL error when deleting a watchlist (sometimes)
+
 *Version 1.7.2*
 * Bugfix where schema definition still had legacy watchListUsers database table in it
 
