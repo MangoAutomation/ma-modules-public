@@ -246,7 +246,11 @@
               </td>
             </tr>
           </table>
-          
+          <table>
+            <tr>
+              <td colspan="2" id="userMessage" class="formError" style="display:none;"></td>
+            </tr>
+          </table>
           <table>
             <tr>
               <td class="formLabelRequired"><fmt:message key="common.xid"/></td>
@@ -300,12 +304,6 @@
             <tr>
               <td class="formLabel"><fmt:message key="common.disabled"/></td>
               <td class="formField"><input type="checkbox" id="disabled"/></td>
-            </tr>
-          </table>
-          
-          <table>
-            <tr>
-              <td colspan="2" id="userMessage" class="formError" style="display:none;"></td>
             </tr>
           </table>
         </div>
