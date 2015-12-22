@@ -189,7 +189,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     			//Parse the RQL Query
 	    		ASTNode query = this.parseRQLtoAST(request);
 	    		if(!user.isAdmin()){
-	    			query.createChildNode("eq", "ue.userId", user.getId());
+	    			query.createChildNode("eq", "userId", user.getId());
 	    		}
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){

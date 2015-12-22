@@ -526,7 +526,7 @@ public class PointValueRestController extends MangoRestController{
 	    	}
 	        
 	    	try{
-	    		if(Permissions.hasDataPointReadPermission(user, existingDp)){
+	    		if(Permissions.hasDataPointSetPermission(user, existingDp)){
 	    			
 	    			//Set the time to now if it is not present
 	    			if(model.getTimestamp() == 0){

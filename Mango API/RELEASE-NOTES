@@ -1,3 +1,7 @@
+*Version 1.1.3*
+* Bugfix for setting point values now requires Data Point Set permissions
+* Bugfix in EventsRestController where Events Query was broken for non-admin users
+
 *Version 1.1.2*
 * Better validation for saving data points via CSV
 * Fixing bug in toggle user mute endpoint
