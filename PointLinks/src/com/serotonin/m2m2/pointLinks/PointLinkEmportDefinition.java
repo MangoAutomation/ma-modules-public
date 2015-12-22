@@ -37,7 +37,7 @@ public class PointLinkEmportDefinition extends EmportDefinition {
 
         String xid = pointLink.getString("xid");
         if (StringUtils.isBlank(xid))
-            pointLinkDao.generateUniqueXid();
+            xid = pointLinkDao.generateUniqueXid();
 
         PointLinkVO vo = pointLinkDao.getPointLink(xid);
         if (vo == null) {

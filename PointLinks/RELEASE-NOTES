@@ -1,5 +1,6 @@
 *Version 1.5.2*
 * Fixing point link saved message to be at top of edit area
+* Fixing bug where importing a point link without XID would fail
 
 *Version 1.5.1*
 * Upgraded to work with core version 2.7.x
