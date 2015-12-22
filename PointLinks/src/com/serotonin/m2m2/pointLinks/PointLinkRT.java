@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -27,6 +28,7 @@ import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptExecutor;
 import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Matthew Lohbihler
@@ -211,8 +213,15 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 
     @Override
     public TranslatableMessage getSetPointSourceMessage() {
-        if (vo.isWriteAnnotation())
-            return new TranslatableMessage("annotation.pointLink");
+        if (vo.isWriteAnnotation()){
+        	DataPointVO vo = DataPointDao.instance.get(this.vo.getSourcePointId());
+        	String xid;
+        	if(vo != null)
+        		xid = vo.getXid();
+        	else
+        		xid = "unknown";
+            return new TranslatableMessage("annotation.pointLink", xid);
+        }
         return null;
     }
 
