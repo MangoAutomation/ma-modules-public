@@ -18,7 +18,7 @@ public class DefaultJFreeChartColourGenerator implements ChartColourGenerator{
 
 	private DefaultDrawingSupplier supplier;
 	
-	public DefaultJFreeChartColourGenerator(int distinctColours, float minComponent, float maxComponent){
+	public DefaultJFreeChartColourGenerator(){
 		this.supplier = new DefaultDrawingSupplier();
 	}
 	

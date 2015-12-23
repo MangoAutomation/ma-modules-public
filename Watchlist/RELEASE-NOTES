@@ -1,3 +1,6 @@
+*Version 1.7.4*
+* Fix to not use data point chart colour property and instead let JFreeChart generate the colors, unless only 1 point is charted then chart colour property is used
+
 *Version 1.7.3*
 * Bugfix for SQL error when deleting a watchlist (sometimes)
 

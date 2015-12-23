@@ -318,10 +318,14 @@ public class WatchListDwr extends ModuleDwr {
         List<DataPointVO> watchList = getWatchList().getPointList();
         
         //Define a list of colours to use for the chart, each must be unique
-        //potentially use the JFree Chart method of determining 
-        ChartColourGenerator colors = new VisuallyDistinctChartColourGenerator(watchList.size(), .1f, .9f);
-        //ChartColourGenerator colors = new DefaultJfreeChartColourGenerator();
+        //currently using the JFree Chart method of determining these
+        //ChartColourGenerator colors = new VisuallyDistinctChartColourGenerator(watchList.size(), .1f, .9f);
+        ChartColourGenerator colors = new DefaultJFreeChartColourGenerator();
 
+        //Allow charts with 1 point to use the default color
+        boolean usePointChartColour = false;
+        if(watchList.size() == 1)
+        	usePointChartColour = true;
         
         for (DataPointVO dp : watchList) {
             int dtid = dp.getPointLocator().getDataTypeId();
@@ -330,9 +334,11 @@ public class WatchListDwr extends ModuleDwr {
                 pointsFound = true;
                 htmlData.append('_');
                 htmlData.append(dp.getId());
-                //Assign Colour
-                htmlData.append("|");
-                htmlData.append(colors.getNextHexColour());
+                //Assign Colour or let chart servlet use point settings
+                if(!usePointChartColour){
+                	htmlData.append("|");
+                	htmlData.append(colors.getNextHexColour());
+                }
             }
         }
 
