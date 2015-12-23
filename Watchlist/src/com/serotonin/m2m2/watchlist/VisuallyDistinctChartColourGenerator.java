@@ -9,15 +9,16 @@ import java.awt.Color;
 /**
  * 
  * 
+ * 
  * @author Terry Packer
  *
  */
-public class WatchlistChartColourGenerator {
+public class VisuallyDistinctChartColourGenerator implements ChartColourGenerator{
 
 	private Color[] colors;
 	private int currentColor;
 	
-	public WatchlistChartColourGenerator(int distinctColours, float minComponent, float maxComponent){
+	public VisuallyDistinctChartColourGenerator(int distinctColours, float minComponent, float maxComponent){
 		this.colors = ColorUtils.generateVisuallyDistinctColors(distinctColours, minComponent, maxComponent);
 		this.currentColor = 0;
 	}
