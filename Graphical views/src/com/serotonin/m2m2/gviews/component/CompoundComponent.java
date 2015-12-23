@@ -175,11 +175,32 @@ abstract public class CompoundComponent extends ViewComponent {
         htmlData.append('_');
         htmlData.append(duration);
 
+        //Define a list of colours to use for the chart, each must be unique
+        //currently using the JFree Chart method of determining these
+        ChartColourGenerator colors = new DefaultJFreeChartColourGenerator();
+
+        //Allow charts with 1 point to use the default color
+        int activeComponentCount = 0;
+        for (String childId : childIds) {
+            PointComponent comp = (PointComponent) getChild(childId).getViewComponent();
+            if (comp.isValid() && comp.isVisible()) {
+            	activeComponentCount++;
+            }
+        }
+        boolean usePointChartColour = false;
+        if(activeComponentCount == 1)
+        	usePointChartColour = true;
+        
         for (String childId : childIds) {
             PointComponent comp = (PointComponent) getChild(childId).getViewComponent();
             if (comp.isValid() && comp.isVisible()) {
                 htmlData.append('_');
                 htmlData.append(comp.tgetDataPoint().getId());
+                //Assign Colour or let chart servlet use point settings
+                if(!usePointChartColour){
+                	htmlData.append("|");
+                	htmlData.append(colors.getNextHexColour());
+                }
             }
         }
 

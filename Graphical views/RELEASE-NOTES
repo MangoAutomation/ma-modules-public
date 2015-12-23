@@ -1,3 +1,6 @@
+*Version 1.6.3*
+* Fix to not use data point chart colour property and instead let JFreeChart generate the colors, unless only 1 point is charted then chart colour property is used
+
 *Version 1.6.2*
 * Fixed bug where large number of events would slow page loading, now latest 10 un-acknowledged events for a point are shown
 * Upgraded to work with core version 2.7.x
