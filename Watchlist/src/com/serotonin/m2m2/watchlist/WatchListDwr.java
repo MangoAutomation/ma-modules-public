@@ -316,6 +316,12 @@ public class WatchListDwr extends ModuleDwr {
         boolean pointsFound = false;
         // Add the list of points that are numeric.
         List<DataPointVO> watchList = getWatchList().getPointList();
+        
+        //Define a list of colours to use for the chart, each must be unique
+        //potentially use the JFree Chart method of determining this.
+        WatchlistChartColourGenerator colors = new WatchlistChartColourGenerator(watchList.size());
+
+        
         for (DataPointVO dp : watchList) {
             int dtid = dp.getPointLocator().getDataTypeId();
             if ((dtid == DataTypes.NUMERIC || dtid == DataTypes.BINARY || dtid == DataTypes.MULTISTATE)
@@ -323,6 +329,9 @@ public class WatchListDwr extends ModuleDwr {
                 pointsFound = true;
                 htmlData.append('_');
                 htmlData.append(dp.getId());
+                //Assign Colour
+                htmlData.append("|");
+                htmlData.append(colors.getNextHexColour());
             }
         }
 
@@ -339,7 +348,7 @@ public class WatchListDwr extends ModuleDwr {
         return htmlData.toString();
     }
 
-    private Map<String, Object> getWatchListData(User user, WatchList watchList) {
+	private Map<String, Object> getWatchListData(User user, WatchList watchList) {
         Map<String, Object> data = new HashMap<>();
         if (watchList == null)
             return data;
