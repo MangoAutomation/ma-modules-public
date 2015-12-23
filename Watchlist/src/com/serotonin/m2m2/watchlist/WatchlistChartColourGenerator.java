@@ -17,8 +17,8 @@ public class WatchlistChartColourGenerator {
 	private Color[] colors;
 	private int currentColor;
 	
-	public WatchlistChartColourGenerator(int distinctColours){
-		this.colors = ColorUtils.generateVisuallyDistinctColors(distinctColours, .8f, .3f);
+	public WatchlistChartColourGenerator(int distinctColours, float minComponent, float maxComponent){
+		this.colors = ColorUtils.generateVisuallyDistinctColors(distinctColours, minComponent, maxComponent);
 		this.currentColor = 0;
 	}
 	

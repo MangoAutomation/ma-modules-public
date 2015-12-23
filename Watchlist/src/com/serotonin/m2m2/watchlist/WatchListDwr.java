@@ -318,8 +318,8 @@ public class WatchListDwr extends ModuleDwr {
         List<DataPointVO> watchList = getWatchList().getPointList();
         
         //Define a list of colours to use for the chart, each must be unique
-        //potentially use the JFree Chart method of determining this.
-        WatchlistChartColourGenerator colors = new WatchlistChartColourGenerator(watchList.size());
+        //potentially use the JFree Chart method of determining 
+        WatchlistChartColourGenerator colors = new WatchlistChartColourGenerator(watchList.size(), .1f, .9f);
 
         
         for (DataPointVO dp : watchList) {
