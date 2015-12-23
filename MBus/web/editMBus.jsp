@@ -19,7 +19,6 @@
   function initImpl() {
       searchButtons(false);
       updateModemOrDirect();
-      hide("editImg"+ <c:out value="<%= Common.NEW_ID %>"/>);
   }
 
   /**

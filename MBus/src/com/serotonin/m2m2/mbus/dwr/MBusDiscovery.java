@@ -157,7 +157,7 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
 					parity,
 					responseTimeoutOffset);
 
-            master.setConnection(conn);
+            master.setConnection((Connection)conn);
             master.open();
         }
         catch (Exception ex) {
