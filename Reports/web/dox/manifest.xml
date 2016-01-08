@@ -6,7 +6,7 @@
 
 <doxManifest>
   <item id="reportInstances" key="dox.reportInstances" filename="reportInstances.htm">
-    <relation id="otherSettings"/>
+    <relation id="reportSettings"/>
     <relation id="reportTemplates"/>
   </item>
   
