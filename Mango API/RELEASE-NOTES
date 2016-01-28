@@ -1,3 +1,6 @@
+*Version 1.1.4*
+* Adding Allowed Origins for CORS Websocket use
+
 *Version 1.1.3*
 * Bugfix for setting point values now requires Data Point Set permissions
 * Bugfix in EventsRestController where Events Query was broken for non-admin users
