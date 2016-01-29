@@ -34,7 +34,7 @@
   <tag:versionedJavascript  src="/resources/header.js" />
   <tag:versionedJavascript  src="${modulePath}/web/graphicalViews.js" />
   <tag:versionedJavascript  src="${modulePath}/web/wz_jsgraphics.js" />
-  <c:forEach items="<%= Common.applicationScripts %>" var="modScript">
+  <c:forEach items="<%= Common.moduleScripts %>" var="modScript">
     <tag:versionedJavascript  src="/${modScript}" /></c:forEach>
 </head>
 
