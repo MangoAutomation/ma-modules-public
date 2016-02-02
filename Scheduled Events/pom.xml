@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>scheduled-events</artifactId>
     <name>Scheduled Events Expansion Module</name>
-    <version>1.5.1</version>
+    <version>1.5.2</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>

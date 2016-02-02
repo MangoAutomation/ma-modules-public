@@ -72,6 +72,11 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
     // /
     //
     //
+    /**
+     * Since the events are not returning to normal at shutdown anymore
+     * we will ensure that if they returned to normal while Mango was off 
+     * we will return them to normal at startup.
+     */
     public void initialize() {
         eventType = new ScheduledEventType(vo.getId());
         if (!vo.isReturnToNormal())
@@ -87,8 +92,8 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
 
             if (vo.getScheduleType() != ScheduledEventVO.TYPE_ONCE) {
                 // Check if we are currently active.
-                if (inactiveTrigger.getNextExecutionTime() < activeTrigger.getNextExecutionTime())
-                    raiseEvent(System.currentTimeMillis());
+                if (inactiveTrigger.getNextExecutionTime() >= activeTrigger.getNextExecutionTime())
+                	returnToNormal(System.currentTimeMillis());
             }
         }
     }
@@ -98,7 +103,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
             activeTask.cancel();
         if (inactiveTask != null)
             inactiveTask.cancel();
-        returnToNormal(System.currentTimeMillis());
+        //returnToNormal(System.currentTimeMillis());
     }
 
     public void joinTermination() {
