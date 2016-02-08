@@ -6,14 +6,9 @@
 <%@page import="com.serotonin.m2m2.scheduledEvents.ScheduledEventVO"%>
 <%@page import="org.joda.time.DateTimeConstants"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
-
 <c:set var="newId"><tag:newId/></c:set>
 
 <tag:page dwr="ScheduledEventsDwr" onload="init">
-  <jsp:attribute name="styles">
-  <link rel="stylesheet" href="/resources/dojox/calendar/themes/claro/Calendar.css">
-  </jsp:attribute>
-  <jsp:body>
   <script type="text/javascript">
     var weekdays = new Array();
     var monthdays = new Array();
@@ -302,34 +297,6 @@
         else
             updateImg(imgNode, "${modulePath}/web/clock.png", "<m2m2:translate key="scheduledEvents.se" escapeDQuotes="true"/>", true);
     }
-    
-    //http://dojotoolkit.org/reference-guide/1.10/dojox/calendar.html
-    //http://archive.dojotoolkit.org/nightly/checkout/dojox/calendar/tests
-    require(["dojo/parser", "dojo/ready", "dojox/calendar/Calendar", "dojo/store/Memory", "dojo/store/Observable"],
-    		  function(parser, ready, Calendar, Memory, Observable){
-    	
-    	var events = [];
-    	events.push({id: 0, summary: 'Event 1', startTime: new Date(), endTime: new Date(new Date().getTime() + 3600000)});
-    	
-    		    ready(function(){
-    		      calendar = new Calendar({
-    		                   //dateInterval: "day",
-    		                   date: null,
-    		                   startDate: new Date(),
-    		                   endDate: new Date(new Date().getTime() + (24*60*60*1000)),
-    		                   minDate: new Date(),
-    		                   maxDate: new Date(new Date().getTime() + (24*60*60*1000)),
-    		                   store: new Observable(new Memory({data: events})),
-    		                   createOnGridClick: true,
-    		                   style: "position:relative;width:600px;height:600px"
-    		                }, "schedule");
-    		      
-    		      console.log('calendar created');
-    		      
-				});
-    		    
-	});
-    
   </script>
     
   <table>
@@ -540,10 +507,8 @@
               <td colspan="2" id="userMessage" class="formError" style="display:none;"></td>
             </tr>
           </table>
-          <div id="schedule"></div>
         </div>
       </td>
     </tr>
   </table>
-  </jsp:body>
 </tag:page>
