@@ -94,6 +94,8 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
                 // Check if we are currently active.
                 if (inactiveTrigger.getNextExecutionTime() >= activeTrigger.getNextExecutionTime())
                 	returnToNormal(System.currentTimeMillis());
+                else
+                    raiseEvent(System.currentTimeMillis());
             }
         }
     }
