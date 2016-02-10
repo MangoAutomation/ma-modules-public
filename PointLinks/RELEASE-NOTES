@@ -1,3 +1,6 @@
+*Version 1.5.3*
+* Fixed bug in permissions where the arrow popup of all available permissions was broken
+
 *Version 1.5.2*
 * Fixing point link saved message to be at top of edit area
 * Fixing bug where importing a point link without XID would fail

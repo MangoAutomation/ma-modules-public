@@ -16,6 +16,7 @@
     var sourcePoints;
     var editingPointLink;
     var sourcePointSelector,targetPointSelector;
+    var permissionUI = new PermissionUI(PointLinksDwr);
     
     function init() {
         PointLinksDwr.init(function(response) {
