@@ -279,40 +279,85 @@ public class GraphicalView implements Serializable, JsonSerializable {
 			Permissions.validateAddedPermissions(this.setPermission, user, response, "setPermission");
 			Permissions.validateAddedPermissions(this.editPermission, user, response, "editPermission");
         }else{
-        	//We are updating a view so only validate the new permissions, allow existing ones to remain
+        	//We are updating a view so only validate the new permissions, allow existing ones to remain and don't let
+        	// the user remove permissions they do not have
+
+        	Set<String> newPermissions = new HashSet<String>();
+        	String validateablePermissions;
+        	boolean removedUnGrantedPermission = false;
         	
         	//Read Permissions
         	Set<String> existingPermissions = Permissions.explodePermissionGroups(existingView.readPermission);
-        	Set<String> readPermissions = Permissions.explodePermissionGroups(this.readPermission);
-        	Set<String> newPermissions = new HashSet<String>();
-        	for(String newPermission : readPermissions){
-        		if(!existingPermissions.contains(newPermission))
-        			newPermissions.add(newPermission);
+        	Set<String> currentPermissions = Permissions.explodePermissionGroups(this.readPermission);
+        	
+        	for(String existingPermission : existingPermissions){
+        		if(!Permissions.hasPermission(user, existingPermission)){
+        			//Make sure it is in the new permissions
+        			if(!currentPermissions.contains(existingPermission)){
+        				removedUnGrantedPermission = true;
+        				response.addMessage("readPermission", new TranslatableMessage("viewEdit.validate.ungrantedPermissionRemoved", existingPermission));
+        			}
+        		}
         	}
-        	String validateablePermissions = Permissions.implodePermissionGroups(newPermissions);
-        	Permissions.validateAddedPermissions(validateablePermissions, user, response, "readPermission");
+        	
+        	if(!removedUnGrantedPermission){
+	        	for(String newPermission : currentPermissions){
+	        		if(!existingPermissions.contains(newPermission))
+	        			newPermissions.add(newPermission);
+	        	}
+	        	validateablePermissions = Permissions.implodePermissionGroups(newPermissions);
+	        	Permissions.validateAddedPermissions(validateablePermissions, user, response, "readPermission");
+        	}
         	
         	//Set Permissions
         	existingPermissions = Permissions.explodePermissionGroups(existingView.setPermission);
-        	Set<String> setPermissions = Permissions.explodePermissionGroups(this.setPermission);
+        	currentPermissions = Permissions.explodePermissionGroups(this.setPermission);
         	newPermissions.clear();
-        	for(String newPermission : setPermissions){
-        		if(!existingPermissions.contains(newPermission))
-        			newPermissions.add(newPermission);
+        	removedUnGrantedPermission = false;
+        	
+        	for(String existingPermission : existingPermissions){
+        		if(!Permissions.hasPermission(user, existingPermission)){
+        			//Make sure it is in the new permissions
+        			if(!currentPermissions.contains(existingPermission)){
+        				removedUnGrantedPermission = true;
+        				response.addMessage("setPermission", new TranslatableMessage("viewEdit.validate.ungrantedPermissionRemoved", existingPermission));
+        			}
+        		}
         	}
-        	validateablePermissions = Permissions.implodePermissionGroups(newPermissions);
-        	Permissions.validateAddedPermissions(validateablePermissions, user, response, "setPermission");
+        	
+        	if(!removedUnGrantedPermission){
+	        	for(String newPermission : currentPermissions){
+	        		if(!existingPermissions.contains(newPermission))
+	        			newPermissions.add(newPermission);
+	        	}
+	        	validateablePermissions = Permissions.implodePermissionGroups(newPermissions);
+	        	Permissions.validateAddedPermissions(validateablePermissions, user, response, "setPermission");
+        	}
 
         	//edit Permissions
         	existingPermissions = Permissions.explodePermissionGroups(existingView.editPermission);
-        	Set<String> editPermissions = Permissions.explodePermissionGroups(this.editPermission);
+        	currentPermissions = Permissions.explodePermissionGroups(this.editPermission);
         	newPermissions.clear();
-        	for(String newPermission : editPermissions){
-        		if(!existingPermissions.contains(newPermission))
-        			newPermissions.add(newPermission);
+        	removedUnGrantedPermission = false;
+        	
+        	for(String existingPermission : existingPermissions){
+        		if(!Permissions.hasPermission(user, existingPermission)){
+        			//Make sure it is in the new permissions
+        			if(!currentPermissions.contains(existingPermission)){
+        				removedUnGrantedPermission = true;
+        				response.addMessage("editPermission", new TranslatableMessage("viewEdit.validate.ungrantedPermissionRemoved", existingPermission));
+        			}
+        		}
         	}
-        	validateablePermissions = Permissions.implodePermissionGroups(newPermissions);
-        	Permissions.validateAddedPermissions(validateablePermissions, user, response, "editPermission");
+        	
+        	if(!removedUnGrantedPermission){
+	        	for(String newPermission : currentPermissions){
+	        		if(!existingPermissions.contains(newPermission))
+	        			newPermissions.add(newPermission);
+	        	}
+	        	validateablePermissions = Permissions.implodePermissionGroups(newPermissions);
+	        	Permissions.validateAddedPermissions(validateablePermissions, user, response, "editPermission");
+        	}
 
         }
     }
