@@ -1,5 +1,6 @@
 *Version 1.6.4*
-* Uncommenting module scripts from public views, fixing elements relying on sstGraphics
+* Allowing module javascript scripts in public views, fixing elements relying on sstGraphics
+* Fixing bug where a user could not save a shared view if it contained a permission the user did not have, users now cannot 'add' a new permission they do not have.
 
 *Version 1.6.3*
 * Fix to not use data point chart colour property and instead let JFreeChart generate the colors, unless only 1 point is charted then chart colour property is used
