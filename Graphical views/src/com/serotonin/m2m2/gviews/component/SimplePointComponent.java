@@ -22,6 +22,10 @@ public class SimplePointComponent extends PointComponent {
     public static ImplDefinition DEFINITION = new ImplDefinition("simple", "SIMPLE", "graphic.simple", new int[] {
             DataTypes.BINARY, DataTypes.MULTISTATE, DataTypes.NUMERIC, DataTypes.ALPHANUMERIC });
 
+    public SimplePointComponent(){
+    	super();
+    }
+    
     @JsonProperty
     private boolean displayPointName;
 

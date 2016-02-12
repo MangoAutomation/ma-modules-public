@@ -1,7 +1,7 @@
 *Version 1.6.4*
 * Allowing module javascript scripts in public views, fixing elements relying on sstGraphics
 * Fixing bug where a user could not save a shared view if it contained a permission the user did not have, users now cannot 'add' a new permission they do not have.
-* Adding update period to Image Chart component to optionally limit the frequency at which the point is updated.
+* Adding update period to Image Chart and all components that use data points to optionally limit the frequency at which the component is updated.
 
 *Version 1.6.3*
 * Fix to not use data point chart colour property and instead let JFreeChart generate the colors, unless only 1 point is charted then chart colour property is used

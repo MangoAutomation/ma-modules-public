@@ -35,6 +35,13 @@
         <td class="formField"><input id="settingsBkgdColor" type="text"/></td>
       </tr>
       <tr>
+        <td class="formLabelRequired"><fmt:message key="viewEdit.settings.updatePeriod"/></td>
+        <td class="formField">
+          <input type="text" id="settingsUpdatePeriods" class="formShort"/>
+          <tag:timePeriods id="settingsUpdatePeriodType" s="true" min="true" h="true" d="true" w="true" />
+        </td>
+      </tr>
+      <tr>
         <td class="formLabel"><fmt:message key="viewEdit.settings.displayControls"/></td>
         <td class="formField"><input id="settingsControls" type="checkbox"/></td>
       </tr>
@@ -90,6 +97,8 @@
                 $set("settingsPointName", comp.nameOverride);
                 $set("settingsSettable", comp.settableOverride);
                 $set("settingsBkgdColor", comp.bkgdColorOverride);
+                $set("settingsUpdatePeriodType", comp.updatePeriodType);
+                $set("settingsUpdatePeriods", comp.updatePeriods);
                 $set("settingsControls", comp.displayControls);
                 $set("settingsX", comp.x);
                 $set("settingsY", comp.y);
@@ -110,6 +119,7 @@
             hideContextualMessages("settingsEditorPopup");
             GraphicalViewDwr.setPointComponentSettings(settingsEditor.componentId, pointFilteringSelect.value,
                     $get("settingsPointName"), $get("settingsSettable"), $get("settingsBkgdColor"),
+                    $get("settingsUpdatePeriodType"), $get("settingsUpdatePeriods"),
                     $get("settingsControls"), $get("settingsX"), $get("settingsY"), function(response) {
                 if (response.hasMessages) {
                     showDwrMessages(response.messages);

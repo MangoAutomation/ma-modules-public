@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,10 +118,15 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
     
     protected int updatePeriodType = Common.TimePeriods.SECONDS;
     @JsonProperty
-    protected int updatePeriods = 30;
+    protected int updatePeriods = 0;
     
     //Runtime members
     protected long lastUpdated;
+    protected Map<String, Object> cachedContent;
+    
+    public ViewComponent(){
+    	this.cachedContent = new HashMap<String, Object>();
+    }
     
     public void setLocation(int x, int y) {
         this.x = x;
@@ -203,6 +209,22 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
 		this.updatePeriods = updatePeriods;
 	}
 
+	public long getLastUpdated(){
+		return this.lastUpdated;
+	}
+	
+	public void setLastUpdated(long lastUpdated){
+		this.lastUpdated = lastUpdated;
+	}
+	
+	public Object getCachedContent(String key){
+		return this.cachedContent.get(key);
+	}
+	
+	public void putCachedContent(String key, Object value){
+		this.cachedContent.put(key, value);
+	}
+	
 	public String getStyle() {
         if (style != null)
             return style;
@@ -266,6 +288,8 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
         }
+        
+        this.cachedContent = new HashMap<String, Object>();
     }
 
     protected void writeDataPoint(ObjectOutputStream out, DataPointVO dataPoint) throws IOException {

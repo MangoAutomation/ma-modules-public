@@ -30,15 +30,19 @@ import com.serotonin.util.SerializationHelper;
  * @author Matthew Lohbihler
  */
 abstract public class CompoundComponent extends ViewComponent {
+
+	public static final String IMAGE_CHART_KEY = "compound.component.image.chart";
+	
+	public CompoundComponent(){
+		super();
+	}
+	
     @JsonProperty
     private String name;
     private List<CompoundChild> children = new ArrayList<CompoundChild>();
-
-
     
     // Runtime attributes
     private boolean visible;
-    private String lastImageChartData;
     
     abstract protected void initialize();
 
@@ -60,10 +64,6 @@ abstract public class CompoundComponent extends ViewComponent {
 
     public List<CompoundChild> getChildComponents() {
         return children;
-    }
-    
-    public String getLastImageChartData(){
-    	return this.lastImageChartData;
     }
 
     protected void addChild(String id, String descriptionKey, HtmlComponent htmlComponent) {
@@ -169,8 +169,8 @@ abstract public class CompoundComponent extends ViewComponent {
             String... childIds) {
     	
     	//Only get new data if we are supposed to
-        if((this.lastImageChartData != null)&&(System.currentTimeMillis() < lastUpdated + Common.getMillis(updatePeriodType, updatePeriods)))
-        	return this.lastImageChartData;
+        if((this.cachedContent.get(IMAGE_CHART_KEY) != null)&&(System.currentTimeMillis() < lastUpdated + Common.getMillis(updatePeriodType, updatePeriods)))
+        	return (String)this.cachedContent.get(IMAGE_CHART_KEY);
         
         long ts = 0;
         for (String childId : childIds) {
@@ -225,10 +225,11 @@ abstract public class CompoundComponent extends ViewComponent {
         htmlData.append(".png");
         htmlData.append("\" alt=\"" + translations.translate("common.imageChart") + "\"/>");
 
-        this.lastImageChartData = htmlData.toString();
+        String output = htmlData.toString();
+        this.cachedContent.put(IMAGE_CHART_KEY, output);
         this.lastUpdated = System.currentTimeMillis();
         
-        return this.lastImageChartData;
+        return output;
     }
 
     //

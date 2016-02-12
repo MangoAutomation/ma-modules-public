@@ -45,6 +45,7 @@ public class ImageChartComponent extends CompoundComponent {
     private int durationPeriods = 1;
 
     public ImageChartComponent() {
+    	super();
         initialize();
     }
 

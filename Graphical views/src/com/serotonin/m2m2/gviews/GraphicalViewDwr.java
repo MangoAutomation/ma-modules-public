@@ -114,6 +114,10 @@ public class GraphicalViewDwr extends ModuleDwr {
         Map<String, Object> model = new HashMap<String, Object>();
 
         for (ViewComponent viewComponent : view.getViewComponents()) {
+        	
+        	//Are we to update this component
+            boolean update = System.currentTimeMillis() >= (viewComponent.getLastUpdated() + Common.getMillis(viewComponent.getUpdatePeriodType(), viewComponent.getUpdatePeriods()));
+            
             if (viewComponent.isCompoundComponent() && (edit || viewComponent.isVisible())) {
                 CompoundComponent compoundComponent = (CompoundComponent) viewComponent;
 
@@ -121,7 +125,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
                 // Add states for each of the children
                 for (CompoundChild child : compoundComponent.getChildComponents())
-                    addPointComponentState(child.getViewComponent(), Common.runtimeManager, model, request, view, user,
+                    addPointComponentState(child.getViewComponent(), update, Common.runtimeManager, model, request, view, user,
                             states, edit, !imageChart);
 
                 // Add a state for the compound component.
@@ -150,7 +154,7 @@ public class GraphicalViewDwr extends ModuleDwr {
                 model.put("childData", childData);
 
                 if (compoundComponent.hasInfo())
-                    state.setInfo(generateViewContent(request, "compoundInfoContent.jsp", model));
+                    state.setInfo(generateViewContent(compoundComponent, update, request, "compoundInfoContent.jsp", model));
 
                 //Check to see if we need to update it...
                 
@@ -163,14 +167,18 @@ public class GraphicalViewDwr extends ModuleDwr {
                 states.add(state);
             }
             else
-                addPointComponentState(viewComponent, Common.runtimeManager, model, request, view, user, states, edit,
-                        true);
+                addPointComponentState(viewComponent, update, Common.runtimeManager, model, request, view, user, states, edit, true);
+        
+            //Save the last time we updated
+            if(update)
+            	viewComponent.setLastUpdated(System.currentTimeMillis());
+
         }
 
         return states;
     }
 
-    private void addPointComponentState(ViewComponent viewComponent, RuntimeManager rtm, Map<String, Object> model,
+    private void addPointComponentState(ViewComponent viewComponent, boolean update, RuntimeManager rtm, Map<String, Object> model,
             HttpServletRequest request, GraphicalView view, User user, List<ViewComponentState> states, boolean edit,
             boolean add) {
         if (viewComponent.isPointComponent() && (edit || viewComponent.isVisible())) {
@@ -180,7 +188,7 @@ public class GraphicalViewDwr extends ModuleDwr {
             if (pointComponent.tgetDataPoint() != null)
                 dataPointRT = rtm.getDataPoint(pointComponent.tgetDataPoint().getId());
 
-            ViewComponentState state = preparePointComponentState(pointComponent, user, dataPointRT, model, request);
+            ViewComponentState state = preparePointComponentState(pointComponent, update, user, dataPointRT, model, request);
 
             if (!edit) {
                 if (pointComponent.isSettable()) {
@@ -194,7 +202,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
             if (add)
                 states.add(state);
-
+            
             model.clear();
         }
     }
@@ -202,17 +210,23 @@ public class GraphicalViewDwr extends ModuleDwr {
     /**
      * Shared convenience method for creating a populated view component state.
      */
-    private ViewComponentState preparePointComponentState(PointComponent pointComponent, User user, DataPointRT point,
+    private ViewComponentState preparePointComponentState(PointComponent pointComponent, boolean update, User user, DataPointRT point,
             Map<String, Object> model, HttpServletRequest request) {
         ViewComponentState state = new ViewComponentState();
         state.setId(pointComponent.getId());
 
         PointValueTime pointValue = prepareBasePointState(pointComponent.getId(), state,
                 pointComponent.tgetDataPoint(), point, model);
-
+        
         model.put("pointComponent", pointComponent);
-        if (pointComponent.isValid())
-            setEvents(pointComponent.tgetDataPoint(), user, model, pointEventsLimit);
+        if (pointComponent.isValid()){
+        	if(!update && pointComponent.getCachedContent(MODEL_ATTR_EVENTS) != null)
+        		model.put(MODEL_ATTR_EVENTS, pointComponent.getCachedContent(MODEL_ATTR_EVENTS));
+        	else{
+        		setEvents(pointComponent.tgetDataPoint(), user, model, pointEventsLimit);
+        		pointComponent.putCachedContent(MODEL_ATTR_EVENTS, model.get(MODEL_ATTR_EVENTS));
+        	}
+        }
 
         pointComponent.addDataToModel(model, pointValue);
 
@@ -220,14 +234,14 @@ public class GraphicalViewDwr extends ModuleDwr {
             model.put("invalid", "true");
         else {
             // Add the rendered text as a convenience to the snippets.
-            model.put("text",
-                    pointComponent.tgetDataPoint().getTextRenderer().getText(pointValue, TextRenderer.HINT_FULL));
-
-            state.setContent(generateViewContent(request, pointComponent.snippetName() + ".jsp", model));
+            model.put("text", pointComponent.tgetDataPoint().getTextRenderer().getText(pointValue, TextRenderer.HINT_FULL));
+            state.setContent(generateViewContent(pointComponent, update, request, pointComponent.snippetName() + ".jsp", model));
             pointComponent.tgetDataPoint().updateLastValue(pointValue);
         }
 
-        state.setInfo(generateViewContent(request, "infoContent.jsp", model));
+        state.setInfo(generateViewContent(pointComponent, update, request, "infoContent.jsp", model));
+        
+        //TODO Cache this
         setMessages(state, request, getFullSnippetName("warningContent.jsp"), model);
 
         return state;
@@ -291,7 +305,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult setPointComponentSettings(String pointComponentId, int dataPointId, String name,
-            boolean settable, String bkgdColorOverride, boolean displayControls, int x, int y) {
+            boolean settable, String bkgdColorOverride, int updatePeriodType, int updatePeriods, boolean displayControls, int x, int y) {
         ProcessResult response = new ProcessResult();
         PointComponent pc = (PointComponent) getViewComponent(pointComponentId);
         User user = Common.getUser();
@@ -300,6 +314,11 @@ public class GraphicalViewDwr extends ModuleDwr {
         if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
             response.addContextualMessage("settingsPointInfo", "validate.required");
 
+        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType))
+            response.addContextualMessage("settingsUpdatePeriodType", "validate.invalidValue");
+        if (updatePeriods < 0)
+            response.addContextualMessage("settingsUpdatePeriods", "validate.cannotBeNegative");
+        
         if (x < 0)
             response.addContextualMessage("settingsX", "validate.cannotBeNegative");
         if (y < 0)
@@ -310,6 +329,8 @@ public class GraphicalViewDwr extends ModuleDwr {
             pc.setNameOverride(name);
             pc.setSettableOverride(settable && Permissions.hasDataPointSetPermission(user, dp));
             pc.setBkgdColorOverride(bkgdColorOverride);
+            pc.setUpdatePeriodType(updatePeriodType);
+            pc.setUpdatePeriods(updatePeriods);
             pc.setDisplayControls(displayControls);
             pc.setLocation(x, y);
 
@@ -694,8 +715,15 @@ public class GraphicalViewDwr extends ModuleDwr {
         new GraphicalViewDao().removeView(view.getId());
     }
 
-    private String generateViewContent(HttpServletRequest request, String snippet, Map<String, Object> model) {
-        return generateContent(request, getFullSnippetName(snippet), model);
+    private String generateViewContent(ViewComponent component, boolean update, HttpServletRequest request, String snippet, Map<String, Object> model) {
+        
+    	if(!update && component.getCachedContent(snippet) != null)
+    		return (String)component.getCachedContent(snippet);
+    	else{
+    		String content =  generateContent(request, getFullSnippetName(snippet), model);
+    		component.putCachedContent(snippet, content);
+    		return content;
+    	}
     }
 
     private String getFullSnippetName(String snippet) {

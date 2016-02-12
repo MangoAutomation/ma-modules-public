@@ -41,6 +41,9 @@ abstract public class PointComponent extends ViewComponent {
     private boolean valid;
     private boolean visible;
 
+    public PointComponent(){
+    	super();
+    }
     @Override
     public boolean isPointComponent() {
         return true;

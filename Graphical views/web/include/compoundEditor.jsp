@@ -46,7 +46,7 @@
           </td>
         </tr>
         <tr>
-          <td class="formLabelRequired"><fmt:message key="viewEdit.compound.updatePeriod"/></td>
+          <td class="formLabelRequired"><fmt:message key="viewEdit.settings.updatePeriod"/></td>
           <td class="formField">
             <input type="text" id="imageChartUpdatePeriods" class="formShort"/>
             <tag:timePeriods id="imageChartUpdatePeriodType" s="true" min="true" h="true" d="true" w="true" />

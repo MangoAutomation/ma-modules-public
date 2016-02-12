@@ -26,7 +26,9 @@
   <img src="images/add.png"/> icon. New components default to being displayed in the center of the view, but can
   be repositioned by dragging and dropping them anywhere within the bounds of the background. Note that point views can 
   overlap one another. During view editing, components are written in the order in which they are defined. This may 
-  affect how components will overlay each, when overlap occurs.
+  affect how components will overlay each, when overlap occurs. Any component that uses one or many data points contains 
+  an <b>update period</b> attribute that limits the frequency at which the content will be updated.  Setting the period 
+  to 0 will update the component as often as the data point updates its value.
 </p>
 
 <h1>Static content</h1>
@@ -66,7 +68,7 @@
   has been added to the view, its default representation is the generic point icon (<img src="images/icon_comp.png"/>).
   This will be the case until the component has enough information to properly render. Required information depends 
   upon the component type. The view editing page behaves similar to the view page in that the current value of the 
-  point is displayed and updated so that users can see exactly how the point will appear on the view.
+  point is displayed and updated so that users can see exactly how the point will appear on the view.  
 </p>
 
 <h1>Point component rendering</h1>
