@@ -152,10 +152,13 @@ public class GraphicalViewDwr extends ModuleDwr {
                 if (compoundComponent.hasInfo())
                     state.setInfo(generateViewContent(request, "compoundInfoContent.jsp", model));
 
-                if (imageChart)
+                //Check to see if we need to update it...
+                
+                if (imageChart){
                     state.setContent(((ImageChartComponent) compoundComponent).getImageChartData(getTranslations()));
-                else if (!edit)
+                }else if (!edit){
                     state.setChart(compoundComponent.getImageChartData(getTranslations()));
+                }
 
                 states.add(state);
             }
@@ -539,7 +542,7 @@ public class GraphicalViewDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult saveImageChartComponent(String viewComponentId, String name, int width, int height,
-            int durationType, int durationPeriods, List<StringStringPair> childPointIds) {
+            int durationType, int durationPeriods, int updatePeriodType, int updatePeriods, List<StringStringPair> childPointIds) {
         ProcessResult response = new ProcessResult();
 
         validateCompoundComponent(response, name);
@@ -551,7 +554,11 @@ public class GraphicalViewDwr extends ModuleDwr {
             response.addContextualMessage("imageChartDurationType", "validate.invalidValue");
         if (durationPeriods <= 0)
             response.addContextualMessage("imageChartDurationPeriods", "validate.greaterThanZero");
-
+        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType))
+            response.addContextualMessage("imageChartUpdatePeriodType", "validate.invalidValue");
+        if (updatePeriods < 0)
+            response.addContextualMessage("imageChartUpdatePeriods", "validate.cannotBeNegative");
+        
         if (!response.getHasMessages()) {
             ImageChartComponent c = (ImageChartComponent) getViewComponent(viewComponentId);
             c.setName(name);
@@ -559,6 +566,8 @@ public class GraphicalViewDwr extends ModuleDwr {
             c.setHeight(height);
             c.setDurationType(durationType);
             c.setDurationPeriods(durationPeriods);
+            c.setUpdatePeriodType(updatePeriodType);
+            c.setUpdatePeriods(updatePeriods);
             saveCompoundPoints(c, childPointIds);
         }
 

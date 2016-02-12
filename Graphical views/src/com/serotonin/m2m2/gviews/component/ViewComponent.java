@@ -24,6 +24,7 @@ import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.spi.TypeResolver;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
@@ -113,7 +114,14 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
     private int x;
     @JsonProperty
     private int y;
-
+    
+    protected int updatePeriodType = Common.TimePeriods.SECONDS;
+    @JsonProperty
+    protected int updatePeriods = 30;
+    
+    //Runtime members
+    protected long lastUpdated;
+    
     public void setLocation(int x, int y) {
         this.x = x;
         this.y = y;
@@ -179,7 +187,23 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
         this.y = y;
     }
 
-    public String getStyle() {
+    public int getUpdatePeriodType() {
+		return updatePeriodType;
+	}
+
+	public void setUpdatePeriodType(int updatePeriodType) {
+		this.updatePeriodType = updatePeriodType;
+	}
+
+	public int getUpdatePeriods() {
+		return updatePeriods;
+	}
+
+	public void setUpdatePeriods(int updatePeriods) {
+		this.updatePeriods = updatePeriods;
+	}
+
+	public String getStyle() {
         if (style != null)
             return style;
 
@@ -199,6 +223,8 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
             response.addMessage("x", new TranslatableMessage("validate.cannotBeNegative"));
         if (y < 0)
             response.addMessage("y", new TranslatableMessage("validate.cannotBeNegative"));
+        
+        
     }
 
     //
@@ -207,7 +233,7 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
@@ -215,6 +241,8 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
         SerializationHelper.writeSafeUTF(out, idSuffix);
         out.writeInt(x);
         out.writeInt(y);
+        out.writeInt(updatePeriodType);
+        out.writeInt(updatePeriods);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
@@ -226,6 +254,17 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
             idSuffix = SerializationHelper.readSafeUTF(in);
             x = in.readInt();
             y = in.readInt();
+            
+            updatePeriodType = Common.TimePeriods.MINUTES;
+            updatePeriods = 0;
+        }else if(ver == 2){
+            index = in.readInt();
+            idSuffix = SerializationHelper.readSafeUTF(in);
+            x = in.readInt();
+            y = in.readInt();
+            
+            updatePeriodType = in.readInt();
+            updatePeriods = in.readInt();
         }
     }
 
@@ -246,11 +285,22 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         writer.writeEntry("type", definition().getExportName());
+        writer.writeEntry("updatePeriodType", Common.TIME_PERIOD_CODES.getCode(updatePeriodType));
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        // no op
+    	String text = jsonObject.getString("updatePeriodType");
+        if (text == null){
+        	//Disable the update feature
+        	updatePeriodType = Common.TimePeriods.MINUTES;
+        	updatePeriods = 0;
+        }else{
+	        updatePeriodType = Common.TIME_PERIOD_CODES.getId(text);
+	        if (updatePeriodType == -1)
+	            throw new TranslatableJsonException("emport.error.component.invalid", "updatePeriodType", text,
+	                    Common.TIME_PERIOD_CODES.getCodeList());
+        }
     }
 
     protected void jsonWriteDataPoint(ObjectWriter writer, String key, PointComponent comp) throws IOException,

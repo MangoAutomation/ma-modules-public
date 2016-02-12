@@ -45,6 +45,13 @@
             <tag:timePeriods id="imageChartDurationType" s="true" min="true" h="true" d="true" w="true" mon="true" y="true"/>
           </td>
         </tr>
+        <tr>
+          <td class="formLabelRequired"><fmt:message key="viewEdit.compound.updatePeriod"/></td>
+          <td class="formField">
+            <input type="text" id="imageChartUpdatePeriods" class="formShort"/>
+            <tag:timePeriods id="imageChartUpdatePeriodType" s="true" min="true" h="true" d="true" w="true" />
+          </td>
+        </tr>
       </tbody>
       <tbody id="pointLists"></tbody>
     </table>
@@ -78,6 +85,9 @@
                     $set("imageChartHeight", comp.height);
                     $set("imageChartDurationType", comp.durationType);
                     $set("imageChartDurationPeriods", comp.durationPeriods);
+                    $set("imageChartUpdatePeriodType", comp.updatePeriodType);
+                    $set("imageChartUpdatePeriods", comp.updatePeriods);
+                    
                     show("imageChartAttrs");
                 }
                 else
@@ -110,7 +120,8 @@
             else if (compoundEditor.component.defName == "imageChart")
                 GraphicalViewDwr.saveImageChartComponent(compoundEditor.component.id, $get("compoundName"),
                         $get("imageChartWidth"), $get("imageChartHeight"), $get("imageChartDurationType"),
-                        $get("imageChartDurationPeriods"), childPointIds, compoundEditor.saveCB);
+                        $get("imageChartDurationPeriods"),$get("imageChartUpdatePeriodType"),
+                        $get("imageChartUpdatePeriods"), childPointIds, compoundEditor.saveCB);
             else
                 GraphicalViewDwr.saveCompoundComponent(compoundEditor.component.id, $get("compoundName"), childPointIds,
                         compoundEditor.saveCB);

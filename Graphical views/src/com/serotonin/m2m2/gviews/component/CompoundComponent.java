@@ -18,6 +18,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -33,9 +34,12 @@ abstract public class CompoundComponent extends ViewComponent {
     private String name;
     private List<CompoundChild> children = new ArrayList<CompoundChild>();
 
+
+    
     // Runtime attributes
     private boolean visible;
-
+    private String lastImageChartData;
+    
     abstract protected void initialize();
 
     abstract public boolean isDisplayImageChart();
@@ -56,6 +60,10 @@ abstract public class CompoundComponent extends ViewComponent {
 
     public List<CompoundChild> getChildComponents() {
         return children;
+    }
+    
+    public String getLastImageChartData(){
+    	return this.lastImageChartData;
     }
 
     protected void addChild(String id, String descriptionKey, HtmlComponent htmlComponent) {
@@ -159,6 +167,11 @@ abstract public class CompoundComponent extends ViewComponent {
 
     protected String generateImageChartData(Translations translations, long duration, int width, int height,
             String... childIds) {
+    	
+    	//Only get new data if we are supposed to
+        if((this.lastImageChartData != null)&&(System.currentTimeMillis() < lastUpdated + Common.getMillis(updatePeriodType, updatePeriods)))
+        	return this.lastImageChartData;
+        
         long ts = 0;
         for (String childId : childIds) {
             PointComponent comp = (PointComponent) getChild(childId).getViewComponent();
@@ -168,7 +181,7 @@ abstract public class CompoundComponent extends ViewComponent {
                     ts = cts;
             }
         }
-
+        
         StringBuilder htmlData = new StringBuilder();
         htmlData.append("<img src=\"chart/");
         htmlData.append(ts);
@@ -212,7 +225,10 @@ abstract public class CompoundComponent extends ViewComponent {
         htmlData.append(".png");
         htmlData.append("\" alt=\"" + translations.translate("common.imageChart") + "\"/>");
 
-        return htmlData.toString();
+        this.lastImageChartData = htmlData.toString();
+        this.lastUpdated = System.currentTimeMillis();
+        
+        return this.lastImageChartData;
     }
 
     //
