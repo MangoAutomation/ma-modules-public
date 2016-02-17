@@ -320,10 +320,10 @@ abstract public class ViewComponent implements Serializable, JsonSerializable {
         	updatePeriodType = Common.TimePeriods.MINUTES;
         	updatePeriods = 0;
         }else{
-	        updatePeriodType = Common.TIME_PERIOD_CODES.getId(text);
+	        updatePeriodType = Common.TIME_PERIOD_CODES.getId(text, Common.TimePeriods.MILLISECONDS, Common.TimePeriods.MONTHS, Common.TimePeriods.YEARS);
 	        if (updatePeriodType == -1)
 	            throw new TranslatableJsonException("emport.error.component.invalid", "updatePeriodType", text,
-	                    Common.TIME_PERIOD_CODES.getCodeList());
+	                    Common.TIME_PERIOD_CODES.getCodeList(Common.TimePeriods.MILLISECONDS, Common.TimePeriods.MONTHS, Common.TimePeriods.YEARS));
         }
     }
 
