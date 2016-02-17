@@ -523,6 +523,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
             scheduleCron = SerializationHelper.readSafeUTF(in);
             email = in.readBoolean();
             recipients = (List<RecipientListEntryBean>) in.readObject();
+            RecipientListEntryBean.cleanRecipientList(recipients);
             includeData = in.readBoolean();
             zipData = in.readBoolean();
         }
@@ -559,6 +560,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
             scheduleCron = SerializationHelper.readSafeUTF(in);
             email = in.readBoolean();
             recipients = (List<RecipientListEntryBean>) in.readObject();
+            RecipientListEntryBean.cleanRecipientList(recipients);
             includeData = in.readBoolean();
             zipData = in.readBoolean();
         }

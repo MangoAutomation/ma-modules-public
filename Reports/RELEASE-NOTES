@@ -1,5 +1,7 @@
 *Version 2.2.2*
 * Fixed help dialogue linking.
+* Fixing bug where deleted users linked to a report template's email functionality would break the report
+
 
 *Version 2.2.1*
 * Limited view of Users available for emailing a report.  User must have 1 common group to report creator.
