@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +37,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	private static final Log LOG = LogFactory.getLog(PointValueEventHandler.class);
 
 	private final Map<Integer, PointValueWebSocketPublisher> map = new HashMap<Integer, PointValueWebSocketPublisher>();
+	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 	public PointValueEventHandler(){
 		super(MangoRestSpringConfiguration.objectMapper);
@@ -100,7 +103,8 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 				LOG.error(e.getMessage(), e);
 			}
 		} 
-		LOG.debug(message.getPayload());
+		if(LOG.isDebugEnabled())
+			LOG.debug(message.getPayload());
 	}
 
 
@@ -109,13 +113,17 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession session,
 			CloseStatus status) {
 
-		synchronized (map) {
+		lock.writeLock().lock();
+		try{
 			Iterator<Integer> it = map.keySet().iterator();
 			while (it.hasNext()) {
 				Integer id = it.next();
 				PointValueWebSocketPublisher pub = map.get(id);
 				pub.terminate();
-				}
+			}
+			map.clear();
+		}finally{
+			lock.writeLock().unlock();
 		}
 		// Handle closing connection here
 		if(LOG.isDebugEnabled())

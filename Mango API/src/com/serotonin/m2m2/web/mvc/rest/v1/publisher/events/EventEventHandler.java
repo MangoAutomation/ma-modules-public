@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +34,7 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	
 	//Map of UserID to User Event Listener
 	private final Map<Integer, EventWebSocketPublisher> map = new HashMap<Integer, EventWebSocketPublisher>();
+	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	public EventEventHandler(){
 		super();
@@ -45,28 +48,42 @@ public class EventEventHandler extends MangoWebSocketHandler {
 			if(user == null){
 				//Not Logged In so no go
 				this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN, new TranslatableMessage("rest.error.notLoggedIn"));
-				
 				return;
 			}	
 			EventRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), EventRegistrationModel.class);
 			
-			synchronized (map) {
-				EventWebSocketPublisher pub = map.get(user.getId());
-				if (pub != null) {
-				    List<String> levels = model.getLevels();
-				    List<EventEventTypeEnum> events = model.getEventTypes();
-				    if (levels.isEmpty() || events.isEmpty()) {
-				        pub.terminate();
-				        map.remove(user.getId());
-				    }
-				    else {
-                        pub.changeLevels(levels);
-                        pub.changeEvents(events);
-				    }
-				} else {
-					pub = new EventWebSocketPublisher(user, model.getLevels(), model.getEventTypes(), session, this.jacksonMapper);
-					pub.initialize();
+			EventWebSocketPublisher pub = null;
+			lock.readLock().lock();
+			try{
+				pub = map.get(user.getId());
+			}finally{
+				lock.readLock().unlock();
+			}
+			
+			if (pub != null) {
+			    List<String> levels = model.getLevels();
+			    List<EventEventTypeEnum> events = model.getEventTypes();
+			    if (levels.isEmpty() || events.isEmpty()) {
+					lock.writeLock().lock();
+					try{
+						map.remove(user.getId());
+					}finally{
+						lock.writeLock().unlock();
+					}
+					pub.terminate();
+			    }
+			    else {
+                    pub.changeLevels(levels);
+                    pub.changeEvents(events);
+			    }
+			} else {
+				pub = new EventWebSocketPublisher(user, model.getLevels(), model.getEventTypes(), session, this.jacksonMapper);
+				pub.initialize();
+				lock.writeLock().lock();
+				try{
 					map.put(user.getId(), pub);
+				}finally{
+					lock.writeLock().unlock();
 				}
 			}
 		
@@ -77,7 +94,8 @@ public class EventEventHandler extends MangoWebSocketHandler {
 				LOG.error(e.getMessage(), e);
 			}
 		} 
-		LOG.debug(message.getPayload());
+		if(LOG.isDebugEnabled())
+			LOG.debug(message.getPayload());
 	}
 
 
@@ -85,13 +103,17 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession session,
 			CloseStatus status) {
 
-		synchronized (map) {
+		lock.writeLock().lock();
+		try{
 			Iterator<Integer> it = map.keySet().iterator();
 			while (it.hasNext()) {
 				Integer id = it.next();
 				EventWebSocketPublisher pub = map.get(id);
 				pub.terminate();
-				}
+			}
+			map.clear();
+		}finally{
+			lock.writeLock().unlock();
 		}
 		// Handle closing connection here
 		if(LOG.isDebugEnabled())
