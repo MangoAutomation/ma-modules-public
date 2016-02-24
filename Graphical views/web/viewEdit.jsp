@@ -202,14 +202,19 @@
     }
     
     function addDnD(divId) {
-        var div = $("viewContent")
-        var cs = dojo.getComputedStyle(div);
-        var mb = dojo.getMarginBox(div, cs);
+        var contentDiv = $("viewContent")
+        var cs = dojo.getComputedStyle(contentDiv);
+        var mb = dojo.getMarginBox(contentDiv, cs);
         
-        div = $(divId)
+        var div = $(divId)
         var coords = $("compCoords");
         //var moveable = new dojo.dnd.move.parentConstrainedMoveable(div);
-        var moveable = new dojo.dnd.move.boxConstrainedMoveable(div, { box: { l:0, t:0, w:mb.w, h:mb.h }})
+        var moveable = new dojo.dnd.move.boxConstrainedMoveable(div, {});
+        moveable.constraints = function() {
+        	var cs = dojo.getComputedStyle(contentDiv);
+            var mb = dojo.getMarginBox(contentDiv, cs);
+            return { l:0, t:0, w:mb.w, h:mb.h };
+        }
         
         // Save the movable in the div in case it gets deleted. See below.
         div.moveable = moveable;
