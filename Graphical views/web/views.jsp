@@ -6,12 +6,16 @@
 <%@ taglib prefix="views" tagdir="/WEB-INF/tags/graphicalViews" %>
 
 <tag:page dwr="GraphicalViewDwr" js="/resources/view.js,${modulePath}/web/graphicalViews.js,${modulePath}/web/wz_jsgraphics.js">
+<jsp:attribute name="styles">
+  <link rel="stylesheet" href="/resources/angular-csp.css"></link>
+  <script src="/resources/loaderConfig.js" data-loader="Dojo"></script>
+</jsp:attribute>
+<jsp:body>
   <script type="text/javascript">
     <c:if test="${!empty currentView}">
       mango.view.initNormalView();
     </c:if>
   </script>
-  
   <c:if test="${empty param.showControls || param.showControls == true}">
   <table class="borderDiv">
     <tr>
@@ -39,9 +43,11 @@
   <%-- This table is here so that the styles are the same from the editor to the view --%>
   <table width="100%" cellspacing="0" cellpadding="0">
     <tr>
-      <td>
+      <td id="ma-dashboard-app" ng-cloak>
         <views:displayView view="${currentView}" emptyMessageKey="views.noViews"/>
       </td>
     </tr>
   </table>
+  <script>require(['mango-3.0/bootstrap']);</script>
+</jsp:body>
 </tag:page>

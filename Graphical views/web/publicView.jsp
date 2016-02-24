@@ -21,7 +21,10 @@
     @import "${dojoURI}/dojox/layout/resources/FloatingPane.css";
     @import "${dojoURI}/dijit/themes/claro/claro.css";
     @import "${dojoURI}/dojo/resources/dojo.css";
-  </style>  
+  </style>
+  
+  <link rel="stylesheet" href="/resources/angular-csp.css"></link>
+  <script src="/resources/loaderConfig.js" data-loader="Dojo"></script>
   
   <!-- Script -->
   <script type="text/javascript" src="${dojoURI}/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug:true, extraLocale: ['en-us', 'nl', 'nl-nl', 'ja-jp', 'fi-fi', 'sv-se', 'zh-cn', 'zh-tw','xx']"></script>
@@ -42,7 +45,7 @@
   <%-- This table is here so that the styles are the same from the editor to the view --%>
   <table width="100%" cellspacing="0" cellpadding="0">
     <tr>
-      <td>
+      <td id="ma-dashboard-app" ng-cloak>
         <views:displayView view="${view}" emptyMessageKey="publicView.notFound"/>
       </td>
     </tr>
@@ -55,5 +58,6 @@
       dojo.ready(mango.longPoll.start);
     </script>
   </c:if>
+  <script>require(['mango-3.0/bootstrap']);</script>
 </body>
 </html>

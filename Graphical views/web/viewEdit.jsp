@@ -6,6 +6,11 @@
 <%@page import="com.serotonin.m2m2.view.ShareUser"%>
 
 <tag:page dwr="GraphicalViewDwr" js="/resources/view.js,${modulePath}/web/graphicalViews.js,${modulePath}/web/wz_jsgraphics.js">
+<jsp:attribute name="styles">
+  <link rel="stylesheet" href="/resources/angular-csp.css"></link>
+  <script src="/resources/loaderConfig.js" data-loader="Dojo"></script>
+</jsp:attribute>
+<jsp:body>
   <style type="text/css">
     #viewContent #compCoords {
         position: absolute; 
@@ -130,8 +135,22 @@
     function updateHtmlComponentContent(id, content) {
         if (!content || content == "")
             $set(id +"Content", '<img src="images/html.png" alt=""/>');
-        else
-            $set(id +"Content", content);
+        else {
+        	var $elem = angular.element('#' + id + 'Content');
+        	var injector = $elem.injector();
+        	if (injector) {
+        		// we have an injector so the angular app has already bootstrapped
+        		// compile the html using the element's scope and replace the contents
+        		injector.invoke(['$compile', function($compile) {
+        			var scope = $elem.scope();
+            		$elem.html($compile(content)(scope));
+            		scope.$digest();
+            	}]);
+        	} else {
+        		// pre angular bootstrap, i.e. initial page load
+        		$elem.html(content);
+        	}
+        }
     }
     
     function openStaticEditor(viewComponentId) {
@@ -460,7 +479,7 @@
       <td>
         <table cellspacing="0" cellpadding="0">
           <tr>
-            <td colspan="3">
+            <td colspan="3" id="ma-dashboard-app" ng-cloak>
               <div id="viewContent" class="borderDiv" style="left:0px;top:0px;float:left;
                       padding-right:1px;padding-bottom:1px;">
                 <span id="compCoords" style="display:none;"></span>
@@ -586,4 +605,6 @@
       </td>
     </tr>
   </table>
+  <script>require(['mango-3.0/bootstrap']);</script>
+</jsp:body>
 </tag:page>
