@@ -141,7 +141,7 @@
         	if (injector) {
         		// we have an injector so the angular app has already bootstrapped
         		// compile the html using the element's scope and replace the contents
-        		injector.invoke(['$compile', function($compile) {
+        		injector.invoke(['$compile', '$rootScope', function($compile, $rootScope) {
         			var scope = $elem.scope();
             		$elem.html($compile(content)(scope));
             		scope.$digest();
@@ -247,7 +247,21 @@
         
         // Unregister the moveable from the DnD manager.
         div.moveable.destroy();
-        
+
+        // find the any angularjs scopes and destroy them
+       	var $parent = angular.element(div);
+       	var parentScope = $parent.scope();
+       	var children = $parent.find('.ng-scope, .ng-isolate-scope');
+       	for (var i = 0; i < children.length; i++) {
+       		var $child = angular.element(children[i]);
+       		var childScope = $child.data('$scope') || $child.data('$isolateScope');
+       		if (childScope && childScope !== parentScope) {
+       			// child scope may have already been destroyed by parent scope cascading destroy
+       			// $destroy() checks for this and returns straight away
+       			childScope.$destroy();
+       		}
+       	}
+
         // Disconnect the event handling for drag ends on this guy.
         $("viewContent").removeChild(div);
     }
