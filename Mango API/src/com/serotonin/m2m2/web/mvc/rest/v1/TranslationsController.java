@@ -153,7 +153,12 @@ public class TranslationsController extends MangoRestController {
         	Iterator<String> it = tranMap.keySet().iterator();
         	while(it.hasNext()){
         		String key = it.next();
-        		resultMap.put(key, tranMap.get(key));
+        		Map<String,String> submap = resultMap.get(key);
+        		if(submap == null){
+        			submap = new HashMap<String,String>();
+        			resultMap.put(key, submap);
+        		}
+        		submap.putAll(tranMap.get(key));
         	}
         }
         return resultMap;
