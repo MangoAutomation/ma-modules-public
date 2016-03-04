@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -18,6 +19,9 @@ import com.serotonin.m2m2.vo.hierarchy.PointFolder;
  */
 public class PointHierarchyModel extends AbstractRestModel<PointFolder>{
 
+	//Helper to speed up outgoing models
+	private Map<Integer, String> dataSourceXidMap;
+	
 	public PointHierarchyModel(){
 		super(new PointFolder());
 		this.data.setSubfolders(new ArrayList<PointFolder>());
@@ -27,8 +31,9 @@ public class PointHierarchyModel extends AbstractRestModel<PointFolder>{
 	/**
 	 * @param data
 	 */
-	public PointHierarchyModel(PointFolder data) {
+	public PointHierarchyModel(PointFolder data, Map<Integer, String> dataSourceXidMap) {
 		super(data);
+		this.dataSourceXidMap = dataSourceXidMap;
 	}
 	
 	/*
@@ -58,7 +63,7 @@ public class PointHierarchyModel extends AbstractRestModel<PointFolder>{
 	public List<PointHierarchyModel> getSubfolders(){
 		List<PointHierarchyModel> subfolders = new ArrayList<PointHierarchyModel>(this.data.getSubfolders().size());
 		for(PointFolder folder : this.data.getSubfolders()){
-			subfolders.add(new PointHierarchyModel(folder));
+			subfolders.add(new PointHierarchyModel(folder, this.dataSourceXidMap));
 		}
 		return subfolders;
 	}
@@ -73,7 +78,7 @@ public class PointHierarchyModel extends AbstractRestModel<PointFolder>{
 	public List<DataPointSummaryModel> getPoints(){
 		List<DataPointSummaryModel> points = new ArrayList<DataPointSummaryModel>();
 		for(DataPointSummary summary : this.data.getPoints())
-			points.add(new DataPointSummaryModel(summary));
+			points.add(new DataPointSummaryModel(summary, this.dataSourceXidMap.get(summary.getDataSourceId())));
 		
 		return points;
 	}

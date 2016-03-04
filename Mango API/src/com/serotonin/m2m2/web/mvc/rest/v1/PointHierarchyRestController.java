@@ -5,7 +5,9 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.hierarchy.PointFolder;
 import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -56,7 +60,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	    	PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
 	    	//Clean out based on permissions
 	    	PointFolder root = prune(ph.getRoot(), user);
-	    	PointHierarchyModel model = new PointHierarchyModel(root);
+	    	PointHierarchyModel model = new PointHierarchyModel(root, getDataSourceXidMap());
 	    	return result.createResponseEntity(model);
     	}
     	
@@ -94,7 +98,7 @@ public class PointHierarchyRestController extends MangoRestController{
 			}else{
 		    	//Clean out based on permissions
 				PointFolder root = prune(desiredFolder, user);
-				return result.createResponseEntity(new PointHierarchyModel(root)); 
+				return result.createResponseEntity(new PointHierarchyModel(root, getDataSourceXidMap())); 
 			}
 
     	}
@@ -130,7 +134,7 @@ public class PointHierarchyRestController extends MangoRestController{
 			}else{
 				//Clean out based on permissions
 				PointFolder root = prune(desiredFolder, user);
-				return result.createResponseEntity(new PointHierarchyModel(root)); 
+				return result.createResponseEntity(new PointHierarchyModel(root, getDataSourceXidMap())); 
 			}
 
     	}
@@ -293,6 +297,16 @@ public class PointHierarchyRestController extends MangoRestController{
 		}
 		
 		return null;
+	}
+	
+	private Map<Integer, String> getDataSourceXidMap(){
+		Map<Integer, String> dsXidMap = new HashMap<Integer, String>();
+		
+		for(DataSourceVO<?> ds : DataSourceDao.instance.getAll()){
+			dsXidMap.put(ds.getId(), ds.getXid());
+		}
+		
+		return dsXidMap;
 	}
 	
 }
