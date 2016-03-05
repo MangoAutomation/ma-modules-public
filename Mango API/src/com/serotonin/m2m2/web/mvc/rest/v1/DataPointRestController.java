@@ -192,7 +192,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Update an existing data point",
 			notes = "Content may be CSV or JSON"
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(
     		@PathVariable String xid,
     		@ApiParam(value = "Updated data point model", required = true)
@@ -425,41 +425,38 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Delete a data point",
 			notes = "The user must have permission to the data point"
 			)
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv"})
-    public ResponseEntity<DataPointModel> delete(@PathVariable String xid, HttpServletRequest request) {
-		
-		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>();
-		
-		//TODO Fix up to use delete by XID?
-		DataPointVO vo = DataPointDao.instance.getByXid(xid);
-		if (vo == null) {
-			result.addRestMessage(getDoesNotExistMessage());
-    		return result.createResponseEntity();
-    	}
-		
-		//Check permissions
-        User user = Common.getUser(request);
-    	try{
-    		//TODO Is this the correct permission to check?
-    		if(!Permissions.hasDataPointReadPermission(user, vo)){
-    			result.addRestMessage(getUnauthorizedMessage());
-    			return result.createResponseEntity();
-    		}
-    	}catch(PermissionException e){
-			result.addRestMessage(getUnauthorizedMessage());
-			return result.createResponseEntity();
-    	}
-		
-		try{
-			DataPointDao.instance.delete(vo.getId());
-		}catch(Exception e){
-			LOG.error(e.getMessage(), e);
-			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+	@RequestMapping(method = RequestMethod.DELETE, value = "{xid}", produces={"application/json", "text/csv"})
+    public ResponseEntity<DataPointModel> delete(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
+		RestProcessResult result = new RestProcessResult(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+		if(result.isOk()) {
+			DataPointVO existing = DaoRegistry.dataPointDao.getByXid(xid);
+			if(existing == null) {
+				result.addRestMessage(this.getDoesNotExistMessage());
+				return result.createResponseEntity();
+			}
+			else {
+				try {
+					if(!Permissions.hasDataPointReadPermission(user, existing)) {
+						result.addRestMessage(this.getUnauthorizedMessage());
+						return result.createResponseEntity();
+					}
+				}
+				catch (PermissionException e) {
+					LOG.warn(e.getMessage(), e);
+					result.addRestMessage(this.getUnauthorizedMessage());
+					return result.createResponseEntity();
+				}
+
+				Common.runtimeManager.deleteDataPoint(existing);
+				URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(new Object[]{xid}).toUri();
+				result.addRestMessage(this.getResourceCreatedMessage(location));
+				return result.createResponseEntity(new DataPointModel(existing));
+			}
+		}
+		else {
 			return result.createResponseEntity();
 		}
-		
-		//All good
-		return result.createResponseEntity(new DataPointModel(vo));
     }
 	
 	@ApiOperation(
