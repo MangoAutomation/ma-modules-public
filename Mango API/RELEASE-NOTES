@@ -1,3 +1,7 @@
+*Version 1.1.5*
+* Performance improvements for Point Hierarchy rest endpoint
+* Adding NoSQL Data Storage endpoint at /nosql
+
 *Version 1.1.4*
 * Adding Allowed Origins for CORS Websocket use
 * Performance improvements to WebSocket synchronization for Events and Point Values
