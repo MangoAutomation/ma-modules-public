@@ -21,14 +21,14 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandshakeInterceptor;
 
 /**
  * 
- * TODO Make WebSocket Configurations for Modules and use the Core's configurer
+ * TODO Make WebSocket Configurations for Modules and use the Core's configurer in 2.8.0 Release
  * @author Terry Packer
  *
  */
 @Configuration
 @EnableWebSocket
 public class MangoWebSocketConfiguration extends MangoWebSocketConfigurer{
-	
+		
 	//@See https://github.com/jetty-project/embedded-jetty-websocket-examples
 	/* (non-Javadoc)
 	 * @see org.springframework.web.socket.config.annotation.WebSocketConfigurer#registerWebSocketHandlers(org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry)
@@ -58,6 +58,11 @@ public class MangoWebSocketConfiguration extends MangoWebSocketConfigurer{
 		if(hasOrigins)
 			registration.setAllowedOrigins(origins);
 		
+		registration = registry.addHandler(com.serotonin.m2m2.web.mvc.spring.MangoWebSocketConfiguration.jsonDataHandler, "/v1/websocket/json-data")
+		.setHandshakeHandler(handshakeHandler())
+		.addInterceptors(new MangoWebSocketHandshakeInterceptor());
+		if(hasOrigins)
+			registration.setAllowedOrigins(origins);
 	}
 	
 	@Bean

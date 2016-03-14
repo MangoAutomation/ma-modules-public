@@ -1,6 +1,6 @@
 *Version 1.1.5*
 * Performance improvements for Point Hierarchy rest endpoint
-* Adding NoSQL Data Storage endpoint at /nosql
+* Adding NoSQL Data Storage endpoint at /json-data
 
 *Version 1.1.4*
 * Adding Allowed Origins for CORS Websocket use

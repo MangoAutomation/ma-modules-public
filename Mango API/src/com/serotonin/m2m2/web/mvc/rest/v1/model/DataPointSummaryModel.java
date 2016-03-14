@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 public class DataPointSummaryModel extends AbstractRestModel<DataPointSummary>{
 
 	public DataPointSummaryModel(){
-		super(new DataPointSummary());
+		this(new DataPointSummary(), null);
 	}
 	
 	//For performance
