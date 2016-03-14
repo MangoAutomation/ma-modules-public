@@ -4,6 +4,35 @@
 */
 //
 // Anonymous views
+mango.view.setData = function(stateArr) {
+	var state;
+    for (var i=0; i<stateArr.length; i++) {
+        state = stateArr[i];
+        
+        // Check that the point exists. Ignore if it doesn't.
+        if (!$("c"+ state.id))
+            throw "Can't find point view c"+ state.id;
+        
+        mango.view.setContent(state);
+        
+        if ($("c"+ state.id +"Controls")) {
+            if (state.info != null)
+                $set("c"+ state.id +"Info", state.info);
+            if (state.change != null) {
+                if (state.change) 
+                    show("c"+ state.id +"ChangeMin");
+                
+                if (mango.view.setEditing !== true)
+                    $set("c"+ state.id +"Change", state.change);
+            }
+            if (state.chart != null)
+                $set("c"+ state.id +"Chart", state.chart);
+        }
+        
+        mango.view.setMessages(state);
+    }
+};
+
 mango.view.initAnonymousView = function(viewId) {
     mango.view.setPoint = mango.view.anon.setPoint;
     // Tell the long poll request that we're interested in anonymous view data, and not max alarm.
