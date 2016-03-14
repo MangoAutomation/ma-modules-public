@@ -1,3 +1,6 @@
+*Version 1.6.5*
+* Fixed bug where setting a point value could result in a differnt point being set.
+
 *Version 1.6.4*
 * Allowing module javascript scripts in public views, fixing elements relying on sstGraphics
 * Fixing bug where a user could not save a shared view if it contained a permission the user did not have, users now cannot 'add' a new permission they do not have.
