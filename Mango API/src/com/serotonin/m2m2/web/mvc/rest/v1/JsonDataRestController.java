@@ -90,46 +90,14 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     	
     	return result.createResponseEntity();
 	}
-	
-	
-	@ApiOperation(
-			value = "Get JSON Data Model",
-			notes = "Retreive a full model",
-			response = JsonDataModel.class
-			)
-    @RequestMapping(method = RequestMethod.GET, value="/full/{xid}", produces={"application/json"})
-    public ResponseEntity<JsonDataModel> getFull(
-    		HttpServletRequest request, 
-    		
-    		@ApiParam(value = "Data xid", required = true, allowMultiple = false)
-    		@PathVariable String xid
-   		){
-        
-    	RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    		JsonDataVO vo = JsonDataDao.instance.getByXid(xid);
-    		if(vo == null){
-    			result.addRestMessage(getDoesNotExistMessage());
-    		}else{
-    			//Check existing permissions
-				if(!Permissions.hasPermission(user, vo.getReadPermission())){
-					result.addRestMessage(getUnauthorizedMessage());
-					return result.createResponseEntity();
-				}
-    			return result.createResponseEntity(new JsonDataModel(vo));
-    		}
-    	}
-    	
-    	return result.createResponseEntity();
-	}
+
 	
 	@ApiOperation(
 			value = "Get JSON Data",
 			notes = "Returns only the data"
 			)
     @RequestMapping(method = RequestMethod.GET, value="/{xid}", produces={"application/json"})
-    public ResponseEntity<Object> getData(
+    public ResponseEntity<JsonDataModel> getData(
     		HttpServletRequest request, 
 
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -137,15 +105,13 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
    		){
 		return getDataWithPath(request, xid, null);
 	}
-
-		
 	
 	@ApiOperation(
 			value = "Get JSON Data using a path",
 			notes = "To get a sub component of the data use a path of member.submember"
 			)
     @RequestMapping(method = RequestMethod.GET, value="/{xid}/{path:.*}", produces={"application/json"})
-    public ResponseEntity<Object> getDataWithPath(
+    public ResponseEntity<JsonDataModel> getDataWithPath(
     		HttpServletRequest request, 
 
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -155,7 +121,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String path
    		){
         
-    	RestProcessResult<Object> result = new RestProcessResult<Object>(HttpStatus.OK);
+    	RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
@@ -170,7 +136,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				}
 				
 				if(path == null)
-					return result.createResponseEntity(vo.getJsonData());
+					return result.createResponseEntity(new JsonDataModel(vo));
 				else{
 		    		String[] pathParts;
 		    		if(path.contains("."))
@@ -181,8 +147,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 		    		if(data == null){
 		    			result.addRestMessage(getDoesNotExistMessage());
 		    			return result.createResponseEntity();
-		    		}else
-		    			return result.createResponseEntity(data);
+		    		}else{
+		    			vo.setJsonData(data);
+		    			return result.createResponseEntity(new JsonDataModel(vo));
+		    		}
 				}
     		}
     	}
