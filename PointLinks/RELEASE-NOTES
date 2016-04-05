@@ -1,3 +1,6 @@
+*Version 1.5.4*
+* Fixed bug where validating a script without a target point would crash the page
+
 *Version 1.5.3*
 * Fixed bug in permissions where the arrow popup of all available permissions was broken
 
