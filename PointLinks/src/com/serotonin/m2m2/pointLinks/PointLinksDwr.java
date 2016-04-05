@@ -144,30 +144,35 @@ public class PointLinksDwr extends ModuleDwr {
         else {
             Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
             context.put(PointLinkRT.CONTEXT_VAR_NAME, point);
-            int targetDataType = new DataPointDao().getDataPoint(targetPointId).getPointLocator().getDataTypeId();
-
-            final StringWriter scriptOut = new StringWriter();
-            final PrintWriter scriptWriter = new PrintWriter(scriptOut);
-            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
-
-            try {
-                PointValueTime pvt = scriptExecutor.execute(script, context, null, System.currentTimeMillis(),
-                        targetDataType, -1, permissions ,scriptWriter, scriptLog);
-                if (pvt.getValue() == null)
-                    message = new TranslatableMessage("event.pointLink.nullResult");
-                else if (pvt.getTime() == -1)
-                    message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
-                else
-                    message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
-                            Functions.getTime(pvt.getTime()));
-            	//Add the script logging output
-                response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
-            }
-            catch (ScriptException e) {
-                message = new TranslatableMessage("common.default", e.getMessage());
-            }
-            catch (ResultTypeException e) {
-                message = e.getTranslatableMessage();
+            DataPointVO target = DataPointDao.instance.getDataPoint(targetPointId);
+            if(target == null){
+            	message = new TranslatableMessage("pointLinks.validate.targetRequired");
+            }else{
+	            int targetDataType = target.getPointLocator().getDataTypeId();
+	
+	            final StringWriter scriptOut = new StringWriter();
+	            final PrintWriter scriptWriter = new PrintWriter(scriptOut);
+	            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
+	
+	            try {
+	                PointValueTime pvt = scriptExecutor.execute(script, context, null, System.currentTimeMillis(),
+	                        targetDataType, -1, permissions ,scriptWriter, scriptLog);
+	                if (pvt.getValue() == null)
+	                    message = new TranslatableMessage("event.pointLink.nullResult");
+	                else if (pvt.getTime() == -1)
+	                    message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
+	                else
+	                    message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
+	                            Functions.getTime(pvt.getTime()));
+	            	//Add the script logging output
+	                response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
+	            }
+	            catch (ScriptException e) {
+	                message = new TranslatableMessage("common.default", e.getMessage());
+	            }
+	            catch (ResultTypeException e) {
+	                message = e.getTranslatableMessage();
+	            }
             }
         }
 
