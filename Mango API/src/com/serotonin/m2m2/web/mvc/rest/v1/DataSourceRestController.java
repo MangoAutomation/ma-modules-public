@@ -112,18 +112,15 @@ public class DataSourceRestController extends MangoRestController{
 	
 	/**
 	 * Put a data source into the system
-	 * @param vo
 	 * @param xid
-	 * @param builder
+	 * @param model
+     * @param builder
 	 * @param request
 	 * @return
 	 */
-	@ApiOperation(
-			value = "Add data source",
-			notes = "Not fully implemented"
-			)
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"})
-    public ResponseEntity<AbstractDataSourceModel<?>> updateDataPoint(
+	@ApiOperation(value = "Update data source")
+	@RequestMapping(method = RequestMethod.PUT, value = "{xid}", produces={"application/json"})
+    public ResponseEntity<AbstractDataSourceModel<?>> updateDataSource(
     		@PathVariable String xid,
     		@RequestBody AbstractDataSourceModel<?> model, 
     		UriComponentsBuilder builder, 
@@ -173,5 +170,87 @@ public class DataSourceRestController extends MangoRestController{
         //Not logged in
         return result.createResponseEntity();
     }
-	
+
+	@ApiOperation(value = "Save data source")
+	@RequestMapping(
+			method = {RequestMethod.PUT},
+			value = {"/save"},
+			produces = {"application/json"}
+	)
+	public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(@RequestBody AbstractDataSourceModel<?> model, UriComponentsBuilder builder, HttpServletRequest request) {
+		RestProcessResult result = new RestProcessResult(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+		if(result.isOk()) {
+			DataSourceVO vo = model.getData();
+			DataSourceVO existing = (DataSourceVO)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+			if(existing != null) {
+				result.addRestMessage(this.getAlreadyExistsMessage());
+				return result.createResponseEntity();
+			} else {
+				try {
+					if(!Permissions.hasAdmin(user)) {
+						result.addRestMessage(this.getUnauthorizedMessage());
+						return result.createResponseEntity();
+					}
+				} catch (PermissionException pe) {
+					LOG.warn(pe.getMessage(), pe);
+					result.addRestMessage(this.getUnauthorizedMessage());
+					return result.createResponseEntity();
+				}
+
+				ProcessResult validation = new ProcessResult();
+				vo.validate(validation);
+				if(!model.validate()) {
+					result.addRestMessage(this.getValidationFailedError());
+					return result.createResponseEntity(model);
+				}
+				else {
+					Common.runtimeManager.saveDataSource(vo);
+					DataSourceVO created = (DataSourceVO)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+					URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
+					result.addRestMessage(this.getResourceCreatedMessage(location));
+					return result.createResponseEntity(created.asModel());
+				}
+			}
+		} else {
+			return result.createResponseEntity();
+		}
+	}
+
+
+	@ApiOperation(value = "Delete data source")
+	@RequestMapping(
+			method = {RequestMethod.DELETE},
+			value = {"{xid}"},
+			produces = {"application/json"}
+	)
+	public ResponseEntity<AbstractDataSourceModel<?>> deleteDataSource(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
+		RestProcessResult result = new RestProcessResult(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+		if(result.isOk()) {
+			DataSourceVO existing = (DataSourceVO)DaoRegistry.dataSourceDao.getByXid(xid);
+			if(existing == null) {
+				result.addRestMessage(this.getDoesNotExistMessage());
+				return result.createResponseEntity();
+			} else {
+				try {
+					if(!Permissions.hasDataSourcePermission(user, existing.getId())) {
+						result.addRestMessage(this.getUnauthorizedMessage());
+						return result.createResponseEntity();
+					}
+				} catch (PermissionException pe) {
+					LOG.warn(pe.getMessage(), pe);
+					result.addRestMessage(this.getUnauthorizedMessage());
+					return result.createResponseEntity();
+				}
+
+				Common.runtimeManager.deleteDataSource(existing.getId());
+				URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{xid}).toUri();
+				result.addRestMessage(this.getResourceCreatedMessage(location));
+				return result.createResponseEntity(existing);
+			}
+		}
+		return result.createResponseEntity();
+	}
+
 }
