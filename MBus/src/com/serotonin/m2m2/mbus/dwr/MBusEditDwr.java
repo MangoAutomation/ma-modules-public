@@ -51,39 +51,60 @@ public class MBusEditDwr extends DataSourceEditDwr {
     }
 
     @DwrPermission(user = true)
-    public void searchMBusByPrimaryAddressing(String commPortId, String phonenumber, int baudrate, int flowControlIn,
+    public ProcessResult searchMBusByPrimaryAddressing(int dataSourceId, String commPortId, String phonenumber, int baudrate, int flowControlIn,
             int flowcontrolOut, int dataBits, int stopBits, int parity, String firstPrimaryAddress,
             String lastPrimaryAddress, int responseTimeoutOffset) {
+    	ProcessResult result = new ProcessResult();
         User user = Common.getUser();
         Permissions.ensureDataSourcePermission(user);
 
-        MBusDiscovery discovery = MBusDiscovery.createPrimaryAddressingSearch(getTranslations(), commPortId,
-                phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity,
-                Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16), responseTimeoutOffset);
-        user.setTestingUtility(discovery);
+        if(!Common.runtimeManager.isDataSourceRunning(dataSourceId)){
+            MBusDiscovery discovery = MBusDiscovery.createPrimaryAddressingSearch(getTranslations(), commPortId,
+                    phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity,
+                    Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16), responseTimeoutOffset);
+            user.setTestingUtility(discovery);
+            result.addData("sourceRunning", false);
+        }else{
+        	result.addData("sourceRunning", true);
+        }
+        return result;
     }
 
     @DwrPermission(user = true)
-    public void searchMBusByPrimaryAddressingTcp(String host, int port,
+    public ProcessResult searchMBusByPrimaryAddressingTcp(int dataSourceId, String host, int port,
             String firstPrimaryAddress,
             String lastPrimaryAddress, int responseTimeoutOffset) {
+    	ProcessResult result = new ProcessResult();
         User user = Common.getUser();
         Permissions.ensureDataSourcePermission(user);
 
-        MBusDiscovery discovery = MBusDiscovery.createPrimaryAddressingSearch(getTranslations(), host, port,
-                Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16), responseTimeoutOffset);
-        user.setTestingUtility(discovery);
+        if(!Common.runtimeManager.isDataSourceRunning(dataSourceId)){
+	        MBusDiscovery discovery = MBusDiscovery.createPrimaryAddressingSearch(getTranslations(), host, port,
+	                Integer.parseInt(firstPrimaryAddress, 16), Integer.parseInt(lastPrimaryAddress, 16), responseTimeoutOffset);
+	        user.setTestingUtility(discovery);
+	        result.addData("sourceRunning", false);
+        }else{
+        	result.addData("sourceRunning", true);
+        }
+        return result;
     }
     
     @DwrPermission(user = true)
-    public void searchMBusBySecondaryAddressing(String commPortId, String phonenumber, int baudrate, int flowControlIn,
+    public ProcessResult searchMBusBySecondaryAddressing(int dataSourceId, String commPortId, String phonenumber, int baudrate, int flowControlIn,
             int flowcontrolOut, int dataBits, int stopBits, int parity, int responseTimeoutOffset) {
-        User user = Common.getUser();
+    	ProcessResult result = new ProcessResult();
+    	User user = Common.getUser();
         Permissions.ensureDataSourcePermission(user);
-
-        MBusDiscovery discovery = MBusDiscovery.createSecondaryAddressingSearch(getTranslations(), commPortId,
-                phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity, responseTimeoutOffset);
-        user.setTestingUtility(discovery);
+        
+        if(!Common.runtimeManager.isDataSourceRunning(dataSourceId)){
+	        MBusDiscovery discovery = MBusDiscovery.createSecondaryAddressingSearch(getTranslations(), commPortId,
+	                phonenumber, baudrate, flowControlIn, flowcontrolOut, dataBits, stopBits, parity, responseTimeoutOffset);
+	        user.setTestingUtility(discovery);
+	        result.addData("sourceRunning", false);
+        }else{
+        	result.addData("sourceRunning", true);
+        }
+        return result;
     }
 
     @DwrPermission(user = true)

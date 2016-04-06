@@ -36,17 +36,17 @@
       dwr.util.removeAllRows("mbusDevices");
       if ($get("addressingType") == "PRIMARY") {
     	  //For testing and perhaps future implementation
-//     	  MBusEditDwr.searchMBusByPrimaryAddressingTcp("localhost",8100,
+//     	  MBusEditDwr.searchMBusByPrimaryAddressingTcp(currentDsId, "localhost",8100,
 //                   $get("firstPrimaryAddress"), $get("lastPrimaryAddress"),
 //                   $get("responseTimeoutOffset"), searchCB);
 
-          MBusEditDwr.searchMBusByPrimaryAddressing($get("commPortId"), $get("phonenumber"),
+          MBusEditDwr.searchMBusByPrimaryAddressing(currentDsId, $get("commPortId"), $get("phonenumber"),
               $get("baudRate"),  $get("flowControlIn"),  $get("flowControlOut"),
               $get("dataBits"),  $get("stopBits"),  $get("parity"),
               $get("firstPrimaryAddress"), $get("lastPrimaryAddress"),
               $get("responseTimeoutOffset"), searchCB);
       } else if ($get("addressingType") == "SECONDARY") {
-          MBusEditDwr.searchMBusBySecondaryAddressing($get("commPortId"), $get("phonenumber"),
+          MBusEditDwr.searchMBusBySecondaryAddressing(currentDsId, $get("commPortId"), $get("phonenumber"),
               $get("baudRate"),  $get("flowControlIn"),  $get("flowControlOut"),
               $get("dataBits"),  $get("stopBits"),  $get("parity"),
               $get("responseTimeoutOffset"), searchCB);
@@ -55,10 +55,15 @@
       }
   }
 
-  function searchCB() {
-      searchButtons(true);
-      //$set("searchMessage", "Callback searchCB");
-      setTimeout(searchUpdate, 1000);
+  function searchCB(result) {
+	  if(result.data.sourceRunning === true){
+		  searchButtons(false);
+		  $set("searchMessage", '<fmt:message key="dsEdit.mbus.noSearchWhileDataSourceRunning"/>');
+	  }else{
+	      searchButtons(true);
+	      //$set("searchMessage", "Callback searchCB");
+	      setTimeout(searchUpdate, 1000);		  
+	  }
   }
 
   function searchUpdate() {

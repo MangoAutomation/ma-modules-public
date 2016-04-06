@@ -155,7 +155,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         if (StringUtils.isBlank(commPortId)) {
             response.addContextualMessage("commPortId", "validate.required");
         }
-        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType)) {
+        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType, Common.TimePeriods.MILLISECONDS)) {
             response.addContextualMessage("updatePeriodType", "validate.invalidValue");
         }
         if (updatePeriods <= 0) {
