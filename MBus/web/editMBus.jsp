@@ -56,7 +56,7 @@
   }
 
   function searchCB(result) {
-	  if(result.data.sourceRunning === true){
+	  if((typeof result != 'undefined') && (result.data.sourceRunning === true)){
 		  searchButtons(false);
 		  $set("searchMessage", '<fmt:message key="dsEdit.mbus.noSearchWhileDataSourceRunning"/>');
 	  }else{
