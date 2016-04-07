@@ -119,7 +119,7 @@ public class DataSourceRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "Update data source")
-	@RequestMapping(method = RequestMethod.PUT, value = "{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"})
     public ResponseEntity<AbstractDataSourceModel<?>> updateDataSource(
     		@PathVariable String xid,
     		@RequestBody AbstractDataSourceModel<?> model, 
@@ -164,7 +164,7 @@ public class DataSourceRestController extends MangoRestController{
 	        
 	        //Put a link to the updated data in the header?
 	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(xid).toUri();
-	    	result.addRestMessage(getResourceCreatedMessage(location));
+	    	result.addRestMessage(getResourceUpdatedMessage(location));
 	        return result.createResponseEntity(model);
         }
         //Not logged in
@@ -173,22 +173,21 @@ public class DataSourceRestController extends MangoRestController{
 
 	@ApiOperation(value = "Save data source")
 	@RequestMapping(
-			method = {RequestMethod.PUT},
-			value = {"/save"},
+			method = {RequestMethod.POST},
 			produces = {"application/json"}
 	)
 	public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(@RequestBody AbstractDataSourceModel<?> model, UriComponentsBuilder builder, HttpServletRequest request) {
-		RestProcessResult result = new RestProcessResult(HttpStatus.OK);
+		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
-			DataSourceVO vo = model.getData();
-			DataSourceVO existing = (DataSourceVO)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+			DataSourceVO<?> vo = model.getData();
+			DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
 			if(existing != null) {
 				result.addRestMessage(this.getAlreadyExistsMessage());
 				return result.createResponseEntity();
 			} else {
 				try {
-					if(!Permissions.hasAdmin(user)) {
+					if(!Permissions.hasDataSourcePermission(user)) {
 						result.addRestMessage(this.getUnauthorizedMessage());
 						return result.createResponseEntity();
 					}
@@ -206,7 +205,7 @@ public class DataSourceRestController extends MangoRestController{
 				}
 				else {
 					Common.runtimeManager.saveDataSource(vo);
-					DataSourceVO created = (DataSourceVO)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+					DataSourceVO<?> created = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
 					URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
 					result.addRestMessage(this.getResourceCreatedMessage(location));
 					return result.createResponseEntity(created.asModel());
@@ -221,14 +220,14 @@ public class DataSourceRestController extends MangoRestController{
 	@ApiOperation(value = "Delete data source")
 	@RequestMapping(
 			method = {RequestMethod.DELETE},
-			value = {"{xid}"},
+			value = {"/{xid}"},
 			produces = {"application/json"}
 	)
 	public ResponseEntity<AbstractDataSourceModel<?>> deleteDataSource(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
-		RestProcessResult result = new RestProcessResult(HttpStatus.OK);
+		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
-			DataSourceVO existing = (DataSourceVO)DaoRegistry.dataSourceDao.getByXid(xid);
+			DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(xid);
 			if(existing == null) {
 				result.addRestMessage(this.getDoesNotExistMessage());
 				return result.createResponseEntity();
@@ -245,9 +244,7 @@ public class DataSourceRestController extends MangoRestController{
 				}
 
 				Common.runtimeManager.deleteDataSource(existing.getId());
-				URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{xid}).toUri();
-				result.addRestMessage(this.getResourceCreatedMessage(location));
-				return result.createResponseEntity(existing);
+				return result.createResponseEntity(existing.asModel());
 			}
 		}
 		return result.createResponseEntity();

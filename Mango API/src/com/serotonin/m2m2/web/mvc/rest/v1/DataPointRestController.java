@@ -192,7 +192,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Update an existing data point",
 			notes = "Content may be CSV or JSON"
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "{xid}")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(
     		@PathVariable String xid,
     		@ApiParam(value = "Updated data point model", required = true)
@@ -216,7 +216,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        
 	        //Check permissions
 	    	try{
-	    		if(!Permissions.hasDataPointReadPermission(user, vo)){
+	    		if(!Permissions.hasDataSourcePermission(user, vo.getDataSourceId())){
 	    			result.addRestMessage(getUnauthorizedMessage());
 	        		return result.createResponseEntity();
 	
@@ -425,9 +425,9 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Delete a data point",
 			notes = "The user must have permission to the data point"
 			)
-	@RequestMapping(method = RequestMethod.DELETE, value = "{xid}", produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv"})
     public ResponseEntity<DataPointModel> delete(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
-		RestProcessResult result = new RestProcessResult(HttpStatus.OK);
+		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
 			DataPointVO existing = DaoRegistry.dataPointDao.getByXid(xid);
@@ -437,7 +437,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			}
 			else {
 				try {
-					if(!Permissions.hasDataPointReadPermission(user, existing)) {
+					//Ensure we have permission to edit the data source
+					if(!Permissions.hasDataSourcePermission(user, existing.getDataSourceId())) {
 						result.addRestMessage(this.getUnauthorizedMessage());
 						return result.createResponseEntity();
 					}
@@ -449,8 +450,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 				}
 
 				Common.runtimeManager.deleteDataPoint(existing);
-				URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(new Object[]{xid}).toUri();
-				result.addRestMessage(this.getResourceCreatedMessage(location));
 				return result.createResponseEntity(new DataPointModel(existing));
 			}
 		}
