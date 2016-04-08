@@ -174,10 +174,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String xid,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -187,7 +187,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		Map<String, Object> data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
-		return updateJsonData(xid, null, readPermissions, editPermissions, name, data, builder, request);
+		return updateJsonData(xid, null, readPermission, editPermission, name, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -209,10 +209,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String path,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -223,7 +223,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
-		return modifyJsonData(MapOperation.APPEND, result, xid, path, readPermissions, editPermissions, name, data, builder, request);
+		return modifyJsonData(MapOperation.APPEND, result, xid, path, readPermission, editPermission, name, data, builder, request);
 	}
 	
 	
@@ -243,10 +243,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String xid,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -256,7 +256,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		Map<String, Object> data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
-		return replaceJsonData(xid, null, readPermissions, editPermissions, name, data, builder, request);
+		return replaceJsonData(xid, null, readPermission, editPermission, name, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -278,10 +278,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String path,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermissions,
+    		@RequestParam(required=false, defaultValue="") String[] editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -292,7 +292,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
-		return modifyJsonData(MapOperation.REPLACE, result, xid, path, readPermissions, editPermissions, name, data, builder, request);
+		return modifyJsonData(MapOperation.REPLACE, result, xid, path, readPermission, editPermission, name, data, builder, request);
 	}
 	
 	@ApiOperation(
