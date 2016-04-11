@@ -295,7 +295,88 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         //Not logged in
         return result.createResponseEntity();
     }
+
+	@ApiOperation(
+			value = "Create a data point",
+			notes = "Content may be CSV or JSON"
+			)
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
+    public ResponseEntity<DataPointModel> saveDataPoint(
+    		@ApiParam(value = "Data point model", required = true)
+    		@RequestBody DataPointModel model, 
+    		UriComponentsBuilder builder, HttpServletRequest request) {
+
+		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	boolean contentTypeCsv = false;
+        	if(request.getContentType().toLowerCase().contains("text/csv"))
+        		contentTypeCsv = true;
+        	
+			DataPointVO vo = model.getData();
+	        
+			//Ensure ds exists
+			DataSourceVO<?> dataSource = DaoRegistry.dataSourceDao.getByXid(model.getDataSourceXid());
+        	//We will always override the DS Info with the one from the XID Lookup
+            if (dataSource == null){
+            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getDataSourceXid()));
+            	return result.createResponseEntity();
+            }else {
+    			vo.setDataSourceId(dataSource.getId());
+    			vo.setDataSourceName(dataSource.getName());
+            }
+			
+	        //Check permissions
+	    	try{
+	    		if(!Permissions.hasDataSourcePermission(user, vo.getDataSourceId())){
+	    			result.addRestMessage(getUnauthorizedMessage());
+	        		return result.createResponseEntity();
 	
+	    		}
+	    	}catch(PermissionException e){
+	    		result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+        	}
+    		
+	        //Check the Template and see if we need to use it
+	        if(model.getTemplateXid() != null){
+            	
+            	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+            	if(template == null){
+            		model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "templateXid");
+            		result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid())));
+            	}
+            }else{
+        		if(contentTypeCsv){
+            		model.addValidationMessage("validate.required", RestMessageLevel.ERROR, "templateXid");
+            		result.addRestMessage(this.getValidationFailedError());
+            		return result.createResponseEntity(model);
+        		}
+                vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
+                if(vo.getChartColour() == null)
+                	vo.setChartColour(""); //Can happen when CSV comes in without template       
+            }
+	        
+	        if(vo.getXid() == null)
+	        	vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());       
+	        
+	        if(!model.validate()){
+	        	result.addRestMessage(this.getValidationFailedError());
+	        	return result.createResponseEntity(model); 
+	        }else{
+	            Common.runtimeManager.saveDataPoint(vo);
+	        }
+	        
+	        //Put a link to the updated data in the header?
+	    	URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
+	    	
+	    	result.addRestMessage(getResourceUpdatedMessage(location));
+	        return result.createResponseEntity(model);
+        }
+        //Not logged in
+        return result.createResponseEntity();
+    }
 
 	@ApiOperation(
 			value = "Insert/Update multiple data points",

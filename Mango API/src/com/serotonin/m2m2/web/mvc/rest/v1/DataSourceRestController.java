@@ -4,11 +4,14 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,8 +25,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -31,6 +36,9 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceStreamCallback;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
@@ -41,12 +49,40 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api(value="Data Sources", description="Data Sources")
 @RestController
 @RequestMapping("/v1/data-sources")
-public class DataSourceRestController extends MangoRestController{
+public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao>{
 
 	public DataSourceRestController(){
+		super(DaoRegistry.dataSourceDao);
 		LOG.info("Creating DS Rest Controller");
 	}
 	private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
+	
+	@ApiOperation(
+			value = "Query Data Sources",
+			notes = "Use RQL formatted query",
+			response=DataPointModel.class,
+			responseContainer="List"
+			)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    public ResponseEntity<QueryDataPageStream<DataSourceVO<?>>> queryRQL(
+    		   		   		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<QueryDataPageStream<DataSourceVO<?>>> result = new RestProcessResult<QueryDataPageStream<DataSourceVO<?>>>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		try{
+    			ASTNode node = this.parseRQLtoAST(request);
+    			DataSourceStreamCallback callback = new DataSourceStreamCallback(this, user);
+    			return result.createResponseEntity(getPageStream(node, callback));
+    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+    		}
+    	}
+    	return result.createResponseEntity();
+	}
 	
 	@ApiOperation(
 			value = "Get all data sources",
@@ -180,23 +216,24 @@ public class DataSourceRestController extends MangoRestController{
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
+			
+			try {
+				if(!Permissions.hasDataSourcePermission(user)) {
+					result.addRestMessage(this.getUnauthorizedMessage());
+					return result.createResponseEntity();
+				}
+			} catch (PermissionException pe) {
+				LOG.warn(pe.getMessage(), pe);
+				result.addRestMessage(this.getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}
+			
 			DataSourceVO<?> vo = model.getData();
 			DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
 			if(existing != null) {
 				result.addRestMessage(this.getAlreadyExistsMessage());
 				return result.createResponseEntity();
 			} else {
-				try {
-					if(!Permissions.hasDataSourcePermission(user)) {
-						result.addRestMessage(this.getUnauthorizedMessage());
-						return result.createResponseEntity();
-					}
-				} catch (PermissionException pe) {
-					LOG.warn(pe.getMessage(), pe);
-					result.addRestMessage(this.getUnauthorizedMessage());
-					return result.createResponseEntity();
-				}
-
 				ProcessResult validation = new ProcessResult();
 				vo.validate(validation);
 				if(!model.validate()) {
@@ -248,6 +285,17 @@ public class DataSourceRestController extends MangoRestController{
 			}
 		}
 		return result.createResponseEntity();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
+	 */
+	@Override
+	public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo) {
+		if(vo != null)
+			return vo.asModel();
+		else
+			return null;
 	}
 
 }
