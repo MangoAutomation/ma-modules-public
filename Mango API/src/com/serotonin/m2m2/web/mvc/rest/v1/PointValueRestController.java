@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.serotonin.m2m2.Common;
@@ -52,6 +53,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueFftCalculat
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StatisticsStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
@@ -518,133 +520,187 @@ public class PointValueRestController extends MangoRestController{
 		
 		User user = this.checkUser(request, result);
 		if(result.isOk()){
-		
-	        DataPointVO existingDp = DataPointDao.instance.getByXid(xid);
-	        if (existingDp == null) {
-	        	result.addRestMessage(getDoesNotExistMessage());
-	        	return result.createResponseEntity();
-	    	}
-	        
-	    	try{
-	    		if(Permissions.hasDataPointSetPermission(user, existingDp)){
-	    			
-	    			//Set the time to now if it is not present
-	    			if(model.getTimestamp() == 0){
-	    				model.setTimestamp(System.currentTimeMillis());
-	    			}
-	    			
-	    			//Validate the model's data type for compatibility
-	    			if(DataTypeEnum.convertFrom(model.getType()) != existingDp.getPointLocator().getDataTypeId()){
-	    				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("event.ds.dataType"));
-	    				return result.createResponseEntity();
-	    			}
-	    			
-	    			//Validate the timestamp for future dated
-	    			if (model.getTimestamp() > System.currentTimeMillis() + SystemSettingsDao.getFutureDateLimit()) {
-	    				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Future dated points not acceptable."));
-	    				return result.createResponseEntity();
-	    		    }
-
-	    			//TODO Backdate validation?
-	    			//boolean backdated = pointValue != null && newValue.getTime() < pointValue.getTime();
-    		        
-	    			//Are we converting from the rendered Unit?
-	    			if(unitConversion){
-	    				if((model.getType() == DataTypeEnum.NUMERIC)&&(model.getValue() instanceof Number)){
-	    					double value;
-	    					if(model.getValue() instanceof Integer){
-	    						value = (double)((Integer)model.getValue());
-	    					}else{
-	    						value = (double)((Double)model.getValue());
-	    					}
-	    					model.setValue(existingDp.getRenderedUnit().getConverterTo(existingDp.getUnit()).convert(value));
-	    				}else{
-	    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Cannot perform unit conversion on Non Numeric data types."));
-	    					return result.createResponseEntity();
-	    				}
-	    			}
-	    			
-	    			//If we are a multistate point and our value is in string format then we should try to convert it
-	    			if((model.getType() == DataTypeEnum.MULTISTATE)&&(model.getValue() instanceof String)){
-	    				try{
-		    				DataValue value = existingDp.getTextRenderer().parseText((String)model.getValue(), existingDp.getPointLocator().getDataTypeId());
-		    				model.setValue(value.getObjectValue());
-	    				}catch(Exception e){
-	    					//Lots can go wrong here so let the user know
-	    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Unable to convert Multistate String representation to any known value."));
-	    				}
-	    			}
-	    			
-	    			
-	    			
-    		        final PointValueTime pvt;
-    				try{
-    					pvt = model.getData(); 
-    				}catch(Exception e){
-    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Invalid Format"));
-    					return result.createResponseEntity();
-    				}
-    				
-    				//one last check to ensure we are inserting the correct data type
-	    			if(DataTypes.getDataType(pvt.getValue()) != existingDp.getPointLocator().getDataTypeId()){
-	    				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("event.ds.dataType"));
-	    				return result.createResponseEntity();
-	    			}
-    				
-	    	        final int dataSourceId = existingDp.getDataSourceId();
-	    	        SetPointSource source = null;
-	    	        if(model.getAnnotation() != null){
-	    	        	source = new SetPointSource(){
-	
-	    					@Override
-	    					public String getSetPointSourceType() {
-	    						return "REST";
-	    					}
-	
-	    					@Override
-	    					public int getSetPointSourceId() {
-	    						return dataSourceId;
-	    					}
-	
-	    					@Override
-	    					public TranslatableMessage getSetPointSourceMessage() {
-	    						return ((AnnotatedPointValueTime)pvt).getSourceMessage();
-	    					}
-	
-	    					@Override
-	    					public void raiseRecursionFailureEvent() {
-	    						LOG.error("Recursive failure while setting point via REST");
-	    					}
-	    	        		
-	    	        	};
-	    	        }
-	    	        try{
-	    	        	Common.runtimeManager.setDataPointValue(existingDp.getId(), pvt, source);
-	    	        	//This URI may not always be accurate if the Data Source doesn't use the provided time...
-	    	        	URI location = builder.path("/v1/pointValue/{xid}/{time}").buildAndExpand(xid, pvt.getTime()).toUri();
-	    		    	result.addRestMessage(getResourceCreatedMessage(location));
-	    		        return result.createResponseEntity(new PointValueTimeModel(pvt));
-	
-	    	        }catch(RTException e){
-	    	        	//Ok its probably not enabled or settable
-	    	        	result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", e.getMessage())));
-	    	        	return result.createResponseEntity();
-	    	        }catch(Exception e){
-	    	        	LOG.error(e.getMessage(), e);
-	    	        	result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-	    	        	return result.createResponseEntity();
-	    	        }
-	    		}else{
-		    		result.addRestMessage(getUnauthorizedMessage());
-		    		return result.createResponseEntity();
-	    		}
-	    	}catch(PermissionException e){
-	    		LOG.error(e.getMessage(), e);
-	    		result.addRestMessage(getUnauthorizedMessage());
-	    		return result.createResponseEntity();
-	    	}
+			RestProcessResult<PointValueTimeModel> setResult = setPointValue(user, xid, model, unitConversion, builder);
+			if(setResult.getHighestStatus().value() == HttpStatus.CREATED.value())
+				return setResult.createResponseEntity(model);
+			else
+				return setResult.createResponseEntity();
 		}else{
 			return result.createResponseEntity();
 		}
     }
+	
+	@ApiOperation(
+			value = "Update one or many data point's current value",
+			notes = "Each data point must exist and be enabled"
+			)
+	@RequestMapping(method = RequestMethod.PUT, produces={"application/json"}, consumes={"application/json"})
+    public ResponseEntity<List<XidPointValueTimeModel>> putPointsValues(
+    		HttpServletRequest request, 
+    		@RequestBody List<XidPointValueTimeModel> models, 
+
+    		@ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+    		@RequestParam(required=false, defaultValue="false") boolean unitConversion) throws RestValidationFailedException {
+		
+		RestProcessResult<List<XidPointValueTimeModel>> result = new RestProcessResult<List<XidPointValueTimeModel>>(HttpStatus.OK);
+		List<XidPointValueTimeModel> setValues = new ArrayList<XidPointValueTimeModel>();
+		
+		User user = this.checkUser(request, result);
+		if(result.isOk()){
+		
+			for(XidPointValueTimeModel model : models){
+				RestProcessResult<PointValueTimeModel> pointResult = setPointValue(user, model.getXid(), model, unitConversion, ServletUriComponentsBuilder.fromContextPath(request));
+				if(pointResult.getHighestStatus().value() == HttpStatus.CREATED.value()){
+					//Save the model for later
+					setValues.add(model);
+				}
+				for(RestMessage message : pointResult.getRestMessages()){
+					result.addRestMessage(message);
+				}
+			}
+			if(setValues.size() > 0)
+				return result.createResponseEntity(setValues);
+		}
+		return result.createResponseEntity();
+    }
+
+	/**
+	 * 
+	 * Helper method for setting a point value
+	 * 
+	 * @param xid
+	 * @param data
+	 * @param unitConversion
+	 * @return
+	 */
+	private RestProcessResult<PointValueTimeModel> setPointValue(User user, String xid,
+			PointValueTimeModel model, boolean unitConversion, UriComponentsBuilder builder) {
+
+		RestProcessResult<PointValueTimeModel> result = new RestProcessResult<PointValueTimeModel>(HttpStatus.OK);
+		
+        DataPointVO existingDp = DataPointDao.instance.getByXid(xid);
+        if (existingDp == null) {
+        	result.addRestMessage(getDoesNotExistMessage());
+        	return result;
+    	}
+        
+    	try{
+    		if(Permissions.hasDataPointSetPermission(user, existingDp)){
+    			
+    			//Set the time to now if it is not present
+    			if(model.getTimestamp() == 0){
+    				model.setTimestamp(System.currentTimeMillis());
+    			}
+    			
+    			//Validate the model's data type for compatibility
+    			if(DataTypeEnum.convertFrom(model.getType()) != existingDp.getPointLocator().getDataTypeId()){
+    				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("event.ds.dataType"));
+    				return result;
+    			}
+    			
+    			//Validate the timestamp for future dated
+    			if (model.getTimestamp() > System.currentTimeMillis() + SystemSettingsDao.getFutureDateLimit()) {
+    				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Future dated points not acceptable."));
+    				return result;
+    		    }
+
+    			//TODO Backdate validation?
+    			//boolean backdated = pointValue != null && newValue.getTime() < pointValue.getTime();
+		        
+    			//Are we converting from the rendered Unit?
+    			if(unitConversion){
+    				if((model.getType() == DataTypeEnum.NUMERIC)&&(model.getValue() instanceof Number)){
+    					double value;
+    					if(model.getValue() instanceof Integer){
+    						value = (double)((Integer)model.getValue());
+    					}else{
+    						value = (double)((Double)model.getValue());
+    					}
+    					model.setValue(existingDp.getRenderedUnit().getConverterTo(existingDp.getUnit()).convert(value));
+    				}else{
+    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "[" + xid +"]Cannot perform unit conversion on Non Numeric data types."));
+    					return result;
+    				}
+    			}
+    			
+    			//If we are a multistate point and our value is in string format then we should try to convert it
+    			if((model.getType() == DataTypeEnum.MULTISTATE)&&(model.getValue() instanceof String)){
+    				try{
+	    				DataValue value = existingDp.getTextRenderer().parseText((String)model.getValue(), existingDp.getPointLocator().getDataTypeId());
+	    				model.setValue(value.getObjectValue());
+    				}catch(Exception e){
+    					//Lots can go wrong here so let the user know
+    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "[" + xid +"]Unable to convert Multistate String representation to any known value."));
+    				}
+    			}
+    			
+    			
+    			
+		        final PointValueTime pvt;
+				try{
+					pvt = model.getData(); 
+				}catch(Exception e){
+					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "[" + xid +"]Invalid Format"));
+					return result;
+				}
+				
+				//one last check to ensure we are inserting the correct data type
+    			if(DataTypes.getDataType(pvt.getValue()) != existingDp.getPointLocator().getDataTypeId()){
+    				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("event.ds.dataType"));
+    				return result;
+    			}
+				
+    	        final int dataSourceId = existingDp.getDataSourceId();
+    	        SetPointSource source = null;
+    	        if(model.getAnnotation() != null){
+    	        	source = new SetPointSource(){
+
+    					@Override
+    					public String getSetPointSourceType() {
+    						return "REST";
+    					}
+
+    					@Override
+    					public int getSetPointSourceId() {
+    						return dataSourceId;
+    					}
+
+    					@Override
+    					public TranslatableMessage getSetPointSourceMessage() {
+    						return ((AnnotatedPointValueTime)pvt).getSourceMessage();
+    					}
+
+    					@Override
+    					public void raiseRecursionFailureEvent() {
+    						LOG.error("Recursive failure while setting point via REST");
+    					}
+    	        		
+    	        	};
+    	        }
+    	        try{
+    	        	Common.runtimeManager.setDataPointValue(existingDp.getId(), pvt, source);
+    	        	//This URI may not always be accurate if the Data Source doesn't use the provided time...
+    	        	URI location = builder.path("/v1/point-values/{xid}/{time}").buildAndExpand(xid, pvt.getTime()).toUri();
+    		    	result.addRestMessage(getResourceCreatedMessage(location));
+    		        return result;
+
+    	        }catch(RTException e){
+    	        	//Ok its probably not enabled or settable
+    	        	result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "[" + xid +"]" + e.getMessage())));
+    	        	return result;
+    	        }catch(Exception e){
+    	        	LOG.error(e.getMessage(), e);
+    	        	result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+    	        	return result;
+    	        }
+    		}else{
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result;
+    		}
+    	}catch(PermissionException e){
+    		LOG.error(e.getMessage(), e);
+    		result.addRestMessage(getUnauthorizedMessage());
+    		return result;
+    	}
+	}
 }
