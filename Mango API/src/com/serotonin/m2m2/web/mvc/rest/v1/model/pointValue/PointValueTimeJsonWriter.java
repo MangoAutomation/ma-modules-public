@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -70,9 +71,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 					jgen.writeNumberField("value", value.getDoubleValue());
 				break;
 				case DataTypes.IMAGE:
-					//TODO need to modify the ImageValue to allow ID to be a string so 
-					// we can use it to reference a link to the image
-					jgen.writeStringField("value", null);
+					jgen.writeStringField("value", ((ImageValue)value).getFilename());
 					break;
 				default:
 					jgen.writeStringField("value","unsupported-value-type");
