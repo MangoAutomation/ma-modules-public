@@ -46,6 +46,9 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 			case DataTypes.NUMERIC:
 				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()));
 			break;
+			case DataTypes.IMAGE:
+				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue));
+			break;
 			default:
 				throw new ShouldNeverHappenException("Invalid Data Type: "+ vo.getPointLocator().getDataTypeId());
 		}

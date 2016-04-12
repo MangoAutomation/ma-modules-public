@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.serotonin.InvalidArgumentException;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -13,6 +14,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumn;
@@ -58,7 +60,11 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 		super(data);
 		
 		this.type = DataTypeEnum.convertTo(data.getValue().getDataType());
-		this.value = data.getValue().getObjectValue();
+		if(type == DataTypeEnum.IMAGE){
+			this.value = ((ImageValue)data.getValue()).getFilename();
+		}else{
+			this.value = data.getValue().getObjectValue();
+		}
 		this.timestamp = data.getTime();
 		
 		if(data.isAnnotated())
@@ -108,6 +114,13 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 			case NUMERIC:
 				dataValue = new NumericValue(((Number)this.value).doubleValue());
 				break;
+			case IMAGE:
+				try {
+					dataValue = new ImageValue((String)this.value);
+				} catch (InvalidArgumentException e) {
+					dataValue = null;
+				}
+			break;
 			default: 
 				throw new ShouldNeverHappenException("Unsupported Data Type: " + this.type);
 		}

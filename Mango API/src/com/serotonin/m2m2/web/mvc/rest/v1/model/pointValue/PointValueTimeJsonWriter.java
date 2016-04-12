@@ -69,6 +69,11 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 				case DataTypes.NUMERIC:
 					jgen.writeNumberField("value", value.getDoubleValue());
 				break;
+				case DataTypes.IMAGE:
+					//TODO need to modify the ImageValue to allow ID to be a string so 
+					// we can use it to reference a link to the image
+					jgen.writeStringField("value", null);
+					break;
 				default:
 					jgen.writeStringField("value","unsupported-value-type");
 					LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());

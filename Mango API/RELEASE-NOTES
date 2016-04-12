@@ -1,3 +1,6 @@
+*Version 1.1.7*
+* Basic support for Image data types
+
 *Version 1.1.6*
 * Adding beta DELETE data-points/{xid}
 * Adding beta POST data-points/
