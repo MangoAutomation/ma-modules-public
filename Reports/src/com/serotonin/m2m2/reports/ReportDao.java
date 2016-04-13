@@ -177,8 +177,6 @@ public class ReportDao extends BaseDao {
      * @param userId
      */
     public void deleteReportInstance(int id, int userId) {
-        ejt.update("delete from reportInstances where id=? and userId=?", new Object[] { id, userId });
-        
 		
         if(Common.databaseProxy.getNoSQLProxy() != null){
             //Delete the NoSQL Data
@@ -190,6 +188,9 @@ public class ReportDao extends BaseDao {
 				dao.deleteStore(id + "_" + point.getReportPointId());
 			}
         }
+        
+        ejt.update("delete from reportInstances where id=? and userId=?", new Object[] { id, userId });
+
     }
 
     public int purgeReportsBefore(final long time) {
