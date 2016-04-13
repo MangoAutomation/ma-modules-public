@@ -1,3 +1,7 @@
+*Version 2.2.3*
+* Fixing bug where copying report would create duplicate XID
+* Fixing bug where data from NoSQL report instances was not being removed on delete
+
 *Version 2.2.2*
 * Fixed help dialogue linking.
 * Fixing bug where deleted users linked to a report template's email functionality would break the report

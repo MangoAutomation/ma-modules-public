@@ -99,6 +99,7 @@ public class ReportsDwr extends ModuleDwr {
             if (copy) {
                 report.setId(Common.NEW_ID);
                 report.setName(TranslatableMessage.translate(getTranslations(), "common.copyPrefix", report.getName()));
+                report.setXid(new ReportDao().generateUniqueXid());
             }
 
             ReportCommon.ensureReportPermission(Common.getUser(), report);
