@@ -23,5 +23,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="lib/mbus4j-core-0.1.6-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/mbus4j-master-0.1.6-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/mbus4j-slaves-0.1.6-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="maven-target/classes"/>
 </classpath>

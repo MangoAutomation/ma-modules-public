@@ -71,8 +71,7 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
                     master.searchDevicesByPrimaryAddress((byte)firstPrimaryAddress, (byte)lastPrimaryAddress);
                 }
                 else {
-                	int tries = 2;
-                    master.searchDevicesBySecondaryAddressing(tries);
+                    master.searchDevicesBySecondaryAddressing();
                 }
             }
             catch (InterruptedException ex) {
