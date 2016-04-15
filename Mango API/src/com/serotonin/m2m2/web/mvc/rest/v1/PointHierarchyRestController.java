@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -104,6 +105,44 @@ public class PointHierarchyRestController extends MangoRestController{
     	}
     	
     	return result.createResponseEntity();
+    }
+	
+	 /**
+     * Get the folder via a path
+     * @param folderPath
+     * @param request
+     * @return
+     */
+    @ApiOperation(value = "Get point hierarchy folder by path", notes = "Points returned based on user priviledges")
+    @RequestMapping(method = RequestMethod.GET, value = "/by-path/{folderPath}", produces={"application/json"})
+    public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable List<String>folderPath, HttpServletRequest request) {
+        
+        RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            
+            PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+            PointFolder folder = ph.getRoot();
+            
+            Iterator<String> it = folderPath.iterator();
+            while(it.hasNext()) {
+                String folderName = it.next();
+                folder = folder.getSubfolder(folderName);
+                if (folder == null) break;
+            }
+            
+            if (folder == null){
+                result.addRestMessage(getDoesNotExistMessage());
+                return result.createResponseEntity();
+            }else{
+                //Clean out based on permissions
+                PointFolder root = prune(folder, user);
+                return result.createResponseEntity(new PointHierarchyModel(root, getDataSourceXidMap())); 
+            }
+
+        }
+        
+        return result.createResponseEntity();
     }
 
 	/**
