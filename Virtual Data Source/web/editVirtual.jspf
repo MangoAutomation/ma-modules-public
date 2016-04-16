@@ -186,15 +186,8 @@
   }
   </script>
 
-<tag:dataSourceAttrs descriptionKey="dsEdit.virtual.desc" helpId="virtual-ds">
-  <tr>
-    <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
-    <td class="formField">
-      <input type="text" id="updatePeriods" value="${dataSource.updatePeriods}" class="formShort" />
-      <tag:timePeriods id="updatePeriodType" value="${dataSource.updatePeriodType}" ms="true" s="true" min="true" h="true"/>
-    </td>
-  </tr>
-</tag:dataSourceAttrs>
+<tag:pollingDataSourceAttrs descriptionKey="dsEdit.virtual.desc" helpId="virtual-ds">
+</tag:pollingDataSourceAttrs>
 
 <tag:pointList pointHelpId="virtual-pp">
   <tr>
