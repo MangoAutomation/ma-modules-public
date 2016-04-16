@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.virtual.rt;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
@@ -16,7 +18,10 @@ public class VirtualDataSourceRT extends PollingDataSource {
 	
     public VirtualDataSourceRT(VirtualDataSourceVO vo) {
         super(vo);
-        setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+        if(StringUtils.isEmpty(vo.getCronPattern()))
+        	setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+        else
+        	setCronPattern(vo.getCronPattern());
     }
 
     @Override
