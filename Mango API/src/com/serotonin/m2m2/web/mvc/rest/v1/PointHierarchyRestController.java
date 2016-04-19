@@ -20,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -55,15 +56,23 @@ public class PointHierarchyRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Get full point hierarchy", notes = "Hierarchy based on user priviledges")
     @RequestMapping(method = RequestMethod.GET, value = "/full", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getPointHierarchy(HttpServletRequest request) {
+    public ResponseEntity<PointHierarchyModel> getPointHierarchy(
+            @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            HttpServletRequest request) {
 
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
 	    	PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+	    	PointFolder folder = copyFolder(ph.getRoot());
+	    	
+	    	if (!getSubFolders) {
+                folder.setSubfolders(Collections.<PointFolder>emptyList());
+            }
+	    	
 	    	//Clean out based on permissions
-	    	PointFolder root = prune(ph.getRoot(), user);
-	    	PointHierarchyModel model = new PointHierarchyModel(root, getDataSourceXidMap());
+	    	prune(folder, user, false);
+	    	PointHierarchyModel model = new PointHierarchyModel(folder, getDataSourceXidMap());
 	    	return result.createResponseEntity(model);
     	}
     	
@@ -80,7 +89,10 @@ public class PointHierarchyRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Get point hierarchy folder by name", notes = "Points returned based on user priviledges")
 	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable String folderName, HttpServletRequest request) {
+    public ResponseEntity<PointHierarchyModel> getFolder(
+            @PathVariable String folderName,
+            @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -99,9 +111,15 @@ public class PointHierarchyRestController extends MangoRestController{
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
 			}else{
-		    	//Clean out based on permissions
-				PointFolder root = prune(desiredFolder, user);
-				return result.createResponseEntity(new PointHierarchyModel(root, getDataSourceXidMap())); 
+			    desiredFolder = copyFolder(desiredFolder);
+	            
+	            if (!getSubFolders) {
+	                desiredFolder.setSubfolders(Collections.<PointFolder>emptyList());
+	            }
+	            
+	            //Clean out based on permissions
+	            prune(desiredFolder, user, false);
+				return result.createResponseEntity(new PointHierarchyModel(desiredFolder, getDataSourceXidMap())); 
 			}
 
     	}
@@ -117,7 +135,10 @@ public class PointHierarchyRestController extends MangoRestController{
      */
     @ApiOperation(value = "Get point hierarchy folder by path", notes = "Points returned based on user priviledges")
     @RequestMapping(method = RequestMethod.GET, value = "/by-path/{folderPath}", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable List<String> folderPath, HttpServletRequest request) {
+    public ResponseEntity<PointHierarchyModel> getFolder(
+            @PathVariable List<String> folderPath,
+            @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            HttpServletRequest request) {
         
         RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
@@ -127,11 +148,15 @@ public class PointHierarchyRestController extends MangoRestController{
             
             PointFolder folder = copyFolder(ph.getRoot());
             folder = removeSubFoldersByPath(folder, folderPath, 0);
-
+            
             if (folder == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
             } else {
+                if (!getSubFolders) {
+                    folder.setSubfolders(Collections.<PointFolder>emptyList());
+                }
+                
                 //Clean out based on permissions
                 prune(folder, user, false);
                 return result.createResponseEntity(new PointHierarchyModel(folder, getDataSourceXidMap())); 
@@ -189,7 +214,10 @@ public class PointHierarchyRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Get point hierarchy folder by ID", notes = "Points returned based on user priviledges")
 	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{folderId}", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getFolder(@PathVariable Integer folderId, HttpServletRequest request) {
+    public ResponseEntity<PointHierarchyModel> getFolder(
+            @PathVariable Integer folderId,
+            @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            HttpServletRequest request) {
 		
     	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -207,9 +235,15 @@ public class PointHierarchyRestController extends MangoRestController{
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
 			}else{
+			    desiredFolder = copyFolder(desiredFolder);
+                
+                if (!getSubFolders) {
+                    desiredFolder.setSubfolders(Collections.<PointFolder>emptyList());
+                }
+                
 				//Clean out based on permissions
-				PointFolder root = prune(desiredFolder, user);
-				return result.createResponseEntity(new PointHierarchyModel(root, getDataSourceXidMap())); 
+				prune(desiredFolder, user, false);
+				return result.createResponseEntity(new PointHierarchyModel(desiredFolder, getDataSourceXidMap())); 
 			}
 
     	}
@@ -263,12 +297,9 @@ public class PointHierarchyRestController extends MangoRestController{
      * 
      * @param ph
      * @param user
+     * @param doCopy copy the folder before pruning it
      * @return PointFolder as a copy
      */
-	private PointFolder prune(PointFolder root, User user) {
-	    return prune(root, user, true);
-	}
-	
 	private PointFolder prune(PointFolder root, User user, boolean doCopy) {
 		//Make a copy from the highest level down
 		PointFolder copy = doCopy ? copyFolder(root) : root;
