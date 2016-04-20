@@ -8,7 +8,7 @@
   
   function saveDataSourceImpl(basic) {
       VirtualEditDwr.saveVirtualDataSource(basic, $get("updatePeriods"),
-              $get("updatePeriodType"), saveDataSourceCB);
+              $get("updatePeriodType"), $get("quantize"), $get("cronPattern"), saveDataSourceCB);
   }
   
   function initImpl() {

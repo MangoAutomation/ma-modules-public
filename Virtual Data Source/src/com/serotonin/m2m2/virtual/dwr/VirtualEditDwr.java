@@ -27,12 +27,14 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 public class VirtualEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
-    public ProcessResult saveVirtualDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType) {
+    public ProcessResult saveVirtualDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, boolean quantize, String cronPattern) {
         VirtualDataSourceVO ds = (VirtualDataSourceVO) Common.getUser().getEditDataSource();
 
         setBasicProps(ds, basic);
         ds.setUpdatePeriods(updatePeriods);
         ds.setUpdatePeriodType(updatePeriodType);
+        ds.setQuantize(quantize);
+        ds.setCronPattern(cronPattern);
 
         return tryDataSourceSave(ds);
     }

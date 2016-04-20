@@ -19,7 +19,7 @@ public class VirtualDataSourceRT extends PollingDataSource {
     public VirtualDataSourceRT(VirtualDataSourceVO vo) {
         super(vo);
         if(StringUtils.isEmpty(vo.getCronPattern()))
-        	setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+        	setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), vo.isQuantize());
         else
         	setCronPattern(vo.getCronPattern());
     }
