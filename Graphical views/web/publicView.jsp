@@ -45,7 +45,7 @@
   <%-- This table is here so that the styles are the same from the editor to the view --%>
   <table width="100%" cellspacing="0" cellpadding="0">
     <tr>
-      <td id="ma-dashboard-app" ng-cloak>
+      <td ma-app="maDashboards" ng-cloak>
         <views:displayView view="${view}" emptyMessageKey="publicView.notFound"/>
       </td>
     </tr>
