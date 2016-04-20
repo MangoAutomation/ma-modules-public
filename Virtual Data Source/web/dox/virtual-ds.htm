@@ -15,5 +15,17 @@
 </ul>
 
 <p>
-  The data source configuration is simple. It requires only a name, and the period of time between each data update. For example, if you choose "2 minutes", then every two minutes the algorithms that change the virtual point values for that data source will be run.
+  The data source configuration is simple. It requires only a name, and setting the polling configuration.
+</p>
+
+<h2>Polling Configuration</h2>
+<p>
+ <b>Quantize</b> will cause the data source startup to be delayed
+  so that pollings occur at a "rounded" point in time (e.g. if polling is every 10 seconds, polls will occur on the 10th 
+  second, the 20th second, etc). Otherwise, polling will begin immediately.  While using quantized polls <b>Cron pattern</b> is not an option.
+  <br></br>
+  <b>Update periods</b> define the period at which the poll will occur. For example, if you choose "2 minutes", then every two minutes 
+  the algorithms that change the virtual point values for that data source will be run.<br></br>
+  <b>Cron pattern</b> is optional but when set will disable the <b>Update period</b> setting.  Cron patterns can be used to schedule the data source to run
+  at flexible intervals.
 </p>
