@@ -7,11 +7,9 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.virtual.rt.BrownianChangeRT;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 
@@ -62,23 +60,6 @@ public class BrownianChangeVO extends ChangeTypeVO {
 
     public void setMin(double min) {
         this.min = min;
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        super.addProperties(list);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.min", min);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.max", max);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.maxChange", maxChange);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        super.addPropertyChanges(list, o);
-        BrownianChangeVO from = (BrownianChangeVO) o;
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.min", from.min, min);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.max", from.max, max);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.maxChange", from.maxChange, maxChange);
     }
 
     //

@@ -7,7 +7,6 @@ package com.serotonin.m2m2.vmstat;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -19,7 +18,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
@@ -105,18 +103,6 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO implements Json
     public void validate(ProcessResult response) {
         if (!ATTRIBUTE_CODES.isValidId(attributeId))
             response.addContextualMessage("attributeId", "validate.invalidValue");
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        AuditEventType.addExportCodeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES, attributeId);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        VMStatPointLocatorVO from = (VMStatPointLocatorVO) o;
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES,
-                from.attributeId, attributeId);
     }
 
     //

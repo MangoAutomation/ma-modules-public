@@ -15,7 +15,6 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.virtual.rt.VirtualDataSourceRT;
@@ -64,14 +63,6 @@ public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO
     @Override
     public void validate(ProcessResult response) {
         super.validate(response);
-    }
-
-    @Override
-    protected void addSubclassPropertiesImpl(List<TranslatableMessage> list) {
-    }
-
-    @Override
-    protected void addSubclassPropertyChangesImpl(List<TranslatableMessage> list, VirtualDataSourceVO from) {
     }
 
     //

@@ -7,12 +7,9 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
-import java.util.List;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.RandomMultistateChangeRT;
 
@@ -45,20 +42,6 @@ public class RandomMultistateChangeVO extends ChangeTypeVO {
         this.values = values;
     }
 
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        super.addProperties(list);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.values", Arrays.toString(values));
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        super.addPropertyChanges(list, o);
-        RandomMultistateChangeVO from = (RandomMultistateChangeVO) o;
-        if (Arrays.equals(from.values, values))
-            AuditEventType.addPropertyChangeMessage(list, "dsEdit.virtual.values", Arrays.toString(from.values),
-                    Arrays.toString(values));
-    }
 
     //
     //

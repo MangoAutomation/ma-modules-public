@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.List;
 
 import org.directwebremoting.annotations.DataTransferObject;
 
@@ -20,15 +19,13 @@ import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
-import com.serotonin.m2m2.util.ChangeComparableObject;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.util.SerializationHelper;
 
 @DataTransferObject
-abstract public class ChangeTypeVO implements Serializable, JsonSerializable, ChangeComparableObject {
+abstract public class ChangeTypeVO implements Serializable, JsonSerializable {
     public interface Types {
         public static final int ALTERNATE_BOOLEAN = 1;
         public static final int BROWNIAN = 2;
@@ -98,17 +95,6 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable, Ch
 
     public void setStartValue(String startValue) {
         this.startValue = startValue;
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.startValue", startValue);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        ChangeTypeVO from = (ChangeTypeVO) o;
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.startValue", from.startValue, startValue);
     }
 
     //

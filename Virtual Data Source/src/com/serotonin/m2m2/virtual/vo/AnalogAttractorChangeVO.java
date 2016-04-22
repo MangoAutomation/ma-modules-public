@@ -7,7 +7,6 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -17,7 +16,6 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.virtual.rt.AnalogAttractorChangeRT;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -68,31 +66,6 @@ public class AnalogAttractorChangeVO extends ChangeTypeVO {
 
     public void setVolatility(double volatility) {
         this.volatility = volatility;
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        super.addProperties(list);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.maxChange", maxChange);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.volatility", volatility);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.attractionPoint", getAttractionPointName());
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        super.addPropertyChanges(list, o);
-        AnalogAttractorChangeVO from = (AnalogAttractorChangeVO) o;
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.maxChange", from.maxChange, maxChange);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.volatility", from.volatility, volatility);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.attractionPoint",
-                from.getAttractionPointName(), getAttractionPointName());
-    }
-
-    private String getAttractionPointName() {
-        DataPointVO dp = new DataPointDao().getDataPoint(attractionPointId);
-        if (dp == null)
-            return "";
-        return dp.getName();
     }
 
     //

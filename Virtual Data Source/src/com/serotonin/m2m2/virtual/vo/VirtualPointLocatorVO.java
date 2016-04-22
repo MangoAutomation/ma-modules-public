@@ -7,7 +7,6 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +30,6 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.VirtualPointLocatorRT;
@@ -357,32 +355,6 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 
 	public void setSinusoidalChange(SinusoidalChangeVO sinusoidal) {
 		this.sinusoidalChange = sinusoidal;
-	}
-
-	@Override
-	public void addProperties(List<TranslatableMessage> list) {
-		AuditEventType.addPropertyMessage(list, "dsEdit.settable", settable);
-		AuditEventType.addDataTypeMessage(list, "dsEdit.pointDataType",
-				dataTypeId);
-		AuditEventType.addExportCodeMessage(list, "dsEdit.virtual.changeType",
-				ChangeTypeVO.CHANGE_TYPE_CODES, changeTypeId);
-		getChangeType().addProperties(list);
-	}
-
-	@Override
-	public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-		VirtualPointLocatorVO from = (VirtualPointLocatorVO) o;
-		AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.settable",
-				from.settable, settable);
-		AuditEventType.maybeAddDataTypeChangeMessage(list,
-				"dsEdit.pointDataType", from.dataTypeId, dataTypeId);
-		AuditEventType.maybeAddExportCodeChangeMessage(list,
-				"dsEdit.virtual.changeType", ChangeTypeVO.CHANGE_TYPE_CODES,
-				from.changeTypeId, changeTypeId);
-		if (from.changeTypeId == changeTypeId)
-			getChangeType().addPropertyChanges(list, from.getChangeType());
-		else
-			getChangeType().addProperties(list);
 	}
 
 	//

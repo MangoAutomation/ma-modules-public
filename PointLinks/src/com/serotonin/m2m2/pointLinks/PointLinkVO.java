@@ -5,31 +5,32 @@
 package com.serotonin.m2m2.pointLinks;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
-import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
-import com.serotonin.m2m2.util.ChangeComparable;
 import com.serotonin.m2m2.util.ExportCodes;
+import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Matthew Lohbihler
  */
-public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializable {
-    public static final String XID_PREFIX = "PL_";
+public class PointLinkVO extends AbstractVO<PointLinkVO> {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public static final String XID_PREFIX = "PL_";
 
     public static final int EVENT_UPDATE = 1;
     public static final int EVENT_CHANGE = 2;
@@ -153,43 +154,6 @@ public class PointLinkVO implements ChangeComparable<PointLinkVO>, JsonSerializa
         if (sourcePointId == targetPointId)
             response.addContextualMessage("targetPointId", "pointLinks.validate.samePoint");
         this.scriptPermissions.validate(response, Common.getUser());
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        DataPointDao dataPointDao = new DataPointDao();
-        AuditEventType.addPropertyMessage(list, "common.xid", xid);
-        AuditEventType.addPropertyMessage(list, "pointLinks.source", dataPointDao.getExtendedPointName(sourcePointId));
-        AuditEventType.addPropertyMessage(list, "pointLinks.target", dataPointDao.getExtendedPointName(targetPointId));
-        AuditEventType.addPropertyMessage(list, "pointLinks.script", script);
-        AuditEventType.addExportCodeMessage(list, "pointLinks.event", EVENT_CODES, event);
-        AuditEventType.addPropertyMessage(list, "pointLinks.writeAnnotation", writeAnnotation);
-        AuditEventType.addPropertyMessage(list, "common.disabled", disabled);
-        AuditEventType.addExportCodeMessage(list, "dsEdit.script.logLevel", ScriptLog.LOG_LEVEL_CODES, logLevel);
-        AuditEventType.addPropertyMessage(list, "scripting.permission", scriptPermissions);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, PointLinkVO from) {
-        DataPointDao dataPointDao = new DataPointDao();
-        AuditEventType.maybeAddPropertyChangeMessage(list, "common.xid", from.xid, xid);
-        AuditEventType
-                .maybeAddPropertyChangeMessage(list, "pointLinks.source",
-                        dataPointDao.getExtendedPointName(from.sourcePointId),
-                        dataPointDao.getExtendedPointName(sourcePointId));
-        AuditEventType
-                .maybeAddPropertyChangeMessage(list, "pointLinks.target",
-                        dataPointDao.getExtendedPointName(from.targetPointId),
-                        dataPointDao.getExtendedPointName(targetPointId));
-        AuditEventType.maybeAddPropertyChangeMessage(list, "pointLinks.script", from.script, script);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "pointLinks.event", EVENT_CODES, from.event, event);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "pointLinks.writeAnnotation", from.writeAnnotation,
-                writeAnnotation);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "common.disabled", from.disabled, disabled);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "pointLinks.logLevel", ScriptLog.LOG_LEVEL_CODES, from.logLevel,
-                logLevel);
-       AuditEventType.maybeAddPropertyChangeMessage(list, "scripting.permission", from.scriptPermissions, scriptPermissions);
-
     }
 
     //
