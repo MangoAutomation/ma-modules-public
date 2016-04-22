@@ -19,7 +19,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
@@ -297,52 +296,6 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             response.addContextualMessage("maxHistoricalIOLogs", "validate.greaterThanZero");        
 
      }
-
-    @Override
-    protected void addPropertiesImpl(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.port", commPortId);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.baud", baudRate);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.flowControlIn", flowControlIn);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.flowControlOut", flowControlOut);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.dataBits", dataBits);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.stopBits", stopBits);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.parity", parity);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.messageTerminator", messageTerminator);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.readTimeout", readTimeout);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.messageRegex", messageRegex);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.pointIdentifierIndex", pointIdentifierIndex);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.useTerminator", useTerminator);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.hex", hex);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.logIO", logIO);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.maxMessageSize", maxMessageSize);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.logIOFileSize", ioLogFileSizeMBytes);
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.logIOFiles", maxHistoricalIOLogs);
-        
-    }
-
-    @Override
-    protected void addPropertyChangesImpl(List<TranslatableMessage> list, SerialDataSourceVO from) {
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.port", from.commPortId, commPortId);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.baud", from.baudRate, baudRate);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.flowIn", from.flowControlIn,
-                flowControlIn);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.flowOut", from.flowControlOut,
-                flowControlOut);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.dataBits", from.dataBits, dataBits);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.stopBits", from.stopBits, stopBits);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.parity", from.parity, parity);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.messageTerminator", from.messageTerminator, messageTerminator);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.readTimeout", from.readTimeout, readTimeout);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.messageRegex", from.messageRegex, messageRegex);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.pointIdentifierIndex", from.pointIdentifierIndex, pointIdentifierIndex);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.useTerminator", from.useTerminator, useTerminator);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.hex", from.hex, hex);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.logIO", from.logIO, logIO);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.maxMessageSize", from.maxMessageSize, maxMessageSize);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.logIOFileSize", from.ioLogFileSizeMBytes, ioLogFileSizeMBytes);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.logIOFiles", from.maxHistoricalIOLogs, maxHistoricalIOLogs);
-
-    }
 
     //
     // /

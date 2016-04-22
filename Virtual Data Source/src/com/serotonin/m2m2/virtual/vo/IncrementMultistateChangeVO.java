@@ -7,13 +7,10 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
-import java.util.List;
 
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.IncrementMultistateChangeRT;
 
@@ -55,23 +52,6 @@ public class IncrementMultistateChangeVO extends ChangeTypeVO {
 
     public void setValues(int[] values) {
         this.values = values;
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        super.addProperties(list);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.values", Arrays.toString(values));
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.roll", roll);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        super.addPropertyChanges(list, o);
-        IncrementMultistateChangeVO from = (IncrementMultistateChangeVO) o;
-        if (Arrays.equals(from.values, values))
-            AuditEventType.addPropertyChangeMessage(list, "dsEdit.virtual.values", Arrays.toString(from.values),
-                    Arrays.toString(values));
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.roll", from.roll, roll);
     }
 
     //

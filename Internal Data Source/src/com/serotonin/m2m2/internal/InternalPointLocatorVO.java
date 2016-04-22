@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -26,7 +26,6 @@ import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
-import com.serotonin.monitor.ValueMonitor;
 import com.serotonin.util.SerializationHelper;
 
 /**
@@ -132,7 +131,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     public TranslatableMessage getConfigurationDescription() {
     	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
     	if(monitor != null)
-    		return new TranslatableMessage(monitor.getName());
+    		return monitor.getName();
     	else
     		return new TranslatableMessage("internal.missingMonitor", monitorId);
     }
@@ -161,19 +160,6 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
     	if(monitor == null)
             response.addContextualMessage("monitorId", "validate.invalidValue");
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        //Not using in 2.7 anymore AuditEventType.addExportCodeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES, attributeId);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-    	//Not using in 2.7 anymore
-//        InternalPointLocatorVO from = (InternalPointLocatorVO) o;
-//        AuditEventType.maybeAddExportCodeChangeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES,
-//                from.attributeId, attributeId);
     }
 
     //

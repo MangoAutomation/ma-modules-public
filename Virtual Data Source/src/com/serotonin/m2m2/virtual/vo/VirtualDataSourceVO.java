@@ -97,17 +97,6 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
             response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
     }
 
-    @Override
-    protected void addPropertiesImpl(List<TranslatableMessage> list) {
-        AuditEventType.addPeriodMessage(list, "dsEdit.updatePeriod", updatePeriodType, updatePeriods);
-    }
-
-    @Override
-    protected void addPropertyChangesImpl(List<TranslatableMessage> list, VirtualDataSourceVO from) {
-        AuditEventType.maybeAddPeriodChangeMessage(list, "dsEdit.updatePeriod", from.updatePeriodType,
-                from.updatePeriods, updatePeriodType, updatePeriods);
-    }
-
     //
     //
     // Serialization

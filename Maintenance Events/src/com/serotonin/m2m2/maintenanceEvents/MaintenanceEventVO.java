@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -15,7 +14,6 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
-import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -23,17 +21,19 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
-import com.serotonin.m2m2.util.ChangeComparable;
 import com.serotonin.m2m2.util.ExportCodes;
+import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.web.taglib.Functions;
 import com.serotonin.timer.CronTimerTrigger;
 import com.serotonin.validation.StringValidation;
 
-public class MaintenanceEventVO implements ChangeComparable<MaintenanceEventVO>, JsonSerializable {
-    public static final String XID_PREFIX = "ME_";
+public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
+
+	private static final long serialVersionUID = 1L;
+
+	public static final String XID_PREFIX = "ME_";
 
     public static final int TYPE_MANUAL = 1;
     public static final int TYPE_HOURLY = 2;
@@ -344,28 +344,6 @@ public class MaintenanceEventVO implements ChangeComparable<MaintenanceEventVO>,
         return message;
     }
 
-    private TranslatableMessage getTypeMessage() {
-        switch (scheduleType) {
-        case TYPE_MANUAL:
-            return new TranslatableMessage("maintenanceEvents.type.manual");
-        case TYPE_HOURLY:
-            return new TranslatableMessage("maintenanceEvents.type.hour");
-        case TYPE_DAILY:
-            return new TranslatableMessage("maintenanceEvents.type.day");
-        case TYPE_WEEKLY:
-            return new TranslatableMessage("maintenanceEvents.type.week");
-        case TYPE_MONTHLY:
-            return new TranslatableMessage("maintenanceEvents.type.month");
-        case TYPE_YEARLY:
-            return new TranslatableMessage("maintenanceEvents.type.year");
-        case TYPE_ONCE:
-            return new TranslatableMessage("maintenanceEvents.type.once");
-        case TYPE_CRON:
-            return new TranslatableMessage("maintenanceEvents.type.cron");
-        }
-        return null;
-    }
-
     private String activeTime() {
         return StringUtils.leftPad(Integer.toString(activeHour), 2, '0') + ":"
                 + StringUtils.leftPad(Integer.toString(activeMinute), 2, '0') + ":"
@@ -473,39 +451,6 @@ public class MaintenanceEventVO implements ChangeComparable<MaintenanceEventVO>,
             if (idt.getMillis() <= adt.getMillis())
                 response.addContextualMessage("scheduleType", "maintenanceEvents.validate.invalidRtn");
         }
-    }
-
-    @Override
-    public void addProperties(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "common.xid", xid);
-        AuditEventType.addPropertyMessage(list, "maintenanceEvents.dataSource", dataSourceId);
-        AuditEventType.addPropertyMessage(list, "maintenanceEvents.alias", alias);
-        AuditEventType.addPropertyMessage(list, "common.alarmLevel", AlarmLevels.getAlarmLevelMessage(alarmLevel));
-        AuditEventType.addPropertyMessage(list, "maintenanceEvents.type", getTypeMessage());
-        AuditEventType.addPropertyMessage(list, "common.disabled", disabled);
-        AuditEventType.addPropertyMessage(list, "common.configuration", getDescription());
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, MaintenanceEventVO from) {
-        AuditEventType.maybeAddPropertyChangeMessage(list, "common.xid", from.xid, xid);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "maintenanceEvents.dataSource", from.dataSourceId,
-                dataSourceId);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "maintenanceEvents.alias", from.alias, alias);
-        AuditEventType.maybeAddAlarmLevelChangeMessage(list, "common.alarmLevel", from.alarmLevel, alarmLevel);
-        if (from.scheduleType != scheduleType)
-            AuditEventType.addPropertyChangeMessage(list, "maintenanceEvents.type", from.getTypeMessage(),
-                    getTypeMessage());
-        AuditEventType.maybeAddPropertyChangeMessage(list, "common.disabled", from.disabled, disabled);
-        if (from.activeYear != activeYear || from.activeMonth != activeMonth || from.activeDay != activeDay
-                || from.activeHour != activeHour || from.activeMinute != activeMinute
-                || from.activeSecond != activeSecond || from.activeCron != activeCron
-                || from.inactiveYear != inactiveYear || from.inactiveMonth != inactiveMonth
-                || from.inactiveDay != inactiveDay || from.inactiveHour != inactiveHour
-                || from.inactiveMinute != inactiveMinute || from.inactiveSecond != inactiveSecond
-                || from.inactiveCron != inactiveCron)
-            AuditEventType.maybeAddPropertyChangeMessage(list, "common.configuration", from.getDescription(),
-                    getDescription());
     }
 
     //

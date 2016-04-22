@@ -33,9 +33,7 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.AbstractVO;
@@ -631,82 +629,8 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
                 }
         	}
         }
-        
-        
-        
-        
     }
-    
-    
-    
-    @Override
-    public final void addProperties(List<TranslatableMessage> list) {
-    	super.addProperties(list);
-
-        AuditEventType.addPropertyMessage(list, "reports.points", points);
-        AuditEventType.addPropertyMessage(list, "reports.template", template);
-        AuditEventType.addExportCodeMessage(list, "reports.includeEvents", EVENT_CODES, includeEvents);
-        AuditEventType.addPropertyMessage(list, "reports.comments", includeUserComments);
-        AuditEventType.addExportCodeMessage(list, "reports.dateRangeType", DATE_RANGE_TYPES, dateRangeType);
-        AuditEventType.addExportCodeMessage(list, "reports.relativeDateType",DATE_RELATIVE_TYPES, relativeDateType);
-        AuditEventType.addPeriodMessage(list, "reports.previous", previousPeriodType, previousPeriodCount);
-        AuditEventType.addPeriodMessage(list, "reports.past", pastPeriodType, pastPeriodCount);
-        AuditEventType.addPropertyMessage(list, "reports.fromNone", fromNone);
-        AuditEventType.addPropertyMessage(list, "reports.fromYear", fromYear);
-        AuditEventType.addPropertyMessage(list, "reports.fromMonth", fromMonth);
-        AuditEventType.addPropertyMessage(list, "reports.fromDay", fromDay);
-        AuditEventType.addPropertyMessage(list, "reports.fromHour", fromHour);
-        AuditEventType.addPropertyMessage(list, "reports.fromMinute", fromMinute);
-        AuditEventType.addPropertyMessage(list, "reports.toNone", toNone);
-        AuditEventType.addPropertyMessage(list, "reports.toYear", toYear);
-        AuditEventType.addPropertyMessage(list, "reports.toMonth", toMonth);
-        AuditEventType.addPropertyMessage(list, "reports.toDay", toDay);
-        AuditEventType.addPropertyMessage(list, "reports.toHour", toHour);
-        AuditEventType.addPropertyMessage(list, "reports.toMinute", toMinute);
-        AuditEventType.addPropertyMessage(list, "reports.schedule", schedule);
-        AuditEventType.addExportCodeMessage(list, "reports.scheulePeriod", SCHEDULE_CODES, schedulePeriod);
-        AuditEventType.addPropertyMessage(list, "reports.runDelay", runDelayMinutes);
-        AuditEventType.addPropertyMessage(list, "reports.cron", scheduleCron);
-        AuditEventType.addPropertyMessage(list, "reports.emailReport", email);
-        AuditEventType.addPropertyMessage(list, "reports.emailRecipients", recipients);
-        AuditEventType.addPropertyMessage(list, "reports.includeTabular", includeData);
-        AuditEventType.addPropertyMessage(list, "reports.zipData", zipData);
-    }
-
-
-    public void addPropertyChanges(List<TranslatableMessage> list, ReportVO from) {
-    	super.addPropertyChanges(list,from);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.points", points, from.points);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.template", from.template, template);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "reports.includeEvents", EVENT_CODES, from.includeEvents, includeEvents);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.comments", from.includeUserComments, includeUserComments);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "reports.dateRangeType", DATE_RANGE_TYPES, from.dateRangeType, dateRangeType);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "reports.relativeDateType",DATE_RELATIVE_TYPES, from.relativeDateType, relativeDateType);
-        AuditEventType.maybeAddPeriodChangeMessage(list, "reports.previous", from.previousPeriodType, from.previousPeriodCount, previousPeriodType, previousPeriodCount);
-        AuditEventType.maybeAddPeriodChangeMessage(list, "reports.past", from.pastPeriodType, from.pastPeriodCount, pastPeriodType, pastPeriodCount);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.fromNone", from.fromNone, fromNone);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.fromYear", from.fromYear, fromYear);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.fromMonth", from.fromMonth, fromMonth);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.fromDay", from.fromDay, fromDay);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.fromHour", from.fromHour, fromHour);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.fromMinute", from.fromMinute, fromMinute);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.toNone", from.toNone, toNone);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.toYear", from.toYear, toYear);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.toMonth", from.toMonth, toMonth);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.toDay", from.toDay, toDay);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.toHour", from.toHour, toHour);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.toMinute", from.toMinute, toMinute);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.schedule", from.schedule, schedule);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "reports.scheulePeriod", SCHEDULE_CODES, from.schedulePeriod, schedulePeriod);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.runDelay", from.runDelayMinutes, runDelayMinutes);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.cron", from.scheduleCron, scheduleCron);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.emailReport", from.email, email);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.emailRecipients", from.recipients, recipients);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.includeTabular", from.includeData, includeData);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "reports.zipData", from.zipData, zipData);
-    }
-
-    
+ 
 	/* (non-Javadoc)
 	 * @see com.serotonin.json.spi.JsonSerializable#jsonRead(com.serotonin.json.JsonReader, com.serotonin.json.type.JsonObject)
 	 */

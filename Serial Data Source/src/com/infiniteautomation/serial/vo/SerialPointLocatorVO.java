@@ -3,7 +3,6 @@ package com.infiniteautomation.serial.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -18,7 +17,6 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.util.SerializationHelper;
@@ -102,25 +100,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 	public void setDataTypeId(int dataTypeId) {
 		this.dataTypeId = dataTypeId;
 	}
-
-	@Override
-	public void addProperties(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.serial.pointIdentifier", pointIdentifier);
-        AuditEventType.addPropertyMessage(list, "dsEdit.valueRegex", valueRegex);
-        AuditEventType.addPropertyMessage(list, "dsEdit.valueIndex", valueIndex);
-        AuditEventType.addDataTypeMessage(list, "dsEdit.pointDataType", dataTypeId);
-
-	}
-
-	@Override
-	public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-		SerialPointLocatorVO from = (SerialPointLocatorVO)o;
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.pointIdentifier", from.pointIdentifier, pointIdentifier);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.valueRegex", from.valueRegex, valueRegex);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.serial.valueIndex", from.valueIndex, valueIndex);
-        AuditEventType.maybeAddDataTypeChangeMessage(list, "dsEdit.pointDataType", from.dataTypeId, dataTypeId);
-
-	}
+	
     //
     //
     // Serialization

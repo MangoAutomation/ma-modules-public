@@ -16,7 +16,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
@@ -119,19 +118,6 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 //            response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
         
      }
-
-    @Override
-    protected void addPropertiesImpl(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.path", filePath);
-        AuditEventType.addPeriodMessage(list, "dsEdit.updatePeriod", updatePeriodType, updatePeriods);
-    }
-
-    @Override
-    protected void addPropertyChangesImpl(List<TranslatableMessage> list, AsciiFileDataSourceVO from) {
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.path", from.filePath, filePath);
-        AuditEventType.maybeAddPeriodChangeMessage(list, "dsEdit.updatePeriod", from.updatePeriodType,
-                from.updatePeriods, updatePeriodType, updatePeriods);
-    }
 
     //
     // /

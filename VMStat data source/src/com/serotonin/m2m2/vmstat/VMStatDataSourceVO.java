@@ -19,7 +19,6 @@ import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -109,19 +108,6 @@ public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
 
         if (!OUTPUT_SCALE_CODES.isValidId(outputScale))
             response.addContextualMessage("outputScale", "validate.invalidValue");
-    }
-
-    @Override
-    protected void addPropertiesImpl(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.vmstat.pollSeconds", pollSeconds);
-        AuditEventType.addExportCodeMessage(list, "dsEdit.vmstat.outputScale", OUTPUT_SCALE_CODES, outputScale);
-    }
-
-    @Override
-    protected void addPropertyChangesImpl(List<TranslatableMessage> list, VMStatDataSourceVO from) {
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.vmstat.pollSeconds", from.pollSeconds, pollSeconds);
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "dsEdit.vmstat.outputScale", OUTPUT_SCALE_CODES,
-                from.outputScale, outputScale);
     }
 
     //

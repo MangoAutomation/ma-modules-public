@@ -7,11 +7,9 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.SinusoidalChangeRT;
 
@@ -71,25 +69,6 @@ public class SinusoidalChangeVO extends ChangeTypeVO {
 	public void setPhaseShift(double phaseShift) {
 		this.phaseShift = phaseShift;
 	}
-
-	@Override
-    public void addProperties(List<TranslatableMessage> list) {
-        super.addProperties(list);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.amplitude", amplitude);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.offset", offset);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.period", period);
-        AuditEventType.addPropertyMessage(list, "dsEdit.virtual.phaseShift", phaseShift);
-    }
-
-    @Override
-    public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        super.addPropertyChanges(list, o);
-        SinusoidalChangeVO from = (SinusoidalChangeVO) o;
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.amplitude", from.amplitude, amplitude);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.offset", from.offset, offset);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.period", from.period, period);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.virtual.phaseShift", from.phaseShift, phaseShift);
-    }
 
     //
     // /

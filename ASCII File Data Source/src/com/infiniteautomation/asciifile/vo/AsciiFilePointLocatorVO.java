@@ -3,7 +3,6 @@ package com.infiniteautomation.asciifile.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import com.infiniteautomation.asciifile.rt.AsciiFilePointLocatorRT;
@@ -18,7 +17,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.util.SerializationHelper;
@@ -154,33 +152,6 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 
 	public void setTimestampFormat(String timestampFormat) {
 		this.timestampFormat = timestampFormat;
-	}
-	
-	@Override
-	public void addProperties(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.pointIdentifier", pointIdentifier);
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.valueRegex", valueRegex);
-		AuditEventType.addPropertyMessage(list, "dsEdit.file.pointIdentifierIndex", pointIdentifierIndex);
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.valueIndex", valueIndex);
-        AuditEventType.addDataTypeMessage(list, "dsEdit.pointDataType", dataType);
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.hasTimestamp", hasTimestamp);
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.timestampIndex", timestampIndex);
-        AuditEventType.addPropertyMessage(list, "dsEdit.file.timestampFormat", timestampFormat);
-
-	}
-
-	@Override
-	public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-		AsciiFilePointLocatorVO from = (AsciiFilePointLocatorVO)o;
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.pointIdentifier", from.pointIdentifier, pointIdentifier);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.valueRegex", from.valueRegex, valueRegex);
-		AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.pointIdentifierIndex", from.pointIdentifierIndex, pointIdentifierIndex);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.valueIndex", from.valueIndex, valueIndex);
-        AuditEventType.maybeAddDataTypeChangeMessage(list, "dsEdit.pointDataType", from.dataType, dataType);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.hasTimestamp", from.hasTimestamp, hasTimestamp);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.timestampIndex", from.timestampIndex, timestampIndex);
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.file.timestampFormat", from.timestampFormat, timestampFormat);
-
 	}
 	
     //
