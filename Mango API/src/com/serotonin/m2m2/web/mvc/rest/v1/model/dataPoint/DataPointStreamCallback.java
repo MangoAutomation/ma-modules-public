@@ -12,7 +12,6 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
 
 /**
