@@ -16,6 +16,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -481,4 +482,13 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
                         TYPE_CODES.getCodeList());
         }
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
+	 */
+	@Override
+	protected AbstractDao<ScheduledEventVO> getDao() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
