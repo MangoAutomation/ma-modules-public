@@ -7,8 +7,8 @@ package com.serotonin.m2m2.virtual.dwr;
 import java.util.ArrayList;
 
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.Common.TimePeriods;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -21,7 +21,7 @@ import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.BasicDataSourceVO;
-import com.serotonin.m2m2.vo.event.PointEventDetectorVO;
+import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
@@ -93,7 +93,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
             dp.setDataSourceId(ds.getId());
             dp.setDataSourceTypeName(ds.getDefinition().getDataSourceTypeName());
             dp.setDeviceName(ds.getName());
-            dp.setEventDetectors(new ArrayList<PointEventDetectorVO>(0));
+            dp.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO<?>>(0));
             dp.defaultTextRenderer();
             //Setup the Chart Renderer
             ImageChartRenderer chartRenderer = new ImageChartRenderer(TimePeriods.DAYS,5);
