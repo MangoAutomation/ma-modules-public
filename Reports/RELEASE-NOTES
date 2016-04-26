@@ -1,5 +1,9 @@
-*Version 2.2.3*
+*Version 2.2.4*
 * Upgraded to work with core version 2.8.x
+
+*Version 2.2.3*
+* Fixing bug where copying report would create duplicate XID
+* Fixing bug where data from NoSQL report instances was not being removed on delete
 
 *Version 2.2.2*
 * Fixed help dialogue linking.

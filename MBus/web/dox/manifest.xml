@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+
+<doxManifest>
+  <item id="mBusPP" key="dox.mBusPP" filename="mBusPP.htm">
+    <relation id="mBusDS"/>
+  </item>
+  
+  <item id="mBusDS" key="dox.mBusDS" filename="mBusDS.htm">
+    <relation id="mBusPP"/>
+  </item>
+</doxManifest>

@@ -4,6 +4,7 @@
 *Version 1.1.7*
 * Basic support for Image data types
 * Endpoint for setting multiple points values PUT /point-values
+* Get point hierarchy by path, including wildcards etc
 
 *Version 1.1.6*
 * Adding beta DELETE data-points/{xid}
