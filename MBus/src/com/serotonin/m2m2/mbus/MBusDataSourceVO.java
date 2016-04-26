@@ -33,7 +33,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -108,19 +107,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     @Override
     public ExportCodes getEventCodes() {
         return EVENT_CODES;
-    }
-
-    @Override
-    protected void addPropertiesImpl(List<TranslatableMessage> list) {
-        AuditEventType.addPropertyMessage(list, "dsEdit.mbus.connection", connection);
-        AuditEventType.addPeriodMessage(list, "dsEdit.updatePeriod", updatePeriodType, updatePeriods);
-    }
-
-    @Override
-    protected void addPropertyChangesImpl(List<TranslatableMessage> list, MBusDataSourceVO from) {
-        AuditEventType.maybeAddPropertyChangeMessage(list, "dsEdit.mbus.connection", from.connection, connection);
-        AuditEventType.maybeAddPeriodChangeMessage(list, "dsEdit.updatePeriod", from.updatePeriodType,
-                from.updatePeriods, updatePeriodType, updatePeriods);
     }
 
     public int getUpdatePeriodType() {
