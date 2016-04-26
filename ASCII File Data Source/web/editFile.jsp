@@ -10,7 +10,12 @@
 	 */
 	function saveDataSourceImpl(basic){
 
-		AsciiFileEditDwr.saveFileDataSource(basic, $get("updatePeriods"), $get("updatePeriodType"), $get("filePath"), saveDataSourceCB);
+		AsciiFileEditDwr.saveFileDataSource(basic, 
+				$get("updatePeriods"), 
+				$get("updatePeriodType"), 
+				$get("quantize"),
+				$get("cronPattern"),
+				$get("filePath"), saveDataSourceCB);
 	}
 	
 	function hideTSindex() {
@@ -92,14 +97,7 @@
 	  }
 </script>
 
-<tag:dataSourceAttrs descriptionKey="dsEdit.file.desc" helpId="asciiFileDS">
-<tr>
-  <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
-  <td class="formField">
-    <input type="text" id="updatePeriods" value="${dataSource.updatePeriods}" class="formShort"/>
-    <tag:timePeriods id="updatePeriodType" value="${dataSource.updatePeriodType}" s="true" min="true" h="true"/>
-  </td>
-</tr>
+<tag:pollingDataSourceAttrs descriptionKey="dsEdit.file.desc" helpId="asciiFileDS">
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.file.path"/></td>
  <td><input id="filePath" type="text" value="${dataSource.filePath}"></input></td>
@@ -108,13 +106,13 @@
  <td align="right"><input id="fileTestButton" type="button" value="<fmt:message key="dsEdit.file.check"/>" onclick="checkFile();"></input></td>
  <td class="formError" id="fileTestMessage"></td>
 </tr>
-</tag:dataSourceAttrs>
+</tag:pollingDataSourceAttrs>
 
 <tag:pointList pointHelpId="asciiFilePP">
-  <tr>
-    <td class="formLabelRequired"><fmt:message key="dsEdit.pointDataType"/></td>
-    <td class="formField"><tag:dataTypeOptions id="dataTypeId" excludeImage="true"/></td>
-  </tr>
+<tr>
+  <td class="formLabelRequired"><fmt:message key="dsEdit.pointDataType"/></td>
+  <td class="formField"><tag:dataTypeOptions id="dataTypeId" excludeImage="true"/></td>
+</tr>
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.file.pointIdentifier"/></td>
  <td><input id="pointIdentifier" type="text" ></input></td>

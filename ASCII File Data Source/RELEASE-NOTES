@@ -1,3 +1,8 @@
+*Version 1.2.2*
+* Upgraded to work with core version 2.8.x
+* Adding Cron pattern polling option
+* Adding optional quantization for polls
+
 *Version 1.2.1*
 * Upgraded to work with core version 2.7.x
 
@@ -25,5 +30,5 @@
 
 *Version 1.1.1*
 * Moved to Core 2.2
-* Removed point identifier as required. 
+* Removed point identifier as required.
 * Fixed Dwr

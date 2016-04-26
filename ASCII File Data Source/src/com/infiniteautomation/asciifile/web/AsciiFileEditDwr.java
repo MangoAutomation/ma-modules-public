@@ -17,7 +17,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 public class AsciiFileEditDwr extends DataSourceEditDwr{
 
 	   @DwrPermission(user = true)
-	    public ProcessResult saveFileDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, String filePath) {
+	    public ProcessResult saveFileDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, boolean quantize, String cronPattern, String filePath) {
 	        AsciiFileDataSourceVO ds = (AsciiFileDataSourceVO) Common.getUser().getEditDataSource();
 
 	        setBasicProps(ds, basic);

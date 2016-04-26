@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,7 +46,9 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 	
 	public AsciiFileDataSourceRT(AsciiFileDataSourceVO vo) {
 		super(vo);
-		setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+		if(StringUtils.isEmpty(vo.getCronPattern()))
+			setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), vo.isQuantize());
+		else setCronPattern(vo.getCronPattern());
 	}
 
 
@@ -55,8 +58,6 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 	 */
 	public boolean connect () throws Exception{
 		AsciiFileDataSourceVO vo = (AsciiFileDataSourceVO) this.getVo();
-		
-		
 		
         this.file = new File( vo.getFilePath() );
 		if ( !file.exists() ) {

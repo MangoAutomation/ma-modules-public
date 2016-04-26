@@ -12,15 +12,13 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
+import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
 
 /**
@@ -28,7 +26,7 @@ import com.serotonin.util.SerializationHelper;
  */
 
 @JsonEntity
-public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
+public class AsciiFileDataSourceVO extends PollingDataSourceVO<AsciiFileDataSourceVO>{
 	
     private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
@@ -40,10 +38,6 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
     
     @JsonProperty
     private String filePath;
-    @JsonProperty
-    private int updatePeriodType = Common.TimePeriods.MINUTES;
-    @JsonProperty
-    private int updatePeriods = 5;
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
@@ -90,32 +84,12 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 		this.filePath = filePath;
 	}
 	
-	public int getUpdatePeriods() {
-		return this.updatePeriods;
-	}
-	
-	public void setUpdatePeriods(int updatePeriods) {
-		this.updatePeriods = updatePeriods;
-	}
-	
-	public int getUpdatePeriodType() {
-		return this.updatePeriodType;
-	}
-	
-	public void setUpdatePeriodType(int updatePeriodType) {
-		this.updatePeriodType = updatePeriodType;
-	}
-	
 	@Override
     public void validate(ProcessResult response) {
         super.validate(response);
 		//TODO: ensure the path syntax is reasonable
         if (isBlank(this.filePath))
             response.addContextualMessage("filePath", "validate.required");
-        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType))
-            response.addContextualMessage("updatePeriodType", "validate.invalidValue");
-//        if (updatePeriods <= 0)
-//            response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
         
      }
 
@@ -125,13 +99,11 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         SerializationHelper.writeSafeUTF(out, this.filePath);
-        out.writeInt(updatePeriodType);
-        out.writeInt(updatePeriods);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -142,6 +114,8 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
             this.filePath = SerializationHelper.readSafeUTF(in);
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
+        }else if(ver == 2){
+        	this.filePath = SerializationHelper.readSafeUTF(in);
         }
     }
 
@@ -172,7 +146,7 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<AsciiFileDataSourceVO> asModel() {
+	public AsciiFileDataSourceModel asModel() {
 		return new AsciiFileDataSourceModel(this);
 	}
     
