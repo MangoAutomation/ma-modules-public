@@ -136,7 +136,7 @@
         if (!content || content == "")
             $set(id +"Content", '<img src="images/html.png" alt=""/>');
         else {
-            if (angular) {
+            if (typeof angular !== 'undefined') {
                 var $elem = angular.element('#' + id + 'Content');
             	var injector = $elem.injector();
             	if (injector) {
@@ -152,7 +152,7 @@
             }
             
          	// pre angular bootstrap, i.e. initial page load
-    		$elem.html(content);
+            $set(id +"Content", content);
         }
     }
     
@@ -251,7 +251,7 @@
         // Unregister the moveable from the DnD manager.
         div.moveable.destroy();
 
-        if (angular) {
+        if (typeof angular !== 'undefined') {
             // find the any angularjs scopes and destroy them
            	var $parent = angular.element(div);
            	var parentScope = $parent.scope();
