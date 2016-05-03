@@ -503,9 +503,9 @@
       <td>
         <table cellspacing="0" cellpadding="0">
           <tr>
-            <td colspan="3" ma-app="maDashboards" ng-cloak>
+            <td colspan="3">
               <div id="viewContent" class="borderDiv" style="left:0px;top:0px;float:left;
-                      padding-right:1px;padding-bottom:1px;">
+                      padding-right:1px;padding-bottom:1px;" ma-app="maDashboards" ng-cloak>
                 <span id="compCoords" style="display:none;"></span>
                 
                 <c:choose>
