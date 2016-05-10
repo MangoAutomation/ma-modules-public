@@ -84,7 +84,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	                        pub.setEventTypes(events);
 					    }
 					} else {
-						pub = new PointValueWebSocketPublisher(vo, model.getEventTypes(), session, this.jacksonMapper);
+						pub = new PointValueWebSocketPublisher(session.getUri(), vo, model.getEventTypes(), session, this.jacksonMapper);
 						pub.initialize();
 						map.put(vo.getId(), pub);
 						//Immediately send the most recent Point Value and the status of the data point

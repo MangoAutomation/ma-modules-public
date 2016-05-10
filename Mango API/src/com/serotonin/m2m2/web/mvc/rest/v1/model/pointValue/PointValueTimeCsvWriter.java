@@ -76,6 +76,22 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	}
 
 	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#writePointValueTime(int, long, java.lang.String)
+	 */
+	@Override
+	public void writePointValueTime(String value, long timestamp,
+			String annotation) throws IOException {
+		if(!wroteHeaders)
+			this.writeHeaders();
+		String[] nextLine = new String[3];
+		nextLine[0] = value;
+		nextLine[1] = Long.toString(timestamp);
+		nextLine[2] = annotation;
+		this.writer.writeNext(nextLine);
+		
+	}
+	
+	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#writePointValueTime(com.serotonin.m2m2.rt.dataImage.types.DataValue, long, java.lang.String)
 	 */
 	@Override

@@ -156,6 +156,19 @@ public class PointValueRestController extends MangoRestController{
 		    				models.add(new PointValueTimeModel(pvt));
 		    			}
 		    		}
+
+	    			if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
+		    			//If we are an image type we should build the URLS
+		    			UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+		    			imageServletBuilder.scheme(request.getScheme());
+		    			imageServletBuilder.host(request.getServerName());
+		    			imageServletBuilder.port(request.getLocalPort());
+		    			
+	    				for(PointValueTimeModel model : models){
+	    					model.setValue(imageServletBuilder.buildAndExpand(model.getTimestamp(), vo.getId()).toUri());
+	    				}
+	    			}
+	    			
 	    			return result.createResponseEntity(models);
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());
@@ -254,6 +267,19 @@ public class PointValueRestController extends MangoRestController{
 	                    models.add(first == null ? null : new PointValueTimeModel(first));
 	                    models.add(last == null ? null : new PointValueTimeModel(last));
                     }
+
+	    			if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
+		    			//If we are an image type we should build the URLS
+		    			UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+		    			imageServletBuilder.scheme(request.getScheme());
+		    			imageServletBuilder.host(request.getServerName());
+		    			imageServletBuilder.port(request.getLocalPort());
+		    			
+	    				for(PointValueTimeModel model : models){
+	    					model.setValue(imageServletBuilder.buildAndExpand(model.getTimestamp(), vo.getId()).toUri());
+	    				}
+	    			}
+                    
 	                return result.createResponseEntity(models);
 	            }else{
 	                result.addRestMessage(getUnauthorizedMessage());
@@ -339,7 +365,7 @@ public class PointValueRestController extends MangoRestController{
 		    				return result.createResponseEntity(calc);
 	    				}
 	    			}else{
-	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request, vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
 		    			return result.createResponseEntity(pvtDatabaseStream);
 	    			}
 	    			

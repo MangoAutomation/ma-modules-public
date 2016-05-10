@@ -4,12 +4,14 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.m2m2.Common;
@@ -38,6 +40,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	private WebSocketSession session;
 	private DataPointVO vo;
 	private DataPointRT rt;
+	private UriComponentsBuilder imageServletBuilder;
 	
 	private boolean sendPointInitialized = false;
 	private boolean sendPointUpdated = false;
@@ -46,12 +49,20 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	private boolean sendPointBackdated = false;
 	private boolean sendPointTerminated = false;
 	
-	public PointValueWebSocketPublisher(DataPointVO vo,  List<PointValueEventType> eventTypes,
+	public PointValueWebSocketPublisher(URI uri, DataPointVO vo,  List<PointValueEventType> eventTypes,
 			WebSocketSession session, ObjectMapper jacksonMapper){
 		super(jacksonMapper);
 
 		this.session = session;
 		this.vo = vo;
+		
+		if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
+			//If we are an image type we should build the URLS
+			imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+			imageServletBuilder.scheme(uri.getScheme());
+			imageServletBuilder.host(uri.getHost());
+			imageServletBuilder.port(uri.getPort());
+		}
 		
 		this.setEventTypes(eventTypes);
 	}
@@ -79,8 +90,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
 				}
 				PointValueTimeModel pvtModel = null;
-				if(pvt != null)
+				if(pvt != null){
 					pvtModel = new PointValueTimeModel(pvt);
+					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+						pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
+				}
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, pvtModel, renderedValue, convertedValue));
 
 		} catch (Exception e) {
