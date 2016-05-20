@@ -327,5 +327,13 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 		return this.session;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#getListenerName()
+	 */
+	@Override
+	public String getListenerName() {
+		return "Web Socket Publisher: " + vo.getXid();
+	}
+
 
 }

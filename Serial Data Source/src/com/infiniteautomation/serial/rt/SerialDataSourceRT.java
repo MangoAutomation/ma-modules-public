@@ -34,6 +34,7 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
+import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.queue.ByteQueue;
 
 public class SerialDataSourceRT extends PollingDataSource implements SerialPortProxyEventListener{
@@ -69,7 +70,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	public boolean connect () throws Exception{
 		
         if (Common.serialPortManager.portOwned(vo.getCommPortId())){
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
 			return false;
         }else{
         	try{
@@ -86,7 +87,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
                 return true;
               
             }catch(Exception e){
-    			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",vo.getCommPortId(),e.getLocalizedMessage()));
+    			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",vo.getCommPortId(),e.getLocalizedMessage()));
     			return false;
             }
         }
@@ -112,12 +113,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     		if(msg == null){
     			msg = "Unknown";
     		}
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.connectFailed",msg));
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.connectFailed",msg));
 			
     	}
     	
     	if(connected){
-    		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
+    		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
     	}
     	this.lastRxTime = System.nanoTime(); //Nanosecond accuracy
     	super.initialize();
@@ -130,7 +131,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 				Common.serialPortManager.close(this.port);
 			} catch (SerialPortException e) {
 	    		LOG.debug("Error while closing serial port", e);
-				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",this.port.getCommPortId(),e.getLocalizedMessage()));
+				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",this.port.getCommPortId(),e.getLocalizedMessage()));
 
 			}
 
@@ -146,7 +147,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 
 		//Are we connected?
 		if(this.port == null){
-			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
+			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
 			return;
 		}
 		
@@ -189,7 +190,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	        		
 	        	}catch(Exception e){
 	        		LOG.error(e.getMessage(),e);
-	    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));
+	    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));
 	    			return;
 	        	}
 	        }else{
@@ -215,9 +216,9 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 			}
 			os.flush();
 			
-			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
+			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
 		} catch (IOException e) {
-			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
+			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
 		}
 		
 		
@@ -229,7 +230,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		synchronized(this.buffer){
 			//If our port is dead, say so
 			if(this.port == null){
-				raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
+				raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
 				return;
 			}
 			
@@ -265,7 +266,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	            while (( data = in.read()) > -1 ){
 	            	if(buffer.size() >= this.vo.getMaxMessageSize()){
 	            		buffer.popAll();
-	    				raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed", "Max message size reached!"));
+	    				raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed", "Max message size reached!"));
 	    				return; //Give up
 	            	}
 	            	buffer.push(data);
@@ -298,7 +299,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	                			if(LOG.isDebugEnabled())
 	                    			LOG.debug("Matching will use String: " + message);
 	                			matchPointValues(message, messageRegex, pointIdentifierIndex);
-			            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+			            		returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
 	                		}
 	            		}
 	            	}
@@ -331,7 +332,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
                 			if(LOG.isDebugEnabled())
                     			LOG.debug("Matching will use String: " + message);
                 			matchPointValues(message, messageRegex, pointIdentifierIndex);
-		            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+		            		returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
                 		}
             		}
 	            	return;
@@ -354,13 +355,13 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		                //DS Information
 		                int pointIdentifierIndex = vo.getPointIdentifierIndex();
 		            	matchPointValues(msg, messageRegex, pointIdentifierIndex);
-		            	returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+		            	returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
 	            	}
 	            }
 			}catch(Exception e){
 				LOG.error(e.getMessage(),e);
 	        	this.buffer.popAll(); //Ensure we clear out the buffer...
-				raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed",e.getMessage()));
+				raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed",e.getMessage()));
 				
 			}
 		}//End synch
@@ -448,12 +449,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
                     		}
                         	
                         	if(dataValue != null){
-	                        	PointValueTime newValue = new PointValueTime(dataValue,Common.timer.currentTimeMillis());
+	                        	PointValueTime newValue = new PointValueTime(dataValue,Common.backgroundProcessing.currentTimeMillis());
 	                    		dp.updatePointValue(newValue);
                         		if(LOG.isDebugEnabled())
                         			LOG.debug("Saving value: " + newValue.toString());
                         	}else{
-                            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(),true,new TranslatableMessage("event.serial.invalidValue",dp.getVO().getXid()));
+                            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,Common.backgroundProcessing.currentTimeMillis(),true,new TranslatableMessage("event.serial.invalidValue",dp.getVO().getXid()));
                             	matcherFailed = true;
                         	}
                     	
@@ -461,7 +462,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
                 	}//end for this point id
             	}
             }else{
-            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(),true,new TranslatableMessage("event.serial.patternMismatch",vo.getMessageRegex(),msg));
+            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,Common.backgroundProcessing.currentTimeMillis(),true,new TranslatableMessage("event.serial.patternMismatch",vo.getMessageRegex(),msg));
             	matcherFailed = true;
             }
             
@@ -469,7 +470,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		
 		//If no failures...
 		if(!matcherFailed)
-			returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
+			returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, Common.backgroundProcessing.currentTimeMillis());
 	}
 
 
@@ -504,7 +505,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	protected void doPoll(long time) {
 		//For now do nothing as we are event driven.
 		if(this.port == null){
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
 			return;
 		}
 	}
@@ -555,11 +556,43 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		public void scheduleTimeout(long fireTime) {
 			rt.serialEvent(new SerialPortProxyEvent(fireTime));
 		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#getName()
+		 */
+		@Override
+		public String getThreadName() {
+			return "Serial Event " + vo.getCommPortId();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#getTaskId()
+		 */
+		@Override
+		public String getTaskId() {
+			return "SERIALDS_TIMEOUT-" + vo.getXid();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#getQueueSize()
+		 */
+		@Override
+		public int getQueueSize() {
+			return Common.envProps.getInt("runtime.realTimeTimer.defaultTaskQueueSize", 0);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#rejected(com.serotonin.timer.RejectedTaskReason)
+		 */
+		@Override
+		public void rejected(RejectedTaskReason reason) {
+			Common.rejectionHandler.rejectedHighPriorityTask(reason);
+		}
     	
     }
     
     void forcePointReload() {
-    	updateChangedPoints(System.currentTimeMillis());
+    	updateChangedPoints(Common.backgroundProcessing.currentTimeMillis());
     }
 	
 }

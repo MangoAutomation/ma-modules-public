@@ -155,7 +155,7 @@ public class PointLinksDwr extends ModuleDwr {
 	            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
 	
 	            try {
-	                PointValueTime pvt = scriptExecutor.execute(script, context, null, System.currentTimeMillis(),
+	                PointValueTime pvt = scriptExecutor.execute(script, context, null, Common.backgroundProcessing.currentTimeMillis(),
 	                        targetDataType, -1, permissions ,scriptWriter, scriptLog);
 	                if (pvt.getValue() == null)
 	                    message = new TranslatableMessage("event.pointLink.nullResult");

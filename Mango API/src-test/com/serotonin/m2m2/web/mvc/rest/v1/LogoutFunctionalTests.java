@@ -63,7 +63,7 @@ public class LogoutFunctionalTests extends BaseRestTest{
 		when(userDao.getUser(standardUser.getUsername())).thenReturn(standardUser);
 		
 		//Mock the return to normal for the Logged In User that DNE anyway
-		Mockito.doNothing().when(Common.eventManager).returnToNormal(new SystemEventType(SystemEventType.TYPE_USER_LOGIN, standardUser.getId()), System.currentTimeMillis());
+		Mockito.doNothing().when(Common.eventManager).returnToNormal(new SystemEventType(SystemEventType.TYPE_USER_LOGIN, standardUser.getId()), Common.backgroundProcessing.currentTimeMillis());
 		
 		try{
 			MvcResult result = this.mockMvc.perform(

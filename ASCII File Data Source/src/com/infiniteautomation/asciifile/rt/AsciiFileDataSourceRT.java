@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -61,10 +62,10 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 		
         this.file = new File( vo.getFilePath() );
 		if ( !file.exists() ) {
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.fileNotFound",vo.getFilePath()));
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.fileNotFound",vo.getFilePath()));
 			return false;
 		}else if ( !file.canRead() ){
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailed",vo.getFilePath()));
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailed",vo.getFilePath()));
 			return false;
         }else{
 			this.fobs = new FileAlterationObserver(this.file);
@@ -87,12 +88,12 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
     		if(msg == null){
     			msg = "Unknown";
     		}
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailed",msg));
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailed",msg));
 			
     	}
     	
     	if(connected){
-    		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
+    		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
     	}
         super.initialize();
     	
@@ -105,7 +106,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 				this.fobs.destroy();
 			} catch (Exception e) {
 				LOG.debug("Error destroying file observer");
-				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.obsDestroy", e.getMessage()));
+				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.obsDestroy", e.getMessage()));
 			}
 			this.file = null;
 		}
@@ -162,7 +163,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 	private void fileEvent() {
 		//Should never happen
 		if(this.file == null) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailedFileNotSetup"));
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailedFileNotSetup"));
 			return;
 		}
 		
@@ -184,7 +185,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 						Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
 						if(pointValueMatcher.find()){
 							if(plVo.getPointIdentifierIndex() > pointValueMatcher.groupCount() || plVo.getValueIndex() > pointValueMatcher.groupCount()) {
-								raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), false, new TranslatableMessage("file.event.insufficientGroups", dp.getVO().getExtendedName()));
+								raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), false, new TranslatableMessage("file.event.insufficientGroups", dp.getVO().getExtendedName()));
 							}
 							else if(plVo.getPointIdentifier().equals(pointValueMatcher.group(plVo.getPointIdentifierIndex()))) {
 								String value = pointValueMatcher.group(plVo.getValueIndex());                	
@@ -229,15 +230,15 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
             	}
 			}
             reader.close();
-            returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+            returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
         }catch ( FileNotFoundException e ){
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.fileNotFound",e.getMessage()));
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.fileNotFound",e.getMessage()));
         } catch (IOException e) {
-        	raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailed",e.getMessage()));
+        	raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.readFailed",e.getMessage()));
 		} catch (NumberFormatException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.notNumber",e.getMessage()));
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.notNumber",e.getMessage()));
 		} catch (ParseException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("file.event.dateParseFailed",e.getMessage()));
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("file.event.dateParseFailed",e.getMessage()));
 		}
 		
 	}

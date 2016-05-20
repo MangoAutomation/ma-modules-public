@@ -31,9 +31,9 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     public interface Attributes {
         int BATCH_ENTRIES = 1;
         int BATCH_INSTANCES = 2;
-        int MONITOR_HIGH = 3;
-        int MONITOR_MEDIUM = 4;
-        int MONITOR_SCHEDULED = 5;
+        int MONITOR_HIGH_WAITING = 3;
+        int MONITOR_MEDIUM_WAITING = 4;
+        int MONITOR_HIGH_SCHEDULED = 5;
         int MONITOR_STACK_HEIGHT = 6;
         int MONITOR_THREAD_COUNT = 7;
         int MONITOR_DB_ACTIVE_CONNECTIONS = 8;
@@ -43,15 +43,19 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         int JAVA_USED_MEMORY = 12;
         int JAVA_MAX_MEMORY = 13;
         int JAVA_PROCESSORS = 14;
+        int MONITOR_HIGH_ACTIVE = 15;
+        int MONITOR_MEDIUM_ACTIVE = 16;
+        int MONITOR_LOW_ACTIVE = 17;
+        int MONITOR_LOW_WAITING = 18;
     }
 
     // Values in this array correspond to the attribute ids above.
     public static String[] MONITOR_NAMES = { "", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.ENTRIES_MONITOR", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.INSTANCES_MONITOR", //
-            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.highPriorityServiceQueueSize", //
-            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.mediumPriorityServiceQueueSize", //
-            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.scheduledTimerTaskCount", //
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.highPriorityWaiting", //
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.mediumPriorityWaiting", //
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.highPriorityScheduled", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.maxStackHeight", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.threadCount", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbActiveConnections", //
@@ -60,17 +64,21 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
             "java.lang.Runtime.freeMemory",
             "java.lang.Runtime.totalMemory",
             "java.lang.Runtime.maxMemory",
-            "java.lang.Runtime.availableProcessors"
+            "java.lang.Runtime.availableProcessors",
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.highPriorityActive",
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.mediumPriorityActive",
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.lowPriorityActive",
+            "com.serotonin.m2m2.rt.maint.WorkItemMonitor.lowPriorityWaiting",
     };
 
     public static ExportCodes ATTRIBUTE_CODES = new ExportCodes();
     static {
     	ATTRIBUTE_CODES.addElement(Attributes.BATCH_ENTRIES, "BATCH_ENTRIES", "internal.monitor.BATCH_ENTRIES");
     	ATTRIBUTE_CODES.addElement(Attributes.BATCH_INSTANCES, "BATCH_INSTANCES", "internal.monitor.BATCH_INSTANCES");
-    	ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH, "MONITOR_HIGH", "internal.monitor.MONITOR_HIGH");
-    	ATTRIBUTE_CODES.addElement(Attributes.MONITOR_MEDIUM, "MONITOR_MEDIUM", "internal.monitor.MONITOR_MEDIUM");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_SCHEDULED, "MONITOR_SCHEDULED",
-                "internal.monitor.MONITOR_SCHEDULED");
+    	ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH_WAITING, "MONITOR_HIGH", "internal.monitor.MONITOR_HIGH_WAITING");
+    	ATTRIBUTE_CODES.addElement(Attributes.MONITOR_MEDIUM_WAITING, "MONITOR_MEDIUM", "internal.monitor.MONITOR_MEDIUM_WAITING");
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH_SCHEDULED, "MONITOR_HIGH_SCHEDULED",
+                "internal.monitor.MONITOR_HIGH_SCHEDULED");
         ATTRIBUTE_CODES.addElement(Attributes.MONITOR_STACK_HEIGHT, "MONITOR_STACK_HEIGHT",
                 "internal.monitor.MONITOR_STACK_HEIGHT");
         ATTRIBUTE_CODES.addElement(Attributes.MONITOR_THREAD_COUNT, "MONITOR_THREAD_COUNT",
@@ -89,7 +97,14 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
                 "java.monitor.JAVA_MAX_MEMORY");
         ATTRIBUTE_CODES.addElement(Attributes.JAVA_PROCESSORS, "JAVA_PROCESSORS",
                 "java.monitor.JAVA_PROCESSORS");        
-        
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH_ACTIVE, "MONITOR_HIGH_ACTIVE",
+                "internal.monitor.MONITOR_HIGH_ACTIVE");
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_MEDIUM_ACTIVE, "MONITOR_MEDIUM_ACTIVE",
+                "internal.monitor.MONITOR_MEDIUM_ACTIVE");
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_LOW_ACTIVE, "MONITOR_LOW_ACTIVE",
+                "internal.monitor.MONITOR_LOW_ACTIVE");
+        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_LOW_WAITING, "MONITOR_LOW_WAITING",
+                "internal.monitor.MONITOR_LOW_WAITING");
     };
 
     private int attributeId = Attributes.BATCH_ENTRIES;

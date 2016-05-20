@@ -22,6 +22,7 @@ import net.sf.mbus4j.master.ValueRequestPointLocator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -87,7 +88,7 @@ public class MBusDataSourceRT extends PollingDataSource {
                         		msg = vr.getVif().toString();
                         	}
                             LOG.warn("Read null value for: " + msg);
-                            raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true,
                                     new TranslatableMessage("event.exception2", vo.getName(),
                                             "Dont know how to save value for point with xid : ", dprt.getVO().getXid()));
                         }
@@ -122,7 +123,7 @@ public class MBusDataSourceRT extends PollingDataSource {
                         }
                         else {
                             LOG.fatal("Dont know how to save : " + vr.getReference());
-                            raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true,
                                     new TranslatableMessage("event.exception2", vo.getName(),
                                             "Dont know how to save : ", "Datapoint"));
 
@@ -138,12 +139,12 @@ public class MBusDataSourceRT extends PollingDataSource {
 
             }
             catch (InterruptedException ex) {
-                raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true,
                         getSerialExceptionMessage(ex, vo.getCommPortId()));
                 LOG.error("cant set value of", ex);
             }
             catch (IOException ex) {
-                raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true,
                         getSerialExceptionMessage(ex, vo.getCommPortId()));
                 LOG.error("cant set value of", ex);
             }
@@ -187,7 +188,7 @@ public class MBusDataSourceRT extends PollingDataSource {
 		} catch (Exception ex) {
 			LOG.fatal("MBus Open tcpip exception", ex);
 			// Raise an event.
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(),
+			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(),
 					true, getSerialExceptionMessage(ex, vo.getCommPortId()));
 			return false;
 		}
@@ -225,7 +226,7 @@ public class MBusDataSourceRT extends PollingDataSource {
         catch (Exception ex) {
             LOG.fatal("MBus Open serial port exception", ex);
             // Raise an event.
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true,
                     getSerialExceptionMessage(ex, vo.getCommPortId()));
             return false;
         }
@@ -237,7 +238,7 @@ public class MBusDataSourceRT extends PollingDataSource {
         }
         catch (IOException ex) {
             LOG.fatal("Close port", ex);
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                     "event.exception2", vo.getName(), ex.getMessage(), "HALLO3"));
         }
     }

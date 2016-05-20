@@ -34,6 +34,7 @@ public class Log4JResetDwr extends ModuleDwr {
                 LOG.info("No Log4J configuration found");
         }
         catch (IOException e) {
+        	//TODO This doesn't help with no-hup instances
             throw new RuntimeException(e);
         }
 

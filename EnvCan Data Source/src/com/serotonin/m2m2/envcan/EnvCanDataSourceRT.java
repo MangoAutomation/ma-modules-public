@@ -47,7 +47,7 @@ public class EnvCanDataSourceRT extends PollingDataSource {
 
     @Override
     public void removeDataPoint(DataPointRT dataPoint) {
-        returnToNormal(PARSE_EXCEPTION_EVENT, System.currentTimeMillis());
+        returnToNormal(PARSE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
         super.removeDataPoint(dataPoint);
     }
 
@@ -65,7 +65,7 @@ public class EnvCanDataSourceRT extends PollingDataSource {
     protected void doPoll(long time) {
         if (nextValueTime == -1) {
             // Determine when we should start from
-            nextValueTime = System.currentTimeMillis();
+            nextValueTime = Common.backgroundProcessing.currentTimeMillis();
             for (DataPointRT dp : dataPoints) {
                 PointValueTime pvt = dp.getPointValue();
                 if (pvt == null) {
@@ -88,7 +88,7 @@ public class EnvCanDataSourceRT extends PollingDataSource {
         while (nextValueTime != previousValueTime) {
             // Something was changed.
             DateTime prev = new DateTime(previousValueTime);
-            DateTime now = new DateTime(System.currentTimeMillis());
+            DateTime now = new DateTime(Common.backgroundProcessing.currentTimeMillis());
             if (prev.getYear() < now.getYear() || prev.getMonthOfYear() < now.getMonthOfYear()) {
                 previousValueTime = nextValueTime;
                 doPollImpl(time);

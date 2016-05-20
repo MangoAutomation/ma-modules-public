@@ -67,7 +67,7 @@ public class SquwkSenderRT extends PublisherRT<SquwkPointVO> {
         }
         catch (SquwkException e) {
             LOG.warn("Request exception", e);
-            Common.eventManager.raiseEvent(requestExceptionEventType, System.currentTimeMillis(), true,
+            Common.eventManager.raiseEvent(requestExceptionEventType, Common.backgroundProcessing.currentTimeMillis(), true,
                     AlarmLevels.URGENT, toTranslatableMessage(e), createEventContext());
         }
     }
@@ -132,19 +132,19 @@ public class SquwkSenderRT extends PublisherRT<SquwkPointVO> {
                 squwkClient.sendBatch(reqs, resultHandler);
 
                 // If we made it this far, the request was ok.
-                Common.eventManager.returnToNormal(requestExceptionEventType, System.currentTimeMillis());
+                Common.eventManager.returnToNormal(requestExceptionEventType, Common.backgroundProcessing.currentTimeMillis());
 
                 // Check for service exception.
                 if (resultHandler.getSquwkException() != null) {
                     LOG.warn("Service exception", resultHandler.getSquwkException());
-                    Common.eventManager.raiseEvent(serviceExceptionEventType, System.currentTimeMillis(), false,
+                    Common.eventManager.raiseEvent(serviceExceptionEventType, Common.backgroundProcessing.currentTimeMillis(), false,
                             AlarmLevels.URGENT, toTranslatableMessage(resultHandler.getSquwkException()),
                             createEventContext());
                 }
             }
             catch (SquwkException e) {
                 LOG.warn("Request exception", e);
-                Common.eventManager.raiseEvent(requestExceptionEventType, System.currentTimeMillis(), true,
+                Common.eventManager.raiseEvent(requestExceptionEventType, Common.backgroundProcessing.currentTimeMillis(), true,
                         AlarmLevels.URGENT, toTranslatableMessage(e), createEventContext());
                 return false;
             }
@@ -166,8 +166,9 @@ public class SquwkSenderRT extends PublisherRT<SquwkPointVO> {
             return mv.getIntegerValue();
         case FLOAT:
             return mv.getDoubleValue();
+        default:
+        	return mv.getStringValue();
         }
-        return mv.getStringValue();
     }
 
     class ResultHandler extends ServiceResultObjectHandler {

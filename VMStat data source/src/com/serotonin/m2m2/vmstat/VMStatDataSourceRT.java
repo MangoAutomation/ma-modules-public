@@ -54,25 +54,25 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
         }
         else if(osName.startsWith("Win")){
             osName = "windows";
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                     "event.initializationError", "OS: " + osName + " Not Supported"));
             return;
         }//since 0.9.0 ->
         else if(osName.equals("SunOS")){
             osName = "solaris";
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                     "event.initializationError", "OS: " + osName + " Not Supported"));
             return;
         }
         else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
             osName = "mac_os_x";
             command = "vm_stat -n"; //TODO Implement this for OSX, output format is different
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                     "event.initializationError", "OS: " + osName + " Not Supported"));
             return;
            
         }else{
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                     "event.initializationError", "OS: " + osName + " Not Supported"));
             return;
         }
@@ -153,10 +153,10 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
             // our purposes. Just throw it away.
             in.readLine();
 
-            returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
+            returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
         }
         catch (IOException e) {
-            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                     "event.initializationError", e.getMessage()));
         }
     }
@@ -199,7 +199,7 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
             readError();
 
             if (!terminated) {
-                raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                         "event.vmstat.process", e.getMessage()));
             }
         }
@@ -207,7 +207,7 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
 
     private void readParts(String[] parts) {
         TranslatableMessage error = null;
-        long time = System.currentTimeMillis();
+        long time = Common.backgroundProcessing.currentTimeMillis();
 
         synchronized (pointListChangeLock) {
             for (DataPointRT dp : dataPoints) {
@@ -232,7 +232,7 @@ public class VMStatDataSourceRT extends EventDataSource implements Runnable {
                     catch (ArrayIndexOutOfBoundsException e) {
                         log.error("Weird. We need element " + position + " but the vmstat data is only " + parts.length
                                 + " elements long. The statistic " + Common.translate(VMStatPointLocatorVO.ATTRIBUTE_CODES.getKey(locator.getAttributeId())) + " is missing from the vmstat output.");
-                        raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage(
+                        raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage(
                                 "event.vmstat.process", "The statistic " + Common.translate(VMStatPointLocatorVO.ATTRIBUTE_CODES.getKey(locator.getAttributeId())) + " is missing from the vmstat output."));
                     }
                 }

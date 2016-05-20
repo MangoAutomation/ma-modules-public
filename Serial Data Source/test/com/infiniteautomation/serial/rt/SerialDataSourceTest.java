@@ -183,7 +183,7 @@ public class SerialDataSourceTest {
 		inputStream.pushToMockStream(message);
 		
 		//Create an event to force the Data Source to read the port
-		SerialPortProxyEvent evt = new SerialPortProxyEvent(System.currentTimeMillis());
+		SerialPortProxyEvent evt = new SerialPortProxyEvent(Common.backgroundProcessing.currentTimeMillis());
 		rt.serialEvent(evt);
 		
 		//test the return value(s), reverse list because Mango stores latest value at [0]
@@ -268,7 +268,7 @@ public class SerialDataSourceTest {
 			inputStream.pushToMockStream(s);
 			
 			//Create an event to force the Data Source to read the port
-			SerialPortProxyEvent evt = new SerialPortProxyEvent(System.currentTimeMillis());
+			SerialPortProxyEvent evt = new SerialPortProxyEvent(Common.backgroundProcessing.currentTimeMillis());
 			rt.serialEvent(evt);
 			
 			//test the return value(s), reverse list because Mango stores latest value at [0]

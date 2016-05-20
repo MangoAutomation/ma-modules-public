@@ -58,7 +58,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
     }
 
     public boolean toggle() {
-        scheduleTimeout(!eventActive, System.currentTimeMillis());
+        scheduleTimeout(!eventActive, Common.backgroundProcessing.currentTimeMillis());
         return eventActive;
     }
 
@@ -89,7 +89,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
             if (vo.getScheduleType() != MaintenanceEventVO.TYPE_ONCE) {
                 // Check if we are currently active.
                 if (inactiveTrigger.getNextExecutionTime() < activeTrigger.getNextExecutionTime())
-                    raiseEvent(System.currentTimeMillis());
+                    raiseEvent(Common.backgroundProcessing.currentTimeMillis());
             }
         }
     }
@@ -101,7 +101,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
             inactiveTask.cancel();
 
         if (eventActive)
-            Common.eventManager.returnToNormal(eventType, System.currentTimeMillis(),
+            Common.eventManager.returnToNormal(eventType, Common.backgroundProcessing.currentTimeMillis(),
                     EventInstance.RtnCauses.SOURCE_DISABLED);
     }
 
@@ -187,4 +187,29 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
         }
         return cronTrigger;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getName()
+	 */
+	@Override
+	public String getThreadName() {
+		return "Maintenence Event " + vo.getXid();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
+	 */
+	@Override
+	public String getTaskId() {
+		return "MAINT-" + vo.getXid();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getQueueSize()
+	 */
+	@Override
+	public int getQueueSize() {
+		return Common.envProps.getInt("runtime.realTimeTimer.defaultTaskQueueSize", 0);
+	}
 }

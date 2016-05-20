@@ -169,7 +169,7 @@ abstract public class CompoundComponent extends ViewComponent {
             String... childIds) {
     	
     	//Only get new data if we are supposed to
-        if((this.cachedContent.get(IMAGE_CHART_KEY) != null)&&(System.currentTimeMillis() < lastUpdated + Common.getMillis(updatePeriodType, updatePeriods)))
+        if((this.cachedContent.get(IMAGE_CHART_KEY) != null)&&(Common.backgroundProcessing.currentTimeMillis() < lastUpdated + Common.getMillis(updatePeriodType, updatePeriods)))
         	return (String)this.cachedContent.get(IMAGE_CHART_KEY);
         
         long ts = 0;
@@ -227,7 +227,7 @@ abstract public class CompoundComponent extends ViewComponent {
 
         String output = htmlData.toString();
         this.cachedContent.put(IMAGE_CHART_KEY, output);
-        this.lastUpdated = System.currentTimeMillis();
+        this.lastUpdated = Common.backgroundProcessing.currentTimeMillis();
         
         return output;
     }

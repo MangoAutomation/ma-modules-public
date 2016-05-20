@@ -89,7 +89,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     }
 
     private void raiseFailureEvent(TranslatableMessage message) {
-        raiseFailureEvent(System.currentTimeMillis(), message);
+        raiseFailureEvent(Common.backgroundProcessing.currentTimeMillis(), message);
     }
 
     private void raiseFailureEvent(long time, TranslatableMessage message) {
@@ -97,7 +97,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     }
 
     private void returnToNormal() {
-        SystemEventType.returnToNormal(eventType, System.currentTimeMillis());
+        SystemEventType.returnToNormal(eventType, Common.backgroundProcessing.currentTimeMillis());
     }
 
     private void execute(PointValueTime newValue) {
@@ -109,7 +109,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 	    		return;
 	    	}else{
 	    		ready = false; //Stop anyone else from using this 
-	    		SystemEventType.returnToNormal(alreadyRunningEvent, System.currentTimeMillis());
+	    		SystemEventType.returnToNormal(alreadyRunningEvent, Common.backgroundProcessing.currentTimeMillis());
 	    	}
     	}
         // Propagate the update to the target point. Validate that the target point is available.
@@ -241,4 +241,12 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public static File getLogFile(int pointId) {
         return new File(Common.getLogsDir(), "pointLink-" + pointId + ".log");
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#getListenerName()
+	 */
+	@Override
+	public String getListenerName() {
+		return "Point Link " + vo.getXid();
+	}
 }

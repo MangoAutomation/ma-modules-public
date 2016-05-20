@@ -27,6 +27,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.serotonin.m2m2.web.OverridingFileResource;
+import com.serotonin.provider.Providers;
+import com.serotonin.provider.TimerProvider;
+import com.serotonin.timer.AbstractTimer;
 import com.serotonin.util.properties.AbstractProperties;
 import com.serotonin.util.properties.PropertyChangeCallback;
 import com.serotonin.util.properties.ReloadCallback;
@@ -43,6 +46,7 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 	private long lastTimestamp = 0;
 	private long lastRecheck = 0;
 	private long recheckDeadbandPeriod = 5000; // 5 seconds
+	private AbstractTimer timer;
 	private ReloadCallback reloadCallback;
 	private final Map<String, List<PropertyChangeCallback>> propertyChangeCallbacks = new HashMap<String, List<PropertyChangeCallback>>();
 
@@ -50,6 +54,7 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 
 	public MangoApiReloadingProperties(OverridingFileResource propertiesResource) {
 		super("mangoApiHeaders");
+		this.timer = Providers.get(TimerProvider.class).getTimer();
 		sourceFile = propertiesResource;
 		checkForReload(false);
 	}
@@ -114,7 +119,7 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 	 */
 	public void checkForReload(boolean forceReload) {
 		if(!forceReload){
-			if (lastRecheck + recheckDeadbandPeriod > System.currentTimeMillis()) {
+			if (lastRecheck + recheckDeadbandPeriod > timer.currentTimeMillis()) {
 				if (LOG.isDebugEnabled())
 					LOG.debug("(" + getDescription()
 							+ ") In do not check period. Not rechecking");
@@ -122,7 +127,7 @@ public class MangoApiReloadingProperties extends AbstractProperties {
 				return;
 			}
 		}
-		lastRecheck = System.currentTimeMillis();
+		lastRecheck = timer.currentTimeMillis();
 
 		if (LOG.isDebugEnabled())
 			LOG.debug("(" + getDescription() + ") Checking for updated files");

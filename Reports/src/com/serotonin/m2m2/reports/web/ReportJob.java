@@ -11,8 +11,8 @@ import java.util.Map;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.reports.vo.ReportVO;
+import com.serotonin.m2m2.util.timeout.RejectableTimerTask;
 import com.serotonin.timer.CronTimerTrigger;
-import com.serotonin.timer.TimerTask;
 import com.serotonin.timer.TimerTrigger;
 
 /**
@@ -20,7 +20,7 @@ import com.serotonin.timer.TimerTrigger;
  * 
  * @author Matthew Lohbihler
  */
-public class ReportJob extends TimerTask {
+public class ReportJob extends RejectableTimerTask {
     private static final Map<Integer, ReportJob> JOB_REGISTRY = new HashMap<Integer, ReportJob>();
 
     public static void scheduleReportJob(ReportVO report) {
@@ -43,7 +43,7 @@ public class ReportJob extends TimerTask {
 
                 ReportJob reportJob = new ReportJob(trigger, report);
                 JOB_REGISTRY.put(report.getId(), reportJob);
-                Common.timer.schedule(reportJob);
+                Common.backgroundProcessing.schedule(reportJob);
             }
         }
     }
@@ -59,7 +59,7 @@ public class ReportJob extends TimerTask {
     private final ReportVO report;
 
     private ReportJob(TimerTrigger trigger, ReportVO report) {
-        super(trigger);
+        super(trigger, "Report " + report.getXid(), "REPORT_JOB-" + report.getXid(), 0);
         this.report = report;
     }
 

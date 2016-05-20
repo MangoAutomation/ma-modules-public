@@ -93,9 +93,9 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
             if (vo.getScheduleType() != ScheduledEventVO.TYPE_ONCE) {
                 // Check if we are currently active.
                 if (inactiveTrigger.getNextExecutionTime() >= activeTrigger.getNextExecutionTime())
-                	returnToNormal(System.currentTimeMillis());
+                	returnToNormal(Common.backgroundProcessing.currentTimeMillis());
                 else
-                    raiseEvent(System.currentTimeMillis());
+                    raiseEvent(Common.backgroundProcessing.currentTimeMillis());
             }
         }
     }
@@ -105,7 +105,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
             activeTask.cancel();
         if (inactiveTask != null)
             inactiveTask.cancel();
-        //returnToNormal(System.currentTimeMillis());
+        //returnToNormal(Common.backgroundProcessing.currentTimeMillis());
     }
 
     public void joinTermination() {
@@ -190,4 +190,29 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
         }
         return cronTrigger;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getName()
+	 */
+	@Override
+	public String getThreadName() {
+		return "Scheduled Event " + vo.getXid();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
+	 */
+	@Override
+	public String getTaskId() {
+		return "SCHED_EVENT-" + vo.getXid();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getQueueSize()
+	 */
+	@Override
+	public int getQueueSize() {
+		return Common.envProps.getInt("runtime.realTimeTimer.defaultTaskQueueSize", 0);
+	}
 }

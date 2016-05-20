@@ -307,7 +307,7 @@ public class WatchListDwr extends ModuleDwr {
 
         StringBuilder htmlData = new StringBuilder();
         htmlData.append("<img src=\"chart/ft_");
-        htmlData.append(System.currentTimeMillis());
+        htmlData.append(Common.backgroundProcessing.currentTimeMillis());
         htmlData.append('_');
         htmlData.append(fromNone ? -1 : from.getMillis());
         htmlData.append('_');

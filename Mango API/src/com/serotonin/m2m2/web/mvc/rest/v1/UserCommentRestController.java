@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
@@ -165,7 +166,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		}
     		
     		if(model.getTimestamp() <=0){
-    			model.setTimestamp(System.currentTimeMillis());
+    			model.setTimestamp(Common.backgroundProcessing.currentTimeMillis());
     		}
     		if(model.validate()){
     			try{

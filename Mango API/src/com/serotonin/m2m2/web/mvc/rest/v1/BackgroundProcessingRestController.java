@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,11 +51,10 @@ public class BackgroundProcessingRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		if(Permissions.hasAdmin(user)){
-    			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
-    			int corePoolSize = executor.getCorePoolSize();
-    			int maximumPoolSize = executor.getMaximumPoolSize();
-    			int activeCount = executor.getActiveCount();
-    			int largestPoolSize = executor.getLargestPoolSize();
+    			int corePoolSize = Common.backgroundProcessing.getHighPriorityServiceCorePoolSize();
+    			int maximumPoolSize = Common.backgroundProcessing.getHighPriorityServiceMaximumPoolSize();
+    			int activeCount = Common.backgroundProcessing.getHighPriorityServiceActiveCount();
+    			int largestPoolSize = Common.backgroundProcessing.getHighPriorityServiceLargestPoolSize();
     			
     			ThreadPoolSettingsModel model = new ThreadPoolSettingsModel(corePoolSize, maximumPoolSize, activeCount, largestPoolSize);
     			return result.createResponseEntity(model);
@@ -87,9 +85,8 @@ public class BackgroundProcessingRestController extends MangoRestController{
     	if(result.isOk()){
     		if(Permissions.hasAdmin(user)){
     			//Validate the settings
-    			ThreadPoolExecutor executor = (ThreadPoolExecutor) Common.timer.getExecutorService();
-    			int currentCorePoolSize = executor.getCorePoolSize();
-    			int currentMaxPoolSize = executor.getMaximumPoolSize();
+    			int currentCorePoolSize = Common.backgroundProcessing.getHighPriorityServiceCorePoolSize();
+    			int currentMaxPoolSize = Common.backgroundProcessing.getHighPriorityServiceMaximumPoolSize();
     			
     			if((model.getMaximumPoolSize() != null)&&(model.getMaximumPoolSize() < BackgroundProcessing.HIGH_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
@@ -103,24 +100,24 @@ public class BackgroundProcessingRestController extends MangoRestController{
     	        }else{
     	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
 	    			if(model.getCorePoolSize() != null){
-	    				executor.setCorePoolSize(model.getCorePoolSize());
+	    				Common.backgroundProcessing.setHighPriorityServiceCorePoolSize(model.getCorePoolSize());
 	        			systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
 	    			}else{
 	    				//Get the info for the user
-	        			int corePoolSize = executor.getCorePoolSize();
+	        			int corePoolSize = Common.backgroundProcessing.getHighPriorityServiceCorePoolSize();
 	        			model.setCorePoolSize(corePoolSize);
 	    			}
 	    			if(model.getMaximumPoolSize() != null){
-	    				executor.setMaximumPoolSize(model.getMaximumPoolSize());
+	    				Common.backgroundProcessing.setHighPriorityServiceMaximumPoolSize(model.getMaximumPoolSize());
 	    				systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
 	    			}else{
 	    				//Get the info for the user
-	        			int maximumPoolSize = executor.getMaximumPoolSize();
+	        			int maximumPoolSize = Common.backgroundProcessing.getHighPriorityServiceMaximumPoolSize();
 	        			model.setMaximumPoolSize(maximumPoolSize);
 	    			}
 	    			//Get the settings for the model
-	    			int activeCount = executor.getActiveCount();
-	    			int largestPoolSize = executor.getLargestPoolSize();
+	    			int activeCount = Common.backgroundProcessing.getHighPriorityServiceActiveCount();
+	    			int largestPoolSize = Common.backgroundProcessing.getHighPriorityServiceLargestPoolSize();
 	    			model.setActiveCount(activeCount);
 	    			model.setLargestPoolSize(largestPoolSize);
     	        }

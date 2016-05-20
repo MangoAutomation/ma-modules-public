@@ -244,7 +244,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	        if(message != null)
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-	        Common.eventManager.acknowledgeEvent(existingEvent, System.currentTimeMillis(), user.getId(), tlm);
+	        Common.eventManager.acknowledgeEvent(existingEvent, Common.backgroundProcessing.currentTimeMillis(), user.getId(), tlm);
 	        
 	        model.setAcknowledged(true);
 	        

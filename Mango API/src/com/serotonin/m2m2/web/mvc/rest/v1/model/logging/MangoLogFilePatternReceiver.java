@@ -44,6 +44,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.infiniteautomation.mango.db.query.RQLToLimitVisitor;
 import com.infiniteautomation.mango.db.query.pojo.RQLToQueryComparisonVisitor;
+import com.serotonin.m2m2.Common;
 
 /**
  * 
@@ -1024,7 +1025,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	    }
 	    //use current time if timestamp not parseable
 	    if (timeStamp == 0L) {
-	      timeStamp = System.currentTimeMillis();
+	      timeStamp = Common.backgroundProcessing.currentTimeMillis();
 	    }
 
 	    message = fieldMap.remove(MESSAGE);

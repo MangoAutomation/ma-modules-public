@@ -55,6 +55,7 @@ import com.serotonin.web.mail.EmailInline;
  */
 public class ReportWorkItem implements WorkItem {
     static final Log LOG = LogFactory.getLog(ReportWorkItem.class);
+    private static final String prefix = "REPORT_WORK_ITEM-";
 
     //Key For Settings
     public static final String REPORT_WORK_ITEM_PRIORITY = "reports.REPORT_WORK_ITEM_PRIORITY";
@@ -106,7 +107,7 @@ public class ReportWorkItem implements WorkItem {
 
         LOG.debug("Running report with id " + reportConfig.getId() + ", instance id " + reportInstance.getId());
 
-        reportInstance.setRunStartTime(System.currentTimeMillis());
+        reportInstance.setRunStartTime(Common.backgroundProcessing.currentTimeMillis());
         reportDao.saveReportInstance(reportInstance);
         Translations translations = Common.getTranslations();
 
@@ -152,13 +153,13 @@ public class ReportWorkItem implements WorkItem {
             throw new RuntimeException("Report instance failed", e);
         }
         finally {
-            reportInstance.setRunEndTime(System.currentTimeMillis());
+            reportInstance.setRunEndTime(Common.backgroundProcessing.currentTimeMillis());
             reportInstance.setRecordCount(recordCount);
             reportDao.saveReportInstance(reportInstance);
         }
 
         if (reportConfig.isEmail()) {
-            String inlinePrefix = "R" + System.currentTimeMillis() + "-" + reportInstance.getId() + "-";
+            String inlinePrefix = "R" + Common.backgroundProcessing.currentTimeMillis() + "-" + reportInstance.getId() + "-";
 
             // TODO should we create different instances of the email based upon language and timezone?
 
@@ -274,5 +275,23 @@ public class ReportWorkItem implements WorkItem {
 	@Override
 	public String getDescription() {
 		return "Generating report: " + this.reportInstance.getName();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getTaskId()
+	 */
+	@Override
+	public String getTaskId() {
+		return prefix + reportConfig.getXid();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getQueueSize()
+	 */
+	@Override
+	public int getQueueSize() {
+		//TODO How many of the same reports do we want to run at the same time?
+		return Common.envProps.getInt("runtime.realTimeTimer.defaultTaskQueueSize", 0);
 	}
 }

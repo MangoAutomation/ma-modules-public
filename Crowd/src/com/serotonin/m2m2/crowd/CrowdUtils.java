@@ -25,6 +25,7 @@ import com.atlassian.crowd.service.client.ClientPropertiesImpl;
 import com.atlassian.crowd.service.client.ClientResourceLocator;
 import com.atlassian.crowd.service.client.CrowdClient;
 import com.atlassian.crowd.service.factory.CrowdClientFactory;
+import com.serotonin.m2m2.Common;
 
 public class CrowdUtils {
     private static final Log LOG = LogFactory.getLog(CrowdUtils.class);
@@ -34,7 +35,7 @@ public class CrowdUtils {
 
     public static boolean authenticate(HttpServletRequest request, HttpServletResponse response, String username,
             String password) {
-        long start = System.currentTimeMillis();
+        long start = Common.backgroundProcessing.currentTimeMillis();
 
         ensureAuthenticator();
 
@@ -69,7 +70,7 @@ public class CrowdUtils {
         }
 
         if (LOG.isDebugEnabled())
-            LOG.debug("Authentication check took " + (System.currentTimeMillis() - start) + "ms");
+            LOG.debug("Authentication check took " + (Common.backgroundProcessing.currentTimeMillis() - start) + "ms");
 
         return authenticated;
     }

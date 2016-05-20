@@ -116,7 +116,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         for (ViewComponent viewComponent : view.getViewComponents()) {
         	
         	//Are we to update this component
-            boolean update = System.currentTimeMillis() >= (viewComponent.getLastUpdated() + Common.getMillis(viewComponent.getUpdatePeriodType(), viewComponent.getUpdatePeriods()));
+            boolean update = Common.backgroundProcessing.currentTimeMillis() >= (viewComponent.getLastUpdated() + Common.getMillis(viewComponent.getUpdatePeriodType(), viewComponent.getUpdatePeriods()));
             
             if (viewComponent.isCompoundComponent() && (edit || viewComponent.isVisible())) {
                 CompoundComponent compoundComponent = (CompoundComponent) viewComponent;
@@ -171,7 +171,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         
             //Save the last time we updated
             if(update)
-            	viewComponent.setLastUpdated(System.currentTimeMillis());
+            	viewComponent.setLastUpdated(Common.backgroundProcessing.currentTimeMillis());
 
         }
 

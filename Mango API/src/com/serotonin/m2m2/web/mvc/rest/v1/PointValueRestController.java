@@ -589,7 +589,7 @@ public class PointValueRestController extends MangoRestController{
     			
     			//Set the time to now if it is not present
     			if(model.getTimestamp() == 0){
-    				model.setTimestamp(System.currentTimeMillis());
+    				model.setTimestamp(Common.backgroundProcessing.currentTimeMillis());
     			}
     			
     			//Validate the model's data type for compatibility
@@ -599,7 +599,7 @@ public class PointValueRestController extends MangoRestController{
     			}
     			
     			//Validate the timestamp for future dated
-    			if (model.getTimestamp() > System.currentTimeMillis() + SystemSettingsDao.getFutureDateLimit()) {
+    			if (model.getTimestamp() > Common.backgroundProcessing.currentTimeMillis() + SystemSettingsDao.getFutureDateLimit()) {
     				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Future dated points not acceptable."));
     				return result;
     		    }
