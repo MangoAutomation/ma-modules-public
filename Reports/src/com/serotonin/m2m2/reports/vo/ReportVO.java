@@ -865,6 +865,6 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 	 */
 	@Override
 	protected AbstractDao<ReportVO> getDao() {
-		return null;
+		return ReportDao.instance;
 	}
 }

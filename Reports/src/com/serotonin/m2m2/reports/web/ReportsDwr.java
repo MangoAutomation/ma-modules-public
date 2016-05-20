@@ -52,7 +52,7 @@ public class ReportsDwr extends ModuleDwr {
 	 @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
 	 public ProcessResult init() {
         ProcessResult response = new ProcessResult();
-        ReportDao reportDao = new ReportDao();
+        ReportDao reportDao = ReportDao.instance;
         User user = Common.getUser();
 
         response.addData("points", getReadablePoints());
@@ -90,16 +90,16 @@ public class ReportsDwr extends ModuleDwr {
         ReportVO report;
         if (id == Common.NEW_ID) {
             report = new ReportVO();
-            report.setXid(new ReportDao().generateUniqueXid());
+            report.setXid(ReportDao.instance.generateUniqueXid());
             report.setName(translate("common.newName"));
         }
         else {
-            report = new ReportDao().getReport(id);
+            report = ReportDao.instance.getReport(id);
 
             if (copy) {
                 report.setId(Common.NEW_ID);
                 report.setName(TranslatableMessage.translate(getTranslations(), "common.copyPrefix", report.getName()));
-                report.setXid(new ReportDao().generateUniqueXid());
+                report.setXid(ReportDao.instance.generateUniqueXid());
             }
 
             ReportCommon.ensureReportPermission(Common.getUser(), report);
@@ -152,7 +152,7 @@ public class ReportsDwr extends ModuleDwr {
             return response;
 
         User user = Common.getUser();
-        ReportDao reportDao = new ReportDao();
+        ReportDao reportDao = ReportDao.instance;
         ReportVO report;
         if (id == Common.NEW_ID) {
             report = new ReportVO();
@@ -223,7 +223,7 @@ public class ReportsDwr extends ModuleDwr {
                 SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE, Common.TimePeriods.MONTHS),
                 SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS, 1));
 
-        int deleteCount = new ReportDao().purgeReportsBefore(cutoff.getMillis());
+        int deleteCount = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
         LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
     	
     	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
@@ -238,7 +238,7 @@ public class ReportsDwr extends ModuleDwr {
     public ProcessResult purgeAllNow(){
     	ProcessResult response = new ProcessResult();
 
-        int deleteCount = new ReportDao().purgeReportsBefore(System.currentTimeMillis());
+        int deleteCount = ReportDao.instance.purgeReportsBefore(Common.backgroundProcessing.currentTimeMillis());
         LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
 
     	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
@@ -300,7 +300,7 @@ public class ReportsDwr extends ModuleDwr {
 
 	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public void deleteReport(int id) {
-        ReportDao reportDao = new ReportDao();
+        ReportDao reportDao = ReportDao.instance;
 
         ReportVO report = reportDao.getReport(id);
         if (report != null) {
@@ -349,7 +349,7 @@ public class ReportsDwr extends ModuleDwr {
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public List<ReportInstance> deleteReportInstance(int instanceId) {
         User user = Common.getUser();
-        ReportDao reportDao = new ReportDao();
+        ReportDao reportDao = ReportDao.instance;
         reportDao.deleteReportInstance(instanceId, user.getId());
         return getReportInstances(user);
     }
@@ -368,9 +368,9 @@ public class ReportsDwr extends ModuleDwr {
     	//Allow Admin access to all report instances
     	List<ReportInstance> result;
     	if(Permissions.hasAdmin(user))
-    		result = new ReportDao().getReportInstances();
+    		result = ReportDao.instance.getReportInstances();
     	else
-    		result = new ReportDao().getReportInstances(user.getId());
+    		result = ReportDao.instance.getReportInstances(user.getId());
         Translations translations = getTranslations();
         UserDao userDao = new UserDao();
         for (ReportInstance i : result){
@@ -387,7 +387,7 @@ public class ReportsDwr extends ModuleDwr {
 
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public void setPreventPurge(int instanceId, boolean value) {
-        new ReportDao().setReportInstancePreventPurge(instanceId, value, Common.getUser());
+        ReportDao.instance.setReportInstancePreventPurge(instanceId, value, Common.getUser());
     }
 
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)

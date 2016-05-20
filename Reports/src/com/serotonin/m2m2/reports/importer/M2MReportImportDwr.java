@@ -72,7 +72,7 @@ public class M2MReportImportDwr extends ModuleDwr {
         	}
         	
         	if(!result.getHasMessages()){
-        		ReportDao reportDao = new ReportDao();
+        		ReportDao reportDao = ReportDao.instance;
         		for(ReportVO vo : reports){
         			vo.validate(result);
         			reportDao.saveReport(vo);

@@ -9,15 +9,19 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.infiniteautomation.mango.web.mvc.rest.v1.reports.ReportWebSocketConfiguration;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.BaseDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -51,9 +55,20 @@ import com.serotonin.util.StringUtils;
 import com.serotonin.web.taglib.Functions;
 
 /**
+ * 
+ * TODO Further flesh out Auditing as its not implemented
+ * 
  * @author Matthew Lohbihler
  */
-public class ReportDao extends BaseDao {
+public class ReportDao extends AbstractDao<ReportVO> {
+	
+	public static final String TABLE_NAME = "reports";
+	public static final ReportDao instance = new ReportDao();
+	
+	private ReportDao(){
+		super(ReportWebSocketConfiguration.reportHandler, ReportAuditEvent.TYPE_NAME);
+	}
+	
     //
     //
     // Report Templates
@@ -908,6 +923,72 @@ public class ReportDao extends BaseDao {
     		this.count++;
     	}
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
+	 */
+	@Override
+	protected String getXidPrefix() {
+		return ReportVO.XID_PREFIX;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
+	 */
+	@Override
+	public ReportVO getNewVo() {
+		return new ReportVO();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
+	 */
+	@Override
+	protected String getTableName() {
+		return TABLE_NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(com.serotonin.m2m2.vo.AbstractBasicVO)
+	 */
+	@Override
+	protected Object[] voToObjectArray(ReportVO vo) {
+        return new Object[] { 
+        		vo.getXid(),
+        		vo.getUserId(),
+        		vo.getName(),
+        		SerializationHelper.writeObject(vo) };
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
+	 */
+	@Override
+	protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
+		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+		map.put("id", Types.INTEGER);
+		map.put("xid", Types.VARCHAR);
+		map.put("userId", Types.INTEGER);
+		map.put("name", Types.VARCHAR);
+		map.put("data", Types.BINARY);
+		return map;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
+	 */
+	@Override
+	protected Map<String, IntStringPair> getPropertiesMap() {
+		return new HashMap<String, IntStringPair>();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
+	 */
+	@Override
+	public RowMapper<ReportVO> getRowMapper() {
+		return new ReportRowMapper();
+	}
 
     
 }

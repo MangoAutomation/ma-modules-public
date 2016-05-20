@@ -26,15 +26,14 @@ public class ReportChartHandler implements UrlHandler {
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model)
             throws Exception {
         int instanceId = Integer.parseInt(request.getParameter("instanceId"));
-        ReportDao reportDao = new ReportDao();
-        ReportInstance instance = reportDao.getReportInstance(instanceId);
+        ReportInstance instance = ReportDao.instance.getReportInstance(instanceId);
 
         User user = Common.getUser(request);
         ReportCommon.ensureReportInstancePermission(user, instance);
 
         ReportChartCreator creator = new ReportChartCreator(ControllerUtils.getTranslations(request),
                 user.getTimeZoneInstance());
-        creator.createContent(instance, reportDao, null, false);
+        creator.createContent(instance, ReportDao.instance, null, false);
 
         Map<String, byte[]> imageData = new HashMap<String, byte[]>();
         imageData.put(creator.getChartName(), creator.getImageData());

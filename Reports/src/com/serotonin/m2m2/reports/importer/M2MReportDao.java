@@ -52,7 +52,7 @@ public class M2MReportDao {
 		mappedClasses.put("com.serotonin.mango.vo.report.ReportPointVO", M2MReportPointVO.class.getCanonicalName());
 		mappedClasses.put("com.serotonin.mango.web.dwr.beans.RecipientListEntryBean", M2MRecipientListEntryBean.class.getCanonicalName());
 		
-		this.mangoDao = new ReportDao();
+		this.mangoDao = ReportDao.instance;
 	}
 	
 	public void close() throws SQLException{
