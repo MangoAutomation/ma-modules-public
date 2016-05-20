@@ -18,7 +18,7 @@ public class ReportLaunchServlet extends BaseInfoServlet{
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 		User user = Common.getUser(request);
 		if(user != null) {
-			ReportDao dao = new ReportDao();
+			ReportDao dao = ReportDao.instance;
 			ReportVO report = null;
 			int id = getIntRequestParameter(request, "reportId", -1);
 			if(id != -1)

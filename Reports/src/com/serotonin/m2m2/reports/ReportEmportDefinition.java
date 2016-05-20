@@ -31,7 +31,7 @@ public class ReportEmportDefinition extends EmportDefinition {
     @Override
     public void postInitialize() {
         super.postInitialize();
-        reportDao = new ReportDao();
+        reportDao = ReportDao.instance;
     }
 
     @Override

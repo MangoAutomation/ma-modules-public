@@ -24,7 +24,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        List<ReportVO> reports = new ReportDao().getReports();
+        List<ReportVO> reports = ReportDao.instance.getReports();
         for (ReportVO report : reports) {
             try {
                 ReportJob.scheduleReportJob(report);

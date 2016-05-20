@@ -84,7 +84,7 @@ public class ReportWorkItem implements WorkItem {
         ReportInstance reportInstance = new ReportInstance(report);
 
         item.user = user;
-        item.reportDao = new ReportDao();
+        item.reportDao = ReportDao.instance;
         item.reportDao.saveReportInstance(reportInstance);
 
         // Start the report work item out of process.

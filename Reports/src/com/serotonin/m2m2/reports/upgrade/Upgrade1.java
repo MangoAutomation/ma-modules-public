@@ -20,7 +20,7 @@ public class Upgrade1 extends DBUpgrade {
     	runScript(new String[] { "alter table reports add xid varchar(50);" });
     	
     	//Now generate XIDs for all entries in the table
-    	ReportDao dao = new ReportDao();
+    	ReportDao dao = ReportDao.instance;
     	List<ReportVO> reports = dao.getReports();
     	for(ReportVO report : reports){
     		report.setXid(dao.generateUniqueXid());

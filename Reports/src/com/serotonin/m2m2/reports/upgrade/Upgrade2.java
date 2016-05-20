@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
@@ -12,7 +11,6 @@ import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.export.ExportPointInfo;
 
 /**
  * Upgrade Schema 2 to 3
@@ -29,7 +27,7 @@ public class Upgrade2 extends DBUpgrade {
     			"alter table reportInstancePoints add xid varchar(50);",
     			"update reportInstancePoints set xid='legacyReport';"});
     	
-    	ReportDao dao = new ReportDao();
+    	ReportDao dao = ReportDao.instance;
     	UserDao ud = new UserDao();
     	List<ReportVO> reports = dao.getReports();
     	List<ReportInstance> reportInstances;

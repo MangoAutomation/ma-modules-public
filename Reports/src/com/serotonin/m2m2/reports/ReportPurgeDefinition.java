@@ -26,7 +26,7 @@ public class ReportPurgeDefinition extends PurgeDefinition {
                 SystemSettingsDao.getIntValue(REPORT_PURGE_PERIOD_TYPE, Common.TimePeriods.MONTHS),
                 SystemSettingsDao.getIntValue(REPORT_PURGE_PERIODS, 1));
 
-        int deleteCount = new ReportDao().purgeReportsBefore(cutoff.getMillis());
+        int deleteCount = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
         if (deleteCount > 0)
             LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
     }
