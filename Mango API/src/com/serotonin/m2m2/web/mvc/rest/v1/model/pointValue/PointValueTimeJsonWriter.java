@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -48,6 +47,15 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	}
 	
 	@Override
+	public void writePointValueTime(String string, long timestamp, String annotation) throws IOException{
+		jgen.writeStartObject();
+		jgen.writeStringField("annotation", annotation);
+    	jgen.writeStringField("value", string);
+    	jgen.writeNumberField("timestamp", timestamp);
+    	jgen.writeEndObject();
+	}
+	
+	@Override
 	public void writePointValueTime(DataValue value, long timestamp,
 			String annotation) throws IOException {
 		
@@ -71,9 +79,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 					jgen.writeNumberField("value", value.getDoubleValue());
 				break;
 				case DataTypes.IMAGE:
-					jgen.writeStringField("value", ((ImageValue)value).getFilename());
-					break;
-				default:
 					jgen.writeStringField("value","unsupported-value-type");
 					LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());
 				break;

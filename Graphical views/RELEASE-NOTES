@@ -1,5 +1,8 @@
-*Version 1.6.6*
+*Version 1.6.7*
 * Upgraded to work with core version 2.8.x
+
+*Version 1.6.6*
+* Fixed bug where angular not being available could cause problems viewing the components on the page
 
 *Version 1.6.5*
 * Fixed bug where setting a point value could result in a differnt point being set.

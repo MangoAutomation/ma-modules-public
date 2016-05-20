@@ -47,7 +47,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-@Api(value="NoSQL Store", description="Store custom data")
+@Api(value="JSON Store", description="Store custom data")
 @RestController
 @RequestMapping("/v1/json-data")
 public class JsonDataRestController extends MangoVoRestController<JsonDataVO, JsonDataModel, JsonDataDao>{

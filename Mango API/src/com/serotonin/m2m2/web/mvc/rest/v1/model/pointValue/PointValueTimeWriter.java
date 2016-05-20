@@ -39,6 +39,8 @@ public abstract class PointValueTimeWriter {
 	public abstract void writePointValueTime(double value, long timestamp, String annotation) throws IOException;
 	
 	public abstract void writePointValueTime(int value, long timestamp, String annotation) throws IOException;
+
+	public abstract void writePointValueTime(String value, long timestamp, String annotation) throws IOException;
 	
 	public abstract void writePointValueTime(DataValue value, long timestamp, String annotation) throws IOException;
 	
