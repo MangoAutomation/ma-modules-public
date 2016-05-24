@@ -14,7 +14,7 @@
 <c:set var="reportWorkItemMediumPriority"><%=WorkItem.PRIORITY_MEDIUM %></c:set>
 <c:set var="reportWorkItemLowPriority"><%=WorkItem.PRIORITY_LOW %></c:set>
 
-<tag:versionedJavascript src="/dwr/interface/ReportsDwr.js" />
+<script type="text/javascript" src="/dwr/interface/ReportsDwr.js" ></script>
 <script type="text/javascript">
   function saveReportSettings() {
       setUserMessage("reportsMessage");

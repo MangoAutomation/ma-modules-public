@@ -28,17 +28,17 @@
   
   <!-- Script -->
   <script type="text/javascript" src="${dojoURI}/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug:true, extraLocale: ['en-us', 'nl', 'nl-nl', 'ja-jp', 'fi-fi', 'sv-se', 'zh-cn', 'zh-tw','xx']"></script>
-  <tag:versionedJavascript  src="/dwr/engine.js" />
-  <tag:versionedJavascript  src="/dwr/util.js" />
-  <tag:versionedJavascript  src="/resources/common.js" />
-  <tag:versionedJavascript  src="/dwr/interface/GraphicalViewDwr.js" />
-  <tag:versionedJavascript  src="/dwr/interface/MiscDwr.js" />
-  <tag:versionedJavascript  src="/resources/view.js" />
-  <tag:versionedJavascript  src="/resources/header.js" />
-  <tag:versionedJavascript  src="${modulePath}/web/graphicalViews.js" />
-  <tag:versionedJavascript  src="${modulePath}/web/wz_jsgraphics.js" />
+  <script type="text/javascript" src="/dwr/engine.js"></script>
+  <script type="text/javascript" src="/dwr/util.js"></script>
+  <script type="text/javascript" src="/resources/common.js"></script>
+  <script type="text/javascript" src="/dwr/interface/GraphicalViewDwr.js"></script>
+  <script type="text/javascript" src="/dwr/interface/MiscDwr.js"></script>
+  <script type="text/javascript" src="/resources/view.js"></script>
+  <script type="text/javascript" src="/resources/header.js"></script>
+  <script type="text/javascript" src="${modulePath}/web/graphicalViews.js"></script>
+  <script type="text/javascript" src="${modulePath}/web/wz_jsgraphics.js"></script>
   <c:forEach items="<%= Common.moduleScripts %>" var="modScript">
-    <tag:versionedJavascript  src="/${modScript}" /></c:forEach>
+    <script type="text/javascript" src="/${modScript}"></script></c:forEach>
 </head>
 
 <body style="background-color:transparent">

@@ -3,7 +3,7 @@
     @author Terry Packer
 --%><%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
-<tag:versionedJavascript src="/dwr/interface/MangoApiSystemSettingsDwr.js" />
+<script type="text/javascript" src="/dwr/interface/MangoApiSystemSettingsDwr.js"></script>
 <script type="text/javascript">
 	
 	function loadMangoApiSettings(){
