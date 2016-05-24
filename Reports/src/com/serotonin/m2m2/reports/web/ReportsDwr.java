@@ -127,6 +127,14 @@ public class ReportsDwr extends ModuleDwr {
         // Basic validation
         validateData(response, name, points, dateRangeType, relativeDateType, previousPeriodCount, pastPeriodCount);
 
+        //Validate XID
+    	if (StringUtils.isBlank(xid))
+            response.addContextualMessage("xid", "validate.required");
+        else if (StringValidation.isLengthGreaterThan(xid, 50))
+            response.addMessage("xid", new TranslatableMessage("validate.notLongerThan", 50));
+        else if (!ReportDao.instance.isXidUnique(xid, id))
+            response.addContextualMessage("xid", "validate.xidUsed");
+        
         if (schedule) {
             if (schedulePeriod == ReportVO.SCHEDULE_CRON) {
                 // Check the cron pattern.
@@ -145,7 +153,7 @@ public class ReportsDwr extends ModuleDwr {
             }
         }
 
-        if (schedule && email && recipients.isEmpty())
+        if (email && recipients.isEmpty())
             response.addContextualMessage("recipients", "reports.validate.needRecip");
 
         if (response.getHasMessages())
@@ -196,7 +204,7 @@ public class ReportsDwr extends ModuleDwr {
         report.setIncludeData(includeData);
         report.setZipData(zipData);
         report.setRecipients(recipients);
-
+        
         // Save the report
         reportDao.saveReport(report);
 
@@ -312,7 +320,8 @@ public class ReportsDwr extends ModuleDwr {
 
     private void validateData(ProcessResult response, String name, List<ReportPointVO> points, int dateRangeType,
             int relativeDateType, int previousPeriodCount, int pastPeriodCount) {
-        if (StringUtils.isBlank(name))
+    	
+    	if (StringUtils.isBlank(name))
             response.addContextualMessage("name", "reports.validate.required");
         if (StringValidation.isLengthGreaterThan(name, 100))
             response.addContextualMessage("name", "reports.validate.longerThan100");
