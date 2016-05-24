@@ -7,6 +7,7 @@ package com.serotonin.m2m2.reports;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
@@ -58,7 +59,13 @@ public class ReportEmportDefinition extends EmportDefinition {
         if (StringUtils.isBlank(xid))
             xid = reportDao.generateUniqueXid();
 
-        ReportVO report = reportDao.getReport(xid);
+        ReportVO report = null; 
+        try{
+        	report = reportDao.getReport(xid);
+        }catch(IncorrectResultSizeDataAccessException e){
+        	importContext.getResult().addGenericMessage("reports.emport.duplicateXids", xid);
+        	return;
+        }
         if (report == null) {
             report = new ReportVO();
             report.setXid(xid);

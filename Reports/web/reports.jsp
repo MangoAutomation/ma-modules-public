@@ -489,9 +489,9 @@
             stopImageFader("saveImg");
             clearMessages();
             
-            if (response.hasMessages)
+            if (response.hasMessages){
                 showMessages(response.messages);
-            else {
+            }else {
                 if (selectedReport.id == ${NEW_ID}) {
                     stopImageFader("r"+ selectedReport.id +"Img");
                     selectedReport.id = response.data.reportId;
@@ -519,6 +519,7 @@
     
     function clearMessages() {
         showMessage("userMessage");
+        showMessage("xidError");
         showMessage("nameError");
         showMessage("pointsError");
         showMessage("previousPeriodCountError");
@@ -672,7 +673,7 @@
 						<tr>
 							<td class="formLabelRequired"><fmt:message key="common.xid" /></td>
 							<td class="formField"><input type="text" id="xid"
-								class="formLong" /><br /></td>
+								class="formLong" /><br /><span class="formError" id="xidError"></span></td>
 						</tr>
 
 						<tr>
