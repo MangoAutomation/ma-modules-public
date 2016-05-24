@@ -36,7 +36,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Api(value="Runtime Manager", description="Operations on Data Source Runtime Manager")
 @RestController(value="RuntimeManagerRestController")
 @RequestMapping("/v1/runtime-manager")
-
 public class RuntimeManagerRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(RuntimeManagerRestController.class);

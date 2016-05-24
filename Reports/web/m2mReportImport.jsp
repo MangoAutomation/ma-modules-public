@@ -6,7 +6,7 @@
 
 
 <tag:page dwr="M2MReportImportDwr">
-<tag:versionedJavascript src="${modulePath}/web/m2mReportImport.js"/>
+<script type="text/javascript" src="${modulePath}/web/m2mReportImport.js"></script>
 
 	<table id="migrationForm">
 	    <tr>
