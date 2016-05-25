@@ -11,28 +11,6 @@
 			displayHeaders(response.data.headers);
 		});
 	}
-
-	function removeCorsHeader(value, rowId){
-		MangoApiSystemSettingsDwr.removeHeader(value, function(response){
-			if(!response.hasMessages){
-				displayHeaders(response.data.headers);
-			}else{
-				showDwrMessages(response);
-			}
-		});
-	}
-	
-	function addCorsHeader(){
-		var name = $get('newCorsHeader');
-		var value = $get('newCorsHeaderValue');
-		MangoApiSystemSettingsDwr.addHeader(name, value, function(response){
-			if(!response.hasMessages){
-				displayHeaders(response.data.headers);
-			}else{
-				showDwrMessages(response);
-			}
-		});
-	}
 	
 	function displayHeaders(headers){
 		dwr.util.removeAllRows('mangoApiCorsHeaders');
@@ -53,17 +31,8 @@
 		            {
 		                rowCreator: function(options) {
 		                    var tr = document.createElement("tr");
-		                    tr.id = "cors_" + options.rowData.key;
 		                    tr.className = "smRow"+ (options.rowIndex % 2 == 0 ? "" : "Alt");
 		                    return tr;
-		                },
-		                cellCreator: function(options){
-		                	var td = document.createElement("td");
-		                	if(options.cellNum == 2){
-		                		td.innerHTML =  "<img src='images/bullet_delete.png' class='ptr' "+
-                                "onclick=\"removeCorsHeader('"+ options.rowData.key +"', 'cors_" + options.rowData.key + "');\"/>";
-		                	}
-		                	return td;
 		                }
 		            }
 		        );
@@ -87,17 +56,6 @@
             <tbody id="mangoApiCorsHeaders"/>
           </table>
         </td>
-      </tr>
-      <tr>
-        <td class="formLabel"><fmt:message key="rest.settings.header"/></td>
-        <td class="formField"><input id="newCorsHeader" type="text"/></td>
-      </tr>
-      <tr>
-        <td class="formLabel"><fmt:message key="common.value"/></td>
-        <td class="formField"><input id="newCorsHeaderValue" type="text"/></td>
-      </tr>
-      <tr>
-        <td class="formField" colspan="2"><button onClick="addCorsHeader()"><fmt:message key="common.add"/></button></td>
       </tr>
       <tr><td colspan="2" id="saveMangoApiMessage" class="formError"></td></tr>
     </table>
