@@ -20,8 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValueCache;
@@ -69,8 +71,17 @@ public class RealTimeDataRestController extends MangoRestController{
 		    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
 		    	values = model.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 		    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
+		    	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+				imageServletBuilder.scheme(request.getScheme());
+				imageServletBuilder.host(request.getServerName());
+				imageServletBuilder.port(request.getLocalPort());
+		    	
 		    	for(RealTimeDataPointValue value : values){
-		    		models.add(new RealTimeModel(value));
+		    		if(value.getDataTypeId() == DataTypes.IMAGE){
+		    			models.add(new RealTimeModel(value,imageServletBuilder.buildAndExpand(value.getTimestamp(), value.getDataPointId()).toUri()));
+		    		}else{
+		    			models.add(new RealTimeModel(value, value.getValue()));
+		    		}
 		    	}
 		    	return result.createResponseEntity(models);
 			} catch (Exception e) {
@@ -105,9 +116,18 @@ public class RealTimeDataRestController extends MangoRestController{
 	    	ASTNode root = new ASTNode("limit", limit);
 	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 	    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
-	    	//TODO Fix up Visitor to be able to create models on the fly?
+
+	    	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+			imageServletBuilder.scheme(request.getScheme());
+			imageServletBuilder.host(request.getServerName());
+			imageServletBuilder.port(request.getLocalPort());
+	    	
 	    	for(RealTimeDataPointValue value : values){
-	    		models.add(new RealTimeModel(value));
+	    		if(value.getDataTypeId() == DataTypes.IMAGE){
+	    			models.add(new RealTimeModel(value,imageServletBuilder.buildAndExpand(value.getTimestamp(), value.getDataPointId()).toUri()));
+	    		}else{
+	    			models.add(new RealTimeModel(value, value.getValue()));
+	    		}
 	    	}
 	    	return result.createResponseEntity(models);
     	}
@@ -137,7 +157,18 @@ public class RealTimeDataRestController extends MangoRestController{
 	        	result.addRestMessage(HttpStatus.NOT_FOUND, new TranslatableMessage("common.default", "Point doesn't exist or is not enabled."));
 	            return result.createResponseEntity();
 	        }
-	        RealTimeModel model = new RealTimeModel(values.get(0));
+	        RealTimeModel model;
+	        RealTimeDataPointValue value = values.get(0);
+	        if(value.getDataTypeId() != DataTypes.IMAGE)
+	        	model = new RealTimeModel(value, value.getValue());
+	        else{
+	        	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+    			imageServletBuilder.scheme(request.getScheme());
+    			imageServletBuilder.host(request.getServerName());
+    			imageServletBuilder.port(request.getLocalPort());
+	        	model = new RealTimeModel(value,imageServletBuilder.buildAndExpand(value.getTimestamp(), value.getDataPointId()).toUri());
+	        }
+
 	        return result.createResponseEntity(model);
 	        
 		}else{

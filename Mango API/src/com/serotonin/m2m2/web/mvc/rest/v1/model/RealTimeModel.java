@@ -13,11 +13,13 @@ import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
  */
 public class RealTimeModel extends AbstractRestModel<RealTimeDataPointValue>{
 
+	private Object value;
 	/**
 	 * @param data
 	 */
-	public RealTimeModel(RealTimeDataPointValue data) {
+	public RealTimeModel(RealTimeDataPointValue data, Object value) {
 		super(data);
+		this.value = value;
 	}
 
 	@JsonGetter("deviceName")
@@ -37,7 +39,7 @@ public class RealTimeModel extends AbstractRestModel<RealTimeDataPointValue>{
 	
 	@JsonGetter("value")
 	public Object getValue(){
-		return this.data.getValue();
+		return this.value;
 	}
 	
 	@JsonGetter("type")
