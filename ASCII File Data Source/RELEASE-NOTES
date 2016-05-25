@@ -2,6 +2,7 @@
 * Upgraded to work with core version 2.8.x
 * Adding Cron pattern polling option
 * Adding optional quantization for polls
+* Fixing JSON export bug for Period Type
 
 *Version 1.2.1*
 * Upgraded to work with core version 2.7.x
