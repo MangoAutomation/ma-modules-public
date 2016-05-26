@@ -16,6 +16,7 @@ import com.serotonin.m2m2.rt.publish.PublisherRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 import com.serotonin.util.SerializationHelper;
 
 public class SquwkSenderVO extends PublisherVO<SquwkPointVO> {
@@ -116,4 +117,13 @@ public class SquwkSenderVO extends PublisherVO<SquwkPointVO> {
             secretKey = SerializationHelper.readSafeUTF(in);
         }
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.publish.PublisherVO#asModel()
+	 */
+	@Override
+	public AbstractPublisherModel<?, ?> asModel() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
