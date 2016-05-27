@@ -59,7 +59,7 @@ public class ReportJob extends RejectableTimerTask {
     private final ReportVO report;
 
     private ReportJob(TimerTrigger trigger, ReportVO report) {
-        super(trigger, "Report " + report.getXid(), "REPORT_JOB-" + report.getXid(), 0);
+        super(trigger, "Report " + report.getXid(), "REPORT_JOB-" + report.getXid(), 0, false);
         this.report = report;
     }
 

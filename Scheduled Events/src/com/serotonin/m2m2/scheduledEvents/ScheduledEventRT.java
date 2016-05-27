@@ -215,4 +215,12 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
 	public int getQueueSize() {
 		return Common.envProps.getInt("runtime.realTimeTimer.defaultTaskQueueSize", 0);
 	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#isQueueable()
+	 */
+	@Override
+	public boolean isQueueable() {
+		return true;
+	}
 }
