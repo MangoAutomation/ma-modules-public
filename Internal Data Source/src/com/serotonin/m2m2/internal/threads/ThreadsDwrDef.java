@@ -106,14 +106,16 @@ public class ThreadsDwrDef extends DwrDefinition {
         @DwrPermission(custom = StatusPermissionDef.PERMISSION)
         public ProcessResult getOrderedQueueStats() {
             ProcessResult result = new ProcessResult();
-            result.addData("stats", Common.backgroundProcessing.getOrderedQueueStats());
+            result.addData("highStats", Common.backgroundProcessing.getHighPriorityOrderedQueueStats());
+            result.addData("mediumStats", Common.backgroundProcessing.getMediumPriorityOrderedQueueStats());
             return result;
         }
         
         @DwrPermission(custom = StatusPermissionDef.PERMISSION)
         public ProcessResult getTaskStats() {
             ProcessResult result = new ProcessResult();
-            result.addData("stats", Common.rejectionHandler.getRejectedHighPriorityTaskStats());
+            result.addData("highStats", Common.highPriorityRejectionHandler.getTaskStats());
+            result.addData("mediumStats", Common.mediumPriorityRejectionHandler.getTaskStats());
             return result;
         }
 

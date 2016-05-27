@@ -11,7 +11,8 @@
     
     function getQueueStats() {
         ThreadsDwr.getOrderedQueueStats(function(result) {
-        	draw(result.data.stats, "highList");
+        	draw(result.data.highStats, "highList");
+        	draw(result.data.mediumStats, "mediumList");
         });            
     }
     
@@ -87,25 +88,19 @@
     <table>
       <thead>
         <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
+          <td><fmt:message key="internal.id"/></td>
+          <td><fmt:message key="common.name"/></td>
+          <td><fmt:message key="internal.queue.task.currentQueueSize"/></td>
+          <td><fmt:message key="internal.queue.task.maxQueueSize"/></td>
+          <td><fmt:message key="internal.queue.task.queueSizeLimit"/></td>
+          <td><fmt:message key="internal.queue.task.avgExecTime"/></td>
+          <td><fmt:message key="internal.queue.task.mostRecentExecTime"/></td>
+          <td><fmt:message key="internal.queue.task.executionCount"/></td>
+          <td><fmt:message key="internal.queue.task.rejectionCount"/></td>
         </tr>
       </thead>
-      <tbody id="medList"></tbody>
+      <tbody id="mediumList"></tbody>
     </table>
   </div>
-  <div>
-    <span class="copyTitle"><fmt:message key="internal.workItems.low"/></span>
-    <table>
-      <thead>
-        <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
-        </tr>
-      </thead>
-      <tbody id="lowList"></tbody>
-    </table>
-  </div>
-  
   <button onclick="getQueueStats()"><fmt:message key="common.refresh"/></button>
 </tag:page>

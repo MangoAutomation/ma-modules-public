@@ -11,7 +11,8 @@
     
     function getTaskStats() {
         ThreadsDwr.getTaskStats(function(result) {
-        	draw(result.data.stats, "highList");
+        	draw(result.data.highStats, "highList");
+        	draw(result.data.mediumStats, "mediumList");
         });            
     }
     
@@ -81,25 +82,16 @@
     <table>
       <thead>
         <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
+          <td><fmt:message key="internal.id"/></td>
+          <td><fmt:message key="common.name"/></td>
+          <td><fmt:message key="internal.tasks.currentlyRunningRejections"/></td>
+          <td><fmt:message key="internal.tasks.poolFullRejections"/></td>
+          <td><fmt:message key="internal.tasks.queueFullRejections"/></td>
+          <td><fmt:message key="internal.tasks.totalRejections"/></td>
         </tr>
       </thead>
-      <tbody id="medList"></tbody>
+      <tbody id="mediumList"></tbody>
     </table>
   </div>
-  <div>
-    <span class="copyTitle"><fmt:message key="internal.workItems.low"/></span>
-    <table>
-      <thead>
-        <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
-        </tr>
-      </thead>
-      <tbody id="lowList"></tbody>
-    </table>
-  </div>
-  
   <button onclick="getTaskStats()"><fmt:message key="common.refresh"/></button>
 </tag:page>
