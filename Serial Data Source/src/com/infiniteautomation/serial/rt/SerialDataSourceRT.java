@@ -158,7 +158,8 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	        SerialPointLocatorRT pl = dataPoint.getPointLocator();
 	        
 	        byte[] data;
-
+	        String fullMsg = new String();
+	        
 	        if(this.vo.isHex()){
 	        	//Convert to Hex
 	        	try{
@@ -200,7 +201,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		        //Do we need to or is it already on the end?
 		        String identifier = pl.getVo().getPointIdentifier();
 		        
-		        String fullMsg = identifier +  valueTime.getStringValue();
+		        fullMsg = identifier +  valueTime.getStringValue();
 		        if(!fullMsg.endsWith(messageTerminator)){
 		        	fullMsg +=  messageTerminator;
 		        }
@@ -208,8 +209,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		      //String output = newValue.getStringValue();
 		      data = fullMsg.getBytes();
 	        }
-	        if(this.vo.isLogIO())
-	        	this.ioLog.log(false, data);
+	        if(this.vo.isLogIO()){
+	        	if(!this.vo.isHex())
+	        		this.ioLog.log(false, data);
+	        	else
+	        		this.ioLog.log("O: " + fullMsg);
+	        }
 	        
 			for(byte b : data){
 				os.write(b);
@@ -274,8 +279,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	            
 	            //Log our buffer contents 
             	byte[] logMsg = buffer.peekAll();
-            	if(this.vo.isLogIO())
-    	        	this.ioLog.log(true, logMsg);
+            	if(this.vo.isLogIO()){
+            		if(!vo.isHex())
+            			this.ioLog.log(true, logMsg);
+            		else
+            			this.ioLog.log("I: " + new String(logMsg, Common.UTF8_CS));
+            	}
     			if(this.vo.isHex()){
     				if(LOG.isDebugEnabled())
     					LOG.debug("Buffer after read: " + StreamUtils.dumpHex(logMsg, 0, logMsg.length));
