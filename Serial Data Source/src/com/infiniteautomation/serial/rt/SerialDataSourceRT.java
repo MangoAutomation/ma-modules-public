@@ -210,10 +210,10 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 		      data = fullMsg.getBytes();
 	        }
 	        if(this.vo.isLogIO()){
-	        	if(!this.vo.isHex())
+	        	if(this.vo.isHex())
 	        		this.ioLog.log(false, data);
 	        	else
-	        		this.ioLog.log("O: " + fullMsg);
+	        		this.ioLog.log("O " + fullMsg);
 	        }
 	        
 			for(byte b : data){
@@ -280,7 +280,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 	            //Log our buffer contents 
             	byte[] logMsg = buffer.peekAll();
             	if(this.vo.isLogIO()){
-            		if(!vo.isHex())
+            		if(vo.isHex())
             			this.ioLog.log(true, logMsg);
             		else
             			this.ioLog.log("I: " + new String(logMsg, Common.UTF8_CS));
