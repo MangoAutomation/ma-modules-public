@@ -31,13 +31,13 @@ import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
-import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
+import com.serotonin.m2m2.rt.dataSource.EventDataSource;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.queue.ByteQueue;
 
-public class SerialDataSourceRT extends PollingDataSource implements SerialPortProxyEventListener{
+public class SerialDataSourceRT extends EventDataSource implements SerialPortProxyEventListener{
 	private final Log LOG = LogFactory.getLog(SerialDataSourceRT.class);
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
@@ -394,131 +394,95 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 
 		boolean matcherFailed = false;
 		
-		if(!this.dataPoints.isEmpty()){
-        	Pattern messagePattern = Pattern.compile(messageRegex);
-        	Matcher messageMatcher = messagePattern.matcher(msg);
-            if(messageMatcher.matches()){
-            	if(LOG.isDebugEnabled())
-            		LOG.debug("Message matched regex: " + messageRegex);
-                //Parse out the Identifier
-            	String pointIdentifier = messageMatcher.group(pointIdentifierIndex);
-            	if(LOG.isDebugEnabled())
-            		LOG.debug("Point Identified: " + pointIdentifier);
-            	
-            	//Update all points that have this Identifier
-            	for(DataPointRT dp: this.dataPoints){
-            		SerialPointLocatorRT pl = dp.getPointLocator();
-            		SerialPointLocatorVO plVo = pl.getVo();
-            		if(plVo.getPointIdentifier().equals(pointIdentifier)){
-            			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
-            			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
-                    	if(pointValueMatcher.matches()){
-                        	String value = pointValueMatcher.group(plVo.getValueIndex());
-                        	if(LOG.isDebugEnabled()){
-                        		LOG.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
-                        	}
-                        	
-                        	//Parse out the value
-                        	DataValue dataValue = null;
-                        	if(this.vo.isHex()){
-                    			try{
-	                    			byte[] data = convertToHex(value);
-	                    			
-	                    			switch(plVo.getDataTypeId()){
-	                    				case DataTypes.ALPHANUMERIC:
-	                    					dataValue = new AlphanumericValue(new String(data, Common.UTF8_CS));
-	                    				break;
-	                    				case DataTypes.BINARY:
-	                    					if(data.length > 0){
-	                    						dataValue = new BinaryValue((data[0]==1)?true:false);
-	                    					}
-	                    				break;
-	                    				case DataTypes.MULTISTATE:
-	                    					ByteBuffer buffer = ByteBuffer.wrap(data);
-	                    					if(data.length == 2)
-	                    						dataValue = new MultistateValue(buffer.getShort());
-	                    					else
-	                    						dataValue = new MultistateValue(buffer.getInt());
-	                    				break;
-	                    				case DataTypes.NUMERIC:
-	                    					ByteBuffer nBuffer = ByteBuffer.wrap(data);
-	                    					if(data.length == 4)
-	                    						dataValue = new NumericValue(nBuffer.getFloat());
-	                    					else
-	                    						dataValue = new NumericValue(nBuffer.getDouble());
-	                    				break;
-	                    				default:
-	                    					throw new ShouldNeverHappenException("Un-supported data type: " + plVo.getDataTypeId());
+		// Match data points in the received set with point locators.
+        synchronized (pointListChangeLock) {
+			if(!this.dataPoints.isEmpty()){
+	        	Pattern messagePattern = Pattern.compile(messageRegex);
+	        	Matcher messageMatcher = messagePattern.matcher(msg);
+	            if(messageMatcher.matches()){
+	            	if(LOG.isDebugEnabled())
+	            		LOG.debug("Message matched regex: " + messageRegex);
+	                //Parse out the Identifier
+	            	String pointIdentifier = messageMatcher.group(pointIdentifierIndex);
+	            	if(LOG.isDebugEnabled())
+	            		LOG.debug("Point Identified: " + pointIdentifier);
+	            	
+	            	//Update all points that have this Identifier
+	            	for(DataPointRT dp: this.dataPoints){
+	            		SerialPointLocatorRT pl = dp.getPointLocator();
+	            		SerialPointLocatorVO plVo = pl.getVo();
+	            		if(plVo.getPointIdentifier().equals(pointIdentifier)){
+	            			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
+	            			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
+	                    	if(pointValueMatcher.matches()){
+	                        	String value = pointValueMatcher.group(plVo.getValueIndex());
+	                        	if(LOG.isDebugEnabled()){
+	                        		LOG.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
+	                        	}
+	                        	
+	                        	//Parse out the value
+	                        	DataValue dataValue = null;
+	                        	if(this.vo.isHex()){
+	                    			try{
+		                    			byte[] data = convertToHex(value);
+		                    			
+		                    			switch(plVo.getDataTypeId()){
+		                    				case DataTypes.ALPHANUMERIC:
+		                    					dataValue = new AlphanumericValue(new String(data, Common.UTF8_CS));
+		                    				break;
+		                    				case DataTypes.BINARY:
+		                    					if(data.length > 0){
+		                    						dataValue = new BinaryValue((data[0]==1)?true:false);
+		                    					}
+		                    				break;
+		                    				case DataTypes.MULTISTATE:
+		                    					ByteBuffer buffer = ByteBuffer.wrap(data);
+		                    					if(data.length == 2)
+		                    						dataValue = new MultistateValue(buffer.getShort());
+		                    					else
+		                    						dataValue = new MultistateValue(buffer.getInt());
+		                    				break;
+		                    				case DataTypes.NUMERIC:
+		                    					ByteBuffer nBuffer = ByteBuffer.wrap(data);
+		                    					if(data.length == 4)
+		                    						dataValue = new NumericValue(nBuffer.getFloat());
+		                    					else
+		                    						dataValue = new NumericValue(nBuffer.getDouble());
+		                    				break;
+		                    				default:
+		                    					throw new ShouldNeverHappenException("Un-supported data type: " + plVo.getDataTypeId());
+		                    			}
+	                    			}catch(Exception e){
+	                    				LOG.error(e.getMessage(),e);
 	                    			}
-                    			}catch(Exception e){
-                    				LOG.error(e.getMessage(),e);
-                    			}
-                    		}else{
-                    			dataValue = DataValue.stringToValue(value, plVo.getDataTypeId());
-                    		}
-                        	
-                        	if(dataValue != null){
-	                        	PointValueTime newValue = new PointValueTime(dataValue,Common.backgroundProcessing.currentTimeMillis());
-	                    		dp.updatePointValue(newValue);
-                        		if(LOG.isDebugEnabled())
-                        			LOG.debug("Saving value: " + newValue.toString());
-                        	}else{
-                            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,Common.backgroundProcessing.currentTimeMillis(),true,new TranslatableMessage("event.serial.invalidValue",dp.getVO().getXid()));
-                            	matcherFailed = true;
-                        	}
-                    	
-                    	}//end if value matches
-                	}//end for this point id
-            	}
-            }else{
-            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,Common.backgroundProcessing.currentTimeMillis(),true,new TranslatableMessage("event.serial.patternMismatch",vo.getMessageRegex(),msg));
-            	matcherFailed = true;
-            }
-            
+	                    		}else{
+	                    			dataValue = DataValue.stringToValue(value, plVo.getDataTypeId());
+	                    		}
+	                        	
+	                        	if(dataValue != null){
+		                        	PointValueTime newValue = new PointValueTime(dataValue,Common.backgroundProcessing.currentTimeMillis());
+		                    		dp.updatePointValue(newValue);
+	                        		if(LOG.isDebugEnabled())
+	                        			LOG.debug("Saving value: " + newValue.toString());
+	                        	}else{
+	                            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,Common.backgroundProcessing.currentTimeMillis(),true,new TranslatableMessage("event.serial.invalidValue",dp.getVO().getXid()));
+	                            	matcherFailed = true;
+	                        	}
+	                    	
+	                    	}//end if value matches
+	                	}//end for this point id
+	            	}
+	            }else{
+	            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,Common.backgroundProcessing.currentTimeMillis(),true,new TranslatableMessage("event.serial.patternMismatch",vo.getMessageRegex(),msg));
+	            	matcherFailed = true;
+	            }
+			}
         }
 		
 		//If no failures...
 		if(!matcherFailed)
 			returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, Common.backgroundProcessing.currentTimeMillis());
 	}
-
-
-//	/**
-//	 * This method might be dumpable if we choose to go with the timeout option
-	// A loop within a recursive function is cause for worry, this will be slow
-//	 * @param msg
-//	 * @param depth
-//	 */
-//	private void searchRegex(String msg, int depth) {
-//		if(depth > 255)
-//			return;
-//		for(DataPointRT rt : dataPoints) {
-//    		Pattern p = ((SerialPointLocatorRT)rt.getPointLocator()).getPattern();
-//    		Matcher m = p.matcher(msg);
-//    		if(m.find()) { //Could use length consumed to allow many points to receive values from the same strings
-//    			SerialPointLocatorRT pl = rt.getPointLocator();
-//        		SerialPointLocatorVO plVo = pl.getVo();
-//    			String value = m.group(plVo.getValueIndex());                	
-//            	PointValueTime newValue = new PointValueTime(DataValue.stringToValue(value, plVo.getDataTypeId()),
-//            			Common.timer.currentTimeMillis());
-//        		rt.updatePointValue(newValue);
-//    			buffer.pop(m.group(0).length());
-//    			index -= m.group(0).length();
-//    			searchRegex(new String(buffer.peekAll()), depth+1);
-//    			return;
-//    		}
-//    	}
-//	}
-
-	@Override
-	protected void doPoll(long time) {
-		//For now do nothing as we are event driven.
-		if(this.port == null){
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailedPortNotSetup"));
-			return;
-		}
-	}
-
 	
 	/**
 	 * Convert a string value to HEX
@@ -607,9 +571,4 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		}
     	
     }
-    
-    void forcePointReload() {
-    	updateChangedPoints(Common.backgroundProcessing.currentTimeMillis());
-    }
-	
 }
