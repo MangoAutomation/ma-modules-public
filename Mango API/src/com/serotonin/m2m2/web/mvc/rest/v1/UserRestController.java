@@ -149,7 +149,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{username}")
     public ResponseEntity<UserModel> updateUser(
     		@PathVariable String username,
-    		@RequestBody UserModel model,
+    		@RequestBody(required=true) UserModel model,
     		HttpServletRequest request) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
@@ -269,7 +269,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
     public ResponseEntity<UserModel> createNewUser(
     		@ApiParam( value = "User to save", required = true )
-    		@RequestBody
+    		@RequestBody(required=true)
     		UserModel model,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {

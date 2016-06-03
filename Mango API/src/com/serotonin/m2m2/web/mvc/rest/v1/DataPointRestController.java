@@ -186,7 +186,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     public ResponseEntity<DataPointModel> updateDataPoint(
     		@PathVariable String xid,
     		@ApiParam(value = "Updated data point model", required = true)
-    		@RequestBody DataPointModel model, 
+    		@RequestBody(required=true) DataPointModel model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
@@ -293,7 +293,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
     public ResponseEntity<DataPointModel> saveDataPoint(
     		@ApiParam(value = "Data point model", required = true)
-    		@RequestBody DataPointModel model, 
+    		@RequestBody(required=true)  DataPointModel model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
@@ -375,7 +375,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json;charset=UTF-8", "text/csv;charset=UTF-8"}, produces={"application/json"})
     public ResponseEntity<List<DataPointModel>> saveDataPoints(
     		@ApiParam(value = "List of updated data point models", required = true)
-    		@RequestBody List<DataPointModel> models, 
+    		@RequestBody(required=true) List<DataPointModel> models, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);

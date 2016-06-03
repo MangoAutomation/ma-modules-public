@@ -27,12 +27,9 @@ import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -154,7 +151,7 @@ public class PublisherRestController extends MangoVoRestController<PublisherVO<?
 	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"})
     public ResponseEntity<AbstractPublisherModel<?,?>> updatePublisher(
     		@PathVariable String xid,
-    		@RequestBody AbstractPublisherModel<?,?> model, 
+    		@RequestBody(required=true) AbstractPublisherModel<?,?> model, 
     		UriComponentsBuilder builder, 
     		HttpServletRequest request) {
 
