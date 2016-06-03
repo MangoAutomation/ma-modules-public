@@ -39,6 +39,7 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
+import com.serotonin.m2m2.web.dwr.beans.DataPointDefaulter;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -254,6 +255,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 	vo.setChartColour(""); //Can happen when CSV comes in without template       
             }
 	        
+	        //Update to defaults if necessary
+	        DataPointDefaulter defaulter = model.getPointLocator().getDataPointDefaulter();
+	        if(defaulter != null)
+	        	defaulter.updateDefaultValues(vo);
+	        
 	        if(!model.validate()){
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
@@ -284,6 +290,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	            }
 	
 	            Common.runtimeManager.saveDataPoint(vo);
+	            
+	            //Defaulting
+	            if(defaulter != null)
+		        	defaulter.postSave(vo);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -361,11 +371,18 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        if(vo.getXid() == null)
 	        	vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());       
 	        
+	        //Update to defaults if necessary
+	        DataPointDefaulter defaulter = model.getPointLocator().getDataPointDefaulter();
+	        if(defaulter != null)
+	        	defaulter.setDefaultValues(vo);
+	        
 	        if(!model.validate()){
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
 	            Common.runtimeManager.saveDataPoint(vo);
+	            if(defaulter != null)
+	            	defaulter.postSave(vo);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -481,6 +498,15 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                     
                 }
     	        
+    	        //Update to defaults if necessary
+    	        DataPointDefaulter defaulter = model.getPointLocator().getDataPointDefaulter();
+    	        if(defaulter != null)
+    	        	if(updated)
+    	        		defaulter.updateDefaultValues(vo);
+    	        	else
+    	        		defaulter.setDefaultValues(vo);
+    	        
+    	        
     	        if(model.validate()){
     	        	if(updated)
     	        		model.addValidationMessage("common.updated", RestMessageLevel.INFORMATION, "all");
@@ -488,6 +514,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	        		model.addValidationMessage("common.saved", RestMessageLevel.INFORMATION, "all");
     	        	//Save it
     	        	Common.runtimeManager.saveDataPoint(vo);
+    	        	//Defaulting
+    	        	if(defaulter != null)
+        	        	defaulter.postSave(vo);
+        	        
     	        }
         	}
 	        return result.createResponseEntity(models);
