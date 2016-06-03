@@ -21,6 +21,7 @@ import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
@@ -97,6 +98,8 @@ public class DataImportController extends FileUploadController {
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         
         int rowErrors = 0;
+        int rowsImported = 0;
+        int rowsDeleted = 0;
         
         // Basic validation of header
         String[] nextLine = csvReader.readNext();
@@ -154,25 +157,39 @@ public class DataImportController extends FileUploadController {
         		rtMap.put(xid, rt);
         		voMap.put(xid, vo);
         	}
-        	
-        	//Going to insert some data
-            time = ExportCsvStreamer.dtf.parseDateTime(nextLine[3]).getMillis();
-            value = DataValue.stringToValue(nextLine[4], vo.getPointLocator().getDataTypeId());
-            pvt = new PointValueTime(value, time);
-        	
-        	if(rt == null){
-        		//Insert Via DAO
-        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
-        	}else{
-        		//Insert Via RT
-        		rt.savePointValueDirectToCache(pvt, null, true, true);
-        	}
 
-        	row++;
+
+            //Add or delete or nothing
+        	String modify = nextLine[7];
+        	if(StringUtils.equalsIgnoreCase("add", modify)){
+	        	//Going to insert some data
+	            time = ExportCsvStreamer.dtf.parseDateTime(nextLine[3]).getMillis();
+	            value = DataValue.stringToValue(nextLine[4], vo.getPointLocator().getDataTypeId());
+	            //Get Annotation
+	            String annotation = nextLine[6];
+	            if(annotation != null)
+	            	pvt = new AnnotatedPointValueTime(value, time, new TranslatableMessage("common.default", annotation));
+	            else
+	            	pvt = new PointValueTime(value, time);
+	            
+	        	if(rt == null){
+	        		//Insert Via DAO
+	        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
+	        	}else{
+	        		//Insert Via RT
+	        		rt.savePointValueDirectToCache(pvt, null, true, true);
+	        	}
+	        	rowsImported++;
+        	}else if(StringUtils.equalsIgnoreCase("delete", modify)){
+        		//Delete this entry
+	            time = ExportCsvStreamer.dtf.parseDateTime(nextLine[3]).getMillis();
+	            rowsDeleted += Common.runtimeManager.purgeDataPointValue(vo.getId(), time);
+        	}
         }
  
         //Setup results
-        model.put("rowsImported", row-2);
+        model.put("rowsImported", rowsImported);
+        model.put("rowsDeleted", rowsDeleted);
         model.put("rowsWithErrors", rowErrors);
         
     }
