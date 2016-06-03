@@ -283,7 +283,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
             		if(vo.isHex())
             			this.ioLog.log(true, logMsg);
             		else
-            			this.ioLog.log("I: " + new String(logMsg, Common.UTF8_CS));
+            			this.ioLog.log("I " + new String(logMsg, Common.UTF8_CS));
             	}
     			if(this.vo.isHex()){
     				if(LOG.isDebugEnabled())
