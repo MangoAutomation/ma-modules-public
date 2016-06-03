@@ -1,6 +1,8 @@
 *Version 1.6.8*
 * Adding permissions field for graphical views, preventing some users from adding views.
 * Removed alert message from "Wireless Temperature/Humidity sensor" component
+* Upgraded to work with core version 2.8.x
+* Add filterable drop down to Simple Compound component
 
 *Version 1.6.7*
 * Fixed bug with database conversion, schema definition included defunct table

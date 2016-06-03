@@ -61,6 +61,7 @@
     function CompoundEditor() {
         this.component = null;
         this.pointList = [];
+        this.selects = {};
         
         this.open = function(compId) {
             GraphicalViewDwr.getViewComponent(compId, function(comp) {
@@ -102,6 +103,11 @@
         this.close = function() {
             hide("compoundEditorPopup");
             hideContextualMessages("compoundEditorPopup");
+            //Destroy the widgets
+            for(var id in compoundEditor.selects){
+            	compoundEditor.selects[id].destroyRecursive(true);
+            	delete compoundEditor.selects[id];
+            }
         };
         
         this.save = function() {
@@ -112,7 +118,7 @@
             var childPointIds = new Array();
             var sel;
             for (var i=0; i<pointChildren.length; i++)
-                childPointIds.push({key: pointChildren[i].id, value: $get("compoundPointSelect"+ pointChildren[i].id)});
+                childPointIds.push({key: pointChildren[i].id, value: compoundEditor.selects[pointChildren[i].id].get('value')});
             
             if (compoundEditor.component.defName == "simpleCompound")
                 GraphicalViewDwr.saveSimpleCompoundComponent(compoundEditor.component.id, $get("compoundName"),
@@ -170,19 +176,23 @@
                 }
             );
             
-            // Add options to the controls.
-            var sel, p;
+            //Create drop down lists
             for (var i=0; i<pointChildren.length; i++) {
-                sel = $("compoundPointSelect"+ pointChildren[i].id);
-                sel.options[0] = new Option("", 0);
-                for (p=0; p<compoundEditor.pointList.length; p++) {
+            	var storeData = [];
+            	for (p=0; p<compoundEditor.pointList.length; p++) {
                     if (contains(pointChildren[i].dataTypes, compoundEditor.pointList[p].dataType))
-                        sel.options[sel.options.length] = new Option(settingsEditor.pointList[p].name,
-                                settingsEditor.pointList[p].id);
+                    	storeData[storeData.length] = compoundEditor.pointList[p];
                 }
-                
-                // Set the control default value.
-                $set(sel, pointChildren[i].viewComponent.dataPointId);
+            	//Create the select
+            	compoundEditor.selects[pointChildren[i].id] = new dijit.form.FilteringSelect({
+                    store: new dojo.store.Memory({ data: storeData }),
+                    autoComplete: false,
+                    queryExpr: "*\${0}*",
+                    highlightMatch: "all",
+                    required: true,
+                }, "compoundPointSelect"+ pointChildren[i].id);  
+            	//Set the control default value
+            	compoundEditor.selects[pointChildren[i].id].set('value', pointChildren[i].viewComponent.dataPointId);
             }
         };
         
