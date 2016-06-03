@@ -427,7 +427,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             	model = new EventInstanceModel(doNotLogEvent);
             else
             	model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.NONE), doNotLogTotal, model));
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.DO_NOT_LOG), doNotLogTotal, model));
 	            
 	        return result.createResponseEntity(list);
         }
