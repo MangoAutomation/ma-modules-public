@@ -158,7 +158,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"})
     public ResponseEntity<AbstractDataSourceModel<?>> updateDataSource(
     		@PathVariable String xid,
-    		@RequestBody AbstractDataSourceModel<?> model, 
+    		@RequestBody(required=true) AbstractDataSourceModel<?> model, 
     		UriComponentsBuilder builder, 
     		HttpServletRequest request) {
 
@@ -212,7 +212,10 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 			method = {RequestMethod.POST},
 			produces = {"application/json"}
 	)
-	public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(@RequestBody AbstractDataSourceModel<?> model, UriComponentsBuilder builder, HttpServletRequest request) {
+	public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(
+			@RequestBody(required=true) AbstractDataSourceModel<?> model,
+			UriComponentsBuilder builder,
+			HttpServletRequest request) {
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {

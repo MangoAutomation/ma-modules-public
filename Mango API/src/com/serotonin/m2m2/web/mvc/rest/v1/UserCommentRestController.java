@@ -145,7 +145,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
     public ResponseEntity<UserCommentModel> createNewUserComment(
     		@ApiParam( value = "User Comment to save", required = true )
-    		@RequestBody
+    		@RequestBody(required=true)
     		UserCommentModel model,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {

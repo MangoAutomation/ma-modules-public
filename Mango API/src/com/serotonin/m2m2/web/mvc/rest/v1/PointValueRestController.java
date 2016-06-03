@@ -534,7 +534,7 @@ public class PointValueRestController extends MangoRestController{
 	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"}, consumes={"application/json"})
     public ResponseEntity<PointValueTimeModel> putPointValue(
     		HttpServletRequest request, 
-    		@RequestBody PointValueTimeModel model, 
+    		@RequestBody(required=true) PointValueTimeModel model, 
     		@PathVariable String xid, 
     		
     		@ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
@@ -563,7 +563,7 @@ public class PointValueRestController extends MangoRestController{
 	@RequestMapping(method = RequestMethod.PUT, produces={"application/json"}, consumes={"application/json"})
     public ResponseEntity<List<XidPointValueTimeModel>> putPointsValues(
     		HttpServletRequest request, 
-    		@RequestBody List<XidPointValueTimeModel> models, 
+    		@RequestBody(required=true) List<XidPointValueTimeModel> models, 
 
     		@ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion) throws RestValidationFailedException {

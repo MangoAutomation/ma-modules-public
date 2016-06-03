@@ -183,7 +183,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@RequestParam(required=false, defaultValue="") String name,
     		
     		@ApiParam( value = "Data to save", required = true )
-    		@RequestBody
+    		@RequestBody(required=false)
     		Map<String, Object> data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
@@ -218,7 +218,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@RequestParam(required=false, defaultValue="") String name,
     		
     		@ApiParam( value = "Data to save", required = true )
-    		@RequestBody
+    		@RequestBody(required=true)
     		Object data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
@@ -252,7 +252,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@RequestParam(required=false, defaultValue="") String name,
     		
     		@ApiParam( value = "Data to save", required = true )
-    		@RequestBody
+    		@RequestBody(required=true)
     		Map<String, Object> data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
@@ -287,7 +287,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@RequestParam(required=false, defaultValue="") String name,
     		
     		@ApiParam( value = "Data to save", required = true )
-    		@RequestBody
+    		@RequestBody(required=true)
     		Object data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
