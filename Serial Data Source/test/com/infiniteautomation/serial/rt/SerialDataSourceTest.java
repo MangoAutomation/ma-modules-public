@@ -139,8 +139,6 @@ public class SerialDataSourceTest {
 				1, 
 				"");
 		rt.addDataPoint(ip1);
-		rt.forcePointReload();
-
 		
 		inputStream = new TestSerialPortInputStream();
 		
@@ -221,7 +219,6 @@ public class SerialDataSourceTest {
 		dprt = SerialDataSourceTestData.getNewlineTerminated();
 		registeredPoints.put("newlineTerminated", dprt);
 		rt.addDataPoint(dprt);
-		rt.forcePointReload();
 		
 		inputStream = new TestSerialPortInputStream();
 		
