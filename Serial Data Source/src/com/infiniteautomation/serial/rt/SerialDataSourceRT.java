@@ -204,34 +204,89 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		os.flush();
     }
     
-	@Override
 	public void setPointValue(DataPointRT dataPoint, PointValueTime valueTime,
 			SetPointSource source) {
 
 		//Are we connected?
-		if(this.port == null && !connect()){
-			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
+		if(this.port == null){
+			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
 			return;
 		}
 		
 		try {
-			setPointValueImpl(dataPoint, valueTime);
-			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
-		} catch (IOException e) {
-			LOG.error(e.getMessage(), e);
-			//Try and reset the connection
-			try{
-				if(this.port != null)
-					Common.serialPortManager.close(this.port);
-				if(this.connect())
-					setPointValueImpl(dataPoint, valueTime);
-			}catch(Exception e2){
-				raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
-				LOG.error("Error re-connecting to serial port.", e2);
+			OutputStream os = this.port.getOutputStream();
+
+			//Create Message from Message Start 
+	        SerialPointLocatorRT pl = dataPoint.getPointLocator();
+	        
+	        byte[] data;
+	        String fullMsg = new String();
+	        
+	        if(this.vo.isHex()){
+	        	//Convert to Hex
+	        	try{
+	        		switch(dataPoint.getDataTypeId()){
+	        		case DataTypes.ALPHANUMERIC:
+	        			data = convertToHex(valueTime.getStringValue());
+	        			break;
+	        		case DataTypes.BINARY:
+	        			if(valueTime.getBooleanValue())
+	        				data = convertToHex("00");
+	        			else
+	        				data = convertToHex("01");
+	        			break;
+	        		case DataTypes.MULTISTATE:
+	        			String intValue = Integer.toString(valueTime.getIntegerValue());
+	        			if(intValue.length()%2 != 0)
+	        				intValue = "0" + intValue;
+	        			data = convertToHex(intValue);
+	        			break;
+	        		case DataTypes.NUMERIC:
+	        			String numValue = Integer.toString(valueTime.getIntegerValue());
+	        			if(numValue.length()%2 != 0)
+	        				numValue = "0" + numValue;
+	        			data = convertToHex(numValue);
+	        			break;
+	        		default:
+	        			throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataTypeId());
+	        		}
+	        		
+	        	}catch(Exception e){
+	        		LOG.error(e.getMessage(),e);
+	    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));
+	    			return;
+	        	}
+	        }else{
+	        	//Pin the terminator on the end
+				String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
+	        	
+		        //Do we need to or is it already on the end?
+		        String identifier = pl.getVo().getPointIdentifier();
+		        
+		        fullMsg = identifier +  valueTime.getStringValue();
+		        if(!fullMsg.endsWith(messageTerminator)){
+		        	fullMsg +=  messageTerminator;
+		        }
+		        
+		      //String output = newValue.getStringValue();
+		      data = fullMsg.getBytes();
+	        }
+	        if(this.vo.isLogIO()){
+	        	if(!this.vo.isHex())
+	        		this.ioLog.log(false, data);
+	        	else
+	        		this.ioLog.log("O: " + fullMsg);
+	        }
+	        
+			for(byte b : data){
+				os.write(b);
 			}
+			os.flush();
+			
+			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis());
+		} catch (IOException e) {
+			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
 		}
-		
-		
 	}
 	
 	@Override
