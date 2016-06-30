@@ -31,7 +31,6 @@ public class GraphicalViewsSchemaDefinition extends DatabaseSchemaDefinition {
     @Override
     public void addConversionTableNames(List<String> tableNames) {
         tableNames.add("graphicalViews");
-        tableNames.add("graphicalViewUsers");
     }
 
     @Override

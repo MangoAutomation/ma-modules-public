@@ -1,3 +1,6 @@
+*Version 1.6.7*
+* Fixed bug with database conversion, schema definition included defunct table
+
 *Version 1.6.6*
 * Fixed bug where angular not being available could cause problems viewing the components on the page
 
