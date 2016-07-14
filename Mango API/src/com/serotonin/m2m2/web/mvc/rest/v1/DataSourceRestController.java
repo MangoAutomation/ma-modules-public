@@ -11,8 +11,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.jazdw.rql.parser.ASTNode;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -36,11 +34,13 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceStreamCallback;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -60,7 +60,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	@ApiOperation(
 			value = "Query Data Sources",
 			notes = "Use RQL formatted query",
-			response=DataPointModel.class,
+			response=AbstractDataSourceModel.class,
 			responseContainer="List"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
@@ -143,9 +143,41 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
     	}
         return result.createResponseEntity();
     }
-	
-	
-	
+
+	@ApiOperation(
+	        value = "Get data source by ID",
+	        notes = "Only returns data sources available to logged in user"
+	        )
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-id/{id}")
+	public ResponseEntity<AbstractDataSourceModel<?>> getDataSourceById(
+	        @ApiParam(value = "Valid Data Source ID", required = true, allowMultiple = false)
+	        @PathVariable int id, HttpServletRequest request) {
+
+	    RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            DataSourceVO<?> vo = DaoRegistry.dataSourceDao.get(id);
+
+            if (vo == null) {
+                return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
+            }else{
+                try{
+                    if(Permissions.hasDataSourcePermission(user, vo))
+                        return result.createResponseEntity(vo.asModel());
+                    else{
+                        result.addRestMessage(getUnauthorizedMessage());
+                        return result.createResponseEntity();
+                    }
+                }catch(PermissionException e){
+                    LOG.warn(e.getMessage(), e);
+                    result.addRestMessage(getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
+            }
+        }
+        return result.createResponseEntity();
+	}
+
 	/**
 	 * Put a data source into the system
 	 * @param xid
