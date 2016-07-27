@@ -1,3 +1,7 @@
+/**
+ * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
+ */
 package com.serotonin.m2m2.mbus;
 
 import java.io.IOException;
@@ -43,6 +47,15 @@ public class MBusTcpIpLink extends Connection{
 	@Override
 	public String getJsonFieldName() {
 		return TCP_IP_LINK;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see net.sf.mbus4j.Connection#getName()
+	 */
+	@Override
+	public String getName() {
+		return this.in.getInetAddress().getHostAddress();
 	}
 
 }

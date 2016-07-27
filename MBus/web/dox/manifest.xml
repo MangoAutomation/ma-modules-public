@@ -7,9 +7,16 @@
 <doxManifest>
   <item id="mBusPP" key="dox.mBusPP" filename="mBusPP.htm">
     <relation id="mBusDS"/>
+    <relation id="mBusDiscovery"/>
   </item>
   
   <item id="mBusDS" key="dox.mBusDS" filename="mBusDS.htm">
     <relation id="mBusPP"/>
+    <relation id="mBusDiscovery"/>
   </item>
+  <item id="mBusDiscovery" key="dox.mBusDS" filename="mBusDiscovery.htm">
+    <relation id="mBusDS"/>
+    <relation id="mBusPP"/>
+  </item>
+
 </doxManifest>

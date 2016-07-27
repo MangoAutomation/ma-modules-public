@@ -18,11 +18,9 @@
  */
 package com.serotonin.m2m2.mbus;
 
-/**
- *
- * @author aploese
- */
-public enum MBusConnectionType {
-        SERIAL_DIRECT, TCP_IP;
-    }
+import net.sf.mbus4j.MBusAddressing;
 
+public abstract class MBusSearchByAddressing {
+
+    public abstract MBusAddressing getAddressing();
+}
