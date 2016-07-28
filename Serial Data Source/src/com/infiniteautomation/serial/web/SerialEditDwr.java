@@ -95,14 +95,21 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	    				pr.addContextualMessage("testString", "serial.test.noMessageMatch");
 	    				return pr;
 	    			}
+	    			//TODO save all the groups that were matched for the user
+	    			
+	    			//Save the identifier group
 	    			String identifier = m.group(ds.getPointIdentifierIndex());
+	    			pr.addData("pointIdentifier", identifier);
+	    			
 	    			for(DataPointVO pnt : points) {
 	    				SerialPointLocatorVO plVo = (SerialPointLocatorVO) pnt.getPointLocator();
 	    				if(identifier.equals(plVo.getPointIdentifier())) {
 	    					Pattern v = Pattern.compile(plVo.getValueRegex());
 	    					Matcher vm = v.matcher(msg);
-	    					if(vm.find())
+	    					if(vm.find()){
+	    						//TODO change this to save the point and the value that would be set
 	    						pr.addContextualMessage("testString", "serial.test.consumed", pnt.getName(), vm.group(0));
+	    					}
 	    				}
 	    					
 	    			}

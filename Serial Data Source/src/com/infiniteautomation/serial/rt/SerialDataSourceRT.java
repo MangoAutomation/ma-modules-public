@@ -66,7 +66,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	 * @param portName
 	 * @throws Exception 
 	 */
-	public boolean connect () throws Exception{
+	public boolean connect() throws Exception{
 		
         if (Common.serialPortManager.portOwned(vo.getCommPortId())){
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
@@ -217,7 +217,17 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 			
 			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
 		} catch (IOException e) {
+			LOG.error(e.getMessage(), e);
 			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
+			//Try and reset the connection
+			try{
+				if(this.port != null){
+					Common.serialPortManager.close(this.port);
+					this.connect();
+				}
+			}catch(Exception e2){
+				LOG.error("Error re-connecting to serial port.", e2);
+			}
 		}
 		
 		
@@ -402,7 +412,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
             		if(plVo.getPointIdentifier().equals(pointIdentifier)){
             			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
             			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
-                    	if(pointValueMatcher.matches()){
+                    	if(pointValueMatcher.find()){
                         	String value = pointValueMatcher.group(plVo.getValueIndex());
                         	if(LOG.isDebugEnabled()){
                         		LOG.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
