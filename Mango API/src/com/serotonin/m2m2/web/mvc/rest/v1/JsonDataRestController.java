@@ -462,12 +462,16 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		JsonDataModel model = new JsonDataModel(vo);
     		if(!model.validate()){
     		    result.addRestMessage(this.getValidationFailedError());
+    		    // return only the data that was saved, i.e. the data that we supplied a path to
+                vo.setJsonData(data);
     		    return result.createResponseEntity(model);
     		}
     		
     		try {
                 String initiatorId = request.getHeader("initiatorId");
                 this.dao.save(vo, initiatorId);
+                // return only the data that was saved, i.e. the data that we supplied a path to
+                vo.setJsonData(data);
                 URI location = builder.path("/v1/json-data/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
                 result.addRestMessage(this.getResourceCreatedMessage(location));
                 return result.createResponseEntity(model);

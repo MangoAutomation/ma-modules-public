@@ -1,5 +1,6 @@
 *Version 1.1.8*
 * Add REST endpoints for getting device names
+* Correct behavior of JSON store endpoint so only data from supplied path is returned
 
 *Version 1.1.7*
 * Basic support for Image data types
