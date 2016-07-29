@@ -56,7 +56,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "Query realtime values", 
-				  notes = "Note that recently enabled points will not be available until the point hierarchy is saved.")
+				  notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
     @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
     public ResponseEntity<List<RealTimeModel>> query(HttpServletRequest request) {
     	RestProcessResult<List<RealTimeModel>> result = new RestProcessResult<List<RealTimeModel>>(HttpStatus.OK);
@@ -91,7 +91,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "List realtime values", 
-			  notes = "Note that recently enabled points will not be available until the point hierarchy is saved.")
+			  notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
     @RequestMapping(method = RequestMethod.GET, value = "/list", produces={"application/json"})
     public ResponseEntity<List<RealTimeModel>> getAll(HttpServletRequest request, 
     		@ApiParam(value = "Limit the number of results", required=false)
@@ -118,7 +118,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	
 	
 	@ApiOperation(value = "Get realtime value of point based on XID", 
-			  notes = "Note that recently enabled points will not be available until the point hierarchy is saved.")
+			  notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
 	@RequestMapping(method = RequestMethod.GET, value = "/by-xid/{xid}", produces={"application/json"})
     public ResponseEntity<RealTimeModel> get(@PathVariable String xid, HttpServletRequest request) {
 		
@@ -133,7 +133,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 	    	
 	        if (values.size() == 0) {
-	        	LOG.debug("Attempted access of Real time point that is not enabled or DNE.");
+	        	LOG.debug("Attempted access of Real time point that DNE.");
 	        	result.addRestMessage(HttpStatus.NOT_FOUND, new TranslatableMessage("common.default", "Point doesn't exist or is not enabled."));
 	            return result.createResponseEntity();
 	        }
