@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -264,7 +265,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
             	
             }
             
-            
 			//Read the data in from the port
 			try{
 				InputStream in = this.port.getInputStream();
@@ -302,14 +302,50 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	            	
 	            	//First check if the previous message timed out
 	            	if(msg != null){
-	            		String[] messages = msg.split("(?<=" + this.vo.getMessageTerminator() + ")");
+	            		String[] messages = splitMessages(msg, this.vo.getMessageTerminator());
 	            		for(String message : messages) {
-		            		if(message.contains(this.vo.getMessageTerminator())){
+	            			if(canProcessTerminatedMessage(message, this.vo.getMessageTerminator())){
 	                			if(LOG.isDebugEnabled())
 	                    			LOG.debug("Matching will use String: " + message);
-	                			matchPointValues(message, messageRegex, pointIdentifierIndex);
-			            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
-	                		}
+	                			final AtomicBoolean matcherFailed = new AtomicBoolean(false);
+	                			
+	                			for(final DataPointRT dp: this.dataPoints){
+	                        		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
+	                        		matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, LOG, new MatchCallback(){
+
+										@Override
+										public void onMatch(String pointIdentifier, String value, int dataTypeId) {
+											if(!updatePointValue(value, dataTypeId, dp)){
+												matcherFailed.set(true);
+									        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
+											}
+										}
+
+										@Override
+										public void pointPatternMismatch(String message, String messageRegex) {
+											//Ignore as this just isn't a message we care about
+										}
+										
+										@Override
+										public void messagePatternMismatch(String message, String messageRegex) { 
+							            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.patternMismatch",messageRegex, message));
+											matcherFailed.set(true);
+										}
+										
+										@Override
+										public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
+											//Don't Care
+										}
+	                        			
+	                        		});
+	                			}
+	                			
+	                			//Did we have a failure?
+	                			//If no failures...
+	                			if(!matcherFailed.get())
+	                				returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
+	                			returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());	
+	            			}
 	            		}
 	            	}
 	            	
@@ -327,23 +363,61 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
             		//Now we have a string that contains the entire contents of the buffer,
             		// split on terminator, keep it on the end of the message and process any full messages
             		// and pop them from the buffer
-            		String[] messages = msg.split("(?<=" + this.vo.getMessageTerminator() + ")");
-            		for(String message : messages){
+            		String[] messages = splitMessages(msg, this.vo.getMessageTerminator());
+            		for(String message : messages) {
             			//Does our message contain the terminator?
             			//It should be impossible to have a non-terminated message
             			// that is before a message with a terminator in the buffer
             			// so it is assumed here that popping from the buffer will 
             			// not cause any issues. As the only data left in the buffer will 
             			// potentially be one incomplete message.
-                   		if(message.contains(this.vo.getMessageTerminator())){
-                   			//Pop off this message
+            			if(canProcessTerminatedMessage(message, this.vo.getMessageTerminator())){
+            				//Pop off this message
                    			this.buffer.pop(message.length());
                 			if(LOG.isDebugEnabled())
                     			LOG.debug("Matching will use String: " + message);
-                			matchPointValues(message, messageRegex, pointIdentifierIndex);
-		            		returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
-                		}
+                			final AtomicBoolean matcherFailed = new AtomicBoolean(false);
+                			
+                			for(final DataPointRT dp: this.dataPoints){
+                        		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
+                        		matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, LOG, new MatchCallback(){
+
+									@Override
+									public void onMatch(String pointIdentifier, String value, int dataTypeId) {
+										if(!updatePointValue(value, dataTypeId, dp)){
+											matcherFailed.set(true);
+								        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
+										}
+									}
+
+									@Override
+									public void pointPatternMismatch(String message, String messageRegex) {
+										//Ignore as this just isn't a message we care about
+									}
+									
+									@Override
+									public void messagePatternMismatch(String message, String messageRegex) { 
+						            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.patternMismatch",messageRegex, message));
+										matcherFailed.set(true);
+									}
+
+									@Override
+									public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
+										//Don't Care
+									}
+                        		});
+                			}
+                			
+                			//Did we have a failure?
+                			//If no failures...
+                			if(!matcherFailed.get())
+                				returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
+                			returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());	
+            			}
             		}
+            		
+            		
+            		
 	            	return;
 	            }else{
 	            	
@@ -363,8 +437,47 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		            	String messageRegex = vo.getMessageRegex(); //"!([A-Z0-9]{3,3})([a-zA-Z])(.*);";
 		                //DS Information
 		                int pointIdentifierIndex = vo.getPointIdentifierIndex();
-		            	matchPointValues(msg, messageRegex, pointIdentifierIndex);
-		            	returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+		            	
+		            	if(LOG.isDebugEnabled())
+                			LOG.debug("Matching will use String: " + msg);
+            			final AtomicBoolean matcherFailed = new AtomicBoolean(false);
+            			
+            			for(final DataPointRT dp: this.dataPoints){
+                    		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
+                    		matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, LOG, new MatchCallback(){
+
+								@Override
+								public void onMatch(String pointIdentifier, String value, int dataTypeId) {
+									if(!updatePointValue(value, dataTypeId, dp)){
+										matcherFailed.set(true);
+							        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
+									}
+								}
+
+								@Override
+								public void pointPatternMismatch(String message, String messageRegex) {
+									//Ignore as this just isn't a message we care about
+								}
+								
+								@Override
+								public void messagePatternMismatch(String message, String messageRegex) { 
+					            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.patternMismatch",messageRegex, message));
+									matcherFailed.set(true);
+								}
+								
+								@Override
+								public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
+									//Don't Care
+								}
+                    			
+                    		});
+            			}
+            			
+            			//Did we have a failure?
+            			//If no failures...
+            			if(!matcherFailed.get())
+            				returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
+            			returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
 	            	}
 	            }
 			}catch(Exception e){
@@ -390,6 +503,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	 * @param messageRegex - Pattern to match with
 	 * @param pointIdentifierIndex - Index to use from messageRegex Pattern
 	 */
+	//TODO Remove when done testing the new callback logic
 	private void matchPointValues(String msg, String messageRegex, int pointIdentifierIndex) {
 
 		boolean matcherFailed = false;
@@ -397,7 +511,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		if(!this.dataPoints.isEmpty()){
         	Pattern messagePattern = Pattern.compile(messageRegex);
         	Matcher messageMatcher = messagePattern.matcher(msg);
-            if(messageMatcher.matches()){
+            if(messageMatcher.find()){
             	if(LOG.isDebugEnabled())
             		LOG.debug("Message matched regex: " + messageRegex);
                 //Parse out the Identifier
@@ -483,6 +597,64 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	}
 
 
+	/**
+	 * Update a value if possible and return if we did
+	 * @param value
+	 * @param dataTypeId
+	 * @param dp
+	 * @return
+	 */
+	private boolean updatePointValue(String value, int dataTypeId, DataPointRT dp){
+    	//Parse out the value
+    	DataValue dataValue = null;
+    	if(this.vo.isHex()){
+			try{
+    			byte[] data = convertToHex(value);
+    			
+    			switch(dataTypeId){
+    				case DataTypes.ALPHANUMERIC:
+    					dataValue = new AlphanumericValue(new String(data, Common.UTF8_CS));
+    				break;
+    				case DataTypes.BINARY:
+    					if(data.length > 0){
+    						dataValue = new BinaryValue((data[0]==1)?true:false);
+    					}
+    				break;
+    				case DataTypes.MULTISTATE:
+    					ByteBuffer buffer = ByteBuffer.wrap(data);
+    					if(data.length == 2)
+    						dataValue = new MultistateValue(buffer.getShort());
+    					else
+    						dataValue = new MultistateValue(buffer.getInt());
+    				break;
+    				case DataTypes.NUMERIC:
+    					ByteBuffer nBuffer = ByteBuffer.wrap(data);
+    					if(data.length == 4)
+    						dataValue = new NumericValue(nBuffer.getFloat());
+    					else
+    						dataValue = new NumericValue(nBuffer.getDouble());
+    				break;
+    				default:
+    					throw new ShouldNeverHappenException("Un-supported data type: " + dataTypeId);
+    			}
+			}catch(Exception e){
+				LOG.error(e.getMessage(),e);
+			}
+		}else{
+			dataValue = DataValue.stringToValue(value, dataTypeId);
+		}
+    	
+    	if(dataValue != null){
+        	PointValueTime newValue = new PointValueTime(dataValue,Common.timer.currentTimeMillis());
+    		dp.updatePointValue(newValue);
+    		if(LOG.isDebugEnabled())
+    			LOG.debug("Saving value: " + newValue.toString());
+    		return true;
+    	}else{
+        	return false;
+    	}
+	}
+	
 //	/**
 //	 * This method might be dumpable if we choose to go with the timeout option
 	// A loop within a recursive function is cause for worry, this will be slow
@@ -571,5 +743,77 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     void forcePointReload() {
     	updateChangedPoints(System.currentTimeMillis());
     }
+    
+    /**
+     * Helper for DWR and Here
+     * @param message
+     * @param terminator
+     * @return
+     */
+    public static String[] splitMessages(String message, String terminator){
+    	return message.split("(?<=" + terminator + ")");
+    }
 	
+    public static boolean canProcessTerminatedMessage(String message, String terminator){
+    	return message.contains(terminator);
+    }
+    
+    /**
+     * Match for 1 point Helper for DWR and here
+     * @param msg
+     * @param messageRegex
+     * @param pointIdentifierIndex
+     * @param plVo
+     * @param callback
+     * @param log
+     */
+    public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, Log log, MatchCallback callback){
+    	Pattern messagePattern = Pattern.compile(messageRegex);
+    	Matcher messageMatcher = messagePattern.matcher(msg);
+        if(messageMatcher.find()){
+        	if(log.isDebugEnabled())
+        		log.debug("Message matched regex: " + messageRegex);
+            
+        	//Parse out the Identifier
+        	String pointIdentifier = null;
+        	try{
+        		pointIdentifier = messageMatcher.group(pointIdentifierIndex);
+            	if(log.isDebugEnabled())
+            		log.debug("Point Identified: " + pointIdentifier);
+        	}catch(Exception e){
+        		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
+        		return;
+        	}
+    		
+        	if(plVo.getPointIdentifier().equals(pointIdentifier)){
+    			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
+    			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
+            	if(pointValueMatcher.find()){
+                	String value = pointValueMatcher.group(plVo.getValueIndex());
+                	if(log.isDebugEnabled()){
+                		log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
+                	}
+                	callback.onMatch(pointIdentifier, value, plVo.getDataTypeId());
+            	}else{
+            		callback.pointPatternMismatch(msg, plVo.getValueRegex());
+            	}
+    		}
+        }else{
+        	callback.messagePatternMismatch(msg, messageRegex);
+        }
+    }
+    
+    /**
+     * Callback to aid in matching one point value
+     * @author Terry Packer
+     *
+     */
+    public interface MatchCallback {
+
+    	public void onMatch(String pointIdentifier, String value, int dataTypeId);
+    	public void pointPatternMismatch(String message, String pointValueRegex);
+    	public void messagePatternMismatch(String message, String messageRegex);
+    	public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex);
+    }
+    
 }

@@ -106,11 +106,25 @@
 	   * Runs a test string
 	   */
 	  function submitTestString() {
-		  SerialEditDwr.testString($get("testString"), displayResult);
+		  SerialEditDwr.testString(
+				  $get("testString"),
+				  dataSources.currentId,
+				  $get("messageRegex"),
+				  $get("messageTerminator"),
+	              $get("pointIdentifierIndex"),
+	              $get("isHex"),
+	              $get("useTerminator"),
+				  displayResult);
 	  }
 	  
 	  function displayResult(resp) {
+		  dwr.util.removeAllRows("pointValuesTestResults");
+		  
 		  if(resp.hasMessages) {
+			  //Error found
+			  hide('testResults');
+			  hide($("pointValuesTestResultsHeaders"));
+			  hide($("pointValuesTestResultsEmpty"));
 			  var message = "";
 			  for(k in resp.messages)
 				  message += resp.messages[k].contextualMessage + "<br>"
@@ -118,8 +132,50 @@
 			  $("testMessages").innerHTML = message;
 		  }
 		  else {
+			  show('testResults')
 			  $("testMessages").innerHTML = "";
 			  $("testMessages").style.visibility = "collapse";
+			  //Show the results
+			  
+			  if(resp.data.results.length == 0){
+				  show($("pointValuesTestResultsEmpty"));
+	         	  hide($("pointValuesTestResultsHeaders"));
+			  }else{
+				  hide($("pointValuesTestResultsEmpty"));
+		          show($("pointValuesTestResultsHeaders"));
+				  dwr.util.addRows("pointValuesTestResults", resp.data.results,
+			              [
+			                function(data) { return data.message; },
+			                function(data) { return data.name; },
+			                function(data) { return data.identifier; },
+			                function(data) { return data.value; },
+			                function(data) { 
+			                	if(data.success === 'true'){
+			                		return 'match';
+			                	}else{
+			                		return data.error;
+			                	}
+			                }
+			                  
+			              ],
+			              {
+			                  rowCreator:function(options) {
+			                      var tr = document.createElement("tr");
+			                      tr.className = "smRow"+ (options.rowIndex % 2 == 0 ? "" : "Alt");
+			                      return tr;
+			                  },
+			                  cellCreator: function(options){
+				                	 var td = document.createElement("td");
+									 td.style.textAlign='center';
+									 if((options.rowData.success === 'false')&&(options.cellNum === 4))
+										 td.style.color='red';
+									 if((options.rowData.success === 'true')&&(options.cellNum === 4))
+										 td.style.color='green';
+				                	 return td;
+				                }
+			              });
+			  }
+			  
 		  }
 	  }
 	  
@@ -189,10 +245,39 @@
     </tr>
     
 <tr>
- <td class="formLabel" style="padding-top:0px;"><button onclick=submitTestString();><fmt:message key="dsEdit.serial.submitTestString"/></button></td>
- <td><input id="testString" type="text"></input></td>
-</tr>
-<tr><td id="testMessages" style="color:red;" colspan=2></td>
+  <td colspan="2">
+    <div class="borderDiv marB marR">
+	  <table class="wide">
+        <tr>
+          <td class="smallTitle" colspan="2"><fmt:message key="dsEdit.serial.submitTestString"/></td>
+        </tr>
+        <tr> 
+	 	  <td class="formLabel" style="padding-top:0px;"><input id="testString" type="text" style="width: 100%"></input></td>
+	 	  <td><button onclick="submitTestString();" style="width:100%"><fmt:message key="common.test"/></button></td>
+		</tr>
+		<tr><td id="testMessages" style="color:red;" colspan=3></td></tr>
+		<tr>
+		 <td id="testResults" colspan="2">
+		  <table class="wide">
+		   <tbody id="pointValuesTestResultsEmpty" style="display:none;">
+            <tr><th colspan="3"><fmt:message key="common.noData"/></th></tr>
+           </tbody>
+           <tbody id="pointValuesTestResultsHeaders" style="display:none;">
+            <tr class="smRowHeader">
+             <td>message</td>
+             <td><fmt:message key="common.pointName"/></td>
+             <td><fmt:message key="dsEdit.serial.pointIdentifier"/></td>
+             <td><fmt:message key="common.value"/></td>
+             <td>status</td>
+            </tr>
+           </tbody>
+		 <tbody id="pointValuesTestResults"></tbody>
+		</table>
+	   </td>
+	  </tr>
+	</table>
+	</div>
+	</td>
 </tr>
 </tag:dataSourceAttrs>
 
