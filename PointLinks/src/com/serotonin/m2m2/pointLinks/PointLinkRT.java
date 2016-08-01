@@ -41,6 +41,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private final SystemEventType eventType;
     private final SystemEventType alreadyRunningEvent;
     private ScriptLog scriptLog;
+    private CompiledScript compiledScript;
+    private boolean compiled;
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -51,12 +53,20 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                 EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
         alreadyRunningEvent = new SystemEventType(PointLinkAlreadyRunningEvent.TYPE_NAME, vo.getId(),
                 EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
+        compiledScript = null;
+        compiled = false;
         ready = true;
     }
 
     public void initialize() {
         Common.runtimeManager.addDataPointListener(vo.getSourcePointId(), this);
         checkSource();
+        try {
+        	compiledScript = CompiledScriptExecutor.compile(vo.getScript());
+        	compiled = true;
+        } catch (ScriptException e) {
+            raiseFailureEvent(Common.timer.currentTimeMillis(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
+        }
         File file = getLogFile(this.vo.getId());
         PrintWriter out;
         try {
@@ -134,8 +144,12 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             context.put(CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getTargetPointId()));
 
             try {
-            	CompiledScript script = CompiledScriptExecutor.compile(vo.getScript());
-                PointValueTime pvt = CompiledScriptExecutor.execute(script, context, null, newValue.getTime(),
+            	if(!compiled) {
+            		compiledScript = CompiledScriptExecutor.compile(vo.getScript());
+            		compiled = true;
+            	}
+            		
+                PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, newValue.getTime(),
                         targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
@@ -144,7 +158,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                 newValue = pvt;
             }
             catch (ScriptException e) {
-                raiseFailureEvent(newValue.getTime(), new TranslatableMessage("common.default", e.getMessage()));
+                raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
                 return;
             }
             catch (ResultTypeException e) {

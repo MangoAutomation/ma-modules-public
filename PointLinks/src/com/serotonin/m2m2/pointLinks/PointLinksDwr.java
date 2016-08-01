@@ -148,7 +148,8 @@ public class PointLinksDwr extends ModuleDwr {
             }else{
             	Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
                 context.put(PointLinkRT.CONTEXT_SOURCE_VAR_NAME, source);
-            	context.put(PointLinkRT.CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(targetPointId));
+                if(Common.runtimeManager.isDataPointRunning(targetPointId))
+                	context.put(PointLinkRT.CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(targetPointId));
 	            int targetDataType = target.getPointLocator().getDataTypeId();
 	
 	            final StringWriter scriptOut = new StringWriter();
