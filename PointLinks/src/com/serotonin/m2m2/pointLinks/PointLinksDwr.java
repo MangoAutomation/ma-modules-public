@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,8 +24,8 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
-import com.serotonin.m2m2.rt.script.ScriptExecutor;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.DataPointExtendedNameComparator;
@@ -136,18 +137,18 @@ public class PointLinksDwr extends ModuleDwr {
     public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, ScriptPermissions permissions, int logLevel) {
         ProcessResult response = new ProcessResult();
         TranslatableMessage message;
-        ScriptExecutor scriptExecutor = new ScriptExecutor();
 
-        DataPointRT point = Common.runtimeManager.getDataPoint(sourcePointId);
-        if (point == null)
+        DataPointRT source = Common.runtimeManager.getDataPoint(sourcePointId);
+        if (source == null)
             message = new TranslatableMessage("event.pointLink.sourceUnavailable");
         else {
-            Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
-            context.put(PointLinkRT.CONTEXT_VAR_NAME, point);
             DataPointVO target = DataPointDao.instance.getDataPoint(targetPointId);
             if(target == null){
             	message = new TranslatableMessage("pointLinks.validate.targetRequired");
             }else{
+            	Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
+                context.put(PointLinkRT.CONTEXT_SOURCE_VAR_NAME, source);
+            	context.put(PointLinkRT.CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(targetPointId));
 	            int targetDataType = target.getPointLocator().getDataTypeId();
 	
 	            final StringWriter scriptOut = new StringWriter();
@@ -155,7 +156,8 @@ public class PointLinksDwr extends ModuleDwr {
 	            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
 	
 	            try {
-	                PointValueTime pvt = scriptExecutor.execute(script, context, null, System.currentTimeMillis(),
+	            	CompiledScript compiledScript = CompiledScriptExecutor.compile(script);
+	                PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, System.currentTimeMillis(),
 	                        targetDataType, -1, permissions ,scriptWriter, scriptLog);
 	                if (pvt.getValue() == null)
 	                    message = new TranslatableMessage("event.pointLink.nullResult");
@@ -168,7 +170,7 @@ public class PointLinksDwr extends ModuleDwr {
 	                response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
 	            }
 	            catch (ScriptException e) {
-	                message = new TranslatableMessage("common.default", e.getMessage());
+	                message = new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage());
 	            }
 	            catch (ResultTypeException e) {
 	                message = e.getTranslatableMessage();

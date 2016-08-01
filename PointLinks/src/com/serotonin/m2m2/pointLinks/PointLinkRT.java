@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
 import org.apache.commons.io.output.NullWriter;
@@ -25,8 +26,8 @@ import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
+import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
-import com.serotonin.m2m2.rt.script.ScriptExecutor;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -34,7 +35,8 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Matthew Lohbihler
  */
 public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
-    public static final String CONTEXT_VAR_NAME = "source";
+    public static final String CONTEXT_SOURCE_VAR_NAME = "source";
+    public static final String CONTEXT_TARGET_VAR_NAME = "target";
     private final PointLinkVO vo;
     private final SystemEventType eventType;
     private final SystemEventType alreadyRunningEvent;
@@ -127,13 +129,13 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         int targetDataType = targetPoint.getVO().getPointLocator().getDataTypeId();
 
         if (!StringUtils.isBlank(vo.getScript())) {
-            ScriptExecutor scriptExecutor = new ScriptExecutor();
             Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
-            DataPointRT source = Common.runtimeManager.getDataPoint(vo.getSourcePointId());
-            context.put(CONTEXT_VAR_NAME, source);
+            context.put(CONTEXT_SOURCE_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getSourcePointId()));
+            context.put(CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getTargetPointId()));
 
             try {
-                PointValueTime pvt = scriptExecutor.execute(vo.getScript(), context, null, newValue.getTime(),
+            	CompiledScript script = CompiledScriptExecutor.compile(vo.getScript());
+                PointValueTime pvt = CompiledScriptExecutor.execute(script, context, null, newValue.getTime(),
                         targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));

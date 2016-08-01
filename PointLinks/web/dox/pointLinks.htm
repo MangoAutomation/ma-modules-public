@@ -42,11 +42,13 @@
 <p>The <b>Target point</b> is the point that will be set with values. It is the point <i>to</i> which values go.</p>
 <p>
   The <b>Script</b> is an optional value that will transform the source value as necessary. More information on 
-  scripting can be found in the Meta point properties documentation. The context variable name is "source". So, a 
-  script such as "return source.value / 2;" will set the target point with half the value of the source point. Note that
+  scripting can be found in the Mango JavaScript documentation, linked in the 'related items'. The context variable name 
+  for the source point is "source". So, a script such as "return source.value / 2;" will set the target point with half the 
+  value of the source point. The target point is available in the context as "target". Note that
   data type transformations can also be done, such as "if (source.value &gt; 0) return true; return false;", which would
   convert a numeric source value to a binary target value. Use the <img src="images/accept.png"/> icon to validate your
-  script (the source point must be available).
+  script (the source point must be available / enabled, the target point must be enabled if referenced in the script body). 
+  During runtime, both the source and target points must be enabled.
 </p>
 <p>
   <b>Event</b> determines if the target point is set whenever the source point is updated (i.e. receives a new 
