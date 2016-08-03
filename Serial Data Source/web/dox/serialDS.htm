@@ -20,7 +20,7 @@ This data source works by sequentially parsing the incoming message and matching
 <h3>Use Terminator</h3>
 Messages must be completely read before any matching can be performed.  There are 2 ways for this data source to 'know' it has recieved a complete message.  
 The first is to check all incomming bytes for the terminator pattern.  The second way is after data is recieved they line is silent for at least 
-<b>Read Timeout</b>ms.  If not using a terminator then the entire message is given to each point as the point identifier for matching.
+<b>Read Timeout</b> milliseconds.  If not using a terminator then the entire message is given to each point as the point identifier for matching.
 
 
 <h3>Message regex</h3>
@@ -80,5 +80,5 @@ The test utility allows the user to input an expected message and compare it to 
 The output from the matching is displayed in red if there are any errors otherwise the point identifier is shown and any matches for existing points.
 
 <h3>Logging</h3>
-Extensive Logging has been added to this datasource.  To enable it, add the following to the log4j.xml configuration file: <br>
-<pre><![CDATA[<category name="com.infiniteautomation.serial"><level value="debug"/></category>]]></pre>
+Extensive Logging has been added to this datasource.  To enable it, simply check the <b>Log I/O</b> checkbox, which will display the log file name 
+underneath the checkbox, and then save the data source. <br>

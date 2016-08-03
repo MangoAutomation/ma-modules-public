@@ -187,7 +187,8 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	        		default:
 	        			throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataTypeId());
 	        		}
-	        		
+	        		if(this.vo.isLogIO())
+	    	        	this.ioLog.log(false, data);
 	        	}catch(Exception e){
 	        		LOG.error(e.getMessage(),e);
 	    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));
@@ -207,9 +208,9 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		        
 		      //String output = newValue.getStringValue();
 		      data = fullMsg.getBytes();
+		      if(vo.isLogIO())
+		    	  this.ioLog.log("O: " + fullMsg);
 	        }
-	        if(this.vo.isLogIO())
-	        	this.ioLog.log(false, data);
 	        
 			for(byte b : data){
 				os.write(b);
@@ -283,15 +284,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	            
 	            //Log our buffer contents 
             	byte[] logMsg = buffer.peekAll();
-            	if(this.vo.isLogIO())
-    	        	this.ioLog.log(true, logMsg);
-    			if(this.vo.isHex()){
-    				if(LOG.isDebugEnabled())
-    					LOG.debug("Buffer after read: " + StreamUtils.dumpHex(logMsg, 0, logMsg.length));
-        		}else{
-        			if(LOG.isDebugEnabled())
-        				LOG.debug("Buffer after read: " + new String(logMsg, Common.UTF8_CS));
-        		}
+            	if(this.vo.isLogIO()) {
+            		if(this.vo.isHex())
+            			this.ioLog.log(true, logMsg);
+            		else
+            			this.ioLog.log("I: "+ new String(logMsg, Common.UTF8_CS));
+            	}
 	            
 	            //We either use a terminator OR we use a Timeout
 	            if(vo.getUseTerminator()) {
