@@ -125,7 +125,9 @@ public class SerialEditDwr extends DataSourceEditDwr{
 
 							@Override
 							public void pointPatternMismatch(String message, String messageRegex) {
-								//Don't care its not for this point anyway
+								result.put("success", "false");
+								result.put("name", vo.getName());
+								result.put("error", new TranslatableMessage("serial.test.noPointRegexMatch").translate(Common.getTranslations()));
 							}
 							
 							@Override
@@ -170,12 +172,14 @@ public class SerialEditDwr extends DataSourceEditDwr{
 						result.put("name", vo.getName());
 						result.put("value", value);
 						result.put("identifier", pointIdentifier);
-						results.add(result);
+						result.put("success", "true");
 					}
 
 					@Override
 					public void pointPatternMismatch(String message, String messageRegex) {
-						//Don't care its not for this point anyway
+						result.put("success", "false");
+						result.put("name", vo.getName());
+						result.put("error", new TranslatableMessage("serial.test.noPointRegexMatch").translate(Common.getTranslations()));
 					}
 					
 					@Override
