@@ -44,7 +44,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
     public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
     
-    private static final String HEX_REGEX = "^[0-9A-Za-z]*$";
+    private static final String HEX_REGEX = "^[0-9A-Fa-f]*$";
     
 	private SerialPortProxy port; //Serial Communication Port
 	private ByteQueue buffer; //Max size is Max Message Size
