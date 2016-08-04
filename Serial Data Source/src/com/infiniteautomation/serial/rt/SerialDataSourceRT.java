@@ -44,6 +44,8 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
     public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
     
+    private static final String HEX_REGEX = "^[0-9A-Za-z]*$";
+    
 	private SerialPortProxy port; //Serial Communication Port
 	private ByteQueue buffer; //Max size is Max Message Size
 	private TimeoutTask timeoutTask; //Task to retrieve buffer contents after timeout
@@ -67,7 +69,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	 * @param portName
 	 * @throws Exception 
 	 */
-	public boolean connect() throws Exception{
+	public boolean connect() {
 		
         if (Common.serialPortManager.portOwned(vo.getCommPortId())){
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
@@ -141,93 +143,96 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     	}
     }
     
+    private void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime) throws IOException {
+    	OutputStream os = this.port.getOutputStream();
+
+		//Create Message from Message Start 
+        SerialPointLocatorRT pl = dataPoint.getPointLocator();
+        
+        byte[] data;
+
+        if(this.vo.isHex()){
+        	//Convert to Hex
+        	try{
+        		switch(dataPoint.getDataTypeId()){
+        		case DataTypes.ALPHANUMERIC:
+        			data = convertToHex(valueTime.getStringValue());
+        			break;
+        		case DataTypes.BINARY:
+        			if(valueTime.getBooleanValue())
+        				data = convertToHex("00");
+        			else
+        				data = convertToHex("01");
+        			break;
+        		case DataTypes.MULTISTATE:
+        			String intValue = Integer.toString(valueTime.getIntegerValue());
+        			if(intValue.length()%2 != 0)
+        				intValue = "0" + intValue;
+        			data = convertToHex(intValue);
+        			break;
+        		case DataTypes.NUMERIC:
+        			String numValue = Integer.toString(valueTime.getIntegerValue());
+        			if(numValue.length()%2 != 0)
+        				numValue = "0" + numValue;
+        			data = convertToHex(numValue);
+        			break;
+        		default:
+        			throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataTypeId());
+        		}
+        		if(this.vo.isLogIO())
+    	        	this.ioLog.log(false, data);
+        	}catch(Exception e){
+        		LOG.error(e.getMessage(),e);
+    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));
+    			return;
+        	}
+        }else{
+        	//Pin the terminator on the end
+			String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
+        	
+	        //Do we need to or is it already on the end?
+	        String identifier = pl.getVo().getPointIdentifier();
+	        
+	        String fullMsg = identifier +  valueTime.getStringValue();
+	        if(!fullMsg.endsWith(messageTerminator)){
+	        	fullMsg +=  messageTerminator;
+	        }
+	        
+	      //String output = newValue.getStringValue();
+	      data = fullMsg.getBytes();
+	      if(vo.isLogIO())
+	    	  this.ioLog.log("O: " + fullMsg);
+        }
+        
+		for(byte b : data){
+			os.write(b);
+		}
+		os.flush();
+    }
+    
 	@Override
 	public void setPointValue(DataPointRT dataPoint, PointValueTime valueTime,
 			SetPointSource source) {
 
 		//Are we connected?
-		if(this.port == null){
+		if(this.port == null && !connect()){
 			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
 			return;
 		}
 		
 		try {
-			OutputStream os = this.port.getOutputStream();
-
-			//Create Message from Message Start 
-	        SerialPointLocatorRT pl = dataPoint.getPointLocator();
-	        
-	        byte[] data;
-
-	        if(this.vo.isHex()){
-	        	//Convert to Hex
-	        	try{
-	        		switch(dataPoint.getDataTypeId()){
-	        		case DataTypes.ALPHANUMERIC:
-	        			data = convertToHex(valueTime.getStringValue());
-	        			break;
-	        		case DataTypes.BINARY:
-	        			if(valueTime.getBooleanValue())
-	        				data = convertToHex("00");
-	        			else
-	        				data = convertToHex("01");
-	        			break;
-	        		case DataTypes.MULTISTATE:
-	        			String intValue = Integer.toString(valueTime.getIntegerValue());
-	        			if(intValue.length()%2 != 0)
-	        				intValue = "0" + intValue;
-	        			data = convertToHex(intValue);
-	        			break;
-	        		case DataTypes.NUMERIC:
-	        			String numValue = Integer.toString(valueTime.getIntegerValue());
-	        			if(numValue.length()%2 != 0)
-	        				numValue = "0" + numValue;
-	        			data = convertToHex(numValue);
-	        			break;
-	        		default:
-	        			throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataTypeId());
-	        		}
-	        		if(this.vo.isLogIO())
-	    	        	this.ioLog.log(false, data);
-	        	}catch(Exception e){
-	        		LOG.error(e.getMessage(),e);
-	    			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.notHex"));
-	    			return;
-	        	}
-	        }else{
-	        	//Pin the terminator on the end
-				String messageTerminator = ((SerialDataSourceVO)this.getVo()).getMessageTerminator();
-	        	
-		        //Do we need to or is it already on the end?
-		        String identifier = pl.getVo().getPointIdentifier();
-		        
-		        String fullMsg = identifier +  valueTime.getStringValue();
-		        if(!fullMsg.endsWith(messageTerminator)){
-		        	fullMsg +=  messageTerminator;
-		        }
-		        
-		      //String output = newValue.getStringValue();
-		      data = fullMsg.getBytes();
-		      if(vo.isLogIO())
-		    	  this.ioLog.log("O: " + fullMsg);
-	        }
-	        
-			for(byte b : data){
-				os.write(b);
-			}
-			os.flush();
-			
+			setPointValueImpl(dataPoint, valueTime);
 			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
-			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
 			//Try and reset the connection
 			try{
-				if(this.port != null){
+				if(this.port != null)
 					Common.serialPortManager.close(this.port);
-					this.connect();
-				}
+				if(this.connect())
+					setPointValueImpl(dataPoint, valueTime);
 			}catch(Exception e2){
+				raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
 				LOG.error("Error re-connecting to serial port.", e2);
 			}
 		}
@@ -695,8 +700,12 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	 * @param stringValue
 	 * @return
 	 */
-	public static byte[] convertToHex(String stringValue) throws Exception{
+	public static byte[] convertToHex(String stringValue) throws ConvertHexException {
 		int len = stringValue.length();
+		if((len&1) == 1)
+			throw new ConvertHexException("Odd value lengths not permitted");
+		if(!Pattern.matches(HEX_REGEX, stringValue))
+			throw new ConvertHexException("Non-hex character detected.");
 		byte[] data = new byte[len / 2];
 	    for (int i = 0; i < len; i += 2) {
 	        data[i / 2] = (byte) ((Character.digit(stringValue.charAt(i), 16) << 4)
@@ -784,20 +793,20 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
         	}
     		
         	if(plVo.getPointIdentifier().equals(pointIdentifier)){
-    			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
-    			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
-            	if(pointValueMatcher.find()){
-                	String value = pointValueMatcher.group(plVo.getValueIndex());
-                	if(log.isDebugEnabled()){
-                		log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
-                	}
-                	callback.onMatch(pointIdentifier, value, plVo.getDataTypeId());
-            	}else{
-            		callback.pointPatternMismatch(msg, plVo.getValueRegex());
-            	}
-    		}
-        }else{
-        	callback.messagePatternMismatch(msg, messageRegex);
+        		Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
+        		Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
+        		if(pointValueMatcher.find()){
+        			String value = pointValueMatcher.group(plVo.getValueIndex());
+        			if(log.isDebugEnabled()){
+        				log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
+        			}
+        			callback.onMatch(pointIdentifier, value, plVo.getDataTypeId());
+        		} else {
+        			callback.pointPatternMismatch(msg, plVo.getValueRegex());
+        		}
+        	}else{
+        		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
+        	}
         }
     }
     
