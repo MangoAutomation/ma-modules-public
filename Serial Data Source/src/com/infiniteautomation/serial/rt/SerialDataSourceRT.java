@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -50,8 +49,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 	private ByteQueue buffer; //Max size is Max Message Size
 	private TimeoutTask timeoutTask; //Task to retrieve buffer contents after timeout
 	private SerialDataSourceVO vo;
-	private long lastRxTime; //Time we last received a message, used to determine message timeout (not wall clock time)
-	private int timeout;
 	
 	private RollingIOLog ioLog;
 	
@@ -59,8 +56,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		super(vo);
 		this.vo = vo;
 		buffer = new ByteQueue(vo.getMaxMessageSize());
-		this.timeout = vo.getReadTimeout() * 1000000; //Timeout in MS from user (nanoseconds here)
-
 	}
 
 
@@ -122,7 +117,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     	if(connected){
     		returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
     	}
-    	this.lastRxTime = System.nanoTime(); //Nanosecond accuracy
     	super.initialize();
     }
     @Override
@@ -250,117 +244,55 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 				return;
 			}
 			
-			//The first message that we might process
-			String msg = null;
-			
-            
-            //For message timeout we will capture the delay between reads
-			long rxTime = System.nanoTime();
-            long rxDelay = rxTime - this.lastRxTime;
-            this.lastRxTime = rxTime;
-			
-            //If we have experienced a delay long enough to be a message, pop it 
-            // before we read in the next message
-            if((this.timeout > 0)&&(rxDelay >= this.timeout)){
-            	//We have a timeout, pop everything into the message and assume its a message
-    			if(this.vo.isHex()){
-    				msg = convertFromHex(buffer.popAll());
-        		}else{
-        			msg = new String(buffer.popAll(), Common.UTF8_CS);
-        		}
-            	
-            }
-            
-			//Read the data in from the port
+			//String msg = null;
 			try{
-				InputStream in = this.port.getInputStream();
-				SerialDataSourceVO vo = ((SerialDataSourceVO)this.getVo());
-	            int data;
-	            //Read in all the data we can from the InputStream
-	            // this may not be the full message, or may read multiple messages
-	            while (( data = in.read()) > -1 ){
-	            	if(buffer.size() >= this.vo.getMaxMessageSize()){
-	            		buffer.popAll();
-	    				raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed", "Max message size reached!"));
-	    				return; //Give up
+				//Read the data in from the port
+				//Don't read during timeout events as there could be no data and this would block till there is
+				if(!(evt instanceof TimeoutSerialEvent)){
+					InputStream in = this.port.getInputStream();
+		            int data;
+		            //Read in all the data we can from the InputStream
+		            // this may not be the full message, or may read multiple messages
+		            while (( data = in.read()) > -1 ){
+		            	if(buffer.size() >= this.vo.getMaxMessageSize()){
+		            		buffer.popAll();
+		    				raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed", "Max message size reached!"));
+		    				return; //Give up
+		            	}
+		            	buffer.push(data);
+		            }
+		            //Log our buffer contents 
+	            	byte[] logMsg = buffer.peekAll();
+	            	if(this.vo.isLogIO()) {
+	            		if(this.vo.isHex())
+	            			this.ioLog.log(true, logMsg);
+	            		else
+	            			this.ioLog.log("I: "+ new String(logMsg, Common.UTF8_CS));
 	            	}
-	            	buffer.push(data);
-	            }
+	            	
+	            	//Setup the timeout task
+	            	//Serial Event so setup a Timeout Task to fire after the message timeout
+	            	if(this.buffer.size() > 0)
+	            		this.timeoutTask = new TimeoutTask(this.vo.getReadTimeout(), new SerialTimeoutClient(this));
+				}
 	            
-	            //Log our buffer contents 
-            	byte[] logMsg = buffer.peekAll();
-            	if(this.vo.isLogIO()) {
-            		if(this.vo.isHex())
-            			this.ioLog.log(true, logMsg);
-            		else
-            			this.ioLog.log("I: "+ new String(logMsg, Common.UTF8_CS));
-            	}
 	            
-	            //We either use a terminator OR we use a Timeout
+	            //We either use a terminator and timeout OR just a Timeout
 	            if(vo.getUseTerminator()) {
+	            	
+	            	//If timeout then process the buffer
+	            	//If serial event then read input and process buffer
 	            	
 	                String messageRegex = vo.getMessageRegex(); //"!([A-Z0-9]{3,3})([a-zA-Z])(.*);";
 	                //DS Information
 	                int pointIdentifierIndex = vo.getPointIdentifierIndex();
 	            	
-	            	//First check if the previous message timed out
-	            	if(msg != null){
-	            		String[] messages = splitMessages(msg, this.vo.getMessageTerminator());
-	            		for(String message : messages) {
-	            			if(canProcessTerminatedMessage(message, this.vo.getMessageTerminator())){
-	                			if(LOG.isDebugEnabled())
-	                    			LOG.debug("Matching will use String: " + message);
-	                			final AtomicBoolean matcherFailed = new AtomicBoolean(false);
-	                			
-	                			for(final DataPointRT dp: this.dataPoints){
-	                        		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
-	                        		matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, LOG, new MatchCallback(){
-
-										@Override
-										public void onMatch(String pointIdentifier, String value, int dataTypeId) {
-											if(!updatePointValue(value, dataTypeId, dp)){
-												matcherFailed.set(true);
-									        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
-											}
-										}
-
-										@Override
-										public void pointPatternMismatch(String message, String messageRegex) {
-											//Ignore as this just isn't a message we care about
-										}
-										
-										@Override
-										public void messagePatternMismatch(String message, String messageRegex) { 
-							            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.patternMismatch",messageRegex, message));
-											matcherFailed.set(true);
-										}
-										
-										@Override
-										public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
-											//Don't Care
-										}
-	                        			
-	                        		});
-	                			}
-	                			
-	                			//Did we have a failure?
-	                			//If no failures...
-	                			if(!matcherFailed.get())
-	                				returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
-	                			returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());	
-	            			}
-	            		}
-	            	}
-	            	
-	            	
-	            	//Using the terminator
 	            	//Create a String so we can use Regex and matching
-	    	        byte[] b = buffer.peekAll();
-	            	
+	                String msg = null;
         			if(this.vo.isHex()){
-        				msg = convertFromHex(b);
+        				msg = convertFromHex(buffer.peekAll());
             		}else{
-            			msg = new String(b, Common.UTF8_CS);
+            			msg = new String(buffer.peekAll(), Common.UTF8_CS);
             		}
             		
             		//Now we have a string that contains the entire contents of the buffer,
@@ -417,23 +349,29 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
                 				returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
                 			returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());	
             			}
+            			
+            			if(evt instanceof TimeoutSerialEvent){
+            				//Clear the buffer
+            				this.buffer.popAll();
+            			}else{
+            				//Check to see if we have remaining data, if not cancel timeout
+            				if(this.buffer.size() == 0)
+            					this.timeoutTask.cancel();
+            			}
+            			
             		}
-            		
-            		
-            		
 	            	return;
 	            }else{
-	            	
-	            	if(this.timeoutTask != null){
-	            		this.timeoutTask.cancel();
-	            	}
-	            	
-	            	//Setup a Timeout Task to fire after the message timeout
-	            	if(this.buffer.size() > 0)
-	            		this.timeoutTask = new TimeoutTask(this.vo.getReadTimeout(), new SerialTimeoutClient(this));
-	            	
+	            	//No Terminator case
 	            	//Do we have a timeout generated message?
-	            	if(!StringUtils.isEmpty(msg)){
+	            	if(evt instanceof TimeoutSerialEvent){
+	            		String msg = null;
+	            		//We are a timeout event so we have a timeout, pop everything into the message and assume its a message
+		    			if(this.vo.isHex()){
+		    				msg = convertFromHex(buffer.popAll());
+		        		}else{
+		        			msg = new String(buffer.popAll(), Common.UTF8_CS);
+		        		}
 		            	//Just do a match on the Entire Message because we are not using Terminator
 		            	//String messageRegex = ".*"; //Match everything
 		            	//int pointIdentifierIndex = 0; //Whole message
@@ -455,6 +393,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 										matcherFailed.set(true);
 							        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
 									}
+									buffer.popAll(); //Ensure we clear out the buffer...
 								}
 
 								@Override
@@ -491,114 +430,6 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 			}
 		}//End synch
 	}
-	
-	
-
-
-	/**
-	 * Match point values from a message. 
-	 * 1. overall message is checked for a match
-	 * 2. the 
-	 * then individual points try to extract a value from the point identifier string
-	 * 
-	 * 
-	 * @param msg - Message to use for match
-	 * @param messageRegex - Pattern to match with
-	 * @param pointIdentifierIndex - Index to use from messageRegex Pattern
-	 */
-	//TODO Remove when done testing the new callback logic
-	private void matchPointValues(String msg, String messageRegex, int pointIdentifierIndex) {
-
-		boolean matcherFailed = false;
-		
-		if(!this.dataPoints.isEmpty()){
-        	Pattern messagePattern = Pattern.compile(messageRegex);
-        	Matcher messageMatcher = messagePattern.matcher(msg);
-            if(messageMatcher.find()){
-            	if(LOG.isDebugEnabled())
-            		LOG.debug("Message matched regex: " + messageRegex);
-                //Parse out the Identifier
-            	String pointIdentifier = messageMatcher.group(pointIdentifierIndex);
-            	if(LOG.isDebugEnabled())
-            		LOG.debug("Point Identified: " + pointIdentifier);
-            	
-            	//Update all points that have this Identifier
-            	for(DataPointRT dp: this.dataPoints){
-            		SerialPointLocatorRT pl = dp.getPointLocator();
-            		SerialPointLocatorVO plVo = pl.getVo();
-            		if(plVo.getPointIdentifier().equals(pointIdentifier)){
-            			Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
-            			Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
-                    	if(pointValueMatcher.find()){
-                        	String value = pointValueMatcher.group(plVo.getValueIndex());
-                        	if(LOG.isDebugEnabled()){
-                        		LOG.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
-                        	}
-                        	
-                        	//Parse out the value
-                        	DataValue dataValue = null;
-                        	if(this.vo.isHex()){
-                    			try{
-	                    			byte[] data = convertToHex(value);
-	                    			
-	                    			switch(plVo.getDataTypeId()){
-	                    				case DataTypes.ALPHANUMERIC:
-	                    					dataValue = new AlphanumericValue(new String(data, Common.UTF8_CS));
-	                    				break;
-	                    				case DataTypes.BINARY:
-	                    					if(data.length > 0){
-	                    						dataValue = new BinaryValue((data[0]==1)?true:false);
-	                    					}
-	                    				break;
-	                    				case DataTypes.MULTISTATE:
-	                    					ByteBuffer buffer = ByteBuffer.wrap(data);
-	                    					if(data.length == 2)
-	                    						dataValue = new MultistateValue(buffer.getShort());
-	                    					else
-	                    						dataValue = new MultistateValue(buffer.getInt());
-	                    				break;
-	                    				case DataTypes.NUMERIC:
-	                    					ByteBuffer nBuffer = ByteBuffer.wrap(data);
-	                    					if(data.length == 4)
-	                    						dataValue = new NumericValue(nBuffer.getFloat());
-	                    					else
-	                    						dataValue = new NumericValue(nBuffer.getDouble());
-	                    				break;
-	                    				default:
-	                    					throw new ShouldNeverHappenException("Un-supported data type: " + plVo.getDataTypeId());
-	                    			}
-                    			}catch(Exception e){
-                    				LOG.error(e.getMessage(),e);
-                    			}
-                    		}else{
-                    			dataValue = DataValue.stringToValue(value, plVo.getDataTypeId());
-                    		}
-                        	
-                        	if(dataValue != null){
-	                        	PointValueTime newValue = new PointValueTime(dataValue,Common.timer.currentTimeMillis());
-	                    		dp.updatePointValue(newValue);
-                        		if(LOG.isDebugEnabled())
-                        			LOG.debug("Saving value: " + newValue.toString());
-                        	}else{
-                            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(),true,new TranslatableMessage("event.serial.invalidValue",dp.getVO().getXid()));
-                            	matcherFailed = true;
-                        	}
-                    	
-                    	}//end if value matches
-                	}//end for this point id
-            	}
-            }else{
-            	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(),true,new TranslatableMessage("event.serial.patternMismatch",vo.getMessageRegex(),msg));
-            	matcherFailed = true;
-            }
-            
-        }
-		
-		//If no failures...
-		if(!matcherFailed)
-			returnToNormal(POINT_READ_PATTERN_MISMATCH_EVENT, System.currentTimeMillis());
-	}
-
 
 	/**
 	 * Update a value if possible and return if we did
@@ -742,7 +573,7 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
 		 */
 		@Override
 		public void scheduleTimeout(long fireTime) {
-			rt.serialEvent(new SerialPortProxyEvent(fireTime));
+			rt.serialEvent(new TimeoutSerialEvent(fireTime));
 		}
     	
     }
@@ -785,14 +616,14 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
         	String pointIdentifier = null;
         	try{
         		pointIdentifier = messageMatcher.group(pointIdentifierIndex);
-            	if(log.isDebugEnabled())
-            		log.debug("Point Identified: " + pointIdentifier);
         	}catch(Exception e){
         		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
         		return;
         	}
     		
         	if(plVo.getPointIdentifier().equals(pointIdentifier)){
+        		if(log.isDebugEnabled())
+            		log.debug("Point Identified: " + pointIdentifier);
         		Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
         		Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
         		if(pointValueMatcher.find()){
@@ -821,6 +652,19 @@ public class SerialDataSourceRT extends PollingDataSource implements SerialPortP
     	public void pointPatternMismatch(String message, String pointValueRegex);
     	public void messagePatternMismatch(String message, String messageRegex);
     	public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex);
+    }
+
+    /**
+     * Class for timeout generated events
+     * @author Terry Packer
+     *
+     */
+    public class TimeoutSerialEvent extends SerialPortProxyEvent{
+
+		public TimeoutSerialEvent(long time) {
+			super(time);
+		}
+    	
     }
     
 }
