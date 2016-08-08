@@ -98,7 +98,11 @@
     function searchUpdateCB(result) {
         if (result) {
             $set("searchMessage", result.message);
-            dwr.util.removeAllRows("mbusDevices");
+            if(result.devices.length < 1) {
+            	searchCB();
+            	return;
+            }
+//             dwr.util.removeAllRows("mbusDevices");
             dwr.util.addRows("mbusDevices", result.devices, [
                 function (device) {
                     return "<input id='addrHexTd_" + device.index + "' value='" + device.addressHex + "'>" + writeImage("changeAddressImg" + device.index, null, "save",
@@ -125,7 +129,7 @@
                     {
                         rowCreator: function (options) {
                             var tr = document.createElement("tr");
-                            tr.id = "deviceIndex" + options.rowData.id;
+                            tr.id = "deviceIndex" + options.rowData.index;
                             tr.className = "row" + (options.rowIndex % 2 == 0 ? "" : "Alt");
                             return tr;
                         }
@@ -229,6 +233,7 @@
     function cancelSearchCB() {
         $set("searchMessage", "<fmt:message key='dsEdit.mbus.seachStopped'/>");
         searchButtons(false);
+        dwr.util.removeAllRows("mbusDevices");
     }
 
     function saveDataSourceImpl() {
