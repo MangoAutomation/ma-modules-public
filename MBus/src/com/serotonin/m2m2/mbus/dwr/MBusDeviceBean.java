@@ -24,7 +24,7 @@ import net.sf.mbus4j.dataframes.MBusResponseFramesContainer;
  *
  * @author aploese
  */
-public class MBusDeviceBean {
+public class MBusDeviceBean{
     private final int index;
     private final MBusResponseFramesContainer dev;
 
@@ -98,4 +98,20 @@ public class MBusDeviceBean {
     public int getIndex() {
         return index;
     }
+
+	@Override
+	public boolean equals(Object o) {
+		
+		if(o instanceof MBusDeviceBean){
+			MBusDeviceBean other = (MBusDeviceBean)o;
+			boolean same = other.getAddress() == getAddress();
+	        same &= other.getIdentNumber().equals(getIdentNumber());
+	        same &= other.getManufacturer().equals(getManufacturer());
+	        same &= other.getMedium().equals(getMedium());
+	        same &= other.getVersion() == getVersion();
+	        return same;
+		}else{
+			return false;
+		}
+	}
 }

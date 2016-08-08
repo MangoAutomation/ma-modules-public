@@ -18,6 +18,14 @@
  */
 package com.serotonin.m2m2.mbus.dwr;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.mbus.MBusSearchByAddressing;
@@ -26,18 +34,12 @@ import com.serotonin.m2m2.mbus.PrimaryAddressingSearch;
 import com.serotonin.m2m2.mbus.SecondaryAddressingSearch;
 import com.serotonin.m2m2.web.dwr.beans.AutoShutOff;
 import com.serotonin.m2m2.web.dwr.beans.TestingUtility;
-import java.io.IOException;
-import java.util.Map;
-
-import net.sf.mbus4j.dataframes.MBusResponseFramesContainer;
-import net.sf.mbus4j.master.MBusMaster;
-import net.sf.mbus4j.master.MasterEventListener;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import net.sf.mbus4j.Connection;
 import net.sf.mbus4j.SerialPortConnection;
+import net.sf.mbus4j.dataframes.MBusResponseFramesContainer;
+import net.sf.mbus4j.master.MBusMaster;
+import net.sf.mbus4j.master.MasterEventListener;
 
 /**
  * @author aploese
@@ -109,11 +111,13 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
     String message;
     boolean finished;
     private final SearchThread searchThread;
+    private final Set<MBusDeviceBean> foundDevices;
+    
 
     public MBusDiscovery(final Translations translations, Connection connection, MBusSearchByAddressing searchByAddressing) {
         LOG.info("MBusDiscovery(...)");
         this.translations = translations;
-
+        this.foundDevices = new HashSet<MBusDeviceBean>();
         autoShutOff = new AutoShutOff(AutoShutOff.DEFAULT_TIMEOUT * 4) {
 
             @Override
@@ -136,19 +140,21 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
         this.searchByAddressing = searchByAddressing;
         message = this.translations.translate("dsEdit.mbus.tester.searchingDevices");
         searchThread = new SearchThread();
+        
     }
 
     public void addUpdateInfo(Map<String, Object> result) {
         LOG.info("addUpdateInfo()");
         autoShutOff.update();
 
-        MBusDeviceBean[] devs = new MBusDeviceBean[master.deviceCount()];
-        for (int i = 0; i < devs.length; i++) {
+        int deviceCount = master.deviceCount();
+        for (int i = 0; i < deviceCount; i++) {
             MBusResponseFramesContainer dev = master.getDevice(i);
-            devs[i] = new MBusDeviceBean(i, dev);
+            //Only keep newly found devices, unique set
+            foundDevices.add(new MBusDeviceBean(i, dev));
         }
-
-        result.put("devices", devs);
+        
+        result.put("devices", foundDevices);
         result.put("message", message);
         result.put("finished", finished);
     }
