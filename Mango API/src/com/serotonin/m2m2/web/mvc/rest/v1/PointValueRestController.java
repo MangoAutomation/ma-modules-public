@@ -7,7 +7,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -183,6 +185,116 @@ public class PointValueRestController extends MangoRestController{
     		return result.createResponseEntity();
     	}
     }
+	
+	/**
+     * Get the latest point values for a point
+     * @param xid
+     * @param limit
+     * @return
+     */
+    @ApiOperation(
+            value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
+            notes = "Default limit 100, time descending order, Default to return cached data"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/{xids}/latest-multiple-points", produces={"application/json", "text/csv"})
+    public ResponseEntity<Map<String, List<PointValueTimeModel>>> getLatestPointValuesForMultiplePoints(
+            HttpServletRequest request, 
+            
+            @ApiParam(value = "Point xids", required = true, allowMultiple = true)
+            @PathVariable String[] xids,
+            
+            @ApiParam(value = "Return rendered value as String", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean useRendered,
+            
+            @ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean unitConversion,
+            
+            @ApiParam(value = "Limit results", allowMultiple = false, defaultValue="100")
+            @RequestParam(value="limit", defaultValue="100") int limit,
+
+            @ApiParam(value = "Return cached data?", allowMultiple = false, defaultValue="true")
+            @RequestParam(value="useCache", defaultValue="true") boolean useCache
+            ){
+        
+        RestProcessResult<Map<String, List<PointValueTimeModel>>> result = new RestProcessResult<>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            Map<String, List<PointValueTimeModel>> resultMap = new HashMap<>();
+            for (String xid : xids) {
+
+                DataPointVO vo = DataPointDao.instance.getByXid(xid);
+                if(vo == null){
+                    result.addRestMessage(getDoesNotExistMessage());
+                    return result.createResponseEntity();
+                }
+
+                try{
+                    if(Permissions.hasDataPointReadPermission(user, vo)){
+                        PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), useCache);
+                        
+                        List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
+                        List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(pvts.size());
+                        if(useRendered){
+                            //Render the values as Strings with the suffix and or units
+                            for(PointValueTime pvt : pvts){
+                                PointValueTimeModel model = new PointValueTimeModel();
+                                model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
+                                model.setValue(Functions.getRenderedText(vo, pvt));
+                                model.setTimestamp(pvt.getTime());
+                                if(pvt.isAnnotated())
+                                    model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
+                                models.add(model);
+                            }
+                        }else if(unitConversion){
+                            //Check to see if we can convert (Must be a Numeric Value)
+                            if (vo.getPointLocator().getDataTypeId() != DataTypes.NUMERIC){
+                                result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Can't convert non-numeric types."));
+                                return result.createResponseEntity();
+                            }
+                            //Convert the numeric value using the unit and rendered unit
+                            for(PointValueTime pvt : pvts){
+                                PointValueTimeModel model = new PointValueTimeModel();
+                                model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
+                                model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()));
+                                model.setTimestamp(pvt.getTime());
+                                if(pvt.isAnnotated())
+                                    model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
+                                models.add(model);
+                            }
+                        }else{
+                            for(PointValueTime pvt : pvts){
+                                models.add(new PointValueTimeModel(pvt));
+                            }
+                        }
+
+                        if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
+                            //If we are an image type we should build the URLS
+                            UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+                            imageServletBuilder.scheme(request.getScheme());
+                            imageServletBuilder.host(request.getServerName());
+                            imageServletBuilder.port(request.getLocalPort());
+                            
+                            for(PointValueTimeModel model : models){
+                                model.setValue(imageServletBuilder.buildAndExpand(model.getTimestamp(), vo.getId()).toUri());
+                            }
+                        }
+                        resultMap.put(xid, models);
+                    }else{
+                        result.addRestMessage(getUnauthorizedMessage());
+                        return result.createResponseEntity();
+                    }
+                }catch(PermissionException e){
+                    LOG.error(e.getMessage(), e);
+                    result.addRestMessage(getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
+            }
+            return result.createResponseEntity(resultMap);
+        }else{
+            return result.createResponseEntity();
+        }
+    }
+
 
 	@ApiOperation(
 	        value = "First and last point values",
