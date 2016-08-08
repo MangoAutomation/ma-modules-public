@@ -100,6 +100,19 @@ public class MBusDeviceBean{
     }
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + getAddress();
+		result = prime * result + getIdentNumber().hashCode();
+		result = prime * result + getManufacturer().hashCode();
+		result = prime * result + getMedium().hashCode();
+		result = prime * result + getVersion();
+		result = prime * result + index;
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		
 		if(o instanceof MBusDeviceBean){

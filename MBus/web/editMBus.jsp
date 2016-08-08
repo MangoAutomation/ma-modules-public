@@ -135,8 +135,6 @@
                         }
                     });
 
-            hide("responseFrames");
-
             if (result.finished) {
                 $set("searchMessage", "Search done!");
                 searchButtons(false);
@@ -234,6 +232,7 @@
         $set("searchMessage", "<fmt:message key='dsEdit.mbus.seachStopped'/>");
         searchButtons(false);
         dwr.util.removeAllRows("mbusDevices");
+        hide("responseFrames");
     }
 
     function saveDataSourceImpl() {
@@ -486,10 +485,12 @@
                             </table>
                         </td>
                     </tr>
-
-                    <tbody id="responseFrames">
-                        <tr><td colspan="2" id="treeAnchor"></td></tr>
-                    </tbody>
+                </table>
+                <hr>
+                <table>
+                  <tbody id="responseFrames">
+                    <tr><td colspan="2" id="treeAnchor"></td></tr>
+                  </tbody>
                 </table>
             </div>
         </td>
