@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
@@ -41,7 +41,7 @@ import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
-import java.util.Set;
+
 import net.sf.mbus4j.Connection;
 import net.sf.mbus4j.SerialPortConnection;
 import net.sf.mbus4j.TcpIpConnection;
@@ -51,7 +51,7 @@ import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 @JsonEntity
 public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
 
-    private final static Log LOG = LogFactory.getLog(MBusDataSourceVO.class);
+//    private final static Log LOG = LogFactory.getLog(MBusDataSourceVO.class);
 
     public static MBusDataSourceVO createNewDataSource() {
         MBusDataSourceVO result = new MBusDataSourceVO();
@@ -59,7 +59,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         return result;
     }
     private static final ExportCodes EVENT_CODES = new ExportCodes();
-//TODO more events???
 
     static {
         EVENT_CODES.addElement(MBusDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
@@ -146,6 +145,20 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
 
         if (connection == null) {
             response.addContextualMessage("connection", "validate.required");
+        }else{
+        	//Validate the connections pieces
+        	 if (connection instanceof TcpIpConnection) {
+        		 TcpIpConnection cnxn =  ((TcpIpConnection) connection);
+        		 if(StringUtils.isEmpty(cnxn.getHost()))
+        			 response.addContextualMessage("ipAddressOrHostname", "validate.required");
+        		 if(cnxn.getPort() < 1)
+        			 response.addContextualMessage("tcpPort", "validate.greaterThanZero");
+             } else if (connection instanceof SerialPortConnection) {
+            	 SerialPortConnection cnxn = ((SerialPortConnection) connection);
+                 if(StringUtils.isEmpty(cnxn.getPortName())){
+                	 response.addContextualMessage("commPortId", "validate.required");
+                 }
+             }
         }
         if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType)) {
             response.addContextualMessage("updatePeriodType", "validate.invalidValue");

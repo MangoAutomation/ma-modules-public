@@ -20,7 +20,6 @@
         searchButtons(false);
         updateConnectionType();
         updateAddressing();
-        hide("editImg" + <c:out value="<%= Common.NEW_ID %>"/>);
     }
 
     /**
@@ -359,9 +358,23 @@
     }
 
     function updateConnectionType() {
-        setDisabled("ipAddressOrHostname", $get("connectionType") !== "TCP_IP");
-        setDisabled("tcpPort", $get("connectionType") !== "TCP_IP");
-        setDisabled("commPortId", $get("connectionType") !== "SERIAL_DIRECT");
+    	var connectionTcp = $get("connectionType") !== "TCP_IP";
+    	
+    	switch($get("connectionType")){
+    	case "TCP_IP":
+        	setDisabled("ipAddressOrHostname", false);
+        	setDisabled("tcpPort", false);
+        	setDisabled("commPortId", true);
+        	$set("useTcpIpConnection", true)
+        break;
+    	default:
+    	case "SERIAL_DIRECT":
+        	setDisabled("ipAddressOrHostname", true);
+        	setDisabled("tcpPort", true);
+    		setDisabled("commPortId", false);
+    		$set("useDirectConnection", true);
+    	}
+        
     }
 
     function updateAddressing() {
