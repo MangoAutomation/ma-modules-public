@@ -146,15 +146,19 @@ public class MBusDiscovery implements MasterEventListener, TestingUtility {
     public void addUpdateInfo(Map<String, Object> result) {
         LOG.info("addUpdateInfo()");
         autoShutOff.update();
-
+        
+        Set<MBusDeviceBean> found = new HashSet<MBusDeviceBean>();
+        
         int deviceCount = master.deviceCount();
         for (int i = 0; i < deviceCount; i++) {
             MBusResponseFramesContainer dev = master.getDevice(i);
             //Only keep newly found devices, unique set
-            foundDevices.add(new MBusDeviceBean(i, dev));
+            MBusDeviceBean device = new MBusDeviceBean(i, dev);
+            if(foundDevices.add(device))
+            	found.add(device);
         }
         
-        result.put("devices", foundDevices);
+        result.put("devices", found);
         result.put("message", message);
         result.put("finished", finished);
     }
