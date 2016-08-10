@@ -34,12 +34,12 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 
 	private Translations translations;
 	private UriComponentsBuilder imageServletBuilder;
-	
+	private DataPointVO vo;
 	/**
 	 * @param jgen
 	 */
 	public PointValueTimeJsonStreamCallback(HttpServletRequest request, JsonGenerator jgen, DataPointVO vo, boolean useRendered,  boolean unitConversion) {
-		super(jgen, vo, useRendered, unitConversion);
+		super(jgen, useRendered, unitConversion);
 		this.translations = Common.getTranslations();
 		
 		if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
@@ -49,6 +49,7 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 			imageServletBuilder.host(request.getServerName());
 			imageServletBuilder.port(request.getLocalPort());
 		}
+		this.vo = vo;
 	}
 
 	/* (non-Javadoc)

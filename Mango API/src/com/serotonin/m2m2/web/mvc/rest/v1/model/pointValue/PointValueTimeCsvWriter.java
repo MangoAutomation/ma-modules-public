@@ -16,6 +16,8 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
+ * Write a row into a CSV based on settings and point value
+ * 
  * @author Terry Packer
  *
  */
@@ -23,19 +25,47 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 
 	private final Log LOG = LogFactory.getLog(PointValueTimeCsvWriter.class);
 	
-	private final String headers[] = {"value", "timestamp", "annotation"};
+	private final String headers[];
 	protected CSVWriter writer;
 	protected boolean wroteHeaders = false;
+	protected DataPointVO vo;
+	protected boolean writeXid;
 	
+
 	/**
+	 * 
+	 * @param writer
 	 * @param vo
 	 * @param useRendered
 	 * @param unitConversion
 	 */
 	public PointValueTimeCsvWriter(CSVWriter writer, DataPointVO vo, boolean useRendered,
 			boolean unitConversion) {
-		super(vo, useRendered, unitConversion);
+		this(writer, vo, useRendered, unitConversion, false, true);
+	}
+	
+	/**
+	 * 
+	 * @param writer
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param writeXid
+	 * @param writeHeaders
+	 */
+	public PointValueTimeCsvWriter(CSVWriter writer, DataPointVO vo, boolean useRendered,
+			boolean unitConversion, boolean writeXid, boolean writeHeaders) {
+		super(useRendered, unitConversion);
+		this.writeXid = writeXid;
+		if(writeXid)
+			headers = new String[]{"xid", "value", "timestamp", "annotation"};
+		else
+			headers = new String[]{"value", "timestamp", "annotation"};
+		
+		this.vo = vo;
 		this.writer = writer;
+		if(!writeHeaders)
+			this.wroteHeaders = true;
 	}
 	
 	public void writeHeaders(){
@@ -49,14 +79,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	@Override
 	public void writePointValueTime(double value, long timestamp,
 			String annotation) throws IOException {
-		if(!wroteHeaders)
-			this.writeHeaders();
-		String[] nextLine = new String[3];
-		nextLine[0] = Double.toString(value);
-		nextLine[1] = Long.toString(timestamp);
-		nextLine[2] = annotation;
-		this.writer.writeNext(nextLine);
-		
+		writeLine(Double.toString(value), timestamp, annotation);
 	}
 
 	/* (non-Javadoc)
@@ -65,14 +88,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	@Override
 	public void writePointValueTime(int value, long timestamp,
 			String annotation) throws IOException {
-		if(!wroteHeaders)
-			this.writeHeaders();
-		String[] nextLine = new String[3];
-		nextLine[0] = Integer.toString(value);
-		nextLine[1] = Long.toString(timestamp);
-		nextLine[2] = annotation;
-		this.writer.writeNext(nextLine);
-		
+		writeLine(Integer.toString(value), timestamp, annotation);
 	}
 
 	/* (non-Javadoc)
@@ -81,14 +97,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	@Override
 	public void writePointValueTime(String value, long timestamp,
 			String annotation) throws IOException {
-		if(!wroteHeaders)
-			this.writeHeaders();
-		String[] nextLine = new String[3];
-		nextLine[0] = value;
-		nextLine[1] = Long.toString(timestamp);
-		nextLine[2] = annotation;
-		this.writer.writeNext(nextLine);
-		
+		writeLine(value, timestamp, annotation);
 	}
 	
 	/* (non-Javadoc)
@@ -100,33 +109,55 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 		if(!wroteHeaders)
 			this.writeHeaders();
 		
-		String[] nextLine = new String[3];
-		
 		if(value == null){
-			nextLine[0] = "";
+			writeLine("", timestamp, annotation);
 		}else{
 			switch(value.getDataType()){
 				case DataTypes.ALPHANUMERIC:
-					nextLine[0] = value.getStringValue();
+					writeLine(value.getStringValue(), timestamp, annotation);
 				break;
 				case DataTypes.BINARY:
-					nextLine[0] = Boolean.toString(value.getBooleanValue());
+					writeLine(Boolean.toString(value.getBooleanValue()), timestamp, annotation);
 				break;
 				case DataTypes.MULTISTATE:
-					nextLine[0] = Integer.toString(value.getIntegerValue());
+					writeLine(Integer.toString(value.getIntegerValue()), timestamp, annotation);
 				break;
 				case DataTypes.NUMERIC:
-					nextLine[0] = Double.toString(value.getDoubleValue());
+					writeLine(Double.toString(value.getDoubleValue()), timestamp, annotation);
 				break;
 				default:
-					nextLine[0] = "unsupported-value-type";
+					writeLine("unsupported-value-type", timestamp, annotation);
 					LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());
 				break;
 			}
 		}
-		nextLine[1] = Long.toString(timestamp);
-		nextLine[2] = annotation;
-		this.writer.writeNext(nextLine);
 	}
 
+	/**
+	 * Helper to write a line
+	 * @param value
+	 * @param timestamp
+	 * @param annotation
+	 */
+	protected void writeLine(String value, long timestamp, String annotation){
+		
+		if(!wroteHeaders)
+			this.writeHeaders();
+		String[] nextLine;
+		if(writeXid){
+			nextLine = new String[4];
+			nextLine[0] = this.vo.getXid();
+			nextLine[1] = value;
+			nextLine[2] = Long.toString(timestamp);
+			nextLine[3] = annotation;
+		}else{
+			nextLine = new String[3];
+			nextLine[0] = value;
+			nextLine[1] = Long.toString(timestamp);
+			nextLine[2] = annotation;
+		}
+		this.writer.writeNext(nextLine);
+	}
+	
+	
 }

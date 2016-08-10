@@ -49,12 +49,19 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.IdPointValueRollupCalculator;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.IdPointValueTimeDatabaseStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.IdPointValueTimeLatestPointValueFacadeStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueFftCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueMapRollupCalculator;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeLatestPointFacadeStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeMapDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StatisticsStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
@@ -187,17 +194,87 @@ public class PointValueRestController extends MangoRestController{
     }
 	
 	/**
-     * Get the latest point values for a point
+     * Get the latest point values a set of points
+     * return as map of xid to array of values
      * @param xid
      * @param limit
      * @return
      */
     @ApiOperation(
             value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
-            notes = "Default limit 100, time descending order, Default to return cached data"
+            notes = "Default limit 100, time descending order, Default to return cached data. Returns as single time ordered array."
             )
-    @RequestMapping(method = RequestMethod.GET, value="/{xids}/latest-multiple-points", produces={"application/json", "text/csv"})
-    public ResponseEntity<Map<String, List<PointValueTimeModel>>> getLatestPointValuesForMultiplePoints(
+    @RequestMapping(method = RequestMethod.GET, value="/{xids}/latest-multiple-points-single-array", produces={"application/json", "text/csv"})
+    public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getLatestPointValuesForMultiplePointsAsSingleArray(
+            HttpServletRequest request, 
+            
+            @ApiParam(value = "Point xids", required = true, allowMultiple = true)
+            @PathVariable String[] xids,
+            
+            @ApiParam(value = "Return rendered value as String", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean useRendered,
+            
+            @ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean unitConversion,
+            
+            @ApiParam(value = "Limit results", allowMultiple = false, defaultValue="100")
+            @RequestParam(value="limit", defaultValue="100") int limit,
+
+            @ApiParam(value = "Return cached data?", allowMultiple = false, defaultValue="true")
+            @RequestParam(value="useCache", defaultValue="true") boolean useCache
+            ){
+    	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		
+    		Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
+    		DataPointVO vo;
+    		for(String xid : xids){
+    			 vo = DataPointDao.instance.getByXid(xid);
+    			 if(vo != null){
+    				 if(Permissions.hasDataPointReadPermission(user, vo))
+    					 pointIdMap.put(vo.getId(), vo);
+    				 else{
+    					 //Abort, invalid permissions
+    					 result.addRestMessage(getUnauthorizedMessage());
+    					 return result.createResponseEntity();
+    				 }
+    			 }
+    		}
+    		
+    		//Do we have any valid points?
+	    	if(pointIdMap.size() == 0){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+
+	    	try{
+	    		IdPointValueTimeLatestPointValueFacadeStream pvtDatabaseStream = new IdPointValueTimeLatestPointValueFacadeStream(request, pointIdMap, useRendered, unitConversion, limit, useCache);
+    			return result.createResponseEntity(pvtDatabaseStream);
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+    	}else{
+    		return result.createResponseEntity();
+    	}
+    }
+	
+	
+	/**
+     * Get the latest point values a set of points
+     * return as map of xid to array of values
+     * @param xid
+     * @param limit
+     * @return
+     */
+    @ApiOperation(
+            value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
+            notes = "Default limit 100, time descending order, Default to return cached data. Returns data as map of xid to values."
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/{xids}/latest-multiple-points-multiple-arrays", produces={"application/json", "text/csv"})
+    public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getLatestPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request, 
             
             @ApiParam(value = "Point xids", required = true, allowMultiple = true)
@@ -216,80 +293,38 @@ public class PointValueRestController extends MangoRestController{
             @RequestParam(value="useCache", defaultValue="true") boolean useCache
             ){
         
-        RestProcessResult<Map<String, List<PointValueTimeModel>>> result = new RestProcessResult<>(HttpStatus.OK);
+    	RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>> result = new RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            Map<String, List<PointValueTimeModel>> resultMap = new HashMap<>();
-            for (String xid : xids) {
-
-                DataPointVO vo = DataPointDao.instance.getByXid(xid);
-                if(vo == null){
-                    result.addRestMessage(getDoesNotExistMessage());
-                    return result.createResponseEntity();
-                }
-
-                try{
-                    if(Permissions.hasDataPointReadPermission(user, vo)){
-                        PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), useCache);
-                        
-                        List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
-                        List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(pvts.size());
-                        if(useRendered){
-                            //Render the values as Strings with the suffix and or units
-                            for(PointValueTime pvt : pvts){
-                                PointValueTimeModel model = new PointValueTimeModel();
-                                model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
-                                model.setValue(Functions.getRenderedText(vo, pvt));
-                                model.setTimestamp(pvt.getTime());
-                                if(pvt.isAnnotated())
-                                    model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
-                                models.add(model);
-                            }
-                        }else if(unitConversion){
-                            //Check to see if we can convert (Must be a Numeric Value)
-                            if (vo.getPointLocator().getDataTypeId() != DataTypes.NUMERIC){
-                                result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Can't convert non-numeric types."));
-                                return result.createResponseEntity();
-                            }
-                            //Convert the numeric value using the unit and rendered unit
-                            for(PointValueTime pvt : pvts){
-                                PointValueTimeModel model = new PointValueTimeModel();
-                                model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
-                                model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()));
-                                model.setTimestamp(pvt.getTime());
-                                if(pvt.isAnnotated())
-                                    model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
-                                models.add(model);
-                            }
-                        }else{
-                            for(PointValueTime pvt : pvts){
-                                models.add(new PointValueTimeModel(pvt));
-                            }
-                        }
-
-                        if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
-                            //If we are an image type we should build the URLS
-                            UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-                            imageServletBuilder.scheme(request.getScheme());
-                            imageServletBuilder.host(request.getServerName());
-                            imageServletBuilder.port(request.getLocalPort());
-                            
-                            for(PointValueTimeModel model : models){
-                                model.setValue(imageServletBuilder.buildAndExpand(model.getTimestamp(), vo.getId()).toUri());
-                            }
-                        }
-                        resultMap.put(xid, models);
-                    }else{
-                        result.addRestMessage(getUnauthorizedMessage());
-                        return result.createResponseEntity();
-                    }
-                }catch(PermissionException e){
-                    LOG.error(e.getMessage(), e);
-                    result.addRestMessage(getUnauthorizedMessage());
-                    return result.createResponseEntity();
-                }
-            }
-            return result.createResponseEntity(resultMap);
+    		Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
+    		DataPointVO vo;
+    		for(String xid : xids){
+    			 vo = DataPointDao.instance.getByXid(xid);
+    			 if(vo != null){
+    				 if(Permissions.hasDataPointReadPermission(user, vo))
+    					 pointIdMap.put(vo.getId(), vo);
+    				 else{
+    					 //Abort, invalid permissions
+    					 result.addRestMessage(getUnauthorizedMessage());
+    					 return result.createResponseEntity();
+    				 }
+    			 }
+    		}
+    		
+    		//Do we have any valid points?
+	    	if(pointIdMap.size() == 0){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+        	
+	    	try{
+				XidPointValueTimeLatestPointFacadeStream pvtDatabaseStream = new XidPointValueTimeLatestPointFacadeStream(request, pointIdMap, useRendered, unitConversion, limit, useCache);
+    			return result.createResponseEntity(pvtDatabaseStream);
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
         }else{
             return result.createResponseEntity();
         }
@@ -407,6 +442,205 @@ public class PointValueRestController extends MangoRestController{
 	    }
 	}
 
+	@ApiOperation(
+			value = "Query Time Range for Multiple Points",
+			notes = "From time inclusive, To time exclusive. Return in single array",
+			response=PointValueTimeModel.class,
+			responseContainer="List"
+			)
+    @RequestMapping(method = RequestMethod.GET, value="/{xids}/multiple-points-single-array", produces={"application/json","text/csv"})
+    public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getPointValuesForMultiplePointsAsSingleArray(
+    		HttpServletRequest request, 
+    		
+    		@ApiParam(value = "Point xids", required = true, allowMultiple = true)
+    		@PathVariable String[] xids,
+    		
+    		@ApiParam(value = "Return rendered value as String", required = false, defaultValue="false", allowMultiple = false)
+    		@RequestParam(required=false, defaultValue="false") boolean useRendered,
+    		
+    		@ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+    		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
+
+    		@ApiParam(value = "From time", required = false, allowMultiple = false)
+    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		
+    		@ApiParam(value = "To time", required = false, allowMultiple = false)
+			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		
+    		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+			@RequestParam(value="rollup", required=false)
+    		RollupEnum rollup,
+
+    		@ApiParam(value = "Time Period Type", required = false, allowMultiple = false)
+			@RequestParam(value="timePeriodType", required=false)
+    		TimePeriodType timePeriodType,
+    		
+    		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
+			@RequestParam(value="timePeriods", required=false)
+    		Integer timePeriods    		
+    		){
+        
+    	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		
+    		Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
+    		DataPointVO vo;
+    		for(String xid : xids){
+    			 vo = DataPointDao.instance.getByXid(xid);
+    			 if(vo != null){
+    				 if(Permissions.hasDataPointReadPermission(user, vo))
+    					 pointIdMap.put(vo.getId(), vo);
+    				 else{
+    					 //Abort, invalid permissions
+    					 result.addRestMessage(getUnauthorizedMessage());
+    					 return result.createResponseEntity();
+    				 }
+    			 }
+    		}
+    		
+    		//Do we have any valid points?
+	    	if(pointIdMap.size() == 0){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+
+	    	try{
+
+    			//Are we using rollup
+    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
+    				if(rollup == RollupEnum.FFT){
+    					//Special Rollup for FFT's with no time rollup action
+    					//TODO Need a way to return frequency or period values
+//    					IdPointValueFftCalculator calc = new IdPointValueFftCalculator(pointIdMap, from.getTime(), to.getTime(), true);
+//    					return result.createResponseEntity(calc);
+    				}else{
+	    				TimePeriod timePeriod = null;
+	    				if((timePeriodType != null)&&(timePeriods != null)){
+	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
+	    				}
+	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+	    				return result.createResponseEntity(calc);
+    				}
+    				return result.createResponseEntity();
+    			}else{
+    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request, pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+	    			return result.createResponseEntity(pvtDatabaseStream);
+    			}
+	    			
+
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+    	}else{
+    		return result.createResponseEntity();
+    	}
+    }
+	
+	@ApiOperation(
+			value = "Query Time Range for Multiple Points",
+			notes = "From time inclusive, To time exclusive.  Returns a map of xid to values",
+			response=PointValueTimeModel.class,
+			responseContainer="List"
+			)
+    @RequestMapping(method = RequestMethod.GET, value="/{xids}/multiple-points-multiple-arrays", produces={"application/json","text/csv"})
+    public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getPointValuesForMultiplePointsAsMultipleArrays(
+    		HttpServletRequest request, 
+    		
+    		@ApiParam(value = "Point xids", required = true, allowMultiple = true)
+    		@PathVariable String[] xids,
+    		
+    		@ApiParam(value = "Return rendered value as String", required = false, defaultValue="false", allowMultiple = false)
+    		@RequestParam(required=false, defaultValue="false") boolean useRendered,
+    		
+    		@ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+    		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
+
+    		@ApiParam(value = "From time", required = false, allowMultiple = false)
+    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		
+    		@ApiParam(value = "To time", required = false, allowMultiple = false)
+			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+    		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		
+    		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+			@RequestParam(value="rollup", required=false)
+    		RollupEnum rollup,
+
+    		@ApiParam(value = "Time Period Type", required = false, allowMultiple = false)
+			@RequestParam(value="timePeriodType", required=false)
+    		TimePeriodType timePeriodType,
+    		
+    		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
+			@RequestParam(value="timePeriods", required=false)
+    		Integer timePeriods    		
+    		){
+        
+    	RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>> result = new RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		
+    		Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
+    		DataPointVO vo;
+    		for(String xid : xids){
+    			 vo = DataPointDao.instance.getByXid(xid);
+    			 if(vo != null){
+    				 if(Permissions.hasDataPointReadPermission(user, vo))
+    					 pointIdMap.put(vo.getId(), vo);
+    				 else{
+    					 //Abort, invalid permissions
+    					 result.addRestMessage(getUnauthorizedMessage());
+    					 return result.createResponseEntity();
+    				 }
+    			 }
+    		}
+    		
+    		//Do we have any valid points?
+	    	if(pointIdMap.size() == 0){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+
+	    	try{
+    			//Are we using rollup
+    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
+    				if(rollup == RollupEnum.FFT){
+    					//Special Rollup for FFT's with no time rollup action
+    					//TODO Need a way to return frequency or period values
+//    					IdPointValueFftCalculator calc = new IdPointValueFftCalculator(pointIdMap, from.getTime(), to.getTime(), true);
+//    					return result.createResponseEntity(calc);
+    				}else{
+	    				TimePeriod timePeriod = null;
+	    				if((timePeriodType != null)&&(timePeriods != null)){
+	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
+	    				}
+	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+	    				return result.createResponseEntity(calc);
+    				}
+    				return result.createResponseEntity();
+    			}else{
+    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request, pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+	    			return result.createResponseEntity(pvtDatabaseStream);
+    			}
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+    	}else{
+    		return result.createResponseEntity();
+    	}
+    }
+	
 	@ApiOperation(
 			value = "Query Time Range",
 			notes = "From time inclusive, To time exclusive",

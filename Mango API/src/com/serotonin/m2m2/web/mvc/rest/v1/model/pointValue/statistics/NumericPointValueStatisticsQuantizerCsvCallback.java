@@ -18,7 +18,7 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 
 
 	/**
-	 * 
+	 * Write CSV with no XID Column
 	 * @param writer
 	 * @param vo
 	 * @param useRendered
@@ -27,7 +27,21 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 	 */
 	public NumericPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, DataPointVO vo, 
 			boolean useRendered,  boolean unitConversion, RollupEnum rollup) {
-		super(new PointValueTimeCsvWriter(writer, vo, useRendered, unitConversion), rollup);
+		this(writer, vo, useRendered, unitConversion, rollup, false, true);
 	}	
+	
+	/**
+	 * Write a CSV with a xid column, useful for writing a sheet with multiple points (not necessarily in time order)
+	 * @param writer
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param rollup
+	 * @param writeXidColumn
+	 */
+	public NumericPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, DataPointVO vo, 
+			boolean useRendered,  boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders) {
+		super(vo, new PointValueTimeCsvWriter(writer, vo, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
+	}
 	
 }

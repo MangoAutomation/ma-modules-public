@@ -24,13 +24,11 @@ import com.serotonin.m2m2.web.taglib.Functions;
  */
 public abstract class PointValueTimeWriter {
 
-	protected DataPointVO vo;
 	protected boolean useRendered;
 	protected boolean unitConversion;
 	protected final String noDataMessage;
 	
-	public PointValueTimeWriter(DataPointVO vo, boolean useRendered, boolean unitConversion){
-		this.vo = vo;
+	public PointValueTimeWriter(boolean useRendered, boolean unitConversion){
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
 		this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod").translate(Common.getTranslations());
@@ -52,7 +50,7 @@ public abstract class PointValueTimeWriter {
 	 * @throws ConversionException
 	 * @throws IOException
 	 */
-	public void writeNonNullDouble(Double value, long time) throws ConversionException, IOException{
+	public void writeNonNullDouble(Double value, long time, DataPointVO vo) throws ConversionException, IOException{
 		if(value == null){
 			if(useRendered){
 				this.writePointValueTime(new AlphanumericValue(""), time, this.noDataMessage);
@@ -82,7 +80,7 @@ public abstract class PointValueTimeWriter {
 	 * @throws ConversionException
 	 * @throws IOException
 	 */
-	public void writeNonNull(DataValue value, Long time) throws ConversionException, IOException{
+	public void writeNonNull(DataValue value, Long time, DataPointVO vo) throws ConversionException, IOException{
 		
 		if(time == null)
 			throw new ShouldNeverHappenException("Time cannot be null");
@@ -110,7 +108,7 @@ public abstract class PointValueTimeWriter {
 		}
 	}
 	
-	public void writeNonNullIntegral(Double integral, long time) throws IOException{
+	public void writeNonNullIntegral(Double integral, long time, DataPointVO vo) throws IOException{
     	if(useRendered){
     		//Convert to Alphanumeric Value
     		if(integral != null){

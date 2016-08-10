@@ -17,6 +17,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 public class NonNumericPointValueStatisticsQuantizerCsvCallback extends AbstractNonNumericPointValueStatisticsQuantizerCallback{
 
 	/**
+	 * Write CSV without XID column
 	 * 
 	 * @param writer
 	 * @param vo
@@ -26,7 +27,20 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	 */
 	public NonNumericPointValueStatisticsQuantizerCsvCallback(
 			CSVWriter writer, DataPointVO vo, boolean useRendered, boolean unitConversion, RollupEnum rollup) {
-		super(new PointValueTimeCsvWriter(writer, vo, useRendered, unitConversion), rollup);
+		this(writer, vo, useRendered, unitConversion, rollup, false, true);
 	}
 
+	/**
+	 * Write CSV with XID column
+	 * @param writer
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param rollup
+	 * @param writeXidColumn
+	 */
+	public NonNumericPointValueStatisticsQuantizerCsvCallback(
+			CSVWriter writer, DataPointVO vo, boolean useRendered, boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders) {
+		super(vo, new PointValueTimeCsvWriter(writer, vo, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
+	}
 }

@@ -14,11 +14,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeJsonWri
  */
 public abstract class StatisticsJsonWriter extends PointValueTimeJsonWriter{
 
+	protected DataPointVO vo;
 	/**
 	 * @param jgen
 	 */
 	public StatisticsJsonWriter(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion) {
-		super(jgen, vo, useRendered, unitConversion);
+		super(jgen, useRendered, unitConversion);
+		this.vo = vo;
 	}
 	
 }

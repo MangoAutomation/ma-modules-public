@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
@@ -23,8 +22,8 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 
 	protected JsonGenerator jgen;
 	
-	public PointValueTimeJsonWriter(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion){
-		super(vo, useRendered, unitConversion);
+	public PointValueTimeJsonWriter(JsonGenerator jgen, boolean useRendered, boolean unitConversion){
+		super(useRendered, unitConversion);
 		this.jgen = jgen;
 	}
 	
@@ -60,7 +59,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 			String annotation) throws IOException {
 		
 		jgen.writeStartObject();
-		jgen.writeStringField("annotation", annotation);
 		
 		if(value == null){
 			jgen.writeNullField("value");
@@ -86,6 +84,8 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 		}
 		
     	jgen.writeNumberField("timestamp", timestamp);
+		jgen.writeStringField("annotation", annotation);
+
     	jgen.writeEndObject();
 	}
 }
