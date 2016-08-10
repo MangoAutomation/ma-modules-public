@@ -44,7 +44,7 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
     public void quantizedStatistics(AnalogStatistics statisticsGenerator, boolean done) {
 
 		try{
-	        if (statisticsGenerator.getCount() > 0 || !done) {
+//	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){
 	                case AVERAGE:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getAverage(), statisticsGenerator.getPeriodStartTime(), this.vo);
@@ -85,7 +85,7 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	                default:
 	                	throw new ShouldNeverHappenException("Unknown Rollup type" + rollup);
 	            }
-	        }
+//	        }
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		}

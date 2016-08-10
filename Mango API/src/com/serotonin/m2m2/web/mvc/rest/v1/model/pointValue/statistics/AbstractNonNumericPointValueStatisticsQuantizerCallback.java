@@ -45,7 +45,7 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	@Override
     public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
 		try{
-	        if (statisticsGenerator.getCount() > 0 || !done) {
+//	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){
 	            case FIRST:
 	            	this.writer.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
@@ -60,7 +60,7 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	            	throw new ShouldNeverHappenException("Unsupported Non-numerical Rollup type: " + rollup);
 	       
 	            }
-	        }
+//	        }
 		}catch(IOException e){
 			LOG.error(e.getMessage(), e);
 		}

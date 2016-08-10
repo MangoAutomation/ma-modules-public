@@ -96,8 +96,6 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
         IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(jgen, 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup);
-        
-        
 		try {
 			//Time ordered list of end values
 			Map<Integer, DataValue> endValues = new HashMap<Integer, DataValue>(this.voMap.size());

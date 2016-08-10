@@ -93,6 +93,7 @@ public class IdPointValueTimeCsvStreamCallback implements MappedRowCallback<IdPo
 		try{
 			DataPointVO vo = this.voMap.get(pvt.getDataPointId());
 			long time = pvt.getTime();
+			this.rowData[0] = Long.toString(time);
 			
 			//Ensure we are saving into the correct time entry
 			if(this.currentTime != time){
@@ -105,7 +106,6 @@ public class IdPointValueTimeCsvStreamCallback implements MappedRowCallback<IdPo
 					this.writer.writeNext(rowData);
 					for(int i=0; i< this.rowData.length; i++)
 						this.rowData[i] = new String();
-					this.rowData[0] = Long.toString(time);
 				}
 				
 				this.currentTime = time;
