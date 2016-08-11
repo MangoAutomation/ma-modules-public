@@ -39,8 +39,8 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	/**
 	 * @param jgen
 	 */
-	public PointValueTimeCsvStreamCallback(HttpServletRequest request, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion) {
-		super(writer, vo, useRendered, unitConversion);
+	public PointValueTimeCsvStreamCallback(HttpServletRequest request, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders) {
+		super(writer, vo, useRendered, unitConversion, writeXid, writeHeaders);
 		this.translations = Common.getTranslations();
 		
 		if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){

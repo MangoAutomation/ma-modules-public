@@ -1,22 +1,31 @@
 /*
+ *   Mango - Open Source M2M - http://mango.serotoninsoftware.com
  *   Copyright (C) 2010 Arne Pl\u00f6se
  *   @author Arne Pl\u00f6se
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.serotonin.m2m2.mbus;
 
-import net.sf.mbus4j.MBusAddressing;
-import net.sf.mbus4j.dataframes.MBusMedium;
-import net.sf.mbus4j.dataframes.datablocks.DataBlock;
-import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
-import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
-import net.sf.mbus4j.dataframes.datablocks.vif.Vife;
-import net.sf.mbus4j.master.ValueRequestPointLocator;
-
-import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 
 public class MBusPointLocatorRT extends PointLocatorRT {
+
     private final MBusPointLocatorVO vo;
+    private int effectiveExponent;
+    private double effectiveCorrectionFactor = 1;
+    boolean needCheckDifAndVif = true;
 
     public MBusPointLocatorRT(MBusPointLocatorVO vo) {
         this.vo = vo;
@@ -34,33 +43,23 @@ public class MBusPointLocatorRT extends PointLocatorRT {
         return vo;
     }
 
-    public ValueRequestPointLocator<DataPointRT> createValueRequestPointLocator(DataPointRT point) {
-        ValueRequestPointLocator<DataPointRT> result = new ValueRequestPointLocator<DataPointRT>();
-        result.setAddressing(MBusAddressing.fromLabel(vo.getAddressing()));
-        result.setAddress(vo.getAddress());
-        result.setDeviceUnit(vo.getDeviceUnit());
-        result.setDifCode(DataFieldCode.fromLabel(vo.getDifCode()));
-        result.setFunctionField(FunctionField.fromLabel(vo.getFunctionField()));
-        result.setIdentnumber(vo.getIdentNumber());
-        result.setManufacturer(vo.getManufacturer());
-        result.setMedium(MBusMedium.fromLabel(vo.getMedium()));
-        result.setReference(point);
-        result.setResponseFrameName(vo.getResponseFrame());
-        result.setStorageNumber(vo.getStorageNumber());
-        result.setTariff(vo.getTariff());
-        result.setVersion(vo.getVersion());
-        result.setVif(DataBlock.getVif(vo.getVifType(), vo.getVifLabel(), vo.getUnitOfMeasurement(), vo.getSiPrefix(),
-                vo.getExponent()));
-        if (vo.getVifeLabels().length == 0) {
-            result.setVifes(DataBlock.EMPTY_VIFE);
+    public double calcCorrectedValue(final double value, final int exponent, final double correctionConstant) {
+        if (exponent != effectiveExponent) {
+            effectiveExponent = exponent;
+            effectiveCorrectionFactor = Math.pow(10, exponent);
         }
-        else {
-            Vife[] vifes = new Vife[vo.getVifeLabels().length];
-            for (int i = 0; i < vo.getVifeLabels().length; i++) {
-                vifes[i] = DataBlock.getVife(vo.getVifeTypes()[i], vo.getVifeLabels()[i]);
+        if (effectiveExponent == 0) {
+            if (Double.isNaN(correctionConstant)) {
+                return value;
+            } else {
+                return value + correctionConstant;
             }
-            result.setVifes(vifes);
+        } else if (Double.isNaN(correctionConstant)) {
+            return value * effectiveCorrectionFactor;
+        } else {
+            return value * effectiveCorrectionFactor + correctionConstant;
         }
-        return result;
     }
+
+    
 }

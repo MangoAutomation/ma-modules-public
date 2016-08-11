@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
@@ -24,6 +25,7 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	private final Log LOG = LogFactory.getLog(AbstractNonNumericPointValueStatisticsQuantizerCallback.class);
 	private RollupEnum rollup;
 	private PointValueTimeWriter writer;
+	private final DataPointVO vo;
 	
 
 	/**
@@ -31,7 +33,8 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	 * @param writer
 	 * @param rollup
 	 */
-	public AbstractNonNumericPointValueStatisticsQuantizerCallback(PointValueTimeWriter writer, RollupEnum rollup) {
+	public AbstractNonNumericPointValueStatisticsQuantizerCallback(DataPointVO vo, PointValueTimeWriter writer, RollupEnum rollup) {
+		this.vo = vo;
 		this.writer= writer;
 		this.rollup = rollup;
 	}
@@ -42,13 +45,13 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	@Override
     public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
 		try{
-	        if (statisticsGenerator.getCount() > 0 || !done) {
+//	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){
 	            case FIRST:
-	            	this.writer.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime());
+	            	this.writer.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	            break;
 	            case LAST:
-	            	this.writer.writeNonNull(statisticsGenerator.getLastValue(), statisticsGenerator.getPeriodStartTime());
+	            	this.writer.writeNonNull(statisticsGenerator.getLastValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	            break;
 	            case COUNT:
 	            	this.writer.writePointValueTime(statisticsGenerator.getCount(), statisticsGenerator.getPeriodStartTime(), null);
@@ -57,7 +60,7 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	            	throw new ShouldNeverHappenException("Unsupported Non-numerical Rollup type: " + rollup);
 	       
 	            }
-	        }
+//	        }
 		}catch(IOException e){
 			LOG.error(e.getMessage(), e);
 		}

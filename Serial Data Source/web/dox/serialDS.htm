@@ -20,7 +20,7 @@ This data source works by sequentially parsing the incoming message and matching
 <h3>Use Terminator</h3>
 Messages must be completely read before any matching can be performed.  There are 2 ways for this data source to 'know' it has recieved a complete message.  
 The first is to check all incomming bytes for the terminator pattern.  The second way is after data is recieved they line is silent for at least 
-<b>Read Timeout</b>ms.  If not using a terminator then the entire message is given to each point as the point identifier for matching.
+<b>Read Timeout</b> milliseconds.  If not using a terminator then the entire message is given to each point as the point identifier for matching.
 
 
 <h3>Message regex</h3>
@@ -31,7 +31,7 @@ When using regex matching groups it is useful to remember that group 0 is the en
 <li><b>Example Message:</b> 0103020000b844</li>
 <li><b>Read timeout</b> - 5</li>
 <li><b>Use Terminator</b> - no</li>
-<li><b>Message Regex</b> - ([0-9]{2})(.*)</li>
+<li><b>Message Regex</b> - ([0-9]{2}).*</li>
 <li><b>Point identifier group</b> - 1</li>
 <li><b>Configuration in hex</b> - no</li>
 <li><b>Maximum size of message</b> - 1024</li>
@@ -40,8 +40,9 @@ When using regex matching groups it is useful to remember that group 0 is the en
 <h4>Point</h4>
 <ul>
 <li><b>Point identifier</b> - 01</li>
-<li><b>Value regex</b> - .*</li>
-<li><b>Value group</b> - 2</li>
+<li><b>Value regex</b> - [0-9]{2}(.*)</li>
+<li><b>Value group</b> - 1</li>
+<li><b>Captured value - 03020000b844</b>
 </ul>
 
 <b>Example UTF-8 Configuration</b>
@@ -52,7 +53,7 @@ When using regex matching groups it is useful to remember that group 0 is the en
 <li><b>Read timeout</b> - 1000</li>
 <li><b>Use Terminator</b> - yes</li>
 <li><b>Message Terminator</b> - \r</li>
-<li><b>Message Regex</b> - ([0-9]{2})HelloWorld(.*)\r</li>
+<li><b>Message Regex</b> - ([0-9]{2})HelloWorld.*\r</li>
 <li><b>Point identifier group</b> - 1</li>
 <li><b>Configuration in hex</b> - no</li>
 <li><b>Maximum size of message</b> - 1024</li>
@@ -61,8 +62,9 @@ When using regex matching groups it is useful to remember that group 0 is the en
 <h4>Point</h4>
 <ul>
 <li><b>Point identifier</b> - 01</li>
-<li><b>Value regex</b> - .*</li>
-<li><b>Value group</b> - 2</li>
+<li><b>Value regex</b> - [0-9]{2}HelloWorld(.*)\r</li>
+<li><b>Value group</b> - 1</li>
+<li><b>Captured value - true</b>
 </ul>
 
 
@@ -74,9 +76,9 @@ Potential message regex is: (01)(.*) to match 01 as group 1 and (030001000b844) 
 
 
 <h3>Test String</h3>
-The test utility allows the user to input an expected message and compare it to the current matching configuration of the data source.  
-The output from the matching is displayed in red if there are any errors.
+The test utility allows the user to input an expected message and compare it to the current matching configuration of the data source and its points.  
+The output from the matching is displayed in red if there are any errors otherwise the point identifier is shown and any matches for existing points.
 
 <h3>Logging</h3>
-Extensive Logging has been added to this datasource.  To enable it, add the following to the log4j.xml configuration file: <br>
-<pre><![CDATA[<category name="com.infiniteautomation.serial"><level value="debug"/></category>]]></pre>
+Extensive Logging has been added to this datasource.  To enable it, simply check the <b>Log I/O</b> checkbox, which will display the log file name 
+underneath the checkbox, and then save the data source. <br>

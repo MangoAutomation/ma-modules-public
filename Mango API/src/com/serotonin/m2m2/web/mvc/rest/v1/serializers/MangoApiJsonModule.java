@@ -6,9 +6,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1.serializers;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 
 /**
  * @author Terry Packer

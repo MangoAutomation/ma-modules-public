@@ -20,6 +20,18 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <id>you-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>com.infiniteautomation</groupId>
@@ -28,26 +40,32 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-			<groupId>net.sf.json-lib</groupId>
-			<artifactId>json-lib</artifactId>
-			<version>2.4</version>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <version>2.4</version>
             <classifier>jdk15</classifier>
-		</dependency>
-<!--        <dependency>
+        </dependency>
+        <dependency>
             <groupId>net.sf.mbus4j</groupId>
             <artifactId>mbus4j-core</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.sf.mbus4j</groupId>
             <artifactId>mbus4j-master</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.sf.mbus4j</groupId>
             <artifactId>mbus4j-slaves</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.6-SNAPSHOT</version>
             <scope>test</scope>
-        </dependency> -->
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

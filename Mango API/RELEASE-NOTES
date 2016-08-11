@@ -1,7 +1,12 @@
-*Version 1.1.8*
+*Version 1.1.9*
 * Upgraded to work with core version 2.8.x
 * Removed mangoApiHeaders.properties file as it is now merged with the env.properties
 * The custom headers filter no longer exists so mango will fail to start if you have that filter defined in the override-web.xml 
+
+*Version 1.1.8*
+* Add REST endpoints for getting device names
+* Correct behavior of JSON store endpoint so only data from supplied path is returned
+* Add REST endpoints for getting point values for multiple points in one request
 
 *Version 1.1.7*
 * Basic support for Image data types

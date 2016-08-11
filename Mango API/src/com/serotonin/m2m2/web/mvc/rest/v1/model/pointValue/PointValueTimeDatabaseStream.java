@@ -57,7 +57,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	@Override
 	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
 			throws IOException {
-		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(request, writer.getWriter(), vo, useRendered, unitConversion));
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(request, writer.getWriter(), vo, useRendered, unitConversion, false, false));
 	}
 
 }

@@ -1,31 +1,53 @@
 /*
+ *   Mango - Open Source M2M - http://mango.serotoninsoftware.com
  *   Copyright (C) 2010 Arne Pl\u00f6se
  *   @author Arne Pl\u00f6se
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.serotonin.m2m2.mbus;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import net.sf.mbus4j.MBusAddressing;
-import net.sf.mbus4j.dataframes.MBusMedium;
-import net.sf.mbus4j.dataframes.datablocks.DataBlock;
-import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
-import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
+import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.List;
+
+import net.sf.mbus4j.MBusAddressing;
+import net.sf.mbus4j.MBusUtils;
+import net.sf.mbus4j.dataframes.MBusMedium;
+import net.sf.mbus4j.dataframes.datablocks.DataBlock;
+import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
+import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
+
 import com.serotonin.util.SerializationHelper;
+import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
+import net.sf.mbus4j.dataframes.datablocks.vif.UnitOfMeasurement;
+import net.sf.mbus4j.dataframes.datablocks.vif.Vif;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class MBusPointLocatorVO extends AbstractPointLocatorVO {
+
+//    private static Log LOG = LogFactory.getLog(MBusPointLocatorVO.class);
 
     public final static String[] EMPTY_STRING_ARRAY = new String[0];
     /**
@@ -34,11 +56,11 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     @JsonProperty
     private byte address;
     @JsonProperty
-    private String difCode = DataFieldCode._8_DIGIT_BCD.getLabel();
+    private DataFieldCode difCode;
     @JsonProperty
-    private String functionField;
+    private FunctionField functionField;
     @JsonProperty
-    private int deviceUnit;
+    private int subUnit;
     @JsonProperty
     private int tariff;
     @JsonProperty
@@ -48,9 +70,9 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     @JsonProperty
     private String vifLabel;
     @JsonProperty
-    private String unitOfMeasurement;
+    private UnitOfMeasurement unitOfMeasurement;
     @JsonProperty
-    private String siPrefix;
+    private SiPrefix siPrefix;
     @JsonProperty
     private Integer exponent;
     @JsonProperty
@@ -58,7 +80,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     @JsonProperty
     private String[] vifeTypes = EMPTY_STRING_ARRAY;
     @JsonProperty
-    private String medium;
+    private MBusMedium medium;
     @JsonProperty
     private String responseFrame;
     @JsonProperty
@@ -68,26 +90,35 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     @JsonProperty
     private String manufacturer;
     @JsonProperty
-    private String addressing;
+    private int dbIndex;
+    @JsonProperty
+    private SiPrefix effectiveSiPrefix = SiPrefix.ONE;
+    private MBusAddressing addressing;
 
     @Override
     public int getDataTypeId() {
-        switch (DataFieldCode.fromLabel(difCode)) {
-        case _12_DIGIT_BCD:
-        case _16_BIT_INTEGER:
-        case _24_BIT_INTEGER:
-        case _2_DIGIT_BCD:
-        case _32_BIT_INTEGER:
-        case _32_BIT_REAL:
-        case _48_BIT_INTEGER:
-        case _4_DIGIT_BCD:
-        case _64_BIT_INTEGER:
-        case _6_DIGIT_BCD:
-        case _8_BIT_INTEGER:
-        case _8_DIGIT_BCD:
-            return DataTypes.NUMERIC;
-        default:
+        //Currently if a new DP is created DataPoint.setPointLocator is called and difCode is null
+        if (difCode == null) {
             return DataTypes.UNKNOWN;
+        }
+        switch (difCode) {
+            case _12_DIGIT_BCD:
+            case _16_BIT_INTEGER:
+            case _24_BIT_INTEGER:
+            case _2_DIGIT_BCD:
+            case _32_BIT_INTEGER:
+            case _32_BIT_REAL:
+            case _48_BIT_INTEGER:
+            case _4_DIGIT_BCD:
+            case _64_BIT_INTEGER:
+            case _6_DIGIT_BCD:
+            case _8_BIT_INTEGER:
+            case _8_DIGIT_BCD:
+                return DataTypes.NUMERIC;
+            case VARIABLE_LENGTH:
+                return DataTypes.ALPHANUMERIC;
+            default:
+                return DataTypes.UNKNOWN;
         }
     }
 
@@ -108,26 +139,23 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
 
     @Override
     public void validate(ProcessResult response) {
-//        if ((address < MBusUtils.FIRST_REGULAR_PRIMARY_ADDRESS)
-//                || (address > MBusUtils.LAST_REGULAR_PRIMARY_ADDRESS)) {
-//            response.addContextualMessage("addressHex", "validate.required");
-//        }
-        try {
-            DataFieldCode.fromLabel(difCode);
-        }
-        catch (IllegalArgumentException ex) {
-            response.addContextualMessage("difCode", "validate.required");
+        switch (getAddressing()) {
+            case PRIMARY:
+                if ((address & 0xFF) > (MBusUtils.LAST_REGULAR_PRIMARY_ADDRESS & 0xFF)) {
+                    response.addContextualMessage("address >= 0xFD", "validate.required");
+                }
+                break;
+            case SECONDARY:
+                if ((address == MBusUtils.BROADCAST_NO_ANSWER_PRIMARY_ADDRESS)
+                        || (address == MBusUtils.BROADCAST_WITH_ANSWER_PRIMARY_ADDRESS)) {
+                        response.addContextualMessage("address", "validate.required");
+                }
+                break;
+
         }
 
-        try {
-            FunctionField.fromLabel(functionField);
-        }
-        catch (IllegalArgumentException ex) {
-            response.addContextualMessage("functionField", "validate.required");
-        }
-
-        if (deviceUnit < 0) {
-            response.addContextualMessage("deviceUnit", "validate.required");
+        if (subUnit < 0) {
+            response.addContextualMessage("subUnit", "validate.required");
         }
 
         if (tariff < 0) {
@@ -138,87 +166,70 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
             response.addContextualMessage("storageNumber", "validate.required");
         }
 
-        
-        if(StringUtils.isEmpty(vifType)){
-        	response.addContextualMessage("vifType", "validate.required");
-        }
-        if(StringUtils.isEmpty(vifLabel)){
-        	response.addContextualMessage("vifLabel", "validate.required");
-        }        
-//        if(StringUtils.isEmpty(unitOfMeasurement)){
-//        	response.addContextualMessage("unitOfMeasurement", "validate.required");
-//        }
-//        if(StringUtils.isEmpty(siPrefix)){
-//        	response.addContextualMessage("siPrefix", "validate.required");
-//        }        
         try {
             DataBlock.getVif(vifType, vifLabel, unitOfMeasurement, siPrefix, exponent);
-        }
-        catch (IllegalArgumentException ex) {
-            response.addMessage(new TranslatableMessage("mbus.validate.vifInvalid", ex.getMessage()));
+        } catch (IllegalArgumentException ex) {
+            response.addContextualMessage("vif", "validate.required");
         }
 
         if (vifeLabels.length > 0) {
             if (vifeLabels.length != vifeTypes.length) {
-                response.addMessage(new TranslatableMessage("mbus.validate.vifeLengthsInvalid"));
+                response.addContextualMessage("vife and vifetype lenght mismatch", "validate.required");
             }
             for (int i = 0; i < vifeLabels.length; i++) {
                 try {
                     DataBlock.getVife(vifeTypes[i], vifeLabels[i]);
-                }
-                catch (IllegalArgumentException ex) {
-                   response.addMessage(new TranslatableMessage("mbus.validate.vifeInvalid", ex.getMessage()));
+                } catch (IllegalArgumentException ex) {
+                    response.addContextualMessage("vife", "validate.required");
                 }
             }
-        }
-        try {
-            MBusMedium.fromLabel(medium);
-        }
-        catch (IllegalArgumentException ex) {
-            response.addContextualMessage("medium", "validate.required");
         }
         if ((responseFrame == null) || (responseFrame.length() == 0)) {
             response.addContextualMessage("responseFrame", "validate.required");
         }
-        if ((version < 0) || (version > 0xFF)) {
+        if (((version & 0xFF) < 0) || ((version & 0xFF) > 0xFF)) {
             response.addContextualMessage("version", "validate.required");
         }
         if (identNumber < 0) {
             response.addContextualMessage("id", "validate.required");
         }
         if ((manufacturer == null) || (manufacturer.length() != 3)) {
-            response.addContextualMessage("manufacturer", "validate.required");
+            response.addContextualMessage("man", "validate.required");
         }
     }
 
     //
-    //
-    // Serialization
+    // /
+    // / Serialization
+    // /
     //
     private static final long serialVersionUID = -1;
-    private static final int serialVersion = 1;
+    private static final int SERIAL_VERSION = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeInt(serialVersion);
-        SerializationHelper.writeSafeUTF(out, addressing);
+        out.writeInt(SERIAL_VERSION);
+        SerializationHelper.writeSafeUTF(out, addressing.name());
+
+        out.writeInt(dbIndex);
+        SerializationHelper.writeSafeUTF(out, effectiveSiPrefix.name());
 
         out.writeByte(address);
         out.writeByte(version);
         out.writeInt(identNumber);
         SerializationHelper.writeSafeUTF(out, manufacturer);
-        SerializationHelper.writeSafeUTF(out, medium);
+        SerializationHelper.writeSafeUTF(out, medium.name());
 
         SerializationHelper.writeSafeUTF(out, responseFrame);
 
-        SerializationHelper.writeSafeUTF(out, difCode);
-        SerializationHelper.writeSafeUTF(out, functionField);
-        out.writeInt(deviceUnit);
+        SerializationHelper.writeSafeUTF(out, difCode.name());
+        SerializationHelper.writeSafeUTF(out, functionField.name());
+        out.writeInt(subUnit);
         out.writeInt(tariff);
         out.writeLong(storageNumber);
         SerializationHelper.writeSafeUTF(out, vifType);
         SerializationHelper.writeSafeUTF(out, vifLabel);
-        SerializationHelper.writeSafeUTF(out, unitOfMeasurement);
-        SerializationHelper.writeSafeUTF(out, siPrefix);
+        SerializationHelper.writeSafeUTF(out, unitOfMeasurement.name());
+        SerializationHelper.writeSafeUTF(out, siPrefix.name());
         out.writeObject(exponent);
         out.writeInt(vifeLabels.length);
         for (int i = 0; i < vifeLabels.length; i++) {
@@ -229,35 +240,82 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         int ver = in.readInt();
+        switch (ver) {
+            case 1: readVersion1(in);
+            break;
+            case 2: readVersion2(in);
+            break;
+            default: throw new RuntimeException("Version: " + ver + " is not supported!");
+        }
+    }
+    
+    private void readVersion1(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            addressing = MBusAddressing.fromLabel(SerializationHelper.readSafeUTF(in));
 
-        // Switch on the version of the class so that version changes can be elegantly handled.
-        if (ver == 1) {
-            addressing = SerializationHelper.readSafeUTF(in);
+            dbIndex = -1;
 
             address = in.readByte();
             version = in.readByte();
             identNumber = in.readInt();
             manufacturer = SerializationHelper.readSafeUTF(in);
-            medium = SerializationHelper.readSafeUTF(in);
+            medium = MBusMedium.fromLabel(SerializationHelper.readSafeUTF(in));
 
             responseFrame = SerializationHelper.readSafeUTF(in);
 
-            difCode = SerializationHelper.readSafeUTF(in);
-            functionField = SerializationHelper.readSafeUTF(in);
-            deviceUnit = in.readInt();
+            difCode = DataFieldCode.fromLabel(SerializationHelper.readSafeUTF(in));
+            functionField = FunctionField.fromLabel(SerializationHelper.readSafeUTF(in));
+            subUnit = in.readInt();
             tariff = in.readInt();
             storageNumber = in.readLong();
             vifType = SerializationHelper.readSafeUTF(in);
             vifLabel = SerializationHelper.readSafeUTF(in);
-            unitOfMeasurement = SerializationHelper.readSafeUTF(in);
-            siPrefix = SerializationHelper.readSafeUTF(in);
+            unitOfMeasurement = UnitOfMeasurement.fromLabel(SerializationHelper.readSafeUTF(in));
+            siPrefix = SiPrefix.fromLabel(SerializationHelper.readSafeUTF(in));
+            effectiveSiPrefix = siPrefix;
             exponent = (Integer) in.readObject();
             final int vifeLength = in.readInt();
             if (vifeLength == 0) {
                 vifeLabels = EMPTY_STRING_ARRAY;
                 vifeTypes = EMPTY_STRING_ARRAY;
+            } else {
+                vifeLabels = new String[vifeLength];
+                vifeTypes = new String[vifeLength];
+                for (int i = 0; i < vifeLength; i++) {
+                    vifeTypes[i] = SerializationHelper.readSafeUTF(in);
+                    vifeLabels[i] = SerializationHelper.readSafeUTF(in);
+                }
             }
-            else {
+    }
+    
+    private void readVersion2(ObjectInputStream in) throws IOException, ClassNotFoundException{
+            addressing = MBusAddressing.fromLabel(SerializationHelper.readSafeUTF(in));
+
+            dbIndex = in.readInt();
+            effectiveSiPrefix = SiPrefix.valueOf(SerializationHelper.readSafeUTF(in));
+
+            address = in.readByte();
+            version = in.readByte();
+            identNumber = in.readInt();
+            manufacturer = SerializationHelper.readSafeUTF(in);
+            medium = MBusMedium.valueOf(SerializationHelper.readSafeUTF(in));
+
+            responseFrame = SerializationHelper.readSafeUTF(in);
+
+            difCode = DataFieldCode.valueOf(SerializationHelper.readSafeUTF(in));
+            functionField = FunctionField.fromLabel(SerializationHelper.readSafeUTF(in));
+            subUnit = in.readInt();
+            tariff = in.readInt();
+            storageNumber = in.readLong();
+            vifType = SerializationHelper.readSafeUTF(in);
+            vifLabel = SerializationHelper.readSafeUTF(in);
+            unitOfMeasurement = UnitOfMeasurement.valueOf(SerializationHelper.readSafeUTF(in));
+            siPrefix = SiPrefix.valueOf(SerializationHelper.readSafeUTF(in));
+            exponent = (Integer) in.readObject();
+            final int vifeLength = in.readInt();
+            if (vifeLength == 0) {
+                vifeLabels = EMPTY_STRING_ARRAY;
+                vifeTypes = EMPTY_STRING_ARRAY;
+            } else {
                 vifeLabels = new String[vifeLength];
                 vifeTypes = new String[vifeLength];
                 for (int i = 0; i < vifeLength; i++) {
@@ -266,8 +324,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
                 }
             }
         }
-    }
-
+    
     /**
      * @return the address
      */
@@ -279,7 +336,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return the address
      */
     public String getAddressHex() {
-        return String.format("0x%02x", address);
+    	return String.format("0x%02x", address);
     }
 
     /**
@@ -319,18 +376,18 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     }
 
     /**
-     * @return the deviceUnit
+     * @return the subUnit
      */
-    public int getDeviceUnit() {
-        return deviceUnit;
+    public int getSubUnit() {
+        return subUnit;
     }
 
     /**
-     * @param deviceUnit
-     *            the deviceUnit to set
+     * @param subUnit
+     *            the subUnit to set
      */
-    public void setDeviceUnit(int deviceUnit) {
-        this.deviceUnit = deviceUnit;
+    public void setSubUnit(int subUnit) {
+        this.subUnit = subUnit;
     }
 
     /**
@@ -402,7 +459,10 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return the difCode
      */
     public String getDifCode() {
-        return difCode;
+    	if(difCode != null)
+    		return difCode.getLabel();
+    	else 
+    		return null;
     }
 
     /**
@@ -410,14 +470,17 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      *            the difCode to set
      */
     public void setDifCode(String difCode) {
-        this.difCode = difCode;
+        this.difCode = DataFieldCode.fromLabel(difCode);
     }
 
     /**
      * @return the functionField
      */
     public String getFunctionField() {
-        return functionField;
+    	if(functionField != null)
+    		return functionField.getLabel();
+    	else
+    		return null;
     }
 
     /**
@@ -425,7 +488,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      *            the functionField to set
      */
     public void setFunctionField(String functionField) {
-        this.functionField = functionField;
+        this.functionField = FunctionField.fromLabel(functionField);
     }
 
     /**
@@ -447,7 +510,10 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return the unitOfMeasurement
      */
     public String getUnitOfMeasurement() {
-        return unitOfMeasurement;
+    	if(unitOfMeasurement != null)
+    		return unitOfMeasurement.getLabel();
+    	else 
+    		return null;
     }
 
     /**
@@ -455,14 +521,38 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      *            the unitOfMeasurement to set
      */
     public void setUnitOfMeasurement(String unitOfMeasurement) {
-        this.unitOfMeasurement = unitOfMeasurement;
+        this.unitOfMeasurement = UnitOfMeasurement.fromLabel(unitOfMeasurement);
     }
 
+    
+    public DataFieldCode difCode() {
+        return difCode;
+    }
+    
+    public FunctionField functionField() {
+        return functionField;
+    }
+    
+    public SiPrefix siPrefix() {
+        return siPrefix;
+    }
+    
+    public UnitOfMeasurement unitOfMeasurement() {
+        return unitOfMeasurement;
+    }
+    
+    public SiPrefix effectiveSiPrefix() {
+        return effectiveSiPrefix;
+    }
+    
     /**
      * @return the siPrefix
      */
     public String getSiPrefix() {
-        return siPrefix;
+    	if(siPrefix != null)
+    		return siPrefix.getLabel();
+    	else
+    		return null;
     }
 
     /**
@@ -470,9 +560,9 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      *            the siPrefix to set
      */
     public void setSiPrefix(String siPrefix) {
-        this.siPrefix = siPrefix;
+        this.siPrefix = SiPrefix.fromLabel(siPrefix);
     }
-
+    
     /**
      * @return the exponent
      */
@@ -506,7 +596,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     /**
      * @return the medium
      */
-    public String getMedium() {
+    public MBusMedium getMedium() {
         return medium;
     }
 
@@ -514,15 +604,14 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @param medium
      *            the medium to set
      */
-    public void setMedium(String medium) {
+    public void setMedium(MBusMedium medium) {
         this.medium = medium;
-        System.out.println("MEDIUM: " + this.medium);
     }
 
     /**
      * @return the addressing
      */
-    public String getAddressing() {
+    public MBusAddressing getAddressing() {
         return addressing;
     }
 
@@ -530,7 +619,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @param addressing
      *            the addressing to set
      */
-    public void setAddressing(String addressing) {
+    public void setAddressing(MBusAddressing addressing) {
         this.addressing = addressing;
     }
 
@@ -540,7 +629,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return
      */
     public boolean isPrimaryAddressing() {
-        return MBusAddressing.PRIMARY.getLabel().equals(addressing);
+        return MBusAddressing.PRIMARY.equals(addressing);
     }
 
     /**
@@ -549,7 +638,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return
      */
     public boolean isSecondaryAddressing() {
-        return MBusAddressing.SECONDARY.getLabel().equals(addressing);
+        return MBusAddressing.SECONDARY.equals(addressing);
     }
 
     /**
@@ -581,12 +670,77 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     public void setVifeTypes(String[] vifeTypes) {
         this.vifeTypes = vifeTypes;
     }
-	/* (non-Javadoc)
+
+    public String getDeviceName() {
+        return String.format("%s %s 0x%02X %08d @0x%02X", getManufacturer(), getMedium(), getVersion(), getIdentNumber(), getAddress());
+    }
+    
+    public String getParams() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<b>dataType = </b> \"").append(getDifCode()).append("\"<br>");
+        sb.append("<b>description =</b> \"").append(vifLabel).append("\"</br>");
+        sb.append("<b>unitOfMeasurement =</b> \"").append(getUnitOfMeasurement()).append("\"<br>");
+        sb.append("<b>exponent =</b> \"").append(exponent).append("\"<br>");
+        sb.append("<b>siPrefix =</b> \"").append(getSiPrefix()).append("\"<br>");
+        sb.append("<b>tariff =</b> \"").append(tariff).append("\"<br>");
+        sb.append("<b>storageNumber =</b> \"").append(storageNumber).append("\"<br>");
+        sb.append("<b>functionField =</b> \"").append(getFunctionField()).append("\"<br>");
+        return sb.toString();
+    }
+
+        @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("MBusPointLocatorVO{");
+        sb.append(String.format("man=%s, medium=%s, version=0x%02X, id=%08d, address=@0x%02X, ", getManufacturer(), getMedium(), getVersion(), getIdentNumber(), getAddress()));
+        sb.append("dataType=").append(getDifCode()).append(", ");
+        sb.append("description=").append(vifLabel).append(", ");
+        sb.append("unitOfMeasurement=").append(getUnitOfMeasurement()).append(", ");
+        sb.append("exponent=").append(exponent).append(", ");
+        sb.append("siPrefix=").append(getSiPrefix()).append(", ");
+        sb.append("tariff=").append(tariff).append(" ,");
+        sb.append("storageNumber=").append(storageNumber).append(", ");
+        sb.append("functionField=").append(functionField);
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * @return the dbIndex
+     */
+    public int getDbIndex() {
+        return dbIndex;
+    }
+
+    /**
+     * @param dbIndex the dbIndex to set
+     */
+    public void setDbIndex(int dbIndex) {
+        this.dbIndex = dbIndex;
+    }
+
+    /**
+     * @return the effectiveSiPrefix
+     */
+    public String getEffectiveSiPrefix() {
+    	if(effectiveSiPrefix != null)
+    		return effectiveSiPrefix.getLabel();
+    	else
+    		return null;
+    }
+
+    /**
+     * @param effectiveSiPrefix the effectiveSiPrefix to set
+     */
+    public void setEffectiveSiPrefix(String effectiveSiPrefix) {
+        this.effectiveSiPrefix = SiPrefix.fromLabel(effectiveSiPrefix);
+    }
+    
+    /* (non-Javadoc)
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
 	public PointLocatorModel<?> asModel() {
-		//TODO Implement when we have a Model
 		return new MBusPointLocatorModel(this);
 	}
 }

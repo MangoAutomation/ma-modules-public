@@ -15,7 +15,9 @@ import org.apache.commons.lang3.StringUtils;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.EnhancedPointValueDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableException;
@@ -27,6 +29,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.export.ExportCsvStreamer;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -174,7 +177,12 @@ public class DataImportController extends FileUploadController {
 	            
 	        	if(rt == null){
 	        		//Insert Via DAO
-	        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
+        			if (pointValueDao instanceof EnhancedPointValueDao) {
+                    	DataSourceVO<?> ds = getDataSource(vo.getDataSourceId());
+                    	((EnhancedPointValueDao) pointValueDao).savePointValueAsync(vo, ds, pvt,null);
+                	} else {
+                   		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
+                	}
 	        	}else{
 	        		//Insert Via RT
 	        		rt.savePointValueDirectToCache(pvt, null, true, true);
@@ -192,5 +200,17 @@ public class DataImportController extends FileUploadController {
         model.put("rowsDeleted", rowsDeleted);
         model.put("rowsWithErrors", rowErrors);
         
+    }
+    
+    Map<Integer, DataSourceVO<?>> cachedDataSources = new HashMap<>();
+    
+    DataSourceVO<?> getDataSource(int dataSourceId) {
+        DataSourceVO<?> ds = cachedDataSources.get(dataSourceId);
+        if (ds == null) {
+            ds = DaoRegistry.dataSourceDao.get(dataSourceId);
+            if (ds != null)
+                cachedDataSources.put(dataSourceId, ds);
+        }
+        return ds;
     }
 }
