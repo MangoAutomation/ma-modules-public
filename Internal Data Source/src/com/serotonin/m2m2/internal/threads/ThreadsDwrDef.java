@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.internal.StatusPermissionDef;
 import com.serotonin.m2m2.module.DwrDefinition;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
-import com.serotonin.monitor.ValueMonitor;
 
 public class ThreadsDwrDef extends DwrDefinition {
     @Override

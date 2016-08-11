@@ -4,15 +4,16 @@
  */
 package com.serotonin.m2m2.internal;
 
+import com.infiniteautomation.mango.monitor.DoubleMonitor;
+import com.infiniteautomation.mango.monitor.IntegerMonitor;
+import com.infiniteautomation.mango.monitor.LongMonitor;
+import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
-import com.serotonin.monitor.DoubleMonitor;
-import com.serotonin.monitor.IntegerMonitor;
-import com.serotonin.monitor.LongMonitor;
-import com.serotonin.monitor.ValueMonitor;
+
 
 /**
  * @author Matthew Lohbihler
