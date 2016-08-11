@@ -28,6 +28,6 @@ public class ImageUploadServletDefinition extends ServletDefinition {
     @Override
     public void preInitialize() {
         IMAGE_DIR = getModule().getWebPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
-        UPLOAD_DIR = Common.M2M2_HOME + getModule().getDirectoryPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
+        UPLOAD_DIR = Common.MA_HOME + getModule().getDirectoryPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
     }
 }
