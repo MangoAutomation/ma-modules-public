@@ -74,12 +74,12 @@ public class SerialDataSourceTest {
     	MockitoAnnotations.initMocks(this);
     	//Make sure that Common and other classes are properly loaded
 		mockMangoInternals();
-
-		testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 1, new String[]{"Hello World!;"}));
-		testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
-		testCases.put("", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 0, new String[]{}));
-		testCases.put("testStr\n\nabs", new SerialDataSourceTestCase(SerialDataSourceTestData.getNewlineTerminated(), "terminator", "\n", 2, new String[]{"testStr", ""}));
-		testCases.put("ok;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(), "terminator", ";", 1, new String[]{"ok;"}));
+		SerialDataSourceVO vo = SerialDataSourceTestData.getStandardDataSourceVO();
+		testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"Hello World!;"}));
+		testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
+		testCases.put("", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 0, new String[]{}));
+		testCases.put("testStr\n\nabs", new SerialDataSourceTestCase(SerialDataSourceTestData.getNewlineTerminated(vo), "terminator", "\n", 2, new String[]{"testStr", ""}));
+		testCases.put("ok;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"ok;"}));
 				
 		//Commented out as requiring more mocks for timers		testCases.put("Hello World!;", new SerialTestCase("timeout", ";", 1, new String[]{"Hello World!;"}));
     }
@@ -121,7 +121,7 @@ public class SerialDataSourceTest {
 				"windDirection",
 				windDirectionRegex,
 				1, 
-				"");
+				"", vo);
 		rt.addDataPoint(windDirection);
 		
 		DataPointRT windSpeed = SerialDataSourceTestData.getCustomPoint(
@@ -129,7 +129,7 @@ public class SerialDataSourceTest {
 				"windSpeed",
 				windSpeedRegex,
 				1, 
-				"");
+				"", vo);
 		rt.addDataPoint(windSpeed);
 		
 		DataPointRT ip1 = SerialDataSourceTestData.getCustomPoint(
@@ -137,7 +137,7 @@ public class SerialDataSourceTest {
 				"ip1",
 				ip1Regex,
 				1, 
-				"");
+				"", vo);
 		rt.addDataPoint(ip1);
 		
 		inputStream = new TestSerialPortInputStream();
@@ -213,10 +213,10 @@ public class SerialDataSourceTest {
 		
 		SerialDataSourceVO vo = SerialDataSourceTestData.getStandardDataSourceVO();
 		SerialDataSourceRT rt = (SerialDataSourceRT) vo.createDataSourceRT();
-		DataPointRT dprt = SerialDataSourceTestData.getMatchAllPoint();
+		DataPointRT dprt = SerialDataSourceTestData.getMatchAllPoint(vo);
 		registeredPoints.put("matchAll", dprt);
 		rt.addDataPoint(dprt);
-		dprt = SerialDataSourceTestData.getNewlineTerminated();
+		dprt = SerialDataSourceTestData.getNewlineTerminated(vo);
 		registeredPoints.put("newlineTerminated", dprt);
 		rt.addDataPoint(dprt);
 		

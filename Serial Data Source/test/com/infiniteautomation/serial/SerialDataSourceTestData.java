@@ -8,14 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
-import com.infiniteautomation.serial.rt.SerialPointLocatorRT;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 /**
  * @author Terry Packer
@@ -32,7 +31,7 @@ public class SerialDataSourceTestData {
 	}
 	
 	// ========== POINT CREATION METHODS ===========
-	public static DataPointRT getMatchAllPoint() {
+	public static DataPointRT getMatchAllPoint(DataSourceVO<?> ds) {
 		DataPointVO vo = new DataPointVO();
 		vo.setName("matchAll");
 		vo.setXid("matchAll");
@@ -44,9 +43,9 @@ public class SerialDataSourceTestData {
 		plVo.setValueIndex(2);
 		plVo.setPointIdentifier("");
 		vo.setPointLocator(plVo);
-		return new DataPointRT(vo, plVo.createRuntime());
+		return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
 	}
-	public static DataPointRT getNewlineTerminated() {
+	public static DataPointRT getNewlineTerminated(DataSourceVO<?> ds) {
 		DataPointVO vo = new DataPointVO();
 		vo.setName("newlineTerminated");
 		vo.setXid("newlineTerminated");
@@ -57,9 +56,9 @@ public class SerialDataSourceTestData {
 		plVo.setValueIndex(2);
 		plVo.setPointIdentifier("");
 		vo.setPointLocator(plVo);
-		return new DataPointRT(vo, plVo.createRuntime());
+		return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
 	}
-	public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier) {
+	public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceVO<?> ds) {
 		DataPointVO vo = new DataPointVO();
 		vo.setName(name);
 		vo.setXid(xid);
@@ -70,7 +69,7 @@ public class SerialDataSourceTestData {
 		plVo.setValueIndex(valueIndex);
 		plVo.setPointIdentifier(pointIdentifier);
 		vo.setPointLocator(plVo);
-		return new DataPointRT(vo, plVo.createRuntime());
+		return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
 	}
 	// ============ END POINT CREATION SECTION =========
 	
