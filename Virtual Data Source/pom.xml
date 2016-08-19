@@ -8,7 +8,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>virtual-ds</artifactId>
-    <name>Virtual Data Source</name>
+    <name>virtualDS</name>
+    <description>Data source that generates deterministic or random values</description>
     <version>1.6.0</version>
     <build>
         <plugins>

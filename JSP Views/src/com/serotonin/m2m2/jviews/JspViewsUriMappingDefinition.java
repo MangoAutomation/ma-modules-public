@@ -45,7 +45,7 @@ public class JspViewsUriMappingDefinition extends UriMappingDefinition{
 	 */
 	@Override
 	public String getJspPath() {
-		return "placeholder.jsp"; //Not sure of the best way to do this, we don't every use the jsp path
+		return null; //Not sure of the best way to do this, we don't every use the jsp path
 	}
 
 }

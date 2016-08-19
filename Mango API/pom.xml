@@ -7,8 +7,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>mangoApi</artifactId>
-    <name>Mango API</name>
+    <artifactId>mango-api</artifactId>
+    <name>mangoApi</name>
+    <description>REST API Expansion for Mango Automation</description>
     <version>1.2.0</version>
     <build>
         <plugins>
@@ -31,7 +32,6 @@
             </plugin>
         </plugins>
     </build>
-
     <dependencies>
         <dependency>
             <groupId>log4j</groupId>

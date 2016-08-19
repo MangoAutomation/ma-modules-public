@@ -48,7 +48,7 @@ public class JspViewsUrlHandler implements UrlHandler{
 		File page = new File(modulePath + parts[1]);
 		if(page.exists()){
 			 request.getRequestDispatcher(webBase + parts[1]).forward(request, response);
-			return null; //This forces the use of the jsp path, wich doesn't exist but doesn't seem to matter.  This should be fixed but not sure how
+			return new JspPageView("");
 		}else{
 			//Return a 404
 			throw new ResourceNotFoundException(page.getName());
