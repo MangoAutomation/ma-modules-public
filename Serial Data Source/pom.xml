@@ -8,8 +8,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>serial-ds</artifactId>
-    <name>Serial Data Source</name>
-    <version>1.2.1</version>
+    <name>serial</name>
+    <description>Data source to send/receive and parse serial port messages</description>
+    <version>1.2.2</version>
     <build>
         <plugins>
             <plugin>
