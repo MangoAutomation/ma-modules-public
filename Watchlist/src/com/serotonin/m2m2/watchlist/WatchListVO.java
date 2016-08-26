@@ -1,6 +1,6 @@
-/*
-    Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
-    @author Matthew Lohbihler
+/**
+ * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
  */
 package com.serotonin.m2m2.watchlist;
 
@@ -15,7 +15,6 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
-import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
@@ -25,28 +24,34 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.validation.StringValidation;
 
 /**
  * @author Matthew Lohbihler
+ * @author Terry Packer
+ *
  */
-public class WatchList implements JsonSerializable {
-    public static final String XID_PREFIX = "WL_";
+public class WatchListVO extends AbstractVO<WatchListVO>{
 
-    private int id = Common.NEW_ID;
-    @JsonProperty
-    private String xid;
+	private static final long serialVersionUID = 1L;
+
+	public static final String XID_PREFIX = "WL_";
+
     private int userId;
-    @JsonProperty
-    private String name;
+    //TODO When we remove the legacy code reduce these objects to summaries only
     private final List<DataPointVO> pointList = new CopyOnWriteArrayList<>();
     @JsonProperty
     private String readPermission;
     @JsonProperty
     private String editPermission;
+    
+    //non-persistent members
+    private String username;
 
     public boolean isOwner(User user) {
         return user.getId() == userId;
@@ -139,13 +144,32 @@ public class WatchList implements JsonSerializable {
             response.addMessage("xid", new TranslatableMessage("validate.required"));
         else if (StringValidation.isLengthGreaterThan(xid, 50))
             response.addMessage("xid", new TranslatableMessage("validate.notLongerThan", 50));
-        else if (!new WatchListDao().isXidUnique(xid, id))
+        else if (!WatchListDao.instance.isXidUnique(xid, id))
             response.addMessage("xid", new TranslatableMessage("validate.xidUsed"));
+
+        //Validate the points
+        UserDao dao = new UserDao();
+        User user = dao.getUser(userId);
+        if(user == null){
+            response.addContextualMessage("userId", "watchlists.validate.userDNE");
+        }
+        
+        //Using the owner of the report to validate against permissions if there is no current user
+        User currentUser = Common.getUser();
+        if(currentUser == null)
+     	   currentUser = user;
+ 
+        //Validate Points
+        for(DataPointVO vo : pointList)
+        	try{
+        		Permissions.ensureDataPointReadPermission(user, vo);
+        	}catch(PermissionException e){
+        		response.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", vo.getXid());
+        	}
         
         //Validate the permissions
-        User user = Common.getUser();
-		Permissions.validateAddedPermissions(this.readPermission, user, response, "readPermission");
-		Permissions.validateAddedPermissions(this.editPermission, user, response, "editPermission");
+ 		Permissions.validateAddedPermissions(this.readPermission, currentUser, response, "readPermission");
+		Permissions.validateAddedPermissions(this.editPermission, currentUser, response, "editPermission");
     }
 
     //
@@ -154,7 +178,8 @@ public class WatchList implements JsonSerializable {
     //
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
+        super.jsonWrite(writer);
+    	writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
 
         List<String> dpXids = new ArrayList<>();
         for (DataPointVO dpVO : pointList)
@@ -164,7 +189,8 @@ public class WatchList implements JsonSerializable {
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        String username = jsonObject.getString("user");
+        super.jsonRead(reader, jsonObject);
+    	String username = jsonObject.getString("user");
         if (StringUtils.isBlank(username))
             throw new TranslatableJsonException("emport.error.missingValue", "user");
         User user = new UserDao().getUser(username);
@@ -185,4 +211,19 @@ public class WatchList implements JsonSerializable {
             }
         }
     }
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.ChangeComparable#getTypeKey()
+	 */
+	@Override
+	public String getTypeKey() {
+		return "event.audit.watchlist";
+	}
+
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
 }

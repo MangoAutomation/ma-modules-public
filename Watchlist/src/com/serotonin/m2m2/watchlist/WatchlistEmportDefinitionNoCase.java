@@ -27,8 +27,6 @@ import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
     
 	public static String elementId = "watchlists";
-	
-	private WatchListDao watchListDao;
     
 
 	@Override
@@ -39,7 +37,6 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
     @Override
     public void postInitialize() {
         super.postInitialize();
-        watchListDao = new WatchListDao();
     }
 
     @Override
@@ -54,8 +51,8 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        List<WatchList> wls = watchListDao.getWatchLists();
-        watchListDao.populateWatchlistData(wls);
+        List<WatchListVO> wls = WatchListDao.instance.getWatchLists();
+        WatchListDao.instance.populateWatchlistData(wls);
         return wls;
     }
 
@@ -65,11 +62,11 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
 
         String xid = watchListJson.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = watchListDao.generateUniqueXid();
+            xid = WatchListDao.instance.generateUniqueXid();
 
-        WatchList watchList = watchListDao.getWatchList(xid);
+        WatchListVO watchList = WatchListDao.instance.getWatchList(xid);
         if (watchList == null) {
-            watchList = new WatchList();
+            watchList = new WatchListVO();
             watchList.setXid(xid);
         }
 
@@ -86,7 +83,7 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
             else {
                 // Sweet. Save it.
                 boolean isnew = watchList.getId() == Common.NEW_ID;
-                watchListDao.saveWatchList(watchList);
+                WatchListDao.instance.saveWatchList(watchList);
                 importContext.addSuccessMessage(isnew, "emport.watchList.prefix", xid);
             }
         }

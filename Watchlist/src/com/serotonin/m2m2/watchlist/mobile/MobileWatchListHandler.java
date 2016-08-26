@@ -20,7 +20,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.watchlist.WatchList;
+import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.watchlist.WatchListCommon;
 import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListHandler;
@@ -33,13 +33,13 @@ public class MobileWatchListHandler extends WatchListHandler {
     @Override
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model) {
         User user = Common.getUser(request);
-        WatchListDao watchListDao = new WatchListDao();
+        WatchListDao watchListDao = WatchListDao.instance;
 
         // Check for a watchlist id parameter. If given, update the user.
         try {
             int watchListId = Integer.parseInt(request.getParameter("watchListId"));
 
-            WatchList watchList = watchListDao.getWatchList(watchListId);
+            WatchListVO watchList = watchListDao.getWatchList(watchListId);
             WatchListCommon.ensureWatchListPermission(user, watchList);
             watchListDao.saveSelectedWatchList(user.getId(), watchList.getId());
         }

@@ -7,8 +7,12 @@ package com.serotonin.m2m2.watchlist;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,37 +20,42 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.BaseDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.view.ShareUser;
+import com.serotonin.m2m2.db.dao.WebSocketNotifyingDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketConfiguration;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
+import com.serotonin.util.SerializationHelper;
 
 /**
  * @author Matthew Lohbihler
+ * @author Terry Packer
  */
-public class WatchListDao extends BaseDao {
-    private static final String SELECT = "SELECT w.id, w.xid, w.userId, w.name, w.readPermission, w.editPermission " //
-            + "FROM watchLists w ";
+public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
+    
+	public static String TABLE_NAME = "watchLists";
+	public static WatchListDao instance = new WatchListDao();
+	
+	private WatchListDao(){
+		super(WatchListWebSocketConfiguration.handler, 
+				AuditEvent.TYPE_NAME, "w",
+				new String[] {"u.username"}, //to allow filtering on username
+				"join users u on u.id = w.userId ");
+	}
 
-    public String generateUniqueXid() {
-        return generateUniqueXid(WatchList.XID_PREFIX, "watchLists");
-    }
-
-    public boolean isXidUnique(String xid, int watchListId) {
-        return isXidUnique(xid, watchListId, "watchLists");
-    }
-
+	
     /**
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
-    public List<WatchList> getWatchLists(final User user) {
-        final List<WatchList> result = new ArrayList<>();
-        query(SELECT + "ORDER BY w.name", new Object[0], rowMapper, new MappedRowCallback<WatchList>() {
+    public List<WatchListVO> getWatchLists(final User user) {
+        final List<WatchListVO> result = new ArrayList<>();
+        query(SELECT_ALL + "ORDER BY w.name", new Object[0], rowMapper, new MappedRowCallback<WatchListVO>() {
             @Override
-            public void row(WatchList wl, int index) {
+            public void row(WatchListVO wl, int index) {
                 if (wl.isReader(user))
                     result.add(wl);
             }
@@ -57,23 +66,23 @@ public class WatchListDao extends BaseDao {
     /**
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
-    public List<WatchList> getWatchLists() {
-        return query(SELECT + "ORDER BY w.name", rowMapper);
+    public List<WatchListVO> getWatchLists() {
+        return query(SELECT_ALL + "ORDER BY w.name", rowMapper);
     }
 
-    public WatchList getWatchList(int watchListId) {
+    public WatchListVO getWatchList(int watchListId) {
         // Get the watch lists.
-        WatchList watchList = queryForObject(SELECT + "WHERE w.id=?", new Object[] { watchListId }, rowMapper);
+        WatchListVO watchList = queryForObject(SELECT_ALL + "WHERE w.id=?", new Object[] { watchListId }, rowMapper);
         populateWatchlistData(watchList);
         return watchList;
     }
 
-    public void populateWatchlistData(List<WatchList> watchLists) {
-        for (WatchList watchList : watchLists)
+    public void populateWatchlistData(List<WatchListVO> watchLists) {
+        for (WatchListVO watchList : watchLists)
             populateWatchlistData(watchList);
     }
 
-    public void populateWatchlistData(WatchList watchList) {
+    public void populateWatchlistData(WatchListVO watchList) {
         if (watchList == null)
             return;
 
@@ -90,33 +99,16 @@ public class WatchListDao extends BaseDao {
     /**
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
-    public WatchList getWatchList(String xid) {
-        return queryForObject(SELECT + " WHERE w.xid=?", new Object[] { xid }, rowMapper, null);
+    public WatchListVO getWatchList(String xid) {
+        return queryForObject(SELECT_ALL + " WHERE w.xid=?", new Object[] { xid }, rowMapper, null);
     }
 
-    public WatchList getSelectedWatchList(int userId) {
-        WatchList watchList = queryForObject(
-                SELECT + "JOIN selectedWatchList s ON s.watchListId=w.id WHERE s.userId=?", new Object[] { userId },
+    public WatchListVO getSelectedWatchList(int userId) {
+        WatchListVO watchList = queryForObject(
+                SELECT_ALL + "JOIN selectedWatchList s ON s.watchListId=w.id WHERE s.userId=?", new Object[] { userId },
                 rowMapper, null);
         populateWatchlistData(watchList);
         return watchList;
-    }
-
-    private final WatchListRowMapper rowMapper = new WatchListRowMapper();
-
-    class WatchListRowMapper implements RowMapper<WatchList> {
-        @Override
-        public WatchList mapRow(ResultSet rs, int rowNum) throws SQLException {
-            int i = 0;
-            WatchList wl = new WatchList();
-            wl.setId(rs.getInt(++i));
-            wl.setXid(rs.getString(++i));
-            wl.setUserId(rs.getInt(++i));
-            wl.setName(rs.getString(++i));
-            wl.setReadPermission(rs.getString(++i));
-            wl.setEditPermission(rs.getString(++i));
-            return wl;
-        }
     }
 
     public void saveSelectedWatchList(int userId, int watchListId) {
@@ -127,7 +119,7 @@ public class WatchListDao extends BaseDao {
                     watchListId });
     }
 
-    public WatchList createNewWatchList(WatchList wl, int userId) {
+    public WatchListVO createNewWatchList(WatchListVO wl, int userId) {
         wl.setUserId(userId);
         wl.setXid(generateUniqueXid());
         wl.setId(ejt.doInsert(
@@ -136,7 +128,7 @@ public class WatchListDao extends BaseDao {
         return wl;
     }
 
-    public void saveWatchList(final WatchList wl) {
+    public void saveWatchList(final WatchListVO wl) {
         final ExtendedJdbcTemplate ejt2 = ejt;
         getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
             @SuppressWarnings("synthetic-access")
@@ -181,18 +173,199 @@ public class WatchListDao extends BaseDao {
             }
         });
     }
+	
+    private final String SELECT_POINT_SUMMARIES = "SELECT dp.xid,dp.name,dp.deviceName,dp.pointFolderId,dp.readPermission,dp.setPermission from dataPoints as dp JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
+    public List<WatchListDataPointModel> getPointSummaries(int watchListId){
+    	return query(SELECT_POINT_SUMMARIES, new Object[]{watchListId}, new RowMapper<WatchListDataPointModel>(){
 
-    //
-    //
-    // Watch list users
-    //
-    class WatchListUserRowMapper implements RowMapper<ShareUser> {
+			@Override
+			public WatchListDataPointModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+				int i=0;
+				WatchListDataPointModel model = new WatchListDataPointModel();
+				model.setXid(rs.getString(++i));
+				model.setName(rs.getString(++i));
+				model.setDeviceName(rs.getString(++i));
+				model.setPointFolderId(rs.getInt(++i));
+				model.setReadPermission(rs.getString(++i));
+				model.setSetPermission(rs.getString(++i));
+				return model;
+			}
+    		
+    	});
+    }
+    
+    //TODO Clean this up when issue #824 is fixed so we don't have to hard code all this business
+    private final String SELECT_POINTS = 
+    "select dp.data, dp.id, dp.xid, dp.dataSourceId, dp.name, dp.deviceName, dp.enabled, dp.pointFolderId, " //
+            + "  dp.loggingType, dp.intervalLoggingPeriodType, dp.intervalLoggingPeriod, dp.intervalLoggingType, " //
+            + "  dp.tolerance, dp.purgeOverride, dp.purgeType, dp.purgePeriod, dp.defaultCacheSize, " //
+            + "  dp.discardExtremeValues, dp.engineeringUnits, dp.readPermission, dp.setPermission, dp.templateId, ds.name, " //
+            + "  ds.xid, ds.dataSourceType " //
+            + "from dataPoints dp join dataSources ds on ds.id = dp.dataSourceId JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
+   public List<DataPointVO> getPoints(int watchListId){
+    	return query(SELECT_POINTS, new Object[]{watchListId}, new RowMapper<DataPointVO>(){
+			@SuppressWarnings("deprecation")
+			@Override
+			public DataPointVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+				int i=0;
+	            DataPointVO dp = (DataPointVO) SerializationHelper.readObjectInContext(rs.getBinaryStream(++i));
+	            dp.setId(rs.getInt(++i));
+	            dp.setXid(rs.getString(++i));
+	            dp.setDataSourceId(rs.getInt(++i));
+	            dp.setName(rs.getString(++i));
+	            dp.setDeviceName(rs.getString(++i));
+	            dp.setEnabled(charToBool(rs.getString(++i)));
+	            dp.setPointFolderId(rs.getInt(++i));
+	            dp.setLoggingType(rs.getInt(++i));
+	            dp.setIntervalLoggingPeriodType(rs.getInt(++i));
+	            dp.setIntervalLoggingPeriod(rs.getInt(++i));
+	            dp.setIntervalLoggingType(rs.getInt(++i));
+	            dp.setTolerance(rs.getDouble(++i));
+	            dp.setPurgeOverride(charToBool(rs.getString(++i)));
+	            dp.setPurgeType(rs.getInt(++i));
+	            dp.setPurgePeriod(rs.getInt(++i));
+	            dp.setDefaultCacheSize(rs.getInt(++i));
+	            dp.setDiscardExtremeValues(charToBool(rs.getString(++i)));
+	            dp.setEngineeringUnits(rs.getInt(++i));
+	            dp.setReadPermission(rs.getString(++i));
+	            dp.setSetPermission(rs.getString(++i));
+	            //Because we read 0 for null
+	            dp.setTemplateId(rs.getInt(++i));
+	            if(rs.wasNull())
+	            	dp.setTemplateId(null);
+
+	            // Data source information.
+	            dp.setDataSourceName(rs.getString(++i));
+	            dp.setDataSourceXid(rs.getString(++i));
+	            dp.setDataSourceTypeName(rs.getString(++i));
+
+	            dp.ensureUnitsCorrect();
+				return dp;
+			}
+    		
+    	});
+    }
+    
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.WebSocketNotifyingDao#save(com.serotonin.m2m2.vo.AbstractVO, java.lang.String)
+     */
+    @Override
+    public void save(final WatchListVO wl, final String initiatorId) {
+    	final ExtendedJdbcTemplate ejt2 = ejt;
+        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
+            @SuppressWarnings("synthetic-access")
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            	WatchListDao.super.save(wl, initiatorId);
+                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
+                ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
+                    @Override
+                    public int getBatchSize() {
+                        return wl.getPointList().size();
+                    }
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setInt(1, wl.getId());
+                        ps.setInt(2, wl.getPointList().get(i).getId());
+                        ps.setInt(3, i);
+                    }
+                });
+            }
+        });
+    }
+    
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
+	 */
+	@Override
+	protected String getXidPrefix() {
+		return WatchListVO.XID_PREFIX;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
+	 */
+	@Override
+	public WatchListVO getNewVo() {
+		return new WatchListVO();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
+	 */
+	@Override
+	protected String getTableName() {
+		return TABLE_NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(java.lang.Object)
+	 */
+	@Override
+	protected Object[] voToObjectArray(WatchListVO vo) {
+		return new Object[]{
+			vo.getXid(),
+			vo.getName(),
+			vo.getUserId(),
+			vo.getEditPermission(),
+			vo.getReadPermission()
+		};
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
+	 */
+	@Override
+	protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
+		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+		map.put("id", Types.INTEGER);
+		map.put("xid", Types.VARCHAR);
+		map.put("name", Types.VARCHAR);
+		map.put("userId", Types.INTEGER);
+		map.put("editPermission", Types.VARCHAR);
+		map.put("readPermission", Types.VARCHAR);
+		
+		return map;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
+	 */
+	@Override
+	protected Map<String, IntStringPair> getPropertiesMap() {
+		Map<String, IntStringPair> map = new HashMap<String, IntStringPair>();
+		
+		//So we can filter/sort on username in the models
+		map.put("username", new IntStringPair(Types.VARCHAR, "u.username"));
+		
+		return map;
+
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
+	 */
+	@Override
+	public RowMapper<WatchListVO> getRowMapper() {
+		return rowMapper;
+	}
+	
+    private final WatchListRowMapper rowMapper = new WatchListRowMapper();
+
+    class WatchListRowMapper implements RowMapper<WatchListVO> {
         @Override
-        public ShareUser mapRow(ResultSet rs, int rowNum) throws SQLException {
-            ShareUser wlu = new ShareUser();
-            wlu.setUserId(rs.getInt(1));
-            wlu.setAccessType(rs.getInt(2));
-            return wlu;
+        public WatchListVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+            int i = 0;
+            WatchListVO wl = new WatchListVO();
+            wl.setId(rs.getInt(++i));
+            wl.setXid(rs.getString(++i));
+            wl.setName(rs.getString(++i));
+            wl.setUserId(rs.getInt(++i));
+            wl.setEditPermission(rs.getString(++i));
+            wl.setReadPermission(rs.getString(++i));
+            wl.setUsername(rs.getString(++i));
+            return wl;
         }
     }
+    
 }

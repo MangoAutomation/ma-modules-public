@@ -27,12 +27,12 @@ public class WatchListCommon {
         return watchListStates;
     }
 
-    public static void ensureWatchListPermission(User user, WatchList watchList) throws PermissionException {
+    public static void ensureWatchListPermission(User user, WatchListVO watchList) throws PermissionException {
         if (!watchList.isReader(user))
             throw new PermissionException("User does not have permission to the watch list", user);
     }
 
-    public static void ensureWatchListEditPermission(User user, WatchList watchList) throws PermissionException {
+    public static void ensureWatchListEditPermission(User user, WatchListVO watchList) throws PermissionException {
         if (!watchList.isEditor(user))
             throw new PermissionException("User does not have permission to edit the watch list", user);
     }

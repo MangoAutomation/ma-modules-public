@@ -44,18 +44,17 @@ public class WatchListHandler implements UrlHandler {
 
     protected void prepareModel(HttpServletRequest request, Map<String, Object> model, User user) {
         // The user's permissions may have changed since the last session, so make sure the watch lists are correct.
-        WatchListDao watchListDao = new WatchListDao();
-        List<WatchList> watchLists = watchListDao.getWatchLists(user);
+        List<WatchListVO> watchLists = WatchListDao.instance.getWatchLists(user);
 
         if (watchLists.size() == 0) {
             // Add a default watch list if none exist.
-            WatchList watchList = new WatchList();
+            WatchListVO watchList = new WatchListVO();
             watchList.setName(ControllerUtils.getTranslations(request).translate("common.newName"));
-            watchLists.add(watchListDao.createNewWatchList(watchList, user.getId()));
+            watchLists.add(WatchListDao.instance.createNewWatchList(watchList, user.getId()));
         }
 
         int selected = 0;
-        WatchList selectedWatchList = watchListDao.getSelectedWatchList(user.getId());
+        WatchListVO selectedWatchList = WatchListDao.instance.getSelectedWatchList(user.getId());
         if (selectedWatchList != null)
             selected = selectedWatchList.getId();
 
@@ -79,7 +78,7 @@ public class WatchListHandler implements UrlHandler {
         List<IntStringPair> userWatchLists = new ArrayList<>(watchLists.size());
         Set<String> users = new HashSet<String>();
         
-        for (WatchList watchList : watchLists) {
+        for (WatchListVO watchList : watchLists) {
             if (!found) {
                 if (StringUtils.equals(watchList.getXid(), wlxid)) {
                     found = true;
@@ -103,7 +102,7 @@ public class WatchListHandler implements UrlHandler {
                 }
 
                 if (changed)
-                    watchListDao.saveWatchList(watchList);
+                	WatchListDao.instance.saveWatchList(watchList);
             }
 
             User watchListUser = userDao.getUser(watchList.getUserId());
@@ -130,7 +129,7 @@ public class WatchListHandler implements UrlHandler {
             // The user's default watch list was not found. It was either deleted or unshared from them. Find a new one.
             // The list will always contain at least one, so just use the id of the first in the list.
             selected = watchLists.get(0).getId();
-            new WatchListDao().saveSelectedWatchList(user.getId(), selected);
+            WatchListDao.instance.saveSelectedWatchList(user.getId(), selected);
         }
 
         Collections.sort(watchListsData, new Comparator<Map<String,String>>(){

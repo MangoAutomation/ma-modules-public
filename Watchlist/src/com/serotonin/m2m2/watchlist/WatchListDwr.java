@@ -60,7 +60,7 @@ public class WatchListDwr extends ModuleDwr {
 
         ph.parseEmptyFolders();
 
-        WatchList watchList = new WatchListDao().getSelectedWatchList(user.getId());
+        WatchListVO watchList = WatchListDao.instance.getSelectedWatchList(user.getId());
         prepareWatchList(watchList, user);
         setWatchList(user, watchList);
 
@@ -81,7 +81,7 @@ public class WatchListDwr extends ModuleDwr {
         return getPointDataImpl(getWatchList());
     }
 
-    private List<WatchListState> getPointDataImpl(WatchList watchList) {
+    private List<WatchListState> getPointDataImpl(WatchListVO watchList) {
         if (watchList == null)
             return new ArrayList<>();
 
@@ -103,35 +103,34 @@ public class WatchListDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public void updateWatchListName(String name) {
         User user = Common.getUser();
-        WatchList watchList = getWatchList(user);
+        WatchListVO watchList = getWatchList(user);
         WatchListCommon.ensureWatchListEditPermission(user, watchList);
         watchList.setName(name);
-        new WatchListDao().saveWatchList(watchList);
+        WatchListDao.instance.saveWatchList(watchList);
     }
 
     @DwrPermission(user = true)
     public IntStringPair addNewWatchList(int copyId) {
         User user = Common.getUser();
 
-        WatchListDao watchListDao = new WatchListDao();
-        WatchList watchList;
+        WatchListVO watchList;
 
         if (copyId == Common.NEW_ID) {
-            watchList = new WatchList();
+            watchList = new WatchListVO();
             watchList.setName(translate("common.newName"));
         }
         else {
-            watchList = new WatchListDao().getWatchList(getWatchList().getId());
+            watchList = WatchListDao.instance.getWatchList(getWatchList().getId());
             watchList.setId(Common.NEW_ID);
             watchList.setName(translate(new TranslatableMessage("common.copyPrefix", watchList.getName())));
         }
         watchList.setUserId(user.getId());
-        watchList.setXid(watchListDao.generateUniqueXid());
+        watchList.setXid(WatchListDao.instance.generateUniqueXid());
 
-        watchListDao.saveWatchList(watchList);
+        WatchListDao.instance.saveWatchList(watchList);
 
         setWatchList(user, watchList);
-        watchListDao.saveSelectedWatchList(user.getId(), watchList.getId());
+        WatchListDao.instance.saveSelectedWatchList(user.getId(), watchList.getId());
 
         return new IntStringPair(watchList.getId(), watchList.getName());
     }
@@ -140,18 +139,17 @@ public class WatchListDwr extends ModuleDwr {
     public boolean deleteWatchList(int watchListId) {
         User user = Common.getUser();
 
-        WatchListDao watchListDao = new WatchListDao();
-        WatchList watchList = getWatchList(user);
+        WatchListVO watchList = getWatchList(user);
         if (watchList == null || watchListId != watchList.getId())
-            watchList = watchListDao.getWatchList(watchListId);
+            watchList = WatchListDao.instance.getWatchList(watchListId);
 
-        if (watchList == null || watchListDao.getWatchLists(user).size() == 1)
+        if (watchList == null || WatchListDao.instance.getWatchLists(user).size() == 1)
             // Only one watch list left. Leave it.
         	return false;
 
         // Allow the delete if the user is an editor.
         if (watchList.isEditor(user)){
-            watchListDao.deleteWatchList(watchListId);
+        	WatchListDao.instance.deleteWatchList(watchListId);
         	return true;
         }
         return false;
@@ -161,12 +159,11 @@ public class WatchListDwr extends ModuleDwr {
     public Map<String, Object> setSelectedWatchList(int watchListId) {
         User user = Common.getUser();
 
-        WatchListDao watchListDao = new WatchListDao();
-        WatchList watchList = watchListDao.getWatchList(watchListId);
+        WatchListVO watchList = WatchListDao.instance.getWatchList(watchListId);
         WatchListCommon.ensureWatchListPermission(user, watchList);
         prepareWatchList(watchList, user);
 
-        watchListDao.saveSelectedWatchList(user.getId(), watchList.getId());
+        WatchListDao.instance.saveSelectedWatchList(user.getId(), watchList.getId());
 
         Map<String, Object> data = getWatchListData(user, watchList);
         // Set the watchlist in the user object after getting the data since it may take a while, and the long poll
@@ -183,7 +180,7 @@ public class WatchListDwr extends ModuleDwr {
         DataPointVO point = new DataPointDao().getDataPoint(pointId);
         if (point == null)
             return null;
-        WatchList watchList = getWatchList(user);
+        WatchListVO watchList = getWatchList(user);
 
         // Check permissions.
         Permissions.ensureDataPointReadPermission(user, point);
@@ -191,7 +188,7 @@ public class WatchListDwr extends ModuleDwr {
 
         // Add it to the watch list.
         watchList.getPointList().add(point);
-        new WatchListDao().saveWatchList(watchList);
+        WatchListDao.instance.saveWatchList(watchList);
         updateSetPermission(point, user);
 
         // Return the watch list state for it.
@@ -202,7 +199,7 @@ public class WatchListDwr extends ModuleDwr {
     public void removeFromWatchList(int pointId) {
         // Remove the point from the user's list.
         User user = Common.getUser();
-        WatchList watchList = getWatchList(user);
+        WatchListVO watchList = getWatchList(user);
         WatchListCommon.ensureWatchListEditPermission(user, watchList);
         for (DataPointVO point : watchList.getPointList()) {
             if (point.getId() == pointId) {
@@ -210,13 +207,13 @@ public class WatchListDwr extends ModuleDwr {
                 break;
             }
         }
-        new WatchListDao().saveWatchList(watchList);
+        WatchListDao.instance.saveWatchList(watchList);
     }
 
     @DwrPermission(user = true)
     public void moveUp(int pointId) {
         User user = Common.getUser();
-        WatchList watchList = getWatchList(user);
+        WatchListVO watchList = getWatchList(user);
         WatchListCommon.ensureWatchListEditPermission(user, watchList);
         List<DataPointVO> points = watchList.getPointList();
 
@@ -230,13 +227,13 @@ public class WatchListDwr extends ModuleDwr {
             }
         }
 
-        new WatchListDao().saveWatchList(watchList);
+        WatchListDao.instance.saveWatchList(watchList);
     }
 
     @DwrPermission(user = true)
     public void moveDown(int pointId) {
         User user = Common.getUser();
-        WatchList watchList = getWatchList(user);
+        WatchListVO watchList = getWatchList(user);
         WatchListCommon.ensureWatchListEditPermission(user, watchList);
         List<DataPointVO> points = watchList.getPointList();
 
@@ -250,7 +247,7 @@ public class WatchListDwr extends ModuleDwr {
             }
         }
 
-        new WatchListDao().saveWatchList(watchList);
+        WatchListDao.instance.saveWatchList(watchList);
     }
 
     /**
@@ -355,7 +352,7 @@ public class WatchListDwr extends ModuleDwr {
         return htmlData.toString();
     }
 
-	private Map<String, Object> getWatchListData(User user, WatchList watchList) {
+	private Map<String, Object> getWatchListData(User user, WatchListVO watchList) {
         Map<String, Object> data = new HashMap<>();
         if (watchList == null)
             return data;
@@ -375,7 +372,7 @@ public class WatchListDwr extends ModuleDwr {
         return data;
     }
 
-    private void prepareWatchList(WatchList watchList, User user) {
+    private void prepareWatchList(WatchListVO watchList, User user) {
         for (DataPointVO point : watchList.getPointList())
             updateSetPermission(point, user);
     }
@@ -413,16 +410,16 @@ public class WatchListDwr extends ModuleDwr {
         }
     }
 
-    private void setWatchList(User user, WatchList watchList) {
+    private void setWatchList(User user, WatchListVO watchList) {
         user.setAttribute("watchList", watchList);
     }
 
-    private static WatchList getWatchList() {
+    private static WatchListVO getWatchList() {
         return getWatchList(Common.getUser());
     }
 
-    private static WatchList getWatchList(User user) {
-        return user.getAttribute("watchList", WatchList.class);
+    private static WatchListVO getWatchList(User user) {
+        return user.getAttribute("watchList", WatchListVO.class);
     }
 
     @DwrPermission(anonymous = true)
@@ -431,7 +428,7 @@ public class WatchListDwr extends ModuleDwr {
 
         synchronized (data.getState()) {
             WatchListCommon.getWatchListStates(data).clear();
-            WatchList wl = getWatchList();
+            WatchListVO wl = getWatchList();
             for (DataPointVO dp : wl.getPointList())
                 dp.resetLastValue();
         }
@@ -453,11 +450,11 @@ public class WatchListDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public ProcessResult exportCurrentWatchlist() {
         ProcessResult result = new ProcessResult();
-        WatchList wl = getWatchList();
+        WatchListVO wl = getWatchList();
 
         Map<String, Object> data = new LinkedHashMap<>();
         //Get the Full VO for the export
-        List<WatchList> vos = new ArrayList<>();
+        List<WatchListVO> vos = new ArrayList<>();
         vos.add(wl);
         data.put(WatchListEmportDefinition.elementId, vos);
 
@@ -468,20 +465,20 @@ public class WatchListDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult savePermissions(String readPermission, String editPermission) {
-        WatchList wl = getWatchList();
+        WatchListVO wl = getWatchList();
         wl.setReadPermission(readPermission);
         wl.setEditPermission(editPermission);
         
         ProcessResult response = new ProcessResult();
         wl.validate(response);
         if(!response.getHasMessages())
-        	new WatchListDao().saveWatchList(wl);
+        	WatchListDao.instance.saveWatchList(wl);
         return response;
     }
 
     @DwrPermission(user = true)
     public ProcessResult getPermissions() {
-        WatchList wl = getWatchList();
+        WatchListVO wl = getWatchList();
         ProcessResult result = new ProcessResult();
         result.addData("readPermission", wl.getReadPermission());
         result.addData("editPermission", wl.getEditPermission());
