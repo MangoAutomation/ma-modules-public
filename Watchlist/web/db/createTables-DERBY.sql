@@ -8,7 +8,9 @@ create table watchLists (
   userId int not null,
   name varchar(50),
   readPermission varchar(255),
-  editPermission varchar(255)
+  editPermission varchar(255),
+  watchListType varchar(20),
+  query varchar(255)
 );
 alter table watchLists add constraint watchListsPk primary key (id);
 alter table watchLists add constraint watchListsUn1 unique (xid);

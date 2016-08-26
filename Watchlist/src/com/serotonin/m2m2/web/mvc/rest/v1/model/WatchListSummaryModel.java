@@ -53,6 +53,25 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>{
 		this.data.setEditPermission(editPermission);
 	}
 	
+	@JsonGetter("type")
+	public String getType(){
+		return this.data.getType();
+	}
+	@JsonSetter("type")
+	public void setType(String type){
+		this.data.setType(type);
+	}
+
+	@JsonGetter("query")
+	public String getQuery(){
+		return this.data.getQuery();
+	}
+	@JsonSetter("query")
+	public void setQuery(String query){
+		this.data.setEditPermission(query);
+	}
+
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
 	 */

@@ -49,6 +49,10 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     private String readPermission;
     @JsonProperty
     private String editPermission;
+    @JsonProperty
+    private String type;
+    @JsonProperty
+    private String query;
     
     //non-persistent members
     private String username;
@@ -134,7 +138,23 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         this.editPermission = editPermission;
     }
 
-    public void validate(ProcessResult response) {
+    public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getQuery() {
+		return query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
+	public void validate(ProcessResult response) {
         if (StringUtils.isBlank(name))
             response.addMessage("name", new TranslatableMessage("validate.required"));
         else if (StringValidation.isLengthGreaterThan(name, 50))

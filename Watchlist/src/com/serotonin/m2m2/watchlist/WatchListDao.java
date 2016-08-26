@@ -308,7 +308,9 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
 			vo.getName(),
 			vo.getUserId(),
 			vo.getEditPermission(),
-			vo.getReadPermission()
+			vo.getReadPermission(),
+			vo.getType(),
+			vo.getQuery()
 		};
 	}
 
@@ -324,6 +326,9 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
 		map.put("userId", Types.INTEGER);
 		map.put("editPermission", Types.VARCHAR);
 		map.put("readPermission", Types.VARCHAR);
+		map.put("type", Types.VARCHAR);
+		map.put("query", Types.VARCHAR);
+		
 		
 		return map;
 	}
@@ -334,10 +339,8 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
 	@Override
 	protected Map<String, IntStringPair> getPropertiesMap() {
 		Map<String, IntStringPair> map = new HashMap<String, IntStringPair>();
-		
 		//So we can filter/sort on username in the models
 		map.put("username", new IntStringPair(Types.VARCHAR, "u.username"));
-		
 		return map;
 
 	}
@@ -363,6 +366,8 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
             wl.setUserId(rs.getInt(++i));
             wl.setEditPermission(rs.getString(++i));
             wl.setReadPermission(rs.getString(++i));
+            wl.setType(rs.getString(++i));
+            wl.setQuery(rs.getString(++i));
             wl.setUsername(rs.getString(++i));
             return wl;
         }
