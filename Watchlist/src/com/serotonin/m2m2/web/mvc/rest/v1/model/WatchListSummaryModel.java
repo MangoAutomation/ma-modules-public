@@ -68,7 +68,7 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>{
 	}
 	@JsonSetter("query")
 	public void setQuery(String query){
-		this.data.setEditPermission(query);
+		this.data.setQuery(query);
 	}
 
 	

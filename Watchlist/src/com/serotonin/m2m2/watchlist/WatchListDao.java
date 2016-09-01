@@ -123,7 +123,7 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
         wl.setUserId(userId);
         wl.setXid(generateUniqueXid());
         wl.setId(ejt.doInsert(
-                "INSERT INTO watchLists (xid, userId, name, readPermission, editPermission) VALUES (?,?,?,?,?)",
+                "INSERT INTO watchLists (xid, userId, name, readPermission, editPermission, type) VALUES (?,?,?,?,?, 'static')",
                 new Object[] { wl.getXid(), userId, wl.getName(), wl.getReadPermission(), wl.getEditPermission() }));
         return wl;
     }
@@ -136,8 +136,8 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 if (wl.getId() == Common.NEW_ID)
                     wl.setId(ejt.doInsert(
-                            "INSERT INTO watchLists (xid, name, userId, readPermission, editPermission) " //
-                                    + "values (?,?,?,?,?)",
+                            "INSERT INTO watchLists (xid, name, userId, readPermission, editPermission, type) " //
+                                    + "values (?,?,?,?,?, 'static')",
                             new Object[] { wl.getXid(), wl.getName(), wl.getUserId(), wl.getReadPermission(),
                                     wl.getEditPermission() }));
                 else
@@ -305,8 +305,8 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
 	protected Object[] voToObjectArray(WatchListVO vo) {
 		return new Object[]{
 			vo.getXid(),
+            vo.getUserId(),
 			vo.getName(),
-			vo.getUserId(),
 			vo.getEditPermission(),
 			vo.getReadPermission(),
 			vo.getType(),
@@ -322,14 +322,12 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
 		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
 		map.put("id", Types.INTEGER);
 		map.put("xid", Types.VARCHAR);
+        map.put("userId", Types.INTEGER);
 		map.put("name", Types.VARCHAR);
-		map.put("userId", Types.INTEGER);
+        map.put("readPermission", Types.VARCHAR);
 		map.put("editPermission", Types.VARCHAR);
-		map.put("readPermission", Types.VARCHAR);
 		map.put("type", Types.VARCHAR);
 		map.put("query", Types.VARCHAR);
-		
-		
 		return map;
 	}
 
@@ -362,10 +360,10 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
             WatchListVO wl = new WatchListVO();
             wl.setId(rs.getInt(++i));
             wl.setXid(rs.getString(++i));
-            wl.setName(rs.getString(++i));
             wl.setUserId(rs.getInt(++i));
-            wl.setEditPermission(rs.getString(++i));
+            wl.setName(rs.getString(++i));
             wl.setReadPermission(rs.getString(++i));
+            wl.setEditPermission(rs.getString(++i));
             wl.setType(rs.getString(++i));
             wl.setQuery(rs.getString(++i));
             wl.setUsername(rs.getString(++i));
