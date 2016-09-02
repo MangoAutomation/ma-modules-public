@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketConfigurer;
@@ -13,6 +15,8 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandshakeInterceptor;
  * @author Terry Packer
  *
  */
+@Configuration
+@EnableWebSocket
 public class WatchListWebSocketConfiguration extends MangoWebSocketConfigurer {
     public static final WatchListWebSocketHandler handler = new WatchListWebSocketHandler();
     
