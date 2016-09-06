@@ -279,7 +279,7 @@
               </td>
             </tr>
             <tr>
-              <td class="formLabelRequired"><fmt:message key="dsEdit.script.logLevel"/></td>
+              <td class="formLabelRequired"><fmt:message key="common.logging.logLevel"/></td>
               <td class="formField">
                 <tag:exportCodesOptions id="logLevel" optionList="<%= ScriptLog.LOG_LEVEL_CODES.getIdKeys() %>"
                         onchange="logLevelChanged()"/>
