@@ -256,6 +256,7 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
             @SuppressWarnings("synthetic-access")
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
+            	WatchListDao.super.save(wl, initiatorId);
                 ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
                 ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
                     @Override
@@ -269,8 +270,6 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
                         ps.setInt(3, i);
                     }
                 });
-                // call after updating points to ensure that the websockets are notified afterwards
-                WatchListDao.super.save(wl, initiatorId);
             }
         });
     }
