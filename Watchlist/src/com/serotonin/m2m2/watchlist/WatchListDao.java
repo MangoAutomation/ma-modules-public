@@ -23,11 +23,12 @@ import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.WebSocketNotifyingDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketConfiguration;
+import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.util.SerializationHelper;
 
@@ -35,16 +36,17 @@ import com.serotonin.util.SerializationHelper;
  * @author Matthew Lohbihler
  * @author Terry Packer
  */
-public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
+public class WatchListDao extends AbstractDao<WatchListVO> {
     
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance = new WatchListDao();
+    WatchListWebSocketHandler handler;
 	
-	private WatchListDao(){
-		super(WatchListWebSocketConfiguration.handler, 
-				AuditEvent.TYPE_NAME, "w",
-				new String[] {"u.username"}, //to allow filtering on username
+	private WatchListDao() {
+		super(AuditEvent.TYPE_NAME, "w",
+		        new String[] {"u.username"}, //to allow filtering on username
 				"join users u on u.id = w.userId ");
+		this.handler = WatchListWebSocketConfiguration.handler;
 	}
 
 	
@@ -245,18 +247,61 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
     		
     	});
     }
-    
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.WebSocketNotifyingDao#save(com.serotonin.m2m2.vo.AbstractVO, java.lang.String)
-     */
+
+    public void delete(int id, String initiatorId) {
+        WatchListVO vo = get(id);
+        delete(vo, initiatorId);
+    }
+
     @Override
+    public void delete(WatchListVO vo) {
+        delete(vo, null);
+    }
+
+    public void delete(WatchListVO vo, String initiatorId) {
+        super.delete(vo);
+        handler.notify("delete", vo, initiatorId);
+    }
+
+    @Override
+    protected void insert(WatchListVO vo) {
+        insert(vo, null);
+    }
+
+    protected void insert(WatchListVO vo, String initiatorId) {
+        super.insert(vo);
+        handler.notify("add", vo, initiatorId);
+    }
+
+    @Override
+    protected void update(WatchListVO vo) {
+        update(vo, null);
+    }
+
+    protected void update(WatchListVO vo, String initiatorId) {
+        super.update(vo);
+        handler.notify("update", vo, initiatorId);
+    }
+    
+    @Override
+    public void save(WatchListVO vo) {
+        save(vo, null);
+    }
+   
     public void save(final WatchListVO wl, final String initiatorId) {
     	final ExtendedJdbcTemplate ejt2 = ejt;
         getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
             @SuppressWarnings("synthetic-access")
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-            	WatchListDao.super.save(wl, initiatorId);
+                // manually call super insert or update methods so websocket is not notified
+                boolean isNew = wl.getId() == Common.NEW_ID;
+            	if (isNew) {
+            	    WatchListDao.super.insert(wl);
+                } else {
+                    WatchListDao.super.update(wl);
+                }
+            	
                 ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
                 ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
                     @Override
@@ -270,6 +315,13 @@ public class WatchListDao extends WebSocketNotifyingDao<WatchListVO> {
                         ps.setInt(3, i);
                     }
                 });
+                
+                // manually trigger websocket after saving points
+                if (isNew) {
+                    handler.notify("add", wl);
+                } else {
+                    handler.notify("update", wl);
+                }
             }
         });
     }
