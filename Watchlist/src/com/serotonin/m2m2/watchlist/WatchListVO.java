@@ -41,6 +41,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 	private static final long serialVersionUID = 1L;
 
 	public static final String XID_PREFIX = "WL_";
+    public static final String DEFAULT_TYPE = "static";
 
     private int userId;
     //TODO When we remove the legacy code reduce these objects to summaries only
@@ -56,6 +57,10 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     
     //non-persistent members
     private String username;
+    
+    public WatchListVO() {
+        type = DEFAULT_TYPE;
+    }
 
     public boolean isOwner(User user) {
         return user.getId() == userId;

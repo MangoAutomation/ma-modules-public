@@ -71,7 +71,7 @@ public class WatchListEmportDefinition extends EmportDefinition {
             else {
                 // Sweet. Save it.
                 boolean isnew = watchList.getId() == Common.NEW_ID;
-                WatchListDao.instance.saveWatchList(watchList);
+                WatchListDao.instance.save(watchList);
                 importContext.addSuccessMessage(isnew, "emport.watchList.prefix", xid);
             }
         }
