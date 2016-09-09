@@ -29,11 +29,13 @@ public class Upgrade3 extends DBUpgrade {
     private final String[] mssqlScript = { //
     	"ALTER TABLE watchLists ADD COLUMN type NVARCHAR(20);", //
     	"ALTER TABLE watchLists ADD COLUMN query NVARCHAR(255);", //
+        "UPDATE watchLists SET type = 'static';", //
     };
 
     private final String[] mysqlScript = { //
     	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);", //
         "ALTER TABLE watchLists ADD COLUMN query VARCHAR(255);", //
+        "UPDATE watchLists SET type = 'static';", //
     };
 
 }
