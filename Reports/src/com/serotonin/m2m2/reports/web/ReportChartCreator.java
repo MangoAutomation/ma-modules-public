@@ -35,6 +35,7 @@ import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.util.chart.DiscreteTimeSeries;
 import com.serotonin.m2m2.util.chart.ImageChartUtils;
@@ -166,8 +167,32 @@ public class ReportChartCreator {
                 pointStat.setImageData(ImageChartUtils.getChartData(ptsc, POINT_IMAGE_WIDTH, POINT_IMAGE_HEIGHT,
                         reportInstance.getReportStartTime(), reportInstance.getReportEndTime()));
             }
+            
+        	//  Since I just want to include the most recent image
+        	// in the report I'll add it here while we are already iterating over the points that are included in the report
+        	if (pointStat.getDataType() == DataTypes.IMAGE) {
+        		ValueChangeCounter pointStatisticsGenerator = (ValueChangeCounter) pointStat.getStats();
+        		ImageValue img = (ImageValue) ( pointStatisticsGenerator.getLastValue() );
+        		if (img != null) {
+        			try {
+        				pointStat.setImageData(img.getImageData());
+        				
+        	            if (inlinePrefix != null)
+        	            	model.put("chartName", pointStat.getChartName());
+        	            else {
+        	            	// serve up the image using the reportImageChart servlet instead of the imageValueServlet that is used on flipbook page
+        	                // The path comes from the servlet path definition in web.xml. 
+        	                model.put("chartName", IMAGE_SERVLET + pointStat.getChartName());
+        	            }        				
+        			}
+        			catch (IOException e) {
+        				LOG.error("failed to retrieve image data", e);
+        			}
+        		}
+        	}
         }
 
+        // consolidated chart
         PointTimeSeriesCollection ptsc = handler.getPointTimeSeriesCollection();
         if (ptsc.hasData()) {
             if (inlinePrefix != null)
@@ -449,7 +474,7 @@ public class ReportChartCreator {
         }
 
         public boolean isChartData() {
-            return numericTimeSeries != null || discreteTimeSeries != null;
+            return numericTimeSeries != null || discreteTimeSeries != null || imageData !=null;
         }
 
         public String getChartPath() {
@@ -459,6 +484,10 @@ public class ReportChartCreator {
         }
 
         public String getChartName() {
+        	if (this.getDataType() == DataTypes.IMAGE) {
+        		// for images the filename is the string representation of the image data type 
+        		return ((ValueChangeCounter) this.getStats()).getLastValue().toString();
+        	} // else 
             return "reportPointChart" + reportPointId + ".png";
         }
     }
