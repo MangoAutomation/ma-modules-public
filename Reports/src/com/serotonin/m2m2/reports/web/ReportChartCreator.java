@@ -178,7 +178,7 @@ public class ReportChartCreator {
         				pointStat.setImageData(img.getImageData());
         				
         	            if (inlinePrefix != null)
-        	            	model.put("chartName", pointStat.getChartName());
+        	            	model.put("chartName", inlinePrefix + pointStat.getChartName());
         	            else {
         	            	// serve up the image using the reportImageChart servlet instead of the imageValueServlet that is used on flipbook page
         	                // The path comes from the servlet path definition in web.xml. 
@@ -486,9 +486,13 @@ public class ReportChartCreator {
         public String getChartName() {
         	if (this.getDataType() == DataTypes.IMAGE) {
         		// for images the filename is the string representation of the image data type 
-        		return ((ValueChangeCounter) this.getStats()).getLastValue().toString();
-        	} // else 
-            return "reportPointChart" + reportPointId + ".png";
+        		ValueChangeCounter stats = (ValueChangeCounter) this.getStats();
+        		if(stats.getLastValue() != null)
+        			return stats.getLastValue().toString();
+        		else
+        			return null;
+        	}else
+        		return "reportPointChart" + reportPointId + ".png";
         }
     }
 
