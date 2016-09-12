@@ -1,3 +1,6 @@
+*Version 1.5.5*
+* Fixing bug where a failed execution of the point link would cause it to stop linking.
+
 *Version 1.5.4*
 * Fixed bug where validating a script without a target point would crash the page
 * Moving to compiled script executor

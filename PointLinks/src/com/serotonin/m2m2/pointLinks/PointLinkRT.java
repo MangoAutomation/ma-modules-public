@@ -128,11 +128,13 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         DataPointRT targetPoint = Common.runtimeManager.getDataPoint(vo.getTargetPointId());
         if (targetPoint == null) {
             raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.targetUnavailable"));
+            ready = true;
             return;
         }
 
         if (!targetPoint.getPointLocator().isSettable()) {
             raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.targetNotSettable"));
+            ready = true;
             return;
         }
 
@@ -153,22 +155,26 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                         targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
+                    ready = true;
                     return;
                 }
                 newValue = pvt;
             }
             catch (ScriptException e) {
                 raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
+                ready = true;
                 return;
             }
             catch (ResultTypeException e) {
                 raiseFailureEvent(newValue.getTime(), e.getTranslatableMessage());
+                ready = true;
                 return;
             }
         }
 
         if (DataTypes.getDataType(newValue.getValue()) != targetDataType) {
             raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.convertError"));
+            ready = true;
             return;
         }
 

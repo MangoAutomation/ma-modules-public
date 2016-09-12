@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>pointlinks</artifactId>
     <name>Point Links</name>
-    <version>1.5.4</version>
+    <version>1.5.5</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
