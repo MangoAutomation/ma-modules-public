@@ -70,6 +70,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		this.modelMap.put("dataPointId", "typeRef1");
 		this.modelMap.put("dataSourceId", "typeRef2");
 		this.modelMap.put("active", "rtnTs");
+		this.modelMap.put("acknowledged", "ackTs");
 		
 		this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
 		this.appenders.put("active", new GenericSQLColumnQueryAppender(){
@@ -83,20 +84,47 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 				if(columnArgs.size() == 0)
 					return;
 				
-				String condition = (String)columnArgs.get(0);
-				if(condition.equals("true")){
-					appendSQL(column.getName(), EQUAL_TO_SQL, selectSql, countSql);
-					selectArgs.add(NULL);
+				Boolean condition = (Boolean)columnArgs.get(0);
+				if(condition){
+					appendSQL(column.getName(), " IS ? ", selectSql, countSql);
+					selectArgs.add(null);
 				}else{
-					appendSQL(column.getName(), GREATER_THAN_SQL, selectSql, countSql);
-					selectArgs.add(0);
+					appendSQL(column.getName(), " IS NOT ? ", selectSql, countSql);
+					selectArgs.add(null);
 				}
 				
-				appendSQL("rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
-				selectArgs.add(true);
+				appendSQL("AND evt.rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
+				selectArgs.add("Y");
 			}
 		
-		});		
+		});	
+		this.appenders.put("acknowledged", new GenericSQLColumnQueryAppender(){
+
+			@Override
+			public void appendSQL(SQLQueryColumn column,
+					StringBuilder selectSql, StringBuilder countSql,
+					List<Object> selectArgs, List<Object> columnArgs,
+					ComparisonEnum comparison) {
+				
+				if(columnArgs.size() == 0)
+					return;
+				
+				Boolean condition = (Boolean)columnArgs.get(0);
+				if(condition){
+					appendSQL(column.getName(), " IS NOT ? ", selectSql, countSql);
+					selectArgs.add(null);
+				}else{
+					appendSQL(column.getName(), " IS ? ", selectSql, countSql);
+					selectArgs.add(null);
+					appendSQL("AND evt.rtnTs", " IS NOT ? ", selectSql, countSql);
+					selectArgs.add(null);
+				}
+				
+				appendSQL("AND evt.rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
+				selectArgs.add("Y");
+			}
+		
+		});	
 	}
 
 	
@@ -115,6 +143,9 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         this.checkUser(request, result);
     	
         if(result.isOk()){
+        	
+        	//TODO Add UserId
+        	
     		return result.createResponseEntity(getStream(new ASTNode("limit", limit)));
     	}
         return result.createResponseEntity();
@@ -133,7 +164,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 
 		this.checkUser(request, result);
         if(result.isOk()){
-	        EventInstanceVO vo =EventInstanceDao.instance.get(id);
+	        EventInstanceVO vo = EventInstanceDao.instance.get(id);
 	        if (vo == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -163,9 +194,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(!user.isAdmin()){
-    			query.createChildNode("eq", "ue.userId", user.getId());
-    		}
+  			query.createChildNode("eq", "userId", user.getId());
     		return result.createResponseEntity(getPageStream(query));
     	}
     	
@@ -188,9 +217,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     		try{
     			//Parse the RQL Query
 	    		ASTNode query = this.parseRQLtoAST(request);
-	    		if(!user.isAdmin()){
-	    			query.createChildNode("eq", "userId", user.getId());
-	    		}
+    			query.createChildNode("eq", "userId", user.getId());
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
