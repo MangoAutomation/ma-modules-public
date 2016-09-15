@@ -73,7 +73,9 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		this.modelMap.put("acknowledged", "ackTs");
 		
 		this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
-		this.appenders.put("active", new GenericSQLColumnQueryAppender(){
+		
+		//TODO change to active instead of rtnTs when core change is IN (2.8.0)
+		this.appenders.put("rtnTs", new GenericSQLColumnQueryAppender(){
 
 			@Override
 			public void appendSQL(SQLQueryColumn column,
@@ -82,6 +84,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 					ComparisonEnum comparison) {
 				
 				if(columnArgs.size() == 0)
+					return;
+				
+				//Hack to allow still querying on rtnTs as number
+				if(!(columnArgs.get(0) instanceof Boolean))
 					return;
 				
 				Boolean condition = (Boolean)columnArgs.get(0);
@@ -98,7 +104,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			}
 		
 		});	
-		this.appenders.put("acknowledged", new GenericSQLColumnQueryAppender(){
+		//TODO change to acknowledged instead of ackTs when core change is IN (2.8.0)
+		this.appenders.put("ackTs", new GenericSQLColumnQueryAppender(){
 
 			@Override
 			public void appendSQL(SQLQueryColumn column,
@@ -107,6 +114,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 					ComparisonEnum comparison) {
 				
 				if(columnArgs.size() == 0)
+					return;
+				
+				//Hack to allow querying on ackTs as number
+				if(!(columnArgs.get(0) instanceof Boolean))
 					return;
 				
 				Boolean condition = (Boolean)columnArgs.get(0);
