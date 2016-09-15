@@ -116,12 +116,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 				}else{
 					appendSQL(column.getName(), " IS ? ", selectSql, countSql);
 					selectArgs.add(null);
-					appendSQL("AND evt.rtnTs", " IS NOT ? ", selectSql, countSql);
-					selectArgs.add(null);
 				}
-				
-				appendSQL("AND evt.rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
-				selectArgs.add("Y");
 			}
 		
 		});	
