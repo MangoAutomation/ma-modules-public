@@ -74,8 +74,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		
 		this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
 		
-		//TODO change to active instead of rtnTs when core change is IN (2.8.0)
-		this.appenders.put("rtnTs", new GenericSQLColumnQueryAppender(){
+		//If we query on the member active
+		this.appenders.put("active", new GenericSQLColumnQueryAppender(){
 
 			@Override
 			public void appendSQL(SQLQueryColumn column,
@@ -104,8 +104,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			}
 		
 		});	
-		//TODO change to acknowledged instead of ackTs when core change is IN (2.8.0)
-		this.appenders.put("ackTs", new GenericSQLColumnQueryAppender(){
+		//If we query on the member acknowledged
+		this.appenders.put("acknowledged", new GenericSQLColumnQueryAppender(){
 
 			@Override
 			public void appendSQL(SQLQueryColumn column,
