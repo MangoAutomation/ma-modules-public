@@ -359,8 +359,8 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 			vo.getXid(),
             vo.getUserId(),
 			vo.getName(),
+            vo.getReadPermission(),
 			vo.getEditPermission(),
-			vo.getReadPermission(),
 			vo.getType(),
 			vo.getQuery()
 		};
