@@ -146,13 +146,9 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 
         RestProcessResult<QueryArrayStream<EventInstanceVO>> result = new RestProcessResult<QueryArrayStream<EventInstanceVO>>(HttpStatus.OK);
         
-        this.checkUser(request, result);
-    	
+        User user = this.checkUser(request, result);
         if(result.isOk()){
-        	
-        	//TODO Add UserId
-        	
-    		return result.createResponseEntity(getStream(new ASTNode("limit", limit)));
+        	return result.createResponseEntity(getPageStream(restrictQuery(new ASTNode("limit", limit), user)));
     	}
         return result.createResponseEntity();
 	}
@@ -200,8 +196,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-  			query.createChildNode("eq", "userId", user.getId());
-    		return result.createResponseEntity(getPageStream(query));
+  			return result.createResponseEntity(getPageStream(restrictQuery(query, user)));
     	}
     	
     	return result.createResponseEntity();
@@ -223,8 +218,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     		try{
     			//Parse the RQL Query
 	    		ASTNode query = this.parseRQLtoAST(request);
-    			query.createChildNode("eq", "userId", user.getId());
-	    		return result.createResponseEntity(getPageStream(query));
+	    		return result.createResponseEntity(getPageStream(restrictQuery(query, user)));
     		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
@@ -233,6 +227,19 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     	}
     	
     	return result.createResponseEntity();
+	}
+	
+	/**
+	 * Restrict results based on userId
+	 * @param query
+	 * @return
+	 */
+	private ASTNode restrictQuery(ASTNode query, User user){
+		if(query == null){
+			return new ASTNode("eq", "userId", user.getId());
+		}else{
+			return new ASTNode("and",  new ASTNode("eq", "userId", user.getId()), query);
+		}
 	}
 	
 	/**
