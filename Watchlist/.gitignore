@@ -2,3 +2,5 @@
 /bin
 *~
 /maven-target
+/junit/
+/logs/

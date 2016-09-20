@@ -4,7 +4,9 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -23,13 +25,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
@@ -44,7 +48,6 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import net.jazdw.rql.parser.ASTNode;
-import net.jazdw.rql.parser.RQLParser;
 
 /**
  * @author Terry Packer
@@ -79,23 +82,40 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-    			RQLParser parser = new RQLParser();
-    			String queryString = request.getQueryString();
-    			ASTNode query;
+    			ASTNode query = this.parseRQLtoAST(request);
     			if(!user.isAdmin()){
-    				StringBuilder permissionsClause = new StringBuilder();
-    				Set<String> permissions = Permissions.explodePermissionGroups(user.getPermissions());
-    				for(String permission : permissions)
-    					permissionsClause.append("|readPermission=like=*" + permission + "*");
     				
-    				String restrict = "(userId=" + user.getId() + permissionsClause.toString() + ")";
-    				queryString = restrict + queryString;
-    				query = parser.parse(queryString);
-	    		}else{
-	    			query = parser.parse(queryString);
-	    		}
-    			return result.createResponseEntity(getPageStream(query));
-    		}catch(RQLToSQLParseException e){
+    				//Root query node
+    				ASTNode root = null;
+    				
+    				//Filter by permissions
+    				Set<String> permissions = Permissions.explodePermissionGroups(user.getPermissions());
+    				ASTNode permRQL = null;
+    	    	    if(permissions.size() != 0){
+    	    	    	//Trim the permissions
+    	    	    	Set<String> groups = new HashSet<String>(permissions.size());
+    	    	    	for(String perm : permissions)
+    	    	    		groups.add(perm.trim());
+    					permRQL = new ASTNode("in", "readPermission", Permissions.implodePermissionGroups(groups));
+    	    	    }
+    				
+    				//Filter by User
+    				if(query == null){
+    					if(permRQL == null)
+    						root = new ASTNode("eq", "userId", user.getId());
+    					else
+    						root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL);
+    				}else{
+    					if(permRQL == null)
+    						root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), query);
+    					else
+    						root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL, query);
+    				}
+    				
+    				return result.createResponseEntity(getPageStream(root));
+	    		}else
+	    			return result.createResponseEntity(getPageStream(query));
+    		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -286,13 +306,13 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 	@ApiOperation(
 			value = "Get Data Points for a Watchlist",
 			notes = "",
-			response=WatchListModel.class
+			response=WatchlistPointsQueryDataPageStream.class
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}/data-points")
-    public ResponseEntity<List<DataPointModel>> getDataPointst(
+    public ResponseEntity<WatchlistPointsQueryDataPageStream> getDataPoints(
     		@PathVariable String xid,
     		HttpServletRequest request) throws RestValidationFailedException {
-		RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
+		RestProcessResult<WatchlistPointsQueryDataPageStream> result = new RestProcessResult<WatchlistPointsQueryDataPageStream>(HttpStatus.OK);
 		try{
 	    	User user = this.checkUser(request, result);
 	    	if(result.isOk()){
@@ -302,13 +322,8 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 	    			return result.createResponseEntity();
 	    		}
 	    		if(hasReadPermission(user, wl)){
-	    			List<DataPointVO> points = this.dao.getPoints(wl.getId());
-	    			List<DataPointModel> models = new ArrayList<DataPointModel>();
-	    			for(DataPointVO dp : points){
-	    				if(Permissions.hasDataPointReadPermission(user, dp));
-	    					models.add(new DataPointModel(dp));
-	    			}
-	    			return result.createResponseEntity(models);
+	    			WatchlistPointsQueryDataPageStream stream = new WatchlistPointsQueryDataPageStream(wl.getId(), user);
+	    			return result.createResponseEntity(stream);
 	    		}else{
 	    			result.addRestMessage(getUnauthorizedMessage());
 	    		}
@@ -370,4 +385,65 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 			return false;
 	}
 
+	
+	class WatchlistPointsQueryDataPageStream implements QueryDataPageStream<DataPointModel>{
+
+		private int watchlistId;
+		private long pointCount = 0;
+		private User user;
+		
+		public WatchlistPointsQueryDataPageStream(int wlId, User user){
+			this.watchlistId = wlId;
+			this.user = user;
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
+		 */
+		@Override
+		public void streamData(final JsonGenerator jgen) throws IOException {
+			WatchListDao.instance.getPoints(watchlistId, new MappedRowCallback<DataPointVO>(){
+
+				@Override
+				public void row(DataPointVO dp, int index) {
+					if(Permissions.hasDataPointReadPermission(user, dp));
+						try {
+							jgen.writeObject(new WatchListDataPointModel(dp));
+							pointCount++;
+						} catch (IOException e) {
+							LOG.error(e.getMessage(), e);
+						}
+				}
+			});
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+		 */
+		@Override
+		public void streamData(CSVPojoWriter<DataPointModel> writer) throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream#streamCount(com.fasterxml.jackson.core.JsonGenerator)
+		 */
+		@Override
+		public void streamCount(JsonGenerator jgen) throws IOException {
+			jgen.writeNumber(pointCount);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream#streamCount(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+		 */
+		@Override
+		public void streamCount(CSVPojoWriter<Long> writer) throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
 }

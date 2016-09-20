@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -204,8 +205,10 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             + "  dp.discardExtremeValues, dp.engineeringUnits, dp.readPermission, dp.setPermission, dp.templateId, ds.name, " //
             + "  ds.xid, ds.dataSourceType " //
             + "from dataPoints dp join dataSources ds on ds.id = dp.dataSourceId JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
-   public List<DataPointVO> getPoints(int watchListId){
-    	return query(SELECT_POINTS, new Object[]{watchListId}, new RowMapper<DataPointVO>(){
+    public void getPoints(int watchListId, final MappedRowCallback<DataPointVO> callback){
+    	
+    	//Create a row mapper
+    	final RowMapper<DataPointVO> pointMapper = new RowMapper<DataPointVO>(){
 			@SuppressWarnings("deprecation")
 			@Override
 			public DataPointVO mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -243,6 +246,17 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 
 	            dp.ensureUnitsCorrect();
 				return dp;
+			}
+    		
+    	};
+    	
+    	this.ejt.query(SELECT_POINTS, new Object[]{watchListId}, new RowCallbackHandler(){
+    		private int row = 0;
+    		
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				callback.row(pointMapper.mapRow(rs, row), row);
+				row++;
 			}
     		
     	});
