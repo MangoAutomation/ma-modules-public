@@ -9,7 +9,7 @@ create table watchLists (
   name nvarchar(50),
   readPermission nvarchar(255),
   editPermission nvarchar(255),
-  watchListType nvarchar(20),
+  type nvarchar(20),
   query nvarchar(255),
   primary key (id)
 );
