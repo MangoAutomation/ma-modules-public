@@ -6,10 +6,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -84,35 +82,11 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     		try{
     			ASTNode query = this.parseRQLtoAST(request);
     			if(!user.isAdmin()){
-    				
-    				//Root query node
-    				ASTNode root = null;
-    				
-    				//Filter by permissions
-    				Set<String> permissions = Permissions.explodePermissionGroups(user.getPermissions());
-    				ASTNode permRQL = null;
-    	    	    if(permissions.size() != 0){
-    	    	    	//Trim the permissions
-    	    	    	Set<String> groups = new HashSet<String>(permissions.size());
-    	    	    	for(String perm : permissions)
-    	    	    		groups.add(perm.trim());
-    					permRQL = new ASTNode("in", "readPermission", Permissions.implodePermissionGroups(groups));
-    	    	    }
-    				
-    				//Filter by User
-    				if(query == null){
-    					if(permRQL == null)
-    						root = new ASTNode("eq", "userId", user.getId());
-    					else
-    						root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL);
-    				}else{
-    					if(permRQL == null)
-    						root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), query);
-    					else
-    						root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL, query);
-    				}
-    				
-    				return result.createResponseEntity(getPageStream(root));
+    				WatchListStreamCallback callback = new WatchListStreamCallback(this, user);
+    				WatchListPageQueryStream stream = new WatchListPageQueryStream(this, query, callback);
+    				//Ensure its ready
+    				stream.setupQuery();
+    				return result.createResponseEntity(stream);
 	    		}else
 	    			return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){
@@ -306,13 +280,13 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 	@ApiOperation(
 			value = "Get Data Points for a Watchlist",
 			notes = "",
-			response=WatchlistPointsQueryDataPageStream.class
+			response=WatchListPointsQueryDataPageStream.class
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}/data-points")
-    public ResponseEntity<WatchlistPointsQueryDataPageStream> getDataPoints(
+    public ResponseEntity<WatchListPointsQueryDataPageStream> getDataPoints(
     		@PathVariable String xid,
     		HttpServletRequest request) throws RestValidationFailedException {
-		RestProcessResult<WatchlistPointsQueryDataPageStream> result = new RestProcessResult<WatchlistPointsQueryDataPageStream>(HttpStatus.OK);
+		RestProcessResult<WatchListPointsQueryDataPageStream> result = new RestProcessResult<WatchListPointsQueryDataPageStream>(HttpStatus.OK);
 		try{
 	    	User user = this.checkUser(request, result);
 	    	if(result.isOk()){
@@ -322,7 +296,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 	    			return result.createResponseEntity();
 	    		}
 	    		if(hasReadPermission(user, wl)){
-	    			WatchlistPointsQueryDataPageStream stream = new WatchlistPointsQueryDataPageStream(wl.getId(), user);
+	    			WatchListPointsQueryDataPageStream stream = new WatchListPointsQueryDataPageStream(wl.getId(), user);
 	    			return result.createResponseEntity(stream);
 	    		}else{
 	    			result.addRestMessage(getUnauthorizedMessage());
@@ -386,13 +360,21 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 	}
 
 	
-	class WatchlistPointsQueryDataPageStream implements QueryDataPageStream<DataPointModel>{
+	
+
+	
+	/**
+	 * Class to stream data points and restrict based on permissions
+	 * @author Terry Packer
+	 *
+	 */
+	class WatchListPointsQueryDataPageStream implements QueryDataPageStream<DataPointModel>{
 
 		private int watchlistId;
 		private long pointCount = 0;
 		private User user;
 		
-		public WatchlistPointsQueryDataPageStream(int wlId, User user){
+		public WatchListPointsQueryDataPageStream(int wlId, User user){
 			this.watchlistId = wlId;
 			this.user = user;
 		}

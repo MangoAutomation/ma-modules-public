@@ -177,6 +177,14 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         });
     }
 	
+    /**
+     * Stream all results back
+     * @param callback
+     */
+    public void getAll(MappedRowCallback<WatchListVO> callback){
+    	query(SELECT_ALL, new Object[]{}, rowMapper, callback);
+    }
+    
     private final String SELECT_POINT_SUMMARIES = "SELECT dp.xid,dp.name,dp.deviceName,dp.pointFolderId,dp.readPermission,dp.setPermission from dataPoints as dp JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
     public List<WatchListDataPointModel> getPointSummaries(int watchListId){
     	return query(SELECT_POINT_SUMMARIES, new Object[]{watchListId}, new RowMapper<WatchListDataPointModel>(){
