@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
@@ -32,7 +34,10 @@ import com.serotonin.m2m2.vo.hierarchy.PointFolder;
 import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointSummaryModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PointHierarchyModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -56,28 +61,18 @@ public class PointHierarchyRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Get full point hierarchy", notes = "Hierarchy based on user priviledges")
     @RequestMapping(method = RequestMethod.GET, value = "/full", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getPointHierarchy(
+    public ResponseEntity<ObjectStream<PointHierarchyModel>> getPointHierarchy(
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
             HttpServletRequest request) {
 
-    	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
+    	RestProcessResult<ObjectStream<PointHierarchyModel>> result = new RestProcessResult<ObjectStream<PointHierarchyModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-	    	PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-	    	PointFolder folder = copyFolder(ph.getRoot());
-	    	
-	    	if (!getSubFolders) {
-                folder.setSubfolders(Collections.<PointFolder>emptyList());
-            }
-	    	
-	    	//Clean out based on permissions
-	    	prune(folder, user, false);
-	    	PointHierarchyModel model = new PointHierarchyModel(folder, getDataSourceXidMap());
-	    	return result.createResponseEntity(model);
+    		PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+	    	PointHiearchyPointlessStream stream = new PointHiearchyPointlessStream(ph.getRoot(), user, getSubFolders);
+	    	return result.createResponseEntity(stream);
     	}
-    	
     	return result.createResponseEntity();
-    
     }
     
 
@@ -289,6 +284,90 @@ public class PointHierarchyRestController extends MangoRestController{
 			return result.createResponseEntity();
 		}
     }
+	
+	class PointHiearchyPointlessStream implements ObjectStream<PointHierarchyModel>{
+
+		private PointFolder folder;
+		private User user;
+		private boolean getSubFolders;
+		private Map<Integer, String> dsXidMap;
+		
+		/**
+		 * @param folder
+		 * @param user
+		 * @param getSubFolders
+		 */
+		public PointHiearchyPointlessStream(PointFolder folder, User user, boolean getSubFolders) {
+			this.folder = folder;
+			this.user = user;
+			this.getSubFolders = getSubFolders;
+			
+			this.dsXidMap = new HashMap<Integer, String>();
+			for(DataSourceVO<?> ds : DataSourceDao.instance.getAll()){
+				dsXidMap.put(ds.getId(), ds.getXid());
+			}
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
+		 */
+		@Override
+		public void streamData(JsonGenerator jgen) throws IOException {
+	    	writeFoldersRecursively(folder, jgen);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+		 */
+		@Override
+		public void streamData(CSVPojoWriter<PointHierarchyModel> jgen) throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		/**
+		 * Write out the Folders
+		 * @param folder
+		 * @param user
+		 * @throws IOException 
+		 */
+		void writeFoldersRecursively(PointFolder folder, JsonGenerator jgen) throws IOException{
+			
+			//Write the folder name
+			jgen.writeStringField("name", folder.getName());
+			//Write the folder id
+			jgen.writeNumberField("id", folder.getId());
+
+			//Write out the points
+			jgen.writeArrayFieldStart("points");
+			
+			List<DataPointSummary> points = folder.getPoints();
+			Iterator<DataPointSummary> ptIt = points.iterator();
+			while (ptIt.hasNext()) {
+			    DataPointSummary pt = ptIt.next();
+			    if (Permissions.hasDataPointReadPermission(user, pt)) {
+			        jgen.writeObject(new DataPointSummaryModel(pt, this.dsXidMap.get(pt.getDataSourceId())));
+			    }
+			}
+			jgen.writeEndArray();
+			
+			if(getSubFolders){
+				//Write the subfolders
+				jgen.writeArrayFieldStart("subfolders");
+				List<PointFolder> folders = folder.getSubfolders();
+				Iterator<PointFolder> folderIt = folders.iterator();
+		        while (folderIt.hasNext()) {
+		            PointFolder f = folderIt.next();
+		            jgen.writeStartObject();
+		            writeFoldersRecursively(f, jgen);
+		            jgen.writeEndObject();
+		        }
+		        jgen.writeEndArray();
+			}
+		}
+		
+	}
+	
 	
 	/**
      * Remove any data points that are not readable by user and remove empty folders that result

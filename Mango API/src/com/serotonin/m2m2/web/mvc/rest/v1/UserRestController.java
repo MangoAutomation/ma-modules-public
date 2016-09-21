@@ -469,7 +469,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     			//Parse the RQL Query
 	    		ASTNode query = this.parseRQLtoAST(request);
 	    		if(!user.isAdmin()){
-	    			query.createChildNode("eq", "id", user.getId());
+	    			query = addAndRestriction(query, new ASTNode("eq", "id", user.getId()));
 	    		}
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(UnsupportedEncodingException e){
