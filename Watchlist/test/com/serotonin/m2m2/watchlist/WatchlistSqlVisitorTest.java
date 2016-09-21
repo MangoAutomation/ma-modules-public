@@ -72,7 +72,7 @@ public class WatchlistSqlVisitorTest{
         MappedRowCallback<Long> countCallback = null;
         
         
-		StreamableSqlQuery<WatchListVO> query = WatchListDao.instance.createQuery(root, selectCallback, countCallback, modelMap, appenders);
+		StreamableSqlQuery<WatchListVO> query = WatchListDao.instance.createQuery(root, selectCallback, countCallback, modelMap, appenders, true);
 		
 		System.out.println(query.toString());
         

@@ -7,7 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredVoStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListSummaryModel;
 
 /**
@@ -15,7 +15,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListSummaryModel;
  * @author Terry Packer
  *
  */
-public class WatchListStreamCallback extends VoStreamCallback<WatchListVO, WatchListSummaryModel, WatchListDao>{
+public class WatchListStreamCallback extends FilteredVoStreamCallback<WatchListVO, WatchListSummaryModel, WatchListDao>{
 
 	private User user;
 	
@@ -32,8 +32,8 @@ public class WatchListStreamCallback extends VoStreamCallback<WatchListVO, Watch
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback#canWrite(java.lang.Object)
 	 */
 	@Override
-	protected boolean canWrite(WatchListVO vo) {
+	protected boolean filter(WatchListVO vo) {
 		//Allow this watchlist to be written out to the user?
-		return WatchListRestController.hasReadPermission(user, vo);
+		return !WatchListRestController.hasReadPermission(user, vo);
 	}
 }

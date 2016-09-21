@@ -35,6 +35,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListModel;
@@ -82,9 +83,11 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     		try{
     			ASTNode query = this.parseRQLtoAST(request);
     			if(!user.isAdmin()){
+    				//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
     				WatchListStreamCallback callback = new WatchListStreamCallback(this, user);
-    				WatchListPageQueryStream stream = new WatchListPageQueryStream(this, query, callback);
-    				//Ensure its ready
+    				FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao> stream  = 
+    						new FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao>(WatchListDao.instance,
+    								this, query, callback);
     				stream.setupQuery();
     				return result.createResponseEntity(stream);
 	    		}else
