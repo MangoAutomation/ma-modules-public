@@ -122,8 +122,8 @@ public class DeviceNameController extends MangoRestController {
      * TODO Remove the below classes and methods and use the functions in DataPointDao for 2.8.x
      */
     
-    private static final String SELECT_DEVICENAME = "SELECT DISTINCT pt.deviceName, pt.readPermission FROM datapoints AS pt";
-    private static final String SELECT_DEVICENAME_JOIN_DATASOURCE = SELECT_DEVICENAME + " LEFT JOIN datasources AS ds ON pt.dataSourceId = ds.id";
+    private static final String SELECT_DEVICENAME = "SELECT DISTINCT pt.deviceName, pt.readPermission FROM dataPoints AS pt";
+    private static final String SELECT_DEVICENAME_JOIN_DATASOURCE = SELECT_DEVICENAME + " LEFT JOIN dataSources AS ds ON pt.dataSourceId = ds.id";
     
     private static class DeviceAndPermission {
         String deviceName;
