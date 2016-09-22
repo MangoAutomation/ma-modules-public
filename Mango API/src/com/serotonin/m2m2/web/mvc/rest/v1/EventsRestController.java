@@ -4,14 +4,13 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-
-import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ComparisonEnum;
 import com.infiniteautomation.mango.db.query.SQLQueryColumn;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
@@ -40,12 +40,16 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryObjectStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.TranslatableMessageModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * 
@@ -291,6 +295,48 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	
 	
 	@ApiOperation(
+			value = "Acknowledge many existing events",
+			notes = ""
+			)
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/acknowledge")
+    public ResponseEntity<EventAcknowledgeQueryStream> acknowledgeManyEvents(
+    		@RequestBody(required=false) TranslatableMessageModel message, 
+    		UriComponentsBuilder builder, HttpServletRequest request) {
+
+		RestProcessResult<EventAcknowledgeQueryStream> result = new RestProcessResult<EventAcknowledgeQueryStream>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+
+        	//Parse the RQL Query
+    		ASTNode query;
+			try {
+				query = this.parseRQLtoAST(request);
+				query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
+	    		
+		        TranslatableMessage tlm = null;
+		        if(message != null)
+		        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
+
+		        //Perform the query and stream through acknowledger
+		        EventAcknowledgeQueryStreamCallback callback = new EventAcknowledgeQueryStreamCallback(user, tlm);
+		        EventAcknowledgeQueryStream stream = new EventAcknowledgeQueryStream(dao, this, query, callback);
+				//Ensure its ready
+				stream.setupQuery();
+
+				return result.createResponseEntity(stream);
+			} catch (UnsupportedEncodingException e) {
+				LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+			}
+    		
+        }
+        //Not logged in
+        return result.createResponseEntity();
+    }
+	
+	@ApiOperation(
 			value = "Get the active events summary",
 			notes = "List of counts for all active events by type and the most recent active alarm for each."
 			)
@@ -397,5 +443,76 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		return new EventInstanceModel(vo);
 	}
 
+	
+	class EventAcknowledgeQueryStream extends QueryObjectStream<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
+
+		/**
+		 * @param dao
+		 * @param controller
+		 * @param root
+		 * @param queryCallback
+		 */
+		public EventAcknowledgeQueryStream(EventInstanceDao dao,
+				MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao> controller, ASTNode root,
+				QueryStreamCallback<EventInstanceVO> queryCallback) {
+			super(dao, controller, root, queryCallback);
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
+		 */
+		@Override
+		public void streamData(JsonGenerator jgen) throws IOException {
+			this.queryCallback.setJsonGenerator(jgen);
+			this.results.query();
+			((EventAcknowledgeQueryStreamCallback)this.queryCallback).finish();
+		}
+		
+	}
+	
+	class EventAcknowledgeQueryStreamCallback extends QueryStreamCallback<EventInstanceVO>{
+		
+		private int count;
+		private User user;
+		private TranslatableMessage message;
+		private long ackTimestamp;
+		
+		
+		/**
+		 * @param user2
+		 * @param tlm
+		 */
+		public EventAcknowledgeQueryStreamCallback(User user, TranslatableMessage message) {
+			this.user = user;
+			this.message = message;
+			this.ackTimestamp = System.currentTimeMillis();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.db.MappedRowCallback#row(java.lang.Object, int)
+		 */
+		@Override
+		public void row(EventInstanceVO vo, int index) {
+			Common.eventManager.acknowledgeEvent(createEventInstance(vo), ackTimestamp, user.getId(), message);
+			this.count++;
+		}
+		
+		private EventInstance createEventInstance(EventInstanceVO vo){
+			//TODO This is a hack until we redo the Events Page to better work 
+			// with the Events Manager
+			EventInstance evt = new EventInstance(vo.getEventType(), 
+					vo.getActiveTimestamp(),
+					vo.isRtnApplicable(),
+					vo.getAlarmLevel(),
+					vo.getMessage(),
+					vo.getContext());
+			evt.setId(vo.getId());
+			return evt;
+		}
+		
+		public void finish() throws IOException{
+			this.jgen.writeNumberField("count", this.count);
+		}
+	}
 
 }
