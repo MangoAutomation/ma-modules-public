@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,7 +70,7 @@ public class PointHierarchyRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-	    	PointHiearchyPointlessStream stream = new PointHiearchyPointlessStream(ph.getRoot(), user, getSubFolders);
+	    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(ph.getRoot(), user, getSubFolders);
 	    	return result.createResponseEntity(stream);
     	}
     	return result.createResponseEntity();
@@ -86,12 +85,12 @@ public class PointHierarchyRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Get point hierarchy folder by name", notes = "Points returned based on user priviledges")
 	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getFolder(
+    public ResponseEntity<ObjectStream<PointHierarchyModel>> getFolder(
             @PathVariable String folderName,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
             HttpServletRequest request) {
 		
-    	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
+    	RestProcessResult<ObjectStream<PointHierarchyModel>> result = new RestProcessResult<ObjectStream<PointHierarchyModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
@@ -103,20 +102,12 @@ public class PointHierarchyRestController extends MangoRestController{
 			else
 				desiredFolder = recursiveFolderSearch(folder, folderName);
 			
-			
 			if (desiredFolder == null){
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
 			}else{
-			    desiredFolder = copyFolder(desiredFolder);
-	            
-	            if (!getSubFolders) {
-	                desiredFolder.setSubfolders(Collections.<PointFolder>emptyList());
-	            }
-	            
-	            //Clean out based on permissions
-	            prune(desiredFolder, user, false);
-				return result.createResponseEntity(new PointHierarchyModel(desiredFolder, getDataSourceXidMap())); 
+		    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(desiredFolder, user, getSubFolders);
+		    	return result.createResponseEntity(stream);
 			}
 
     	}
@@ -132,75 +123,20 @@ public class PointHierarchyRestController extends MangoRestController{
      */
     @ApiOperation(value = "Get point hierarchy folder by path", notes = "Points returned based on user priviledges")
     @RequestMapping(method = RequestMethod.GET, value = "/by-path/{folderPath}", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getFolder(
+    public ResponseEntity<ObjectStream<PointHierarchyModel>> getFolder(
             @PathVariable List<String> folderPath,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
             HttpServletRequest request) {
         
-        RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
+        RestProcessResult<ObjectStream<PointHierarchyModel>> result = new RestProcessResult<ObjectStream<PointHierarchyModel>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            
             PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-            
-            PointFolder folder = copyFolder(ph.getRoot());
-            folder = removeSubFoldersByPath(folder, folderPath, 0);
-            
-            if (folder == null) {
-                result.addRestMessage(getDoesNotExistMessage());
-                return result.createResponseEntity();
-            } else {
-                if (!getSubFolders) {
-                    folder.setSubfolders(Collections.<PointFolder>emptyList());
-                }
-                
-                //Clean out based on permissions
-                prune(folder, user, false);
-                return result.createResponseEntity(new PointHierarchyModel(folder, getDataSourceXidMap())); 
-            }
+            PointHierarchyPathStream stream = new PointHierarchyPathStream(ph.getRoot(), user, getSubFolders, folderPath);
+	    	return result.createResponseEntity(stream);
         }
         
         return result.createResponseEntity();
-    }
-    
-    private PointFolder removeSubFoldersByPath(PointFolder folder, List<String> path, int pathIndex) {
-        // reached end of path, include points
-        if (pathIndex >= path.size()) {
-            return folder;
-        }
-        String segment = path.get(pathIndex);
-
-        // getting sub-folders, don't return this folder's points
-        folder.setPoints(Collections.<DataPointSummary>emptyList());
-
-        List<String> folderNamesToKeep = Arrays.asList(segment.split("\\s*\\|\\s*"));
-        boolean keepAll = folderNamesToKeep.contains("*");
-        boolean explicitFolderName = !keepAll && folderNamesToKeep.size() == 1;
-        
-        List<PointFolder> subFolders = folder.getSubfolders();
-        Iterator<PointFolder> folderIt = subFolders.iterator();
-        // step over the sub-folders and check if they match the path
-        while (folderIt.hasNext()) {
-            PointFolder subFolder = folderIt.next();
-            if (keepAll || folderNamesToKeep.contains(subFolder.getName())) {
-                subFolder = removeSubFoldersByPath(subFolder, path, pathIndex + 1);
-                if (subFolder == null) {
-                    // folder name matches but its sub-folders didn't match the rest of the path, remove it
-                    folderIt.remove();
-                } else if (explicitFolderName) {
-                    return subFolder;
-                }
-            } else {
-                // folder name doesn't match, remove it
-                folderIt.remove();
-            }
-        }
-        
-        if (folder.getPoints().isEmpty() && subFolders.isEmpty()) {
-            return null;
-        }
-        
-        return folder;
     }
 
 	/**
@@ -211,12 +147,12 @@ public class PointHierarchyRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Get point hierarchy folder by ID", notes = "Points returned based on user priviledges")
 	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{folderId}", produces={"application/json"})
-    public ResponseEntity<PointHierarchyModel> getFolder(
+    public ResponseEntity<ObjectStream<PointHierarchyModel>> getFolder(
             @PathVariable Integer folderId,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
             HttpServletRequest request) {
 		
-    	RestProcessResult<PointHierarchyModel> result = new RestProcessResult<PointHierarchyModel>(HttpStatus.OK);
+    	RestProcessResult<ObjectStream<PointHierarchyModel>> result = new RestProcessResult<ObjectStream<PointHierarchyModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
@@ -232,15 +168,8 @@ public class PointHierarchyRestController extends MangoRestController{
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
 			}else{
-			    desiredFolder = copyFolder(desiredFolder);
-                
-                if (!getSubFolders) {
-                    desiredFolder.setSubfolders(Collections.<PointFolder>emptyList());
-                }
-                
-				//Clean out based on permissions
-				prune(desiredFolder, user, false);
-				return result.createResponseEntity(new PointHierarchyModel(desiredFolder, getDataSourceXidMap())); 
+				PointHiearchyFolderStream stream = new PointHiearchyFolderStream(desiredFolder, user, getSubFolders);
+		    	return result.createResponseEntity(stream);
 			}
 
     	}
@@ -287,19 +216,91 @@ public class PointHierarchyRestController extends MangoRestController{
 		}
     }
 	
-	class PointHiearchyPointlessStream implements ObjectStream<PointHierarchyModel>{
+	/**
+	 * Stream out the folder (and possibly sub-folders) while filtering points based on permissions
+	 * by finding a folder based on its path
+	 * @author Terry Packer
+	 *
+	 */
+	class PointHierarchyPathStream extends PointHiearchyFolderStream{
 
-		private PointFolder folder;
-		private Set<String> userPermissions;
-		private boolean getSubFolders;
-		private Map<Integer, DataSourceSummary> dsXidMap;
+		protected List<String> path;
 		
 		/**
 		 * @param folder
 		 * @param user
 		 * @param getSubFolders
 		 */
-		public PointHiearchyPointlessStream(PointFolder folder, User user, boolean getSubFolders) {
+		public PointHierarchyPathStream(PointFolder folder, User user, boolean getSubFolders, List<String> path) {
+			super(folder, user, getSubFolders);
+			this.path = path;
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
+		 */
+		@Override
+		public void streamData(JsonGenerator jgen) throws IOException {
+			writeFolderRecursively(this.folder, this.path, 0, jgen);
+		}
+		
+		protected void writeFolderRecursively(PointFolder currentFolder, List<String> path, int pathIndex, JsonGenerator jgen) throws IOException{
+			// reached end of path, include points
+	        if (pathIndex >= path.size()) {
+	        	writeFoldersRecursively(currentFolder, true, jgen);
+	        }
+	        String segment = path.get(pathIndex);
+
+	        // getting sub-folders, don't return this folder's points
+	        //folder.setPoints(Collections.<DataPointSummary>emptyList());
+
+	        List<String> folderNamesToKeep = Arrays.asList(segment.split("\\s*\\|\\s*"));
+	        boolean keepAll = folderNamesToKeep.contains("*");
+	        boolean explicitFolderName = !keepAll && folderNamesToKeep.size() == 1;
+	        
+	        List<PointFolder> subFolders = currentFolder.getSubfolders();
+	        Iterator<PointFolder> folderIt = subFolders.iterator();
+	        // step over the sub-folders and check if they match the path
+	        while (folderIt.hasNext()) {
+	            PointFolder subFolder = folderIt.next();
+	            if (keepAll || folderNamesToKeep.contains(subFolder.getName())) {
+	            	//Write subFolder
+	            	writeFoldersRecursively(subFolder, false, jgen);
+	                writeFolderRecursively(subFolder, path, pathIndex + 1, jgen);
+	            } else {
+	                // folder name doesn't match, remove it
+	                folderIt.remove();
+	            }
+	        }
+	        
+	        if (currentFolder.getPoints().isEmpty() && subFolders.isEmpty()) {
+	            return;
+	        }
+	        
+	        return;
+		}
+		
+		
+	}
+	
+	/**
+	 * Stream out the folder (and possibly sub-folders) while filtering points based on permissions
+	 * @author Terry Packer
+	 *
+	 */
+	class PointHiearchyFolderStream implements ObjectStream<PointHierarchyModel>{
+
+		protected PointFolder folder;
+		protected Set<String> userPermissions;
+		protected boolean getSubFolders;
+		protected Map<Integer, DataSourceSummary> dsXidMap;
+		
+		/**
+		 * @param folder
+		 * @param user
+		 * @param getSubFolders
+		 */
+		public PointHiearchyFolderStream(PointFolder folder, User user, boolean getSubFolders) {
 			this.folder = folder;
 			this.userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
 			this.getSubFolders = getSubFolders;
@@ -315,7 +316,7 @@ public class PointHierarchyRestController extends MangoRestController{
 		 */
 		@Override
 		public void streamData(JsonGenerator jgen) throws IOException {
-	    	writeFoldersRecursively(folder, jgen);
+	    	writeFoldersRecursively(this.folder, this.getSubFolders, jgen);
 		}
 
 		/* (non-Javadoc)
@@ -333,7 +334,7 @@ public class PointHierarchyRestController extends MangoRestController{
 		 * @param user
 		 * @throws IOException 
 		 */
-		void writeFoldersRecursively(PointFolder folder, JsonGenerator jgen) throws IOException{
+		void writeFoldersRecursively(PointFolder folder, boolean getSubFolders, JsonGenerator jgen) throws IOException{
 			
 			//Write the folder name
 			jgen.writeStringField("name", folder.getName());
@@ -362,7 +363,7 @@ public class PointHierarchyRestController extends MangoRestController{
 		        while (folderIt.hasNext()) {
 		            PointFolder f = folderIt.next();
 		            jgen.writeStartObject();
-		            writeFoldersRecursively(f, jgen);
+		            writeFoldersRecursively(f, getSubFolders, jgen);
 		            jgen.writeEndObject();
 		        }
 		        jgen.writeEndArray();
@@ -392,62 +393,6 @@ public class PointHierarchyRestController extends MangoRestController{
 		
 	}
 	
-	
-	/**
-     * Remove any data points that are not readable by user and remove empty folders that result
-     * 
-     * Caution not to edit the folders in place as they are the real cached point hierarchy
-     * 
-     * @param ph
-     * @param user
-     * @param doCopy copy the folder before pruning it
-     * @return PointFolder as a copy
-     */
-	private PointFolder prune(PointFolder root, User user, boolean doCopy) {
-		//Make a copy from the highest level down
-		PointFolder copy = doCopy ? copyFolder(root) : root;
-		
-		//Always prune the base folder's points but don't remove it.
-		List<DataPointSummary> points = copy.getPoints();
-		Iterator<DataPointSummary> ptIt = points.iterator();
-		while (ptIt.hasNext()) {
-		    DataPointSummary pt = ptIt.next();
-		    if (!Permissions.hasDataPointReadPermission(user, pt)) {
-		        ptIt.remove();
-		    }
-		}
-
-		List<PointFolder> folders = copy.getSubfolders();
-		Iterator<PointFolder> folderIt = folders.iterator();
-        while (folderIt.hasNext()) {
-            PointFolder folder = folderIt.next();
-            prune(folder, user, false);
-            if (folder.getPoints().isEmpty() && folder.getSubfolders().isEmpty()) {
-                folderIt.remove();
-            }
-        }
-		
-		return copy;
-	}
-	
-	/**
-	 * Make a copy of the folder and copies of its subfolders
-	 * @param folder
-	 * @return
-	 */
-	private PointFolder copyFolder(PointFolder folder){
-		PointFolder copy = new PointFolder(folder.getId(), folder.getName());
-		copy.setPoints(new ArrayList<DataPointSummary>(folder.getPoints()));
-		
-		//Copy the subfolders
-		List<PointFolder> subFolders = folder.getSubfolders();
-		List<PointFolder> folderCopies = new ArrayList<PointFolder>(subFolders.size());
-		for(PointFolder f : subFolders)
-			folderCopies.add(copyFolder(f));
-		
-		copy.setSubfolders(folderCopies);
-		return copy;
-	}
 	
 	/**
 	 * @param ph
@@ -486,16 +431,46 @@ public class PointHierarchyRestController extends MangoRestController{
 		
 		return null;
 	}
-	
-	private Map<Integer, String> getDataSourceXidMap(){
-		Map<Integer, String> dsXidMap = new HashMap<Integer, String>();
-		
-		for(DataSourceVO<?> ds : DataSourceDao.instance.getAll()){
-			dsXidMap.put(ds.getId(), ds.getXid());
-		}
-		
-		return dsXidMap;
-	}
+    
+    private PointFolder removeSubFoldersByPath(PointFolder folder, List<String> path, int pathIndex) {
+        // reached end of path, include points
+        if (pathIndex >= path.size()) {
+            return folder;
+        }
+        String segment = path.get(pathIndex);
+
+        // getting sub-folders, don't return this folder's points
+        folder.setPoints(Collections.<DataPointSummary>emptyList());
+
+        List<String> folderNamesToKeep = Arrays.asList(segment.split("\\s*\\|\\s*"));
+        boolean keepAll = folderNamesToKeep.contains("*");
+        boolean explicitFolderName = !keepAll && folderNamesToKeep.size() == 1;
+        
+        List<PointFolder> subFolders = folder.getSubfolders();
+        Iterator<PointFolder> folderIt = subFolders.iterator();
+        // step over the sub-folders and check if they match the path
+        while (folderIt.hasNext()) {
+            PointFolder subFolder = folderIt.next();
+            if (keepAll || folderNamesToKeep.contains(subFolder.getName())) {
+                subFolder = removeSubFoldersByPath(subFolder, path, pathIndex + 1);
+                if (subFolder == null) {
+                    // folder name matches but its sub-folders didn't match the rest of the path, remove it
+                    folderIt.remove();
+                } else if (explicitFolderName) {
+                    return subFolder;
+                }
+            } else {
+                // folder name doesn't match, remove it
+                folderIt.remove();
+            }
+        }
+        
+        if (folder.getPoints().isEmpty() && subFolders.isEmpty()) {
+            return null;
+        }
+        
+        return folder;
+    }
 	
 	class DataSourceSummary{
 		
