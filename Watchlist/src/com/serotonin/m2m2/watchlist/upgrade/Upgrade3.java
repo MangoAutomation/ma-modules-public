@@ -26,20 +26,22 @@ public class Upgrade3 extends DBUpgrade {
         return "4";
     }
 
-    private final String[] derbyScript = { //
+    private final String[] derbyScript = {
     	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);",
-    	"ALTER TABLE watchLists ADD COLUMN data CLOB;"
+    	"ALTER TABLE watchLists ADD COLUMN data CLOB;",
+        "UPDATE watchLists SET type = 'static';"
     };
-    
-    private final String[] mysqlScript = { //
-        	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);",
-        	"ALTER TABLE watchLists ADD COLUMN data LONGTEXT;"
-        };
-    
-    private final String[] mssqlScript = { //
-    	"ALTER TABLE watchLists ADD COLUMN type NVARCHAR(20);", //
-    	"ALTER TABLE watchLists ADD COLUMN data NTEXT;", //
-        "UPDATE watchLists SET type = 'static';", //
+
+    private final String[] mysqlScript = {
+    	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);",
+    	"ALTER TABLE watchLists ADD COLUMN data LONGTEXT;",
+        "UPDATE watchLists SET type = 'static';"
+    };
+
+    private final String[] mssqlScript = {
+    	"ALTER TABLE watchLists ADD COLUMN type NVARCHAR(20);",
+    	"ALTER TABLE watchLists ADD COLUMN data NTEXT;",
+        "UPDATE watchLists SET type = 'static';"
     };
 
 }

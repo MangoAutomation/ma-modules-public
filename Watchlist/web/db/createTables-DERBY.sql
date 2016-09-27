@@ -10,7 +10,7 @@ create table watchLists (
   readPermission varchar(255),
   editPermission varchar(255),
   type varchar(20),
-  jsonData clob
+  data clob
 );
 alter table watchLists add constraint watchListsPk primary key (id);
 alter table watchLists add constraint watchListsUn1 unique (xid);
