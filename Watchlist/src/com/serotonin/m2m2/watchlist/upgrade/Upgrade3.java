@@ -13,7 +13,7 @@ public class Upgrade3 extends DBUpgrade {
     protected void upgrade() throws Exception {
         // Run the script.
         Map<String, String[]> scripts = new HashMap<>();
-        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), mysqlScript);
+        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), derbyScript);
         scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), mysqlScript);
         scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), mssqlScript);
         scripts.put(DatabaseProxy.DatabaseType.H2.name(), mysqlScript);
@@ -26,15 +26,19 @@ public class Upgrade3 extends DBUpgrade {
         return "4";
     }
 
+    private final String[] derbyScript = { //
+    	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);",
+    	"ALTER TABLE watchLists ADD COLUMN data CLOB;"
+    };
+    
+    private final String[] mysqlScript = { //
+        	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);",
+        	"ALTER TABLE watchLists ADD COLUMN data LONGTEXT;"
+        };
+    
     private final String[] mssqlScript = { //
     	"ALTER TABLE watchLists ADD COLUMN type NVARCHAR(20);", //
-    	"ALTER TABLE watchLists ADD COLUMN query NVARCHAR(255);", //
-        "UPDATE watchLists SET type = 'static';", //
-    };
-
-    private final String[] mysqlScript = { //
-    	"ALTER TABLE watchLists ADD COLUMN type VARCHAR(20);", //
-        "ALTER TABLE watchLists ADD COLUMN query VARCHAR(255);", //
+    	"ALTER TABLE watchLists ADD COLUMN data NTEXT;", //
         "UPDATE watchLists SET type = 'static';", //
     };
 

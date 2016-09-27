@@ -7,6 +7,7 @@ package com.serotonin.m2m2.watchlist;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     @JsonProperty
     private String type;
     @JsonProperty
-    private String query;
+    private Map<String, Object> jsonData;
     
     //non-persistent members
     private String username;
@@ -151,12 +152,12 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 		this.type = type;
 	}
 
-	public String getQuery() {
-		return query;
+	public Map<String, Object> getJsonData() {
+		return jsonData;
 	}
 
-	public void setQuery(String query) {
-		this.query = query;
+	public void setJsonData(Map<String, Object> data) {
+		this.jsonData = data;
 	}
 
 	public void validate(ProcessResult response) {

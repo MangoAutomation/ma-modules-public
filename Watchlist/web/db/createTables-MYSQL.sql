@@ -10,7 +10,7 @@ CREATE TABLE watchLists (
   readPermission varchar(255),
   editPermission varchar(255),
   type varchar(20),
-  query varchar(255),
+  data longtext,
   PRIMARY KEY (id)
 ) engine=InnoDB;
 ALTER TABLE watchLists add constraint watchListsUn1 unique (xid);

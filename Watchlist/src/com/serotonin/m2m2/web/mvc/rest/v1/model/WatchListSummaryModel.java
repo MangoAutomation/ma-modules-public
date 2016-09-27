@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.watchlist.WatchListSummaryModelDefinition;
@@ -62,15 +64,14 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>{
 		this.data.setType(type);
 	}
 
-	@JsonGetter("query")
-	public String getQuery(){
-		return this.data.getQuery();
+	@JsonGetter("jsonData")
+	public Map<String, Object> getJsonData(){
+		return this.data.getJsonData();
 	}
-	@JsonSetter("query")
-	public void setQuery(String query){
-		this.data.setQuery(query);
+	@JsonSetter("jsonData")
+	public void setJsonData(Map<String, Object> data){
+		this.data.setJsonData(data);
 	}
-
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()

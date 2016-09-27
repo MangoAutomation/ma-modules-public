@@ -10,7 +10,7 @@ create table watchLists (
   readPermission nvarchar(255),
   editPermission nvarchar(255),
   type nvarchar(20),
-  query nvarchar(255),
+  data ntext,
   primary key (id)
 );
 alter table watchLists add constraint watchListsUn1 unique (xid);

@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.watchlist;
 
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,6 +21,10 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
@@ -42,12 +47,17 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance = new WatchListDao();
     WatchListWebSocketHandler handler;
+	private ObjectMapper mapper;
+	private MapType mapType;
 	
 	private WatchListDao() {
 		super(AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"}, //to allow filtering on username
 				"join users u on u.id = w.userId ");
 		this.handler = WatchListWebSocketConfiguration.handler;
+		mapper = new ObjectMapper();
+		TypeFactory typeFactory = mapper.getTypeFactory();
+		mapType = typeFactory.constructMapType(HashMap.class, String.class, Object.class);
 	}
 
 	
@@ -377,6 +387,13 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	 */
 	@Override
 	protected Object[] voToObjectArray(WatchListVO vo) {
+		String jsonData = null;
+		try{ 
+			jsonData = writeValueAsString(vo.getJsonData());
+		}catch(JsonProcessingException e){
+			LOG.error(e.getMessage(), e);
+		}
+		
 		return new Object[]{
 			vo.getXid(),
             vo.getUserId(),
@@ -384,7 +401,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             vo.getReadPermission(),
 			vo.getEditPermission(),
 			vo.getType(),
-			vo.getQuery()
+			jsonData
 		};
 	}
 
@@ -401,7 +418,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         map.put("readPermission", Types.VARCHAR);
 		map.put("editPermission", Types.VARCHAR);
 		map.put("type", Types.VARCHAR);
-		map.put("query", Types.VARCHAR);
+		map.put("data", Types.CLOB);
 		return map;
 	}
 
@@ -428,7 +445,8 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     private final WatchListRowMapper rowMapper = new WatchListRowMapper();
 
     class WatchListRowMapper implements RowMapper<WatchListVO> {
-        @Override
+        @SuppressWarnings("unchecked")
+		@Override
         public WatchListVO mapRow(ResultSet rs, int rowNum) throws SQLException {
             int i = 0;
             WatchListVO wl = new WatchListVO();
@@ -439,10 +457,21 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             wl.setReadPermission(rs.getString(++i));
             wl.setEditPermission(rs.getString(++i));
             wl.setType(rs.getString(++i));
-            wl.setQuery(rs.getString(++i));
+            //Read the data
+			try{
+				Clob c = rs.getClob(++i);
+				if(c != null)
+					wl.setJsonData((Map<String, Object>) mapper.readValue(c.getCharacterStream(), mapType));
+			}catch(Exception e){
+				LOG.error(e.getMessage(), e);
+			}
             wl.setUsername(rs.getString(++i));
             return wl;
         }
     }
+    
+	public String writeValueAsString(Object value) throws JsonProcessingException{
+		return mapper.writeValueAsString(value);
+	}
     
 }
