@@ -11,8 +11,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.jazdw.rql.parser.ASTNode;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -43,11 +41,15 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointStreamCallback;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -73,33 +75,21 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "Only returns points available to logged in user"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
-    public ResponseEntity<List<DataPointModel>> getAllDataPoints(HttpServletRequest request, 
+    public ResponseEntity<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>> getAllDataPoints(HttpServletRequest request, 
     		@ApiParam(value = "Limit the number of results", required=false)
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
-        RestProcessResult<List<DataPointModel>> result = new RestProcessResult<List<DataPointModel>>(HttpStatus.OK);
+        RestProcessResult<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>> result = new RestProcessResult<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>>(HttpStatus.OK);
         
         User user = this.checkUser(request, result);
         if(result.isOk()){
-        	
-           	List<DataPointVO> dataPoints = DaoRegistry.dataPointDao.getAll();
-            List<DataPointModel> userDataPoints = new ArrayList<DataPointModel>();
-        	
-	        for(DataPointVO vo : dataPoints){
-	        	try{
-	        		if(Permissions.hasDataPointReadPermission(user, vo)){
-	        			userDataPoints.add(new DataPointModel(vo));
-	        			limit--;
-	        		}
-	        		//Check the limit, TODO make this work like the DOJO Query
-	        		if(limit <= 0)
-	        			break;
-	        	}catch(PermissionException e){
-	        		//Munched
-	        		//TODO maybe don't throw this from check permissions?
-	        	}
-	        }
-	        result.addRestMessage(getSuccessMessage());
-	        return result.createResponseEntity(userDataPoints);
+        	ASTNode root = new ASTNode("limit", limit);
+			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
+			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+			FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+					new FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+							this, root, callback);
+			stream.setupQuery();
+			return result.createResponseEntity(stream);
         }
         
         return result.createResponseEntity();
@@ -606,8 +596,13 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-    		return result.createResponseEntity(getPageStream(root, callback));
+			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
+			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+							this, root, callback);
+			stream.setupQuery();
+			return result.createResponseEntity(stream);
     	}
     	
     	return result.createResponseEntity();
@@ -630,7 +625,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		try{
     			ASTNode node = this.parseRQLtoAST(request);
     			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-    			return result.createResponseEntity(getPageStream(node, callback));
+    			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+    					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+    							this, node, callback);
+    			stream.setupQuery();
+    			return result.createResponseEntity(stream);
     		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));

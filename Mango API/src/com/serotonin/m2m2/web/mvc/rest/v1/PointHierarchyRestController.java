@@ -6,12 +6,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,12 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.module.definitions.SuperadminPermissionDefinition;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.hierarchy.PointFolder;
 import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -40,6 +33,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointSummaryModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PointHierarchyModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceSummary;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
@@ -292,12 +287,10 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @author Terry Packer
 	 *
 	 */
-	static class PointHiearchyFolderStream implements JsonStream<PointHierarchyModel>{
+	static class PointHiearchyFolderStream extends DataPointFilter implements JsonStream<PointHierarchyModel>{
 
 		protected PointFolder folder;
-		protected Set<String> userPermissions;
 		protected boolean getSubFolders;
-		protected Map<Integer, DataSourceSummary> dsXidMap;
         protected JsonGenerator jgen;
 		
 		/**
@@ -306,14 +299,9 @@ public class PointHierarchyRestController extends MangoRestController{
 		 * @param getSubFolders
 		 */
 		public PointHiearchyFolderStream(PointFolder folder, User user, boolean getSubFolders) {
+			super(user);
 			this.folder = folder;
-			this.userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
 			this.getSubFolders = getSubFolders;
-			
-			this.dsXidMap = new HashMap<Integer, DataSourceSummary>();
-			for(DataSourceVO<?> ds : DataSourceDao.instance.getAll()){
-				dsXidMap.put(ds.getId(), new DataSourceSummary(ds.getId(), ds.getXid(), Permissions.explodePermissionGroups(ds.getEditPermission())));
-			}
 		}
 
 		/* (non-Javadoc)
@@ -355,8 +343,8 @@ public class PointHierarchyRestController extends MangoRestController{
 			Iterator<DataPointSummary> ptIt = points.iterator();
 			while (ptIt.hasNext()) {
 			    DataPointSummary pt = ptIt.next();
-			    DataSourceSummary ds = this.dsXidMap.get(pt.getDataSourceId());
-			    if (hasDataPointReadPermission(userPermissions, pt, ds)) {
+			    DataSourceSummary ds = this.dsIdMap.get(pt.getDataSourceId());
+			    if (hasDataPointReadPermission(pt, ds)) {
 			        jgen.writeObject(new DataPointSummaryModel(pt, ds.getXid()));
 			    }
 			}
@@ -376,28 +364,6 @@ public class PointHierarchyRestController extends MangoRestController{
 			
             jgen.writeEndObject();
 		}
-		
-		boolean hasDataPointReadPermission(Set<String> userPermissions, DataPointSummary dp, DataSourceSummary ds){
-			//Is the user superadmin
-			if(userPermissions.contains(SuperadminPermissionDefinition.GROUP_NAME))
-				return true;
-			
-			//Check point read permissions
-			else if(!Collections.disjoint(userPermissions, dp.getReadPermissionsSet()))
-				return true;
-			
-			//Check set permissions
-			else if(!Collections.disjoint(userPermissions, dp.getSetPermissionsSet()))
-				return true;
-			
-			//Check data source edit permissions
-			else if(!Collections.disjoint(userPermissions, ds.getEditPermissions()))
-				return true;
-			else 
-				return false;
-			
-		}
-		
 	}
 	
 	
@@ -438,30 +404,4 @@ public class PointHierarchyRestController extends MangoRestController{
 		
 		return null;
 	}
-
-	static class DataSourceSummary{
-		
-		private int id;
-		private String xid;
-		private Set<String> editPermissions;
-		
-		public DataSourceSummary(int id, String xid, Set<String> editPermissions){
-			this.id = id;
-			this.xid = xid;
-			this.editPermissions = editPermissions;			
-		}
-
-		public int getId() {
-			return id;
-		}
-
-		public String getXid() {
-			return xid;
-		}
-
-		public Set<String> getEditPermissions() {
-			return editPermissions;
-		}
-	}
-	
 }
