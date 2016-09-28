@@ -13,10 +13,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.infiniteautomation.mango.db.query.StreamableRowCallback;
 import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ILifecycle;
 import com.serotonin.m2m2.db.DatabaseProxy;
@@ -68,8 +68,8 @@ public class WatchlistSqlVisitorTest{
         	root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL, queryNode);
         }
         
-        MappedRowCallback<WatchListVO> selectCallback = null;
-        MappedRowCallback<Long> countCallback = null;
+        StreamableRowCallback<WatchListVO> selectCallback = null;
+        StreamableRowCallback<Long> countCallback = null;
         
         
 		StreamableSqlQuery<WatchListVO> query = WatchListDao.instance.createQuery(root, selectCallback, countCallback, modelMap, appenders, true);
