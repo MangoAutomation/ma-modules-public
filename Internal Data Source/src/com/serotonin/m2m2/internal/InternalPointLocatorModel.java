@@ -23,16 +23,16 @@ public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLo
 		return InternalPointLocatorModelDefinition.TYPE_NAME;
 	}
 	
-	@JsonGetter("attribute")
-	@CSVColumnGetter(order=18, header="attribute")
-	public String getAttributeId() {
-	    return InternalPointLocatorVO.ATTRIBUTE_CODES.getCode(this.data.getAttributeId());
+	@JsonGetter("monitorId")
+	@CSVColumnGetter(order=18, header="monitorId")
+	public String getMonitorId() {
+	    return data.getMonitorId();
 	}
 
-	@JsonSetter("attribute")
-	@CSVColumnSetter(order=18, header="attribute")
-	public void setAttributeId(String attributeId) {
-	    this.data.setAttributeId(InternalPointLocatorVO.ATTRIBUTE_CODES.getId(attributeId));
+	@JsonSetter("monitor")
+	@CSVColumnSetter(order=18, header="monitor")
+	public void setMonitorId(String monitorId) {
+	    this.data.setMonitorId(monitorId);
 	}
 
 }

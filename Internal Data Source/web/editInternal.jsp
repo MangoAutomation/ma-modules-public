@@ -4,6 +4,7 @@
 --%>
 <%@page import="com.serotonin.m2m2.internal.InternalDataSourceVO"%>
 <%@page import="com.serotonin.m2m2.internal.InternalPointLocatorVO"%>
+<%@page import="com.serotonin.m2m2.Common" %>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <script type="text/javascript">
@@ -19,7 +20,7 @@
   }
   
   function editPointCBImpl(locator) {
-      $set("attributeId", locator.attributeId);
+      $set("monitorId", locator.monitorId);
   }
   
   function savePointImpl(locator) {
@@ -27,7 +28,7 @@
       delete locator.dataTypeId;
       delete locator.relinquishable;
       
-      locator.attributeId = $get("attributeId");
+      locator.monitorId = $get("monitorId");
       
       InternalEditDwr.saveInternalPointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
   }
@@ -47,7 +48,11 @@
   <tr>
     <td class="formLabelRequired"><fmt:message key="dsEdit.internal.attribute"/></td>
     <td class="formField">
-      <tag:exportCodesOptions id="attributeId" optionList="<%= InternalPointLocatorVO.ATTRIBUTE_CODES.getIdKeys() %>"/>
+    	<select id="monitorId">
+    		<c:forEach items="${Common.MONITORED_VALUES.monitors}" var="monitor">
+    		<option value="${monitor.id}"><fmt:message key="${monitor.name}"/></option>
+    		</c:forEach>
+    	</select>
     </td>
   </tr>
 </tag:pointList>

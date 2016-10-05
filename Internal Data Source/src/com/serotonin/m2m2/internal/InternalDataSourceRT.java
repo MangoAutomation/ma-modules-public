@@ -9,7 +9,10 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
+import com.serotonin.monitor.DoubleMonitor;
 import com.serotonin.monitor.IntegerMonitor;
+import com.serotonin.monitor.LongMonitor;
+import com.serotonin.monitor.ValueMonitor;
 
 /**
  * @author Matthew Lohbihler
@@ -26,12 +29,15 @@ public class InternalDataSourceRT extends PollingDataSource {
     public void doPoll(long time) {
         for (DataPointRT dataPoint : dataPoints) {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
-
-            String monitorId = InternalPointLocatorVO.MONITOR_NAMES[locator.getPointLocatorVO().getAttributeId()];
-            // They are all integer monitors so far, so this is fine.
-            IntegerMonitor m = (IntegerMonitor) Common.MONITORED_VALUES.getValueMonitor(monitorId);
-            if (m != null)
-                dataPoint.updatePointValue(new PointValueTime((double) m.getValue(), time));
+            ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
+            if (m != null){
+            	if(m instanceof IntegerMonitor)
+            		dataPoint.updatePointValue(new PointValueTime((double) ((IntegerMonitor)m).getValue(), time));
+            	else if(m instanceof LongMonitor)
+            		dataPoint.updatePointValue(new PointValueTime((double) ((LongMonitor)m).getValue(), time));
+            	else if(m instanceof DoubleMonitor)
+            		dataPoint.updatePointValue(new PointValueTime((double) ((DoubleMonitor)m).getValue(), time));
+            }
         }
     }
 

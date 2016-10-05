@@ -7,7 +7,9 @@ package com.serotonin.m2m2.internal;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -15,15 +17,17 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
+import com.serotonin.monitor.ValueMonitor;
+import com.serotonin.util.SerializationHelper;
 
 /**
  * @author Matthew Lohbihler
@@ -94,8 +98,26 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         
     };
 
-    private int attributeId = Attributes.BATCH_ENTRIES;
-
+    //Map of Monitor ID to legacy JSON code (or if new then just Monitor ID)
+    public static Map<String, String> MONITOR_EXPORT_CODES = new HashMap<String, String>();
+    static{
+    	
+    	//Add in new codes for anything missing
+    	for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()){
+    		//Do we have this one?
+    		int attributeId = ATTRIBUTE_CODES.getId(monitor.getId());
+    		if( attributeId > 0){
+    			MONITOR_EXPORT_CODES.put(monitor.getId(), ATTRIBUTE_CODES.getCode(attributeId));
+    		}else{
+    			//Use its ID in the JSON
+    			MONITOR_EXPORT_CODES.put(monitor.getId(), monitor.getId());
+    		}
+    	}
+    	
+    }
+    
+    private String monitorId = MONITOR_NAMES[Attributes.BATCH_ENTRIES];
+    
     @Override
     public boolean isSettable() {
         return false;
@@ -108,40 +130,50 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
 
     @Override
     public TranslatableMessage getConfigurationDescription() {
-        if (ATTRIBUTE_CODES.isValidId(attributeId))
-            return new TranslatableMessage(ATTRIBUTE_CODES.getKey(attributeId));
-        return new TranslatableMessage("common.unknown");
+    	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
+    	if(monitor != null)
+    		return new TranslatableMessage(monitor.getName());
+    	else
+    		return new TranslatableMessage("internal.missingMonitor", monitorId);
     }
 
     @Override
     public int getDataTypeId() {
         return DataTypes.NUMERIC;
     }
-
-    public int getAttributeId() {
-        return attributeId;
-    }
-
-    public void setAttributeId(int attributeId) {
-        this.attributeId = attributeId;
-    }
+    
+    /**
+	 * @return the monitorId
+	 */
+	public String getMonitorId() {
+		return monitorId;
+	}
+	
+	/**
+	 * @param monitorId the monitorId to set
+	 */
+	public void setMonitorId(String monitorId) {
+		this.monitorId = monitorId;
+	}
 
     @Override
     public void validate(ProcessResult response) {
-        if (!ATTRIBUTE_CODES.isValidId(attributeId))
-            response.addContextualMessage("attributeId", "validate.invalidValue");
+    	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
+    	if(monitor != null)
+            response.addContextualMessage("monitorId", "validate.invalidValue");
     }
 
     @Override
     public void addProperties(List<TranslatableMessage> list) {
-        AuditEventType.addExportCodeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES, attributeId);
+        //Not using in 2.7 anymore AuditEventType.addExportCodeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES, attributeId);
     }
 
     @Override
     public void addPropertyChanges(List<TranslatableMessage> list, Object o) {
-        InternalPointLocatorVO from = (InternalPointLocatorVO) o;
-        AuditEventType.maybeAddExportCodeChangeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES,
-                from.attributeId, attributeId);
+    	//Not using in 2.7 anymore
+//        InternalPointLocatorVO from = (InternalPointLocatorVO) o;
+//        AuditEventType.maybeAddExportCodeChangeMessage(list, "dsEdit.vmstat.attribute", ATTRIBUTE_CODES,
+//                from.attributeId, attributeId);
     }
 
     //
@@ -149,35 +181,50 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
-        out.writeInt(attributeId);
+        SerializationHelper.writeSafeUTF(out, monitorId);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
         int ver = in.readInt();
 
         // Switch on the version of the class so that version changes can be elegantly handled.
-        if (ver == 1)
-            attributeId = in.readInt();
+        if (ver == 1){
+            int attributeId = in.readInt();
+            monitorId = MONITOR_NAMES[attributeId];
+        }else if (ver == 2){
+        	monitorId = SerializationHelper.readSafeUTF(in);
+        }
     }
 
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        writer.writeEntry("attributeId", ATTRIBUTE_CODES.getCode(attributeId));
+        writer.writeEntry("monitorId", monitorId);
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         String text = jsonObject.getString("attributeId");
-        if (text == null)
-            throw new TranslatableJsonException("emport.error.missing", "attributeId", ATTRIBUTE_CODES.getCodeList());
-        attributeId = ATTRIBUTE_CODES.getId(text);
-        if (!ATTRIBUTE_CODES.isValidId(attributeId))
-            throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
-                    ATTRIBUTE_CODES.getCodeList());
+        if (text == null){
+            text = jsonObject.getString("monitorId");
+        	if(text == null)
+        		throw new TranslatableJsonException("emport.error.missing", "monitorId", MONITOR_EXPORT_CODES.keySet());
+        	else
+        		monitorId = text;
+        	if(MONITOR_EXPORT_CODES.get(monitorId) == null)
+        		throw new TranslatableJsonException("emport.error.invalid", "monitorId", text,
+        				MONITOR_EXPORT_CODES.keySet());
+        	
+        }else{
+        	int attributeId = ATTRIBUTE_CODES.getId(text);
+            if (!ATTRIBUTE_CODES.isValidId(attributeId))
+                throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
+                        ATTRIBUTE_CODES.getCodeList());
+            
+        }
     }
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
