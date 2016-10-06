@@ -117,7 +117,7 @@ public class WatchlistSqlVisitorTest{
 			for (File c : f.listFiles())
 				delete(c);
 		}
-	    if (!f.delete())
+	    if (f.exists() && !f.delete())
 		    throw new FileNotFoundException("Failed to delete file: " + f);
 	}
 }
