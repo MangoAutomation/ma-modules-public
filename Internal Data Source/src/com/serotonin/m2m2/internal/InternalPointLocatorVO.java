@@ -159,7 +159,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     @Override
     public void validate(ProcessResult response) {
     	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
-    	if(monitor != null)
+    	if(monitor == null)
             response.addContextualMessage("monitorId", "validate.invalidValue");
     }
 

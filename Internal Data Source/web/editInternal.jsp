@@ -5,9 +5,11 @@
 <%@page import="com.serotonin.m2m2.internal.InternalDataSourceVO"%>
 <%@page import="com.serotonin.m2m2.internal.InternalPointLocatorVO"%>
 <%@page import="com.serotonin.m2m2.Common" %>
+<%@page import="com.serotonin.monitor.MonitoredValues" %>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <script type="text/javascript">
+
   function saveDataSourceImpl(basic) {
       InternalEditDwr.saveInternalDataSource(basic, $get("updatePeriods"),
               $get("updatePeriodType"), saveDataSourceCB);
@@ -32,6 +34,7 @@
       
       InternalEditDwr.saveInternalPointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
   }
+  
 </script>
 
 <tag:dataSourceAttrs descriptionKey="dsEdit.internal.desc" helpId="internalDS">
@@ -49,9 +52,10 @@
     <td class="formLabelRequired"><fmt:message key="dsEdit.internal.attribute"/></td>
     <td class="formField">
     	<select id="monitorId">
-    		<c:forEach items="${Common.MONITORED_VALUES.monitors}" var="monitor">
-    		<option value="${monitor.id}"><fmt:message key="${monitor.name}"/></option>
-    		</c:forEach>
+    	<c:set var="monitorItems" value="<%= Common.MONITORED_VALUES.getMonitors() %>" />
+        <c:forEach items="${monitorItems}" var="monit">
+            <option value="${monit.id}"><fmt:message key="${monit.name}"/></option>
+        </c:forEach>
     	</select>
     </td>
   </tr>
