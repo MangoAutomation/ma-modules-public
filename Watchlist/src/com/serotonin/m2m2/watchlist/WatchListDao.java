@@ -389,7 +389,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	protected Object[] voToObjectArray(WatchListVO vo) {
 		String jsonData = null;
 		try{ 
-			jsonData = writeValueAsString(vo.getJsonData());
+			jsonData =  vo.serializeJSON(this.mapper);
 		}catch(JsonProcessingException e){
 			LOG.error(e.getMessage(), e);
 		}
@@ -445,7 +445,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     private final WatchListRowMapper rowMapper = new WatchListRowMapper();
 
     class WatchListRowMapper implements RowMapper<WatchListVO> {
-        @SuppressWarnings("unchecked")
 		@Override
         public WatchListVO mapRow(ResultSet rs, int rowNum) throws SQLException {
             int i = 0;
@@ -461,7 +460,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 			try{
 				Clob c = rs.getClob(++i);
 				if(c != null)
-					wl.setJsonData((Map<String, Object>) mapper.readValue(c.getCharacterStream(), mapType));
+					wl.deserializeJSON(mapper, mapType, c.getCharacterStream());
 			}catch(Exception e){
 				LOG.error(e.getMessage(), e);
 			}
@@ -469,9 +468,5 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             return wl;
         }
     }
-    
-	public String writeValueAsString(Object value) throws JsonProcessingException{
-		return mapper.writeValueAsString(value);
-	}
     
 }

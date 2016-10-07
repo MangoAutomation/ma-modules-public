@@ -4,10 +4,12 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.serotonin.m2m2.watchlist.WatchListParameter;
 import com.serotonin.m2m2.watchlist.WatchListSummaryModelDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 
@@ -63,14 +65,45 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>{
 	public void setType(String type){
 		this.data.setType(type);
 	}
-
-	@JsonGetter("jsonData")
-	public Map<String, Object> getJsonData(){
-		return this.data.getJsonData();
+	
+	@JsonGetter("query")
+	public String getQuery(){
+		return this.data.getQuery();
 	}
-	@JsonSetter("jsonData")
-	public void setJsonData(Map<String, Object> data){
-		this.data.setJsonData(data);
+
+	@JsonSetter("query")
+	public void setQuery(String query){
+		this.data.setQuery(query);
+	}
+	
+	@JsonGetter("folderIds")
+	public List<Integer> getFolderIds(){
+		return this.data.getFolderIds();
+	}
+	
+	@JsonSetter("folderIds")
+	public void setFolderIds(List<Integer> folderIds){
+		this.data.setFolderIds(folderIds);
+	}
+	
+	@JsonGetter("params")
+	public List<WatchListParameter> getParams(){
+		return this.data.getParams();
+	}
+	
+	@JsonSetter("params")
+	public void setParams(List<WatchListParameter> params){
+		this.data.setParams(params);
+	}
+	
+	@JsonGetter("data")
+	public Map<String, Object> getWatchListData(){
+		return this.data.getData();
+	}
+	
+	@JsonSetter("data")
+	public void setWatchListData(Map<String, Object> data){
+		this.data.setData(data);
 	}
 	
 	/* (non-Javadoc)
