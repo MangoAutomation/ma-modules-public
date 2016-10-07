@@ -5,20 +5,13 @@
 package com.serotonin.m2m2.watchlist;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -291,35 +284,5 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	
-	
-	/* JSON Serialization */
-	public String serializeJSON(ObjectMapper mapper) throws JsonProcessingException{
-		
-		 Map<String, Object> data = new HashMap<String, Object>();
-		data.put("version", 1);
-		data.put("query", this.query);
-		data.put("folderIds", this.folderIds);
-		data.put("params", this.params);
-		data.put("data", this.data);
-		
-		return mapper.writeValueAsString(data);
-		
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void deserializeJSON(ObjectMapper mapper, JavaType type, Reader stream) throws JsonParseException, JsonMappingException, IOException{
-		
-		Map<String, Object> data = (Map<String, Object>) mapper.readValue(stream, type);
-		
-		int version = (int)data.get("version");
-		if(version == 1){
-			this.query = (String)data.get("query");
-			this.folderIds = (List<Integer>)data.get("folderIds");
-			this.params = (List<WatchListParameter>)data.get("params");
-			this.data = (Map<String, Object>)data.get("data");
-		}
-		
-	}
-	
+
 }

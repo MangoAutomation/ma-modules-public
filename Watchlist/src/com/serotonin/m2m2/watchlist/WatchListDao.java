@@ -21,10 +21,14 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
@@ -48,7 +52,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	public static WatchListDao instance = new WatchListDao();
     WatchListWebSocketHandler handler;
 	private ObjectMapper mapper;
-	private MapType mapType;
 	
 	private WatchListDao() {
 		super(AuditEvent.TYPE_NAME, "w",
@@ -56,8 +59,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 				"join users u on u.id = w.userId ");
 		this.handler = WatchListWebSocketConfiguration.handler;
 		mapper = new ObjectMapper();
-		TypeFactory typeFactory = mapper.getTypeFactory();
-		mapType = typeFactory.constructMapType(HashMap.class, String.class, Object.class);
 	}
 
 	
@@ -388,8 +389,13 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	@Override
 	protected Object[] voToObjectArray(WatchListVO vo) {
 		String jsonData = null;
-		try{ 
-			jsonData =  vo.serializeJSON(this.mapper);
+		try{
+		    WatchListDbDataModel1 data = new WatchListDbDataModel1();
+		    data.query = vo.getQuery();
+            data.folderIds = vo.getFolderIds();
+            data.params = vo.getParams();
+            data.data = vo.getData();
+            jsonData =  this.mapper.writeValueAsString(data);
 		}catch(JsonProcessingException e){
 			LOG.error(e.getMessage(), e);
 		}
@@ -459,8 +465,13 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             //Read the data
 			try{
 				Clob c = rs.getClob(++i);
-				if(c != null)
-					wl.deserializeJSON(mapper, mapType, c.getCharacterStream());
+				if(c != null) {
+				    WatchListDbDataModel data = mapper.readValue(c.getCharacterStream(), WatchListDbDataModel.class);
+				    wl.setQuery(data.query);
+				    wl.setFolderIds(data.folderIds);
+				    wl.setParams(data.params);
+                    wl.setData(data.data);
+				}
 			}catch(Exception e){
 				LOG.error(e.getMessage(), e);
 			}
@@ -468,5 +479,22 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             return wl;
         }
     }
-    
+
+    @JsonTypeInfo(use=Id.NAME, include=As.PROPERTY, property="version")
+    @JsonSubTypes({
+        @Type(name = "1", value = WatchListDbDataModel1.class)
+    })
+    private static abstract class WatchListDbDataModel {
+        @JsonProperty
+        String query;
+        @JsonProperty
+        List<Integer> folderIds;
+        @JsonProperty
+        List<WatchListParameter> params;
+        @JsonProperty
+        Map<String, Object> data;
+    }
+
+    private static class WatchListDbDataModel1 extends WatchListDbDataModel {
+    }
 }
