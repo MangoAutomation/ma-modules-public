@@ -59,7 +59,6 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     private List<Integer> folderIds;
     @JsonProperty
     List<WatchListParameter> params;
-    @JsonProperty
     private Map<String, Object> data;
     
     //non-persistent members
@@ -243,6 +242,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         for (DataPointVO dpVO : pointList)
             dpXids.add(dpVO.getXid());
         writer.writeEntry("dataPoints", dpXids);
+        writer.writeEntry("data", this.data);
     }
 
     @Override
@@ -268,6 +268,10 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
                 pointList.add(dpVO);
             }
         }
+        
+        JsonObject o = jsonObject.getJsonObject("data");
+		if(o != null)
+			this.data = o.toMap();
     }
 	
 	/* (non-Javadoc)
