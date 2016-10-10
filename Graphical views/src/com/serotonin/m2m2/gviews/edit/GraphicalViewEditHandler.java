@@ -58,6 +58,7 @@ public class GraphicalViewEditHandler implements UrlHandler {
         }
         else {
             // A new view.
+        	GraphicalViewsCommon.ensureCanCreate(user);
             view = new GraphicalView();
             view.setId(Common.NEW_ID);
             view.setUserId(user.getId());

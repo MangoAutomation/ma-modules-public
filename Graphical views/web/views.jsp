@@ -33,9 +33,17 @@
               <a href="view_edit.shtm?viewId=${currentView.id}"><tag:img png="pencil" title="viewEdit.editView"/></a>
             </c:when>
           </c:choose>
-          <a href="view_edit.shtm?viewId=${currentView.id}&copy=true"><tag:img png="copy" title="viewEdit.copyView"/></a>
+          <c:choose>
+            <c:when test="${canCreateViews}">
+              <a href="view_edit.shtm?viewId=${currentView.id}&copy=true"><tag:img png="copy" title="viewEdit.copyView"/></a>
+            </c:when>
+          </c:choose>
         </c:if>
-        <a href="view_edit.shtm"><tag:img png="add" title="views.newView"/></a>
+        <c:choose>
+          <c:when test="${canCreateViews}">
+            <a href="view_edit.shtm"><tag:img png="add" title="views.newView"/></a>
+          </c:when>
+        </c:choose>
       </td>
     </tr>
   </table>

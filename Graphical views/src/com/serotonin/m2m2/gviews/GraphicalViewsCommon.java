@@ -17,9 +17,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 import org.directwebremoting.WebContextFactory;
 
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.edit.ImageUploadServletDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.longPoll.LongPollData;
 
 public class GraphicalViewsCommon {
@@ -55,6 +57,11 @@ public class GraphicalViewsCommon {
     public static void ensureViewEditPermission(User user, GraphicalView view) throws PermissionException {
         if (!view.isEditor(user))
             throw new PermissionException("User does not have permission to edit the view", user);
+    }
+    
+    public static void ensureCanCreate(User user) {
+    	if(user == null || !Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewAddViewPermissionDefinition.PERMISSION)))
+    		throw new PermissionException("User does not have permission to create new views", user);
     }
 
     //

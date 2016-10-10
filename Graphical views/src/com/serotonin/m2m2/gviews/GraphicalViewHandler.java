@@ -27,6 +27,13 @@ public class GraphicalViewHandler implements UrlHandler {
         List<IntStringPair> views = viewDao.getViewNames(user);
         model.put("views", views);
 
+        try {
+        	GraphicalViewsCommon.ensureCanCreate(user);
+        	model.put("canCreateViews", true);
+        } catch(Exception e) {
+        	model.put("canCreateViews", false);
+        }
+        
         // Set the current view.
         GraphicalView currentView = null;
         String vid = request.getParameter("viewId");
