@@ -494,6 +494,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				vo = new JsonDataVO();
 				vo.setXid(xid);
 				vo.setName(name);
+				vo.setPublicData(publicData);
 				vo.setReadPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(readPermissions))));
 				vo.setEditPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(editPermissions))));
 				vo.setJsonData(data);
