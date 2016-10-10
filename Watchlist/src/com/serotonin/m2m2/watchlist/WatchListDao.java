@@ -467,10 +467,12 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 				Clob c = rs.getClob(++i);
 				if(c != null) {
 				    WatchListDbDataModel data = mapper.readValue(c.getCharacterStream(), WatchListDbDataModel.class);
-				    wl.setQuery(data.query);
-				    wl.setFolderIds(data.folderIds);
-				    wl.setParams(data.params);
-                    wl.setData(data.data);
+				    if (data != null) {
+    				    wl.setQuery(data.query);
+    				    wl.setFolderIds(data.folderIds);
+    				    wl.setParams(data.params);
+                        wl.setData(data.data);
+				    }
 				}
 			}catch(Exception e){
 				LOG.error(e.getMessage(), e);
