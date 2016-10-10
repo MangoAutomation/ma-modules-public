@@ -393,7 +393,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 				public void row(DataPointVO dp, int index) {
 					if(Permissions.hasDataPointReadPermission(user, dp)){
 						try {
-							jgen.writeObject(new WatchListDataPointModel(dp));
+							jgen.writeObject(new DataPointModel(dp));
 							pointCount++;
 						} catch (IOException e) {
 							LOG.error(e.getMessage(), e);
