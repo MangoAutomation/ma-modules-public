@@ -91,6 +91,33 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     	return result.createResponseEntity();
 	}
 
+	@ApiOperation(
+			value = "Get Public JSON Data",
+			notes = "Returns only the data"
+			)
+    @RequestMapping(method = RequestMethod.GET, value="/public/{xid}", produces={"application/json"})
+    public ResponseEntity<JsonDataModel> getPublicData(
+    		HttpServletRequest request, 
+    		@ApiParam(value = "XID", required = true, allowMultiple = false)
+    		@PathVariable String xid
+   		){
+		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
+		JsonDataVO vo = JsonDataDao.instance.getByXid(xid);
+
+		if(vo == null){
+			result.addRestMessage(getDoesNotExistMessage());
+			return result.createResponseEntity();
+		}else{
+			//Check existing permissions
+			if(!vo.isPublicData()){
+				result.addRestMessage(getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}
+			else{ 
+				return result.createResponseEntity(new JsonDataModel(vo));
+			}
+		}
+	}
 	
 	@ApiOperation(
 			value = "Get JSON Data",
@@ -182,12 +209,15 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
     		
+    		@ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
+    		@RequestParam(required=false, defaultValue="false") boolean publicData,
+    		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody
     		Map<String, Object> data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
-		return updateJsonData(xid, null, readPermission, editPermission, name, data, builder, request);
+		return updateJsonData(xid, null, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -217,13 +247,16 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
     		
+    		@ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
+    		@RequestParam(required=false, defaultValue="false") boolean publicData,
+    		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody
     		Object data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
-		return modifyJsonData(MapOperation.APPEND, result, xid, path, readPermission, editPermission, name, data, builder, request);
+		return modifyJsonData(MapOperation.APPEND, result, xid, path, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	
@@ -251,12 +284,15 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
     		
+    		@ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
+    		@RequestParam(required=false, defaultValue="false") boolean publicData,
+    		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody
     		Map<String, Object> data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
-		return replaceJsonData(xid, null, readPermission, editPermission, name, data, builder, request);
+		return replaceJsonData(xid, null, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -286,13 +322,16 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
     		
+    		@ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
+    		@RequestParam(required=false, defaultValue="false") boolean publicData,
+    		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody
     		Object data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
-		return modifyJsonData(MapOperation.REPLACE, result, xid, path, readPermission, editPermission, name, data, builder, request);
+		return modifyJsonData(MapOperation.REPLACE, result, xid, path, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -405,7 +444,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	 * @return
 	 */
 	private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation, RestProcessResult<JsonDataModel> result,
-			String xid, String path, String[] readPermissions, String editPermissions[], String name, 
+			String xid, String path, String[] readPermissions, String editPermissions[], String name, boolean publicData, 
 			Object data, UriComponentsBuilder builder, HttpServletRequest request){
 
 		User user = this.checkUser(request, result);
@@ -423,6 +462,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				
 				//Replace the data
 				vo.setName(name);
+				vo.setPublicData(publicData);
 				vo.setReadPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(readPermissions))));
 				vo.setEditPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(editPermissions))));
 
