@@ -482,7 +482,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         }
     }
 
-    @JsonTypeInfo(use=Id.NAME, include=As.PROPERTY, property="version")
+    @JsonTypeInfo(use=Id.NAME, include=As.PROPERTY, property="version", defaultImpl=WatchListDbDataModel1.class)
     @JsonSubTypes({
         @Type(name = "1", value = WatchListDbDataModel1.class)
     })
