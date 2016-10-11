@@ -59,13 +59,14 @@ public class PointHierarchyRestController extends MangoRestController{
     @RequestMapping(method = RequestMethod.GET, value = "/full", produces={"application/json"})
     public ResponseEntity<JsonStream<PointHierarchyModel>> getPointHierarchy(
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            @RequestParam(name="points", defaultValue="true") boolean getPoints,
             HttpServletRequest request) {
 
     	RestProcessResult<JsonStream<PointHierarchyModel>> result = new RestProcessResult<JsonStream<PointHierarchyModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-	    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(ph.getRoot(), user, getSubFolders);
+	    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(ph.getRoot(), user, getSubFolders, getPoints);
 	    	return result.createResponseEntity(stream);
     	}
     	return result.createResponseEntity();
@@ -83,6 +84,7 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<JsonStream<PointHierarchyModel>> getFolder(
             @PathVariable String folderName,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            @RequestParam(name="points", defaultValue="true") boolean getPoints,
             HttpServletRequest request) {
 		
     	RestProcessResult<JsonStream<PointHierarchyModel>> result = new RestProcessResult<JsonStream<PointHierarchyModel>>(HttpStatus.OK);
@@ -101,7 +103,7 @@ public class PointHierarchyRestController extends MangoRestController{
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
 			}else{
-		    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(desiredFolder, user, getSubFolders);
+		    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(desiredFolder, user, getSubFolders, getPoints);
 		    	return result.createResponseEntity(stream);
 			}
 
@@ -121,13 +123,14 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<JsonStream<PointHierarchyModel>> getFolder(
             @PathVariable List<String> folderPath,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            @RequestParam(name="points", defaultValue="true") boolean getPoints,
             HttpServletRequest request) {
         
         RestProcessResult<JsonStream<PointHierarchyModel>> result = new RestProcessResult<JsonStream<PointHierarchyModel>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
             PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
-            PointHierarchyPathStream stream = new PointHierarchyPathStream(ph.getRoot(), user, getSubFolders, folderPath);
+            PointHierarchyPathStream stream = new PointHierarchyPathStream(ph.getRoot(), user, getSubFolders, getPoints, folderPath);
 	    	return result.createResponseEntity(stream);
         }
         
@@ -145,6 +148,7 @@ public class PointHierarchyRestController extends MangoRestController{
     public ResponseEntity<JsonStream<PointHierarchyModel>> getFolder(
             @PathVariable Integer folderId,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
+            @RequestParam(name="points", defaultValue="true") boolean getPoints,
             HttpServletRequest request) {
 		
     	RestProcessResult<JsonStream<PointHierarchyModel>> result = new RestProcessResult<JsonStream<PointHierarchyModel>>(HttpStatus.OK);
@@ -163,7 +167,7 @@ public class PointHierarchyRestController extends MangoRestController{
 				result.addRestMessage(getDoesNotExistMessage());
 	            return result.createResponseEntity();
 			}else{
-				PointHiearchyFolderStream stream = new PointHiearchyFolderStream(desiredFolder, user, getSubFolders);
+				PointHiearchyFolderStream stream = new PointHiearchyFolderStream(desiredFolder, user, getSubFolders, getPoints);
 		    	return result.createResponseEntity(stream);
 			}
 
@@ -226,8 +230,8 @@ public class PointHierarchyRestController extends MangoRestController{
 		 * @param user
 		 * @param getSubFolders
 		 */
-		public PointHierarchyPathStream(PointFolder folder, User user, boolean getSubFolders, List<String> path) {
-			super(folder, user, getSubFolders);
+		public PointHierarchyPathStream(PointFolder folder, User user, boolean getSubFolders, boolean getPoints, List<String> path) {
+			super(folder, user, getSubFolders, getPoints);
 			this.path = path;
 		}
 		
@@ -291,6 +295,7 @@ public class PointHierarchyRestController extends MangoRestController{
 
 		protected PointFolder folder;
 		protected boolean getSubFolders;
+		protected boolean getPoints;
         protected JsonGenerator jgen;
 		
 		/**
@@ -298,10 +303,11 @@ public class PointHierarchyRestController extends MangoRestController{
 		 * @param user
 		 * @param getSubFolders
 		 */
-		public PointHiearchyFolderStream(PointFolder folder, User user, boolean getSubFolders) {
+		public PointHiearchyFolderStream(PointFolder folder, User user, boolean getSubFolders, boolean getPoints) {
 			super(user);
 			this.folder = folder;
 			this.getSubFolders = getSubFolders;
+			this.getPoints = getPoints;
 		}
 
 		/* (non-Javadoc)
@@ -336,19 +342,26 @@ public class PointHierarchyRestController extends MangoRestController{
 			//Write the folder id
 			jgen.writeNumberField("id", folder.getId());
 
-			//Write out the points
-			jgen.writeArrayFieldStart("points");
-			
+			//Write out the points and count them
+			int pointCount = 0;
+			if(this.getPoints)
+				jgen.writeArrayFieldStart("points");
+				
 			List<DataPointSummary> points = folder.getPoints();
 			Iterator<DataPointSummary> ptIt = points.iterator();
 			while (ptIt.hasNext()) {
 			    DataPointSummary pt = ptIt.next();
 			    DataSourceSummary ds = this.dsIdMap.get(pt.getDataSourceId());
 			    if (hasDataPointReadPermission(pt, ds)) {
-			        jgen.writeObject(new DataPointSummaryModel(pt, ds.getXid()));
+			    	pointCount++;
+			    	if(this.getPoints)
+			    		jgen.writeObject(new DataPointSummaryModel(pt, ds.getXid()));
 			    }
 			}
-			jgen.writeEndArray();
+			if(this.getPoints)
+				jgen.writeEndArray();
+			
+			jgen.writeNumberField("pointCount", pointCount);
 			
 			if(getSubFolders){
 				//Write the subfolders
