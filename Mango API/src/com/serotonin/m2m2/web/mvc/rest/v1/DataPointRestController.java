@@ -598,11 +598,16 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	if(result.isOk()){
 			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
 			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
-					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
-							this, user, root, callback);
-			stream.setupQuery();
-			return result.createResponseEntity(stream);
+			if(!user.isAdmin()){
+				FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+						new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+								this, root, callback);
+				stream.setupQuery();
+				return result.createResponseEntity(stream);
+			}else{
+				//Admin Users Don't need to filter the results
+				return result.createResponseEntity(getPageStream(root));
+			}
     	}
     	
     	return result.createResponseEntity();
@@ -624,12 +629,17 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	if(result.isOk()){
     		try{
     			ASTNode node = this.parseRQLtoAST(request);
-    			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-    			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
-    					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
-    							this, user, node, callback);
-    			stream.setupQuery();
-    			return result.createResponseEntity(stream);
+    			if(user.isAdmin()){
+    				//Admin Users Don't need to filter the results
+    				return result.createResponseEntity(getPageStream(node));
+    			}else{
+	    			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+	    			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+	    					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+	    							this, node, callback);
+	    			stream.setupQuery();
+	    			return result.createResponseEntity(stream);
+    			}
     		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
