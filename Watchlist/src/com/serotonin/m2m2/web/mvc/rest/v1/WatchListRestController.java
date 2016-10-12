@@ -87,7 +87,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     				WatchListStreamCallback callback = new WatchListStreamCallback(this, user);
     				FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao> stream  = 
     						new FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao>(WatchListDao.instance,
-    								this, query, callback);
+    								this, user, query, callback);
     				stream.setupQuery();
     				return result.createResponseEntity(stream);
 	    		}else

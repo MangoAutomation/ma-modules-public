@@ -600,7 +600,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
 			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
 					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
-							this, root, callback);
+							this, user, root, callback);
 			stream.setupQuery();
 			return result.createResponseEntity(stream);
     	}
@@ -627,7 +627,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
     			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
     					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
-    							this, node, callback);
+    							this, user, node, callback);
     			stream.setupQuery();
     			return result.createResponseEntity(stream);
     		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
