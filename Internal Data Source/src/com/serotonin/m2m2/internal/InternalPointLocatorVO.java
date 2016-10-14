@@ -64,7 +64,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbIdleConnections", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.BATCH_WRITE_SPEED_MONITOR", //
             "java.lang.Runtime.freeMemory",
-            "java.lang.Runtime.totalMemory",
+            "java.lang.Runtime.usedMemory",
             "java.lang.Runtime.maxMemory",
             "java.lang.Runtime.availableProcessors"
     };
