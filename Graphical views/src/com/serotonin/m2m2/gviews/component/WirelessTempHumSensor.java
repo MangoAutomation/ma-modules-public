@@ -30,9 +30,9 @@ public class WirelessTempHumSensor extends CompoundComponent {
 
     @Override
     protected void initialize() {
-        HtmlComponent text = new HtmlComponent();
-        text.setContent("Shameless promotion. Contact <a href='http://mango.serotoninsoftware.com/contact.jsp' target='_blank'>Serotonin Software</a> to order custom components.");
-        text.setLocation(0, 40);
+//        HtmlComponent text = new HtmlComponent();
+//        text.setContent("Shameless promotion. Contact <a href='http://mango.serotoninsoftware.com/contact.jsp' target='_blank'>Serotonin Software</a> to order custom components.");
+//        text.setLocation(0, 40);
 
         String script = "if (value > 0.7) return \"<img src='graphics/Battery/batt_full.png'/>\"; ";
         script += "if (value > 0.4) return \"<img src='graphics/Battery/batt_med.png'/>\";";
@@ -61,7 +61,7 @@ public class WirelessTempHumSensor extends CompoundComponent {
         humidity.setLocation(16, 20);
         humidity.setDisplayControls(true);
 
-        addChild(TEXT, "graphic.wirelessTempHumSensor.staticText", text);
+//        addChild(TEXT, "graphic.wirelessTempHumSensor.staticText", text);
         addChild(BATTERY, "graphic.wirelessTempHumSensor.battery", battery, new int[] { DataTypes.NUMERIC });
         addChild(SIGNAL, "graphic.wirelessTempHumSensor.signal", signal, new int[] { DataTypes.NUMERIC });
         addChild(TEMPERATURE, "graphic.wirelessTempHumSensor.temperature", temperature, new int[] { DataTypes.NUMERIC });
