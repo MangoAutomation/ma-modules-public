@@ -23,10 +23,10 @@ public class SquwkSenderVO extends PublisherVO<SquwkPointVO> {
     protected void getEventTypesImpl(List<EventTypeVO> eventTypes) {
         eventTypes.add(new EventTypeVO(EventType.EventTypeNames.PUBLISHER, null, getId(),
                 SquwkSenderRT.REQUEST_EXCEPTION_EVENT, new TranslatableMessage("event.pb.squwk.request"),
-                AlarmLevels.URGENT));
+                getAlarmLevel(SquwkSenderRT.REQUEST_EXCEPTION_EVENT, AlarmLevels.URGENT)));
         eventTypes.add(new EventTypeVO(EventType.EventTypeNames.PUBLISHER, null, getId(),
                 SquwkSenderRT.SERVICE_EXCEPTION_EVENT, new TranslatableMessage("event.pb.squwk.service"),
-                AlarmLevels.URGENT));
+                getAlarmLevel(SquwkSenderRT.SERVICE_EXCEPTION_EVENT, AlarmLevels.URGENT)));
     }
 
     private static final ExportCodes EVENT_CODES = new ExportCodes();
