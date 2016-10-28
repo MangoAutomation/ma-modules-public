@@ -68,7 +68,7 @@ public class SquwkSenderRT extends PublisherRT<SquwkPointVO> {
         catch (SquwkException e) {
             LOG.warn("Request exception", e);
             Common.eventManager.raiseEvent(requestExceptionEventType, System.currentTimeMillis(), true,
-                    AlarmLevels.URGENT, toTranslatableMessage(e), createEventContext());
+                    vo.getAlarmLevel(REQUEST_EXCEPTION_EVENT, AlarmLevels.URGENT), toTranslatableMessage(e), createEventContext());
         }
     }
 
@@ -138,14 +138,14 @@ public class SquwkSenderRT extends PublisherRT<SquwkPointVO> {
                 if (resultHandler.getSquwkException() != null) {
                     LOG.warn("Service exception", resultHandler.getSquwkException());
                     Common.eventManager.raiseEvent(serviceExceptionEventType, System.currentTimeMillis(), false,
-                            AlarmLevels.URGENT, toTranslatableMessage(resultHandler.getSquwkException()),
+                            vo.getAlarmLevel(SERVICE_EXCEPTION_EVENT, AlarmLevels.URGENT), toTranslatableMessage(resultHandler.getSquwkException()),
                             createEventContext());
                 }
             }
             catch (SquwkException e) {
                 LOG.warn("Request exception", e);
                 Common.eventManager.raiseEvent(requestExceptionEventType, System.currentTimeMillis(), true,
-                        AlarmLevels.URGENT, toTranslatableMessage(e), createEventContext());
+                        vo.getAlarmLevel(REQUEST_EXCEPTION_EVENT, AlarmLevels.URGENT), toTranslatableMessage(e), createEventContext());
                 return false;
             }
 
