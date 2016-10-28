@@ -1,3 +1,6 @@
+*Version 1.1.2*
+* Added userGraphics folder to hold persist user graphics across updates see README in web/userGraphics folder
+
 *Version 1.1.1*
 * Upgraded to work with core version 2.7.x
 

@@ -1,0 +1,9 @@
+Place Any User Graphics in folders within this directory, they will not be overwritten during upgrades.  In order for the graphics to be picked up the must be in the form:
+
+imageSet1Directory/
+   -Image1Name.imageExtension
+   -Image2Name.imageExtension
+   
+imageSet2Directory/
+   -Image1Name.imageExtension
+   -Image2Name.imageExtension
