@@ -1,24 +1,23 @@
-/*
-   Copyright (C) 2016 Infinite Automation Systems Inc. All rights reserved.
-   @author Terry Packer
+/**
+ * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
  */
-package com.serotonin.m2m2.watchlist;
+package com.infiniteautomation.mangoApi.websocket;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.EventInstanceWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
  * @author Terry Packer
  *
  */
-public class WatchListWebSocketDefinition extends WebSocketDefinition{
+public class EventInstanceWebSocketDefinition extends WebSocketDefinition{
 
-	public static final WatchListWebSocketHandler handler = new WatchListWebSocketHandler();
-	public static final String TYPE_NAME = "WATCH_LIST";
+	public static final EventInstanceWebSocketHandler handler = new EventInstanceWebSocketHandler();
 	
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
+	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
 	public MangoWebSocketHandler getHandler() {
@@ -30,7 +29,7 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	 */
 	@Override
 	public String getUrl() {
-		return "/v1/websocket/watch-lists";
+		return "/v1/websocket/event-instances";
 	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
@@ -39,15 +38,12 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	public boolean perConnection() {
 		return false;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()
 	 */
 	@Override
 	public String getTypeName() {
-		return TYPE_NAME;
+		return "EVENT_INSTANCE";
 	}
-
-	
-	
 }

@@ -9,7 +9,7 @@ import com.serotonin.m2m2.virtual.dwr.VirtualEditDwr;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceModel;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractDataSourceModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
 public class VirtualDataSourceDefinition extends DataSourceDefinition {
 	

@@ -2,24 +2,26 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mangoApi;
+package com.infiniteautomation.mangoApi.websocket;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.events.EventEventHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemplateWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
  * @author Terry Packer
  *
  */
-public class EventWebSocketDefinition extends WebSocketDefinition{
+public class TemplateWebSocketDefinition extends WebSocketDefinition{
 
+	public static final TemplateWebSocketHandler handler = new TemplateWebSocketHandler();
+	
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
+	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
 	public MangoWebSocketHandler getHandler() {
-		return new EventEventHandler();
+		return handler;
 	}
 
 	/* (non-Javadoc)
@@ -27,13 +29,21 @@ public class EventWebSocketDefinition extends WebSocketDefinition{
 	 */
 	@Override
 	public String getUrl() {
-		return "/v1/websocket/events";
+		return "/v1/websocket/templates";
 	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
 	 */
 	@Override
 	public boolean perConnection() {
-		return true;
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()
+	 */
+	@Override
+	public String getTypeName() {
+		return "TEMPLATE";
 	}
 }

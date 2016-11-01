@@ -1,24 +1,24 @@
-/*
-   Copyright (C) 2016 Infinite Automation Systems Inc. All rights reserved.
-   @author Terry Packer
+/**
+ * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
  */
-package com.serotonin.m2m2.watchlist;
+package com.infiniteautomation.mangoApi.websocket;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.datapoint.DataPointWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
  * @author Terry Packer
  *
  */
-public class WatchListWebSocketDefinition extends WebSocketDefinition{
+public class DataPointWebSocketDefinition extends WebSocketDefinition{
 
-	public static final WatchListWebSocketHandler handler = new WatchListWebSocketHandler();
-	public static final String TYPE_NAME = "WATCH_LIST";
+	public static final String TYPE_NAME = "DATA_POINT";
+	public static final DataPointWebSocketHandler handler = new DataPointWebSocketHandler();
 	
 	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
+	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
 	public MangoWebSocketHandler getHandler() {
@@ -30,7 +30,7 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	 */
 	@Override
 	public String getUrl() {
-		return "/v1/websocket/watch-lists";
+		return "/v1/websocket/data-points";
 	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
@@ -47,7 +47,4 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	public String getTypeName() {
 		return TYPE_NAME;
 	}
-
-	
-	
 }
