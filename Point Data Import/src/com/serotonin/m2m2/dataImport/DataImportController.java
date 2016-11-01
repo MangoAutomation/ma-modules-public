@@ -132,6 +132,8 @@ public class DataImportController extends FileUploadController {
 
         	if(nextLine.length != ExportCsvStreamer.columns){
         		errorMessages.add(new TranslatableMessage("dataImport.import.invalidLength", row).translate(translations));
+        		rowErrors++;
+        		row++;
         		continue;
         	}
         	
@@ -140,6 +142,7 @@ public class DataImportController extends FileUploadController {
         	if (StringUtils.isBlank(xid)){
         		errorMessages.add(new TranslatableMessage("dataImport.import.badXid", xid, row).translate(translations));
         		rowErrors++;
+        		row++;
         		continue;
         	}
         	//First Check to see if we already have a point
@@ -152,6 +155,7 @@ public class DataImportController extends FileUploadController {
 	            if (vo == null){
 	            	errorMessages.add(new TranslatableMessage("dataImport.import.xidNotFound", xid, row).translate(translations));
 	            	rowErrors++;
+	            	row++;
 	            	continue;
 	            }
 	        	rt = Common.runtimeManager.getDataPoint(vo.getId());
@@ -185,6 +189,7 @@ public class DataImportController extends FileUploadController {
 	            time = ExportCsvStreamer.dtf.parseDateTime(nextLine[3]).getMillis();
 	            rowsDeleted += Common.runtimeManager.purgeDataPointValue(vo.getId(), time);
         	}
+        	row++;
         }
  
         //Setup results
