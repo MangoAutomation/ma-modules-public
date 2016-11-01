@@ -37,8 +37,6 @@ import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketConfiguration;
-import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.util.SerializationHelper;
 
@@ -50,14 +48,12 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance = new WatchListDao();
-    WatchListWebSocketHandler handler;
 	private ObjectMapper mapper;
 	
 	private WatchListDao() {
-		super(AuditEvent.TYPE_NAME, "w",
+		super(WatchListWebSocketDefinition.handler, AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"}, //to allow filtering on username
 				"join users u on u.id = w.userId ");
-		this.handler = WatchListWebSocketConfiguration.handler;
 		mapper = new ObjectMapper();
 	}
 
@@ -292,8 +288,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     }
 
     public void delete(WatchListVO vo, String initiatorId) {
-        super.delete(vo);
-        handler.notify("delete", vo, initiatorId);
+        super.delete(vo, initiatorId);
     }
 
     @Override
@@ -302,8 +297,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     }
 
     protected void insert(WatchListVO vo, String initiatorId) {
-        super.insert(vo);
-        handler.notify("add", vo, initiatorId);
+        super.insert(vo, initiatorId);
     }
 
     @Override
@@ -312,8 +306,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     }
 
     protected void update(WatchListVO vo, String initiatorId) {
-        super.update(vo);
-        handler.notify("update", vo, initiatorId);
+        super.update(vo, initiatorId);
     }
     
     @Override

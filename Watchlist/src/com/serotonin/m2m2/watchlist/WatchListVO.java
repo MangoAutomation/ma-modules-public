@@ -20,6 +20,7 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -287,6 +288,14 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 	}
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
+	 */
+	@Override
+	protected AbstractDao<WatchListVO> getDao() {
+		return WatchListDao.instance;
 	}
 
 }
