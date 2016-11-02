@@ -43,6 +43,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredQueryStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointStreamCallback;
 import com.wordnik.swagger.annotations.Api;
@@ -75,21 +76,26 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "Only returns points available to logged in user"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
-    public ResponseEntity<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>> getAllDataPoints(HttpServletRequest request, 
+    public ResponseEntity<QueryArrayStream<DataPointVO>> getAllDataPoints(HttpServletRequest request, 
     		@ApiParam(value = "Limit the number of results", required=false)
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
-        RestProcessResult<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>> result = new RestProcessResult<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>>(HttpStatus.OK);
+        RestProcessResult<QueryArrayStream<DataPointVO>> result = new RestProcessResult<QueryArrayStream<DataPointVO>>(HttpStatus.OK);
         
         User user = this.checkUser(request, result);
         if(result.isOk()){
         	ASTNode root = new ASTNode("limit", limit);
-			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
-			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-			FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
-					new FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
-							this, root, callback);
-			stream.setupQuery();
-			return result.createResponseEntity(stream);
+        	if(user.isAdmin()){
+				//Admin Users Don't need to filter the results
+				return result.createResponseEntity(getStream(root));
+			}else{
+				//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
+				DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+				FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+						new FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+								this, root, callback);
+				stream.setupQuery();
+				return result.createResponseEntity(stream);
+			}
         }
         
         return result.createResponseEntity();
