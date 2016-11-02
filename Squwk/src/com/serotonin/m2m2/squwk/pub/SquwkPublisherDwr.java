@@ -10,7 +10,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 public class SquwkPublisherDwr extends PublisherEditDwr {
     @DwrPermission(admin = true)
     public ProcessResult saveSquwkSender(String name, String xid, boolean enabled, List<SquwkPointVO> points,
-            String accessKey, String secretKey, int cacheWarningSize, int cacheDiscardSize, boolean changesOnly,
+            String accessKey, String secretKey, int cacheWarningSize, int cacheDiscardSize, int publishType,
             boolean sendSnapshot, int snapshotSendPeriods, int snapshotSendPeriodType) {
         SquwkSenderVO p = (SquwkSenderVO) Common.getUser().getEditPublisher();
 
@@ -22,7 +22,7 @@ public class SquwkPublisherDwr extends PublisherEditDwr {
         p.setSecretKey(secretKey);
         p.setCacheWarningSize(cacheWarningSize);
         p.setCacheDiscardSize(cacheDiscardSize);
-        p.setChangesOnly(changesOnly);
+        p.setPublishType(publishType);
         p.setSendSnapshot(sendSnapshot);
         p.setSnapshotSendPeriods(snapshotSendPeriods);
         p.setSnapshotSendPeriodType(snapshotSendPeriodType);
