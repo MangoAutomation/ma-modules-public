@@ -9,14 +9,15 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.infiniteautomation.mango.regex.MatchCallback;
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
-import com.infiniteautomation.serial.rt.SerialDataSourceRT.MatchCallback;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.BasicDataSourceVO;
 import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
@@ -113,12 +114,12 @@ public class SerialEditDwr extends DataSourceEditDwr{
         			//Check all the points
         			for(final DataPointVO vo : points){
         				final Map<String, String> result = new HashMap<String,String>();
-        				SerialDataSourceRT.matchPointValue(message, messageRegex, pointIdentifierIndex, (SerialPointLocatorVO)vo.getPointLocator(), LOG, new MatchCallback(){
+        				MatchCallback callback = new MatchCallback(){
 
 							@Override
-							public void onMatch(String pointIdentifier, String value, int dataTypeId) {
+							public void onMatch(String pointIdentifier, PointValueTime pvt) {
 								result.put("name", vo.getName());
-								result.put("value", value);
+								result.put("value", pvt.toString());
 								result.put("identifier", pointIdentifier);
 								result.put("success", "true");
 							}
@@ -143,7 +144,28 @@ public class SerialEditDwr extends DataSourceEditDwr{
 								result.put("name", vo.getName());
 								result.put("error", new TranslatableMessage("serial.test.noIdentifierFound").translate(Common.getTranslations()));
 							}
-                		});
+							
+							/* (non-Javadoc)
+							 * @see com.infiniteautomation.mango.regex.MatchCallback#matchGeneralFailure(java.lang.Exception)
+							 */
+							@Override
+							public void matchGeneralFailure(Exception e) {
+								result.put("success", "false");
+								result.put("name", vo.getName());
+								result.put("error", new TranslatableMessage("common.default", e.getMessage()).translate(Common.getTranslations()));
+							}
+                		};
+        				
+        				try{
+        					SerialDataSourceRT.matchPointValue(message, 
+        						messageRegex, 
+        						pointIdentifierIndex,
+        						(SerialPointLocatorVO)vo.getPointLocator(),
+        						isHex, LOG, callback);
+        				}catch(Exception e){
+        					callback.matchGeneralFailure(e);
+        				}
+        				
         				if(result.size() > 0){
             				result.put("message", message);
             				results.add(result);
@@ -165,12 +187,12 @@ public class SerialEditDwr extends DataSourceEditDwr{
 			//Check all the points
 			for(final DataPointVO vo : points){
 				final Map<String, String> result = new HashMap<String,String>();
-				SerialDataSourceRT.matchPointValue(msg, messageRegex, pointIdentifierIndex, (SerialPointLocatorVO)vo.getPointLocator(), LOG, new MatchCallback(){
+				MatchCallback callback = new MatchCallback(){
 
 					@Override
-					public void onMatch(String pointIdentifier, String value, int dataTypeId) {
+					public void onMatch(String pointIdentifier, PointValueTime pvt) {
 						result.put("name", vo.getName());
-						result.put("value", value);
+						result.put("value", pvt.toString());
 						result.put("identifier", pointIdentifier);
 						result.put("success", "true");
 					}
@@ -195,7 +217,27 @@ public class SerialEditDwr extends DataSourceEditDwr{
 						result.put("name", vo.getName());
 						result.put("error", new TranslatableMessage("serial.test.noIdentifierFound").translate(Common.getTranslations()));
 					}
-        		});
+					/* (non-Javadoc)
+					 * @see com.infiniteautomation.mango.regex.MatchCallback#matchGeneralFailure(java.lang.Exception)
+					 */
+					@Override
+					public void matchGeneralFailure(Exception e) {
+						result.put("success", "false");
+						result.put("name", vo.getName());
+						result.put("error", new TranslatableMessage("common.default", e.getMessage()).translate(Common.getTranslations()));
+					}
+        		};
+        		try{
+        			SerialDataSourceRT.matchPointValue(msg, 
+						messageRegex, 
+						pointIdentifierIndex, 
+						(SerialPointLocatorVO)vo.getPointLocator(), 
+						isHex,
+						LOG,
+						callback);
+        		}catch(Exception e){
+        			callback.matchGeneralFailure(e);
+        		}
 				
 				if(result.size() > 0){
     				result.put("message", msg);
