@@ -263,4 +263,9 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public static File getLogFile(int pointId) {
         return new File(Common.getLogsDir(), "pointLink-" + pointId + ".log");
     }
+
+	@Override
+	public void pointLogged(PointValueTime value) {
+		//Nothing
+	}
 }

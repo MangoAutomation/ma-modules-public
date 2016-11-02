@@ -341,5 +341,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 		return this.session;
 	}
 
-
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#pointLogged(com.serotonin.m2m2.rt.dataImage.PointValueTime)
+	 */
+	@Override
+	public void pointLogged(PointValueTime value) {
+		//Do nothing for now
+	}
 }
