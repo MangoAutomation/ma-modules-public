@@ -143,7 +143,7 @@
       for (var i=0; i<selectedPoints.length; i++)
           points[points.length] = {dataPointId: selectedPoints[i].id, guid: selectedPoints[i].guid};
       
-      PublisherEditDwr.saveSquwkSender(name, xid, enabled, points, $get("accessKey"), $get("secretKey"), 
+      SquwkPublisherDwr.saveSquwkSender(name, xid, enabled, points, $get("accessKey"), $get("secretKey"), 
               cacheWarningSize, cacheDiscardSize, changesOnly, sendSnapshot, snapshotSendPeriods, 
               snapshotSendPeriodType, savePublisherCB);
   }
