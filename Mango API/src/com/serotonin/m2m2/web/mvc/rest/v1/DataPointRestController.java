@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -604,6 +605,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
 			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
 			if(!user.isAdmin()){
+				//Limit our results based on the fact that our permissions should be in the permissions strings
+				root = addPermissionsFilter(root, user);
 				FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
 						new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
 								this, root, callback);
@@ -625,9 +628,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			responseContainer="List"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
-    public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(
-    		   		   		
-    		HttpServletRequest request) {
+    public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -638,6 +639,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     				//Admin Users Don't need to filter the results
     				return result.createResponseEntity(getPageStream(node));
     			}else{
+    				//Limit our results based on the fact that our permissions should be in the permissions strings
+    				node = addPermissionsFilter(node, user);
 	    			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
 	    			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
 	    					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
@@ -791,6 +794,28 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	}
     	
     	return result.createResponseEntity();
+	}
+	
+	/**
+	 * Add AST Nodes to filter permissions for a user
+	 * @param node
+	 * @param user
+	 * @return
+	 */
+	protected ASTNode addPermissionsFilter(ASTNode query, User user){
+		Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+		List<ASTNode> permissionsLikes = new ArrayList<ASTNode>(userPermissions.size() * 3);
+		for(String userPermission : userPermissions){
+			permissionsLikes.add(new ASTNode("like", "readPermission", "*" + userPermission + "*"));
+			permissionsLikes.add(new ASTNode("like", "setPermission", "*" + userPermission + "*"));
+			permissionsLikes.add(new ASTNode("like", "dataSourceEditPermission", "*" + userPermission + "*"));
+		}
+		if(!permissionsLikes.isEmpty()){
+			ASTNode permissionOr = new ASTNode("or", permissionsLikes.toArray());
+			return this.addAndRestriction(query, permissionOr);
+		}else{
+			return query;
+		}
 	}
 	
 	
