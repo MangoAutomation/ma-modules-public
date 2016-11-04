@@ -129,8 +129,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
 				}
 				PointValueTimeModel pvtModel = null;
-				if(pvt != null)
+				if(pvt != null){
 					pvtModel = new PointValueTimeModel(pvt);
+					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+						pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
+				}
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.INITIALIZE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (Exception e) {
@@ -162,8 +165,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(newValue.getValue().getDoubleValue());
 				}
 				PointValueTimeModel pvtModel = null;
-				if(newValue != null)
+				if(newValue != null){
 					pvtModel = new PointValueTimeModel(newValue);
+					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+						pvtModel.setValue(imageServletBuilder.buildAndExpand(newValue.getTime(), vo.getId()).toUri().toString());
+				}
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.UPDATE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (Exception e) {
@@ -194,8 +200,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(newValue.getValue().getDoubleValue());
 				}
 				PointValueTimeModel pvtModel = null;
-				if(newValue != null)
+				if(newValue != null){
 					pvtModel = new PointValueTimeModel(newValue);
+					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+						pvtModel.setValue(imageServletBuilder.buildAndExpand(newValue.getTime(), vo.getId()).toUri().toString());
+				}
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.CHANGE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (Exception e) {
@@ -225,8 +234,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(newValue.getValue().getDoubleValue());
 				}
 				PointValueTimeModel pvtModel = null;
-				if(newValue != null)
+				if(newValue != null){
 					pvtModel = new PointValueTimeModel(newValue);
+					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+						pvtModel.setValue(imageServletBuilder.buildAndExpand(newValue.getTime(), vo.getId()).toUri().toString());
+				}
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.SET, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (Exception e) {
@@ -256,8 +268,11 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getValue().getDoubleValue());
 				}
 				PointValueTimeModel pvtModel = null;
-				if(value != null)
+				if(value != null){
 					pvtModel = new PointValueTimeModel(value);
+					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+						pvtModel.setValue(imageServletBuilder.buildAndExpand(value.getTime(), vo.getId()).toUri().toString());
+				}
 				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.BACKDATE, pvtModel, renderedValue, convertedValue));
 			}
 		} catch (Exception e) {
