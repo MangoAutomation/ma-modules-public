@@ -210,6 +210,13 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	    		return result.createResponseEntity();
 	        }
 	        
+        	//We will always override the DS Info with the one from the XID Lookup
+            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
+            
+            //TODO this implies that we may need to have a different JSON Converter for data points
+            //Need to set DataSourceId among other things
+            vo.setDataSourceId(existingDp.getDataSourceId());
+	        
 	        //Check permissions
 	    	try{
 	    		if(!Permissions.hasDataSourcePermission(user, vo.getDataSourceId())){
@@ -254,14 +261,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-	
-	        	//We will always override the DS Info with the one from the XID Lookup
-	            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
-	            
-	            //TODO this implies that we may need to have a different JSON Converter for data points
-	            //Need to set DataSourceId among other things
-	            vo.setDataSourceId(existingDp.getDataSourceId());
-	            
 	            
 	            if (dsvo == null){
 	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", xid));
