@@ -44,6 +44,8 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 
 	private static final Log LOG = LogFactory.getLog(PointValueRollupCalculator.class);
 	
+	private String host;
+	private int port;
 	private DataPointVO vo;
 	private boolean useRendered;
 	private boolean unitConversion;
@@ -52,7 +54,9 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 	private long from;
 	private long to;
 	
-	public PointValueRollupCalculator(DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+	public PointValueRollupCalculator(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+		this.host = host;
+		this.port = port;
 		this.vo = vo;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -102,14 +106,14 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
             quantizer = new AnalogStatisticsQuantizer(bc, 
             		startValue,
-            		new NumericPointValueStatisticsQuantizerJsonCallback(jgen, this.vo, this.useRendered, this.unitConversion, this.rollup));
+            		new NumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, this.vo, this.useRendered, this.unitConversion, this.rollup));
         }else {
             if (!rollup.nonNumericSupport()) {
                 LOG.warn("Invalid non-numeric rollup type: " + rollup);
                 rollup = RollupEnum.FIRST; //Default to first
             }
             quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-            		new NonNumericPointValueStatisticsQuantizerJsonCallback(jgen, vo, useRendered, unitConversion, this.rollup));
+            		new NonNumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, useRendered, unitConversion, this.rollup));
         }
 		
 		this.calculate(quantizer, startTime, endTime);
@@ -134,14 +138,14 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
             quantizer = new AnalogStatisticsQuantizer(bc, 
             		startValue,
-            		new NumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), this.vo, this.useRendered, this.unitConversion, this.rollup));
+            		new NumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), this.vo, this.useRendered, this.unitConversion, this.rollup));
         }else {
             if (!rollup.nonNumericSupport()) {
                 LOG.warn("Invalid non-numeric rollup type: " + rollup);
                 rollup = RollupEnum.FIRST; //Default to first
             }
             quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-            		new NonNumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), vo, useRendered, unitConversion, this.rollup));
+            		new NonNumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, this.rollup));
         }
 		
 		this.calculate(quantizer, startTime, endTime);

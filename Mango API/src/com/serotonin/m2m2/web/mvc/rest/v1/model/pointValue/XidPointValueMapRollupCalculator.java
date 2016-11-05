@@ -53,6 +53,8 @@ public class XidPointValueMapRollupCalculator implements ObjectStream<Map<String
 
 	private static final Log LOG = LogFactory.getLog(XidPointValueMapRollupCalculator.class);
 	
+	private String host;
+	private int port;
 	private Map<Integer, DataPointVO> voMap;
 	private boolean useRendered;
 	private boolean unitConversion;
@@ -61,7 +63,9 @@ public class XidPointValueMapRollupCalculator implements ObjectStream<Map<String
 	private long from;
 	private long to;
 	
-	public XidPointValueMapRollupCalculator(Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+	public XidPointValueMapRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+		this.host = host;
+		this.port = port;
 		this.voMap = voMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -113,14 +117,14 @@ public class XidPointValueMapRollupCalculator implements ObjectStream<Map<String
 		        if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
 		            quantizer = new AnalogStatisticsQuantizer(bc, 
 		            		startValue,
-		            		new NumericPointValueStatisticsQuantizerJsonCallback(jgen, vo, this.useRendered, this.unitConversion, this.rollup));
+		            		new NumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, this.useRendered, this.unitConversion, this.rollup));
 		        }else {
 		            if (!rollup.nonNumericSupport()) {
 		                LOG.warn("Invalid non-numeric rollup type: " + rollup);
 		                rollup = RollupEnum.FIRST; //Default to first
 		            }
 		            quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-		            		new NonNumericPointValueStatisticsQuantizerJsonCallback(jgen, vo, useRendered, unitConversion, this.rollup));
+		            		new NonNumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, useRendered, unitConversion, this.rollup));
 		        }
 				
 				this.calculate(vo, quantizer, startTime, endTime);
@@ -156,15 +160,15 @@ public class XidPointValueMapRollupCalculator implements ObjectStream<Map<String
 	        if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
 	            quantizer = new AnalogStatisticsQuantizer(bc, 
 	            		startValue,
-	            		new NumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), vo, this.useRendered, this.unitConversion, this.rollup, true, writeHeaders));
+	            		new NumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, this.useRendered, this.unitConversion, this.rollup, true, writeHeaders));
 	        }else {
 	            if (!rollup.nonNumericSupport()) {
 	                LOG.warn("Invalid non-numeric rollup type: " + rollup);
 		            quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-		            		new NonNumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), vo, useRendered, unitConversion, RollupEnum.FIRST, true, writeHeaders));
+		            		new NonNumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, RollupEnum.FIRST, true, writeHeaders));
 	            }else{
 		            quantizer = new ValueChangeCounterQuantizer(bc, startValue,
-		            		new NonNumericPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), vo, useRendered, unitConversion, this.rollup, true, writeHeaders));
+		            		new NonNumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, this.rollup, true, writeHeaders));
 	            }
 	        }
 			

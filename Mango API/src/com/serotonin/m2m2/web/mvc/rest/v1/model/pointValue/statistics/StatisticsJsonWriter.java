@@ -18,8 +18,8 @@ public abstract class StatisticsJsonWriter extends PointValueTimeJsonWriter{
 	/**
 	 * @param jgen
 	 */
-	public StatisticsJsonWriter(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion) {
-		super(jgen, useRendered, unitConversion);
+	public StatisticsJsonWriter(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion) {
+		super(host, port, jgen, useRendered, unitConversion);
 		this.vo = vo;
 	}
 	

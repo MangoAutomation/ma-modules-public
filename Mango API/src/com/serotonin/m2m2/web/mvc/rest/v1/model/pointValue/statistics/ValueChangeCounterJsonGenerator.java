@@ -23,10 +23,10 @@ public class ValueChangeCounterJsonGenerator extends StatisticsJsonGenerator{
 	 * @param jgen
 	 * @param valueChangeCounter
 	 */
-	public ValueChangeCounterJsonGenerator(JsonGenerator jgen,
+	public ValueChangeCounterJsonGenerator(String host, int port, JsonGenerator jgen,
 			DataPointVO vo, boolean useRendered, boolean unitConversion,
 			ValueChangeCounter valueChangeCounter) {
-		super(jgen, vo, useRendered, unitConversion, valueChangeCounter);
+		super(host, port, jgen, vo, useRendered, unitConversion, valueChangeCounter);
 		this.statistics = valueChangeCounter;
 	}
 	
@@ -42,10 +42,10 @@ public class ValueChangeCounterJsonGenerator extends StatisticsJsonGenerator{
 		if(this.statistics.getCount() > 0){
 			this.jgen.writeBooleanField("hasData", true);
 			this.jgen.writeFieldName("first");
-			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null);
+			this.writePointValueTime(this.statistics.getFirstValue(), this.statistics.getFirstTime(), null, vo);
 			
 			this.jgen.writeFieldName("last");
-			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null);
+			this.writePointValueTime(this.statistics.getLastValue(), this.statistics.getLastTime(), null, vo);
 			
 			this.jgen.writeNumberField("count", this.statistics.getCount());
 			this.jgen.writeNumberField("changes",  this.statistics.getChanges());

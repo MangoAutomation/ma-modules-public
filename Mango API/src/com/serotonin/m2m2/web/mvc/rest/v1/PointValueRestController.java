@@ -318,7 +318,7 @@ public class PointValueRestController extends MangoRestController{
 	    	}
         	
 	    	try{
-				XidPointValueTimeLatestPointFacadeStream pvtDatabaseStream = new XidPointValueTimeLatestPointFacadeStream(request, pointIdMap, useRendered, unitConversion, limit, useCache);
+				XidPointValueTimeLatestPointFacadeStream pvtDatabaseStream = new XidPointValueTimeLatestPointFacadeStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, limit, useCache);
     			return result.createResponseEntity(pvtDatabaseStream);
 	    	}catch(PermissionException e){
 	    		LOG.error(e.getMessage(), e);
@@ -623,12 +623,12 @@ public class PointValueRestController extends MangoRestController{
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
-	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
 	    				return result.createResponseEntity(calc);
     				}
     				return result.createResponseEntity();
     			}else{
-    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request, pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
 	    			return result.createResponseEntity(pvtDatabaseStream);
     			}
 	    	}catch(PermissionException e){
@@ -707,11 +707,11 @@ public class PointValueRestController extends MangoRestController{
 		    				if((timePeriodType != null)&&(timePeriods != null)){
 		    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 		    				}
-		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(vo, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
 		    				return result.createResponseEntity(calc);
 	    				}
 	    			}else{
-	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request, vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
 		    			return result.createResponseEntity(pvtDatabaseStream);
 	    			}
 	    			
@@ -849,7 +849,7 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			StatisticsStream stream = new StatisticsStream(vo, useRendered, unitConversion, from.getTime(), to.getTime());
+	    			StatisticsStream stream = new StatisticsStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getTime(), to.getTime());
 	    			return result.createResponseEntity(stream);
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());

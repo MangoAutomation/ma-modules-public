@@ -6,14 +6,11 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import au.com.bytecode.opencsv.CSVWriter;
-
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * Write a row into a CSV based on settings and point value
@@ -22,8 +19,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  */
 public class PointValueTimeCsvWriter extends PointValueTimeWriter{
-
-	private final Log LOG = LogFactory.getLog(PointValueTimeCsvWriter.class);
 	
 	private final String headers[];
 	protected CSVWriter writer;
@@ -39,9 +34,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	 * @param useRendered
 	 * @param unitConversion
 	 */
-	public PointValueTimeCsvWriter(CSVWriter writer, DataPointVO vo, boolean useRendered,
+	public PointValueTimeCsvWriter(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,
 			boolean unitConversion) {
-		this(writer, vo, useRendered, unitConversion, false, true);
+		this(host, port, writer, vo, useRendered, unitConversion, false, true);
 	}
 	
 	/**
@@ -53,9 +48,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	 * @param writeXid
 	 * @param writeHeaders
 	 */
-	public PointValueTimeCsvWriter(CSVWriter writer, DataPointVO vo, boolean useRendered,
+	public PointValueTimeCsvWriter(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,
 			boolean unitConversion, boolean writeXid, boolean writeHeaders) {
-		super(useRendered, unitConversion);
+		super(host, port, useRendered, unitConversion);
 		this.writeXid = writeXid;
 		if(writeXid)
 			headers = new String[]{"xid", "value", "timestamp", "annotation"};
@@ -105,7 +100,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 	 */
 	@Override
 	public void writePointValueTime(DataValue value, long timestamp,
-			String annotation) throws IOException {
+			String annotation, DataPointVO vo) throws IOException {
 		if(!wroteHeaders)
 			this.writeHeaders();
 		
@@ -126,8 +121,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 					writeLine(Double.toString(value.getDoubleValue()), timestamp, annotation);
 				break;
 				default:
-					writeLine("unsupported-value-type", timestamp, annotation);
-					LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());
+					writeLine(imageServletBuilder.buildAndExpand(timestamp, vo.getId()).toUri().toString(), timestamp, annotation);
 				break;
 			}
 		}
