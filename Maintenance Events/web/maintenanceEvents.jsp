@@ -384,6 +384,7 @@
               <td class="formField">
                 <tag:alarmLevelOptions id="alarmLevel" onchange="updateAlarmLevelImage()"/>
                 <tag:img id="alarmLevelImg" png="flag_green" title="common.alarmLevel.none" style="display:none;"/>
+              	<tag:help id="alarms"/>
               </td>
             </tr>
             
