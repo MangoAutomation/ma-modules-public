@@ -1,3 +1,6 @@
+*Version 2.3.0*
+* Upgraded to work with core version 2.8.x
+
 *Version 2.2.4*
 * Adding support for Image data type, will display latest image for any image point type.
 
@@ -26,7 +29,7 @@
 *Version 2.1.2*
 * Adding Purge now option in system settings
 * Deleting NoSQL data when Report Instance is deleted.
-* Deleting NoSQL data when emailing scheduled report. 
+* Deleting NoSQL data when emailing scheduled report.
 
 
 *Version 2.1.1*
