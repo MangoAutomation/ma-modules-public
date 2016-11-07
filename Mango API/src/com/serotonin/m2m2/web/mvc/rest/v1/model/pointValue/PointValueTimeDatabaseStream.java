@@ -33,8 +33,9 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	 * @param to
 	 */
 	public PointValueTimeDatabaseStream(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao) {
-
-		this.vo = vo;
+        this.host = host;
+        this.port = port;
+        this.vo = vo;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
 		this.from = from;
