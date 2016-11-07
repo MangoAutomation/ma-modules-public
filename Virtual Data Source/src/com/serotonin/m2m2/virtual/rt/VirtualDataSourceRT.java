@@ -42,6 +42,13 @@ public class VirtualDataSourceRT extends PollingDataSource {
     }
 
     @Override
+    public void forcePointRead(DataPointRT dataPoint) {
+        VirtualPointLocatorRT locator = dataPoint.getPointLocator();
+        locator.change();
+        dataPoint.updatePointValue(new PointValueTime(locator.getCurrentValue(), System.currentTimeMillis()));
+    }
+
+    @Override
     public void setPointValue(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
         VirtualPointLocatorRT l = dataPoint.getPointLocator();
         l.setCurrentValue(valueTime.getValue());
