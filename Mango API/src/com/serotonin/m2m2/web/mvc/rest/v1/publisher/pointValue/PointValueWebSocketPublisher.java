@@ -60,9 +60,9 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 			//If we are an image type we should build the URLS
 			imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
 			if(Common.envProps.getBoolean("ssl.on", false))
-				imageServletBuilder.scheme("http");
-			else
 				imageServletBuilder.scheme("https");
+			else
+				imageServletBuilder.scheme("http");
 			imageServletBuilder.host(uri.getHost());
 			imageServletBuilder.port(uri.getPort());
 		}
