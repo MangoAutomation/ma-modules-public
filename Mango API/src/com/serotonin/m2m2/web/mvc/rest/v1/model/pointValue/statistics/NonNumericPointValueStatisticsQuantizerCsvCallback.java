@@ -44,6 +44,6 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 			CSVWriter writer, DataPointVO vo, boolean useRendered,
 			boolean unitConversion, RollupEnum rollup, boolean writeXidColumn,
 			boolean writeHeaders) {
-		super(vo, new PointValueTimeCsvWriter(host, port, writer, vo, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
+		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
 	}
 }

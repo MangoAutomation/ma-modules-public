@@ -25,7 +25,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	}
 	
 	@Override
-	public void writePointValueTime(double value, long timestamp, String annotation) throws IOException{
+	public void writePointValueTime(double value, long timestamp, String annotation, DataPointVO vo) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);
     	jgen.writeNumberField("value", value);
@@ -34,7 +34,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	}
 	
 	@Override
-	public void writePointValueTime(int value, long timestamp, String annotation) throws IOException{
+	public void writePointValueTime(int value, long timestamp, String annotation, DataPointVO vo) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);
     	jgen.writeNumberField("value", value);
@@ -43,7 +43,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	}
 	
 	@Override
-	public void writePointValueTime(String string, long timestamp, String annotation) throws IOException{
+	public void writePointValueTime(String string, long timestamp, String annotation, DataPointVO vo) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);
     	jgen.writeStringField("value", string);

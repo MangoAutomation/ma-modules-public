@@ -51,34 +51,24 @@ import com.serotonin.m2m2.web.taglib.Functions;
  * @author Terry Packer
  *
  */
-public class IdPointValueTimeJsonStreamCallback implements MappedRowCallback<IdPointValueTime>{
+public class IdPointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter implements MappedRowCallback<IdPointValueTime>{
 
 	private final Log LOG = LogFactory.getLog(IdPointValueTimeJsonStreamCallback.class);
 	private final String TIMESTAMP = "timestamp";
 	
-	private final JsonGenerator jgen;
-	private final boolean useRendered;
-	private final boolean unitConversion;
-	private final UriComponentsBuilder imageServletBuilder;
 	private final Map<Integer, DataPointVO> voMap;
 	
-	private final Map<String, DataValue> currentValueMap;
+	private final Map<String, PointDataValue> currentValueMap;
 	private long currentTime;
 	private boolean objectOpen;
 	
 	/**
 	 * @param jgen
 	 */
-	public IdPointValueTimeJsonStreamCallback(HttpServletRequest request, JsonGenerator jgen, Map<Integer,DataPointVO> voMap, boolean useRendered,  boolean unitConversion) {
-		this.jgen = jgen;
-		this.useRendered = useRendered;
-		this.unitConversion = unitConversion;
-		this.imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-		this.imageServletBuilder.scheme(request.getScheme());
-		this.imageServletBuilder.host(request.getServerName());
-		this.imageServletBuilder.port(request.getLocalPort());
+	public IdPointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, Map<Integer,DataPointVO> voMap, boolean useRendered,  boolean unitConversion) {
+		super(host, port, jgen, useRendered, unitConversion);
 		this.voMap = voMap;
-		this.currentValueMap = new HashMap<String, DataValue>(voMap.size());
+		this.currentValueMap = new HashMap<String, PointDataValue>(voMap.size());
 		this.currentTime = Long.MIN_VALUE;
 		this.objectOpen = false;
 	}
@@ -104,17 +94,17 @@ public class IdPointValueTimeJsonStreamCallback implements MappedRowCallback<IdP
 			
 			if(useRendered){
 				//Convert to Alphanumeric Value
-				this.currentValueMap.put(vo.getXid(), new AlphanumericValue(Functions.getRenderedText(vo, pvt)));
+				this.currentValueMap.put(vo.getXid(), new PointDataValue(vo, new AlphanumericValue(Functions.getRenderedText(vo, pvt))));
 			}else if(unitConversion){
 				if (pvt.getValue() instanceof NumericValue)
-					this.currentValueMap.put(vo.getXid(), new NumericValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue())));
+					this.currentValueMap.put(vo.getXid(), new PointDataValue(vo, new NumericValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()))));
 				else
-					this.currentValueMap.put(vo.getXid(), pvt.getValue());
+					this.currentValueMap.put(vo.getXid(), new PointDataValue(vo, pvt.getValue()));
 			}else{
 				if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-					this.currentValueMap.put(vo.getXid(), new AlphanumericValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString()));
+					this.currentValueMap.put(vo.getXid(), new PointDataValue(vo, new AlphanumericValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString())));
 				else
-					this.currentValueMap.put(vo.getXid(), pvt.getValue());
+					this.currentValueMap.put(vo.getXid(), new PointDataValue(vo, pvt.getValue()));
 			}
 		}catch(IOException e){
 			LOG.error(e.getMessage(), e);
@@ -129,7 +119,7 @@ public class IdPointValueTimeJsonStreamCallback implements MappedRowCallback<IdP
 	 * @param value
 	 * @throws IOException 
 	 */
-	private void writeXidPointValue(String xid, DataValue value) throws IOException {
+	private void writeXidPointValue(String xid, long timestamp, DataValue value, DataPointVO vo) throws IOException {
 		if(value == null){
 			this.jgen.writeNullField(xid);
 		}else{
@@ -147,7 +137,7 @@ public class IdPointValueTimeJsonStreamCallback implements MappedRowCallback<IdP
 					this.jgen.writeNumberField(xid, value.getDoubleValue());
 				break;
 				case DataTypes.IMAGE:
-					this.jgen.writeStringField(xid,"unsupported-value-type");
+					this.jgen.writeStringField(xid,imageServletBuilder.buildAndExpand(timestamp, vo.getId()).toUri().toString());
 				break;
 				default:
 					LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());
@@ -163,9 +153,9 @@ public class IdPointValueTimeJsonStreamCallback implements MappedRowCallback<IdP
 		String xid;
 		while(it.hasNext()){
 			xid = it.next();
-			DataValue value = this.currentValueMap.get(xid);
+			PointDataValue value = this.currentValueMap.get(xid);
 			if(value != null){
-				this.writeXidPointValue(xid, value);
+				this.writeXidPointValue(xid, this.currentTime, value.value, value.vo);
 			}
 		}
 		jgen.writeEndObject();
@@ -183,6 +173,17 @@ public class IdPointValueTimeJsonStreamCallback implements MappedRowCallback<IdP
 				LOG.error(e.getMessage(), e);
 			}
 		}
+	}
+	
+	class PointDataValue{
+		DataPointVO vo;
+		DataValue value;
+		
+		public PointDataValue(DataPointVO vo, DataValue value){
+			this.vo = vo;
+			this.value = value;
+		}
+		
 	}
 	
 }

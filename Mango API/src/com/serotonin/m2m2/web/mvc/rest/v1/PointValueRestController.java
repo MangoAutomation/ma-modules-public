@@ -249,7 +249,7 @@ public class PointValueRestController extends MangoRestController{
 	    	}
 
 	    	try{
-	    		IdPointValueTimeLatestPointValueFacadeStream pvtDatabaseStream = new IdPointValueTimeLatestPointValueFacadeStream(request, pointIdMap, useRendered, unitConversion, limit, useCache);
+	    		IdPointValueTimeLatestPointValueFacadeStream pvtDatabaseStream = new IdPointValueTimeLatestPointValueFacadeStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, limit, useCache);
     			return result.createResponseEntity(pvtDatabaseStream);
 	    	}catch(PermissionException e){
 	    		LOG.error(e.getMessage(), e);
@@ -523,12 +523,12 @@ public class PointValueRestController extends MangoRestController{
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
-	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
 	    				return result.createResponseEntity(calc);
     				}
     				return result.createResponseEntity();
     			}else{
-    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request, pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
 	    			return result.createResponseEntity(pvtDatabaseStream);
     			}
 	    			

@@ -33,15 +33,11 @@ import au.com.bytecode.opencsv.CSVWriter;
  * @author Terry Packer
  *
  */
-public class IdPointValueTimeCsvStreamCallback implements MappedRowCallback<IdPointValueTime>{
+public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter implements MappedRowCallback<IdPointValueTime>{
 
 	private final Log LOG = LogFactory.getLog(PointValueTimeJsonStreamCallback.class);
 	private final String TIMESTAMP = "timestamp";
 	
-	private CSVWriter writer;
-	private final boolean useRendered;
-	private final boolean unitConversion;
-	private final UriComponentsBuilder imageServletBuilder;
 	private final Map<Integer, DataPointVO> voMap;
 	private long currentTime;
 	
@@ -54,15 +50,9 @@ public class IdPointValueTimeCsvStreamCallback implements MappedRowCallback<IdPo
 	/**
 	 * @param jgen
 	 */
-	public IdPointValueTimeCsvStreamCallback(HttpServletRequest request, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion) {
-		this.writer = writer;
+	public IdPointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion) {
+		super(host, port, writer, useRendered, unitConversion);
 		this.voMap = voMap;
-		this.useRendered = useRendered;
-		this.unitConversion = unitConversion;
-		this.imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-		this.imageServletBuilder.scheme(request.getScheme());
-		this.imageServletBuilder.host(request.getServerName());
-		this.imageServletBuilder.port(request.getLocalPort());
 		this.currentTime = Long.MIN_VALUE;
 		
 		this.wroteHeaders = false;

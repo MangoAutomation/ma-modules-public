@@ -46,6 +46,8 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 
 	private static final Log LOG = LogFactory.getLog(IdPointValueRollupCalculator.class);
 	
+	private String host;
+	private int port;
 	private Map<Integer, DataPointVO> voMap;
 	private boolean useRendered;
 	private boolean unitConversion;
@@ -54,7 +56,9 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 	private long from;
 	private long to;
 	
-	public IdPointValueRollupCalculator(Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+		this.host = host;
+		this.port = port;
 		this.voMap = voMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -93,7 +97,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 		DateTime startTime = this.getStartTime();
 		DateTime endTime = this.getEndTime();
         BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
-        IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(jgen, 
+        IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(this.host, this.port, jgen, 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup);
 		try {
@@ -131,7 +135,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 		DateTime startTime = this.getStartTime();
 		DateTime endTime = this.getEndTime();
         BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
-        IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), 
+        IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(this.host, this.port, writer.getWriter(), 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup);
 

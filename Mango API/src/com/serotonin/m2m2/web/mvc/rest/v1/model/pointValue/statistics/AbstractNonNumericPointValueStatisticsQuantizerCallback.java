@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -45,22 +46,26 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	@Override
     public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
 		try{
-//	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){
 	            case FIRST:
-	            	this.writer.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
+	            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+	            		this.writer.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), this.vo);
+	            	else
+	            		this.writer.writeNonNull(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	            break;
 	            case LAST:
-	            	this.writer.writeNonNull(statisticsGenerator.getLastValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
+	            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+	            		this.writer.writeNonNull(statisticsGenerator.getLastValue(), statisticsGenerator.getLastTime(), this.vo);
+	            	else
+	            		this.writer.writeNonNull(statisticsGenerator.getLastValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	            break;
 	            case COUNT:
-	            	this.writer.writePointValueTime(statisticsGenerator.getCount(), statisticsGenerator.getPeriodStartTime(), null);
+	            	this.writer.writePointValueTime(statisticsGenerator.getCount(), statisticsGenerator.getPeriodStartTime(), null, this.vo);
 	            break;
 	            default:
 	            	throw new ShouldNeverHappenException("Unsupported Non-numerical Rollup type: " + rollup);
 	       
 	            }
-//	        }
 		}catch(IOException e){
 			LOG.error(e.getMessage(), e);
 		}

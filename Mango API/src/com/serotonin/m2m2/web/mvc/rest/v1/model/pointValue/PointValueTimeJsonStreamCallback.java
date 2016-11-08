@@ -54,7 +54,7 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 				this.writePointValueTime(new AlphanumericValue(textValue), pvt.getTime(), annotation, vo);
 			}else if(unitConversion){
 				if (pvt.getValue() instanceof NumericValue)
-					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()), pvt.getTime(), annotation);
+					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()), pvt.getTime(), annotation, vo);
 				else
 					this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation, vo);
 			}else{
