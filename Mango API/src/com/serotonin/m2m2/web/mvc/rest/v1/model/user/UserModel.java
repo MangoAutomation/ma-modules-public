@@ -207,6 +207,19 @@ public class UserModel extends AbstractRestModel<User> {
         data.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
     }
     
+    @CSVColumnGetter(order=13, header="locale")
+    @JsonGetter("locale")
+    public String getLocale() {
+        // TODO enable each user to have a locale, and add option for browser locale
+        return Common.getLocale().toLanguageTag();
+    }
+
+    @CSVColumnSetter(order=13, header="locale")
+    @JsonSetter("locale")
+    public void setLocale(String locale) {
+        // no op
+    }
+    
 	public List<RestValidationMessage> getMessages() {
 		return messages;
 	}
