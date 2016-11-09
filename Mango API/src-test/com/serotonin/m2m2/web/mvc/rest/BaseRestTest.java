@@ -100,7 +100,7 @@ public class BaseRestTest {
     	DaoRegistry.userDao = this.userDao;
     	//DaoRegistry.pointValueDao = this.pointValueDao;
     	
-    	this.objectMapper = MangoRestSpringConfiguration.objectMapper;
+    	this.objectMapper = MangoRestSpringConfiguration.createNewObjectMapper();
     	
     	MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
     	converter.setObjectMapper(this.objectMapper);

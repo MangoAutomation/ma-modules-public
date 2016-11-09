@@ -48,7 +48,7 @@ public class BaseFullStackRestTest {
      * @param controllers
      */
     protected void setupMvc(Object... controllers){
-    	this.objectMapper = MangoRestSpringConfiguration.objectMapper;
+    	this.objectMapper = MangoRestSpringConfiguration.createNewObjectMapper();
     	
     	MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
     	converter.setObjectMapper(this.objectMapper);

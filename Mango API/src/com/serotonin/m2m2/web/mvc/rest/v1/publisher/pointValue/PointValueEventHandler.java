@@ -40,7 +40,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 	public PointValueEventHandler(){
-		super(MangoRestSpringConfiguration.objectMapper);
+		super(MangoRestSpringConfiguration.getObjectMapper());
 	}
 	
 	@Override
