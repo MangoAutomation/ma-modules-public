@@ -28,6 +28,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValueCache;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RealTimeModel;
 import com.wordnik.swagger.annotations.Api;
@@ -68,6 +69,11 @@ public class RealTimeDataRestController extends MangoRestController{
     		ASTNode model;
 			try{
 				model = this.parseRQLtoAST(request);
+				if(model == null){
+					result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Query Required")));
+					return result.createResponseEntity();
+				}
+
 		    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
 		    	values = model.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 		    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
