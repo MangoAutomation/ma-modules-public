@@ -13,15 +13,13 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  *
  */
 public class UserCommentWebSocketDefinition extends WebSocketDefinition{
-
-	public static final UserCommentWebSocketHandler handler = new UserCommentWebSocketHandler();
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	public MangoWebSocketHandler getHandler() {
-		return handler;
+	protected MangoWebSocketHandler getHandler() {
+		return new UserCommentWebSocketHandler();
 	}
 
 	/* (non-Javadoc)

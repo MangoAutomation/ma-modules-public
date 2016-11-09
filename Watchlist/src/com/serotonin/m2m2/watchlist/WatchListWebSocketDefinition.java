@@ -14,15 +14,14 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  */
 public class WatchListWebSocketDefinition extends WebSocketDefinition{
 
-	public static final WatchListWebSocketHandler handler = new WatchListWebSocketHandler();
 	public static final String TYPE_NAME = "WATCH_LIST";
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
 	 */
 	@Override
-	public MangoWebSocketHandler getHandler() {
-		return handler;
+	protected MangoWebSocketHandler getHandler() {
+		return new WatchListWebSocketHandler();
 	}
 
 	/* (non-Javadoc)

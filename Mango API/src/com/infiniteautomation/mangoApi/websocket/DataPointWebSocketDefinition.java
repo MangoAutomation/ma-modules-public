@@ -15,14 +15,13 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 public class DataPointWebSocketDefinition extends WebSocketDefinition{
 
 	public static final String TYPE_NAME = "DATA_POINT";
-	public static final DataPointWebSocketHandler handler = new DataPointWebSocketHandler();
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
 	public MangoWebSocketHandler getHandler() {
-		return handler;
+		return new DataPointWebSocketHandler();
 	}
 
 	/* (non-Javadoc)

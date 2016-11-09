@@ -36,6 +36,7 @@ import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
@@ -52,7 +53,8 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	private ObjectMapper mapper;
 	
 	private WatchListDao() {
-		super(WatchListWebSocketDefinition.handler, AuditEvent.TYPE_NAME, "w",
+		super(ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME),
+				AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"} //to allow filtering on username
 		        );
 		mapper = new ObjectMapper();

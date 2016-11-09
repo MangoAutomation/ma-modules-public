@@ -13,15 +13,13 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  *
  */
 public class DataSourceWebSocketDefinition extends WebSocketDefinition{
-
-	public static final DataSourceWebSocketHandler handler = new DataSourceWebSocketHandler();
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	public MangoWebSocketHandler getHandler() {
-		return handler;
+	protected MangoWebSocketHandler getHandler() {
+		return new DataSourceWebSocketHandler();
 	}
 
 	/* (non-Javadoc)
