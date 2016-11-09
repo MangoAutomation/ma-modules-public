@@ -7,7 +7,6 @@
 * Fixed bug where JSON import allowed millisecond poll rates
 * Adding MBus IP Support
 
-
 *Version 1.1.2*
 * Fixed javascript bug on edit page to not reference non-existent dom node
 

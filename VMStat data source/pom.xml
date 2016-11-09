@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>vmstat-ds</artifactId>
     <name>VMStat Data Source</name>
-    <version>1.5.1</version>
+    <version>1.6.0</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
