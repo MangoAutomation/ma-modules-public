@@ -84,16 +84,10 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 //		            	this.jgen.writeEndObject();
 //		            break;
 		            case FIRST:
-		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-		            		this.writeDataValue(statisticsGenerator.getFirstTime(), statisticsGenerator.getFirstValue(), vo, vo.getXid());
-		            	else
 		            		this.writeDataValue(periodStartTime, statisticsGenerator.getFirstValue(), vo, vo.getXid());
 		            break;
 		            case LAST:
-		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-		            		this.writeDataValue(statisticsGenerator.getLastTime(), statisticsGenerator.getLastValue(), vo, vo.getXid());
-		            	else
-		            		this.writeDataValue(periodStartTime, statisticsGenerator.getLastValue(), vo, vo.getXid());
+	            		this.writeDataValue(periodStartTime, statisticsGenerator.getLastValue(), vo, vo.getXid());
 		            break;
 		            case COUNT:
 		            	this.jgen.writeNumberField(vo.getXid(), statisticsGenerator.getCount());
