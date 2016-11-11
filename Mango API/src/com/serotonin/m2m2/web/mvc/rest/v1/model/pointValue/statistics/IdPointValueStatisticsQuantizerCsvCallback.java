@@ -110,10 +110,16 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 					ValueChangeCounter statisticsGenerator = (ValueChangeCounter)stats;
 		            switch(rollup){
 		            case FIRST:
-		            	this.writeDataValue(periodStartTime, statisticsGenerator.getFirstValue(), vo);
+		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+		            		this.writeNonNullImage(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), periodStartTime, vo);
+		            	else
+		            		this.writeDataValue(periodStartTime, statisticsGenerator.getFirstValue(), vo);
 		            break;
 		            case LAST:
-	            		this.writeDataValue(periodStartTime, statisticsGenerator.getLastValue(), vo);
+		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+		            		this.writeNonNullImage(statisticsGenerator.getLastValue(), statisticsGenerator.getLastTime(), periodStartTime, vo);
+		            	else
+		            		this.writeDataValue(periodStartTime, statisticsGenerator.getLastValue(), vo);
 		            break;
 		            case COUNT:
 		            	this.rowData[this.columnMap.get(vo.getId())] = Integer.toString(statisticsGenerator.getCount());

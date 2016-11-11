@@ -120,6 +120,30 @@ public abstract class PointValueTimeWriter {
 		}
 	}
 	
+	/**
+	 * Write an image using its timestamp
+	 * @param value
+	 * @param imageTimestamp
+	 * @param timestamp
+	 * @param vo
+	 * @throws IOException
+	 */
+	public void writeNonNullImage(DataValue value, Long imageTimestamp, Long timestamp, DataPointVO vo) throws IOException{
+		if(timestamp == null)
+			throw new ShouldNeverHappenException("Time cannot be null");
+		
+		if(value == null){
+			if(useRendered){
+				this.writePointValueTime(new AlphanumericValue(""), timestamp, this.noDataMessage, vo);
+			}else{
+				this.writePointValueTime(0.0D, timestamp, this.noDataMessage, vo);
+			}
+		}else{
+			this.writePointValueTime(value, imageTimestamp, null, vo);
+		}
+
+	}
+	
 	public void writeNonNullIntegral(Double integral, long time, DataPointVO vo) throws IOException{
     	if(useRendered){
     		//Convert to Alphanumeric Value
