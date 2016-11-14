@@ -4,6 +4,7 @@
 * Removed mangoApiHeaders.properties file as it is now merged with the env.properties
 * The custom headers filter no longer exists so Mango will fail to start if you have that filter defined in the override-web.xml
 * Adding image support to all point-value end points and web sockets
+* Added timezone parameter to point-value REST end-points
 
 *Version 1.1.8*
 * Add REST endpoints for getting device names
