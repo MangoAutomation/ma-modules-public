@@ -6,7 +6,6 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
@@ -349,12 +349,12 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
 	        
 	        @ApiParam(value = "From time", required = false, allowMultiple = false)
-	        @RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
-	        @DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+	        @RequestParam(value="from", required=false)
+	        @DateTimeFormat(iso=ISO.DATE_TIME) DateTime from,
 
 	        @ApiParam(value = "To time", required = false, allowMultiple = false)
-	        @RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
-	        @DateTimeFormat(iso=ISO.DATE_TIME) Date to
+	        @RequestParam(value="to", required=false)
+	        @DateTimeFormat(iso=ISO.DATE_TIME) DateTime to
 	        ){
 	    RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
 	    User user = this.checkUser(request, result);
@@ -367,9 +367,15 @@ public class PointValueRestController extends MangoRestController{
 
 	        try{
 	            if(Permissions.hasDataPointReadPermission(user, vo)){
+                    long current = System.currentTimeMillis();
+                    if (from == null)
+                        from = new DateTime(current);
+                    if (to == null)
+                        to = new DateTime(current);
+	                
 	                PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), false);
-                    PointValueTime first = pointValueFacade.getPointValueAfter(from.getTime());
-                    PointValueTime last = pointValueFacade.getPointValueBefore(to.getTime());
+                    PointValueTime first = pointValueFacade.getPointValueAfter(from.getMillis());
+                    PointValueTime last = pointValueFacade.getPointValueBefore(to.getMillis());
                     
                     List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(2);
                     if(useRendered){
@@ -462,14 +468,14 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
 
     		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		@RequestParam(value="from", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime from,
     		
     		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+			@RequestParam(value="to", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime to,
     		
     		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
 			@RequestParam(value="rollup", required=false)
@@ -481,7 +487,11 @@ public class PointValueRestController extends MangoRestController{
     		
     		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
 			@RequestParam(value="timePeriods", required=false)
-    		Integer timePeriods    		
+    		Integer timePeriods,
+            
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value="timezone", required=false)
+            String timezone
     		){
         
     	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
@@ -510,6 +520,19 @@ public class PointValueRestController extends MangoRestController{
 	    	}
 
 	    	try{
+                long current = System.currentTimeMillis();
+                if (from == null)
+                    from = new DateTime(current);
+                if (to == null)
+                    to = new DateTime(current);
+
+                // could also get the user's timezone if parameter was not supplied but probably
+                // better not to for RESTfulness
+                if (timezone != null) {
+                    DateTimeZone zone = DateTimeZone.forID(timezone);
+                    from = from.withZone(zone);
+                    to = to.withZone(zone);
+                }
 
     			//Are we using rollup
     			if((rollup != null)&&(rollup != RollupEnum.NONE)){
@@ -523,12 +546,12 @@ public class PointValueRestController extends MangoRestController{
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
-	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from, to);
 	    				return result.createResponseEntity(calc);
     				}
     				return result.createResponseEntity();
     			}else{
-    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao);
 	    			return result.createResponseEntity(pvtDatabaseStream);
     			}
 	    			
@@ -563,14 +586,14 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
 
     		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		@RequestParam(value="from", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime from,
     		
     		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+			@RequestParam(value="to", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime to,
     		
     		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
 			@RequestParam(value="rollup", required=false)
@@ -582,7 +605,11 @@ public class PointValueRestController extends MangoRestController{
     		
     		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
 			@RequestParam(value="timePeriods", required=false)
-    		Integer timePeriods    		
+    		Integer timePeriods,
+            
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value="timezone", required=false)
+            String timezone
     		){
         
     	RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>> result = new RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>>(HttpStatus.OK);
@@ -611,6 +638,20 @@ public class PointValueRestController extends MangoRestController{
 	    	}
 
 	    	try{
+	            long current = System.currentTimeMillis();
+	            if (from == null)
+	                from = new DateTime(current);
+	            if (to == null)
+	                to = new DateTime(current);
+
+	            // could also get the user's timezone if parameter was not supplied but probably
+	            // better not to for RESTfulness
+	            if (timezone != null) {
+	                DateTimeZone zone = DateTimeZone.forID(timezone);
+	                from = from.withZone(zone);
+	                to = to.withZone(zone);
+	            }
+	            
     			//Are we using rollup
     			if((rollup != null)&&(rollup != RollupEnum.NONE)){
     				if(rollup == RollupEnum.FFT){
@@ -623,12 +664,12 @@ public class PointValueRestController extends MangoRestController{
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
-	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from, to);
 	    				return result.createResponseEntity(calc);
     				}
     				return result.createResponseEntity();
     			}else{
-    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao);
 	    			return result.createResponseEntity(pvtDatabaseStream);
     			}
 	    	}catch(PermissionException e){
@@ -661,14 +702,14 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
 
     		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		@RequestParam(value="from", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime from,
     		
     		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+			@RequestParam(value="to", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime to,
     		
     		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
 			@RequestParam(value="rollup", required=false)
@@ -680,7 +721,11 @@ public class PointValueRestController extends MangoRestController{
     		
     		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
 			@RequestParam(value="timePeriods", required=false)
-    		Integer timePeriods    		
+    		Integer timePeriods,
+    		
+    		@ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value="timezone", required=false)
+            String timezone
     		){
         
     	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
@@ -695,23 +740,37 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
+                    long current = System.currentTimeMillis();
+                    if (from == null)
+                        from = new DateTime(current);
+                    if (to == null)
+                        to = new DateTime(current);
+
+                    // could also get the user's timezone if parameter was not supplied but probably
+                    // better not to for RESTfulness
+                    if (timezone != null) {
+                        DateTimeZone zone = DateTimeZone.forID(timezone);
+                        from = from.withZone(zone);
+                        to = to.withZone(zone);
+                    }
+
 	    			//Are we using rollup
 	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
 	    				if(rollup == RollupEnum.FFT){
 	    					//Special Rollup for FFT's with no time rollup action
 	    					//TODO Need a way to return frequency or period values
-	    					PointValueFftCalculator calc = new PointValueFftCalculator(vo, from.getTime(), to.getTime(), true);
+	    					PointValueFftCalculator calc = new PointValueFftCalculator(vo, from.getMillis(), to.getMillis(), true);
 	    					return result.createResponseEntity(calc);
 	    				}else{
 		    				TimePeriod timePeriod = null;
 		    				if((timePeriodType != null)&&(timePeriods != null)){
 		    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 		    				}
-		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, rollup, timePeriod, from.getTime(), to.getTime());
+		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, rollup, timePeriod, from, to);
 		    				return result.createResponseEntity(calc);
 	    				}
 	    			}else{
-	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getTime(), to.getTime(), this.dao);
+	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao);
 		    			return result.createResponseEntity(pvtDatabaseStream);
 	    			}
 	    			
@@ -743,14 +802,14 @@ public class PointValueRestController extends MangoRestController{
     		@PathVariable String xid,
     		
     		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00")
+    		@RequestParam(value="from", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime from,
     		
     		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")
+			@RequestParam(value="to", required=false)
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime to,
     		
     		@ApiParam(value = "Rollup type", required = false, allowMultiple = false)
 			@RequestParam(value="rollup", required=false)
@@ -762,7 +821,11 @@ public class PointValueRestController extends MangoRestController{
     		
     		@ApiParam(value = "Time Periods", required = false, allowMultiple = false)
 			@RequestParam(value="timePeriods", required=false)
-    		Integer timePeriods    		
+    		Integer timePeriods,
+            
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value="timezone", required=false)
+            String timezone	
     		){
         
     	RestProcessResult<Long> result = new RestProcessResult<Long>(HttpStatus.OK);
@@ -777,20 +840,34 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
+	    		    long current = System.currentTimeMillis();
+                    if (from == null)
+                        from = new DateTime(current);
+                    if (to == null)
+                        to = new DateTime(current);
+
+                    // could also get the user's timezone if parameter was not supplied but probably
+                    // better not to for RESTfulness
+                    if (timezone != null) {
+                        DateTimeZone zone = DateTimeZone.forID(timezone);
+                        from = from.withZone(zone);
+                        to = to.withZone(zone);
+                    }
+	    		    
 	    			//Are we using rollup
 	    			if((rollup != null)&&(rollup != RollupEnum.NONE)){
 	    				//First check to see if there are any values in the range
-	    				long pointValueCount = Common.databaseProxy.newPointValueDao().dateRangeCount(vo.getId(), from.getTime(), to.getTime());
+	    				long pointValueCount = Common.databaseProxy.newPointValueDao().dateRangeCount(vo.getId(), from.getMillis(), to.getMillis());
 	    				if(pointValueCount == 0)
 	    					return result.createResponseEntity(pointValueCount);
 	    				long count = new Long(0);
-	    				TimePeriodBucketCalculator calc = new TimePeriodBucketCalculator(new DateTime(from), new DateTime(to), TimePeriodType.convertFrom(timePeriodType), timePeriods);
+	    				TimePeriodBucketCalculator calc = new TimePeriodBucketCalculator(from, to, TimePeriodType.convertFrom(timePeriodType), timePeriods);
 	    				while(calc.getNextPeriodTo().isBefore(calc.getEndTime())){
 	    					count++;
 	    				}
 	    				return result.createResponseEntity(count);
 	    			}else{
-		    			long count = Common.databaseProxy.newPointValueDao().dateRangeCount(vo.getId(), from.getTime(), to.getTime());
+		    			long count = Common.databaseProxy.newPointValueDao().dateRangeCount(vo.getId(), from.getMillis(), to.getMillis());
 		    			return result.createResponseEntity(count);
 	    			}
 	    			
@@ -827,14 +904,14 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="false") boolean unitConversion,
 
     		@ApiParam(value = "From time", required = false, allowMultiple = false)
-    		@RequestParam(value="from", required=false, defaultValue="2014-08-10T00:00:00.000-10:00") //Not working yet: defaultValue="2014-08-01 00:00:00.000 -1000" )
+    		@RequestParam(value="from", required=false) //Not working yet: defaultValue="2014-08-01 00:00:00.000 -1000" )
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date from,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date from,
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime from,
     		
     		@ApiParam(value = "To time", required = false, allowMultiple = false)
-			@RequestParam(value="to", required=false, defaultValue="2014-08-11T23:59:59.999-10:00")//Not working yet defaultValue="2014-08-11 23:59:59.999 -1000")
+			@RequestParam(value="to", required=false)//Not working yet defaultValue="2014-08-11 23:59:59.999 -1000")
     		//Not working yet@DateTimeFormat(pattern = "${rest.customDateInputFormat}") Date to,
-    		@DateTimeFormat(iso=ISO.DATE_TIME) Date to    		
+    		@DateTimeFormat(iso=ISO.DATE_TIME) DateTime to
     		){
         
     	RestProcessResult<StatisticsStream> result = new RestProcessResult<StatisticsStream>(HttpStatus.OK);
@@ -849,7 +926,13 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			StatisticsStream stream = new StatisticsStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getTime(), to.getTime());
+	    		    long current = System.currentTimeMillis();
+                    if (from == null)
+                        from = new DateTime(current);
+                    if (to == null)
+                        to = new DateTime(current);
+
+	    			StatisticsStream stream = new StatisticsStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getMillis(), to.getMillis());
 	    			return result.createResponseEntity(stream);
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());

@@ -51,22 +51,21 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 	private boolean unitConversion;
 	private RollupEnum rollup;
 	private TimePeriod period;
-	private long from;
-	private long to;
-	
-	public PointValueRollupCalculator(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
-		this.host = host;
-		this.port = port;
-		this.vo = vo;
-		this.useRendered = useRendered;
-		this.unitConversion = unitConversion;
-		this.rollup = rollup;
-		this.period = period;
-		this.from = from;
-		this.to = to;
-	}
+	private DateTime from;
+	private DateTime to;
 
-	
+	public PointValueRollupCalculator(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to){
+        this.host = host;
+        this.port = port;
+        this.vo = vo;
+        this.useRendered = useRendered;
+        this.unitConversion = unitConversion;
+        this.rollup = rollup;
+        this.period = period;
+        this.from = from;
+        this.to = to;
+    }
+
 	/**
 	 * Calculate statistics, if TimePeriod is null the entire range will be used
 	 * @return
@@ -153,11 +152,11 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 
 	private void setupDates(){
         // Determine the start and end times.
-        if (from == -1) {
+        if (from == null) {
             // Get the start and end from the point values table.
             LongPair lp = DaoRegistry.pointValueDao.getStartAndEndTime(Collections.singletonList(vo.getId()));
-            from = lp.getL1();
-            to = lp.getL2();
+            from = new DateTime(lp.getL1());
+            to = new DateTime(lp.getL2());
         }
 
 	}
@@ -189,16 +188,16 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 	private DataValue getStartValue(){
         // Determine the start and end values. This is important for
         // properly calculating average.
-        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from);
+        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from.getMillis());
         //Try our best to get the closest value
         if(startPvt == null)
-        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from);
+        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from.getMillis());
         DataValue startValue = PointValueTime.getValue(startPvt);
         return startValue;
 	}
 	
 	private DataValue getEndValue(){
-		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
+		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to.getMillis());
         return PointValueTime.getValue(endPvt);
 	}
 	
