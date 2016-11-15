@@ -46,15 +46,19 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 
 	private static final Log LOG = LogFactory.getLog(IdPointValueRollupCalculator.class);
 	
+	private String host;
+	private int port;
 	private Map<Integer, DataPointVO> voMap;
 	private boolean useRendered;
 	private boolean unitConversion;
 	private RollupEnum rollup;
 	private TimePeriod period;
-	private long from;
-	private long to;
+	private DateTime from;
+	private DateTime to;
 	
-	public IdPointValueRollupCalculator(Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, long from, long to){
+	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to){
+		this.host = host;
+		this.port = port;
 		this.voMap = voMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -93,7 +97,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 		DateTime startTime = this.getStartTime();
 		DateTime endTime = this.getEndTime();
         BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
-        IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(jgen, 
+        IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(this.host, this.port, jgen, 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup);
 		try {
@@ -131,7 +135,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 		DateTime startTime = this.getStartTime();
 		DateTime endTime = this.getEndTime();
         BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
-        IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), 
+        IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(this.host, this.port, writer.getWriter(), 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup);
 
@@ -157,11 +161,11 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 
 	private void setupDates(){
         // Determine the start and end times.
-        if (from == -1) {
+        if (from == null) {
             // Get the start and end from the point values table.
             LongPair lp = DaoRegistry.pointValueDao.getStartAndEndTime(new ArrayList<Integer>(this.voMap.keySet()));
-            from = lp.getL1();
-            to = lp.getL2();
+            from = new DateTime(lp.getL1());
+            to = new DateTime(lp.getL2());
         }
 
 	}
@@ -180,7 +184,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 	}
 	
 	private DateTime getStartTime(){
-		DateTime startTime = new DateTime(from);
+		DateTime startTime = from;
 		 //Round off the start period if we are using periodic rollup
         if(period != null)
         	startTime = DateUtils.truncateDateTime(startTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
@@ -188,22 +192,22 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 
 	}
 	private DateTime getEndTime(){
-        return new DateTime(to);
+        return to;
 	}
 	
 	private DataValue getStartValue(DataPointVO vo){
         // Determine the start and end values. This is important for
         // properly calculating average.
-        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from);
+        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from.getMillis());
         //Try our best to get the closest value
         if(startPvt == null)
-        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from);
+        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from.getMillis());
         DataValue startValue = PointValueTime.getValue(startPvt);
         return startValue;
 	}
 	
 	private DataValue getEndValue(DataPointVO vo){
-		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
+		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to.getMillis());
         if(endPvt != null)
         	return endPvt.getValue();
         else

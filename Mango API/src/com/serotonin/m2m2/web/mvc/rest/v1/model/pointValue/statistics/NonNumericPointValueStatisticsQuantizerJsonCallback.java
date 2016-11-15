@@ -24,8 +24,8 @@ public class NonNumericPointValueStatisticsQuantizerJsonCallback extends Abstrac
 	 * @param unitConversion
 	 * @param rollup
 	 */
-	public NonNumericPointValueStatisticsQuantizerJsonCallback(
+	public NonNumericPointValueStatisticsQuantizerJsonCallback(String host, int port,
 			JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, RollupEnum rollup) {
-		super(vo, new PointValueTimeJsonWriter(jgen, useRendered, unitConversion), rollup);
+		super(vo, new PointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion), rollup);
 	}
 }

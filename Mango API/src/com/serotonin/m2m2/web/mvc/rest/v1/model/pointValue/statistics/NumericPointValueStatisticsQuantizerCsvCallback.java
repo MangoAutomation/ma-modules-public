@@ -25,9 +25,9 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 	 * @param unitConversion
 	 * @param rollup
 	 */
-	public NumericPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, DataPointVO vo, 
+	public NumericPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, DataPointVO vo, 
 			boolean useRendered,  boolean unitConversion, RollupEnum rollup) {
-		this(writer, vo, useRendered, unitConversion, rollup, false, true);
+		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true);
 	}	
 	
 	/**
@@ -39,9 +39,9 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 	 * @param rollup
 	 * @param writeXidColumn
 	 */
-	public NumericPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, DataPointVO vo, 
+	public NumericPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, DataPointVO vo, 
 			boolean useRendered,  boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders) {
-		super(vo, new PointValueTimeCsvWriter(writer, vo, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
+		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
 	}
 	
 }

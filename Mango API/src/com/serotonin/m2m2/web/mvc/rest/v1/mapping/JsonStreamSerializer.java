@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  */
-package com.serotonin.m2m2.web.mvc.rest.v1.serializers;
+package com.serotonin.m2m2.web.mvc.rest.v1.mapping;
 
 import java.io.IOException;
 

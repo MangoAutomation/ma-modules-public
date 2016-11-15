@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,6 +44,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredQueryStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointStreamCallback;
 import com.wordnik.swagger.annotations.Api;
@@ -75,21 +77,26 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			notes = "Only returns points available to logged in user"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
-    public ResponseEntity<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>> getAllDataPoints(HttpServletRequest request, 
+    public ResponseEntity<QueryArrayStream<DataPointVO>> getAllDataPoints(HttpServletRequest request, 
     		@ApiParam(value = "Limit the number of results", required=false)
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
-        RestProcessResult<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>> result = new RestProcessResult<FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>>(HttpStatus.OK);
+        RestProcessResult<QueryArrayStream<DataPointVO>> result = new RestProcessResult<QueryArrayStream<DataPointVO>>(HttpStatus.OK);
         
         User user = this.checkUser(request, result);
         if(result.isOk()){
         	ASTNode root = new ASTNode("limit", limit);
-			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
-			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
-			FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
-					new FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
-							this, root, callback);
-			stream.setupQuery();
-			return result.createResponseEntity(stream);
+        	if(user.isAdmin()){
+				//Admin Users Don't need to filter the results
+				return result.createResponseEntity(getStream(root));
+			}else{
+				//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
+				DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
+				FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
+						new FilteredQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
+								this, root, callback);
+				stream.setupQuery();
+				return result.createResponseEntity(stream);
+			}
         }
         
         return result.createResponseEntity();
@@ -204,6 +211,13 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	    		return result.createResponseEntity();
 	        }
 	        
+        	//We will always override the DS Info with the one from the XID Lookup
+            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
+            
+            //TODO this implies that we may need to have a different JSON Converter for data points
+            //Need to set DataSourceId among other things
+            vo.setDataSourceId(existingDp.getDataSourceId());
+	        
 	        //Check permissions
 	    	try{
 	    		if(!Permissions.hasDataSourcePermission(user, vo.getDataSourceId())){
@@ -248,14 +262,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-	
-	        	//We will always override the DS Info with the one from the XID Lookup
-	            DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(existingDp.getDataSourceXid());
-	            
-	            //TODO this implies that we may need to have a different JSON Converter for data points
-	            //Need to set DataSourceId among other things
-	            vo.setDataSourceId(existingDp.getDataSourceId());
-	            
 	            
 	            if (dsvo == null){
 	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", xid));
@@ -599,6 +605,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
 			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
 			if(!user.isAdmin()){
+				//Limit our results based on the fact that our permissions should be in the permissions strings
+				root = addPermissionsFilter(root, user);
 				FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
 						new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
 								this, root, callback);
@@ -620,9 +628,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			responseContainer="List"
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
-    public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(
-    		   		   		
-    		HttpServletRequest request) {
+    public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -633,6 +639,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     				//Admin Users Don't need to filter the results
     				return result.createResponseEntity(getPageStream(node));
     			}else{
+    				//Limit our results based on the fact that our permissions should be in the permissions strings
+    				node = addPermissionsFilter(node, user);
 	    			DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
 	    			FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao> stream  = 
 	    					new FilteredPageQueryStream<DataPointVO, DataPointModel, DataPointDao>(DataPointDao.instance,
@@ -786,6 +794,28 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	}
     	
     	return result.createResponseEntity();
+	}
+	
+	/**
+	 * Add AST Nodes to filter permissions for a user
+	 * @param node
+	 * @param user
+	 * @return
+	 */
+	protected ASTNode addPermissionsFilter(ASTNode query, User user){
+		Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+		List<ASTNode> permissionsLikes = new ArrayList<ASTNode>(userPermissions.size() * 3);
+		for(String userPermission : userPermissions){
+			permissionsLikes.add(new ASTNode("like", "readPermission", "*" + userPermission + "*"));
+			permissionsLikes.add(new ASTNode("like", "setPermission", "*" + userPermission + "*"));
+			permissionsLikes.add(new ASTNode("like", "dataSourceEditPermission", "*" + userPermission + "*"));
+		}
+		if(!permissionsLikes.isEmpty()){
+			ASTNode permissionOr = new ASTNode("or", permissionsLikes.toArray());
+			return this.addAndRestriction(query, permissionOr);
+		}else{
+			return query;
+		}
 	}
 	
 	

@@ -4,11 +4,11 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 
-import au.com.bytecode.opencsv.CSVWriter;
-
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeCsvWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * @author Terry Packer
@@ -25,9 +25,10 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	 * @param unitConversion
 	 * @param rollup
 	 */
-	public NonNumericPointValueStatisticsQuantizerCsvCallback(
-			CSVWriter writer, DataPointVO vo, boolean useRendered, boolean unitConversion, RollupEnum rollup) {
-		this(writer, vo, useRendered, unitConversion, rollup, false, true);
+	public NonNumericPointValueStatisticsQuantizerCsvCallback(String host, int port,
+			CSVWriter writer, DataPointVO vo, boolean useRendered, 
+			boolean unitConversion, RollupEnum rollup) {
+		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true);
 	}
 
 	/**
@@ -39,8 +40,10 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	 * @param rollup
 	 * @param writeXidColumn
 	 */
-	public NonNumericPointValueStatisticsQuantizerCsvCallback(
-			CSVWriter writer, DataPointVO vo, boolean useRendered, boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders) {
-		super(vo, new PointValueTimeCsvWriter(writer, vo, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
+	public NonNumericPointValueStatisticsQuantizerCsvCallback(String host, int port,
+			CSVWriter writer, DataPointVO vo, boolean useRendered,
+			boolean unitConversion, RollupEnum rollup, boolean writeXidColumn,
+			boolean writeHeaders) {
+		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
 	}
 }

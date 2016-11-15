@@ -14,14 +14,12 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  */
 public class EventDetectorWebSocketDefinition extends WebSocketDefinition{
 
-	public static final EventDetectorWebSocketHandler handler = new EventDetectorWebSocketHandler();
-	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	public MangoWebSocketHandler getHandler() {
-		return handler;
+	protected MangoWebSocketHandler getHandler() {
+		return new EventDetectorWebSocketHandler();
 	}
 
 	/* (non-Javadoc)

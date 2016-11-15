@@ -6,13 +6,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import au.com.bytecode.opencsv.CSVWriter;
 
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
@@ -25,6 +20,8 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.taglib.Functions;
 
+import au.com.bytecode.opencsv.CSVWriter;
+
 /**
  * @author Terry Packer
  *
@@ -34,23 +31,15 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	private final Log LOG = LogFactory.getLog(PointValueTimeJsonStreamCallback.class);
 
 	private Translations translations;
-	private UriComponentsBuilder imageServletBuilder;
+	private DataPointVO vo;
 	
 	/**
 	 * @param jgen
 	 */
-	public PointValueTimeCsvStreamCallback(HttpServletRequest request, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders) {
-		super(writer, vo, useRendered, unitConversion, writeXid, writeHeaders);
+	public PointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders) {
+		super(host, port, writer, useRendered, unitConversion, writeXid, writeHeaders);
 		this.translations = Common.getTranslations();
-		
-		if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
-			//If we are an image type we should build the URLS
-			this.imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-			imageServletBuilder.scheme(request.getScheme());
-			imageServletBuilder.host(request.getServerName());
-			imageServletBuilder.port(request.getLocalPort());
-		}
-		
+		this.vo = vo;
 	}
 
 	/* (non-Javadoc)
@@ -65,17 +54,17 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 			if(useRendered){
 				//Convert to Alphanumeric Value
 				String textValue = Functions.getRenderedText(vo, pvt);
-				this.writePointValueTime(new AlphanumericValue(textValue), pvt.getTime(), annotation );
+				this.writePointValueTime(new AlphanumericValue(textValue), pvt.getTime(), annotation, vo);
 			}else if(unitConversion){
 				if (pvt.getValue() instanceof NumericValue)
-					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()), pvt.getTime(), annotation);
+					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()), pvt.getTime(), annotation, vo);
 				else
-					this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation);
+					this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation, vo);
 			}else{
 				if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-					this.writePointValueTime(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString(), pvt.getTime(), annotation);
+					this.writePointValueTime(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString(), pvt.getTime(), annotation, vo);
 				else
-					this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation);
+					this.writePointValueTime(pvt.getValue(), pvt.getTime(), annotation, vo);
 			}
 		}catch(IOException e){
 			LOG.error(e.getMessage(), e);

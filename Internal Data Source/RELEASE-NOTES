@@ -1,4 +1,5 @@
-*Version 1.5.4*
+*Version 1.6.0*
+* Upgraded to work with core version 2.8.x
 * Adding dynamic collection of all monitoring points instead of hard coding options into interface
 * Fixing bad id for JVM Used Memory Monitor
 

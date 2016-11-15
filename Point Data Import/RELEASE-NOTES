@@ -1,4 +1,4 @@
-*Version 1.4.2*
+*Version 1.5.0*
 * Upgraded to work with core version 2.8.x
 * Fixed bug where CSV Imports weren't using the modify column now only add/delete works empty does nothing
 

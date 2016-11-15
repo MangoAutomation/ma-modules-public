@@ -1,4 +1,6 @@
-*Version 1.5.2*
+*Version 1.6.0*
+* Upgraded to work with core version 2.8.x
+* Support force read
 * Update JSON models for REST Api to contain all members for all point types
 
 *Version 1.5.1*

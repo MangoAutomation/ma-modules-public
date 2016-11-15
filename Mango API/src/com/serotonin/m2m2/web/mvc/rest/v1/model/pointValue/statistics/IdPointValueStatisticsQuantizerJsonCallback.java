@@ -21,6 +21,7 @@ import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeJsonWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.statistics.ParentStatisticsQuantizerCallback;
 import com.serotonin.m2m2.web.taglib.Functions;
@@ -29,17 +30,14 @@ import com.serotonin.m2m2.web.taglib.Functions;
  * @author Terry Packer
  *
  */
-public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatisticsQuantizerCallback{
+public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJsonWriter implements ParentStatisticsQuantizerCallback {
 
 	private static final Log LOG = LogFactory.getLog(IdPointValueStatisticsQuantizerJsonCallback.class);
 			
 	protected final String TIMESTAMP = "timestamp";
 	protected final String ROLLUP = "rollup";
 	
-	protected boolean useRendered;
-	protected boolean unitConversion;
 	protected RollupEnum rollup;
-	protected JsonGenerator jgen;
 	protected Map<Integer, DataPointVO> voMap;
 	
 	/**
@@ -49,12 +47,10 @@ public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatis
 	 * @param unitConversion
 	 * @param rollup
 	 */
-	public IdPointValueStatisticsQuantizerJsonCallback(JsonGenerator jgen, Map<Integer, DataPointVO> voMap,
+	public IdPointValueStatisticsQuantizerJsonCallback(String host, int port, JsonGenerator jgen, Map<Integer, DataPointVO> voMap,
 			boolean useRendered, boolean unitConversion, RollupEnum rollup) {
-		this.jgen = jgen;
+		super(host, port, jgen, useRendered, unitConversion);
 		this.voMap = voMap;
-		this.useRendered = useRendered;
-		this.unitConversion = unitConversion;
 		this.rollup = rollup;
 	}
 
@@ -88,17 +84,23 @@ public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatis
 //		            	this.jgen.writeEndObject();
 //		            break;
 		            case FIRST:
-		            	this.writeDataValue(statisticsGenerator.getFirstValue(), vo, vo.getXid());
+		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+		            		this.writeNonNullImage(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), periodStartTime, vo);
+		            	else
+		            		this.writeDataValue(periodStartTime, statisticsGenerator.getFirstValue(), vo, vo.getXid());
 		            break;
 		            case LAST:
-		            	this.writeDataValue(statisticsGenerator.getLastValue(), vo, vo.getXid());
+		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+		            		this.writeNonNullImage(statisticsGenerator.getLastValue(), statisticsGenerator.getLastTime(), periodStartTime, vo);
+		            	else
+		            		this.writeDataValue(periodStartTime, statisticsGenerator.getLastValue(), vo, vo.getXid());
 		            break;
 		            case COUNT:
 		            	this.jgen.writeNumberField(vo.getXid(), statisticsGenerator.getCount());
 		            break;
 		            default:
 		            	//Default to first
-		            	this.writeDataValue(statisticsGenerator.getFirstValue(), vo, vo.getXid());
+		            	this.writeDataValue(periodStartTime, statisticsGenerator.getFirstValue(), vo, vo.getXid());
 		            }
 	
 				}else if(stats instanceof AnalogStatistics){
@@ -177,7 +179,7 @@ public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatis
 	 * @param firstValue
 	 * @throws IOException 
 	 */
-	private void writeDataValue(DataValue value, DataPointVO vo, String name) throws IOException {
+	private void writeDataValue(long timestamp, DataValue value, DataPointVO vo, String name) throws IOException {
 		
 		if(value == null){
 			this.jgen.writeNullField(name);
@@ -189,9 +191,9 @@ public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatis
 				if (value instanceof NumericValue)
 					this.jgen.writeNumberField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()));
 				else
-					this.writeDataValue(name, value);
+					this.writeDataValue(name, value, timestamp, vo);
 			}else{
-				this.writeDataValue(name, value);
+				this.writeDataValue(name, value, timestamp, vo);
 			}
 		}
 	}
@@ -233,7 +235,7 @@ public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatis
 	 * @param value
 	 * @throws IOException
 	 */
-	private void writeDataValue(String name, DataValue value) throws IOException{
+	private void writeDataValue(String name, DataValue value, long timestamp, DataPointVO vo) throws IOException{
 		switch(value.getDataType()){
 		case DataTypes.ALPHANUMERIC:
 			this.jgen.writeStringField(name, value.getStringValue());
@@ -248,8 +250,7 @@ public class IdPointValueStatisticsQuantizerJsonCallback implements ParentStatis
 			this.jgen.writeNumberField(name, value.getDoubleValue());
 		break;
 		case DataTypes.IMAGE:
-			this.jgen.writeStringField("value","unsupported-value-type");
-			LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());
+			jgen.writeStringField("value",imageServletBuilder.buildAndExpand(timestamp, vo.getId()).toUri().toString());
 		break;
 		}
 	}

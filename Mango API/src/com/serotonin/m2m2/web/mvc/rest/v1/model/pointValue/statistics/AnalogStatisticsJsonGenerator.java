@@ -23,9 +23,9 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	 * @param jgen
 	 * @param generator
 	 */
-	public AnalogStatisticsJsonGenerator(JsonGenerator jgen,
+	public AnalogStatisticsJsonGenerator(String host, int port, JsonGenerator jgen,
 			DataPointVO vo, boolean useRendered, boolean unitConversion, AnalogStatistics generator) {
-		super(jgen, vo, useRendered, unitConversion, generator);
+		super(host, port, jgen, vo, useRendered, unitConversion, generator);
 		this.statistics = generator;
 	}
 

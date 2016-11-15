@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.wordnik.swagger.annotations.Api;
@@ -51,8 +52,9 @@ public class TranslationsController extends MangoRestController {
     public ResponseEntity<Map<String, ?>> translations(
     		@ApiParam(value = "Language for translations", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
+            @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             HttpServletRequest request) {
-        return namespacedTranslations(null, language, request);
+        return namespacedTranslations(null, language, server, request);
     }
     
 	@ApiOperation(value = "Get translations based on namespaces", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public")
@@ -62,7 +64,8 @@ public class TranslationsController extends MangoRestController {
             @PathVariable String[] namespaces,
             @ApiParam(value = "Language for translation (must have language pack installed)", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
-            
+            @ApiParam(value = "Use server language for translation", allowMultiple = false)
+            @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             HttpServletRequest request) {
         
         RestProcessResult<Map<String, ?>> result =
@@ -72,7 +75,7 @@ public class TranslationsController extends MangoRestController {
         if (result.isOk()) {
            
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = this.getLocale(language, request);
+            Locale locale = server ? Common.getLocale() : this.getLocale(language, request);
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             
@@ -89,7 +92,8 @@ public class TranslationsController extends MangoRestController {
             @PathVariable String[] namespaces,
             @ApiParam(value = "Language for translation (must have language pack installed)", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
-            
+            @ApiParam(value = "Use server language for translation", allowMultiple = false)
+            @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             HttpServletRequest request) {
         
         RestProcessResult<Map<String, ?>> result = new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
@@ -105,7 +109,7 @@ public class TranslationsController extends MangoRestController {
         if (result.isOk()) {
 
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = this.getLocale(language, request);
+            Locale locale = server ? Common.getLocale() : this.getLocale(language, request);
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             

@@ -1,3 +1,6 @@
+*Version 1.6.0*
+* Upgraded to work with core version 2.8.x
+
 *Version 1.5.5*
 * Fixing bug where a failed execution of the point link would cause it to stop linking.
 

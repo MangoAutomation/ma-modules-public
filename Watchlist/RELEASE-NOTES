@@ -1,4 +1,5 @@
-*Version 1.7.5*
+*Version 1.8.0*
+* Upgraded to work with core version 2.8.x
 * Add REST API endpoints for watchlist
 * Expand watchlist properties to include a type and a query string
 
@@ -18,7 +19,7 @@
 
 *Version 1.7.0*
 * Upgraded to work with core version 2.6.x
-* Added new permissions subsystem to allow finer grained access 
+* Added new permissions subsystem to allow finer grained access
 * Fix bug where state information was not changing for points
 * Improved efficiency when refreshing point events
 

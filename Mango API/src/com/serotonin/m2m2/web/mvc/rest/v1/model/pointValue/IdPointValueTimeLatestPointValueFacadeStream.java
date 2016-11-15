@@ -11,8 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
@@ -36,11 +34,12 @@ import edu.emory.mathcs.backport.java.util.Collections;
  */
 public class IdPointValueTimeLatestPointValueFacadeStream implements QueryArrayStream<PointValueTimeModel>{
 
+	private String host;
+	private int port;
 	private boolean useRendered;
 	private boolean unitConversion;
 	private int limit;
 	private boolean useCache;
-	private HttpServletRequest request;
 	private final Map<Integer,DataPointVO> pointMap;
 	
 	/**
@@ -48,8 +47,9 @@ public class IdPointValueTimeLatestPointValueFacadeStream implements QueryArrayS
 	 * @param from
 	 * @param to
 	 */
-	public IdPointValueTimeLatestPointValueFacadeStream(HttpServletRequest request, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, int limit, boolean useCache) {
-		this.request = request;
+	public IdPointValueTimeLatestPointValueFacadeStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, int limit, boolean useCache) {
+		this.host = host;
+		this.port = port;
 		this.pointMap = pointMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -62,7 +62,7 @@ public class IdPointValueTimeLatestPointValueFacadeStream implements QueryArrayS
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) {
-		IdPointValueTimeJsonStreamCallback callback = new IdPointValueTimeJsonStreamCallback(request, jgen, pointMap, useRendered, unitConversion);
+		IdPointValueTimeJsonStreamCallback callback = new IdPointValueTimeJsonStreamCallback(host, port, jgen, pointMap, useRendered, unitConversion);
 		//Sadly in this scenario we must collect all the data and then order it
 		List<IdPointValueTime> ipvts = new ArrayList<IdPointValueTime>();
 		Iterator<Integer> it = this.pointMap.keySet().iterator();
@@ -93,7 +93,7 @@ public class IdPointValueTimeLatestPointValueFacadeStream implements QueryArrayS
 	@Override
 	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
 			throws IOException {
-		IdPointValueTimeCsvStreamCallback callback = new IdPointValueTimeCsvStreamCallback(request, writer.getWriter(), pointMap, useRendered, unitConversion);
+		IdPointValueTimeCsvStreamCallback callback = new IdPointValueTimeCsvStreamCallback(host, port, writer.getWriter(), pointMap, useRendered, unitConversion);
 		//Sadly in this scenario we must collect all the data and then order it
 		List<IdPointValueTime> ipvts = new ArrayList<IdPointValueTime>();
 		Iterator<Integer> it = this.pointMap.keySet().iterator();

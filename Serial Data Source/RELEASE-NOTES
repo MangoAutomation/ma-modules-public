@@ -1,6 +1,6 @@
-*Version 1.2.2*
+*Version 1.3.0*
 * Upgraded to work with core version 2.8.x
-* Change to allow logging the string value is the configuration is in hex rather than the byte values
+* Change to allow logging the string value if the configuration is in hex rather than the byte values
 * Change to pickup new/updated points while data source is running.
 
 *Version 1.2.1*

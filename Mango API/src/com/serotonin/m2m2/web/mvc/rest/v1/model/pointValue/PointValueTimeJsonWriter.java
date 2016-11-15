@@ -6,29 +6,26 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
  *
  */
 public class PointValueTimeJsonWriter extends PointValueTimeWriter{
-	private final Log LOG = LogFactory.getLog(PointValueTimeJsonWriter.class);
 
 	protected JsonGenerator jgen;
 	
-	public PointValueTimeJsonWriter(JsonGenerator jgen, boolean useRendered, boolean unitConversion){
-		super(useRendered, unitConversion);
+	public PointValueTimeJsonWriter(String host, int port, JsonGenerator jgen, boolean useRendered, boolean unitConversion){
+		super(host, port, useRendered, unitConversion);
 		this.jgen = jgen;
 	}
 	
 	@Override
-	public void writePointValueTime(double value, long timestamp, String annotation) throws IOException{
+	public void writePointValueTime(double value, long timestamp, String annotation, DataPointVO vo) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);
     	jgen.writeNumberField("value", value);
@@ -37,7 +34,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	}
 	
 	@Override
-	public void writePointValueTime(int value, long timestamp, String annotation) throws IOException{
+	public void writePointValueTime(int value, long timestamp, String annotation, DataPointVO vo) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);
     	jgen.writeNumberField("value", value);
@@ -46,7 +43,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	}
 	
 	@Override
-	public void writePointValueTime(String string, long timestamp, String annotation) throws IOException{
+	public void writePointValueTime(String string, long timestamp, String annotation, DataPointVO vo) throws IOException{
 		jgen.writeStartObject();
 		jgen.writeStringField("annotation", annotation);
     	jgen.writeStringField("value", string);
@@ -56,7 +53,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 	
 	@Override
 	public void writePointValueTime(DataValue value, long timestamp,
-			String annotation) throws IOException {
+			String annotation, DataPointVO vo) throws IOException {
 		
 		jgen.writeStartObject();
 		
@@ -77,8 +74,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 					jgen.writeNumberField("value", value.getDoubleValue());
 				break;
 				case DataTypes.IMAGE:
-					jgen.writeStringField("value","unsupported-value-type");
-					LOG.error("Unsupported data type for Point Value Time: " + value.getDataType());
+					jgen.writeStringField("value",imageServletBuilder.buildAndExpand(timestamp, vo.getId()).toUri().toString());
 				break;
 			}
 		}

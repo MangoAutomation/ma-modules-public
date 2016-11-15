@@ -24,7 +24,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 
 	private StatisticsJsonGenerator statsGenerator;
-
+	
 	/**
 	 * 
 	 * @param jgen
@@ -34,20 +34,18 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 	 * @param from
 	 * @param to
 	 */
-	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, DataValue startValue) {
+	public StatisticsCalculator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, DataValue startValue) {
 		switch(vo.getPointLocator().getDataTypeId()){
 			case DataTypes.BINARY:
 			case DataTypes.MULTISTATE:
-				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue));
+				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(host, port, jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue));
 			break;
 			case DataTypes.ALPHANUMERIC:
-				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue));
+			case DataTypes.IMAGE:
+				this.statsGenerator = new ValueChangeCounterJsonGenerator(host, port, jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue));
 			break;
 			case DataTypes.NUMERIC:
-				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()));
-			break;
-			case DataTypes.IMAGE:
-				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue));
+				this.statsGenerator = new AnalogStatisticsJsonGenerator(host, port, jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()));
 			break;
 			default:
 				throw new ShouldNeverHappenException("Invalid Data Type: "+ vo.getPointLocator().getDataTypeId());

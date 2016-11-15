@@ -1,4 +1,5 @@
-*Version 1.2.2*
+*Version 1.3.0*
+* Upgraded to work with core version 2.8.x
 * Adding Regex Test utility to edit page
 
 *Version 1.2.1*
@@ -28,5 +29,5 @@
 
 *Version 1.1.1*
 * Moved to Core 2.2
-* Removed point identifier as required. 
+* Removed point identifier as required.
 * Fixed Dwr

@@ -18,7 +18,7 @@ public class EventWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
 	 */
 	@Override
-	public MangoWebSocketHandler getHandler() {
+	protected MangoWebSocketHandler getHandler() {
 		return new EventEventHandler();
 	}
 

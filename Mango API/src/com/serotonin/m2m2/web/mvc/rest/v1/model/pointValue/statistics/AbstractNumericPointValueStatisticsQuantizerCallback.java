@@ -77,7 +77,7 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	                break;
 	                case COUNT:
 	                	this.writer.writePointValueTime(statisticsGenerator.getCount(),
-	                			statisticsGenerator.getPeriodStartTime(), null);
+	                			statisticsGenerator.getPeriodStartTime(), null, this.vo);
 	                break;
 	                case INTEGRAL:
 	                	this.writer.writeNonNullIntegral(statisticsGenerator.getIntegral(), statisticsGenerator.getPeriodStartTime(), this.vo);

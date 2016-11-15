@@ -24,6 +24,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
  */
 public class StatisticsStream implements ObjectStream<PointValueTime>{
 	
+	private String host;
+	private int port;
 	private DataPointVO vo;
 	private final boolean useRendered;
 	private final boolean unitConversion;
@@ -39,7 +41,9 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 	 * @param from
 	 * @param to
 	 */
-	public StatisticsStream(DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to) {
+	public StatisticsStream(String host, int port, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to) {
+		this.host = host;
+		this.port = port;
 		this.vo = vo;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -64,7 +68,7 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 		DataValue startValue = null;
 		if(startPvt != null)
 			startValue = startPvt.getValue();
-		StatisticsCalculator calculator = new StatisticsCalculator(jgen, vo, useRendered, unitConversion, this.from, this.to, startValue);
+		StatisticsCalculator calculator = new StatisticsCalculator(host, port, jgen, vo, useRendered, unitConversion, this.from, this.to, startValue);
 
 		//Do the main work
 		DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from, to, calculator);

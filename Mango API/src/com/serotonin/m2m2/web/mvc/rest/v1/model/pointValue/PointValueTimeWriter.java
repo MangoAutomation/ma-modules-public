@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import javax.measure.converter.ConversionException;
 
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -27,20 +29,30 @@ public abstract class PointValueTimeWriter {
 	protected boolean useRendered;
 	protected boolean unitConversion;
 	protected final String noDataMessage;
+	protected UriComponentsBuilder imageServletBuilder;
 	
-	public PointValueTimeWriter(boolean useRendered, boolean unitConversion){
+	public PointValueTimeWriter(String host, int port, boolean useRendered, boolean unitConversion){
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
 		this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod").translate(Common.getTranslations());
+		
+		//If we are an image type we should build the URLS
+		imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
+		if(Common.envProps.getBoolean("ssl.on", false))
+			imageServletBuilder.scheme("https");
+		else
+			imageServletBuilder.scheme("http");
+		imageServletBuilder.host(host);
+		imageServletBuilder.port(port);
 	}
 	
-	public abstract void writePointValueTime(double value, long timestamp, String annotation) throws IOException;
+	public abstract void writePointValueTime(double value, long timestamp, String annotation, DataPointVO vo) throws IOException;
 	
-	public abstract void writePointValueTime(int value, long timestamp, String annotation) throws IOException;
+	public abstract void writePointValueTime(int value, long timestamp, String annotation, DataPointVO vo) throws IOException;
 
-	public abstract void writePointValueTime(String value, long timestamp, String annotation) throws IOException;
+	public abstract void writePointValueTime(String value, long timestamp, String annotation, DataPointVO vo) throws IOException;
 	
-	public abstract void writePointValueTime(DataValue value, long timestamp, String annotation) throws IOException;
+	public abstract void writePointValueTime(DataValue value, long timestamp, String annotation, DataPointVO vo) throws IOException;
 	
 	/**
 	 * Write a Data Value that if null contains an annotation saying there is no data at this point in time
@@ -53,20 +65,20 @@ public abstract class PointValueTimeWriter {
 	public void writeNonNullDouble(Double value, long time, DataPointVO vo) throws ConversionException, IOException{
 		if(value == null){
 			if(useRendered){
-				this.writePointValueTime(new AlphanumericValue(""), time, this.noDataMessage);
+				this.writePointValueTime(new AlphanumericValue(""), time, this.noDataMessage, vo);
 			}else{
-				this.writePointValueTime(0.0D, time, this.noDataMessage);
+				this.writePointValueTime(0.0D, time, this.noDataMessage, vo);
 			}
 		}else{
 	    	if(useRendered){
 	    		//Convert to Alphanumeric Value
 				String textValue = Functions.getRenderedText(vo, new PointValueTime(value, time));
-				this.writePointValueTime(new AlphanumericValue(textValue), time, null);
+				this.writePointValueTime(new AlphanumericValue(textValue), time, null, vo);
 			}else if(unitConversion){
 				//Convert Value, must be numeric
-				this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value), time, null);
+				this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value), time, null, vo);
 			}else{
-				this.writePointValueTime(value, time, null);
+				this.writePointValueTime(value, time, null, vo);
 
 			}
 		}
@@ -87,25 +99,49 @@ public abstract class PointValueTimeWriter {
 		
 		if(value == null){
 			if(useRendered){
-				this.writePointValueTime(new AlphanumericValue(""), time, this.noDataMessage);
+				this.writePointValueTime(new AlphanumericValue(""), time, this.noDataMessage, vo);
 			}else{
-				this.writePointValueTime(0.0D, time, this.noDataMessage);
+				this.writePointValueTime(0.0D, time, this.noDataMessage, vo);
 			}
 		}else{
 	    	if(useRendered){
 	    		//Convert to Alphanumeric Value
 				String textValue = Functions.getRenderedText(vo, new PointValueTime(value, time));
-				this.writePointValueTime(new AlphanumericValue(textValue), time, null);
+				this.writePointValueTime(new AlphanumericValue(textValue), time, null, vo);
 			}else if(unitConversion){
 				//Convert Value, must be numeric
 				if (value instanceof NumericValue)
-					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()), time, null);
+					this.writePointValueTime(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()), time, null,vo );
 				else
-					this.writePointValueTime(value, time, null);
+					this.writePointValueTime(value, time, null, vo);
 			}else{
-				this.writePointValueTime(value, time, null);
+				this.writePointValueTime(value, time, null, vo);
 			}
 		}
+	}
+	
+	/**
+	 * Write an image using its timestamp
+	 * @param value
+	 * @param imageTimestamp
+	 * @param timestamp
+	 * @param vo
+	 * @throws IOException
+	 */
+	public void writeNonNullImage(DataValue value, Long imageTimestamp, Long timestamp, DataPointVO vo) throws IOException{
+		if(timestamp == null)
+			throw new ShouldNeverHappenException("Time cannot be null");
+		
+		if(value == null){
+			if(useRendered){
+				this.writePointValueTime(new AlphanumericValue(""), timestamp, this.noDataMessage, vo);
+			}else{
+				this.writePointValueTime(0.0D, timestamp, this.noDataMessage, vo);
+			}
+		}else{
+			this.writePointValueTime(value, imageTimestamp, null, vo);
+		}
+
 	}
 	
 	public void writeNonNullIntegral(Double integral, long time, DataPointVO vo) throws IOException{
@@ -113,15 +149,15 @@ public abstract class PointValueTimeWriter {
     		//Convert to Alphanumeric Value
     		if(integral != null){
     			String textValue = Functions.getIntegralText(vo, integral);
-    			this.writePointValueTime(new AlphanumericValue(textValue), time, null);
+    			this.writePointValueTime(new AlphanumericValue(textValue), time, null, vo);
     		}else{
-    			this.writePointValueTime(new AlphanumericValue(""), time, null);
+    			this.writePointValueTime(new AlphanumericValue(""), time, null, vo);
     		}
 		}else{ //No conversion possible
 			if(integral == null)
-				this.writePointValueTime(0.0D, time, this.noDataMessage);  
+				this.writePointValueTime(0.0D, time, this.noDataMessage, vo);  
 			else
-				this.writePointValueTime(integral, time, null);  
+				this.writePointValueTime(integral, time, null, vo);  
 		}
 	}
 	

@@ -29,9 +29,9 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 	 * @param unitConversion
 	 * @param generator
 	 */
-	public StartsAndRuntimeListJsonGenerator(JsonGenerator jgen, DataPointVO vo, boolean useRendered,
+	public StartsAndRuntimeListJsonGenerator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered,
 			boolean unitConversion, StartsAndRuntimeList generator) {
-		super(jgen, vo, useRendered, unitConversion, generator);
+		super(host, port, jgen, vo, useRendered, unitConversion, generator);
 		this.statistics = generator;
 	}
 

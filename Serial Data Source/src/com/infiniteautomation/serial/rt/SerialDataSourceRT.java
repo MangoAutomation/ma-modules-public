@@ -15,6 +15,7 @@ import com.infiniteautomation.mango.io.serial.SerialPortException;
 import com.infiniteautomation.mango.io.serial.SerialPortProxy;
 import com.infiniteautomation.mango.io.serial.SerialPortProxyEvent;
 import com.infiniteautomation.mango.io.serial.SerialPortProxyEventListener;
+import com.infiniteautomation.mango.regex.MatchCallback;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.ShouldNeverHappenException;
@@ -313,11 +314,11 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
                 			synchronized (pointListChangeLock) {
 	                			for(final DataPointRT dp: this.dataPoints){
 	                        		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
-	                        		matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, LOG, new MatchCallback(){
-	
+	                        		MatchCallback callback = new MatchCallback(){
+	                        			
 										@Override
-										public void onMatch(String pointIdentifier, String value, int dataTypeId) {
-											if(!updatePointValue(value, dataTypeId, dp)){
+										public void onMatch(String pointIdentifier, PointValueTime value) {
+											if(!updatePointValue(value, dp)){
 												matcherFailed.set(true);
 									        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
 											}
@@ -338,7 +339,19 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 										public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
 											//Don't Care
 										}
-	                        		});
+										
+										@Override
+										public void matchGeneralFailure(Exception e) {
+							            	raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed", e.getMessage()));
+											matcherFailed.set(true);
+										}
+	                        		};
+	                        		
+	                        		try{
+	                        			matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, vo.isHex(), LOG, callback);
+	                        		}catch(Exception e){
+	                        			callback.matchGeneralFailure(e);
+	                        		}
 	                			}
                 			}
                 			
@@ -384,11 +397,11 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
             			synchronized (pointListChangeLock) {
 	            			for(final DataPointRT dp: this.dataPoints){
 	                    		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
-	                    		matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, LOG, new MatchCallback(){
-	
+	                    		MatchCallback callback = new MatchCallback(){
+	                    			
 									@Override
-									public void onMatch(String pointIdentifier, String value, int dataTypeId) {
-										if(!updatePointValue(value, dataTypeId, dp)){
+									public void onMatch(String pointIdentifier, PointValueTime pvt) {
+										if(!updatePointValue(pvt, dp)){
 											matcherFailed.set(true);
 								        	raiseEvent(POINT_READ_PATTERN_MISMATCH_EVENT,System.currentTimeMillis(), true, new TranslatableMessage("event.serial.invalidValue", dp.getVO().getXid()));
 										}
@@ -410,8 +423,19 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 									public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
 										//Don't Care
 									}
+
+									@Override
+									public void matchGeneralFailure(Exception e) {
+						            	raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.readFailed", e.getMessage()));
+										matcherFailed.set(true);
+									}
 	                    			
-	                    		});
+	                    		};
+	                    		try{
+	                    			matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, vo.isHex(), LOG, callback);
+	                    		}catch(Exception e){
+	                    			callback.matchGeneralFailure(e);
+	                    		}
 	            			}
             			}
             			
@@ -430,6 +454,55 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 			}
 		}//End synch
 	}
+	
+	/**
+	 * Convert to a point value time or NULL if not possible
+	 * @param value
+	 * @param dataTypeId
+	 * @return
+	 * @throws ConvertHexException 
+	 */
+	public static PointValueTime convertToPointValue(String value, int dataTypeId, boolean isHex) throws ConvertHexException{
+    	//Parse out the value
+    	DataValue dataValue = null;
+    	if(isHex){
+			byte[] data = convertToHex(value);
+			
+			switch(dataTypeId){
+				case DataTypes.ALPHANUMERIC:
+					dataValue = new AlphanumericValue(new String(data, Common.UTF8_CS));
+				break;
+				case DataTypes.BINARY:
+					if(data.length > 0){
+						dataValue = new BinaryValue((data[0]==1)?true:false);
+					}
+				break;
+				case DataTypes.MULTISTATE:
+					ByteBuffer buffer = ByteBuffer.wrap(data);
+					if(data.length == 2)
+						dataValue = new MultistateValue(buffer.getShort());
+					else
+						dataValue = new MultistateValue(buffer.getInt());
+				break;
+				case DataTypes.NUMERIC:
+					ByteBuffer nBuffer = ByteBuffer.wrap(data);
+					if(data.length == 4)
+						dataValue = new NumericValue(nBuffer.getFloat());
+					else
+						dataValue = new NumericValue(nBuffer.getDouble());
+				break;
+				default:
+					throw new ShouldNeverHappenException("Un-supported data type: " + dataTypeId);
+			}
+		}else{
+			dataValue = DataValue.stringToValue(value, dataTypeId);
+		}
+    	
+    	if(dataValue != null)
+        	return new PointValueTime(dataValue,Common.timer.currentTimeMillis());
+    	else
+    		return null;
+	}
 
 	/**
 	 * Update a value if possible and return if we did
@@ -438,51 +511,11 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 	 * @param dp
 	 * @return
 	 */
-	private boolean updatePointValue(String value, int dataTypeId, DataPointRT dp){
-    	//Parse out the value
-    	DataValue dataValue = null;
-    	if(this.vo.isHex()){
-			try{
-    			byte[] data = convertToHex(value);
-    			
-    			switch(dataTypeId){
-    				case DataTypes.ALPHANUMERIC:
-    					dataValue = new AlphanumericValue(new String(data, Common.UTF8_CS));
-    				break;
-    				case DataTypes.BINARY:
-    					if(data.length > 0){
-    						dataValue = new BinaryValue((data[0]==1)?true:false);
-    					}
-    				break;
-    				case DataTypes.MULTISTATE:
-    					ByteBuffer buffer = ByteBuffer.wrap(data);
-    					if(data.length == 2)
-    						dataValue = new MultistateValue(buffer.getShort());
-    					else
-    						dataValue = new MultistateValue(buffer.getInt());
-    				break;
-    				case DataTypes.NUMERIC:
-    					ByteBuffer nBuffer = ByteBuffer.wrap(data);
-    					if(data.length == 4)
-    						dataValue = new NumericValue(nBuffer.getFloat());
-    					else
-    						dataValue = new NumericValue(nBuffer.getDouble());
-    				break;
-    				default:
-    					throw new ShouldNeverHappenException("Un-supported data type: " + dataTypeId);
-    			}
-			}catch(Exception e){
-				LOG.error(e.getMessage(),e);
-			}
-		}else{
-			dataValue = DataValue.stringToValue(value, dataTypeId);
-		}
-    	
-    	if(dataValue != null){
-        	PointValueTime newValue = new PointValueTime(dataValue,Common.timer.currentTimeMillis());
-    		dp.updatePointValue(newValue);
+	private boolean updatePointValue(PointValueTime pvt, DataPointRT dp){
+    	if(pvt != null){
+    		dp.updatePointValue(pvt);
     		if(LOG.isDebugEnabled())
-    			LOG.debug("Saving value: " + newValue.toString());
+    			LOG.debug("Saving value: " + pvt.toString());
     		return true;
     	}else{
         	return false;
@@ -564,7 +597,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
      * @param callback
      * @param log
      */
-    public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, Log log, MatchCallback callback){
+    public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, boolean isHex, Log log, MatchCallback callback) throws Exception{
     	Pattern messagePattern = Pattern.compile(messageRegex);
     	Matcher messageMatcher = messagePattern.matcher(msg);
         if(messageMatcher.find()){
@@ -590,7 +623,8 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
         			if(log.isDebugEnabled()){
         				log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
         			}
-        			callback.onMatch(pointIdentifier, value, plVo.getDataTypeId());
+        			PointValueTime pvt = convertToPointValue(value, plVo.getDataTypeId(), isHex);
+        			callback.onMatch(pointIdentifier, pvt);
         		} else {
         			callback.pointPatternMismatch(msg, plVo.getValueRegex());
         		}
@@ -598,19 +632,6 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
         		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
         	}
         }
-    }
-    
-    /**
-     * Callback to aid in matching one point value
-     * @author Terry Packer
-     *
-     */
-    public interface MatchCallback {
-
-    	public void onMatch(String pointIdentifier, String value, int dataTypeId);
-    	public void pointPatternMismatch(String message, String pointValueRegex);
-    	public void messagePatternMismatch(String message, String messageRegex);
-    	public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex);
     }
 
     /**

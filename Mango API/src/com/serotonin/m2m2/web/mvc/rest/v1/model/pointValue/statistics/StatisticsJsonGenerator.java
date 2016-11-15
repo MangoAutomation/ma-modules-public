@@ -28,8 +28,8 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
 	 * @param periodEnd
 	 * @param startValue
 	 */
-	public StatisticsJsonGenerator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator) {
-		super(jgen, vo, useRendered, unitConversion);
+	public StatisticsJsonGenerator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator) {
+		super(host, port, jgen, vo, useRendered, unitConversion);
 		this.generator = generator;
 	}
 

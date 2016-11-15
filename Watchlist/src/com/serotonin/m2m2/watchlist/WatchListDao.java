@@ -29,12 +29,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.db.query.JoinClause;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
@@ -51,9 +53,10 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	private ObjectMapper mapper;
 	
 	private WatchListDao() {
-		super(WatchListWebSocketDefinition.handler, AuditEvent.TYPE_NAME, "w",
-		        new String[] {"u.username"}, //to allow filtering on username
-				"join users u on u.id = w.userId ");
+		super(ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME),
+				AuditEvent.TYPE_NAME, "w",
+		        new String[] {"u.username"} //to allow filtering on username
+		        );
 		mapper = new ObjectMapper();
 	}
 
@@ -421,6 +424,16 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 		return map;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getJoins()
+	 */
+	@Override
+	protected List<JoinClause> getJoins() {
+    	List<JoinClause> joins = new ArrayList<JoinClause>();
+    	joins.add(new JoinClause(JOIN, "users", "u", "w.userId = u.id"));
+    	return joins;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
 	 */
