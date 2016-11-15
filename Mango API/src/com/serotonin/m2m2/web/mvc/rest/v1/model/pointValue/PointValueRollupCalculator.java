@@ -175,7 +175,7 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 	}
 	
 	private DateTime getStartTime(){
-		DateTime startTime = new DateTime(from);
+		DateTime startTime = from;
 		 //Round off the start period if we are using periodic rollup
         if(period != null)
         	startTime = DateUtils.truncateDateTime(startTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
@@ -183,7 +183,7 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 
 	}
 	private DateTime getEndTime(){
-        return new DateTime(to);
+        return to;
 	}
 	private DataValue getStartValue(){
         // Determine the start and end values. This is important for
