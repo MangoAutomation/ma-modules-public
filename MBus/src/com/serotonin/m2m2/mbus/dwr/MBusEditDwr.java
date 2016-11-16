@@ -111,7 +111,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
 
     @DwrPermission(user = true)
     public Map<String, Object> changeMBusAddress(int deviceIndex, String newAddress) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         result.put("deviceIndex", deviceIndex);
         MBusDiscovery test = Common.getUser().getTestingUtility(MBusDiscovery.class);
         if (test == null) {
@@ -179,12 +179,12 @@ public class MBusEditDwr extends DataSourceEditDwr {
             locator.setFunctionField(db.getFunctionField().getLabel());
             locator.setStorageNumber(db.getStorageNumber());
             locator.setTariff(db.getTariff());
-            locator.setSiPrefix(db.getVif().getSiPrefix().getLabel());
+            locator.setSiPrefix(db.getSiPrefix().getLabel());
             locator.setEffectiveSiPrefix(locator.getSiPrefix());
-            locator.setUnitOfMeasurement(db.getVif().getUnitOfMeasurement().getLabel());
+            locator.setUnitOfMeasurement(db.getUnitOfMeasurement() != null ? db.getUnitOfMeasurement().getLabel(): null);
             locator.setVifType(db.getVif().getVifType().getLabel());
             locator.setVifLabel(db.getVif().getLabel());
-            locator.setExponent(db.getVif().getExponent());
+            locator.setExponent(db.getExponent());
             if (db.getVifes() != null) {
                 final String[] vifeLabels = new String[db.getVifes().length];
                 final String[] vifeTypes = new String[db.getVifes().length];

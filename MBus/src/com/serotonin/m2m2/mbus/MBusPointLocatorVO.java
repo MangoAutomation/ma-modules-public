@@ -222,7 +222,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
         out.writeLong(storageNumber);
         SerializationHelper.writeSafeUTF(out, vifType);
         SerializationHelper.writeSafeUTF(out, vifLabel);
-        SerializationHelper.writeSafeUTF(out, unitOfMeasurement.name());
+        SerializationHelper.writeSafeUTF(out, unitOfMeasurement != null ? unitOfMeasurement.name() : null);
         SerializationHelper.writeSafeUTF(out, siPrefix.name());
         out.writeObject(exponent);
         out.writeInt(vifeLabels.length);
@@ -302,7 +302,12 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
             storageNumber = in.readLong();
             vifType = SerializationHelper.readSafeUTF(in);
             vifLabel = SerializationHelper.readSafeUTF(in);
-            unitOfMeasurement = UnitOfMeasurement.valueOf(SerializationHelper.readSafeUTF(in));
+            final String unitOfMeasurementStr = SerializationHelper.readSafeUTF(in);
+            if (unitOfMeasurementStr != null) {
+                unitOfMeasurement = UnitOfMeasurement.valueOf(unitOfMeasurementStr);
+            } else {
+                unitOfMeasurement = null;
+            }
             siPrefix = SiPrefix.valueOf(SerializationHelper.readSafeUTF(in));
             exponent = (Integer) in.readObject();
             final int vifeLength = in.readInt();
@@ -504,10 +509,11 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return the unitOfMeasurement
      */
     public String getUnitOfMeasurement() {
-    	if(unitOfMeasurement != null)
-    		return unitOfMeasurement.getLabel();
-    	else 
-    		return null;
+    	if(unitOfMeasurement != null) {
+            return unitOfMeasurement.getLabel();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -515,7 +521,11 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      *            the unitOfMeasurement to set
      */
     public void setUnitOfMeasurement(String unitOfMeasurement) {
-        this.unitOfMeasurement = UnitOfMeasurement.fromLabel(unitOfMeasurement);
+        if (unitOfMeasurement != null) {
+            this.unitOfMeasurement = UnitOfMeasurement.fromLabel(unitOfMeasurement);
+        } else {
+            this.unitOfMeasurement = null;
+        }
     }
 
     
@@ -543,10 +553,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return the siPrefix
      */
     public String getSiPrefix() {
-    	if(siPrefix != null)
-    		return siPrefix.getLabel();
-    	else
-    		return null;
+	return siPrefix.getLabel();
     }
 
     /**
@@ -580,11 +587,11 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     }
 
     /**
-     * @param vifeLabel
-     *            the vifeLabel to set
+     * @param vifeLabels
+     *            the vifeLabels to set
      */
-    public void setVifeLabels(String[] vifeLabel) {
-        vifeLabels = vifeLabel;
+    public void setVifeLabels(String[] vifeLabels) {
+        this.vifeLabels = vifeLabels;
     }
 
     /**
@@ -717,10 +724,11 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
      * @return the effectiveSiPrefix
      */
     public String getEffectiveSiPrefix() {
-    	if(effectiveSiPrefix != null)
-    		return effectiveSiPrefix.getLabel();
-    	else
-    		return null;
+    	if(effectiveSiPrefix != null) {
+            return effectiveSiPrefix.getLabel();
+        } else {
+            return null;
+            }
     }
 
     /**

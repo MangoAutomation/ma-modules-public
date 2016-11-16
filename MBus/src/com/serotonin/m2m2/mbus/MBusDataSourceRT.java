@@ -44,6 +44,7 @@ import net.sf.mbus4j.MBusUtils;
 import net.sf.mbus4j.SerialPortConnection;
 import net.sf.mbus4j.dataframes.UserDataResponse;
 import net.sf.mbus4j.dataframes.datablocks.BcdValue;
+import net.sf.mbus4j.dataframes.datablocks.ByteDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 
 /**
@@ -202,6 +203,9 @@ public class MBusDataSourceRT extends PollingDataSource {
                         new TranslatableMessage("event.exception2", point.getVO().getName(),
                                 "BCD error value: " + ((BcdValue) db).getBcdError()));
                 pointError = true;
+            } else if (db instanceof ByteDataBlock) {
+                point.updatePointValue(
+                        new PointValueTime(locatorRT.calcCorrectedValue(((ByteDataBlock) db).getValue(), db.getCorrectionExponent(locatorVo.effectiveSiPrefix()), db.getCorrectionConstant()), time));
             } else if (db instanceof ShortDataBlock) {
                 point.updatePointValue(
                         new PointValueTime(locatorRT.calcCorrectedValue(((ShortDataBlock) db).getValue(), db.getCorrectionExponent(locatorVo.effectiveSiPrefix()), db.getCorrectionConstant()), time));
