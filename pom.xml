@@ -3,10 +3,11 @@
     <parent>
         <artifactId>modules-parent</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>2.8.0</version>
+        <version>2.8.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ma-modules-public</artifactId>
+  <version>2.8.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Mango Public Modules</name>
     <issueManagement>
@@ -15,10 +16,36 @@
     </issueManagement>
     <scm>
         <connection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</connection>
-        <developerConnection>scm:git:git@github.com:infiniteautomation/ma-modules-public.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-private.git</developerConnection>
         <url>https://github.com/infiniteautomation/ma-modules-public</url>
     </scm>
     <modules>
-
+        <module>ASCII File Data Source</module>
+        <module>Crowd</module>
+        <module>EnvCan Data Source</module>
+        <module>Graphical views</module>
+        <module>Internal Data Source</module>
+        <module>JSP Views</module>
+        <module>Language - de</module>
+        <module>Language - en</module>
+        <module>Language - fi</module>
+        <module>Language - nl</module>
+        <module>Language - pt</module>
+        <module>Language - zh</module>
+        <module>Log4J Reset</module>
+        <module>Maintenance Events</module>
+        <module>Mango API</module>
+        <module>MBus</module>
+        <module>Point Data Import</module>
+        <module>PointLinks</module>
+        <module>Reports</module>
+        <module>Scheduled Events</module>
+        <module>Serial Data Source</module>
+        <module>SQL console</module>
+        <module>SST Graphics</module>
+        <module>SST Theme</module>
+        <module>Virtual Data Source</module>
+        <module>VMStat data source</module>
+        <module>Watchlist</module>
     </modules>
 </project>
