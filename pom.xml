@@ -47,6 +47,5 @@
         <module>Virtual Data Source</module>
         <module>VMStat data source</module>
         <module>Watchlist</module>
-        <module>public-modules-dist</module>
     </modules>
 </project>
