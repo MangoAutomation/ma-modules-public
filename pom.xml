@@ -16,7 +16,7 @@
     </issueManagement>
     <scm>
         <connection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</connection>
-        <developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-private.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</developerConnection>
         <url>https://github.com/infiniteautomation/ma-modules-public</url>
     </scm>
     <modules>
@@ -47,5 +47,6 @@
         <module>Virtual Data Source</module>
         <module>VMStat data source</module>
         <module>Watchlist</module>
+        <module>public-modules-dist</module>
     </modules>
 </project>
