@@ -32,7 +32,7 @@
         <module>Language - nl</module>
         <module>Language - pt</module>
         <module>Language - zh</module>
-        <module>Log4J Reset</module>
+        <module>Log4J reset</module>
         <module>Maintenance Events</module>
         <module>Mango API</module>
         <module>MBus</module>
