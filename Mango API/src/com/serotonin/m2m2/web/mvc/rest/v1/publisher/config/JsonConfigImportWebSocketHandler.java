@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.socket.CloseStatus;
@@ -14,17 +13,20 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.JsonEmportRestController.ImportBackgroundTask;
+import com.serotonin.m2m2.web.mvc.rest.v1.JsonEmportRestController;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStatusModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
-import com.serotonin.util.ProgressiveTaskListener;
 
-public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler implements ProgressiveTaskListener {
+public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
 	
 	private static final Log LOG = LogFactory.getLog(JsonConfigImportWebSocketHandler.class);
 	final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
 	final ReadWriteLock lock = new ReentrantReadWriteLock();
-	private ImportBackgroundTask task;
+	
+	//For our reference to cancel the tasks
+	private JsonEmportRestController controller;
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -58,7 +60,6 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler impl
 		}
 	}
 	
-	//TODO Handle Incoming Cancel Message
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
 		try {	
@@ -69,11 +70,11 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler impl
 				session.close(CloseStatus.NOT_ACCEPTABLE);
 				return;
 			}
-			if(StringUtils.equals(message.getPayload(), "CANCEL")){
+			
+			JsonEmportControlModel model = this.jacksonMapper.readValue(message.getPayload(), JsonEmportControlModel.class);
+			if(model != null && model.isCancel()){
 				//Cancel the task if it is running
-				if(task != null){
-					task.cancel();
-				}
+				this.controller.cancelImport(model.getResourceId());
 			}
 		} catch (Exception e) {
 			try {
@@ -106,23 +107,7 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler impl
         }
     }
     
-    public void setTask(ImportBackgroundTask task){
-    	this.task = task;
+    public void setController(JsonEmportRestController controller){
+    	this.controller = controller;
     }
-
-	@Override
-	public void progressUpdate(float progress) {
-		this.notify(new JsonConfigImportStatusModel(JsonConfigImportStateEnum.RUNNING, progress));
-	}
-
-	@Override
-	public void taskCancelled() {
-		this.notify(new JsonConfigImportStatusModel(JsonConfigImportStateEnum.CANCELLED, 0.0f));
-	}
-
-	@Override
-	public void taskCompleted() {
-		notify(new JsonConfigImportStatusModel(JsonConfigImportStateEnum.COMPLETED, this.task.getResponse(), 100f));
-	}
-	
 }

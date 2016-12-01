@@ -4,31 +4,49 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mangoApi.websocket.JsonConfigImportWebSocketDefinition;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.json.type.JsonTypeReader;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.EventHandlerDao;
+import com.serotonin.m2m2.db.dao.JsonDataDao;
+import com.serotonin.m2m2.db.dao.MailingListDao;
+import com.serotonin.m2m2.db.dao.PublisherDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.db.dao.TemplateDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EmportDefinition;
@@ -50,12 +68,20 @@ import com.serotonin.m2m2.web.dwr.emport.importers.SystemSettingsImporter;
 import com.serotonin.m2m2.web.dwr.emport.importers.TemplateImporter;
 import com.serotonin.m2m2.web.dwr.emport.importers.UserImporter;
 import com.serotonin.m2m2.web.dwr.emport.importers.VirtualSerialPortImporter;
+import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStateEnum;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStatusModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.config.JsonConfigImportWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.util.MangoRestTemporaryResource;
+import com.serotonin.m2m2.web.mvc.rest.v1.util.MangoRestTemporaryResourceContainer;
 import com.serotonin.util.ProgressiveTask;
+import com.serotonin.util.ProgressiveTaskListener;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * @author Terry Packer
@@ -68,14 +94,85 @@ public class JsonEmportRestController extends MangoRestController{
 	
 	private static Log LOG = LogFactory.getLog(JsonEmportRestController.class);
 	
-	//Lock to ensure only 1 import at a time can run
-	private Object importLock = new Object();
-	private ImportBackgroundTask task;
+	private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
 	private final JsonConfigImportWebSocketHandler websocket;
-
+	
+	
 	public JsonEmportRestController(){
 		this.websocket = (JsonConfigImportWebSocketHandler)ModuleRegistry.getWebSocketHandlerDefinition(JsonConfigImportWebSocketDefinition.TYPE_NAME).getHandlerInstance();
+		this.websocket.setController(this);
+		this.importStatusResources = new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
 	}
+	
+	@ApiOperation(
+			value = "Get Status For Import",
+			notes = "",
+			response=JsonConfigImportStatusModel.class
+			)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/import/{id}")
+    public ResponseEntity<JsonConfigImportStatusModel> getImportStatus(
+    		@ApiParam(value = "Valid Resource ID", required = true, allowMultiple = false)
+    		@PathVariable String id, HttpServletRequest request) {
+		
+		RestProcessResult<JsonConfigImportStatusModel> result = new RestProcessResult<JsonConfigImportStatusModel>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	
+			if(!user.isAdmin()){
+				result.addRestMessage(getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}
+        	ImportStatusProvider provider = this.importStatusResources.get(id);
+        	if(provider == null){
+        		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+        	}else{
+        		return result.createResponseEntity((JsonConfigImportStatusModel) provider.getModel());
+        	}
+        }
+		return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Update an Import in Progress",
+			notes = "Currently only cancel action is supported"
+			)
+	@RequestMapping(method = RequestMethod.PUT, value = "/import/{id}", produces={"application/json"}, consumes={"application/json"})
+    public ResponseEntity<Void> putPointValue(
+    		HttpServletRequest request, 
+    		@RequestBody(required=true) JsonEmportControlModel model, 
+    		@ApiParam(value="Resource id", required=true, allowMultiple=false)
+    		@PathVariable String resourceId, 
+    		UriComponentsBuilder builder) throws RestValidationFailedException {
+		
+		RestProcessResult<Void> result = new RestProcessResult<Void>(HttpStatus.OK);
+		
+		User user = this.checkUser(request, result);
+		if(result.isOk()){
+			
+			if(!user.isAdmin()){
+				result.addRestMessage(getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}
+        	ImportStatusProvider provider = this.importStatusResources.get(resourceId);
+        	if(provider == null){
+        		result.addRestMessage(getDoesNotExistMessage());
+        	}else{
+        		//Currently our only action
+        		if(model.isCancel()){
+        			provider.cancel();
+        			result.addRestMessage(HttpStatus.ACCEPTED, new TranslatableMessage("emport.importCancelled"));
+        		}
+            	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
+            	result.addHeader("Location", location.toString());
+        	}
+        	return result.createResponseEntity();
+		}else{
+			return result.createResponseEntity();
+		}
+    }
+
 	
 	@ApiOperation(value = "Import Configuration", notes="Submit the request and get a URL for the results")
 	@RequestMapping(
@@ -85,7 +182,16 @@ public class JsonEmportRestController extends MangoRestController{
 	)
 	public ResponseEntity<Void> importConfiguration(
 			HttpServletRequest request,
-			@RequestBody(required=true) String config){
+			UriComponentsBuilder builder,
+    		@ApiParam(value = "Optional Date for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
+    		@RequestParam(value="expiration", required=false) DateTime expiration,
+    		
+    		@ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value="timezone", required=false)
+            String timezone,
+            
+			@RequestBody(required=true) JsonValue config){
+		
 		RestProcessResult<Void> result = new RestProcessResult<Void>(HttpStatus.ACCEPTED);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
@@ -93,63 +199,176 @@ public class JsonEmportRestController extends MangoRestController{
 				result.addRestMessage(getUnauthorizedMessage());
 				return result.createResponseEntity();
 			}
-			
-			synchronized(importLock){
-				if(task != null){
-					result.addRestMessage(HttpStatus.CONFLICT, new TranslatableMessage("emport.importProgress"));
-					return result.createResponseEntity();
-				}
-				JsonTypeReader reader = new JsonTypeReader(config);
-		        try {
-		            JsonValue value = reader.read();
-		            if (value instanceof JsonObject) {
-		                JsonObject root = value.toJsonObject();
-		                task = new ImportBackgroundTask(root, Common.getTranslations(), user, websocket);
-		            }
-		            else {
-		            	result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.invalidImportData")));
-		            }
-		        }
-		        catch (ClassCastException e) {
-		        	LOG.error(e.getMessage(), e);
-	            	result.addRestMessage(new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("emport.parseError", e.getMessage())));
-		        }
-		        catch (TranslatableJsonException e) {
-		        	LOG.error(e.getMessage(), e);
-	            	result.addRestMessage(new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, e.getMsg()));
-		        }
-		        catch (IOException | JsonException e) {
-		        	LOG.error(e.getMessage(), e);
-	            	result.addRestMessage(new RestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("emport.parseError", e.getMessage())));
-		        }
-			}
+            if (config instanceof JsonObject) {
+            	if(expiration == null)
+            		expiration = new DateTime(System.currentTimeMillis() + 300000);
+            	// could also get the user's timezone if parameter was not supplied but probably
+                // better not to for RESTfulness
+                if (timezone != null) {
+                    DateTimeZone zone = DateTimeZone.forID(timezone);
+                    expiration = expiration.withZone(zone);
+                }
+                //Setup the Temporary Resource
+            	String resourceId = importStatusResources.generateResourceId();
+            	this.importStatusResources.put(resourceId, new ImportStatusProvider(config.toJsonObject(), resourceId, user, websocket), expiration.toDate());
+            	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
+            	result.addHeader("Location", location.toString());
+            }
+            else {
+            	result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.invalidImportData")));
+            }
 		}
         return result.createResponseEntity();
 	}
 
+
+	@ApiOperation(
+			value = "List Exportable Elements",
+			notes = "Provided as parameters to choose what to export",
+			response=String.class,
+			responseContainer="List"
+			)
+	@RequestMapping(method = RequestMethod.GET, value = "/list", produces={"application/json"})
+    public ResponseEntity<List<String>> listExportElements(HttpServletRequest request) {
+		RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);
+		
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+			if(!user.isAdmin()){
+				result.addRestMessage(getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}else{
+				List<String> elements = new ArrayList<String>();
+				elements.add(EmportDwr.DATA_SOURCES);
+				elements.add(EmportDwr.DATA_POINTS);
+				elements.add(EmportDwr.USERS);
+				elements.add(EmportDwr.MAILING_LISTS);
+				elements.add(EmportDwr.PUBLISHERS);
+				elements.add(EmportDwr.EVENT_HANDLERS);
+				elements.add(EmportDwr.POINT_HIERARCHY);
+				elements.add(EmportDwr.SYSTEM_SETTINGS);
+				elements.add(EmportDwr.TEMPLATES);
+				elements.add(EmportDwr.VIRTUAL_SERIAL_PORTS);
+				elements.add(EmportDwr.JSON_DATA);
+				
+				for (EmportDefinition def : ModuleRegistry.getDefinitions(EmportDefinition.class)) {
+		            elements.add(def.getElementId());
+		        }
+				return result.createResponseEntity(elements);
+			}
+        }
+		
+		return result.createResponseEntity();
+	}
+	
+	@ApiOperation(
+			value = "Export Configuration",
+			notes = "",
+			response=JsonValue.class
+			)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    public ResponseEntity<JsonValue> export(
+    		@ApiParam(value = "Elements To Export", required = true, allowMultiple = true)
+    		@RequestParam(name="exportElements", required=true)
+    		String[] exportElements,
+    		
+    		HttpServletRequest request) {
+		
+		RestProcessResult<JsonValue> result = new RestProcessResult<JsonValue>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	
+			if(!user.isAdmin()){
+				result.addRestMessage(getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}
+        	//Do the Export
+			Map<String,Object> data = createExportData(exportElements);
+			JsonTypeWriter writer = new JsonTypeWriter(Common.JSON_CONTEXT);
+			try{
+				return result.createResponseEntity(writer.writeObject(data));
+			}catch(JsonException e){
+				result.addRestMessage(this.getInternalServerErrorMessage(e.getMessage()));
+				return result.createResponseEntity();
+			}
+        }
+		return result.createResponseEntity();
+	}
+	
+	/**
+	 * Status Provider for Imports
+	 * 
+	 * @author Terry Packer
+	 */
+	public class ImportStatusProvider extends MangoRestTemporaryResource implements ProgressiveTaskListener{
+
+		private final ImportBackgroundTask task;
+		private final JsonConfigImportWebSocketHandler websocket;
+		private final JsonConfigImportStatusModel model;
+		
+		public ImportStatusProvider(JsonObject root, String resourceId, User user, JsonConfigImportWebSocketHandler websocket){
+			super(resourceId);
+			this.websocket = websocket;
+			this.model = new JsonConfigImportStatusModel(resourceId, user.getUsername(), new Date());
+			this.task = new ImportBackgroundTask(root, Common.getTranslations(), user, this);
+		}
+		
+		/**
+		 * @return
+		 */
+		@Override
+		public JsonConfigImportStatusModel createModel() {
+			return model;
+		}
+
+		public void cancel(){
+			this.task.cancel();
+		}
+		
+		@Override
+		public void progressUpdate(float progress) {
+			this.model.setProgress(progress);
+			this.websocket.notify(this.model);
+		}
+
+		@Override
+		public void taskCancelled() {
+			this.model.setProgress(0.0f);
+			this.model.setState(JsonConfigImportStateEnum.CANCELLED);
+			this.websocket.notify(this.model);
+		}
+
+		@Override
+		public void taskCompleted() {
+			this.model.setFinish(new Date());
+			this.model.setProgress(100.0f);
+			this.model.setState(JsonConfigImportStateEnum.COMPLETED);
+			this.model.updateMessages(this.task.getResponse());
+			this.websocket.notify(this.model);
+		}
+	}
+	
 	/**
 	 * Class to import a JSON config in the background and 
 	 * publish the results to a websocket
 	 * 
 	 * @author Terry Packer
 	 */
-	public class ImportBackgroundTask extends ProgressiveTask {
+	public class ImportBackgroundTask extends ProgressiveTask{
 
 		private final ImportContext importContext;
 	    private final User user;
 
 	    private final List<Importer> importers = new ArrayList<Importer>();
 	    private final List<ImportItem> importItems = new ArrayList<ImportItem>();
-	    private final JsonConfigImportWebSocketHandler websocket;
+	    
 	    private float progress = 0f;
 	    //Chunk of progress for each importer
 	    private float progressChunk;
 	    
-	    public ImportBackgroundTask(JsonObject root, Translations translations, User user, JsonConfigImportWebSocketHandler websocket) {
-	    	super(websocket);
-	    	
-	    	this.websocket = websocket;
-	    	this.websocket.setTask(this);
+	    public ImportBackgroundTask(JsonObject root, Translations translations, User user, ProgressiveTaskListener listener) {
+	    	super(listener);
 	    	
 	        JsonReader reader = new JsonReader(Common.JSON_CONTEXT, root);
 	        this.importContext = new ImportContext(reader, new ProcessResult(), translations);
@@ -223,7 +442,6 @@ public class JsonEmportRestController extends MangoRestController{
 	    @Override
 	    protected void runImpl() {
 	        try {
-	        	declareProgress(this.progress + 0.1f);
 	            BackgroundContext.set(user);
 	            if (!importers.isEmpty()) {
 	            	
@@ -289,16 +507,15 @@ public class JsonEmportRestController extends MangoRestController{
 	        }
 	        finally {
 	            BackgroundContext.remove();
+	            //Compute progress, but only declare if we are < 100 since we will declare 100 when done
 	            //Our progress is 100 - chunk*importersLeft
 	            int importItemsLeft = 0;
 	            for(ImportItem item : importItems)
 	            	if(!item.isComplete())
 	            		importItemsLeft++;
-	            declareProgress(100f - progressChunk*((float)importers.size() + (float)importItemsLeft));
-	            synchronized(importLock){
-	            	task = null;
-	            	this.websocket.setTask(null);
-	            }
+	            this.progress = 100f - progressChunk*((float)importers.size() + (float)importItemsLeft);
+	            if(progress < 100f)
+	            	declareProgress(this.progress);
 	        }
 	    }
 
@@ -312,5 +529,56 @@ public class JsonEmportRestController extends MangoRestController{
 	        	msg = e.getClass().getCanonicalName();
 	        importContext.getResult().addGenericMessage("common.default", msg);
 	    }
+	}
+	
+	/**
+	 * Cancel a given task if it exists
+	 * 
+	 * @param resourceId
+	 */
+	public void cancelImport(String resourceId) {
+		ImportStatusProvider provider = this.importStatusResources.get(resourceId);
+		if(provider != null)
+			provider.cancel();
+	}
+	
+	/**
+	 * Get the export data
+	 * @param exportElements
+	 * @return
+	 */
+	private Map<String, Object> createExportData(String[] exportElements){
+		 Map<String, Object> data = new LinkedHashMap<>();
+
+	        if (ArrayUtils.contains(exportElements, EmportDwr.DATA_SOURCES))
+	            data.put(EmportDwr.DATA_SOURCES, new DataSourceDao().getDataSources());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.DATA_POINTS))
+	            data.put(EmportDwr.DATA_POINTS, new DataPointDao().getDataPoints(null, true));
+	        if (ArrayUtils.contains(exportElements, EmportDwr.USERS))
+	            data.put(EmportDwr.USERS, new UserDao().getUsers());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.MAILING_LISTS))
+	            data.put(EmportDwr.MAILING_LISTS, new MailingListDao().getMailingLists());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.PUBLISHERS))
+	            data.put(EmportDwr.PUBLISHERS, PublisherDao.instance.getPublishers());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.EVENT_HANDLERS))
+	            data.put(EmportDwr.EVENT_HANDLERS, EventHandlerDao.instance.getEventHandlers());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.POINT_HIERARCHY))
+	            data.put(EmportDwr.POINT_HIERARCHY, new DataPointDao().getPointHierarchy(true).getRoot().getSubfolders());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.SYSTEM_SETTINGS))
+	            data.put(EmportDwr.SYSTEM_SETTINGS, new SystemSettingsDao().getSystemSettingsForExport());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.TEMPLATES))
+	            data.put(EmportDwr.TEMPLATES, TemplateDao.instance.getAll());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.VIRTUAL_SERIAL_PORTS))
+	            data.put(EmportDwr.VIRTUAL_SERIAL_PORTS, VirtualSerialPortConfigDao.instance.getAll());
+	        if (ArrayUtils.contains(exportElements, EmportDwr.JSON_DATA))
+	            data.put(EmportDwr.JSON_DATA, JsonDataDao.instance.getAll());
+	        
+	        
+	        for (EmportDefinition def : ModuleRegistry.getDefinitions(EmportDefinition.class)) {
+	            if (ArrayUtils.contains(exportElements, def.getElementId()))
+	                data.put(def.getElementId(), def.getExportData());
+	        }
+	        
+	        return data;
 	}
 }

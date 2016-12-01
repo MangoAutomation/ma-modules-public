@@ -6,7 +6,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 public class JsonConfigImportWebSocketDefinition extends WebSocketDefinition{
 	
-	public static final String TYPE_NAME = "JSON_CONFIG_IMPORT_HANDLER";
+	public static final String TYPE_NAME = "JSON_IMPORT_HANDLER";
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
@@ -21,7 +21,7 @@ public class JsonConfigImportWebSocketDefinition extends WebSocketDefinition{
 	 */
 	@Override
 	public String getUrl() {
-		return "/v1/websocket/json-config-import";
+		return "/v1/websocket/json-import";
 	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
