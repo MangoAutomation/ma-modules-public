@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
@@ -82,6 +85,8 @@ import com.serotonin.util.ProgressiveTaskListener;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+//import com.wordnik.swagger.annotations.ApiResponse;
+//import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
@@ -173,6 +178,58 @@ public class JsonEmportRestController extends MangoRestController{
 		}
     }
 
+	@ApiOperation(value = "Upload a configuration json file", notes = "Files should only contain the json object to be imported")
+//	@ApiResponses({
+//			@ApiResponse(code = 201, message = "Configuration Uploaded", response=Map.class),
+//			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class)
+//			}) //boundary=----------1111111111 useful in testing through swagger
+	@RequestMapping(method = RequestMethod.POST, value = "/upload-file", consumes={"multipart/form-data;"}, produces={"application/json"})
+    public ResponseEntity<Void> uploadConfigurationFile(
+    		MultipartHttpServletRequest multipartRequest,
+    		UriComponentsBuilder builder,
+    		HttpServletRequest request,
+    		@ApiParam(value = "Optional Date for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
+    		@RequestParam(value="expiration", required=false) DateTime expiration,
+    		
+    		@ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value="timezone", required=false)
+            String timezone) throws RestValidationFailedException {
+
+		RestProcessResult<Void> result = new RestProcessResult<Void>(HttpStatus.ACCEPTED);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		Iterator<String> itr =  multipartRequest.getFileNames();
+    		while(itr.hasNext()){
+    			
+	            MultipartFile file = multipartRequest.getFile(itr.next());
+	    		if (!file.isEmpty()) {
+	                try {
+	                	JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
+	                	JsonObject jo = jr.read(JsonObject.class);
+	                	
+	                	if(expiration == null)
+	                		expiration = new DateTime(System.currentTimeMillis() + 300000);
+	                    if (timezone != null) {
+	                        DateTimeZone zone = DateTimeZone.forID(timezone);
+	                        expiration = expiration.withZone(zone);
+	                    }
+	                    
+	                    //Setup the Temporary Resource
+	                	String resourceId = importStatusResources.generateResourceId();
+	                	this.importStatusResources.put(resourceId, new ImportStatusProvider(jo, resourceId, user, websocket), expiration.toDate());
+	                	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
+	                	result.addHeader("Location", location.toString());
+	                } catch (Exception e) {
+	                    result.addRestMessage(this.getInternalServerErrorMessage(e.getMessage()));
+	                }
+	            } else {
+	                result.addRestMessage(this.getInternalServerErrorMessage("No file provided"));
+	            }
+    		}
+    		return result.createResponseEntity();
+    	}
+    	return result.createResponseEntity();
+	}
 	
 	@ApiOperation(value = "Import Configuration", notes="Submit the request and get a URL for the results")
 	@RequestMapping(
