@@ -107,7 +107,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get data point by XID",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv", "application/sero-json"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> getDataPoint(
     		@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -143,7 +143,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get data point by ID",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/by-id/{id}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv", "application/sero-json"}, value = "/by-id/{id}")
     public ResponseEntity<DataPointModel> getDataPointById(
     		@ApiParam(value = "Valid Data Point ID", required = true, allowMultiple = false)
     		@PathVariable int id, HttpServletRequest request) {
@@ -189,7 +189,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Update an existing data point",
 			notes = "Content may be CSV or JSON"
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv", "application/sero-json"}, produces={"application/json", "text/csv", "application/sero-json"}, value = "/{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(
     		@PathVariable String xid,
     		@ApiParam(value = "Updated data point model", required = true)
@@ -296,7 +296,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Create a data point",
 			notes = "Content may be CSV or JSON"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv", "application/sero-json"}, produces={"application/json", "text/csv", "application/sero-json"})
     public ResponseEntity<DataPointModel> saveDataPoint(
     		@ApiParam(value = "Data point model", required = true)
     		@RequestBody(required=true)  DataPointModel model, 
@@ -378,7 +378,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Insert/Update multiple data points",
 			notes = "CSV content must be limited to 1 type of data source."
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json;charset=UTF-8", "text/csv;charset=UTF-8"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json;charset=UTF-8", "text/csv;charset=UTF-8"}, produces={"application/json", "application/sero-json"})
     public ResponseEntity<List<DataPointModel>> saveDataPoints(
     		@ApiParam(value = "List of updated data point models", required = true)
     		@RequestBody(required=true) List<DataPointModel> models, 
@@ -502,7 +502,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Delete a data point",
 			notes = "The user must have permission to the data point"
 			)
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv", "application/sero-json"})
     public ResponseEntity<DataPointModel> delete(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
@@ -539,7 +539,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			value = "Get all data points for data source",
 			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/data-source/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv", "application/sero-json"}, value = "/data-source/{xid}")
     public ResponseEntity<List<DataPointModel>> getDataPointsForDataSource(
     		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
