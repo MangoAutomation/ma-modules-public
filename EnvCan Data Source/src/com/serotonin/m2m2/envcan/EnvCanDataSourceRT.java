@@ -4,18 +4,26 @@
  */
 package com.serotonin.m2m2.envcan;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.TimeZone;
 
+import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.ContentType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import com.serotonin.io.StreamUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -24,8 +32,6 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
-import com.serotonin.util.XmlUtilsTS;
-import com.serotonin.web.http.HttpUtils4;
 
 /**
  * @author Matthew Lohbihler
@@ -101,7 +107,7 @@ public class EnvCanDataSourceRT extends PollingDataSource {
     private void doPollImpl(long runtime) {
         DateTime dt = new DateTime(nextValueTime);
         StringBuilder url = new StringBuilder();
-        url.append("http://climate.weatheroffice.gc.ca/climateData/bulkdata_e.html?StationID=").append(
+        url.append("http://climate.weather.gc.ca/climate_data/bulk_data_e.html?stationID=").append(
                 vo.getStationId());
         url.append("&Year=").append(dt.getYear());
         url.append("&Month=").append(dt.getMonthOfYear() + 1);
@@ -147,7 +153,7 @@ public class EnvCanDataSourceRT extends PollingDataSource {
                 double humidex = XmlUtilsTS.getChildElementTextAsDouble(stationDataElement, "humidex", Double.NaN);
                 double windchill = XmlUtilsTS.getChildElementTextAsDouble(stationDataElement, "windchill", Double.NaN);
                 String weather = XmlUtilsTS.getChildElementText(stationDataElement, "weather");
-
+                
                 if (Double.isNaN(temp))
                     // If there is no temp value, ignore the record
                     continue;
@@ -214,7 +220,8 @@ public class EnvCanDataSourceRT extends PollingDataSource {
                 request = new HttpGet(url);
                 HttpResponse response = client.execute(request);
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                    data = HttpUtils4.readResponseBody(response);
+//                    data = HttpUtils4.readResponseBody(response);
+                	data = readResponseBody(response);
                     break;
                 }
                 message = new TranslatableMessage("event.http.response", url, response.getStatusLine().getStatusCode());
@@ -241,4 +248,28 @@ public class EnvCanDataSourceRT extends PollingDataSource {
 
         return data;
     }
+    
+    public static String readResponseBody(HttpResponse response) throws IOException {
+        return readResponseBody(response, 1024 * 1024);
+    }
+
+    public static String readResponseBody(HttpResponse response, int limit) throws IOException {
+        InputStream in = response.getEntity().getContent();
+        if (in == null)
+            return null;
+        
+        while(in.available() > 0 && in.read() != 0x3c) {}
+
+        Charset charset = ContentType.getOrDefault(response.getEntity()).getCharset();
+        if (charset == null)
+            charset = Consts.ISO_8859_1;
+        InputStreamReader reader = new InputStreamReader(in, charset);
+        StringWriter writer = new StringWriter();
+        writer.write(0x3c);
+
+        StreamUtils.transfer(reader, writer, limit);
+
+        return writer.toString();
+    }
+
 }
