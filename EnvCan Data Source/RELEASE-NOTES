@@ -1,3 +1,8 @@
+*Version 1.2.1*
+* Updating API URL
+* Parsing message body to remove file header
+* Moving XML utils into this class so as to handle NPE in empty elements
+
 *Version 1.2.0*
 * Upgraded to work with core version 2.8.x
 
