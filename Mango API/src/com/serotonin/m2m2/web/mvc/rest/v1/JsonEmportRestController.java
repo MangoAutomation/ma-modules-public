@@ -532,6 +532,7 @@ public class JsonEmportRestController extends MangoRestController{
 	                            importer.copyMessages();
 	                        }
 	                        importers.clear();
+	                        completed = true;
 	                        return;
 	                    }
 	                }
