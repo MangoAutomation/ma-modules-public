@@ -1,3 +1,6 @@
+*Version 2.3.1*
+* Adding image support for NoSQL.  Image files are referenced from existing point values so by deleting point values the files will be gone and by deleting a report instance the files will remain.
+
 *Version 2.3.0*
 * Upgraded to work with core version 2.8.x
 * Adding support for Image data type, will display latest image for any image point type.
