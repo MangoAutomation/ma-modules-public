@@ -724,9 +724,13 @@ public class ReportDao extends AbstractDao<ReportVO> {
     }
 
     public List<Long> getFiledataIds() {
-        return queryForList("select distinct d.pointValueId from reportInstanceData d " //
+    	//TODO add support for NoSQL and SQL when we actually copy the image files.  Currently we only 
+    	// reference the existing point value files so there are no files to delete that are our own.
+    	
+        /* return queryForList("select distinct d.pointValueId from reportInstanceData d " //
                 + "  join reportInstancePoints p on d.reportInstancePointId=p.id " //
-                + "where p.dataType=?", new Object[] { DataTypes.IMAGE }, Long.class);
+                + "where p.dataType=?", new Object[] { DataTypes.IMAGE }, Long.class); */
+    	return new ArrayList<Long>();
     }
     
     

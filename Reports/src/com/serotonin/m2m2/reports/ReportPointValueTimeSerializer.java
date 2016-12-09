@@ -4,8 +4,12 @@
  */
 package com.serotonin.m2m2.reports;
 
+import java.io.IOException;
+
+import com.serotonin.InvalidArgumentException;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.ImageSaveException;
 import com.serotonin.m2m2.db.dao.nosql.ByteArrayBuilder;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -14,6 +18,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.view.stats.ITime;
@@ -57,7 +62,12 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 				dataValue = new BinaryValue(bool);
 				break;
 			case DataTypes.IMAGE:
-				throw new ShouldNeverHappenException("Images are not supported");
+				try {
+					dataValue = new ImageValue(b.getString());
+				} catch (InvalidArgumentException e1) {
+					//Probably no file
+				}
+				break;
 			case DataTypes.MULTISTATE:
 				int i  = b.getInt();
 				dataValue = new MultistateValue(i);
@@ -105,7 +115,12 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 				b.putBoolean(value.getBooleanValue());
 				break;
 			case DataTypes.IMAGE:
-				throw new ShouldNeverHappenException("Images are not supported");
+				ImageValue imageValue = (ImageValue) value.getValue();
+	            if (!imageValue.isSaved()) {
+	            	throw new ImageSaveException(new IOException("Image not saved."));
+	            }
+				b.putString(imageValue.getFilename());
+				break;
 			case DataTypes.MULTISTATE:
 				b.putInt(value.getIntegerValue());
 				break;
