@@ -98,24 +98,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=19, header="maxChange")
 	public void setMaxChange(double maxChange) {
-		switch(this.data.getChangeTypeId()){
-		case Types.ANALOG_ATTRACTOR:
-			this.data.getAnalogAttractorChange().setMaxChange(maxChange);
-			break;
-		case Types.BROWNIAN:
-			this.data.getBrownianChange().setMaxChange(maxChange);
-			break;
-		case Types.INCREMENT_ANALOG:
-		case Types.ALTERNATE_BOOLEAN:
-		case Types.INCREMENT_MULTISTATE:
-		case Types.NO_CHANGE:
-		case Types.RANDOM_ANALOG:
-		case Types.RANDOM_BOOLEAN:
-		case Types.RANDOM_MULTISTATE:
-		case Types.SINUSOIDAL:
-		default:
-			break;
-		}
+		this.data.getAnalogAttractorChange().setMaxChange(maxChange);
+		this.data.getBrownianChange().setMaxChange(maxChange);
 	}
 
 	@CSVColumnGetter(order=20, header="volatility")
@@ -166,26 +150,10 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=222, header="min")
 	public void setMin(double min) {
-		switch(this.data.getChangeTypeId()){
-		case Types.INCREMENT_ANALOG:
-		    this.data.getIncrementAnalogChange().setMin(min);
-		    break;
-		case Types.BROWNIAN:
-			this.data.getBrownianChange().setMin(min);
-			break;
-		case Types.RANDOM_ANALOG:
-			this.data.getRandomAnalogChange().setMin(min);
-			break;
-		case Types.ALTERNATE_BOOLEAN:
-		case Types.ANALOG_ATTRACTOR:
-		case Types.INCREMENT_MULTISTATE:
-		case Types.NO_CHANGE:
-		case Types.RANDOM_BOOLEAN:
-		case Types.RANDOM_MULTISTATE:
-		case Types.SINUSOIDAL:
-		default:
-			break;
-		}
+	    this.data.getIncrementAnalogChange().setMin(min);
+		this.data.getBrownianChange().setMin(min);
+		this.data.getRandomAnalogChange().setMin(min);
+
 	}
 
 	@CSVColumnGetter(order=23, header="max")
@@ -211,26 +179,9 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=23, header="max")
 	public void setMax(double max) {
-		switch(this.data.getChangeTypeId()){
-		case Types.INCREMENT_ANALOG:
-		    this.data.getIncrementAnalogChange().setMax(max);
-		    break;
-		case Types.BROWNIAN:
-			this.data.getBrownianChange().setMax(max);
-			break;
-		case Types.RANDOM_ANALOG:
-			this.data.getRandomAnalogChange().setMax(max);
-			break;
-		case Types.ALTERNATE_BOOLEAN:
-		case Types.ANALOG_ATTRACTOR:
-		case Types.INCREMENT_MULTISTATE:
-		case Types.NO_CHANGE:
-		case Types.RANDOM_BOOLEAN:
-		case Types.RANDOM_MULTISTATE:
-		case Types.SINUSOIDAL:
-		default:
-			break;
-		}
+	    this.data.getIncrementAnalogChange().setMax(max);
+		this.data.getBrownianChange().setMax(max);
+		this.data.getRandomAnalogChange().setMax(max);
 	}
 	
 	@CSVColumnGetter(order=24, header="change")
@@ -265,24 +216,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=25, header="roll")
 	public void setRoll(boolean roll) {
-		switch(this.data.getChangeTypeId()){
-		case Types.INCREMENT_ANALOG:
-		    this.data.getIncrementAnalogChange().setRoll(roll);
-		    break;
-		case Types.INCREMENT_MULTISTATE:
-			this.data.getIncrementMultistateChange().setRoll(roll);
-			break;
-		case Types.ALTERNATE_BOOLEAN:
-		case Types.ANALOG_ATTRACTOR:
-		case Types.BROWNIAN:
-		case Types.NO_CHANGE:
-		case Types.RANDOM_ANALOG:
-		case Types.RANDOM_BOOLEAN:
-		case Types.RANDOM_MULTISTATE:
-		case Types.SINUSOIDAL:
-		default:
-			break;
-		}
+	    this.data.getIncrementAnalogChange().setRoll(roll);
+		this.data.getIncrementMultistateChange().setRoll(roll);
 	}
 
 	@CSVColumnGetter(order=26, header="values", editor=IntArrayPropertyEditor.class)
@@ -307,24 +242,8 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=26, header="values",  editor=IntArrayPropertyEditor.class)
 	public void setValues(int[] values) {
-		switch(this.data.getChangeTypeId()){
-		case Types.INCREMENT_MULTISTATE:
-			this.data.getIncrementMultistateChange().setValues(values);
-			break;
-		case Types.RANDOM_MULTISTATE:
-			this.data.getRandomMultistateChange().setValues(values);
-			break;
-		case Types.INCREMENT_ANALOG:
-		case Types.ALTERNATE_BOOLEAN:
-		case Types.ANALOG_ATTRACTOR:
-		case Types.BROWNIAN:
-		case Types.NO_CHANGE:
-		case Types.RANDOM_ANALOG:
-		case Types.RANDOM_BOOLEAN:
-		case Types.SINUSOIDAL:
-		default:
-			break;
-		}
+		this.data.getIncrementMultistateChange().setValues(values);
+		this.data.getRandomMultistateChange().setValues(values);
 	}
 	
 	@CSVColumnGetter(order=27, header="amplitude")
@@ -399,40 +318,16 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=31, header="startValue")
 	public void setStartValue(String startValue) {
-		switch(this.data.getChangeTypeId()){
-		case Types.INCREMENT_ANALOG:
-		    this.data.getIncrementAnalogChange().setStartValue(startValue);
-		    break;
-		case Types.ALTERNATE_BOOLEAN:
-			this.data.getAlternateBooleanChange().setStartValue(startValue);
-			break;
-		case Types.ANALOG_ATTRACTOR:
-			this.data.getAnalogAttractorChange().setStartValue(startValue);
-			break;
-		case Types.BROWNIAN:
-			this.data.getBrownianChange().setStartValue(startValue);
-			break;
-		case Types.INCREMENT_MULTISTATE:
-			this.data.getIncrementMultistateChange().setStartValue(startValue);
-			break;
-		case Types.NO_CHANGE:
-			this.data.getNoChange().setStartValue(startValue);
-			break;
-		case Types.RANDOM_ANALOG:
-			this.data.getRandomAnalogChange().setStartValue(startValue);
-			break;
-		case Types.RANDOM_BOOLEAN:
-			this.data.getRandomBooleanChange().setStartValue(startValue);
-			break;
-		case Types.RANDOM_MULTISTATE:
-			this.data.getRandomMultistateChange().setStartValue(startValue);
-			break;
-		case Types.SINUSOIDAL:
-			this.data.getSinusoidalChange().setStartValue(startValue);
-			break;
-		default:
-			break;
-		}
+	    this.data.getIncrementAnalogChange().setStartValue(startValue);
+		this.data.getAlternateBooleanChange().setStartValue(startValue);
+		this.data.getAnalogAttractorChange().setStartValue(startValue);
+		this.data.getBrownianChange().setStartValue(startValue);
+		this.data.getIncrementMultistateChange().setStartValue(startValue);
+		this.data.getNoChange().setStartValue(startValue);
+		this.data.getRandomAnalogChange().setStartValue(startValue);
+		this.data.getRandomBooleanChange().setStartValue(startValue);
+		this.data.getRandomMultistateChange().setStartValue(startValue);
+		this.data.getSinusoidalChange().setStartValue(startValue);
 	}
 
 	/* (non-Javadoc)
