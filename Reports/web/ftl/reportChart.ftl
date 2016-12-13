@@ -105,79 +105,81 @@
   <table cellspacing="5">
     <#assign col = 1/>
     <#list points as point>
-      <#assign col = col + 1/>
-      <#if col == 2><#assign col = 0/></#if>
-      <#if col == 0><tr></#if>
-      
-      <td class="stats">
-        <table>
-          <tr><td colspan="2" class="pointName">${point.name}</td></tr>
-          <tr>
-            <td class="label"><@fmt key="reports.dataType"/></td>
-            <td>${point.dataTypeDescription}</td>
-          </tr>
-          <#if point.startValue?? && point.dataType != IMAGE>
-            <tr>
-              <td class="label"><@fmt key="common.stats.start"/></td>
-              <td>${point.startValue}</td>
-            </tr>
-          </#if>
-          <#if point.dataType == NUMERIC>
-            <tr>
-              <td class="label"><@fmt key="common.stats.min"/></td>
-              <td><#if point.analogMinimum??>${point.analogMinimum} @ ${point.analogMinTime}<#else>--</#if></td>
-            </tr>
-            <tr>
-              <td class="label"><@fmt key="common.stats.max"/></td>
-              <td><#if point.analogMaximum??>${point.analogMaximum} @ ${point.analogMaxTime}<#else>--</#if></td>
-            </tr>
-            <tr>
-              <td class="label"><@fmt key="common.stats.avg"/></td>
-              <td><#if point.analogAverage??>${point.analogAverage}<#else>--</#if></td>
-            </tr>
-            <tr>
-              <td class="label"><@fmt key="common.stats.sum"/></td>
-              <td>${point.analogSum}</td>
-            </tr>
-            <tr>
-              <td class="label"><@fmt key="common.stats.count"/></td>
-              <td>${point.analogCount}</td>
-            </tr>
-          <#elseif point.dataType == BINARY || point.dataType == MULTISTATE>
-            <tr>
-              <td colspan="2">
-                <table>
-                  <tr style="padding-top:15px">
-                    <th><@fmt key="common.stats.value"/></th>
-                    <th><@fmt key="common.stats.starts"/></th>
-                    <th><@fmt key="common.stats.runtime"/></th>
-                  </tr>
-                  
-                  <#list point.startsAndRuntimes as sar>
-                    <tr>
-                      <td>${sar.value}</td>
-                      <td align="right">${sar.starts}</td>
-                      <td align="right">${sar.runtime}</td>
-                    </tr>
-                  </#list>
-                </table>
-              </td>
-            </tr>
-          <#elseif point.dataType == ALPHANUMERIC || point.dataType == IMAGE>
-            <tr>
-              <td class="label"><@fmt key="common.stats.count"/></td>
-              <td>${point.valueChangeCount}</td>
-            </tr>
-          </#if>
-          <#if point.chartData>
-            <tr>
-              <td colspan="2"><img src="${inline}${point.chartPath}"/></td>
-            </tr>
-          </#if>
-        </table>
-      </td>
-      
-      <#if col == 1></tr></#if>
+      <#if point.dataType != IMAGE>
+	      <#assign col = col + 1/>
+	      <#if col == 2><#assign col = 0/></#if>
+	      <#if col == 0><tr></#if>
+	      
+	      <td class="stats">
+	        <table>
+	          <tr><td colspan="2" class="pointName">${point.name}</td></tr>
+	          <tr>
+	            <td class="label"><@fmt key="reports.dataType"/></td>
+	            <td>${point.dataTypeDescription}</td>
+	          </tr>
+	          <#if point.startValue??>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.start"/></td>
+	              <td>${point.startValue}</td>
+	            </tr>
+	          </#if>
+	          <#if point.dataType == NUMERIC>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.min"/></td>
+	              <td><#if point.analogMinimum??>${point.analogMinimum} @ ${point.analogMinTime}<#else>--</#if></td>
+	            </tr>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.max"/></td>
+	              <td><#if point.analogMaximum??>${point.analogMaximum} @ ${point.analogMaxTime}<#else>--</#if></td>
+	            </tr>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.avg"/></td>
+	              <td><#if point.analogAverage??>${point.analogAverage}<#else>--</#if></td>
+	            </tr>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.sum"/></td>
+	              <td>${point.analogSum}</td>
+	            </tr>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.count"/></td>
+	              <td>${point.analogCount}</td>
+	            </tr>
+	          <#elseif point.dataType == BINARY || point.dataType == MULTISTATE>
+	            <tr>
+	              <td colspan="2">
+	                <table>
+	                  <tr style="padding-top:15px">
+	                    <th><@fmt key="common.stats.value"/></th>
+	                    <th><@fmt key="common.stats.starts"/></th>
+	                    <th><@fmt key="common.stats.runtime"/></th>
+	                  </tr>
+	                  
+	                  <#list point.startsAndRuntimes as sar>
+	                    <tr>
+	                      <td>${sar.value}</td>
+	                      <td align="right">${sar.starts}</td>
+	                      <td align="right">${sar.runtime}</td>
+	                    </tr>
+	                  </#list>
+	                </table>
+	              </td>
+	            </tr>
+	          <#elseif point.dataType == ALPHANUMERIC>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.count"/></td>
+	              <td>${point.valueChangeCount}</td>
+	            </tr>
+	          </#if>
+	          <#if point.chartData>
+	            <tr>
+	              <td colspan="2"><img src="${inline}${point.chartPath}"/></td>
+	            </tr>
+	          </#if>
+	        </table>
+	      </td>
+	      
+	      <#if col == 1></tr></#if>
+	  </#if>
     </#list>
     <#if col < 1></tr></#if>
   </table>
@@ -186,6 +188,25 @@
     <h2><@fmt key="reports.consolidated"/></h2>
     <img src="${inline}${chartName}"/>
   </#if>
+  
+  <#-- include any points that are of type image  -->
+  <#list points as point>
+	<#if point.dataType == IMAGE>
+	  <table>
+	    <tr><td colspan="2"><h2>${point.name}</h2></td></tr>
+        <tr>
+	      <td class="label"><@fmt key="common.stats.count"/></td>
+	      <td>${point.valueChangeCount}</td>
+	    </tr>
+	    <#if point.chartData>
+	    <tr>
+	      <td colspan="2"><img src="${inline}${point.chartPath}"/></td>
+	    </tr>
+	    </#if>
+	  </table>
+      <br>
+	  </#if>
+  </#list>  
       
   <#if includeEvents>
     <h2><@fmt key="reports.events"/></h2>
