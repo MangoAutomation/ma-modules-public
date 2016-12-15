@@ -4,7 +4,7 @@
     <groupId>com.infiniteautomation.mango</groupId>
     <artifactId>virtual-ds</artifactId>
     <name>Virtual Data Source</name>
-    <version>1.7.0</version>
+    <version>1.6.1</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
