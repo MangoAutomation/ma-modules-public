@@ -100,7 +100,8 @@ public class PointValueRestController extends MangoRestController{
 	 */
 	@ApiOperation(
 			value = "Get Latest Point Values Directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
-			notes = "Default limit 100, time descending order, Default to return cached data"
+			notes = "Default limit 100, time descending order, Default to return cached data. For the most efficient use of this endpoint " +
+					" the data point's default cache size should be the size that you will typically query the latest values of."
 			)
     @RequestMapping(method = RequestMethod.GET, value="/{xid}/latest", produces={"application/json", "text/csv"})
     public ResponseEntity<List<RecentPointValueTimeModel>> getLatestPointValues(
