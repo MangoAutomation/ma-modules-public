@@ -45,7 +45,7 @@ abstract public class ReportExportBase extends HttpServlet {
 
         Translations translations = Common.getTranslations();
         if (content == CONTENT_REPORT) {
-            ExportCsvStreamer creator = new ExportCsvStreamer(response.getWriter(), translations);
+            ExportCsvStreamer creator = new ExportCsvStreamer(request.getServerName(), request.getLocalPort(), response.getWriter(), translations);
             if(Common.databaseProxy.getNoSQLProxy() == null)
             	reportDao.reportInstanceDataSQL(instanceId, creator);
             else

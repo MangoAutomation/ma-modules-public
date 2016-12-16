@@ -23,6 +23,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.BaseDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDao;
@@ -566,6 +567,13 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
         final ExportDataValue edv = new ExportDataValue();
         for (final ExportPointInfo point : pointInfos) {
+        	if(point.getDataType() == DataTypes.IMAGE){
+        		DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
+        		if(vo != null)
+        			point.setDataPointId(vo.getId());
+        		else
+        			point.setDataPointId(-1);
+        	}
             handler.startPoint(point);
 
             edv.setReportPointId(point.getReportPointId());
@@ -634,6 +642,13 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
         final ExportDataValue edv = new ExportDataValue();
         for (final ExportPointInfo point : pointInfos) {
+        	if(point.getDataType() == DataTypes.IMAGE){
+        		DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
+        		if(vo != null)
+        			point.setDataPointId(vo.getId());
+        		else
+        			point.setDataPointId(-1);
+        	}
             handler.startPoint(point);
 
             edv.setReportPointId(point.getReportPointId());
