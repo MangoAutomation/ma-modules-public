@@ -141,7 +141,7 @@ public class PointValueRestController extends MangoRestController{
     				}
 	    			
     				//If we are an image type we should build the URLS
-    				UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+    				UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
     				imageServletBuilder.scheme(request.getScheme());
     				imageServletBuilder.host(request.getServerName());
     				imageServletBuilder.port(request.getLocalPort());
@@ -467,7 +467,7 @@ public class PointValueRestController extends MangoRestController{
 
 	    			if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
 		    			//If we are an image type we should build the URLS
-		    			UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+		    			UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
 		    			imageServletBuilder.scheme(request.getScheme());
 		    			imageServletBuilder.host(request.getServerName());
 		    			imageServletBuilder.port(request.getLocalPort());
