@@ -6,9 +6,12 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,6 +40,7 @@ import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RTException;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
@@ -59,6 +63,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueFftCalculat
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeDatabaseStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.RecentPointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueMapRollupCalculator;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeLatestPointFacadeStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeMapDatabaseStream;
@@ -98,7 +103,7 @@ public class PointValueRestController extends MangoRestController{
 			notes = "Default limit 100, time descending order, Default to return cached data"
 			)
     @RequestMapping(method = RequestMethod.GET, value="/{xid}/latest", produces={"application/json", "text/csv"})
-    public ResponseEntity<List<PointValueTimeModel>> getLatestPointValues(
+    public ResponseEntity<List<RecentPointValueTimeModel>> getLatestPointValues(
     		HttpServletRequest request, 
     		
     		@ApiParam(value = "Point xid", required = true, allowMultiple = false)
@@ -117,7 +122,7 @@ public class PointValueRestController extends MangoRestController{
     		@RequestParam(value="useCache", defaultValue="true") boolean useCache
     		){
         
-    	RestProcessResult<List<PointValueTimeModel>> result = new RestProcessResult<List<PointValueTimeModel>>(HttpStatus.OK);
+    	RestProcessResult<List<RecentPointValueTimeModel>> result = new RestProcessResult<List<RecentPointValueTimeModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     	
@@ -129,55 +134,54 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), useCache);
+    				//Check to see if we can convert (Must be a Numeric Value)
+    				if (unitConversion && (vo.getPointLocator().getDataTypeId() != DataTypes.NUMERIC)){
+    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Can't convert non-numeric types."));
+    					return result.createResponseEntity();
+    				}
 	    			
-	    			List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
-	    			List<PointValueTimeModel> models = new ArrayList<PointValueTimeModel>(pvts.size());
-	    			if(useRendered){
-	    				//Render the values as Strings with the suffix and or units
-	    				for(PointValueTime pvt : pvts){
-	    					PointValueTimeModel model = new PointValueTimeModel();
-	    					model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
-	    					model.setValue(Functions.getRenderedText(vo, pvt));
-	    					model.setTimestamp(pvt.getTime());
-	    					if(pvt.isAnnotated())
-	    						model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
-		    				models.add(model);
-	    				}
-	    			}else if(unitConversion){
-	    				//Check to see if we can convert (Must be a Numeric Value)
-	    				if (vo.getPointLocator().getDataTypeId() != DataTypes.NUMERIC){
-	    					result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Can't convert non-numeric types."));
-	    					return result.createResponseEntity();
-	    				}
-	    				//Convert the numeric value using the unit and rendered unit
-	    				for(PointValueTime pvt : pvts){
-	    					PointValueTimeModel model = new PointValueTimeModel();
-	    					model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
-	    					model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()));
-	    					model.setTimestamp(pvt.getTime());
-	    					if(pvt.isAnnotated())
-	    						model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
-		    				models.add(model);
-		    			}
-		    		}else{
-		    			for(PointValueTime pvt : pvts){
-		    				models.add(new PointValueTimeModel(pvt));
-		    			}
-		    		}
-
-	    			if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE){
-		    			//If we are an image type we should build the URLS
-		    			UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-		    			imageServletBuilder.scheme(request.getScheme());
-		    			imageServletBuilder.host(request.getServerName());
-		    			imageServletBuilder.port(request.getLocalPort());
-		    			
-	    				for(PointValueTimeModel model : models){
-	    					model.setValue(imageServletBuilder.buildAndExpand(model.getTimestamp(), vo.getId()).toUri());
-	    				}
+    				//If we are an image type we should build the URLS
+    				UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
+    				imageServletBuilder.scheme(request.getScheme());
+    				imageServletBuilder.host(request.getServerName());
+    				imageServletBuilder.port(request.getLocalPort());
+    				
+	    			List<RecentPointValueTimeModel> models = new ArrayList<>(limit);
+	    			if(useCache){
+		    			//In an effort not to expand the PointValueCache we avoid the PointValueFacade
+	    				DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
+	    				if(rt != null){
+	    					List<PointValueTime> cache = rt.getCacheCopy();
+	    					if(limit < cache.size()){
+	    						List<PointValueTime> pvts = cache.subList(0, limit);
+	    						for(PointValueTime pvt : pvts)
+	    							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, true));
+	    					}else{
+	    						//We need to merge 2 lists
+	    						List<PointValueTime> disk = Common.databaseProxy.newPointValueDao().getLatestPointValues(vo.getId(), limit);
+	    						Set<RecentPointValueTimeModel> all = new HashSet<RecentPointValueTimeModel>(limit);
+	    						for(PointValueTime pvt : cache)
+	    							all.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, true));
+	    						for(PointValueTime pvt : disk){
+	    							if(all.size() >= limit)
+	    								break;
+	    							else
+		    							all.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
+	    						}
+	    						models = new ArrayList<>(all);
+	    						Collections.sort(models);
+	    					}
+	    					
+	    				}else{
+	    					List<PointValueTime> pvts = Common.databaseProxy.newPointValueDao().getLatestPointValues(vo.getId(), limit);
+	   						for(PointValueTime pvt : pvts)
+    							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
+ 	    				}
+	    			}else{
+	    				List<PointValueTime> pvts = Common.databaseProxy.newPointValueDao().getLatestPointValues(vo.getId(), limit);
+   						for(PointValueTime pvt : pvts)
+							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
 	    			}
-	    			
 	    			return result.createResponseEntity(models);
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());
@@ -193,6 +197,46 @@ public class PointValueRestController extends MangoRestController{
     	}
     }
 	
+	/**
+	 * @param vo
+	 * @param pvt
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param b
+	 * @return
+	 */
+	private RecentPointValueTimeModel createRecentPointValueTimeModel(DataPointVO vo, PointValueTime pvt,
+			UriComponentsBuilder imageServletBuilder,
+			boolean useRendered, boolean unitConversion, boolean cached) {
+		RecentPointValueTimeModel model;
+		if(useRendered){
+			//Render the values as Strings with the suffix and or units
+			model = new RecentPointValueTimeModel();
+			model.setCached(cached);
+			model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
+			model.setValue(Functions.getRenderedText(vo, pvt));
+			model.setTimestamp(pvt.getTime());
+			if(pvt.isAnnotated())
+				model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
+		}else if(unitConversion){
+			//Convert the numeric value using the unit and rendered unit
+			model = new RecentPointValueTimeModel();
+			model.setCached(cached);
+			model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
+			model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()));
+			model.setTimestamp(pvt.getTime());
+			if(pvt.isAnnotated())
+				model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
+		}else{
+			model = new RecentPointValueTimeModel(pvt, cached);
+		}
+
+		if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+			model.setValue(imageServletBuilder.buildAndExpand(model.getTimestamp(), vo.getId()).toUri());
+		
+		return model;
+	}
+
 	/**
      * Get the latest point values a set of points
      * return as map of xid to array of values
