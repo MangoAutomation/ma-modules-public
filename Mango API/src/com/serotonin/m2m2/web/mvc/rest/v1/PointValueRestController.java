@@ -149,7 +149,7 @@ public class PointValueRestController extends MangoRestController{
     				imageServletBuilder.host(request.getServerName());
     				imageServletBuilder.port(request.getLocalPort());
     				
-	    			List<RecentPointValueTimeModel> models = new ArrayList<>(limit);
+	    			List<RecentPointValueTimeModel> models;
 	    			if(useCache){
 		    			//In an effort not to expand the PointValueCache we avoid the PointValueFacade
 	    				DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
@@ -157,6 +157,7 @@ public class PointValueRestController extends MangoRestController{
 	    					List<PointValueTime> cache = rt.getCacheCopy();
 	    					if(limit < cache.size()){
 	    						List<PointValueTime> pvts = cache.subList(0, limit);
+	    						models = new ArrayList<>(limit);
 	    						for(PointValueTime pvt : pvts)
 	    							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, true));
 	    					}else{
@@ -177,10 +178,12 @@ public class PointValueRestController extends MangoRestController{
 	    					
 	    				}else{
 	    					List<PointValueTime> pvts = Common.databaseProxy.newPointValueDao().getLatestPointValues(vo.getId(), limit);
+	    					models = new ArrayList<>(limit);
 	   						for(PointValueTime pvt : pvts)
     							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
  	    				}
 	    			}else{
+	    				models = new ArrayList<>(limit);
 	    				List<PointValueTime> pvts = Common.databaseProxy.newPointValueDao().getLatestPointValues(vo.getId(), limit);
    						for(PointValueTime pvt : pvts)
 							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
