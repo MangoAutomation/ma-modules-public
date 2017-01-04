@@ -33,7 +33,7 @@ public class ReportChartHandler implements UrlHandler {
 
         ReportChartCreator creator = new ReportChartCreator(ControllerUtils.getTranslations(request),
                 user.getTimeZoneInstance());
-        creator.createContent(instance, ReportDao.instance, null, false);
+        creator.createContent(request.getServerName(), request.getLocalPort(), instance, ReportDao.instance, null, false);
 
         Map<String, byte[]> imageData = new HashMap<String, byte[]>();
         imageData.put(creator.getChartName(), creator.getImageData());

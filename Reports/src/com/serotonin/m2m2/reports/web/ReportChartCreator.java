@@ -107,20 +107,22 @@ public class ReportChartCreator {
      * Uses the given parameters to create the data for the fields of this class. Once the content has been created the
      * getters for the fields can be used to retrieve.
      * 
+     * @param host - Mango's hostname
+     * @param port - Mango's port
      * @param reportInstance
      * @param reportDao
      * @param inlinePrefix
      *            if this is non-null, it implies that the content should be inline.
      * @param createExportFile
      */
-    public void createContent(ReportInstance reportInstance, ReportDao reportDao, String inlinePrefix,
+    public void createContent(String host, int port, ReportInstance reportInstance, ReportDao reportDao, String inlinePrefix,
             boolean createExportFile) {
         this.inlinePrefix = inlinePrefix;
 
         reportInstance.setTranslations(translations);
 
         // Use a stream handler to get the report data from the database.
-        StreamHandler handler = new StreamHandler(reportInstance.getXidMap(), reportInstance.getReportStartTime(), 
+        StreamHandler handler = new StreamHandler(host, port, reportInstance.getXidMap(), reportInstance.getReportStartTime(), 
                 reportInstance.getReportEndTime(), IMAGE_WIDTH, createExportFile, translations);
         // Process the report content with the handler.
         if(Common.databaseProxy.getNoSQLProxy() == null)
@@ -539,7 +541,7 @@ public class ReportChartCreator {
         private HashMap<String, PointStatistics> statisticsMap;
 		private HashMap<String, HashMap<String, PointStatistics>> devices;
 
-        public StreamHandler(Map<String, String> xidMapping, long start, long end, int imageWidth, boolean createExportFile, Translations translations) {
+        public StreamHandler(String host, int port, Map<String, String> xidMapping, long start, long end, int imageWidth, boolean createExportFile, Translations translations) {
             pointStatistics = new ArrayList<PointStatistics>();
             pointTimeSeriesCollection = new PointTimeSeriesCollection(timeZone);
 			
@@ -553,7 +555,7 @@ public class ReportChartCreator {
             try {
                 if (createExportFile) {
                     exportFile = File.createTempFile("tempCSV", ".csv");
-                    exportCsvStreamer = new ExportCsvStreamer(new PrintWriter(new FileWriter(exportFile)), translations);
+                    exportCsvStreamer = new ExportCsvStreamer(host, port, new PrintWriter(new FileWriter(exportFile)), translations);
                 }
             }
             catch (IOException e) {

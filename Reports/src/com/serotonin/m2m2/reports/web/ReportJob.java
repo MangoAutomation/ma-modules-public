@@ -23,7 +23,7 @@ import com.serotonin.timer.TimerTrigger;
 public class ReportJob extends TimerTask {
     private static final Map<Integer, ReportJob> JOB_REGISTRY = new HashMap<Integer, ReportJob>();
 
-    public static void scheduleReportJob(ReportVO report) {
+    public static void scheduleReportJob(String host, int port, ReportVO report) {
         synchronized (JOB_REGISTRY) {
             // Ensure that there is no existing job.
             unscheduleReportJob(report);
@@ -41,7 +41,7 @@ public class ReportJob extends TimerTask {
                 else
                     trigger = Common.getCronTrigger(report.getSchedulePeriod(), report.getRunDelayMinutes() * 60);
 
-                ReportJob reportJob = new ReportJob(trigger, report);
+                ReportJob reportJob = new ReportJob(trigger, report, host, port);
                 JOB_REGISTRY.put(report.getId(), reportJob);
                 Common.timer.schedule(reportJob);
             }
@@ -57,14 +57,18 @@ public class ReportJob extends TimerTask {
     }
 
     private final ReportVO report;
+    private final String host;
+    private final int port;
 
-    private ReportJob(TimerTrigger trigger, ReportVO report) {
+    private ReportJob(TimerTrigger trigger, ReportVO report, String host, int port) {
         super(trigger);
         this.report = report;
+        this.host = host;
+        this.port = port;
     }
 
     @Override
     public void run(long runtime) {
-        ReportWorkItem.queueReport(report);
+        ReportWorkItem.queueReport(host, port, report);
     }
 }

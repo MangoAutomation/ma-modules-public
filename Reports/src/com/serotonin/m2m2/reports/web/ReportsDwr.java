@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.directwebremoting.WebContext;
+import org.directwebremoting.WebContextFactory;
 import org.joda.time.DateTime;
 
 import com.serotonin.InvalidArgumentException;
@@ -209,7 +213,18 @@ public class ReportsDwr extends ModuleDwr {
         reportDao.saveReport(report);
 
         // Conditionally schedule the report.
-        ReportJob.scheduleReportJob(report);
+        String host = "";
+        WebContext webContext = WebContextFactory.get();
+        int port;
+        if (webContext != null) {
+        	HttpServletRequest req = webContext.getHttpServletRequest();
+        	host = req.getServerName();
+        	port = req.getLocalPort();
+        }else{
+        	port = Common.envProps.getInt("web.port", 8080);
+        }
+        
+        ReportJob.scheduleReportJob(host, port, report);
 
         // Send back the report id in case this was new.
         response.addData("reportId", report.getId());
@@ -300,7 +315,18 @@ public class ReportsDwr extends ModuleDwr {
             report.setZipData(zipData);
             report.setRecipients(recipients);
 
-            ReportWorkItem.queueReport(report);
+            String host = "";
+            WebContext webContext = WebContextFactory.get();
+            int port;
+            if (webContext != null) {
+            	HttpServletRequest req = webContext.getHttpServletRequest();
+            	host = req.getServerName();
+            	port = req.getLocalPort();
+            }else{
+            	port = Common.envProps.getInt("web.port", 8080);
+            }
+            
+            ReportWorkItem.queueReport(host, port, report);
         }
 
         return response;

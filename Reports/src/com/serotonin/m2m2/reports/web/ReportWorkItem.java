@@ -60,6 +60,14 @@ public class ReportWorkItem implements WorkItem {
     public static final String REPORT_WORK_ITEM_PRIORITY = "reports.REPORT_WORK_ITEM_PRIORITY";
 
     //    private static UsageExpiryChecker USAGE_EXPIRY_CHECKER;
+    
+    public ReportWorkItem(String host, int port){
+    	this.host = host;
+    	this.port = port;
+    }
+    
+    private String host;
+    private int port;
 
     @Override
     public int getPriority() {
@@ -67,7 +75,7 @@ public class ReportWorkItem implements WorkItem {
     	return SystemSettingsDao.getIntValue(REPORT_WORK_ITEM_PRIORITY, WorkItem.PRIORITY_LOW);
     }
 
-    public static void queueReport(ReportVO report) {
+    public static void queueReport(String host, int port, ReportVO report) {
         LOG.debug("Queuing report with id " + report.getId());
 
         // Verify that the user is not disabled.
@@ -76,7 +84,7 @@ public class ReportWorkItem implements WorkItem {
             return;
 
         // User is ok. Continue...
-        ReportWorkItem item = new ReportWorkItem();
+        ReportWorkItem item = new ReportWorkItem(host, port);
 
         // Create the database record in process.
         item.reportConfig = report;
@@ -164,7 +172,7 @@ public class ReportWorkItem implements WorkItem {
 
             // We are creating an email from the result. Create the content.
             final ReportChartCreator creator = new ReportChartCreator(translations, TimeZone.getDefault());
-            creator.createContent(reportInstance, reportDao, inlinePrefix, reportConfig.isIncludeData());
+            creator.createContent(host, port, reportInstance, reportDao, inlinePrefix, reportConfig.isIncludeData());
 
             // Create the to list
             Set<String> addresses = new MailingListDao().getRecipientAddresses(reportConfig.getRecipients(),

@@ -4,12 +4,15 @@
  */
 package com.serotonin.m2m2.reports;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.RuntimeManagerDefinition;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportJob;
@@ -27,9 +30,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
         List<ReportVO> reports = ReportDao.instance.getReports();
         for (ReportVO report : reports) {
             try {
-                ReportJob.scheduleReportJob(report);
+            	String host = InetAddress.getLocalHost().getHostName();
+            	int port = Common.envProps.getInt("web.port", 8080);
+                ReportJob.scheduleReportJob(host, port, report);
             }
-            catch (ShouldNeverHappenException e) {
+            catch (ShouldNeverHappenException | UnknownHostException e) {
                 // Don't stop the startup if there is an error. Just log it.
                 LOG.error("Error starting report " + report.getName(), e);
             }
