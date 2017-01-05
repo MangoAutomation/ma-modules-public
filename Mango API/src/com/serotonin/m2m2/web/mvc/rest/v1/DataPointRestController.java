@@ -267,13 +267,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", xid));
 	            	return result.createResponseEntity();
 	            }else {
-	                //Compare this point to the existing point in DB to ensure
-	                // that we aren't moving a point to a different type of Data Source
-	                DataPointDao dpDao = DataPointDao.instance;
-	                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
-	                
 	                //Does the old point have a different data source?
-	                if(oldPoint != null&&(oldPoint.getDataSourceId() != dsvo.getId())){
+	                if(existingDp.getDataSourceId() != dsvo.getId()){
 	                    vo.setDataSourceId(dsvo.getId());
 	                    vo.setDataSourceName(dsvo.getName());
 	                }
