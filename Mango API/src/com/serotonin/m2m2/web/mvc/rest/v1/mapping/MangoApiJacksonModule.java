@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.mapping;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
@@ -32,7 +33,8 @@ public class MangoApiJacksonModule extends SimpleModule {
 		this.addSerializer(ObjectStream.class, new JsonObjectSerializer());
         this.addSerializer(JsonStream.class, new JsonStreamSerializer());
 		this.addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
-        
+        this.addSerializer(ValueMonitor.class, new ValueMonitorSerializer());
+		
         this.addDeserializer(EmailRecipientModel.class, new EmailRecipientModelDeserializer());
 		this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
 
