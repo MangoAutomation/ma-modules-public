@@ -623,19 +623,19 @@ public class JsonEmportRestController extends MangoRestController{
 		 Map<String, Object> data = new LinkedHashMap<>();
 
 	        if (ArrayUtils.contains(exportElements, EmportDwr.DATA_SOURCES))
-	            data.put(EmportDwr.DATA_SOURCES, new DataSourceDao().getDataSources());
+	            data.put(EmportDwr.DATA_SOURCES, DataSourceDao.instance.getDataSources());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.DATA_POINTS))
-	            data.put(EmportDwr.DATA_POINTS, new DataPointDao().getDataPoints(null, true));
+	            data.put(EmportDwr.DATA_POINTS, DataPointDao.instance.getDataPoints(null, true));
 	        if (ArrayUtils.contains(exportElements, EmportDwr.USERS))
-	            data.put(EmportDwr.USERS, new UserDao().getUsers());
+	            data.put(EmportDwr.USERS, UserDao.instance.getUsers());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.MAILING_LISTS))
-	            data.put(EmportDwr.MAILING_LISTS, new MailingListDao().getMailingLists());
+	            data.put(EmportDwr.MAILING_LISTS, MailingListDao.instance.getMailingLists());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.PUBLISHERS))
 	            data.put(EmportDwr.PUBLISHERS, PublisherDao.instance.getPublishers());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.EVENT_HANDLERS))
 	            data.put(EmportDwr.EVENT_HANDLERS, EventHandlerDao.instance.getEventHandlers());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.POINT_HIERARCHY))
-	            data.put(EmportDwr.POINT_HIERARCHY, new DataPointDao().getPointHierarchy(true).getRoot().getSubfolders());
+	            data.put(EmportDwr.POINT_HIERARCHY, DataPointDao.instance.getPointHierarchy(true).getRoot().getSubfolders());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.SYSTEM_SETTINGS))
 	            data.put(EmportDwr.SYSTEM_SETTINGS, new SystemSettingsDao().getSystemSettingsForExport());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.TEMPLATES))

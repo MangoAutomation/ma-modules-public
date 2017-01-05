@@ -99,7 +99,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
     	final List<Map<String,String>> results = new ArrayList<Map<String,String>>();
 		pr.addData("results", results);
     	
-    	DataPointDao dpd = new DataPointDao();
+    	DataPointDao dpd = DataPointDao.instance;
     	List<DataPointVO> points = dpd.getDataPoints(dsId, null);
     	
     	if(useTerminator) { 

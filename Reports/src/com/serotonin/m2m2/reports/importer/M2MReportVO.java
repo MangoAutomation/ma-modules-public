@@ -631,7 +631,7 @@ public class M2MReportVO implements Serializable{
 		
 		//Find the user from M2M
 		String username = legacyDao.getUsername(userId);
-		User user = new UserDao().getUser(username);
+		User user = UserDao.instance.getUser(username);
 		if(user != null)
 			vo.setUserId(user.getId());
 		else

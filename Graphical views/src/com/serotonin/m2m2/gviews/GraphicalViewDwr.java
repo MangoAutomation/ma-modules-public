@@ -269,7 +269,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         result.put("componentTypes", components);
 
         // Available points
-        List<DataPointVO> allPoints = new DataPointDao().getDataPoints(DataPointExtendedNameComparator.instance, false);
+        List<DataPointVO> allPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
         List<DataPointBean> availablePoints = new ArrayList<DataPointBean>();
         for (DataPointVO dataPoint : allPoints) {
             if (Permissions.hasDataPointReadPermission(user, dataPoint))
@@ -310,7 +310,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         PointComponent pc = (PointComponent) getViewComponent(pointComponentId);
         User user = Common.getUser();
 
-        DataPointVO dp = new DataPointDao().getDataPoint(dataPointId);
+        DataPointVO dp = DataPointDao.instance.getDataPoint(dataPointId);
         if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
             response.addContextualMessage("settingsPointInfo", "validate.required");
 
@@ -627,7 +627,7 @@ public class GraphicalViewDwr extends ModuleDwr {
                 // no op
             }
 
-            DataPointVO dp = new DataPointDao().getDataPoint(dataPointId);
+            DataPointVO dp = DataPointDao.instance.getDataPoint(dataPointId);
 
             if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
                 c.setDataPoint(kvp.getKey(), null);

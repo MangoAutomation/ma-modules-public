@@ -61,10 +61,10 @@ public class ReportsDwr extends ModuleDwr {
 
         response.addData("points", getReadablePoints());
 
-        response.addData("mailingLists", new MailingListDao().getMailingLists());
+        response.addData("mailingLists", MailingListDao.instance.getMailingLists());
 
         if(Permissions.hasAdmin(user)) {
-        	response.addData("users", new UserDao().getUsers());   
+        	response.addData("users", UserDao.instance.getUsers());   
         	response.addData("reports", reportDao.getReports());
         	response.addData("instances", getReportInstances(user));
     	}
@@ -73,7 +73,7 @@ public class ReportsDwr extends ModuleDwr {
         	response.addData("instances", getReportInstances(user));
         	
         	//Filter User's available to Email on User Permissions
-        	List<User> users = new UserDao().getUsers();
+        	List<User> users = UserDao.instance.getUsers();
         	List<User> availableForEmail = new ArrayList<User>();
         	String currentUserPermissions = user.getPermissions();
         	for(User u : users){
@@ -364,7 +364,7 @@ public class ReportsDwr extends ModuleDwr {
             response.addContextualMessage("pastPeriodCount", "reports.validate.periodCountLessThan1");
 
         User user = Common.getUser();
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
         for (ReportPointVO point : points) {
             Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId()));
 
@@ -407,7 +407,7 @@ public class ReportsDwr extends ModuleDwr {
     	else
     		result = ReportDao.instance.getReportInstances(user.getId());
         Translations translations = getTranslations();
-        UserDao userDao = new UserDao();
+        UserDao userDao = UserDao.instance;
         for (ReportInstance i : result){
             i.setTranslations(translations);
             User reportUser = userDao.getUser(i.getUserId());
@@ -432,7 +432,7 @@ public class ReportsDwr extends ModuleDwr {
 
         report.setName(new TranslatableMessage("common.copyPrefix", name).translate(getTranslations()));
         report.setXid(Common.generateXid("REP_"));
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
         for (int id : dataPointIds) {
             DataPointVO dp = dataPointDao.getDataPoint(id);
             if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))

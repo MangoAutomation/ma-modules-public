@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.internal;
 
+import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.DoubleMonitor;
 import com.infiniteautomation.mango.monitor.IntegerMonitor;
 import com.infiniteautomation.mango.monitor.LongMonitor;
@@ -26,6 +27,21 @@ public class InternalDataSourceRT extends PollingDataSource {
         setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
     }
 
+
+    @Override
+    public void beginPolling() {
+    	//Ensure have all our points loaded
+    	this.updateChangedPoints(Common.timer.currentTimeMillis());
+    	//Refresh our Monitored Values
+    	for (DataPointRT dataPoint : dataPoints) {
+            InternalPointLocatorRT locator = dataPoint.getPointLocator();
+            ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
+            if(m != null)
+            	m.reset();
+    	}
+    	super.beginPolling();
+    }
+    
     @Override
     public void doPoll(long time) {
         for (DataPointRT dataPoint : dataPoints) {
@@ -38,6 +54,8 @@ public class InternalDataSourceRT extends PollingDataSource {
             		dataPoint.updatePointValue(new PointValueTime((double) ((LongMonitor)m).getValue(), time));
             	else if(m instanceof DoubleMonitor)
             		dataPoint.updatePointValue(new PointValueTime((double) ((DoubleMonitor)m).getValue(), time));
+            	else if(m instanceof AtomicIntegerMonitor)
+            		dataPoint.updatePointValue(new PointValueTime((double) ((AtomicIntegerMonitor)m).getValue(), time));
             }
         }
     }

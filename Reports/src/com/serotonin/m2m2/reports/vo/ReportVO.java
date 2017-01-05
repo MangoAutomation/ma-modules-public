@@ -418,7 +418,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     }
     
     public Map<String, String> getXidMapping() {
-    	DataPointDao dpd = new DataPointDao();
+    	DataPointDao dpd = DataPointDao.instance;
     	Map<String, String> ans = new HashMap<String, String>();
     	for(ReportPointVO vo : points) {
     		//Check to see if point exists
@@ -431,7 +431,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 
     //Helper for JSP Page
     public String getUsername(){
-    	UserDao userDao = new UserDao();
+    	UserDao userDao = UserDao.instance;
     	User reportUser = userDao.getUser(this.userId);
         if(reportUser != null)
         	return reportUser.getUsername();
@@ -583,7 +583,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
         if (pastPeriodCount < 1)
             response.addContextualMessage("pastPeriodCount", "reports.validate.periodCountLessThan1");
         
-        UserDao dao = new UserDao();
+        UserDao dao = UserDao.instance;
         User user = dao.getUser(userId);
         if(user == null){
             response.addContextualMessage("userId", "reports.validate.userDNE");
@@ -593,7 +593,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
         if(!t.isFile())
         	response.addContextualMessage("template", "reports.validate.template");
         
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
         for (ReportPointVO point : points) {
         	DataPointVO vo  = dataPointDao.getDataPoint(point.getPointId());
         	String pointXid = "unknown";
@@ -647,7 +647,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			String username = jsonObject.getString("user");
 	        if (org.apache.commons.lang3.StringUtils.isBlank(username))
 	            throw new TranslatableJsonException("emport.error.missingValue", "user");
-	        User user = new UserDao().getUser(username);
+	        User user = UserDao.instance.getUser(username);
 	        if (user == null)
 	            throw new TranslatableJsonException("emport.error.missingUser", username);
 	        userId = user.getId();
@@ -803,7 +803,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			JsonException {
 		super.jsonWrite(writer);
 		
-		writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
+		writer.writeEntry("user", UserDao.instance.getUser(userId).getUsername());
 		writer.writeEntry("includeEvents", EVENT_CODES.getCode(includeEvents));
 		writer.writeEntry("dateRangeType", DATE_RANGE_TYPES.getCode(dateRangeType));
 		

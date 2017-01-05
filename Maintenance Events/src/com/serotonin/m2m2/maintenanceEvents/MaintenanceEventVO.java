@@ -470,7 +470,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         String text = jsonObject.getString("dataSourceXid");
         if (text != null) {
-            DataSourceVO<?> ds = new DataSourceDao().getDataSource(text);
+            DataSourceVO<?> ds = DataSourceDao.instance.getDataSource(text);
             if (ds == null)
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "dataSourceXid", text);
             dataSourceId = ds.getId();

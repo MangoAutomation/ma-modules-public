@@ -10,15 +10,33 @@ import java.util.List;
 
 import org.springframework.jdbc.core.RowMapper;
 
+import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
+import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.BaseDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
 
 /**
  * @author Matthew Lohbihler
  */
-public class PointLinkDao extends BaseDao {
+public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
+	
+	//If you change this the Internal Metrics DS Should be updated
+	public static final String COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
+	
+	public static final PointLinkDao instance = new PointLinkDao();
+	
+    //Monitor for count of table
+    protected final AtomicIntegerMonitor countMonitor;
+	
+	private PointLinkDao(){
+		this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.POINT_LINK_COUNT"), this);
+        this.countMonitor.setValue(this.count());
+    	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
+	}
+	
     public String generateUniqueXid() {
         return generateUniqueXid(PointLinkVO.XID_PREFIX, "pointLinks");
     }
@@ -27,6 +45,12 @@ public class PointLinkDao extends BaseDao {
         return isXidUnique(xid, excludeId, "pointLinks");
     }
 
+    private static final String POINT_LINK_COUNT = "SELECT COUNT(DISTINCT id) FROM pointLinks";
+
+    public int count(){
+    	return ejt.queryForInt(POINT_LINK_COUNT, new Object[0], 0);
+    }
+    
     private static final String POINT_LINK_SELECT = "select id, xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission from pointLinks ";
 
     public List<PointLinkVO> getPointLinks() {
@@ -89,6 +113,7 @@ public class PointLinkDao extends BaseDao {
                 pl.getScriptPermissions().getDataPointReadPermissions()});
         pl.setId(id);
         AuditEventType.raiseAddedEvent(AuditEvent.TYPE_NAME, pl);
+        this.countMonitor.increment();
     }
 
     private static final String POINT_LINK_UPDATE = //
@@ -115,6 +140,16 @@ public class PointLinkDao extends BaseDao {
         if (pl != null) {
             ejt.update("delete from pointLinks where id=?", new Object[] { pointLinkId });
             AuditEventType.raiseDeletedEvent(AuditEvent.TYPE_NAME, pl);
+            this.countMonitor.decrement();
         }
     }
+
+	/* (non-Javadoc)
+	 * @see com.infiniteautomation.mango.monitor.ValueMonitorOwner#reset(java.lang.String)
+	 */
+	@Override
+	public void reset(String monitorId) {
+		//We only have one monitor so:
+		this.countMonitor.setValue(this.count());
+	}
 }

@@ -128,7 +128,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
             if (test.changeAddress(deviceIndex, address, result)) {
                 //if address was changed, then change existing datapoints enabled disabled
                 final DataSourceVO<?> ds = Common.getUser().getEditDataSource();
-                List<DataPointVO> dpVos = new DataPointDao().getDataPoints(ds.getId(), null);
+                List<DataPointVO> dpVos = DataPointDao.instance.getDataPoints(ds.getId(), null);
                 for (DataPointVO dpVo : dpVos) {
                     final MBusPointLocatorVO pl = dpVo.getPointLocator();
                     if (pl.getAddress() == oldAddress) {

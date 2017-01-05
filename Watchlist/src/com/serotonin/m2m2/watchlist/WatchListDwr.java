@@ -47,7 +47,7 @@ public class WatchListDwr extends ModuleDwr {
 	
     @DwrPermission(user = true)
     public Map<String, Object> init() {
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
         Map<String, Object> data = new HashMap<>();
 
         PointHierarchy ph = dataPointDao.getPointHierarchy(true).copyFoldersOnly();
@@ -177,7 +177,7 @@ public class WatchListDwr extends ModuleDwr {
     public WatchListState addToWatchList(int pointId) {
         HttpServletRequest request = WebContextFactory.get().getHttpServletRequest();
         User user = Common.getUser();
-        DataPointVO point = new DataPointDao().getDataPoint(pointId);
+        DataPointVO point = DataPointDao.instance.getDataPoint(pointId);
         if (point == null)
             return null;
         WatchListVO watchList = getWatchList(user);

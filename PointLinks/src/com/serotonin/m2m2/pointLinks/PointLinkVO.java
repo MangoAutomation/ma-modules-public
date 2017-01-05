@@ -163,7 +163,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     //
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
 
         writer.writeEntry("xid", xid);
 
@@ -182,7 +182,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
 
         String xid = jsonObject.getString("sourcePointId");
         if (xid != null) {

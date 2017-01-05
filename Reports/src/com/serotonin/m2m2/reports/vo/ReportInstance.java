@@ -57,7 +57,7 @@ public class ReportInstance {
         includeEvents = template.getIncludeEvents();
         includeUserComments = template.isIncludeUserComments();
 
-        UserDao userDao = new UserDao();
+        UserDao userDao = UserDao.instance;
         User reportUser = userDao.getUser(userId);
         if(reportUser != null)
         	username = reportUser.getUsername();

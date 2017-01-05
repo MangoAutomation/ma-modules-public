@@ -28,6 +28,7 @@ import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLQueryCallback;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportUserComment;
@@ -67,7 +68,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
 	public static final ReportDao instance = new ReportDao();
 	
 	private ReportDao(){
-		super(ReportWebSocketConfiguration.reportHandler, ReportAuditEvent.TYPE_NAME);
+		super(ReportWebSocketConfiguration.reportHandler, ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
 	}
 	
     //
@@ -126,6 +127,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
         report.setId(doInsert(REPORT_INSERT,
                 new Object[] { report.getXid(), report.getUserId(), report.getName(), SerializationHelper.writeObject(report) },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB }));
+        this.countMonitor.increment();
     }
 
     private static final String REPORT_UPDATE = "update reports set xid=?, userId=?, name=?, data=? where id=?";
@@ -139,6 +141,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
     public void deleteReport(int reportId) {
         ejt.update("delete from reports where id=?", new Object[] { reportId });
+        this.countMonitor.decrement();
     }
 
     //

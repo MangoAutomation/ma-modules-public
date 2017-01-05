@@ -23,7 +23,7 @@ public class ScheduledEventsDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public List<ScheduledEventVO> getScheduledEvents() {
         Permissions.ensureDataSourcePermission(Common.getUser());
-        return new ScheduledEventDao().getScheduledEvents();
+        return ScheduledEventDao.instance.getScheduledEvents();
     }
 
     @DwrPermission(user = true)
@@ -33,14 +33,14 @@ public class ScheduledEventsDwr extends ModuleDwr {
         if (id == Common.NEW_ID) {
             DateTime dt = new DateTime();
             ScheduledEventVO se = new ScheduledEventVO();
-            se.setXid(new ScheduledEventDao().generateUniqueXid());
+            se.setXid(ScheduledEventDao.instance.generateUniqueXid());
             se.setActiveYear(dt.getYear());
             se.setInactiveYear(dt.getYear());
             se.setActiveMonth(dt.getMonthOfYear());
             se.setInactiveMonth(dt.getMonthOfYear());
             return se;
         }
-        return new ScheduledEventDao().getScheduledEvent(id);
+        return ScheduledEventDao.instance.getScheduledEvent(id);
     }
 
     @DwrPermission(user = true)
@@ -75,7 +75,7 @@ public class ScheduledEventsDwr extends ModuleDwr {
         se.setInactiveCron(inactiveCron);
 
         ProcessResult response = new ProcessResult();
-        ScheduledEventDao scheduledEventDao = new ScheduledEventDao();
+        ScheduledEventDao scheduledEventDao = ScheduledEventDao.instance;
 
         if (StringUtils.isBlank(xid))
             response.addContextualMessage("xid", "validate.required");

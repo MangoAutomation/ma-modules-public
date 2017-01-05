@@ -46,7 +46,7 @@ public class PointLinksDwr extends ModuleDwr {
         Map<String, Object> data = new HashMap<String, Object>();
 
         // Get the points that this user can access.
-        List<DataPointVO> allPoints = new DataPointDao().getDataPoints(DataPointExtendedNameComparator.instance, false);
+        List<DataPointVO> allPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
         List<IntStringPair> sourcePoints = new ArrayList<IntStringPair>();
         List<IntStringPair> targetPoints = new ArrayList<IntStringPair>();
         for (DataPointVO point : allPoints) {
@@ -61,7 +61,7 @@ public class PointLinksDwr extends ModuleDwr {
 
         // Get the existing point links.
         List<PointLinkVO> pointLinks = new ArrayList<PointLinkVO>();
-        for (PointLinkVO pointLink : new PointLinkDao().getPointLinks()) {
+        for (PointLinkVO pointLink : PointLinkDao.instance.getPointLinks()) {
             if (containsPoint(sourcePoints, pointLink.getSourcePointId())
                     && containsPoint(targetPoints, pointLink.getTargetPointId()))
                 pointLinks.add(pointLink);
@@ -83,7 +83,7 @@ public class PointLinksDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public PointLinkVO getPointLink(int id) {
         PointLinkVO vo;
-        PointLinkDao pointLinkDao = new PointLinkDao();
+        PointLinkDao pointLinkDao = PointLinkDao.instance;
         if (id == Common.NEW_ID) {
             vo = new PointLinkVO();
             vo.setXid(pointLinkDao.generateUniqueXid());
@@ -110,7 +110,7 @@ public class PointLinksDwr extends ModuleDwr {
         vo.setLogLevel(logLevel);
 
         ProcessResult response = new ProcessResult();
-        PointLinkDao pointLinkDao = new PointLinkDao();
+        PointLinkDao pointLinkDao = PointLinkDao.instance;
 
         if (StringUtils.isBlank(xid))
             response.addContextualMessage("xid", "validate.required");

@@ -28,7 +28,7 @@ public class Upgrade2 extends DBUpgrade {
     			"update reportInstancePoints set xid='legacyReport';"});
     	
     	ReportDao dao = ReportDao.instance;
-    	UserDao ud = new UserDao();
+    	UserDao ud = UserDao.instance;
     	List<ReportVO> reports = dao.getReports();
     	List<ReportInstance> reportInstances;
     	List<User> users = ud.getUsers();

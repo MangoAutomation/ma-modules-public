@@ -71,7 +71,7 @@ public class WatchListHandler implements UrlHandler {
 
         String wlxid = request.getParameter("wlxid");
 
-        UserDao userDao = new UserDao();
+        UserDao userDao = UserDao.instance;
         boolean found = false;
         List<Map<String,String>> watchListsData = new ArrayList<Map<String,String>>(watchLists.size());
         List<IntStringPair> watchListUsers = new ArrayList<>(watchLists.size());

@@ -20,7 +20,7 @@ public class ScheduledEventEmportDefinition extends EmportDefinition {
     @Override
     public void postInitialize() {
         super.postInitialize();
-        scheduledEventDao = new ScheduledEventDao();
+        scheduledEventDao = ScheduledEventDao.instance;
     }
 
     @Override

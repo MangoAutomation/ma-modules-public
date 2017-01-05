@@ -50,7 +50,7 @@ public class JspView {
                 return dp;
         }
 
-        DataPointVO dp = new DataPointDao().getDataPoint(xid);
+        DataPointVO dp = DataPointDao.instance.getDataPoint(xid);
         if (dp != null) {
             // Check permissions.
             Permissions.ensureDataPointSetPermission(authorityUser, dp);

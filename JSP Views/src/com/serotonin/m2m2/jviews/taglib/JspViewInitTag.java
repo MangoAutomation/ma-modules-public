@@ -28,7 +28,7 @@ public class JspViewInitTag extends TagSupport {
     @Override
     public int doStartTag() throws JspException {
         // Check the user id.
-        User user = new UserDao().getUser(username);
+        User user = UserDao.instance.getUser(username);
         if (user == null)
             throw new JspException("Username '" + username + "' not found");
         if (user.isDisabled())

@@ -42,7 +42,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         response.addData("events", events);
 
         List<IntStringPair> dataSources = new ArrayList<IntStringPair>();
-        for (DataSourceVO<?> ds : new DataSourceDao().getDataSources())
+        for (DataSourceVO<?> ds : DataSourceDao.instance.getDataSources())
             dataSources.add(new IntStringPair(ds.getId(), ds.getName()));
         response.addData("dataSources", dataSources);
 

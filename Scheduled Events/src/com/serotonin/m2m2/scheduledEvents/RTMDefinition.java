@@ -25,7 +25,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        ScheduledEventDao scheduledEventDao = new ScheduledEventDao();
+        ScheduledEventDao scheduledEventDao = ScheduledEventDao.instance;
         for (ScheduledEventVO se : scheduledEventDao.getScheduledEvents()) {
             if (!se.isDisabled()) {
                 if (safe) {
@@ -48,7 +48,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
         // If the scheduled event is running, stop it.
         stopScheduledEvent(vo.getId());
 
-        new ScheduledEventDao().saveScheduledEvent(vo);
+        ScheduledEventDao.instance.saveScheduledEvent(vo);
 
         // If the scheduled event is enabled, start it.
         if (!vo.isDisabled())
@@ -57,7 +57,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     public void deleteScheduledEvent(int id) {
         stopScheduledEvent(id);
-        new ScheduledEventDao().deleteScheduledEvent(id);
+        ScheduledEventDao.instance.deleteScheduledEvent(id);
     }
 
     private void startScheduledEvent(ScheduledEventVO vo) {

@@ -12,21 +12,44 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
+import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.BaseDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 
 /**
  * @author Matthew Lohbihler
  * 
  */
-public class ScheduledEventDao extends BaseDao {
+public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
+	
+	//If you change this the Internal Metrics DS Should be updated
+	public static final String COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
+	public static final ScheduledEventDao instance = new ScheduledEventDao();
+	
+    //Monitor for count of table
+    protected final AtomicIntegerMonitor countMonitor;
+    
+	private ScheduledEventDao(){
+		this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.SCHEDULED_EVENT_COUNT"), this);
+        this.countMonitor.setValue(this.count());
+    	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
+	};
+	
     private static final String SCHEDULED_EVENT_SELECT = "select id, xid, alias, alarmLevel, scheduleType, "
             + "  returnToNormal, disabled, activeYear, activeMonth, activeDay, activeHour, activeMinute, activeSecond, "
             + "  activeCron, inactiveYear, inactiveMonth, inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, "
             + "inactiveCron from scheduledEvents ";
 
+    private static final String SCHEDULED_EVENT_COUNT = "SELECT COUNT(DISTINCT id) FROM scheduledEvents";
+    
+    public int count(){
+    	return ejt.queryForInt(SCHEDULED_EVENT_COUNT, new Object[0], 0);
+    }
+    
     public String generateUniqueXid() {
         return generateUniqueXid(ScheduledEventVO.XID_PREFIX, "scheduledEvents");
     }
@@ -101,6 +124,7 @@ public class ScheduledEventDao extends BaseDao {
                         se.getInactiveDay(), se.getInactiveHour(), se.getInactiveMinute(), se.getInactiveSecond(),
                         se.getInactiveCron() }));
         AuditEventType.raiseAddedEvent(AuditEvent.TYPE_NAME, se);
+        this.countMonitor.increment();
     }
 
     private void updateScheduledEvent(ScheduledEventVO se) {
@@ -134,6 +158,16 @@ public class ScheduledEventDao extends BaseDao {
             });
 
             AuditEventType.raiseDeletedEvent(AuditEvent.TYPE_NAME, se);
+            this.countMonitor.decrement();
         }
     }
+    
+	/* (non-Javadoc)
+	 * @see com.infiniteautomation.mango.monitor.ValueMonitorOwner#reset(java.lang.String)
+	 */
+	@Override
+	public void reset(String monitorId) {
+		//We only have one monitor so:
+		this.countMonitor.setValue(this.count());
+	}
 }

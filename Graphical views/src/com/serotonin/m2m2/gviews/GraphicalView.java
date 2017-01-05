@@ -155,7 +155,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
      * components that render them
      */
     public void validateViewComponents(boolean makeReadOnly) {
-        User owner = new UserDao().getUser(userId);
+        User owner = UserDao.instance.getUser(userId);
         for (ViewComponent viewComponent : viewComponents)
             viewComponent.validateDataPoint(owner, makeReadOnly);
     }
@@ -378,7 +378,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
 
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        writer.writeEntry("user", new UserDao().getUser(userId).getUsername());
+        writer.writeEntry("user", UserDao.instance.getUser(userId).getUsername());
         writer.writeEntry("anonymousAccess", ShareUser.ACCESS_CODES.getCode(anonymousAccess));
         writer.writeEntry("viewComponents", viewComponents);
     }
@@ -389,7 +389,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
             String username = jsonObject.getString("user");
             if (StringUtils.isBlank(username))
                 throw new TranslatableJsonException("emport.error.missingValue", "user");
-            User user = new UserDao().getUser(username);
+            User user = UserDao.instance.getUser(username);
             if (user == null)
                 throw new TranslatableJsonException("emport.error.missingUser", username);
             userId = user.getId();

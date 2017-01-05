@@ -501,7 +501,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	if(result.isOk()){
 
 	        List<PermissionDetails> ds = new ArrayList<>();
-	        for (User user : new UserDao().getActiveUsers()){
+	        for (User user : UserDao.instance.getActiveUsers()){
 	        	PermissionDetails deets = Permissions.getPermissionDetails(currentUser, null, user);
 	        	if(deets != null)
 	        		ds.add(deets);
@@ -534,7 +534,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	if(result.isOk()){
 
 	        List<PermissionDetails> ds = new ArrayList<>();
-	        for (User user : new UserDao().getActiveUsers()){
+	        for (User user : UserDao.instance.getActiveUsers()){
 	        	PermissionDetails deets = Permissions.getPermissionDetails(currentUser, query, user);
 	        	if(deets != null)
 	        		ds.add(deets);
@@ -566,7 +566,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
             Set<String> groups = new TreeSet<>();
 
-            for (User user : new UserDao().getActiveUsers())
+            for (User user : UserDao.instance.getActiveUsers())
                 groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
             
     		return result.createResponseEntity(groups);
@@ -598,7 +598,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
             Set<String> groups = new TreeSet<>();
 
-            for (User user : new UserDao().getActiveUsers())
+            for (User user : UserDao.instance.getActiveUsers())
                 groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
 
             if (!StringUtils.isEmpty(exclude)) {

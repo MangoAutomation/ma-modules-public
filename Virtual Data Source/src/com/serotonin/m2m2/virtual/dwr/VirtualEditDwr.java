@@ -53,7 +53,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
     @DwrPermission(admin = true)
     public void createTestSource(){
 		VirtualDataSourceVO ds = new VirtualDataSourceVO();
-		DataSourceDao dsDao = new DataSourceDao();
+		DataSourceDao dsDao = DataSourceDao.instance;
 		
 		DataSourceDefinition def = ModuleRegistry.getDataSourceDefinition("VIRTUAL");
         ds = (VirtualDataSourceVO) def.baseCreateDataSourceVO();
@@ -72,7 +72,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 			throw new RuntimeException("Invalid data!");
 		
 		
-		DataPointDao dpDao = new DataPointDao();
+		DataPointDao dpDao = DataPointDao.instance;
 		//Create Test Points
 		for(int i=0; i<10; i++){
 			VirtualPointLocatorVO pointLocator = ds.createPointLocator();

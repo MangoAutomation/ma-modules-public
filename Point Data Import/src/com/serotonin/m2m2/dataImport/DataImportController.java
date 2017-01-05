@@ -96,7 +96,7 @@ public class DataImportController extends FileUploadController {
      */
     private void importCsv(CSVReader csvReader, Map<String, Object> model, Translations translations, List<String> errorMessages) throws IOException, TranslatableException {
     	
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         
         int rowErrors = 0;

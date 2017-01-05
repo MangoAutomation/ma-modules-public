@@ -74,7 +74,7 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
     	final List<Map<String,Object>> results = new ArrayList<Map<String,Object>>();
 		pr.addData("results", results);
     	
-    	DataPointDao dpd = new DataPointDao();
+    	DataPointDao dpd = DataPointDao.instance;
     	List<DataPointVO> points = dpd.getDataPoints(dsId, null);
 
     	

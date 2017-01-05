@@ -269,7 +269,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	            }else {
 	                //Compare this point to the existing point in DB to ensure
 	                // that we aren't moving a point to a different type of Data Source
-	                DataPointDao dpDao = new DataPointDao();
+	                DataPointDao dpDao = DataPointDao.instance;
 	                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
 	                
 	                //Does the old point have a different data source?

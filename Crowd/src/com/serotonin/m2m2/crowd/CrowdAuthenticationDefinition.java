@@ -35,7 +35,7 @@ public class CrowdAuthenticationDefinition extends AuthenticationDefinition {
                 ValidationUtils.reject(errors, "crowd.license");
 
             // The user is logged into Crowd. Make sure the username is valid in this instance.
-            User user = new UserDao().getUser(username);
+            User user = UserDao.instance.getUser(username);
             if (user == null)
                 ValidationUtils.rejectValue(errors, "username", "login.validation.noSuchUser");
             else {

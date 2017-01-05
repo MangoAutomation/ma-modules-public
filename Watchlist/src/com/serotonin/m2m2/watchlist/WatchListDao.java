@@ -36,6 +36,7 @@ import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -55,7 +56,9 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	private WatchListDao() {
 		super(ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME),
 				AuditEvent.TYPE_NAME, "w",
-		        new String[] {"u.username"} //to allow filtering on username
+		        new String[] {"u.username"}, //to allow filtering on username
+		        false,
+		        new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
 		        );
 		mapper = new ObjectMapper();
 	}
@@ -104,7 +107,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
                 "SELECT dataPointId FROM watchListPoints WHERE watchListId=? ORDER BY sortOrder",
                 new Object[] { watchList.getId() }, Integer.class);
         List<DataPointVO> points = watchList.getPointList();
-        DataPointDao dataPointDao = new DataPointDao();
+        DataPointDao dataPointDao = DataPointDao.instance;
         for (Integer pointId : pointIds)
             points.add(dataPointDao.getDataPoint(pointId));
     }
@@ -138,6 +141,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         wl.setId(ejt.doInsert(
                 "INSERT INTO watchLists (xid, userId, name, readPermission, editPermission, type) VALUES (?,?,?,?,?, 'static')",
                 new Object[] { wl.getXid(), userId, wl.getName(), wl.getReadPermission(), wl.getEditPermission() }));
+        this.countMonitor.increment();
         return wl;
     }
 
@@ -147,13 +151,14 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             @SuppressWarnings("synthetic-access")
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                if (wl.getId() == Common.NEW_ID)
+                if (wl.getId() == Common.NEW_ID){
                     wl.setId(ejt.doInsert(
                             "INSERT INTO watchLists (xid, name, userId, readPermission, editPermission, type) " //
                                     + "values (?,?,?,?,?, 'static')",
                             new Object[] { wl.getXid(), wl.getName(), wl.getUserId(), wl.getReadPermission(),
                                     wl.getEditPermission() }));
-                else
+                    countMonitor.increment();
+                }else
                     ejt2.update("UPDATE watchLists SET xid=?, name=?, readPermission=?, editPermission=? WHERE id=?",
                             new Object[] { wl.getXid(), wl.getName(), wl.getReadPermission(), wl.getEditPermission(),
                                     wl.getId() });
@@ -183,6 +188,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
                 ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { watchListId });
                 ejt2.update("DELETE FROM selectedWatchList WHERE watchListId=?", new Object[] { watchListId });
                 ejt2.update("DELETE FROM watchLists WHERE id=?", new Object[] { watchListId });
+                countMonitor.decrement();
             }
         });
     }
