@@ -11,6 +11,7 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 public class MaintenanceEventType extends EventType {
     public static final String TYPE_NAME = "MAINTENANCE";
@@ -99,4 +100,12 @@ public class MaintenanceEventType extends EventType {
         super.jsonWrite(writer);
         writer.writeEntry("XID", new MaintenanceEventDao().getMaintenanceEvent(maintenanceId).getXid());
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
+	 */
+	@Override
+	public EventTypeModel asModel() {
+		return new MaintenanceEventTypeModel(this);
+	}
 }
