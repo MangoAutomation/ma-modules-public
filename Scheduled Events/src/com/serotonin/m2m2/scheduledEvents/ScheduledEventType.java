@@ -12,6 +12,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 /**
  * @author Matthew Lohbihler
@@ -31,6 +32,11 @@ public class ScheduledEventType extends EventType {
         this.scheduleId = scheduleId;
     }
 
+    public ScheduledEventType(int scheduleId, int duplicateHandling) {
+        this.scheduleId = scheduleId;
+        this.duplicateHandling = duplicateHandling;
+    }
+    
     @Override
     public String getEventType() {
         return TYPE_NAME;
@@ -109,4 +115,12 @@ public class ScheduledEventType extends EventType {
         super.jsonWrite(writer);
         writer.writeEntry("XID", ScheduledEventDao.instance.getScheduledEvent(scheduleId).getXid());
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
+	 */
+	@Override
+	public EventTypeModel asModel() {
+		return new ScheduledEventTypeModel(this);
+	}
 }

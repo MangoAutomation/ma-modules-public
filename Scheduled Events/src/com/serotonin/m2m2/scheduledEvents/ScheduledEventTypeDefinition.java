@@ -12,6 +12,7 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 import com.serotonin.web.taglib.Functions;
 
 public class ScheduledEventTypeDefinition extends EventTypeDefinition {
@@ -73,4 +74,12 @@ public class ScheduledEventTypeDefinition extends EventTypeDefinition {
     public TranslatableMessage getSourceDisabledMessage() {
         return null;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.EventTypeDefinition#getModelClass()
+	 */
+	@Override
+	public Class<? extends EventTypeModel> getModelClass() {
+		return ScheduledEventTypeModel.class;
+	}
 }
