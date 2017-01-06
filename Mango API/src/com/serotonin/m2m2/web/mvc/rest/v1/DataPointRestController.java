@@ -26,6 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -356,7 +357,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-	            Common.runtimeManager.saveDataPoint(vo);
+	        	try {
+	        		Common.runtimeManager.saveDataPoint(vo);
+	        	} catch(LicenseViolatedException e) {
+	        		result.addRestMessage(HttpStatus.METHOD_NOT_ALLOWED, e.getErrorMessage());
+	        	}
 	        }
 	        
 	        //Put a link to the updated data in the header?
