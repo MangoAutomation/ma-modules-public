@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<licenseTypes>
+	<licenseType id="paid" status="deprecated">
+		<description>No restrictions.</description>
+		<features>
+			<usageLimit>unlimited</usageLimit>
+		<price>0</price>
+	</licenseType>
+	
+	<licenseType id="unlicensed" status="normal">
+		<description>This module is unlicensed and will not work.</description>
+		<features>
+			<usageLimit>0</usageLimit>
+		</features>
+		<price>0</price>
+	</licenseType>
+	
+	<licenseType id="included" status="normal">
+		<description>This module is included with your Core license.</description>
+		<features>
+			<usageLimit>unlimited</usageLimit>
+		</features>
+		<price>0</price>
+		<price fromType="paid">0</price>
+	</licenseType>
+	
+	<coreType id="free">
+		<ref id="included"/>
+	</coreType>
+	
+	<coreType id="Free">
+		<ref id="included"/>
+	</coreType>
+	
+	<coreType id="paid">
+		<ref id="included"/>
+	</coreType>
+	
+	<coreType id="MangoES">
+		<ref id="included"/>
+	</coreType>
+	
+	<coreType id="Gateway">
+		<ref id="unlicensed"/>
+	</coreType>
+	
+	<coreType id="Commercial">
+		<ref id="included"/>
+	</coreType>
+	
+	<coreType id="Enterprise">
+		<ref id="included"/>
+	</coreType>
+	
+	<coreType id="brewersdashboard">
+		<ref id="included"/>
+	</coreType>
+</licenseTypes>
