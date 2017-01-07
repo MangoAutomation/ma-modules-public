@@ -93,11 +93,12 @@ public class InternalMenuItem extends MenuItemDefinition {
 
     //Module Monitor IDs
     public static final String POINT_LINK_COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
-    //public static final String METADATA_POINT_COUNT_MONITOR_ID = "com.serotonin.m2m2.meta.PointLinkDao.COUNT";
-    //public static final String SCRIPT_DATASOURCE_COUNT_MONITOR_ID = "";
     public static final String WATCHLIST_COUNT_MONITOR_ID = "com.serotonin.m2m2.watchlist.WatchistDao.COUNT";
     public static final String SCHEDULED_EVENTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
     public static final String REPORTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportDao.COUNT";
+    public static final String REPORT_INSTANCES_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportInstanceDao.COUNT";
+    public static final String EXCEL_REPORTS_COUNT_MONITOR_ID = "com.infiniteautomation.mango.excelreports.dao.ExcelReportDao.COUNT";
+    public static final String EXCEL_REPORT_TEMPLATES_COUNT_MONITOR_ID = "com.infiniteautomation.mango.excelreports.dao.ExcelReportTemplateDao.COUNT";
     
     //Datasource Defaults
     public static final String SYSTEM_DATASOURCE_XID = "internal_mango_monitoring_ds";
@@ -113,13 +114,14 @@ public class InternalMenuItem extends MenuItemDefinition {
     public static final String POINT_LINK_COUNT_POINT_XID = "internal_mango_num_point_links";
     public static final String AVAILABLE_UPDATES_COUNT_POINT_XID = "internal_mango_num_updates_available";
     public static final String ACTIVE_USER_SESSION_COUNT_POINT_XID = "internal_mango_num_active_user_sessions";
-    //public static final String METADATA_POINT_COUNT_POINT_XID = "internal_mango_num_metadata_points";
-    //public static final String SCRIPT_DATASOURCE_COUNT_POINT_XID = "internal_mango_num_script_data_sources";
+    public static final String SYSTEM_UPTIME_POINT_XID = "internal_mango_uptime_hrs";
     public static final String WATCHLIST_COUNT_POINT_XID = "internal_mango_num_watchlists";
     public static final String SCHEDULED_EVENTS_COUNT_POINT_XID = "internal_mango_num_scheduled_events";
     public static final String MAILING_LIST_COUNT_POINT_XID = "internal_mango_num_mailing_lists";
     public static final String REPORTS_COUNT_POINT_XID = "internal_mango_num_reports";
-    public static final String SYSTEM_UPTIME_POINT_XID = "internal_mango_uptime_hrs";
+    public static final String REPORT_INSTANCES_COUNT_POINT_XID = "internal_mango_num_report_instances";
+    public static final String EXCEL_REPORTS_COUNT_POINT_XID = "internal_mango_num_excel_reports";
+    public static final String EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID = "internal_mango_num_excel_report_templates";
     
     /**
      * 
@@ -155,14 +157,17 @@ public class InternalMenuItem extends MenuItemDefinition {
     	//Active User Sessions
     	monitors.put(ACTIVE_USER_SESSION_COUNT_POINT_XID, Common.loginManager.getSessionCountMonitor());
     	
+    	//System Uptime
+    	monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.SYSTEM_UPTIME_MONITOR_ID));
+    	
     	//Get from Modules
     	monitors.put(POINT_LINK_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(POINT_LINK_COUNT_MONITOR_ID));
-    	//TODO ??monitors.put(METADATA_POINT_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(METADATA_POINT_COUNT_MONITOR_ID));
-    	//TODO ??monitors.put(SCRIPT_DATASOURCE_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(SCRIPT_DATASOURCE_COUNT_MONITOR_ID));
     	monitors.put(WATCHLIST_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WATCHLIST_COUNT_MONITOR_ID));
     	monitors.put(SCHEDULED_EVENTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(SCHEDULED_EVENTS_COUNT_MONITOR_ID));
     	monitors.put(REPORTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(REPORTS_COUNT_MONITOR_ID));
-    	monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.SYSTEM_UPTIME_MONITOR_ID));
+    	monitors.put(REPORT_INSTANCES_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(REPORT_INSTANCES_COUNT_MONITOR_ID));
+    	monitors.put(EXCEL_REPORTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(EXCEL_REPORTS_COUNT_MONITOR_ID));
+    	monitors.put(EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(EXCEL_REPORT_TEMPLATES_COUNT_MONITOR_ID));
     	
     	return monitors;
     }

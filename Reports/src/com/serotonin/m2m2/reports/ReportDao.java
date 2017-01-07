@@ -16,6 +16,8 @@ import java.util.Map;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
+import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
 import com.infiniteautomation.mango.web.mvc.rest.v1.reports.ReportWebSocketConfiguration;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
@@ -69,6 +71,9 @@ public class ReportDao extends AbstractDao<ReportVO> {
 	
 	private ReportDao(){
 		super(ReportWebSocketConfiguration.reportHandler, ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
+		this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner);
+		this.instanceCountMonitor.setValue(this.countInstances());
+    	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.instanceCountMonitor);
 	}
 	
     //
@@ -148,6 +153,22 @@ public class ReportDao extends AbstractDao<ReportVO> {
     //
     // Report Instances
     //
+    private final ValueMonitorOwner instanceCountMonitorOwner = new ValueMonitorOwner(){
+
+		@Override
+		public void reset(String monitorId) {
+			instanceCountMonitor.setValue(countInstances());
+		}
+    	
+    };
+    private final AtomicIntegerMonitor instanceCountMonitor;
+    
+    private static final String REPORT_INSTANCE_COUNT = "SELECT COUNT(DISTINCT id) FROM reportInstances";
+    
+    public int countInstances(){
+    	return ejt.queryForInt(REPORT_INSTANCE_COUNT, new Object[0], 0);
+    }
+    
     private static final String REPORT_INSTANCE_SELECT = "select id, userId, reportId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
             + "  runEndTime, recordCount, preventPurge, mapping " + "from reportInstances ";
     
@@ -208,7 +229,8 @@ public class ReportDao extends AbstractDao<ReportVO> {
 			}
         }
         
-        ejt.update("delete from reportInstances where id=? and userId=?", new Object[] { id, userId });
+        int deleted = ejt.update("delete from reportInstances where id=? and userId=?", new Object[] { id, userId });
+        instanceCountMonitor.addValue(-deleted);
 
     }
 
@@ -231,8 +253,11 @@ public class ReportDao extends AbstractDao<ReportVO> {
     			}
     		}
     		
-    		return ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
+    		int deleted =  ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
                     boolToChar(false) });
+    		
+    		instanceCountMonitor.addValue(-deleted);
+    		return deleted;
     	}
     }
 
@@ -272,14 +297,15 @@ public class ReportDao extends AbstractDao<ReportVO> {
             + "where id=?";
 
     public void saveReportInstance(ReportInstance instance) {
-        if (instance.getId() == Common.NEW_ID)
+        if (instance.getId() == Common.NEW_ID){
             instance.setId(doInsert(
                     REPORT_INSTANCE_INSERT,
                     new Object[] { instance.getUserId(), instance.getReportId(), instance.getName(), instance.getTemplateFile(), instance.getIncludeEvents(),
                             boolToChar(instance.isIncludeUserComments()), instance.getReportStartTime(),
                             instance.getReportEndTime(), instance.getRunStartTime(), instance.getRunEndTime(),
                             instance.getRecordCount(), boolToChar(instance.isPreventPurge()), SerializationHelper.writeObject(instance.getXidMap()) }));
-        else
+            instanceCountMonitor.increment();
+        }else
             ejt.update(
                     REPORT_INSTANCE_UPDATE,
                     new Object[] { instance.getReportStartTime(), instance.getReportEndTime(),
