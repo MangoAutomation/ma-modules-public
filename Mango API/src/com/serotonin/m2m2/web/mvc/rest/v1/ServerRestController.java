@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.net.URI;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -29,17 +30,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.maint.work.EmailWorkItem;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
@@ -195,6 +199,32 @@ public class ServerRestController extends MangoRestController{
     	        return result.createResponseEntity(model);
     		}else{
         		result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User not admin"));
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
+	
+	@ApiOperation(value = "Restart Mango", notes="Returns URL for status updates while web interface is still active")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/restart")
+    public ResponseEntity<String> restart(UriComponentsBuilder builder, HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(Permissions.hasAdmin(user)){
+    			ProcessResult r = ModulesDwr.scheduleShutdown();
+    			if(r.getData().get("shutdownUri") != null){
+    				//TODO Make SystemStatus web socket and push out message around shutdown
+    	            URI location = builder.path("/status/mango").buildAndExpand().toUri();
+    		    	result.addRestMessage(getResourceUpdatedMessage(location));
+    	        }
+    	        else {
+    	            result.addRestMessage(HttpStatus.NOT_MODIFIED, new TranslatableMessage("modules.restartAlreadyScheduled"));
+    	        }
+    		}else{
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to restart Mango.");
+    			result.addRestMessage(this.getUnauthorizedMessage());
     		}
     	}
     	
