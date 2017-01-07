@@ -4,14 +4,22 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-
-import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -33,10 +43,16 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.system.DiskInfoModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.system.SystemInfoModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
+import com.serotonin.util.DirectoryInfo;
+import com.serotonin.util.DirectoryUtils;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -65,7 +81,7 @@ public class ServerRestController extends MangoRestController{
 			response=TimezoneModel.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="timezones")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(HttpServletRequest request) {
 		
 		RestProcessResult<PageQueryResultModel<TimezoneModel>> result = new RestProcessResult<PageQueryResultModel<TimezoneModel>>(HttpStatus.OK);
@@ -121,6 +137,68 @@ public class ServerRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 	
-	
+	@ApiOperation(
+			value = "System Info",
+			notes = "Provides disk use, db sizes and point, event counts",
+			response=Map.class
+			)
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/system-info")
+    public ResponseEntity<SystemInfoModel> getDataSizes(HttpServletRequest request) {
+		
+		RestProcessResult<SystemInfoModel> result = new RestProcessResult<SystemInfoModel>(HttpStatus.OK);
+    	
+		User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		if(user.isAdmin()){
+    			SystemInfoModel model = new SystemInfoModel();
+    	        // Database size
+    	        model.setSqlDbSizeBytes(Common.databaseProxy.getDatabaseSizeInBytes());
+
+    	        //Do we have any NoSQL Data
+    	        if (Common.databaseProxy.getNoSQLProxy() != null)
+    	        	model.setNoSqlDbSizeBytes(Common.databaseProxy.getNoSQLProxy().getDatabaseSizeInBytes());
+
+    	        // Filedata data
+    	        DirectoryInfo fileDatainfo = DirectoryUtils.getSize(new File(Common.getFiledataPath()));
+    	        model.setFileDataSizeBytes(fileDatainfo.getSize());
+    	        
+
+    	        // Point history counts.
+    	        model.setTopPoints(DataPointDao.instance.getTopPointHistoryCounts());
+    	        model.setEventCount(EventDao.instance.getEventCount());
+    	        
+    	        //Disk Info
+    	        FileSystem fs = FileSystems.getDefault();
+    	        List<DiskInfoModel> disks = new ArrayList<DiskInfoModel>();
+    	        model.setDisks(disks);
+    	        for(Path root : fs.getRootDirectories()){
+    	        	try {
+						FileStore store = Files.getFileStore(root);
+						DiskInfoModel disk = new DiskInfoModel();
+						disk.setName(root.getRoot().toString());
+						disk.setTotalSpaceBytes(store.getTotalSpace());
+						disk.setUsableSpaceBytes(store.getUsableSpace());
+						disks.add(disk);
+					} catch (IOException e) { }
+    	        }
+
+    	        //CPU Info
+    	        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+    	        model.setLoadAverage(osBean.getSystemLoadAverage());
+    	        
+    	        //OS Info
+    	        model.setArchitecture(osBean.getArch());
+    	        model.setOperatingSystem(osBean.getName());
+    	        model.setOsVersion(osBean.getVersion());
+    	        
+    	        
+    	        return result.createResponseEntity(model);
+    		}else{
+        		result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "User not admin"));
+    		}
+    	}
+    	
+    	return result.createResponseEntity();
+	}
 
 }
