@@ -30,6 +30,7 @@ import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.MenuItemDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.UpgradeCheck;
+import com.serotonin.m2m2.rt.maint.WorkItemMonitor;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
@@ -118,6 +119,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     public static final String SCHEDULED_EVENTS_COUNT_POINT_XID = "internal_mango_num_scheduled_events";
     public static final String MAILING_LIST_COUNT_POINT_XID = "internal_mango_num_mailing_lists";
     public static final String REPORTS_COUNT_POINT_XID = "internal_mango_num_reports";
+    public static final String SYSTEM_UPTIME_POINT_XID = "internal_mango_uptime_hrs";
     
     /**
      * 
@@ -160,7 +162,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     	monitors.put(WATCHLIST_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WATCHLIST_COUNT_MONITOR_ID));
     	monitors.put(SCHEDULED_EVENTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(SCHEDULED_EVENTS_COUNT_MONITOR_ID));
     	monitors.put(REPORTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(REPORTS_COUNT_MONITOR_ID));
-    	
+    	monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.SYSTEM_UPTIME_MONITOR_ID));
     	
     	return monitors;
     }

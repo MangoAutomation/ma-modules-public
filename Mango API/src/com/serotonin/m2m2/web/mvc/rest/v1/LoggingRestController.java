@@ -71,12 +71,10 @@ public class LoggingRestController extends MangoRestController{
 					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
 					"by-filename/ma.log/?methodName=setPointValue\n")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-filename/{filename}")
-    public ResponseEntity<LogQueryArrayStream> getAll(
+    public ResponseEntity<LogQueryArrayStream> query(
     		@PathVariable String filename, 
     		HttpServletRequest request) {
 		RestProcessResult<LogQueryArrayStream> result = new RestProcessResult<LogQueryArrayStream>(HttpStatus.OK);
-
-		
 		
 		this.checkUser(request, result);
     	if(result.isOk()){
