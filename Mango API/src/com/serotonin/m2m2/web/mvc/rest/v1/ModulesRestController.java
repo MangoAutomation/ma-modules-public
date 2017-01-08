@@ -18,12 +18,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AngularJSModuleDefinition;
+import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -32,6 +35,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.AngularJSModuleDefinitionGroupModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpgradeStatusModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -166,4 +170,71 @@ public class ModulesRestController extends MangoRestController{
         return result.createResponseEntity();
 	}
 	
+	@ApiOperation(value = "Get Current Upgrade Task Status", notes = "")
+    @RequestMapping(method = RequestMethod.GET, value = "/upgrade-status",  produces={"application/json"})
+    public ResponseEntity<UpgradeStatusModel> getUpgradeStatus(HttpServletRequest request) {
+		
+		RestProcessResult<UpgradeStatusModel> result = new RestProcessResult<UpgradeStatusModel>(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+		if(result.isOk()){
+    		if(Permissions.hasAdmin(user)){
+				ProcessResult status = ModulesDwr.monitorDownloads();
+				UpgradeStatusModel model = new UpgradeStatusModel();
+				if(status.getHasMessages()){
+					//Not running
+					model.setRunning(false);
+				}else{
+					List<ModuleModel> modules = new ArrayList<ModuleModel>();
+					@SuppressWarnings("unchecked")
+					List<StringStringPair> results = (List<StringStringPair>) status.getData().get("results");
+					for(StringStringPair r : results)
+						modules.add(new ModuleModel(r.getKey(), r.getValue()));
+					model.setResults(modules);
+					model.setFinished((boolean)status.getData().get("finished"));
+					model.setCancelled((boolean)status.getData().get("cancelled"));
+					model.setWillRestart((boolean)status.getData().get("restart"));
+					Object error = status.getData().get("error");
+					if(error != null)
+						model.setError((String)error);
+					model.setStage((String)status.getData().get("stage"));
+				}
+				
+			
+                return result.createResponseEntity(model);
+    		}else{
+    			result.addRestMessage(this.getUnauthorizedMessage());
+    		}
+		}
+		return result.createResponseEntity();
+    }
+	
+	@ApiOperation(
+			value = "Set Marked For Deletion state of Module",
+			notes = "Marking a module for deletion will un-install it upon restart"
+			)
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value="/deletion-state")
+    public ResponseEntity<ModuleModel> markForDeletion(
+    		@ApiParam(value = "Deletion Statue", required = false, defaultValue="false", allowMultiple = false)
+    		@RequestParam(required=true) boolean delete,
+
+    		@ApiParam(value = "Desired Upgrades", required = true)
+    		@RequestBody(required=true)  ModuleModel model, 
+    		HttpServletRequest request) {
+
+		RestProcessResult<ModuleModel> result = new RestProcessResult<ModuleModel>(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	if(user.isAdmin()){
+                Module module = ModuleRegistry.getModule(model.getName());
+                if(module != null){
+                	module.setMarkedForDeletion(delete);
+                }else{
+                	result.addRestMessage(getDoesNotExistMessage());
+                }
+        	}else{
+        		result.addRestMessage(this.getUnauthorizedMessage());	
+        	}
+        }
+        return result.createResponseEntity(model);
+	}
 }
