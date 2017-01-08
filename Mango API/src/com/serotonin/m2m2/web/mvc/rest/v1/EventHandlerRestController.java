@@ -9,6 +9,7 @@ import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -23,11 +24,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
 import com.serotonin.m2m2.db.dao.EventHandlerDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.eventHandler.EventHandlerStreamCallback;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.handlers.AbstractEventHandlerModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -92,12 +97,15 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
     public ResponseEntity<QueryDataPageStream<AbstractEventHandlerVO<?>>> queryRQL(HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<AbstractEventHandlerVO<?>>> result = new RestProcessResult<QueryDataPageStream<AbstractEventHandlerVO<?>>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-    			//TODO Add Event Type Permissions Checking via FilteredQueryStream
 				ASTNode node = this.parseRQLtoAST(request);
-				return result.createResponseEntity(getPageStream(node));
+				EventHandlerStreamCallback callback = new EventHandlerStreamCallback(this, user);
+				FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao> stream = 
+						new FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>(EventHandlerDao.instance, this, node, callback);
+				stream.setupQuery();
+				return result.createResponseEntity(stream);
     		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
@@ -132,8 +140,8 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }
 	
 	        //Check Event Type Permission
-	        if(!Permissions.hasEventTypePermission(user, model.getEventType().getEventTypeInstance())){
-				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "No Event Type Permission"));
+	        if(!hasEventTypePermission(user, model.getEventType())){
+				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", model.getEventType().getTypeName()));
 				return result.createResponseEntity();
 	        }
 	        
@@ -158,6 +166,49 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
         return result.createResponseEntity();
     }
 	
+	@ApiOperation(
+			value = "Save a new event handler",
+			notes = ""
+			)
+	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"})
+    public ResponseEntity<AbstractEventHandlerModel<?>> save(
+    		@RequestBody(required=true) AbstractEventHandlerModel<?> model, 
+    		UriComponentsBuilder builder, HttpServletRequest request) {
+
+		RestProcessResult<AbstractEventHandlerModel<?>> result = new RestProcessResult<AbstractEventHandlerModel<?>>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	
+	        //Check Event Type Permission
+	        if(!hasEventTypePermission(user, model.getEventType())){
+				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", model.getEventType().getEventTypeInstance()));
+				return result.createResponseEntity();
+	        }
+	        
+	        //Set XID if required
+	        if(StringUtils.isEmpty(model.getXid())){
+	        	model.setXid(EventHandlerDao.instance.generateUniqueXid());
+	        }
+	        
+	        if(!model.validate()){
+	        	result.addRestMessage(this.getValidationFailedError());
+	        	return result.createResponseEntity(model); 
+	        }else{
+				AbstractEventHandlerVO<?> vo = model.getData();
+	        	String initiatorId = request.getHeader("initiatorId");
+	        	EventHandlerDao.instance.save(vo, initiatorId);
+	        }
+	        
+	        //Put a link to the updated data in the header?
+	    	URI location = builder.path("/v1/event-handlers/{xid}").buildAndExpand(model.getXid()).toUri();
+	    	
+	    	result.addRestMessage(getResourceCreatedMessage(location));
+	        return result.createResponseEntity(model);
+        }
+        //Not logged in
+        return result.createResponseEntity();
+    }
 	
 	
 	/* (non-Javadoc)
@@ -184,5 +235,21 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			}
 		}
 		return user;
+	}
+	
+	/**
+	 * Does the user have the event type permission for this Event Handler?
+	 * @param user
+	 * @return
+	 */
+	private boolean hasEventTypePermission(User user, EventTypeModel eventType){
+		if(eventType != null){
+			EventType type = eventType.getEventTypeInstance();
+			if(type != null)
+				return Permissions.hasEventTypePermission(user, type);
+			else
+				return true;
+		}else
+			return true;
 	}
 }
