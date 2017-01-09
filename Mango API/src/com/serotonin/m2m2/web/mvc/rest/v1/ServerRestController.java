@@ -147,7 +147,7 @@ public class ServerRestController extends MangoRestController{
 			response=Map.class
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/system-info")
-    public ResponseEntity<SystemInfoModel> getDataSizes(HttpServletRequest request) {
+    public ResponseEntity<SystemInfoModel> getSystemInfo(HttpServletRequest request) {
 		
 		RestProcessResult<SystemInfoModel> result = new RestProcessResult<SystemInfoModel>(HttpStatus.OK);
     	
