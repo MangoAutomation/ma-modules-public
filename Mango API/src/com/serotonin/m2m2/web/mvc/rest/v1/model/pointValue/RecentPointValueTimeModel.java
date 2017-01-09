@@ -18,10 +18,6 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 public class RecentPointValueTimeModel extends PointValueTimeModel implements Comparable<RecentPointValueTimeModel>{
 	
 	boolean cached;
-
-	public RecentPointValueTimeModel(){
-		
-	}
 	
 	public RecentPointValueTimeModel(PointValueTime pvt, boolean cached){
 		super(pvt);

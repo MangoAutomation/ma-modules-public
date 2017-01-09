@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
@@ -96,7 +95,7 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 	
 	@Override
 	public PointValueTime getData(){
-		DataValue dataValue;
+		DataValue dataValue = null;
 		switch(this.type){
 			case ALPHANUMERIC:
 				dataValue = new AlphanumericValue((String) this.value);
@@ -111,8 +110,7 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 				dataValue = new NumericValue(((Number)this.value).doubleValue());
 				break;
 			case IMAGE:
-			default: 
-				throw new ShouldNeverHappenException("Unsupported Data Type: " + this.type);
+				return this.data;
 		}
 		
 		if(this.annotation != null)

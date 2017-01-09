@@ -218,8 +218,7 @@ public class PointValueRestController extends MangoRestController{
 		RecentPointValueTimeModel model;
 		if(useRendered){
 			//Render the values as Strings with the suffix and or units
-			model = new RecentPointValueTimeModel();
-			model.setCached(cached);
+			model = new RecentPointValueTimeModel(pvt, cached);
 			model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
 			model.setValue(Functions.getRenderedText(vo, pvt));
 			model.setTimestamp(pvt.getTime());
@@ -227,8 +226,7 @@ public class PointValueRestController extends MangoRestController{
 				model.setAnnotation(((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
 		}else if(unitConversion){
 			//Convert the numeric value using the unit and rendered unit
-			model = new RecentPointValueTimeModel();
-			model.setCached(cached);
+			model = new RecentPointValueTimeModel(pvt, cached);
 			model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
 			model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue()));
 			model.setTimestamp(pvt.getTime());
