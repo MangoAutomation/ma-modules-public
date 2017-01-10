@@ -4,6 +4,7 @@
 		<description>No restrictions.</description>
 		<features>
 			<usageLimit>unlimited</usageLimit>
+		</features>
 		<price>0</price>
 	</licenseType>
 	
