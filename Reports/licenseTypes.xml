@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <licenseTypes>
 	<licenseType id="paid" status="deprecated">
 		<description>No restrictions.</description>
@@ -17,34 +16,7 @@
 		<price fromType="paid">0</price>
 	</licenseType>
 	
-	<coreType id="free">
-		<ref id="included"/>
-	</coreType>
-	
-	<coreType id="Free">
-		<ref id="included"/>
-	</coreType>
-	
-	<coreType id="paid">
-		<ref id="included"/>
-	</coreType>
-	
-	<coreType id="MangoES">
-		<ref id="included"/>
-	</coreType>
 	
 	<coreType id="Gateway">
-	</coreType>
-	
-	<coreType id="Commercial">
-		<ref id="included"/>
-	</coreType>
-	
-	<coreType id="Enterprise">
-		<ref id="included"/>
-	</coreType>
-	
-	<coreType id="brewersdashboard">
-		<ref id="included"/>
 	</coreType>
 </licenseTypes>
