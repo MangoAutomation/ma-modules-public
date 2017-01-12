@@ -8,14 +8,6 @@
 		<price>0</price>
 	</licenseType>
 	
-	<licenseType id="unlicensed" status="normal">
-		<description>This module is unlicensed and will not work.</description>
-		<features>
-			<usageLimit>0</usageLimit>
-		</features>
-		<price>0</price>
-	</licenseType>
-	
 	<licenseType id="included" status="normal">
 		<description>This module is included with your Core license.</description>
 		<features>
@@ -42,7 +34,6 @@
 	</coreType>
 	
 	<coreType id="Gateway">
-		<ref id="unlicensed"/>
 	</coreType>
 	
 	<coreType id="Commercial">
