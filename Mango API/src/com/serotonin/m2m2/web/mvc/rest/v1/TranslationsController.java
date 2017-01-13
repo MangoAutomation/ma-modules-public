@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,7 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -53,8 +55,9 @@ public class TranslationsController extends MangoRestController {
     		@ApiParam(value = "Language for translations", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
+            @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
-        return namespacedTranslations(null, language, server, request);
+        return namespacedTranslations(null, language, server, browser, request);
     }
     
 	@ApiOperation(value = "Get translations based on namespaces", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public")
@@ -66,6 +69,7 @@ public class TranslationsController extends MangoRestController {
             @RequestParam(value = "language", required = false) String language,
             @ApiParam(value = "Use server language for translation", allowMultiple = false)
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
+            @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
         
         RestProcessResult<Map<String, ?>> result =
@@ -75,7 +79,7 @@ public class TranslationsController extends MangoRestController {
         if (result.isOk()) {
            
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = server ? Common.getLocale() : this.getLocale(language, request);
+            Locale locale = this.getLocale(language, server, browser, request);
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             
@@ -94,6 +98,7 @@ public class TranslationsController extends MangoRestController {
             @RequestParam(value = "language", required = false) String language,
             @ApiParam(value = "Use server language for translation", allowMultiple = false)
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
+            @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
         
         RestProcessResult<Map<String, ?>> result = new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
@@ -109,7 +114,7 @@ public class TranslationsController extends MangoRestController {
         if (result.isOk()) {
 
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = server ? Common.getLocale() : this.getLocale(language, request);
+            Locale locale = this.getLocale(language, server, browser, request);
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             
@@ -118,7 +123,6 @@ public class TranslationsController extends MangoRestController {
         
         return result.createResponseEntity();
     }
-	
 
 	/**
 	 * Get the locale for the request
@@ -126,21 +130,25 @@ public class TranslationsController extends MangoRestController {
 	 * @param request
 	 * @return
 	 */
-	private Locale getLocale(String language, HttpServletRequest request){
-        // TODO add user locale setting which can be set to "Browser", "Server" or specific value
-        Locale locale;
-        if (language == null || language.isEmpty()) {
-            // browser locale
-            locale = RequestContextUtils.getLocale(request);
-            // server locale
-            // locale = Locale.getDefault();
-            // user locale
-            // locale = user.getLocale();
+	private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request) {
+	    if (!StringUtils.isBlank(language)) {
+	        return Locale.forLanguageTag(language.replace('_', '-'));
+	    }
+	    
+	    if (browser) {
+            return RequestContextUtils.getLocale(request);
+	    } else if (server) {
+            return Common.getLocale();
         }
-        else {
-            locale = Locale.forLanguageTag(language.replace("_", "-"));
+	    
+        User user = Common.getUser(request);
+        String userLocale = user.getLocale();
+        
+	    if (user == null || StringUtils.isBlank(userLocale)) {
+            return Common.getLocale();
+	    } else {
+            return Locale.forLanguageTag(userLocale.replace('_', '-'));
         }
-        return locale;
 	}
 
 	/**

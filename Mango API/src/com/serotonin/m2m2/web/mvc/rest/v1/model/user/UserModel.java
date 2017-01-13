@@ -218,13 +218,24 @@ public class UserModel extends AbstractRestModel<User> {
     @CSVColumnGetter(order=13, header="locale")
     @JsonGetter("locale")
     public String getLocale() {
-        // TODO enable each user to have a locale, and add option for browser locale
-        return Common.getLocale().toLanguageTag();
+        return data.getLocale();
     }
 
     @CSVColumnSetter(order=13, header="locale")
     @JsonSetter("locale")
     public void setLocale(String locale) {
+        data.setLocale(locale);
+    }
+    
+    @CSVColumnGetter(order=14, header="systemLocale")
+    @JsonGetter("systemLocale")
+    public String getSystemLocale() {
+        return Common.getLocale().toLanguageTag();
+    }
+
+    @CSVColumnSetter(order=14, header="systemLocale")
+    @JsonSetter("systemLocale")
+    public void setSystemLocale(String locale) {
         // no op
     }
     
