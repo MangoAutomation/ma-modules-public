@@ -215,25 +215,37 @@ public class UserModel extends AbstractRestModel<User> {
         data.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
     }
     
-    @CSVColumnGetter(order=13, header="locale")
+    @CSVColumnGetter(order=13, header="name")
+    @JsonGetter("name")
+    public String getName() {
+        return data.getName();
+    }
+
+    @CSVColumnSetter(order=13, header="name")
+    @JsonSetter("name")
+    public void setName(String name) {
+        data.setName(name);
+    }
+    
+    @CSVColumnGetter(order=14, header="locale")
     @JsonGetter("locale")
     public String getLocale() {
         return data.getLocale();
     }
 
-    @CSVColumnSetter(order=13, header="locale")
+    @CSVColumnSetter(order=14, header="locale")
     @JsonSetter("locale")
     public void setLocale(String locale) {
         data.setLocale(locale);
     }
     
-    @CSVColumnGetter(order=14, header="systemLocale")
+    @CSVColumnGetter(order=15, header="systemLocale")
     @JsonGetter("systemLocale")
     public String getSystemLocale() {
         return Common.getLocale().toLanguageTag();
     }
 
-    @CSVColumnSetter(order=14, header="systemLocale")
+    @CSVColumnSetter(order=15, header="systemLocale")
     @JsonSetter("systemLocale")
     public void setSystemLocale(String locale) {
         // no op
