@@ -73,8 +73,16 @@ public class UserModel extends AbstractRestModel<User> {
     }
 
     public String getPassword() {
-        return data.getPassword(); 
+        //return data.getPassword();
+        // dont return password hashes over the REST API, security issue
+        return "";
     }
+    
+    public boolean isOldHashAlgorithm() {
+        String algorithm = Common.extractHashAlgorithm(data.getPassword());
+        return !Common.getHashAlgorithm().equals(algorithm);
+    }
+    
     @CSVColumnSetter(order=1, header="password")
     @JsonSetter("password")
     public void setPassword(String password) {
