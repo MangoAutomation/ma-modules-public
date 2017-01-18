@@ -142,7 +142,10 @@ public class TranslationsController extends MangoRestController {
         }
 	    
         User user = Common.getUser(request);
-        String userLocale = user.getLocale();
+        String userLocale = null;
+        if (user != null) {
+            userLocale = user.getLocale();
+        }
         
 	    if (user == null || StringUtils.isBlank(userLocale)) {
             return Common.getLocale();
