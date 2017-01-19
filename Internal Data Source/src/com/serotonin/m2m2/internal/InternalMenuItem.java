@@ -74,7 +74,11 @@ public class InternalMenuItem extends MenuItemDefinition {
     	Providers.get(ILifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
-            	maybeInstallSystemMonitor();
+            	try{
+            		maybeInstallSystemMonitor();
+            	}catch(Exception e){
+            		LOG.error(e.getMessage(), e);
+            	}
             }
         });
     }
@@ -86,7 +90,11 @@ public class InternalMenuItem extends MenuItemDefinition {
     	Providers.get(ILifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
-            	maybeInstallSystemMonitor();
+            	try{
+            		maybeInstallSystemMonitor();
+            	}catch(Exception e){
+            		LOG.error(e.getMessage(), e);
+            	}
             }
         });
     }
