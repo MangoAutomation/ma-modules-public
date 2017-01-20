@@ -77,7 +77,7 @@ public class SystemSettingsRestController extends MangoRestController{
 				break;
 			case STRING:
 			default:
-				value = SystemSettingsDao.getValueAsCode(key);
+				value = SystemSettingsDao.getExportCode(key);
 				break;
         	}
 	        if (value == null) {
