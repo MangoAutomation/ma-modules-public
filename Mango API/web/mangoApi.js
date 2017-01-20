@@ -7,11 +7,7 @@ define(['angular', 'require'], function(angular, require) {
 'use strict';
 
 return angular.module('maApi', [])
-.config(['SystemSettingsProvider', function(SystemSettingsProvider) {
-    SystemSettingsProvider.addSection({
-        titleTr: 'rest.settings.title',
-        template: require.toUrl('./settings.html')
-    });
+.config([function() {
 }]);
 
 }); // require
