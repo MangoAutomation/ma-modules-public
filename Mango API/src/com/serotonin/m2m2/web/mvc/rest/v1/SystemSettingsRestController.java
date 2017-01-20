@@ -77,7 +77,17 @@ public class SystemSettingsRestController extends MangoRestController{
 				break;
 			case STRING:
 			default:
-				value = SystemSettingsDao.getExportCode(key);
+				//First get the value as a String
+				value = SystemSettingsDao.getValue(key);
+				try{
+					//Can it potentially be converted to an export code?
+					Integer i = Integer.parseInt((String) value);
+					value = SystemSettingsDao.convertToCodeFromValue(key, i);
+					//Was it able to be converted?
+					if(value == null)
+						value = i.toString();
+				}catch(NumberFormatException e){ }
+				
 				break;
         	}
 	        if (value == null) {
