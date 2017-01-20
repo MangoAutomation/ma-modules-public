@@ -50,13 +50,27 @@ public class ModuleModel {
 	 * @param v
 	 */
 	public ModuleModel(JsonValue v) {
-		this.name = v.getJsonValue("name").toString();
-		this.version = v.getJsonValue("version").toString();
-		this.description = v.getJsonValue("shortDescription").toString();
-		this.longDescription = v.getJsonValue("longDescription").toString();
-		this.vendor = v.getJsonValue("vendorName").toString();
-		this.vendorUrl = v.getJsonValue("vendorUrl").toString();
-		this.releaseNotes = v.getJsonValue("releaseNotes").toString();
+		JsonValue sub = v.getJsonValue("name");
+		if(sub != null)
+			this.name = sub.toString();
+		sub = v.getJsonValue("version");
+		if(sub != null)
+			this.version = sub.toString();
+		sub = v.getJsonValue("shortDescription");
+		if(sub!= null)
+			this.description = sub.toString();
+		sub = v.getJsonValue("longDescription");
+		if(sub != null)
+			this.longDescription = sub.toString();
+		sub = v.getJsonValue("vendorName");
+		if(sub != null)
+			this.vendor = sub.toString();
+		sub = v.getJsonValue("vendorUrl");
+		if(sub != null)
+			this.vendorUrl = sub.toString();
+		sub = v.getJsonValue("releaseNotes");
+		if(sub != null)
+			this.releaseNotes = sub.toString();
 	}
 
 	public String getName() {
