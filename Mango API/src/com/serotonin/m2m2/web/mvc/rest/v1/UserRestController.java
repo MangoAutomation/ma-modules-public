@@ -197,8 +197,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        }else{
     	        	User newUser = model.getData();
         			newUser.setId(u.getId());
-        			if (!StringUtils.isBlank(model.getPassword()))
-        				newUser.setPassword(Common.encrypt(model.getPassword()));
+        			if (!StringUtils.isBlank(model.getData().getPassword()))
+        				newUser.setPassword(Common.encrypt(model.getData().getPassword()));
         			else
         				newUser.setPassword(u.getPassword());
         			
@@ -217,8 +217,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     				//Allow users to update themselves
     				User newUser = model.getData();
         			newUser.setId(u.getId());
-    				if (!StringUtils.isBlank(model.getPassword()))
-        				newUser.setPassword(Common.encrypt(model.getPassword()));
+    				if (!StringUtils.isBlank(model.getData().getPassword()))
+        				newUser.setPassword(Common.encrypt(model.getData().getPassword()));
         			else
         				newUser.setPassword(u.getPassword());
         	        if(!model.validate()){
@@ -285,7 +285,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     				if(model.validate()){
 	    				try{
 	    					User newUser = model.getData();
-	    					newUser.setPassword(Common.encrypt(model.getPassword()));
+	    					newUser.setPassword(Common.encrypt(model.getData().getPassword()));
 	    		        	DaoRegistry.userDao.saveUser(newUser);
 	        		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
 	        		    	result.addRestMessage(getResourceCreatedMessage(location));

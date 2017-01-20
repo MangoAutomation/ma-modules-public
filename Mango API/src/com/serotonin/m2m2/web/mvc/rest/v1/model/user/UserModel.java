@@ -71,12 +71,6 @@ public class UserModel extends AbstractRestModel<User> {
     public String getPasswordForCsv(){
     	return "";
     }
-
-    public String getPassword() {
-        //return data.getPassword();
-        // dont return password hashes over the REST API, security issue
-        return "";
-    }
     
     public boolean isOldHashAlgorithm() {
         String algorithm = Common.extractHashAlgorithm(data.getPassword());
