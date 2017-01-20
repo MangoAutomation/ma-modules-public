@@ -103,4 +103,10 @@ public class MockLifecycle implements ILifecycle{
 		return false;
 	}
 
+	@Override
+	public Integer dataPointLimit() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
