@@ -14,7 +14,8 @@ return angular.module('maSqlConsole', [])
         template: '<iframe-view src="/sqlConsole.shtm"></iframe-view>',
         menuTr: 'header.sql',
         menuIcon: 'storage',
-        permission: 'superadmin'
+        permission: 'superadmin',
+        weight: 2000
     };
     
     mangoStateProvider.addStates([menuItem]);
