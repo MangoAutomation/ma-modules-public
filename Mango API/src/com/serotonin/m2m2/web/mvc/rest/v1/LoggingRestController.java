@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.QueryModel;
+import com.infiniteautomation.mango.db.query.TableModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
@@ -29,6 +32,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.logging.LogQueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.util.FileQueryArrayStream;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -106,5 +111,34 @@ public class LoggingRestController extends MangoRestController{
     	return result.createResponseEntity();
     }
 	
-	
+	@ApiOperation(
+			value = "Get Explaination For Query",
+			notes = "What is Query-able on this model"
+			)
+	@ApiResponses(value = { 
+	@ApiResponse(code = 200, message = "Ok"),
+	@ApiResponse(code = 403, message = "User does not have access")
+	})
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/explain-query")
+    public ResponseEntity<TableModel> getTableModel(HttpServletRequest request) {
+        
+        RestProcessResult<TableModel> result = new RestProcessResult<TableModel>(HttpStatus.OK);
+        
+        this.checkUser(request, result);
+        if(result.isOk()){
+        	TableModel model = new TableModel();
+        	List<QueryAttribute> attributes = new ArrayList<QueryAttribute>();
+        	attributes.add(new QueryAttribute("level", null, Types.VARCHAR));
+        	attributes.add(new QueryAttribute("classname", null, Types.VARCHAR));
+        	attributes.add(new QueryAttribute("method", null, Types.VARCHAR));
+        	attributes.add(new QueryAttribute("time", null, Types.INTEGER));
+        	attributes.add(new QueryAttribute("message", null, Types.VARCHAR));
+        	
+        	model.setAttributes(attributes);
+ 	        result.addRestMessage(getSuccessMessage());
+	        return result.createResponseEntity();
+        }
+        
+        return result.createResponseEntity();
+    }
 }
