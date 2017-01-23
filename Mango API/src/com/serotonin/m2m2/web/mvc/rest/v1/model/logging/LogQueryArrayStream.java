@@ -7,12 +7,12 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.logging;
 import java.io.File;
 import java.io.IOException;
 
-import net.jazdw.rql.parser.ASTNode;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -33,7 +33,25 @@ public class LogQueryArrayStream implements QueryArrayStream<LogMessageModel>{
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) throws IOException {
+		
+		if(filename == null)
+			return;
+		
+		if(filename.startsWith("ma.")){
+			processLog4j(jgen);
+		}else{
+			throw new IOException("Cannot query non Mango Log4J Files");
+		}
+		
 
+	}
+
+	/**
+	 * Specifically Process a Log4J file
+	 * 
+	 * @param jgen
+	 */
+	private void processLog4j(JsonGenerator jgen) {
 		MangoLogFilePatternReceiver receiver = new MangoLogFilePatternReceiver(query, jgen);
 
 		try {

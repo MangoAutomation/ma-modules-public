@@ -11,8 +11,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.jazdw.rql.parser.ASTNode;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -26,9 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.db.query.QueryModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.logging.LogQueryArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.util.FileQueryArrayStream;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -69,19 +71,31 @@ public class LoggingRestController extends MangoRestController{
 					"<br>Query Examples: \n" + 
 					"by-filename/ma.log/?level=gt=DEBUG\n" + 
 					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
-					"by-filename/ma.log/?methodName=setPointValue\n")
+					"by-filename/ma.log/?methodName=setPointValue\n" + 
+					"NOTE: non ma.log files only support limit restrictions in the query")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-filename/{filename}")
-    public ResponseEntity<LogQueryArrayStream> query(
+    public ResponseEntity<QueryArrayStream<?>> query(
     		@PathVariable String filename, 
     		HttpServletRequest request) {
-		RestProcessResult<LogQueryArrayStream> result = new RestProcessResult<LogQueryArrayStream>(HttpStatus.OK);
+		RestProcessResult<QueryArrayStream<?>> result = new RestProcessResult<QueryArrayStream<?>>(HttpStatus.OK);
 		
 		this.checkUser(request, result);
     	if(result.isOk()){
     		try{
 	    		ASTNode query = this.parseRQLtoAST(request);
-				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
-				return result.createResponseEntity(stream);
+	    		File file = new File(Common.getLogsDir(), filename);
+	    		if(file.exists()){
+	    			if(filename.startsWith("ma.")){
+	    				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
+	    				return result.createResponseEntity(stream);
+	    			}else{
+	    				//Simply return the lines from the file without RQL
+	    				FileQueryArrayStream stream = new FileQueryArrayStream(file, query);
+	    				return result.createResponseEntity(stream);
+	    			}
+	    		}else{
+	    			result.addRestMessage(getDoesNotExistMessage());
+	    		}
     		}catch(UnsupportedEncodingException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
