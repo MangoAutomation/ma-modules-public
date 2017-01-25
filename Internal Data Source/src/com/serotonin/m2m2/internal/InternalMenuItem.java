@@ -94,7 +94,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     public static final String POINT_LINK_COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
     //public static final String METADATA_POINT_COUNT_MONITOR_ID = "com.serotonin.m2m2.meta.PointLinkDao.COUNT";
     //public static final String SCRIPT_DATASOURCE_COUNT_MONITOR_ID = "";
-    public static final String WATCHLIST_COUNT_MONITOR_ID = "com.serotonin.m2m2.watchlist.WatchistDao.COUNT";
+    public static final String WATCHLIST_COUNT_MONITOR_ID = "com.serotonin.m2m2.watchlist.WatchListDao.COUNT";
     public static final String SCHEDULED_EVENTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
     public static final String REPORTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportDao.COUNT";
     
