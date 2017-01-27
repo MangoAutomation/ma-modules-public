@@ -25,6 +25,7 @@ import org.joda.time.DateTime;
 import com.serotonin.InvalidArgumentException;
 import com.serotonin.io.StreamUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -33,6 +34,7 @@ import com.serotonin.m2m2.email.PostEmailRunnable;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.reports.ReportDao;
+import com.serotonin.m2m2.reports.ReportLicenseChecker;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
 import com.serotonin.m2m2.reports.vo.ReportVO;
@@ -109,8 +111,16 @@ public class ReportWorkItem implements WorkItem {
 
     @Override
     public void execute() {
-        //        if (USAGE_EXPIRY_CHECKER == null)
-        //            USAGE_EXPIRY_CHECKER = new UsageExpiryChecker("reports", 25, null);
+    	try {
+    		ReportLicenseChecker.checkLicense();
+    	} catch(LicenseViolatedException e) {
+    		LOG.error("Your core license doesn't permit you to use the reports module.");
+    		reportInstance.setReportStartTime(Common.timer.currentTimeMillis());
+    		reportInstance.setReportEndTime(Common.timer.currentTimeMillis());
+    		reportInstance.setRecordCount(-1);
+    		reportDao.saveReportInstance(reportInstance);
+    		return;
+    	}
 
         LOG.debug("Running report with id " + reportConfig.getId() + ", instance id " + reportInstance.getId());
 

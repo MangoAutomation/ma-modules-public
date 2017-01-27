@@ -58,7 +58,7 @@ public class EnvCanDataSourceRT extends PollingDataSource {
     }
 
     @Override
-    public void setPointValue(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
+    public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
         // no op
     }
 

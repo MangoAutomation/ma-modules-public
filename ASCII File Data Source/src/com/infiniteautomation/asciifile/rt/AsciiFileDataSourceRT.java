@@ -115,7 +115,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlte
 	}
 
 	@Override
-	public void setPointValue(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
+	public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
 		// TODO: Enable Regex replace
 		// no-op
 	}

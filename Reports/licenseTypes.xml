@@ -1,0 +1,22 @@
+<licenseTypes>
+	<licenseType id="paid" status="deprecated">
+		<description>No restrictions.</description>
+		<features>
+			<usageLimit>unlimited</usageLimit>
+		</features>
+		<price>0</price>
+	</licenseType>
+	
+	<licenseType id="included" status="normal">
+		<description>This module is included with your Core license.</description>
+		<features>
+			<usageLimit>unlimited</usageLimit>
+		</features>
+		<price>0</price>
+		<price fromType="paid">0</price>
+	</licenseType>
+	
+	
+	<coreType id="Gateway">
+	</coreType>
+</licenseTypes>

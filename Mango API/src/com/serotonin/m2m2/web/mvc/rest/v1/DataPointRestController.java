@@ -26,6 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -267,13 +268,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", xid));
 	            	return result.createResponseEntity();
 	            }else {
-	                //Compare this point to the existing point in DB to ensure
-	                // that we aren't moving a point to a different type of Data Source
-	                DataPointDao dpDao = DataPointDao.instance;
-	                DataPointVO oldPoint = dpDao.getDataPoint(vo.getId());
-	                
 	                //Does the old point have a different data source?
-	                if(oldPoint != null&&(oldPoint.getDataSourceId() != dsvo.getId())){
+	                if(existingDp.getDataSourceId() != dsvo.getId()){
 	                    vo.setDataSourceId(dsvo.getId());
 	                    vo.setDataSourceName(dsvo.getName());
 	                }
@@ -361,7 +357,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-	            Common.runtimeManager.saveDataPoint(vo);
+	        	try {
+	        		Common.runtimeManager.saveDataPoint(vo);
+	        	} catch(LicenseViolatedException e) {
+	        		result.addRestMessage(HttpStatus.METHOD_NOT_ALLOWED, e.getErrorMessage());
+	        	}
 	        }
 	        
 	        //Put a link to the updated data in the header?

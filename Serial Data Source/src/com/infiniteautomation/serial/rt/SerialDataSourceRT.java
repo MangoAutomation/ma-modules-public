@@ -138,7 +138,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
     	}
     }
     
-    private void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime) throws IOException {
+    private void setPointValueImplTransport(DataPointRT dataPoint, PointValueTime valueTime) throws IOException {
     	OutputStream os = this.port.getOutputStream();
 
 		//Create Message from Message Start 
@@ -206,7 +206,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
     }
     
     @Override
-	public void setPointValue(DataPointRT dataPoint, PointValueTime valueTime,
+	public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime,
 			SetPointSource source) {
 
 		//Are we connected?
@@ -216,7 +216,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 		}
 		
 		try {
-			setPointValueImpl(dataPoint, valueTime);
+			setPointValueImplTransport(dataPoint, valueTime);
 			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
@@ -225,7 +225,7 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 				if(this.port != null)
 					Common.serialPortManager.close(this.port);
 				if(this.connect())
-					setPointValueImpl(dataPoint, valueTime);
+					setPointValueImplTransport(dataPoint, valueTime);
 			}catch(Exception e2){
 				raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
 				LOG.error("Error re-connecting to serial port.", e2);

@@ -244,8 +244,7 @@ public class MBusDataSourceRT extends PollingDataSource {
     }
 
     @Override
-    public synchronized void setPointValue(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source
-    ) {
+    public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
         // no op
     }
 
