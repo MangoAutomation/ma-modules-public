@@ -17,7 +17,7 @@ public class ModuleModel {
 	
 	private String name;
 	private String version;
-	private String buildNumber;
+	private int buildNumber;
 	private String licenseType;
     private String description;
     private String longDescription;
@@ -25,6 +25,9 @@ public class ModuleModel {
     private String vendorUrl;
     private String dependencies;
     private String releaseNotes;
+    private boolean markedForDeletion;
+    private String versionState;
+    private boolean unloaded;
     
 	public ModuleModel(){ }
 	
@@ -43,6 +46,12 @@ public class ModuleModel {
 		this.vendor = module.getVendor();
 		this.vendorUrl = module.getVendorUrl();
 		this.dependencies = module.getDependencies();
+		this.markedForDeletion = module.isMarkedForDeletion();
+		this.buildNumber = module.getBuildNumber();
+		int versionState = module.getVersionState();
+		if(versionState >= 0){
+			this.versionState = Module.VERSION_STATE_CODES.getCode(versionState);
+		}
 	}
 	
 	/**
@@ -86,11 +95,11 @@ public class ModuleModel {
 		this.version = version;
 	}
 
-	public String getBuildNumber() {
+	public int getBuildNumber() {
 		return buildNumber;
 	}
 
-	public void setBuildNumber(String buildNumber) {
+	public void setBuildNumber(int buildNumber) {
 		this.buildNumber = buildNumber;
 	}
 
@@ -150,4 +159,19 @@ public class ModuleModel {
 		this.releaseNotes = releaseNotes;
 	}
 	
+	public String getVersionState(){
+		return this.versionState;
+	}
+	
+	public boolean markedForDeletion(){
+		return this.markedForDeletion;
+	}
+	
+	public void setUnloaded(boolean unloaded){
+		this.unloaded = unloaded;
+	}
+	
+	public boolean isUnloaded(){
+		return this.unloaded;
+	}
 }

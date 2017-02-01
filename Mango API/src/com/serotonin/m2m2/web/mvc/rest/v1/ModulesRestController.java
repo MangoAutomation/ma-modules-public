@@ -4,11 +4,9 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,6 +30,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AngularJSModuleDefinition;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.shared.DependencyData;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
@@ -100,13 +99,37 @@ public class ModulesRestController extends MangoRestController {
 				List<ModuleModel> models = new ArrayList<ModuleModel>();
 				ModuleModel core = getCoreModule();
 				List<Module> modules = ModuleRegistry.getModules();
-				Module.sortByName(modules);
-
 				models.add(core);
-				// Add them in order
 				for (Module module : modules)
 					models.add(new ModuleModel(module));
+				
+				//Add the unloaded modules at the end?
+				List<Module> unloaded = ModuleRegistry.getUnloadedModules();
+				for(Module module : unloaded){
+					ModuleModel model = new ModuleModel(module);
+					model.setUnloaded(true);
+					models.add(model);
+				}
+				
+				//TODO Sort them?
+				
 				return result.createResponseEntity(models);
+			} else {
+				result.addRestMessage(this.getUnauthorizedMessage());
+			}
+		}
+		return result.createResponseEntity();
+	}
+	
+	@ApiOperation(value = "List Current Missing Module Dependencies", notes = "List all installed")
+	@RequestMapping(method = RequestMethod.GET, value = "/list-missing-dependencies", produces = { "application/json" })
+	public ResponseEntity<Map<String, DependencyData>> listMissingModuleDependencies(HttpServletRequest request) {
+
+		RestProcessResult<Map<String, DependencyData>> result = new RestProcessResult<Map<String, DependencyData>>(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+		if (result.isOk()) {
+			if (Permissions.hasAdmin(user)) {
+				return result.createResponseEntity(ModuleRegistry.getMissingDependencies());
 			} else {
 				result.addRestMessage(this.getUnauthorizedMessage());
 			}
@@ -274,32 +297,13 @@ public class ModulesRestController extends MangoRestController {
 	}
 
 	/**
-	 * Create a Core Module
+	 * Create a Core Module Model
 	 * 
 	 * @return
 	 */
 	private ModuleModel getCoreModule() {
-
-		ModuleModel model = new ModuleModel();
+		ModuleModel model = new ModuleModel(ModuleRegistry.getCoreModule());
 		model.setVersion(Common.getVersion().getFullString());
-
-		// Get the build number if one exists
-		try (InputStream inStream = this.getClass().getResourceAsStream("/mango.build.number")) {
-			if (inStream != null) {
-				Properties props = new Properties();
-				props.load(inStream);
-				model.setBuildNumber(props.getProperty("build.number"));
-			}
-		} catch (IOException e) {
-		}
-
-		model.setName("core");
-		model.setDescription(
-				new TranslatableMessage("modules.core.description").translate(Common.getTranslations()));
-		model.setVendor("Infinite Automation Systems");
-		model.setVendorUrl("http://infiniteautomation.com");
-		model.setDependencies(null);
-		model.setLicenseType(Common.license() == null ? null : Common.license().getLicenseType());
 		return model;
 	}
 }
