@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
@@ -790,23 +791,32 @@ public class ReportDao extends AbstractDao<ReportVO> {
         final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
 
         // The timestamp selection code is used multiple times for different tables
+        long startTime, endTime;
         String timestampSql;
         Object[] timestampParams;
         if (instance.isFromInception() && instance.isToNow()) {
             timestampSql = "";
             timestampParams = new Object[0];
+            startTime = 0l;
+            endTime = Common.timer.currentTimeMillis();
         }
         else if (instance.isFromInception()) {
             timestampSql = "and ${field}<?";
             timestampParams = new Object[] { instance.getReportEndTime() };
+            startTime = 0l;
+            endTime = instance.getReportEndTime();
         }
         else if (instance.isToNow()) {
             timestampSql = "and ${field}>=?";
             timestampParams = new Object[] { instance.getReportStartTime() };
+            startTime = instance.getReportStartTime();
+            endTime = Common.timer.currentTimeMillis();
         }
         else {
             timestampSql = "and ${field}>=? and ${field}<?";
             timestampParams = new Object[] { instance.getReportStartTime(), instance.getReportEndTime() };
+            startTime = instance.getReportStartTime();
+            endTime = instance.getReportEndTime();
         }
 
         // For each point.
@@ -902,14 +912,20 @@ public class ReportDao extends AbstractDao<ReportVO> {
             }
         } //end for all points
 
-        //Insert the data into the NoSQL DB
+        //Insert the data into the NoSQL DB and track first/last times
         //The series name is reportInstanceId_reportPointId
+        final AtomicLong firstPointTime = new AtomicLong(Long.MAX_VALUE);
+        final AtomicLong lastPointTime = new AtomicLong(-1l);
        final String reportId = Integer.toString(instance.getId()) + "_";
-       pointValueDao.getPointValuesBetween(pointIds, instance.getReportStartTime(), instance.getReportEndTime(), new MappedRowCallback<IdPointValueTime>(){
+       pointValueDao.getPointValuesBetween(pointIds, startTime, endTime, new MappedRowCallback<IdPointValueTime>(){
 			@Override
 			public void row(final IdPointValueTime ipvt, int rowId) {
 				dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getDataPointId())),ipvt);
 				count.increment();
+				if(ipvt.getTime() < firstPointTime.get())
+					firstPointTime.set(ipvt.getTime());
+				if(ipvt.getTime() > lastPointTime.get())
+					lastPointTime.set(ipvt.getTime());
 			}
        });
         
@@ -930,32 +946,11 @@ public class ReportDao extends AbstractDao<ReportVO> {
         // If the report had undefined start or end times, update them with values from the data.
         if (instance.isFromInception() || instance.isToNow()) {
         	if(instance.isFromInception()){
-	        	final List<ITime> firstValueTimeList = new ArrayList<ITime>();
-				dao.getData("reports", 0L, Long.MAX_VALUE, 1, false, new NoSQLQueryCallback(){
-					@Override
-					public void entry(String storeName, long timestamp,
-							ITime entry) {
-						firstValueTimeList.add(entry); 
-					}
-	           });
-	
-				if(firstValueTimeList.size() > 0){
-					instance.setReportStartTime(firstValueTimeList.get(0).getTime());
-				}
+        		if(firstPointTime.get() != Long.MAX_VALUE)
+        			instance.setReportStartTime(firstPointTime.get());
         	}		
         	if(instance.isToNow()){
-	        	final List<ITime> lastValueTimeList = new ArrayList<ITime>();
-				dao.getData("reports", 0L, Long.MAX_VALUE, 1, true, new NoSQLQueryCallback(){
-					@Override
-					public void entry(String storeName, long timestamp,
-							ITime entry) {
-						lastValueTimeList.add(entry); 
-					}
-				});
-				if(lastValueTimeList.size() > 0){
-					instance.setReportEndTime(lastValueTimeList.get(0).getTime());
-				}
-				
+				instance.setReportEndTime(lastPointTime.get());
         	}
         }
 
