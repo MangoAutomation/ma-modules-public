@@ -150,10 +150,6 @@ public class ReportWorkItem implements WorkItem {
 
         int recordCount = 0;
         try {
-            //            if (USAGE_EXPIRY_CHECKER.isExpired(true))
-            //                recordCount = -2;
-            //            else if (!points.isEmpty())
-            //                recordCount = reportDao.runReport(reportInstance, points);
             if (!points.isEmpty()){
                 if(Common.databaseProxy.getNoSQLProxy() == null)
                 	recordCount = reportDao.runReportSQL(reportInstance, points);
