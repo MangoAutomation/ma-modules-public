@@ -53,12 +53,11 @@ public class VirtualEditDwr extends DataSourceEditDwr {
     @DwrPermission(admin = true)
     public void createTestSource(){
 		VirtualDataSourceVO ds = new VirtualDataSourceVO();
-		DataSourceDao dsDao = DataSourceDao.instance;
 		
 		DataSourceDefinition def = ModuleRegistry.getDataSourceDefinition("VIRTUAL");
         ds = (VirtualDataSourceVO) def.baseCreateDataSourceVO();
         ds.setId(Common.NEW_ID);
-        ds.setXid(dsDao.generateUniqueXid());
+        ds.setXid(DataSourceDao.instance.generateUniqueXid());
 		ds.setName("Test Virtual");
 		ds.setEnabled(true);
 		ds.setUpdatePeriods(5);

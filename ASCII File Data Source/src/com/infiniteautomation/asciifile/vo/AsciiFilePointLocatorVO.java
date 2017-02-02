@@ -16,16 +16,14 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.util.SerializationHelper;
 
 /**
  * @author Phillip Dunlap
  */
 
-public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements JsonSerializable{
+public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePointLocatorVO> implements JsonSerializable{
 
 	private static final long serialVersionUID = 1L;
 
@@ -41,7 +39,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 	}
 
 	@Override
-	public PointLocatorRT createRuntime() {
+	public AsciiFilePointLocatorRT createRuntime() {
 		return new AsciiFilePointLocatorRT(this);
 	}
 
@@ -214,10 +212,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO implements J
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
-	public PointLocatorModel<?> asModel() {
+	public AsciiFilePointLocatorModel asModel() {
 		return new AsciiFilePointLocatorModel(this);
 	}
-
-	
-	
 }

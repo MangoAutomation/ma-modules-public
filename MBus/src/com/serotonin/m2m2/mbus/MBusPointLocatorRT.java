@@ -20,27 +20,19 @@ package com.serotonin.m2m2.mbus;
 
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 
-public class MBusPointLocatorRT extends PointLocatorRT {
+public class MBusPointLocatorRT extends PointLocatorRT<MBusPointLocatorVO> {
 
-    private final MBusPointLocatorVO vo;
     private int effectiveExponent;
     private double effectiveCorrectionFactor = 1;
     boolean needCheckDifAndVif = true;
 
     public MBusPointLocatorRT(MBusPointLocatorVO vo) {
-        this.vo = vo;
+    	super(vo);
     }
 
     @Override
     public boolean isSettable() {
         return false;
-    }
-
-    /**
-     * @return the vo
-     */
-    public MBusPointLocatorVO getVo() {
-        return vo;
     }
 
     public double calcCorrectedValue(final double value, final int exponent, final double correctionConstant) {

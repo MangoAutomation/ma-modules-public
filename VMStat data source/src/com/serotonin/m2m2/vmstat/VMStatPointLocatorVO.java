@@ -17,15 +17,13 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 /**
  * @author Matthew Lohbihler
  */
-public class VMStatPointLocatorVO extends AbstractPointLocatorVO implements JsonSerializable {
+public class VMStatPointLocatorVO extends AbstractPointLocatorVO<VMStatPointLocatorVO> implements JsonSerializable {
     public interface Attributes {
         int PROCS_R = 1;
         int PROCS_B = 2;
@@ -75,7 +73,7 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO implements Json
     }
 
     @Override
-    public PointLocatorRT createRuntime() {
+    public VMStatPointLocatorRT createRuntime() {
         return new VMStatPointLocatorRT(this);
     }
 
@@ -145,7 +143,7 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO implements Json
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
-	public PointLocatorModel<?> asModel() {
+	public VMStatPointLocatorModel asModel() {
 		return new VMStatPointLocatorModel(this);
 	}
 }

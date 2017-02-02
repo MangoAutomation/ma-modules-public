@@ -50,7 +50,7 @@ import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 /**
  * TODO datatype NUMERIC_INT is missing TODO Starttime for timpepoints ???
  */
-public class MBusDataSourceRT extends PollingDataSource {
+public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
 
     private final static Log LOG = LogFactory.getLog(MBusDataSourceRT.class);
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 1;
@@ -80,7 +80,7 @@ public class MBusDataSourceRT extends PollingDataSource {
     @Override
     protected synchronized void doPoll(long time) {
         boolean pointError = false;
-        boolean dsError = false;
+
         final List<UserDataResponse> udrs = new LinkedList<>();
 
         if (openConnection()) {

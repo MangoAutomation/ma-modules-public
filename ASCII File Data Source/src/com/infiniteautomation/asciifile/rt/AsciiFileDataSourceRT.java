@@ -31,7 +31,7 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
  * @author Phillip Dunlap
  */
 
-public class AsciiFileDataSourceRT extends PollingDataSource implements FileAlterationListener {
+public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSourceVO> implements FileAlterationListener {
 	private static final Log LOG = LogFactory.getLog(AsciiFileDataSourceRT.class);
 
 	public static final int POINT_READ_EXCEPTION_EVENT = 1;

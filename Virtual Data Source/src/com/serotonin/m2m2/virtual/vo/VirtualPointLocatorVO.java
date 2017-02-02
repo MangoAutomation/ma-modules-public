@@ -37,7 +37,7 @@ import com.serotonin.m2m2.virtual.vo.model.VirtualPointLocatorModel;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
-public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
+public class VirtualPointLocatorVO extends AbstractPointLocatorVO<VirtualPointLocatorVO> implements
 		JsonSerializable {
 	private static final Log LOG = LogFactory
 			.getLog(VirtualPointLocatorVO.class);
@@ -77,7 +77,7 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 	}
 
 	@Override
-	public PointLocatorRT createRuntime() {
+	public PointLocatorRT<VirtualPointLocatorVO> createRuntime() {
 		ChangeTypeRT changeType = getChangeType().createRuntime();
 		String startValue = getChangeType().getStartValue();
 		DataValue startObject;
@@ -101,7 +101,7 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 			else
 				startObject = new AlphanumericValue(startValue);
 		}
-		return new VirtualPointLocatorRT(changeType, startObject, isSettable());
+		return new VirtualPointLocatorRT(this, changeType, startObject, isSettable());
 	}
 
 	@Override
@@ -455,7 +455,7 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO implements
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
-	public PointLocatorModel<?> asModel() {
+	public PointLocatorModel<VirtualPointLocatorVO> asModel() {
 		return new VirtualPointLocatorModel(this);
 	}
 }

@@ -9,13 +9,12 @@ import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
  * @author Phillip Dunlap
  */
 
-public class AsciiFilePointLocatorRT extends PointLocatorRT{
+public class AsciiFilePointLocatorRT extends PointLocatorRT<AsciiFilePointLocatorVO>{
 
-	private AsciiFilePointLocatorVO vo;
 	private Pattern valuePattern;
 	
 	public AsciiFilePointLocatorRT(AsciiFilePointLocatorVO vo){
-		this.vo = vo;
+		super(vo);
 		valuePattern = Pattern.compile(vo.getValueRegex());
 	}
 	

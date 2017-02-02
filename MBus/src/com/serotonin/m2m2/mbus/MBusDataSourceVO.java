@@ -31,14 +31,11 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
 
 import net.sf.mbus4j.Connection;
@@ -95,12 +92,12 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     }
 
     @Override
-    public PointLocatorVO createPointLocator() {
+    public MBusPointLocatorVO createPointLocator() {
         return new MBusPointLocatorVO();
     }
 
     @Override
-    public DataSourceRT createDataSourceRT() {
+    public MBusDataSourceRT createDataSourceRT() {
         return new MBusDataSourceRT(this);
     }
 
@@ -290,7 +287,7 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
      */
     @Override
-    public AbstractDataSourceModel<MBusDataSourceVO> asModel() {
+    public MBusDataSourceModel asModel() {
         return new MBusDataSourceModel(this);
     }
 }

@@ -36,18 +36,16 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 /**
  * @author Matthew Lohbihler
  */
-public class EnvCanDataSourceRT extends PollingDataSource {
+public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
     public static final int DATA_RETRIEVAL_FAILURE_EVENT = 1;
     public static final int PARSE_EXCEPTION_EVENT = 2;
     public static final int POLL_ABORTED_EVENT = 3;
 
-    private final EnvCanDataSourceVO vo;
     private long nextValueTime = -1;
     private long tzOffset;
 
     public EnvCanDataSourceRT(EnvCanDataSourceVO vo) {
         super(vo);
-        this.vo = vo;
         setPollingPeriod(Common.TimePeriods.HOURS, 1, false);
     }
 

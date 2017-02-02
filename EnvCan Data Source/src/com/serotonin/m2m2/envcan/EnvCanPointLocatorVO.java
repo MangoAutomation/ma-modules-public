@@ -18,16 +18,14 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 /**
  * @author Matthew Lohbihler
  */
 @JsonEntity
-public class EnvCanPointLocatorVO extends AbstractPointLocatorVO implements JsonSerializable {
+public class EnvCanPointLocatorVO extends AbstractPointLocatorVO<EnvCanPointLocatorVO> implements JsonSerializable {
     public interface Attributes {
         int TEMP = 1;
         int DEW_POINT_TEMP = 2;
@@ -63,7 +61,7 @@ public class EnvCanPointLocatorVO extends AbstractPointLocatorVO implements Json
     }
 
     @Override
-    public PointLocatorRT createRuntime() {
+    public EnvCanPointLocatorRT createRuntime() {
         return new EnvCanPointLocatorRT(this);
     }
 
@@ -134,7 +132,7 @@ public class EnvCanPointLocatorVO extends AbstractPointLocatorVO implements Json
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
-	public PointLocatorModel<?> asModel() {
+	public EnvCanPointLocatorModel asModel() {
 		return new EnvCanPointLocatorModel(this);
 	}
 	

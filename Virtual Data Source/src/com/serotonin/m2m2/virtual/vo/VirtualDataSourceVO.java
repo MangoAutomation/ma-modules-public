@@ -18,7 +18,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.virtual.rt.VirtualDataSourceRT;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -59,7 +58,7 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     }
 
     @Override
-    public DataSourceRT createDataSourceRT() {
+    public DataSourceRT<VirtualDataSourceVO> createDataSourceRT() {
         return new VirtualDataSourceRT(this);
     }
 

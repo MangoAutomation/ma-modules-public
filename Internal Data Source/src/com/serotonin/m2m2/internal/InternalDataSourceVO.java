@@ -17,7 +17,6 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
@@ -55,7 +54,7 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
     }
 
     @Override
-    public DataSourceRT createDataSourceRT() {
+    public InternalDataSourceRT createDataSourceRT() {
         return new InternalDataSourceRT(this);
     }
 

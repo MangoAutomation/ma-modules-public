@@ -9,11 +9,10 @@ import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 /**
  * @author Matthew Lohbihler
  */
-public class EnvCanPointLocatorRT extends PointLocatorRT {
-    private final EnvCanPointLocatorVO vo;
+public class EnvCanPointLocatorRT extends PointLocatorRT<EnvCanPointLocatorVO> {
 
     public EnvCanPointLocatorRT(EnvCanPointLocatorVO vo) {
-        this.vo = vo;
+    	super(vo);
     }
 
     @Override
@@ -21,7 +20,4 @@ public class EnvCanPointLocatorRT extends PointLocatorRT {
         return vo.isSettable();
     }
 
-    public EnvCanPointLocatorVO getPointLocatorVO() {
-        return vo;
-    }
 }

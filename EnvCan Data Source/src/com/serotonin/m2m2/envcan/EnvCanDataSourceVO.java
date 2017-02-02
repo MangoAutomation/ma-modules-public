@@ -12,13 +12,11 @@ import java.util.List;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
 /**
  * @author Matthew Lohbihler
@@ -58,7 +56,7 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
     }
 
     @Override
-    public DataSourceRT createDataSourceRT() {
+    public EnvCanDataSourceRT createDataSourceRT() {
         return new EnvCanDataSourceRT(this);
     }
 
@@ -111,7 +109,7 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<EnvCanDataSourceVO> asModel() {
+	public EnvCanDataSourceModel asModel() {
 		return new EnvCanDataSourceModel(this);
 	}
 }

@@ -49,7 +49,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data Sources", description="Data Sources")
 @RestController
 @RequestMapping("/v1/data-sources")
-public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao>{
+public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>>{
 
 	public DataSourceRestController(){
 		super(DaoRegistry.dataSourceDao);

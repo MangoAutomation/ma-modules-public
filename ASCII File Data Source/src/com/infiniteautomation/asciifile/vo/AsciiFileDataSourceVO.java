@@ -15,12 +15,9 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
 
 /**
@@ -51,12 +48,12 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 	}
 
 	@Override
-	public PointLocatorVO createPointLocator() {
+	public AsciiFilePointLocatorVO createPointLocator() {
 		return new AsciiFilePointLocatorVO();
 	}
 
 	@Override
-	public DataSourceRT createDataSourceRT() {
+	public AsciiFileDataSourceRT createDataSourceRT() {
 		return new AsciiFileDataSourceRT(this);
 	}
 
@@ -172,7 +169,7 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<AsciiFileDataSourceVO> asModel() {
+	public AsciiFileDataSourceModel asModel() {
 		return new AsciiFileDataSourceModel(this);
 	}
     

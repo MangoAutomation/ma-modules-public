@@ -16,12 +16,10 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.util.SerializationHelper;
 
-public class SerialPointLocatorVO extends AbstractPointLocatorVO implements JsonSerializable{
+public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLocatorVO> implements JsonSerializable{
 	
 	@Override
 	public int getDataTypeId() {
@@ -40,7 +38,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 	}
 
 	@Override
-	public PointLocatorRT createRuntime() {
+	public SerialPointLocatorRT createRuntime() {
 		return new SerialPointLocatorRT(this);
 	}
 
@@ -144,7 +142,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO implements Json
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
-	public PointLocatorModel<?> asModel() {
+	public SerialPointLocatorModel asModel() {
 		return new SerialPointLocatorModel(this);
 	}
 

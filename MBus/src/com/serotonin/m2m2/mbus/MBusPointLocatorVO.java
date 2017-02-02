@@ -26,9 +26,7 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.util.SerializationHelper;
 
 import net.sf.mbus4j.MBusAddressing;
@@ -40,7 +38,7 @@ import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
 import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 import net.sf.mbus4j.dataframes.datablocks.vif.UnitOfMeasurement;
 
-public class MBusPointLocatorVO extends AbstractPointLocatorVO {
+public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorVO> {
 
 //    private static Log LOG = LogFactory.getLog(MBusPointLocatorVO.class);
 
@@ -128,7 +126,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
     }
 
     @Override
-    public PointLocatorRT createRuntime() {
+    public MBusPointLocatorRT createRuntime() {
         return new MBusPointLocatorRT(this);
     }
 
@@ -742,7 +740,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO {
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
 	@Override
-	public PointLocatorModel<?> asModel() {
+	public MBusPointLocatorModel asModel() {
 		return new MBusPointLocatorModel(this);
 	}
 }

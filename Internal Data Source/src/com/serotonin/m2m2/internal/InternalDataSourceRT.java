@@ -19,7 +19,7 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 /**
  * @author Matthew Lohbihler
  */
-public class InternalDataSourceRT extends PollingDataSource {
+public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO> {
     public static final int POLL_ABORTED_EVENT = 1;
 	
     public InternalDataSourceRT(InternalDataSourceVO vo) {

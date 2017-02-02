@@ -10,7 +10,7 @@ import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 
-public class VirtualDataSourceRT extends PollingDataSource {
+public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> {
 	
 	public static final int POLL_ABORTED_EVENT = 1;
 	

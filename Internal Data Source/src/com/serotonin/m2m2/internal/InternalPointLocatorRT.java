@@ -9,11 +9,10 @@ import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 /**
  * @author Matthew Lohbihler
  */
-public class InternalPointLocatorRT extends PointLocatorRT {
-    private final InternalPointLocatorVO vo;
+public class InternalPointLocatorRT extends PointLocatorRT<InternalPointLocatorVO> {
 
     public InternalPointLocatorRT(InternalPointLocatorVO vo) {
-        this.vo = vo;
+    	super(vo);
     }
 
     @Override

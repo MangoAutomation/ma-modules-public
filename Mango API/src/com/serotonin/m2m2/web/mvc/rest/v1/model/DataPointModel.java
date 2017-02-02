@@ -262,7 +262,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@CSVColumnGetter(header="pointLocatorType", order=14)
 	@JsonGetter("pointLocator")
 	public PointLocatorModel<?> getPointLocator(){
-		PointLocatorVO vo = this.data.getPointLocator();
+		PointLocatorVO<?> vo = this.data.getPointLocator();
 		if(vo == null)
 			return null;
 		else
@@ -273,7 +273,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@JsonSetter("pointLocator")
 	public void setPointLocator(PointLocatorModel<?> pl){
 		if(pl != null)
-			this.data.setPointLocator((PointLocatorVO)pl.getData());
+			this.data.setPointLocator((PointLocatorVO<?>)pl.getData());
 	}
 	
 	@JsonGetter("chartColour")

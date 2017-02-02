@@ -37,7 +37,7 @@ import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.util.queue.ByteQueue;
 
-public class SerialDataSourceRT extends EventDataSource implements SerialPortProxyEventListener{
+public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> implements SerialPortProxyEventListener{
 	private final Log LOG = LogFactory.getLog(SerialDataSourceRT.class);
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
@@ -49,13 +49,11 @@ public class SerialDataSourceRT extends EventDataSource implements SerialPortPro
 	private SerialPortProxy port; //Serial Communication Port
 	private ByteQueue buffer; //Max size is Max Message Size
 	private TimeoutTask timeoutTask; //Task to retrieve buffer contents after timeout
-	private SerialDataSourceVO vo;
 	
 	private RollingIOLog ioLog;
 	
 	public SerialDataSourceRT(SerialDataSourceVO vo) {
 		super(vo);
-		this.vo = vo;
 		buffer = new ByteQueue(vo.getMaxMessageSize());
 	}
 

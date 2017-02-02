@@ -6,14 +6,16 @@ package com.serotonin.m2m2.virtual.rt;
 
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
+import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
 
-public class VirtualPointLocatorRT extends PointLocatorRT {
+public class VirtualPointLocatorRT extends PointLocatorRT<VirtualPointLocatorVO> {
     private final ChangeTypeRT changeType;
     private DataValue currentValue;
     private final boolean settable;
 
-    public VirtualPointLocatorRT(ChangeTypeRT changeType, DataValue startValue, boolean settable) {
-        this.changeType = changeType;
+    public VirtualPointLocatorRT(VirtualPointLocatorVO vo, ChangeTypeRT changeType, DataValue startValue, boolean settable) {
+        super(vo);
+    	this.changeType = changeType;
         currentValue = startValue;
         this.settable = settable;
     }

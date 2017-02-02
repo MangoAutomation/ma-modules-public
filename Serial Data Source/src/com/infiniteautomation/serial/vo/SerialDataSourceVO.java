@@ -18,12 +18,9 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.util.SerializationHelper;
 
 @JsonEntity
@@ -78,12 +75,12 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	}
 
 	@Override
-	public PointLocatorVO createPointLocator() {
+	public SerialPointLocatorVO createPointLocator() {
 		return new SerialPointLocatorVO();
 	}
 
 	@Override
-	public DataSourceRT createDataSourceRT() {
+	public SerialDataSourceRT createDataSourceRT() {
 		return new SerialDataSourceRT(this);
 	}
 
@@ -435,7 +432,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
 	 */
 	@Override
-	public AbstractDataSourceModel<SerialDataSourceVO> asModel() {
+	public SerialDataSourceModel asModel() {
 		return new SerialDataSourceModel(this);
 	}
     
