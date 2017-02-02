@@ -1,3 +1,6 @@
+*Version 2.3.2*
+* Bugfix for running report to 'latest' and not getting any data with NoSQL data store.
+
 *Version 2.3.1*
 * Adding image support for NoSQL.  Image files are referenced from existing point values so by deleting point values the files will be gone and by deleting a report instance the files will remain.
 * Modify formatting for Image points in reports
