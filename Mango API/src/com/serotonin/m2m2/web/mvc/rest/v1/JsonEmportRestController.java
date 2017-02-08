@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mangoApi.websocket.JsonConfigImportWebSocketDefinition;
+import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.type.JsonArray;
@@ -286,8 +287,8 @@ public class JsonEmportRestController extends MangoRestController{
 			responseContainer="List"
 			)
 	@RequestMapping(method = RequestMethod.GET, value = "/list", produces={"application/json"})
-    public ResponseEntity<List<String>> listExportElements(HttpServletRequest request) {
-		RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);
+    public ResponseEntity<List<StringStringPair>> listExportElements(HttpServletRequest request) {
+		RestProcessResult<List<StringStringPair>> result = new RestProcessResult<List<StringStringPair>>(HttpStatus.OK);
 		
 		User user = this.checkUser(request, result);
         if(result.isOk()){
@@ -295,21 +296,21 @@ public class JsonEmportRestController extends MangoRestController{
 				result.addRestMessage(getUnauthorizedMessage());
 				return result.createResponseEntity();
 			}else{
-				List<String> elements = new ArrayList<String>();
-				elements.add(EmportDwr.DATA_SOURCES);
-				elements.add(EmportDwr.DATA_POINTS);
-				elements.add(EmportDwr.USERS);
-				elements.add(EmportDwr.MAILING_LISTS);
-				elements.add(EmportDwr.PUBLISHERS);
-				elements.add(EmportDwr.EVENT_HANDLERS);
-				elements.add(EmportDwr.POINT_HIERARCHY);
-				elements.add(EmportDwr.SYSTEM_SETTINGS);
-				elements.add(EmportDwr.TEMPLATES);
-				elements.add(EmportDwr.VIRTUAL_SERIAL_PORTS);
-				elements.add(EmportDwr.JSON_DATA);
+				List<StringStringPair> elements = new ArrayList<StringStringPair>();
+				elements.add(new StringStringPair("header.dataSources", EmportDwr.DATA_SOURCES));
+				elements.add(new StringStringPair("header.dataPoints", EmportDwr.DATA_POINTS));
+				elements.add(new StringStringPair("header.users", EmportDwr.USERS));
+				elements.add(new StringStringPair("header.mailingLists", EmportDwr.MAILING_LISTS));
+				elements.add(new StringStringPair("header.publishers", EmportDwr.PUBLISHERS));
+				elements.add(new StringStringPair("header.eventHandlers", EmportDwr.EVENT_HANDLERS));
+				elements.add(new StringStringPair("header.pointHierarchy", EmportDwr.POINT_HIERARCHY));
+				elements.add(new StringStringPair("header.systemSettings", EmportDwr.SYSTEM_SETTINGS));
+				elements.add(new StringStringPair("header.pointPropertyTemplates", EmportDwr.TEMPLATES));
+				elements.add(new StringStringPair("header.virtualSerialPorts", EmportDwr.VIRTUAL_SERIAL_PORTS));
+				elements.add(new StringStringPair("header.jsonData", EmportDwr.JSON_DATA));
 				
 				for (EmportDefinition def : ModuleRegistry.getDefinitions(EmportDefinition.class)) {
-		            elements.add(def.getElementId());
+		            elements.add(new StringStringPair(def.getDescriptionKey(), def.getElementId()));
 		        }
 				return result.createResponseEntity(elements);
 			}
