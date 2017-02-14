@@ -16,8 +16,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.MangoRestTemporaryResourceModel;
  */
 public abstract class MangoRestTemporaryResource implements TimeoutClient{
 	
-	private final String resourceId;
-	private Date expiration;
+	protected final String resourceId;
+	protected Date expiration;
 	private MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container;
 	private TimeoutTask task;
 
