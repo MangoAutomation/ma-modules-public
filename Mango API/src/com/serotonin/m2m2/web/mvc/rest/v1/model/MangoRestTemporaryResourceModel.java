@@ -4,8 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
-import java.util.Date;
-
 /**
  * 
  * Base Class for Temporary Resources
@@ -15,7 +13,7 @@ import java.util.Date;
 public abstract class MangoRestTemporaryResourceModel {
 	
 	protected String id;
-	protected Date expires;
+	protected long expires;
 	
 	public MangoRestTemporaryResourceModel(){ }
 	
@@ -31,10 +29,10 @@ public abstract class MangoRestTemporaryResourceModel {
 		this.id = id;
 	}
 	
-	public Date getExpires(){
+	public long getExpires(){
 		return this.expires;
 	}
-	public void setExpires(Date expires){
+	public void setExpires(long expires){
 		this.expires = expires;
 	}
 

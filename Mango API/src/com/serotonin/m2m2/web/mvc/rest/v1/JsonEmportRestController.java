@@ -217,7 +217,7 @@ public class JsonEmportRestController extends MangoRestController{
 	                    
 	                    //Setup the Temporary Resource
 	                	String resourceId = importStatusResources.generateResourceId();
-	                	this.importStatusResources.put(resourceId, new ImportStatusProvider(jo, resourceId, user, websocket), expiration.toDate());
+	                	this.importStatusResources.put(resourceId, new ImportStatusProvider(jo, resourceId, user, websocket), expiration.getMillis());
 	                	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
 	                	result.addHeader("Location", location.toString());
 	                } catch (Exception e) {
@@ -268,7 +268,7 @@ public class JsonEmportRestController extends MangoRestController{
                 }
                 //Setup the Temporary Resource
             	String resourceId = importStatusResources.generateResourceId();
-            	this.importStatusResources.put(resourceId, new ImportStatusProvider(config.toJsonObject(), resourceId, user, websocket), expiration.toDate());
+            	this.importStatusResources.put(resourceId, new ImportStatusProvider(config.toJsonObject(), resourceId, user, websocket), expiration.getMillis());
             	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
             	result.addHeader("Location", location.toString());
             }
