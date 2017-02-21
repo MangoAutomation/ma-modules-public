@@ -1,3 +1,6 @@
+*Version 1.6.2*
+* Adding option to disable data source polling
+
 *Version 1.6.1*
 * Bugfix for data point REST models so order of members is no longer important
 
