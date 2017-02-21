@@ -27,12 +27,13 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 public class VirtualEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
-    public ProcessResult saveVirtualDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType) {
+    public ProcessResult saveVirtualDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, boolean polling) {
         VirtualDataSourceVO ds = (VirtualDataSourceVO) Common.getUser().getEditDataSource();
 
         setBasicProps(ds, basic);
         ds.setUpdatePeriods(updatePeriods);
         ds.setUpdatePeriodType(updatePeriodType);
+        ds.setPolling(polling);
 
         return tryDataSourceSave(ds);
     }
@@ -62,6 +63,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 		ds.setEnabled(true);
 		ds.setUpdatePeriods(5);
 		ds.setUpdatePeriodType(TimePeriods.SECONDS);
+		ds.setPolling(true);
 		
 		ProcessResult response = new ProcessResult();
 		ds.validate(response);

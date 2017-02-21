@@ -8,7 +8,7 @@
   
   function saveDataSourceImpl(basic) {
       VirtualEditDwr.saveVirtualDataSource(basic, $get("updatePeriods"),
-              $get("updatePeriodType"), saveDataSourceCB);
+              $get("updatePeriodType"), $get("isPolling"), saveDataSourceCB);
   }
   
   function initImpl() {
@@ -187,6 +187,10 @@
   </script>
 
 <tag:dataSourceAttrs descriptionKey="dsEdit.virtual.desc" helpId="virtual-ds">
+  <tr>
+    <td class="formLabelRequired"><fmt:message key="dsEdit.virtual.performPolling"/></td>
+    <td class="formField"><sst:checkbox id="isPolling" selectedValue="${dataSource.polling}"/></td>
+  </tr>
   <tr>
     <td class="formLabelRequired"><fmt:message key="dsEdit.updatePeriod"/></td>
     <td class="formField">

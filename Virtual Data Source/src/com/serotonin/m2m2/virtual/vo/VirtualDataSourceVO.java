@@ -70,6 +70,8 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     private int updatePeriodType = Common.TimePeriods.MINUTES;
     @JsonProperty
     private int updatePeriods = 5;
+    @JsonProperty
+    private boolean polling = true;
 
     public int getUpdatePeriods() {
         return updatePeriods;
@@ -86,6 +88,12 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     public void setUpdatePeriodType(int updatePeriodType) {
         this.updatePeriodType = updatePeriodType;
     }
+    public boolean isPolling() {
+    	return polling;
+    }
+    public void setPolling(boolean polling) {
+    	this.polling = polling;
+    }
 
     @Override
     public void validate(ProcessResult response) {
@@ -101,12 +109,13 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 2;
+    private static final int version = 3;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         out.writeInt(updatePeriodType);
         out.writeInt(updatePeriods);
+        out.writeBoolean(polling);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
@@ -116,10 +125,17 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
         if (ver == 1) {
             updatePeriodType = Common.TimePeriods.SECONDS;
             updatePeriods = in.readInt();
+            polling = true;
         }
         else if (ver == 2) {
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
+            polling = true;
+        }
+        else if (ver == 3) {
+        	updatePeriodType = in.readInt();
+            updatePeriods = in.readInt();
+            polling = in.readBoolean();
         }
     }
 

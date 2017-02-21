@@ -37,5 +37,15 @@ public class VirtualDataSourceModel extends AbstractDataSourceModel<VirtualDataS
 		this.data.setUpdatePeriods(pollPeriod.getPeriods());
 		this.data.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
 	}
+	
+	@JsonGetter(value="polling")
+	public boolean isPolling(){
+		return this.data.isPolling();
+	}
+	
+	@JsonSetter(value="polling")
+	public void setPolling(boolean polling) {
+		this.data.setPolling(polling);
+	}
 
 }
