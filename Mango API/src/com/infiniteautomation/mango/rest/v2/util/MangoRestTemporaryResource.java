@@ -4,11 +4,12 @@
  */
 package com.infiniteautomation.mango.rest.v2.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.MangoRestTemporaryResourceModel;
 
 /**
+ * Temporary Resources potentially expire at some point in the future.
  * 
  * @author Terry Packer
  */
@@ -16,10 +17,15 @@ public abstract class MangoRestTemporaryResource implements TimeoutClient{
 	
 	protected final String resourceId;
 	protected long expiration = 0;
+	@JsonIgnore
 	private MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container;
+	@JsonIgnore
 	private TimeoutTask task;
 
-	
+	/**
+	 * 
+	 * @param resourceId
+	 */
 	public MangoRestTemporaryResource(String resourceId){
 		this.resourceId = resourceId;
 	}
@@ -32,6 +38,8 @@ public abstract class MangoRestTemporaryResource implements TimeoutClient{
 	public void schedule(long expiration, MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container){
 		this.expiration = expiration;
 		this.container = container;
+		if(this.task != null)
+			this.task.cancel();
 		this.task = new TimeoutTask(expiration, this);
 	}
 	
@@ -50,21 +58,6 @@ public abstract class MangoRestTemporaryResource implements TimeoutClient{
 	public void scheduleTimeout(long fireTime) {
 		this.container.remove(this.resourceId);
 	}
-
-	/**
-	 * Create a model
-	 * @return
-	 */
-	protected abstract MangoRestTemporaryResourceModel createModel();
 	
-	/**
-	 * Get the model for the resource
-	 * @return
-	 */
-	public MangoRestTemporaryResourceModel getModel(){
-		MangoRestTemporaryResourceModel model = createModel();
-		if(this.expiration >= 0)
-			model.setExpires(expiration);
-		return model;
-	}
+	
 }
