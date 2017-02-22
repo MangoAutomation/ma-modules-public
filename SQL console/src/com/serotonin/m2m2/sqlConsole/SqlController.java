@@ -38,7 +38,7 @@ public class SqlController implements UrlHandler {
     @Override
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, final Map<String, Object> model)
             throws Exception {
-        Permissions.ensureAdmin(request);
+        Permissions.ensureAdmin(Common.getHttpUser());
         model.put("updateResult", -1);
 
         try {
