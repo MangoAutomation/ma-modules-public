@@ -1,4 +1,3 @@
-#Thu Nov 04 20:00:27 EDT 2010
 eclipse.preferences.version=1
 encoding//classes/i18n.properties=UTF-8
 encoding//classes/i18n_de.properties=UTF-8
@@ -7,3 +6,5 @@ encoding//classes/i18n_nl.properties=UTF-8
 encoding//classes/i18n_pt.properties=UTF-8
 encoding//classes/i18n_zh.properties=UTF-8
 encoding//web/dox/pt/directQuerying.htm=UTF-8
+encoding/<project>=UTF-8
+encoding/src=UTF-8
