@@ -16,4 +16,6 @@
 
 <p>
   The data source configuration is simple. It requires only a name, and the period of time between each data update. For example, if you choose "2 minutes", then every two minutes the algorithms that change the virtual point values for that data source will be run.
+  If one unchecks the <b>Perform polls</b> checkbox, the virtual data source will not generate updates for the points. This can be useful if you are using virtual points as components in more complex control logic, and only wish for the points to update when
+  they are set from a point link, a script, the interface, etc.
 </p>
