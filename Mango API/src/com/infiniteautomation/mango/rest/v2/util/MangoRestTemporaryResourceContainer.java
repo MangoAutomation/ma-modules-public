@@ -7,7 +7,7 @@ package com.infiniteautomation.mango.rest.v2.util;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.infiniteautomation.mango.web.mvc.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
 
 /**

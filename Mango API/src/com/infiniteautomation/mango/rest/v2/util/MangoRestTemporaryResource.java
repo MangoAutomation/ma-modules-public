@@ -59,5 +59,19 @@ public abstract class MangoRestTemporaryResource implements TimeoutClient{
 		this.container.remove(this.resourceId);
 	}
 	
-	
+	/**
+	 * ID for this resource
+	 * @return
+	 */
+	public String getResourceId(){
+		return this.resourceId;
+	}
+
+	/**
+	 * Timestamp at which the resource will expire
+	 * @return
+	 */
+	public long getExpires(){
+		return this.expiration;
+	}
 }
