@@ -234,6 +234,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 		            dp.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO<?>>(0));
 		            dp.defaultTextRenderer();
 					dp.setEnabled(true);
+					dp.setChartColour("");
 
 					dp.setPointLocator(pl);
 					DataPointPropertiesTemplateVO template = TemplateDao.instance.getDefaultDataPointTemplate(pl.getDataTypeId());
