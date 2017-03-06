@@ -1,10 +1,14 @@
 package com.infiniteautomation.asciifile.vo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.rt.AsciiFileDataSourceRT;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -13,6 +17,7 @@ import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
@@ -111,9 +116,23 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
             response.addContextualMessage("filePath", "validate.required");
         if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType))
             response.addContextualMessage("updatePeriodType", "validate.invalidValue");
-//        if (updatePeriods <= 0)
-//            response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
-        
+//        if (updatePeriods < 0)
+//        	response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
+        if(!StringUtils.isEmpty(this.filePath)) {
+        	File file = new File(this.filePath);
+        	try {
+        		this.filePath = file.getCanonicalPath();
+        	} catch(IOException e) {
+        		response.addContextualMessage("filePath", "dsEdit.file.ioexceptionCanonical", filePath);
+        		return;
+        	}
+	        String restrictedPaths = SystemSettingsDao.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH, Common.MA_HOME);
+	        if(!StringUtils.isEmpty(restrictedPaths))
+		        for(String rPath : restrictedPaths.split(";")) {
+		        	if(this.filePath.startsWith(rPath))
+		        		response.addContextualMessage("filePath", "dsEdit.file.pathRestrictedBy", filePath);
+		        }
+        }
      }
 
     //

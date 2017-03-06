@@ -13,25 +13,31 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.infiniteautomation.mango.regex.MatchCallback;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
+import com.serotonin.m2m2.vo.systemSettings.SystemSettingsEventDispatcher;
+import com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener;
 
 /**
  * @author Phillip Dunlap
  */
 
-public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSourceVO> implements FileAlterationListener {
+public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSourceVO> implements FileAlterationListener, SystemSettingsListener {
 	private static final Log LOG = LogFactory.getLog(AsciiFileDataSourceRT.class);
 
 	public static final int POINT_READ_EXCEPTION_EVENT = 1;
@@ -42,10 +48,13 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	private File file; // File
 	private FileAlterationObserver fobs;
+	private boolean restrictedPath;
 
 	public AsciiFileDataSourceRT(AsciiFileDataSourceVO vo) {
 		super(vo);
+		this.restrictedPath = isPathRestricted(SystemSettingsDao.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH));
 		setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+		SystemSettingsEventDispatcher.addListener(this);
 	}
 
 	/**
@@ -72,7 +81,6 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 			return true;
 		}
-
 	}
 
 	@Override
@@ -111,7 +119,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 			}
 			this.file = null;
 		}
-
+		SystemSettingsEventDispatcher.removeListener(this);
 	}
 
 	@Override
@@ -167,6 +175,12 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 					new TranslatableMessage("file.event.readFailedFileNotSetup"));
 			return;
 		}
+		
+		if (restrictedPath) {
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+					new TranslatableMessage("dsEdit.file.pathRestrictedBy", vo.getFilePath()));
+			return;
+		}
 
 		// The file is modified or we've just started, so read it.
 		try {
@@ -205,7 +219,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 							@Override
 							public void pointNotIdentified(String message, String messageRegex,
 									int pointIdentifierIndex) {
-								raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), false,
+								raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), false,
 										new TranslatableMessage("file.event.insufficientGroups",
 												dp.getVO().getExtendedName()));
 							}
@@ -213,13 +227,13 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 							@Override
 							public void matchGeneralFailure(Exception e) {
 								if (e instanceof ParseException)
-									raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+									raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
 											new TranslatableMessage("file.event.dateParseFailed", e.getMessage()));
 								else if (e instanceof NumberFormatException) {
-									raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+									raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
 											new TranslatableMessage("file.event.notNumber", e.getMessage()));
 								} else
-									raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+									raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
 											new TranslatableMessage("file.event.readFailed", e.getMessage()));
 							}
 
@@ -233,16 +247,16 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 					}
 				}
 				reader.close();
-				returnToNormal(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis());
+				returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis());
 			}
 		} catch (FileNotFoundException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
 					new TranslatableMessage("file.event.fileNotFound", e.getMessage()));
 		} catch (IOException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
 					new TranslatableMessage("file.event.readFailed", e.getMessage()));
 		} catch (NumberFormatException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
 					new TranslatableMessage("file.event.notNumber", e.getMessage()));
 		}
 
@@ -250,6 +264,11 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	@Override
 	protected void doPoll(long time) {
+		if (restrictedPath) {
+			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+					new TranslatableMessage("dsEdit.file.pathRestrictedBy", vo.getFilePath()));
+			return;
+		}
 		if (fobs != null)
 			fobs.checkAndNotify();
 
@@ -307,6 +326,30 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 				callback.matchGeneralFailure(e);
 				return;
 			}
+		}
+	}
+
+	@Override
+	public void SystemSettingsSaved(String key, Object oldValue, Object newValue) {
+		if(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH.equals(key)) {
+			this.restrictedPath = isPathRestricted((String)newValue);
+		}
+	}
+	
+	private boolean isPathRestricted(String restrictedPaths) {
+		if(StringUtils.isEmpty(restrictedPaths))
+			return false;
+		for(String rPath : restrictedPaths.split(";")) {
+			if(vo.getFilePath().startsWith(rPath))
+				return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void SystemSettingsRemoved(String key, Object lastValue) {
+		if(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH.equals(key)) {
+			this.restrictedPath = false;
 		}
 	}
 }

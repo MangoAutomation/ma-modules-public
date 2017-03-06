@@ -1,6 +1,7 @@
 package com.infiniteautomation.asciifile.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.rt.AsciiFileDataSourceRT;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
@@ -37,7 +39,13 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 		setBasicProps(ds, basic);
 		ds.setUpdatePeriods(updatePeriods);
 		ds.setUpdatePeriodType(updatePeriodType);
-		ds.setFilePath(filePath);
+		try {
+			ds.setFilePath(new File(filePath).getCanonicalPath());
+		} catch(IOException e) {
+			ProcessResult pr = new ProcessResult();
+			pr.addContextualMessage("filePath", "dsEdit.file.ioexceptionCanonical", filePath);
+			return pr;
+		}
 
 		return tryDataSourceSave(ds);
 	}
@@ -50,8 +58,15 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 	@DwrPermission(user = true)
 	public boolean checkIsFileReadable(String path) {
 		File verify = new File(path);
+		try {
+			System.out.println(verify.getCanonicalPath());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		if (verify.exists())
 			return verify.canRead();
+		if (verify.isAbsolute())
+			System.out.println("Is absolute.");
 		return false;
 	}
 	
@@ -131,5 +146,12 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 		
 		}
     	return pr;
+    }
+    
+    @DwrPermission(admin = true)
+    public ProcessResult validateSettings(Map<String, String> settings) {
+    	ProcessResult response = new ProcessResult();
+    	AsciiFileSystemSettingsDefinition.validate(settings, response);
+    	return response;
     }
 }
