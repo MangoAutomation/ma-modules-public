@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.rt.AsciiFileDataSourceRT;
@@ -17,6 +20,7 @@ import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.infiniteautomation.mango.regex.MatchCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -30,6 +34,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
  */
 
 public class AsciiFileEditDwr extends DataSourceEditDwr {
+	private static final Log LOG = LogFactory.getLog(AsciiFileEditDwr.class);
 
 	@DwrPermission(user = true)
 	public ProcessResult saveFileDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType,
@@ -57,16 +62,25 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 
 	@DwrPermission(user = true)
 	public boolean checkIsFileReadable(String path) {
+		String canonicalPath;
 		File verify = new File(path);
 		try {
-			System.out.println(verify.getCanonicalPath());
+			canonicalPath = verify.getCanonicalPath();
+			LOG.info("Verifying ASCII file reader path to: " + canonicalPath);
 		}catch(Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
+			return false;
 		}
+		
+		String restrictedPaths = SystemSettingsDao.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+		if(!StringUtils.isEmpty(restrictedPaths))
+			for(String p : restrictedPaths.split(";"))
+				if(path.startsWith(p))
+					return false;
+		
 		if (verify.exists())
 			return verify.canRead();
-		if (verify.isAbsolute())
-			System.out.println("Is absolute.");
+
 		return false;
 	}
 	

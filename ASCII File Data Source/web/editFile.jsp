@@ -39,9 +39,9 @@
 	  
 	  function checkFileCB(result) {
 		  if(result)
-	   		$set("fileTestMessage", "<fmt:message key="dsEdit.file.fileExists"/>");
+	   		$set("fileTestMessage", "<fmt:message key="dsEdit.file.canRead"/>");
 		  else
-			$set("fileTestMessage", "<fmt:message key="dsEdit.file.fileDoesNotExist"/>")
+			$set("fileTestMessage", "<fmt:message key="dsEdit.file.cannotRead"/>")
 	      fileTestButton(false);
 	  }
 

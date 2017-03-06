@@ -11,5 +11,10 @@
   
   <item id="asciiFilePP" key="dox.asciiFilePP" filename="asciiFilePP.htm">
     <relation id="asciiFileDS"/>
+    <relation id="asciiFileSystemSettings"/>
+  </item>
+  
+  <item id="asciiFileSystemSettings" key="dox.asciiFileSystemSettings" filename="asciiFileSystemSettings.htm">
+    <relation id="asciiFileDS"/>
   </item>
 </doxManifest>
