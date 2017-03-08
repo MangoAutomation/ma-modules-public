@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.json.JsonException;
@@ -112,7 +114,14 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     			MONITOR_EXPORT_CODES.put(monitor.getId(), monitor.getId());
     		}
     	}
-    	
+    }
+    
+    private Set<String> getCurrentMonitorIdSet() {
+    	Set<String> validKeys = new HashSet<String>();
+    	for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()) {
+    		validKeys.add(monitor.getId());
+    	}
+    	return validKeys;
     }
     
     private String monitorId = MONITOR_NAMES[Attributes.BATCH_ENTRIES];
@@ -197,14 +206,15 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         if (text == null){
             text = jsonObject.getString("monitorId");
         	if(text == null)
-        		throw new TranslatableJsonException("emport.error.missing", "monitorId", MONITOR_EXPORT_CODES.keySet());
+        		throw new TranslatableJsonException("emport.error.missing", "monitorId", getCurrentMonitorIdSet());
         	else
         		monitorId = text;
-        	if(MONITOR_EXPORT_CODES.get(monitorId) == null)
+        	if(Common.MONITORED_VALUES.getValueMonitor(monitorId) == null)
         		throw new TranslatableJsonException("emport.error.invalid", "monitorId", text,
-        				MONITOR_EXPORT_CODES.keySet());
+        				getCurrentMonitorIdSet());
         	
         }else{
+        	//TODO this definitely doesn't work or do anything. Should fix
         	int attributeId = ATTRIBUTE_CODES.getId(text);
             if (!ATTRIBUTE_CODES.isValidId(attributeId))
                 throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
