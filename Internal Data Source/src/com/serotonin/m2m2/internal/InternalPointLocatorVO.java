@@ -7,10 +7,10 @@ package com.serotonin.m2m2.internal;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.json.JsonException;
@@ -116,8 +116,8 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
     	}
     }
     
-    private Set<String> getCurrentMonitorIdSet() {
-    	Set<String> validKeys = new HashSet<String>();
+    private List<String> getCurrentMonitorIdList() {
+    	List<String> validKeys = new ArrayList<String>();
     	for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()) {
     		validKeys.add(monitor.getId());
     	}
@@ -206,12 +206,12 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO implements Js
         if (text == null){
             text = jsonObject.getString("monitorId");
         	if(text == null)
-        		throw new TranslatableJsonException("emport.error.missing", "monitorId", getCurrentMonitorIdSet());
+        		throw new TranslatableJsonException("emport.error.missing", "monitorId", getCurrentMonitorIdList());
         	else
         		monitorId = text;
         	if(Common.MONITORED_VALUES.getValueMonitor(monitorId) == null)
         		throw new TranslatableJsonException("emport.error.invalid", "monitorId", text,
-        				getCurrentMonitorIdSet());
+        				getCurrentMonitorIdList());
         	
         }else{
         	//TODO this definitely doesn't work or do anything. Should fix
