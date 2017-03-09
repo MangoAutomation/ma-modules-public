@@ -17,7 +17,7 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.EventInstance.RtnCauses;
 import com.serotonin.m2m2.rt.event.type.EventType;
-import com.serotonin.m2m2.vo.UserComment;
+import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
@@ -185,19 +185,19 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 	@JsonGetter
 	public List<UserCommentModel> getComments(){
 		List<UserCommentModel> commentModels = new ArrayList<UserCommentModel>();
-		List<UserComment> comments = this.data.getEventComments();
+		List<UserCommentVO> comments = this.data.getEventComments();
 		if(comments == null)
 			return null;
-		for(UserComment comment: comments){
+		for(UserCommentVO comment: comments){
 			commentModels.add(new UserCommentModel(comment));
 		}
 		return commentModels;
 	}
 	@JsonSetter
 	public void setComments(List<UserCommentModel> commentModels){
-		List<UserComment> comments = this.data.getEventComments();
+		List<UserCommentVO> comments = this.data.getEventComments();
 		if(comments == null){
-			comments = new ArrayList<UserComment>();
+			comments = new ArrayList<UserCommentVO>();
 			this.data.setEventComments(comments);
 		}
 		for(UserCommentModel model : commentModels){
