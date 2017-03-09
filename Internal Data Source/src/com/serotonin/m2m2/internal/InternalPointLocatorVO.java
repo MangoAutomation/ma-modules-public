@@ -24,7 +24,6 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.util.SerializationHelper;
 
@@ -33,24 +32,6 @@ import com.serotonin.util.SerializationHelper;
  */
 @JsonEntity
 public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPointLocatorVO> implements JsonSerializable {
-    public interface Attributes {
-        int BATCH_ENTRIES = 1;
-        int BATCH_INSTANCES = 2;
-        int MONITOR_HIGH = 3;
-        int MONITOR_MEDIUM = 4;
-        int MONITOR_SCHEDULED = 5;
-        int MONITOR_STACK_HEIGHT = 6;
-        int MONITOR_THREAD_COUNT = 7;
-        int MONITOR_DB_ACTIVE_CONNECTIONS = 8;
-        int MONITOR_DB_IDLE_CONNECTIONS = 9;
-        int BATCH_WRITE_SPEED_MONITOR = 10;
-        int JAVA_FREE_MEMORY = 11;
-        int JAVA_USED_MEMORY = 12;
-        int JAVA_MAX_MEMORY = 13;
-        int JAVA_PROCESSORS = 14;
-    }
-
-    // Values in this array correspond to the attribute ids above.
     public static String[] MONITOR_NAMES = { "", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.ENTRIES_MONITOR", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.INSTANCES_MONITOR", //
@@ -67,53 +48,25 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
             "java.lang.Runtime.maxMemory",
             "java.lang.Runtime.availableProcessors"
     };
-
-    public static ExportCodes ATTRIBUTE_CODES = new ExportCodes();
-    static {
-    	ATTRIBUTE_CODES.addElement(Attributes.BATCH_ENTRIES, "BATCH_ENTRIES", "internal.monitor.BATCH_ENTRIES");
-    	ATTRIBUTE_CODES.addElement(Attributes.BATCH_INSTANCES, "BATCH_INSTANCES", "internal.monitor.BATCH_INSTANCES");
-    	ATTRIBUTE_CODES.addElement(Attributes.MONITOR_HIGH, "MONITOR_HIGH", "internal.monitor.MONITOR_HIGH");
-    	ATTRIBUTE_CODES.addElement(Attributes.MONITOR_MEDIUM, "MONITOR_MEDIUM", "internal.monitor.MONITOR_MEDIUM");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_SCHEDULED, "MONITOR_SCHEDULED",
-                "internal.monitor.MONITOR_SCHEDULED");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_STACK_HEIGHT, "MONITOR_STACK_HEIGHT",
-                "internal.monitor.MONITOR_STACK_HEIGHT");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_THREAD_COUNT, "MONITOR_THREAD_COUNT",
-                "internal.monitor.MONITOR_THREAD_COUNT");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_DB_ACTIVE_CONNECTIONS, "DB_ACTIVE_CONNECTIONS",
-                "internal.monitor.DB_ACTIVE_CONNECTIONS");
-        ATTRIBUTE_CODES.addElement(Attributes.MONITOR_DB_IDLE_CONNECTIONS, "DB_IDLE_CONNECTIONS",
-                "internal.monitor.DB_IDLE_CONNECTIONS");
-        ATTRIBUTE_CODES.addElement(Attributes.BATCH_WRITE_SPEED_MONITOR, "BATCH_WRITE_SPEED_MONITOR",
-                "internal.monitor.BATCH_WRITE_SPEED_MONITOR");
-        ATTRIBUTE_CODES.addElement(Attributes.JAVA_FREE_MEMORY, "JAVA_FREE_MEMORY",
-                "java.monitor.JAVA_FREE_MEMORY");
-        ATTRIBUTE_CODES.addElement(Attributes.JAVA_USED_MEMORY, "JAVA_USED_MEMORY",
-                "java.monitor.JAVA_USED_MEMORY");
-        ATTRIBUTE_CODES.addElement(Attributes.JAVA_MAX_MEMORY, "JAVA_MAX_MEMORY",
-                "java.monitor.JAVA_MAX_MEMORY");
-        ATTRIBUTE_CODES.addElement(Attributes.JAVA_PROCESSORS, "JAVA_PROCESSORS",
-                "java.monitor.JAVA_PROCESSORS");        
-        
-    };
-
-    //Map of Monitor ID to legacy JSON code (or if new then just Monitor ID)
-    public static Map<String, String> MONITOR_EXPORT_CODES = new HashMap<String, String>();
-    static{
-    	
-    	//Add in new codes for anything missing
-    	for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()){
-    		//Do we have this one?
-    		int attributeId = ATTRIBUTE_CODES.getId(monitor.getId());
-    		if( attributeId > 0){
-    			MONITOR_EXPORT_CODES.put(monitor.getId(), ATTRIBUTE_CODES.getCode(attributeId));
-    		}else{
-    			//Use its ID in the JSON
-    			MONITOR_EXPORT_CODES.put(monitor.getId(), monitor.getId());
-    		}
-    	}
-    }
     
+    private static Map<String, String> LEGACY_ID_MAP = new HashMap<String, String>();
+    static {
+    	LEGACY_ID_MAP.put("BATCH_ENTRIES", MONITOR_NAMES[1]);
+    	LEGACY_ID_MAP.put("BATCH_INSTANCES", MONITOR_NAMES[2]);
+    	LEGACY_ID_MAP.put("MONITOR_HIGH", MONITOR_NAMES[3]);
+    	LEGACY_ID_MAP.put("MONITOR_MEDIUM", MONITOR_NAMES[4]);
+    	LEGACY_ID_MAP.put("MONITOR_SCHEDULED", MONITOR_NAMES[5]);
+    	LEGACY_ID_MAP.put("MONITOR_STACK_HEIGHT", MONITOR_NAMES[6]);
+    	LEGACY_ID_MAP.put("MONITOR_THREAD_COUNT", MONITOR_NAMES[7]);
+    	LEGACY_ID_MAP.put("DB_ACTIVE_CONNECTIONS", MONITOR_NAMES[8]);
+    	LEGACY_ID_MAP.put("DB_IDLE_CONNECTIONS", MONITOR_NAMES[9]);
+    	LEGACY_ID_MAP.put("BATCH_WRITE_SPEED_MONITOR", MONITOR_NAMES[10]);
+    	LEGACY_ID_MAP.put("JAVA_FREE_MEMORY", MONITOR_NAMES[11]);
+    	LEGACY_ID_MAP.put("JAVA_USED_MEMORY", MONITOR_NAMES[12]);
+    	LEGACY_ID_MAP.put("JAVA_MAX_MEMORY", MONITOR_NAMES[13]);
+    	LEGACY_ID_MAP.put("JAVA_PROCESSORS", MONITOR_NAMES[14]);
+    }
+
     private List<String> getCurrentMonitorIdList() {
     	List<String> validKeys = new ArrayList<String>();
     	for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()) {
@@ -122,7 +75,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
     	return validKeys;
     }
     
-    private String monitorId = MONITOR_NAMES[Attributes.BATCH_ENTRIES];
+    private String monitorId = MONITOR_NAMES[1];
     
     @Override
     public boolean isSettable() {
@@ -212,12 +165,10 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
         				getCurrentMonitorIdList());
         	
         }else{
-        	//TODO this definitely doesn't work or do anything. Should fix
-        	int attributeId = ATTRIBUTE_CODES.getId(text);
-            if (!ATTRIBUTE_CODES.isValidId(attributeId))
-                throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
-                        ATTRIBUTE_CODES.getCodeList());
-            
+        	if(!LEGACY_ID_MAP.containsKey(text))
+        		throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
+                        LEGACY_ID_MAP.keySet());
+        	monitorId = LEGACY_ID_MAP.get(text);
         }
     }
 	/* (non-Javadoc)
