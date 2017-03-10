@@ -50,7 +50,7 @@ import com.serotonin.m2m2.view.stats.ITime;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.UserComment;
+import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
 import com.serotonin.m2m2.vo.export.ExportDataValue;
 import com.serotonin.m2m2.vo.export.ExportPointInfo;
@@ -464,11 +464,11 @@ public class ReportDao extends AbstractDao<ReportVO> {
             if (instance.isIncludeUserComments()) {
                 String commentSQL = "insert into reportInstanceUserComments " //
                         + "  (reportInstanceId, username, commentType, typeKey, ts, commentText)" //
-                        + "  select " + instance.getId() + ", u.username, " + UserComment.TYPE_POINT + ", " //
+                        + "  select " + instance.getId() + ", u.username, " + UserCommentVO.TYPE_POINT + ", " //
                         + reportPointId + ", uc.ts, uc.commentText " //
                         + "  from userComments uc " //
                         + "    left join users u on uc.userId=u.id " //
-                        + "  where uc.commentType=" + UserComment.TYPE_POINT //
+                        + "  where uc.commentType=" + UserCommentVO.TYPE_POINT //
                         + "    and uc.typeKey=? ";
 
                 // Only include comments made in the duration of the report.
@@ -481,12 +481,12 @@ public class ReportDao extends AbstractDao<ReportVO> {
         if (instance.isIncludeUserComments()) {
             String commentSQL = "insert into reportInstanceUserComments " //
                     + "  (reportInstanceId, username, commentType, typeKey, ts, commentText)" //
-                    + "  select " + instance.getId() + ", u.username, " + UserComment.TYPE_EVENT + ", uc.typeKey, " //
+                    + "  select " + instance.getId() + ", u.username, " + UserCommentVO.TYPE_EVENT + ", uc.typeKey, " //
                     + "    uc.ts, uc.commentText " //
                     + "  from userComments uc " //
                     + "    left join users u on uc.userId=u.id " //
                     + "    join reportInstanceEvents re on re.eventId=uc.typeKey " //
-                    + "  where uc.commentType=" + UserComment.TYPE_EVENT //
+                    + "  where uc.commentType=" + UserCommentVO.TYPE_EVENT //
                     + "    and re.reportInstanceId=? ";
             ejt.update(commentSQL, new Object[] { instance.getId() });
         }
@@ -719,11 +719,11 @@ public class ReportDao extends AbstractDao<ReportVO> {
         final List<EventInstance> events = query(EVENT_SELECT, new Object[] { instanceId },
                 new EventDao.EventInstanceRowMapper());
         // Add in the comments.
-        ejt.query(EVENT_COMMENT_SELECT, new Object[] { instanceId, UserComment.TYPE_EVENT }, new RowCallbackHandler() {
+        ejt.query(EVENT_COMMENT_SELECT, new Object[] { instanceId, UserCommentVO.TYPE_EVENT }, new RowCallbackHandler() {
             @Override
             public void processRow(ResultSet rs) throws SQLException {
                 // Create the comment
-                UserComment c = new UserComment();
+                UserCommentVO c = new UserCommentVO();
                 c.setUsername(rs.getString(1));
                 c.setTs(rs.getLong(3));
                 c.setComment(rs.getString(4));
@@ -733,7 +733,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
                 for (EventInstance event : events) {
                     if (event.getId() == eventId) {
                         if (event.getEventComments() == null)
-                            event.setEventComments(new ArrayList<UserComment>());
+                            event.setEventComments(new ArrayList<UserCommentVO>());
                         event.addEventComment(c);
                     }
                 }
@@ -747,7 +747,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
             + "  rc.ts, rc.commentText "
             + "from reportInstanceUserComments rc "
             + "  left join reportInstancePoints rp on rc.typeKey=rp.id and rc.commentType="
-            + UserComment.TYPE_POINT
+            + UserCommentVO.TYPE_POINT
             + " " + "where rc.reportInstanceId=? " + "order by rc.ts ";
 
     public List<ReportUserComment> getReportInstanceUserComments(int instanceId) {
@@ -899,11 +899,11 @@ public class ReportDao extends AbstractDao<ReportVO> {
             if (instance.isIncludeUserComments()) {
                 String commentSQL = "insert into reportInstanceUserComments " //
                         + "  (reportInstanceId, username, commentType, typeKey, ts, commentText)" //
-                        + "  select " + instance.getId() + ", u.username, " + UserComment.TYPE_POINT + ", " //
+                        + "  select " + instance.getId() + ", u.username, " + UserCommentVO.TYPE_POINT + ", " //
                         + reportPointId + ", uc.ts, uc.commentText " //
                         + "  from userComments uc " //
                         + "    left join users u on uc.userId=u.id " //
-                        + "  where uc.commentType=" + UserComment.TYPE_POINT //
+                        + "  where uc.commentType=" + UserCommentVO.TYPE_POINT //
                         + "    and uc.typeKey=? ";
 
                 // Only include comments made in the duration of the report.
@@ -933,12 +933,12 @@ public class ReportDao extends AbstractDao<ReportVO> {
         if (instance.isIncludeUserComments()) {
             String commentSQL = "insert into reportInstanceUserComments " //
                     + "  (reportInstanceId, username, commentType, typeKey, ts, commentText)" //
-                    + "  select " + instance.getId() + ", u.username, " + UserComment.TYPE_EVENT + ", uc.typeKey, " //
+                    + "  select " + instance.getId() + ", u.username, " + UserCommentVO.TYPE_EVENT + ", uc.typeKey, " //
                     + "    uc.ts, uc.commentText " //
                     + "  from userComments uc " //
                     + "    left join users u on uc.userId=u.id " //
                     + "    join reportInstanceEvents re on re.eventId=uc.typeKey " //
-                    + "  where uc.commentType=" + UserComment.TYPE_EVENT //
+                    + "  where uc.commentType=" + UserCommentVO.TYPE_EVENT //
                     + "    and re.reportInstanceId=? ";
             ejt.update(commentSQL, new Object[] { instance.getId() });
         }

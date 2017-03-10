@@ -53,7 +53,7 @@ import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.view.text.TextRenderer;
-import com.serotonin.m2m2.vo.UserComment;
+import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.export.EventCsvStreamer;
 import com.serotonin.m2m2.vo.export.ExportCsvStreamer;
 import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
@@ -226,7 +226,7 @@ public class ReportChartCreator {
             // into the events list.
             List<ReportUserComment> pointComments = new ArrayList<ReportUserComment>();
             for (ReportUserComment c : comments) {
-                if (c.getCommentType() == UserComment.TYPE_POINT)
+                if (c.getCommentType() == UserCommentVO.TYPE_POINT)
                     pointComments.add(c);
             }
 
