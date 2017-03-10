@@ -8,12 +8,11 @@ import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.jazdw.rql.parser.ASTNode;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,7 +24,6 @@ import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppen
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
@@ -34,6 +32,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * 
@@ -159,7 +159,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     			model.setUsername(user.getUsername());
     		}
     		//Don't let non admin users create notes from other people
-    		if((model.getUserId() != user.getId()) && !Permissions.hasAdmin(user)){
+    		if(!hasEditPermission(model.getData(), user)){
     			result.addRestMessage(this.getUnauthorizedMessage());
     			return result.createResponseEntity();
     		}
@@ -169,7 +169,8 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		}
     		if(model.validate()){
     			try{
-	    			UserCommentDao.instance.save(model.getData());
+    				String initiatorId = request.getHeader("initiatorId");
+	    			UserCommentDao.instance.save(model.getData(), initiatorId);
 	    			LOG.info("User with name/id: " + user.getUsername() + "/" + user.getId() + " created a User Comment for user: " + model.getData().getUserId());
 	    			return result.createResponseEntity(model); 
     			}catch(Exception e){
@@ -185,7 +186,72 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     	return result.createResponseEntity();
 	}
 
+	@ApiOperation(value = "Delete A User Comment by XID")
+	@RequestMapping(method = RequestMethod.DELETE,  produces={"application/json", "text/csv"}, value = "/{xid}")
+    public ResponseEntity<UserCommentModel> deleteUserComment(
+    		@ApiParam(value = "xid", required = true, allowMultiple = false)
+    		@PathVariable String xid,
+    		HttpServletRequest request) throws RestValidationFailedException {
 
+		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		UserCommentVO u = UserCommentDao.instance.getByXid(xid);
+			if (u == null) {
+				result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	        }
+    		
+    		//Check permissions
+    		if(hasEditPermission(u, user)){
+    			//Delete it
+    			String initiatorId = request.getHeader("initiatorId");
+    			UserCommentDao.instance.delete(u.getId(), initiatorId);
+    		}else{
+    			LOG.warn("Non admin user: " + user.getUsername() + " attempted to delete user comment : " + u.getUsername());
+    			result.addRestMessage(this.getUnauthorizedMessage());
+    		}
+    	}
+		
+		return result.createResponseEntity();
+	}
+	
+	@ApiOperation(value = "Get user comment by xid", notes = "Returns the user comment specified by the given xid")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
+    public ResponseEntity<UserCommentModel> getUserComment(
+    		@ApiParam(value = "Valid xid", required = true, allowMultiple = false)
+    		@PathVariable String xid, HttpServletRequest request) {
+		
+		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
+    	this.checkUser(request, result);
+    	if(result.isOk()){
+    		UserCommentVO u = UserCommentDao.instance.getByXid(xid);
+			if (u == null) {
+				result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	        }else{
+			
+	        	UserCommentModel model = new UserCommentModel(u);
+	        	return result.createResponseEntity(model);
+    		}
+    	}
+    	return result.createResponseEntity();
+	}
+
+	/**
+	 * A user has comment permission if they are Admin or Created the comment.
+	 * @param vo
+	 * @param user
+	 * @return
+	 */
+	private boolean hasEditPermission(UserCommentVO vo, User user){
+		if(user.isAdmin())
+			return true;
+		else if(vo.getUserId() == user.getId())
+			return true;
+		return false;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
 	 */
