@@ -11,7 +11,7 @@ import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel;
 
 /**
- * This class should really JSON ignore xid and name properties
+ * This class should really JSON ignore name properties
  * 
  * @author Terry Packer
  *
@@ -24,6 +24,12 @@ public class UserCommentModel extends AbstractVoModel<UserCommentVO>{
 	
 	public UserCommentModel(UserCommentVO comment){
 		super(comment);
+	}
+	
+	@JsonIgnore
+	@Override
+	public String getName() {
+		return super.getName();
 	}
 	
 	@JsonGetter
@@ -95,10 +101,7 @@ public class UserCommentModel extends AbstractVoModel<UserCommentVO>{
 		return comment;
 	}
 	
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
+	@JsonIgnore
 	@Override
 	public String getModelType() {
 		return null;
