@@ -7,36 +7,29 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.comment;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.serotonin.m2m2.vo.UserComment;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel;
 
 /**
- * This class should really JSON ignore xid and name properties
+ * This class should really JSON ignore name properties
  * 
  * @author Terry Packer
  *
  */
 public class UserCommentModel extends AbstractVoModel<UserCommentVO>{
 
-	
-	/**
-	 * @param data
-	 */
-	public UserCommentModel(UserCommentVO comment) {
-		super(comment);
-	}
-
 	public UserCommentModel(){
 		super(new UserCommentVO());
 	}
 	
-	public UserCommentModel(UserComment comment){
-		super(new UserCommentVO());
-		this.data.setUserId(comment.getUserId());
-		this.data.setUsername(comment.getUsername());
-		this.data.setTs(comment.getTs());
-		this.data.setComment(comment.getComment());		
+	public UserCommentModel(UserCommentVO comment){
+		super(comment);
+	}
+	
+	@JsonIgnore
+	@Override
+	public String getName() {
+		return super.getName();
 	}
 	
 	@JsonGetter
@@ -97,8 +90,10 @@ public class UserCommentModel extends AbstractVoModel<UserCommentVO>{
 	 * @return
 	 */
 	@JsonIgnore
-	public UserComment getDataAsComment() {
-		UserComment comment = new UserComment();
+	public UserCommentVO getDataAsComment() {
+		UserCommentVO comment = new UserCommentVO();
+		comment.setId(this.data.getId());
+		comment.setXid(this.data.getXid());
 		comment.setUserId(this.data.getUserId());
 		comment.setUsername(this.data.getUsername());
 		comment.setTs(this.data.getTs());
@@ -106,10 +101,7 @@ public class UserCommentModel extends AbstractVoModel<UserCommentVO>{
 		return comment;
 	}
 	
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel#getModelType()
-	 */
+	@JsonIgnore
 	@Override
 	public String getModelType() {
 		return null;

@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.view.export.CsvWriter;
-import com.serotonin.m2m2.vo.UserComment;
+import com.serotonin.m2m2.vo.comment.UserCommentVO;
 
 /**
  * @author Matthew Lohbihler
@@ -31,11 +31,11 @@ public class UserCommentCsvStreamer {
             data[0] = comment.getUsername();
             if (data[0] == null)
                 data[0] = translations.translate("common.deleted");
-            if (comment.getCommentType() == UserComment.TYPE_EVENT) {
+            if (comment.getCommentType() == UserCommentVO.TYPE_EVENT) {
                 data[1] = translations.translate("reports.commentList.type.event");
                 data[2] = Integer.toString(comment.getTypeKey());
             }
-            else if (comment.getCommentType() == UserComment.TYPE_POINT) {
+            else if (comment.getCommentType() == UserCommentVO.TYPE_POINT) {
                 data[1] = translations.translate("reports.commentList.type.point");
                 data[2] = comment.getPointName();
             }
