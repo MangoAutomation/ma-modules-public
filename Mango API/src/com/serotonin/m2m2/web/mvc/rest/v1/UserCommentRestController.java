@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -172,6 +173,8 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     				String initiatorId = request.getHeader("initiatorId");
 	    			UserCommentDao.instance.save(model.getData(), initiatorId);
 	    			LOG.info("User with name/id: " + user.getUsername() + "/" + user.getId() + " created a User Comment for user: " + model.getData().getUserId());
+	    			URI location = builder.path("v1/comments/{xid}").buildAndExpand(model.getXid()).toUri();
+    		    	result.addRestMessage(getResourceCreatedMessage(location));
 	    			return result.createResponseEntity(model); 
     			}catch(Exception e){
     				result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
@@ -187,7 +190,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	}
 
 	@ApiOperation(value = "Delete A User Comment by XID")
-	@RequestMapping(method = RequestMethod.DELETE,  produces={"application/json", "text/csv"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.DELETE,  produces={"application/json"}, value = "/{xid}")
     public ResponseEntity<UserCommentModel> deleteUserComment(
     		@ApiParam(value = "xid", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -217,7 +220,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	}
 	
 	@ApiOperation(value = "Get user comment by xid", notes = "Returns the user comment specified by the given xid")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/{xid}")
     public ResponseEntity<UserCommentModel> getUserComment(
     		@ApiParam(value = "Valid xid", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -238,6 +241,49 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     	return result.createResponseEntity();
 	}
 
+	@ApiOperation(value = "Updates a user comment")
+	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/{xid}")
+    public ResponseEntity<UserCommentModel> updateUserComment(
+    		@PathVariable String xid,
+    		@RequestBody(required=true) UserCommentModel model,
+    		UriComponentsBuilder builder,
+    		HttpServletRequest request) throws RestValidationFailedException {
+
+		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		UserCommentVO u = UserCommentDao.instance.getByXid(xid);
+
+			if (u == null) {
+				result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    		
+	        }else{
+        		//Change the owner
+        		if(model.getUserId() == 0){
+        			model.setUserId(user.getId());
+        			model.setUsername(user.getUsername());
+        		}
+        		//Check permissions
+	        	if(hasEditPermission(model.getData(), user)){
+		        	//Validate and Update
+		        	if(!model.validate()){
+	    	        	result.addRestMessage(this.getValidationFailedError());
+	    	        }else{
+	    	        	UserCommentDao.instance.save(model.getData());
+	    	        	URI location = builder.path("v1/comments/{xid}").buildAndExpand(model.getXid()).toUri();
+	    		    	result.addRestMessage(getResourceUpdatedMessage(location));
+	    	        }
+		        	return result.createResponseEntity(model);
+	        	}else{
+		        	result.addRestMessage(this.getUnauthorizedMessage());
+	    			return result.createResponseEntity();
+	        	}
+	        }
+    	}
+    	return result.createResponseEntity();
+	}
+	
 	/**
 	 * A user has comment permission if they are Admin or Created the comment.
 	 * @param vo

@@ -150,6 +150,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     public ResponseEntity<UserModel> updateUser(
     		@PathVariable String username,
     		@RequestBody(required=true) UserModel model,
+    		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
@@ -241,6 +242,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        	DaoRegistry.userDao.saveUser(newUser);
         	        	//Update the session user to keep any changes around
        	        	 	Common.setUser(request, newUser);
+       	        	 	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
+       	        	 	result.addRestMessage(getResourceCreatedMessage(location));
         	        }
     				return result.createResponseEntity(model);
     			}
