@@ -42,7 +42,7 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 	 * @see com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer#getObject(byte[], long)
 	 */
 	@Override
-	public ITime getObject(byte[] bytes, int readOffset, long ts) {
+	public ITime getObject(byte[] bytes, int readOffset, long ts, String seriesId) {
 		
 		//Get the data type
 		ByteArrayBuilder b = new ByteArrayBuilder(bytes, readOffset, bytes.length);
@@ -100,7 +100,7 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 	 * @see com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer#getBytes(com.serotonin.m2m2.db.dao.nosql.NoSQLDataEntry)
 	 */
 	@Override
-	public byte[] getBytes(ITime obj) {
+	public byte[] getBytes(ITime obj, long timestamp, String seriesId) {
 		PointValueTime value = (PointValueTime)obj;
 		ByteArrayBuilder b = new ByteArrayBuilder();
 		//First put in the data type
