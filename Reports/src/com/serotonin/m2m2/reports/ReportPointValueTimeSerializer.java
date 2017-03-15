@@ -42,10 +42,7 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 	 * @see com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer#getObject(byte[], long)
 	 */
 	@Override
-	public ITime getObject(byte[] bytes, int readOffset, int writeOffset, long ts, String seriesId) {
-		
-		//Get the data type
-		ByteArrayBuilder b = new ByteArrayBuilder(bytes, readOffset, writeOffset);
+	public ITime getObject(ByteArrayBuilder b, long ts, String seriesId) {
 
 		//Get the data type
 		int dataType = b.getShort();
@@ -100,9 +97,8 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 	 * @see com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer#getBytes(com.serotonin.m2m2.db.dao.nosql.NoSQLDataEntry)
 	 */
 	@Override
-	public byte[] getBytes(ITime obj, long timestamp, String seriesId) {
+	public void putBytes(ByteArrayBuilder b, ITime obj, long timestamp, String seriesId) {
 		PointValueTime value = (PointValueTime)obj;
-		ByteArrayBuilder b = new ByteArrayBuilder();
 		//First put in the data type
 		b.putShort((short) value.getValue().getDataType());
 		
@@ -138,12 +134,6 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 			b.putString(apv.getSourceMessage().serialize());
 		}else
 			b.putString(null);
-		
-		byte[] buffer = b.getBuffer();
-		byte[] bytes = new byte[b.getWriteOffset()];
-		System.arraycopy(buffer, 0, bytes, 0, b.getWriteOffset());
-		
-		return bytes;
 	}
 
 }
