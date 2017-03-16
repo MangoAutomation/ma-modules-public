@@ -78,7 +78,7 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	@Override
 	public void row(IdPointValueTime pvt, int index) {
 		try{
-			DataPointVO vo = this.voMap.get(pvt.getDataPointId());
+			DataPointVO vo = this.voMap.get(pvt.getId());
 			long time = pvt.getTime();
 			this.rowData[0] = Long.toString(time);
 			

@@ -80,7 +80,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
                 new MappedRowCallback<IdPointValueTime>() {
                     @Override
                     public void row(IdPointValueTime pvt, int row) {
-                        quantizer.data(pvt.getDataPointId(), pvt.getValue(), pvt.getTime());
+                        quantizer.data(pvt.getId(), pvt.getValue(), pvt.getTime());
                     }
                 });
         quantizer.done(endValues);
