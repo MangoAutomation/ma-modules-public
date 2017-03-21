@@ -163,7 +163,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     	monitors.put(AVAILABLE_UPDATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(UpgradeCheck.UPGRADES_AVAILABLE_MONITOR_ID));
     	
     	//Active User Sessions
-    	monitors.put(ACTIVE_USER_SESSION_COUNT_POINT_XID, Common.loginManager.getSessionCountMonitor());
+    	monitors.put(ACTIVE_USER_SESSION_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.USER_SESSION_MONITOR_ID));
     	
     	//System Uptime
     	monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.SYSTEM_UPTIME_MONITOR_ID));
