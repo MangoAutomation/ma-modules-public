@@ -39,7 +39,7 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 	@DwrPermission(user = true)
 	public ProcessResult saveFileDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType,
 			String filePath) {
-		AsciiFileDataSourceVO ds = (AsciiFileDataSourceVO) Common.getUser().getEditDataSource();
+		AsciiFileDataSourceVO ds = (AsciiFileDataSourceVO) Common.getHttpUser().getEditDataSource();
 
 		setBasicProps(ds, basic);
 		ds.setUpdatePeriods(updatePeriods);
