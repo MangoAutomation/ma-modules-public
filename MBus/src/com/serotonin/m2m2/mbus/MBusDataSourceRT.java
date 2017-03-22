@@ -169,7 +169,7 @@ public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
                     } catch (IndexOutOfBoundsException ex) {
                         // Handle if datablock is not there...
                         raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-                                new TranslatableMessage("event.exception2", point.getVO().getName(),
+                                new TranslatableMessage("event.exception2", point.getVO().getExtendedName(),
                                         "No Data"));
                         pointError = true;
                     }
@@ -200,7 +200,7 @@ public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
                 pointError = true;
                 LOG.fatal("BCD Error : " + ((BcdValue) db).getBcdError());
                 raiseEvent(POINT_READ_EXCEPTION_EVENT, time, true,
-                        new TranslatableMessage("event.exception2", point.getVO().getName(),
+                        new TranslatableMessage("event.exception2", point.getVO().getExtendedName(),
                                 "BCD error value: " + ((BcdValue) db).getBcdError()));
                 pointError = true;
             } else if (db instanceof ByteDataBlock) {
@@ -225,9 +225,9 @@ public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
                 point.updatePointValue(
                         new PointValueTime(((StringDataBlock) db).getValue(), time));
             } else {
-                LOG.fatal("Dont know how to save: " + point.getVO().getName());
+                LOG.fatal("Dont know how to save: " + point.getVO().getExtendedName());
                 raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-                        new TranslatableMessage("event.exception2", point.getVO().getName(),
+                        new TranslatableMessage("event.exception2", point.getVO().getExtendedName(),
                                 "Dont know how to save"));
                 pointError = true;
 
@@ -235,7 +235,7 @@ public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
         } catch (Exception ex) {
             LOG.fatal("Error during saving: " + vo.getName(), ex);
             raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-                    new TranslatableMessage("event.exception2", point.getVO().getName(),
+                    new TranslatableMessage("event.exception2", point.getVO().getExtendedName(),
                             "Ex: " + ex));
             pointError = true;
 
