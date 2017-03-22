@@ -4,6 +4,9 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -30,8 +33,10 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value = "Session Exception Information", description = "Endpoints to help with collection of server side errors")
 @RestController
 @RequestMapping("/v2/exception")
-public class SessionExceptionRestController extends AbstractMangoRestV2Controller{
+public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Controller{
 
+	//Session Keys for all stored exceptions
+	private final String [] exceptionKeys = {Common.SESSION_USER_EXCEPTION,  WebAttributes.AUTHENTICATION_EXCEPTION, WebAttributes.ACCESS_DENIED_403};
 	
 	@ApiOperation(value = "Get Last Exception for your session", notes = "")
 	@ApiResponses({
@@ -40,21 +45,20 @@ public class SessionExceptionRestController extends AbstractMangoRestV2Controlle
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
 	@RequestMapping( method = {RequestMethod.GET}, value = {"/latest"}, produces = {"application/json"} )
-	public ResponseEntity<Exception> getLatest(HttpServletRequest request) {
-		RestProcessResult<Exception> result = new RestProcessResult<>(HttpStatus.OK);
+	public ResponseEntity<Map<String,Exception>> getLatest(HttpServletRequest request) {
+		RestProcessResult<Map<String,Exception>> result = new RestProcessResult<>(HttpStatus.OK);
 		
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
 		if(session == null)
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "No Session");
 		
-		Exception e = (Exception)session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-		if(e == null){
-			//Check for other general mango exceptions
-			e = (Exception)session.getAttribute(Common.SESSION_USER_EXCEPTION);
+		Map<String,Exception> exceptionMap = new HashMap<String, Exception>();
+		for(String key : exceptionKeys){
+			exceptionMap.put(key, (Exception)session.getAttribute(key));			
 		}
 		
-		return result.createResponseEntity(e);
+		return result.createResponseEntity(exceptionMap);
 	}
 	
 	@ApiOperation(value = "Clear Last Exception for your session", notes = "")
@@ -64,21 +68,20 @@ public class SessionExceptionRestController extends AbstractMangoRestV2Controlle
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
 	@RequestMapping( method = {RequestMethod.PUT}, value = {"/latest"}, produces = {"application/json"} )
-	public ResponseEntity<Exception> clearLatest(HttpServletRequest request) {
-		RestProcessResult<Exception> result = new RestProcessResult<>(HttpStatus.OK);
+	public ResponseEntity<Map<String,Exception>> clearLatest(HttpServletRequest request) {
+		RestProcessResult<Map<String,Exception>> result = new RestProcessResult<>(HttpStatus.OK);
 		
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
 		if(session == null)
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "No Session");
 		
-		Exception e = (Exception)session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-		if(e != null)
-			session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-		else
-			session.removeAttribute(Common.SESSION_USER_EXCEPTION);	
+		Map<String,Exception> exceptionMap = new HashMap<String, Exception>();
+		for(String key : exceptionKeys){
+			exceptionMap.put(key, (Exception)session.getAttribute(key));
+			session.removeAttribute(key);
+		}
 		
-		
-		return result.createResponseEntity(e);
+		return result.createResponseEntity(exceptionMap);
 	}
 }
