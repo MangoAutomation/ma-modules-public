@@ -30,7 +30,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api(value = "Session Exception Information", description = "Endpoints to help with collection of server side errors")
 @RestController
 @RequestMapping("/v2/exception")
-public class SessionExceptionRestController extends AbstractMangoRestController{
+public class SessionExceptionRestController extends AbstractMangoRestV2Controller{
 
 	
 	@ApiOperation(value = "Get Last Exception for your session", notes = "")
@@ -42,9 +42,6 @@ public class SessionExceptionRestController extends AbstractMangoRestController{
 	@RequestMapping( method = {RequestMethod.GET}, value = {"/latest"}, produces = {"application/json"} )
 	public ResponseEntity<Exception> getLatest(HttpServletRequest request) {
 		RestProcessResult<Exception> result = new RestProcessResult<>(HttpStatus.OK);
-
-		//TODO Should we even do this?
-		this.checkUser(request);
 		
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
@@ -69,9 +66,6 @@ public class SessionExceptionRestController extends AbstractMangoRestController{
 	@RequestMapping( method = {RequestMethod.PUT}, value = {"/latest"}, produces = {"application/json"} )
 	public ResponseEntity<Exception> clearLatest(HttpServletRequest request) {
 		RestProcessResult<Exception> result = new RestProcessResult<>(HttpStatus.OK);
-		
-		//TODO Should we even do this?
-		this.checkUser(request);
 		
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
