@@ -21,7 +21,6 @@
     </scm>
     <modules>
         <module>ASCII File Data Source</module>
-        <module>Crowd</module>
         <module>EnvCan Data Source</module>
         <module>Graphical views</module>
         <module>Internal Data Source</module>
