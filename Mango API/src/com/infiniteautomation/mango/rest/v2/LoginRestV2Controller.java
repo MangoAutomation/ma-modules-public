@@ -82,7 +82,7 @@ public class LoginRestV2Controller {
 	public ResponseEntity<UserModel> switchUser(
 			@ApiParam(value = "Username to switch to", required = true, allowMultiple = false)
     		@RequestParam(required=true) String username,
-            @AuthenticationPrincipal(expression="user") User user,
+            @AuthenticationPrincipal User user,
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 	    
 	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
