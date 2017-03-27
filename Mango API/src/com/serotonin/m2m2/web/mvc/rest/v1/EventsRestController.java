@@ -356,6 +356,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             EventInstance criticalEvent = null;
             int urgentTotal = 0;
             EventInstance urgentEvent = null;
+            int warningTotal = 0;
+            EventInstance warningEvent = null;
+            int importantTotal = 0;
+            EventInstance importantEvent = null;
             int informationTotal = 0;
             EventInstance informationEvent = null;
             int noneTotal = 0;
@@ -376,6 +380,14 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             	case AlarmLevels.URGENT:
             		urgentTotal++;
             		urgentEvent = event;
+            		break;
+            	case AlarmLevels.WARNING:
+            		warningTotal++;
+            		warningEvent = event;
+            		break;
+            	case AlarmLevels.IMPORTANT:
+            		importantTotal++;
+            		importantEvent = event;
             		break;
             	case AlarmLevels.INFORMATION:
             		informationTotal++;
@@ -410,6 +422,18 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             else
             	model = null;
             list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.URGENT), urgentTotal, model));
+            //Warning Events
+            if(warningEvent != null)
+            	model = new EventInstanceModel(warningEvent);
+            else
+            	model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.WARNING), warningTotal, model));
+            //Important Events
+            if(importantEvent != null)
+            	model = new EventInstanceModel(importantEvent);
+            else
+            	model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.IMPORTANT), importantTotal, model));
             //Information Events
             if(informationEvent != null)
             	model = new EventInstanceModel(informationEvent);
