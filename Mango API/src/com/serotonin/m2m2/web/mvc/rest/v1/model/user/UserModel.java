@@ -79,6 +79,9 @@ public class UserModel extends AbstractRestModel<User> {
     }
     
     public boolean isOldHashAlgorithm() {
+    	//New Users have null passwords
+    	if(data.getPassword() == null)
+    		return false;
         String algorithm = Common.extractHashAlgorithm(data.getPassword());
         return !Common.getHashAlgorithm().equals(algorithm);
     }
