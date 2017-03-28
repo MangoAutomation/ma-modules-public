@@ -136,8 +136,9 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 		wl.setUserId(user.getId());
 		
 		//Setup the Points
-		for(WatchListDataPointModel pm : model.getPoints())
-			wl.getPointList().add(pm.getDataPointVO());
+		if(model.getPoints() != null)
+			for(WatchListDataPointModel pm : model.getPoints())
+				wl.getPointList().add(pm.getDataPointVO());
 		
 		//Ready to validate and then save
 		if(!model.validate()){
@@ -224,9 +225,11 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 		update.setId(wl.getId());
 		//Add the user
 		update.setUserId(wl.getUserId());
+		
 		//Setup the Points
-		for(WatchListDataPointModel pm : model.getPoints())
-			update.getPointList().add(pm.getDataPointVO());
+		if(model.getPoints() != null)
+			for(WatchListDataPointModel pm : model.getPoints())
+				update.getPointList().add(pm.getDataPointVO());
 		
 		if (!model.validate()){
 		    result.addRestMessage(this.getValidationFailedError());
