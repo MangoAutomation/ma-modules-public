@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -20,6 +21,7 @@ public class WatchListModel extends WatchListSummaryModel{
 
 	public WatchListModel(){
 		super();
+		this.points = new ArrayList<WatchListDataPointModel>();
 	}
 	
 	public WatchListModel(WatchListVO data, List<WatchListDataPointModel> points){
