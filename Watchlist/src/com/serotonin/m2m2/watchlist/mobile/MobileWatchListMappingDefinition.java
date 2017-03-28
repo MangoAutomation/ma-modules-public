@@ -4,14 +4,10 @@
  */
 package com.serotonin.m2m2.watchlist.mobile;
 
-import com.serotonin.m2m2.module.UrlMappingDefinition;
+import com.serotonin.m2m2.module.UriMappingDefinition;
 import com.serotonin.m2m2.web.mvc.UrlHandler;
 
-public class MobileWatchListMappingDefinition extends UrlMappingDefinition {
-    @Override
-    public String getUrlPath() {
-        return "/mobile/watch_list.shtm";
-    }
+public class MobileWatchListMappingDefinition extends UriMappingDefinition {
 
     @Override
     public UrlHandler getHandler() {
@@ -24,17 +20,15 @@ public class MobileWatchListMappingDefinition extends UrlMappingDefinition {
     }
 
     @Override
-    public String getMenuKey() {
-        return null;
-    }
-
-    @Override
-    public String getMenuImage() {
-        return null;
-    }
-
-    @Override
     public Permission getPermission() {
-        return null;
+        return Permission.USER;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.UriMappingDefinition#getPath()
+	 */
+	@Override
+	public String getPath() {
+		return "/mobile/watch_list.shtm";
+	}
 }

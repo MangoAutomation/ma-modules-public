@@ -32,7 +32,7 @@ public class MobileWatchListHandler extends WatchListHandler {
 
     @Override
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model) {
-        User user = Common.getUser(request);
+        User user = Common.getHttpUser();
         WatchListDao watchListDao = WatchListDao.instance;
 
         // Check for a watchlist id parameter. If given, update the user.
