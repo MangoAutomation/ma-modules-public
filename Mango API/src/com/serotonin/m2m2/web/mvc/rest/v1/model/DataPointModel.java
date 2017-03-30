@@ -301,6 +301,16 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@JsonSetter("id")
 	public void setId(){ }//No Op 
 	
+    @JsonGetter("rollup")
+    public String getRollup() {
+        return Common.ROLLUP_CODES.getCode(this.data.getRollup());
+    }
+    
+    @JsonSetter("rollup")
+    public void setRollup(String rollup) {
+        this.data.setRollup(Common.ROLLUP_CODES.getId(rollup));
+    }
+	
 	public BaseTextRendererModel<?> getTextRenderer(){
 		return this.textRenderer;
 	}
