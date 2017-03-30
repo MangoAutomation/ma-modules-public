@@ -72,7 +72,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		this.modelMap.put("referenceId1", "typeRef1");
 		this.modelMap.put("referenceId2", "typeRef2");
 		this.modelMap.put("dataPointId", "typeRef1");
-		this.modelMap.put("dataSourceId", "typeRef2");
+		this.modelMap.put("dataSourceId", "typeRef1");
 		this.modelMap.put("active", "rtnTs");
 		this.modelMap.put("acknowledged", "ackTs");
 		
@@ -135,6 +135,36 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			}
 		
 		});	
+		
+		//Ensure we are querying on Type of Data Point for dataPointId queries
+		this.appenders.put("dataPointId", new GenericSQLColumnQueryAppender(){
+
+			@Override
+			public void appendSQL(SQLQueryColumn column,
+					StringBuilder selectSql, StringBuilder countSql,
+					List<Object> selectArgs, List<Object> columnArgs,
+					ComparisonEnum comparison) {
+				
+				selectSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
+				countSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
+				selectArgs.add(columnArgs.get(0));
+			}
+		});
+		
+		//Ensure we are querying on Type of Data Point for dataPointId queries
+		this.appenders.put("dataSourceId", new GenericSQLColumnQueryAppender(){
+
+			@Override
+			public void appendSQL(SQLQueryColumn column,
+					StringBuilder selectSql, StringBuilder countSql,
+					List<Object> selectArgs, List<Object> columnArgs,
+					ComparisonEnum comparison) {
+				
+				selectSql.append(" typeName = 'DATA_SOURCE' AND typeRef1 = ? ");
+				countSql.append(" typeName = 'DATA_SOURCE' AND typeRef1 = ? ");
+				selectArgs.add(columnArgs.get(0));
+			}
+		});
 	}
 
 	
