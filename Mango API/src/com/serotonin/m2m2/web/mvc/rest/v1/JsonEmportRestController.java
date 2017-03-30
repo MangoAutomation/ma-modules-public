@@ -433,7 +433,7 @@ public class JsonEmportRestController extends MangoRestController{
 	        this.user = user;
 
 	        for (JsonValue jv : nonNullList(root, EmportDwr.USERS))
-	            addImporter(new UserImporter(jv.toJsonObject()));
+	            addImporter(new UserImporter(this.user, jv.toJsonObject()));
 	        
 	        for (JsonValue jv : nonNullList(root, EmportDwr.DATA_SOURCES))
 	            addImporter(new DataSourceImporter(jv.toJsonObject()));
