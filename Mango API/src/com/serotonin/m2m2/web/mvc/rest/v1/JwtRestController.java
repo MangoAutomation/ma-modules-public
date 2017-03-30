@@ -17,24 +17,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.components.JwtService;
-import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
+ * TODO This is Currently Disabled
  * JSON Web Token REST endpoint
  *
  * @author Jared Wiltshire
  *
  */
-@Api(value = "JWT", description = "JSON web tokens")
-@RestController
-@RequestMapping("/v1/jwt")
+//@Api(value = "JWT", description = "JSON web tokens")
+//@RestController
+//@RequestMapping("/v1/jwt")
 public class JwtRestController extends MangoRestController {
     @Autowired
     JwtService jwtService;
