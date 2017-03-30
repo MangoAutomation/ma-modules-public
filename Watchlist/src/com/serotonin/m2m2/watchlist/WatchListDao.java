@@ -41,7 +41,6 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
-import com.serotonin.util.SerializationHelper;
 
 /**
  * @author Matthew Lohbihler
@@ -220,60 +219,18 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     		
     	});
     }
+
+    private final String SELECT_POINTS = DataPointDao.instance.getSelectAllSql() + " JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
     
-    //TODO Clean this up when issue #824 is fixed so we don't have to hard code all this business
-    private final String SELECT_POINTS = 
-    "select dp.data, dp.id, dp.xid, dp.dataSourceId, dp.name, dp.deviceName, dp.enabled, dp.pointFolderId, " //
-            + "  dp.loggingType, dp.intervalLoggingPeriodType, dp.intervalLoggingPeriod, dp.intervalLoggingType, " //
-            + "  dp.tolerance, dp.purgeOverride, dp.purgeType, dp.purgePeriod, dp.defaultCacheSize, " //
-            + "  dp.discardExtremeValues, dp.engineeringUnits, dp.readPermission, dp.setPermission, dp.templateId, ds.name, " //
-            + "  ds.xid, ds.dataSourceType " //
-            + "from dataPoints dp join dataSources ds on ds.id = dp.dataSourceId JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
+    /**
+     * Get the Data Points for a Given Watchlist
+     * @param watchListId
+     * @param callback
+     */
     public void getPoints(int watchListId, final MappedRowCallback<DataPointVO> callback){
-    	
-    	//Create a row mapper
-    	final RowMapper<DataPointVO> pointMapper = new RowMapper<DataPointVO>(){
-			@SuppressWarnings("deprecation")
-			@Override
-			public DataPointVO mapRow(ResultSet rs, int rowNum) throws SQLException {
-				int i=0;
-	            DataPointVO dp = (DataPointVO) SerializationHelper.readObjectInContext(rs.getBinaryStream(++i));
-	            dp.setId(rs.getInt(++i));
-	            dp.setXid(rs.getString(++i));
-	            dp.setDataSourceId(rs.getInt(++i));
-	            dp.setName(rs.getString(++i));
-	            dp.setDeviceName(rs.getString(++i));
-	            dp.setEnabled(charToBool(rs.getString(++i)));
-	            dp.setPointFolderId(rs.getInt(++i));
-	            dp.setLoggingType(rs.getInt(++i));
-	            dp.setIntervalLoggingPeriodType(rs.getInt(++i));
-	            dp.setIntervalLoggingPeriod(rs.getInt(++i));
-	            dp.setIntervalLoggingType(rs.getInt(++i));
-	            dp.setTolerance(rs.getDouble(++i));
-	            dp.setPurgeOverride(charToBool(rs.getString(++i)));
-	            dp.setPurgeType(rs.getInt(++i));
-	            dp.setPurgePeriod(rs.getInt(++i));
-	            dp.setDefaultCacheSize(rs.getInt(++i));
-	            dp.setDiscardExtremeValues(charToBool(rs.getString(++i)));
-	            dp.setEngineeringUnits(rs.getInt(++i));
-	            dp.setReadPermission(rs.getString(++i));
-	            dp.setSetPermission(rs.getString(++i));
-	            //Because we read 0 for null
-	            dp.setTemplateId(rs.getInt(++i));
-	            if(rs.wasNull())
-	            	dp.setTemplateId(null);
 
-	            // Data source information.
-	            dp.setDataSourceName(rs.getString(++i));
-	            dp.setDataSourceXid(rs.getString(++i));
-	            dp.setDataSourceTypeName(rs.getString(++i));
+    	RowMapper<DataPointVO> pointMapper = DataPointDao.instance.getRowMapper();
 
-	            dp.ensureUnitsCorrect();
-				return dp;
-			}
-    		
-    	};
-    	
     	this.ejt.query(SELECT_POINTS, new Object[]{watchListId}, new RowCallbackHandler(){
     		private int row = 0;
     		
