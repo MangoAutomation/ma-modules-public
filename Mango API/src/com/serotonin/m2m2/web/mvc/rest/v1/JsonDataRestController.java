@@ -6,10 +6,10 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,6 +30,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
 import com.wordnik.swagger.annotations.Api;
@@ -201,10 +202,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String xid,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -239,10 +240,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String path,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -276,10 +277,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String xid,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -314,10 +315,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String path,
     		
     		@ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] readPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> readPermission,
 
     		@ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-    		@RequestParam(required=false, defaultValue="") String[] editPermission,
+    		@RequestParam(required=false, defaultValue="") Set<String> editPermission,
 
     		@ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
     		@RequestParam(required=false, defaultValue="") String name,
@@ -444,7 +445,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	 * @return
 	 */
 	private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation, RestProcessResult<JsonDataModel> result,
-			String xid, String path, String[] readPermissions, String editPermissions[], String name, boolean publicData, 
+			String xid, String path, Set<String> readPermissions, Set<String> editPermissions, String name, boolean publicData, 
 			Object data, UriComponentsBuilder builder, HttpServletRequest request){
 
 		User user = this.checkUser(request, result);
@@ -463,8 +464,8 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				//Replace the data
 				vo.setName(name);
 				vo.setPublicData(publicData);
-				vo.setReadPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(readPermissions))));
-				vo.setEditPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(editPermissions))));
+				vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
+				vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
 
 				//Merge the maps
 				Object existingData = vo.getJsonData();
@@ -495,8 +496,8 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				vo.setXid(xid);
 				vo.setName(name);
 				vo.setPublicData(publicData);
-				vo.setReadPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(readPermissions))));
-				vo.setEditPermission(Permissions.implodePermissionGroups(new HashSet<String>(Arrays.asList(editPermissions))));
+				vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
+				vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
 				vo.setJsonData(data);
 			}
     		
@@ -505,6 +506,19 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		    result.addRestMessage(this.getValidationFailedError());
     		    // return only the data that was saved, i.e. the data that we supplied a path to
                 vo.setJsonData(data);
+    		    return result.createResponseEntity(model);
+    		}
+    		
+    		//Ensure we have the correct permissions
+    		//First we must check to ensure that the User actually has editPermission before they can save it otherwise
+    		// they won't be able to modify it.
+    		Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+    		
+    		if(!user.isAdmin() && Collections.disjoint(userPermissions, editPermissions)){
+    			//Return validation error
+    			result.addRestMessage(this.getValidationFailedError());
+    			model.addValidationMessage("jsonData.editPermissionRequired", RestMessageLevel.ERROR, "editPermission");
+    			vo.setJsonData(data);
     		    return result.createResponseEntity(model);
     		}
     		
