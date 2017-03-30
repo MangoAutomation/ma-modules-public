@@ -219,6 +219,16 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         				newUser.setPassword(Common.encrypt(model.getData().getPassword()));
         			else
         				newUser.setPassword(u.getPassword());
+    				
+    				//If we are not Admin we cannot modify our own privs
+    				if(!u.isAdmin()){
+    					if(!StringUtils.equals(u.getPermissions(), newUser.getPermissions())){
+    						model.addValidationMessage(new ProcessMessage("permissions", new TranslatableMessage("users.validate.cannotChangePermissions")));
+    						result.addRestMessage(this.getValidationFailedError());
+    						return result.createResponseEntity(model);
+    					}
+    				}
+    				
         	        if(!model.validate()){
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
