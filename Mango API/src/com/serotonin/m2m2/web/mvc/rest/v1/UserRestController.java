@@ -202,8 +202,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         				newUser.setPassword(Common.encrypt(model.getData().getPassword()));
         			else
         				newUser.setPassword(u.getPassword());
-        			
-    	        	DaoRegistry.userDao.saveUser(newUser);
+        			DaoRegistry.userDao.saveUser(newUser);
+    	        	this.maybeUpdateSessionUser(user, newUser, request);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -223,20 +223,35 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
         	        	
-            			// Cannot make yourself disabled or not admin
+            			// Cannot make yourself disabled admin or not admin
             			boolean failed = false;
                         if (user.getId() == u.getId()) {
                             if (model.getDisabled()){
                             	model.addValidationMessage(new ProcessMessage("disabled", new TranslatableMessage("users.validate.adminDisable")));
                             	failed = true;
                             }
+                            
+                            if(u.isAdmin()){
+                            	//We were superadmin, so we must still have it
+                            	if(!model.getData().isAdmin()){
+                                	model.addValidationMessage(new ProcessMessage("permissions", new TranslatableMessage("users.validate.adminInvalid")));
+                                	failed = true;
+                            	}
+                            }else{
+                            	//We were not superadmin so we must not have it
+                            	if(model.getData().isAdmin()){
+                                	model.addValidationMessage(new ProcessMessage("permissions", new TranslatableMessage("users.validate.adminGrantInvalid")));
+                                	failed = true;
+                            	}
+                            }
+                            
                             if(failed){
                             	result.addRestMessage(getValidationFailedError());
                             	return result.createResponseEntity(model);
                             }
                         }
-        	        	
-        	        	DaoRegistry.userDao.saveUser(newUser);
+                		DaoRegistry.userDao.saveUser(newUser);
+                        this.maybeUpdateSessionUser(user, newUser, request);
        	        	 	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
        	        	 	result.addRestMessage(getResourceCreatedMessage(location));
         	        }
@@ -337,11 +352,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	//Check to see if we are the user that was updated
-    	            User theUser = Common.getUser();
-    	            if(u.getId() == theUser.getId())
-    	            	theUser.setHomeUrl(url);
     	            DaoRegistry.userDao.saveHomeUrl(u.getId(), url);
+    	            this.maybeUpdateSessionUser(user, u, request);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -358,9 +370,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
         	        	//We have confirmed that we are the user
-        	        	User theUser = Common.getUser();
-         	            theUser.setHomeUrl(url);
          	            DaoRegistry.userDao.saveHomeUrl(u.getId(), url);
+        	            this.maybeUpdateSessionUser(user, u, request);
         	        }
     				return result.createResponseEntity(model);
     			}
@@ -402,15 +413,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	DaoRegistry.userDao.saveUser(model.getData());
-    	        	User theUser = Common.getUser();
-    	            if(u.getId() == theUser.getId()){
-    	            	if(mute == null){
-    	            		theUser.setMuted(!theUser.isMuted());
-    	    			}else{
-    	    				theUser.setMuted(mute);
-    	    			}
-    	            }
+    	    		DaoRegistry.userDao.saveUser(model.getData());
+    	        	this.maybeUpdateSessionUser(user, model.getData(), request);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -430,13 +434,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        if(!model.validate()){
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
-        	        	DaoRegistry.userDao.saveUser(model.getData());
-            			User theUser = Common.getUser();
-            			if(mute == null){
-    	            		theUser.setMuted(!theUser.isMuted());
-    	    			}else{
-    	    				theUser.setMuted(mute);
-    	    			}
+        	    		DaoRegistry.userDao.saveUser(model.getData());
+        	        	this.maybeUpdateSessionUser(user, model.getData(), request);
         	        }
     				return result.createResponseEntity(model);
     			}
@@ -652,5 +651,19 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	@Override
 	public UserModel createModel(User vo) {
 		return new UserModel(vo);
+	}
+	
+	/**
+	 * Ensure we update the user in the HttpSession if that user is us.  Otherwise 
+	 * the User's session will be expired (at the Dao level) if we are editing another user.
+	 * @param currentUser
+	 * @param newUser
+	 * @param request
+	 */
+	private void maybeUpdateSessionUser(User currentUser, User newUser, HttpServletRequest request){
+		if(currentUser.getId() == newUser.getId()){
+			//Update in HttpSession
+			Common.setHttpUser(request, newUser);
+		}
 	}
 }
