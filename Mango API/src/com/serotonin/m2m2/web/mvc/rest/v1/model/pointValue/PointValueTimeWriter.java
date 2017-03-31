@@ -17,6 +17,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
+import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.taglib.Functions;
 
@@ -160,6 +161,14 @@ public abstract class PointValueTimeWriter {
 				this.writePointValueTime(integral, time, null, vo);  
 		}
 	}
+
+	/**
+	 * Write out all statistics into one entry
+	 * 
+	 * @param statisticsGenerator
+	 * @param vo
+	 */
+	public abstract void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo) throws IOException;
 	
 	
 }

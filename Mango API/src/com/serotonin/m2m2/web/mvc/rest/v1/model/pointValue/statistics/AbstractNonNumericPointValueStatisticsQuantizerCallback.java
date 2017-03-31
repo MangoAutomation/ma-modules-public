@@ -47,6 +47,9 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
     public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
 		try{
 	            switch(rollup){
+	            case ALL:
+	            	this.writer.writeAllStatistics(statisticsGenerator, this.vo);
+	            break;
 	            case FIRST:
 	            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
 	            		this.writer.writeNonNullImage(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), statisticsGenerator.getPeriodStartTime(), this.vo);

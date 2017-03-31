@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 import au.com.bytecode.opencsv.CSVWriter;
@@ -149,6 +150,14 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter{
 			nextLine[2] = annotation;
 		}
 		this.writer.writeNext(nextLine);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#writeAllStatistics(com.serotonin.m2m2.view.stats.ValueChangeCounter, com.serotonin.m2m2.vo.DataPointVO)
+	 */
+	@Override
+	public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo) throws IOException {
+		//TODO Implement somehow?
 	}
 	
 	

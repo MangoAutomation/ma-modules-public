@@ -111,13 +111,13 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 		            switch(rollup){
 		            case FIRST:
 		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-		            		this.writeNonNullImage(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), periodStartTime, vo);
+		            		this.writeImageValue(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), periodStartTime, vo);
 		            	else
 		            		this.writeDataValue(periodStartTime, statisticsGenerator.getFirstValue(), vo);
 		            break;
 		            case LAST:
 		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-		            		this.writeNonNullImage(statisticsGenerator.getLastValue(), statisticsGenerator.getLastTime(), periodStartTime, vo);
+		            		this.writeImageValue(statisticsGenerator.getLastValue(), statisticsGenerator.getLastTime(), periodStartTime, vo);
 		            	else
 		            		this.writeDataValue(periodStartTime, statisticsGenerator.getLastValue(), vo);
 		            break;
@@ -185,11 +185,15 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 		}
 	}
 
-	/**
-	 * @param xid
-	 * @param firstValue
-	 * @throws IOException 
-	 */
+	private void writeImageValue(DataValue value, long imageTimestamp, long periodTimestamp, DataPointVO vo) throws IOException {
+		
+		if(value == null){
+			this.rowData[this.columnMap.get(vo.getId())] = null;
+		}else{
+			this.rowData[this.columnMap.get(vo.getId())] = imageServletBuilder.buildAndExpand(imageTimestamp, vo.getId()).toUri().toString();
+		}
+	}
+	
 	private void writeDataValue(long timestamp, DataValue value, DataPointVO vo) throws IOException {
 		
 		if(value == null){

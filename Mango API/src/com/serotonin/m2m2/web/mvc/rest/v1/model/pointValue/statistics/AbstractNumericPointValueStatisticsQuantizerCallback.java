@@ -46,6 +46,9 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 		try{
 //	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){
+	            	case ALL:
+	            		this.writer.writeAllStatistics(statisticsGenerator, vo);
+	            		break;
 	                case AVERAGE:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getAverage(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	                break;
