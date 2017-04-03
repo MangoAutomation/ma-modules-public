@@ -78,19 +78,18 @@ public class ReportSettingsDefinition extends SystemSettingsDefinition {
 	@Override
 	public void validateSettings(Map<String, Object> settings, ProcessResult response) {
 		//Validate the purge periods
-		Object value = settings.get(ReportPurgeDefinition.REPORT_PURGE_PERIODS);
-		if(value != null)
-			if((Integer)value < 1)
-				response.addContextualMessage(ReportPurgeDefinition.REPORT_PURGE_PERIODS, "validate.greaterThanZero");
+		Object value = getIntegerValue(settings.get(ReportPurgeDefinition.REPORT_PURGE_PERIODS));
+		if(value != null && (Integer)value < 1)
+			response.addContextualMessage(ReportPurgeDefinition.REPORT_PURGE_PERIODS, "validate.greaterThanZero");
 		
 		//Validate the purge period type
-		value = settings.get(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE);
+		value = getIntegerValue(settings.get(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE));
 		if(value != null)
 			if (!Common.TIME_PERIOD_CODES.isValidId((Integer)value, TimePeriods.MILLISECONDS, TimePeriods.SECONDS, TimePeriods.MINUTES, TimePeriods.HOURS))
 				response.addContextualMessage(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE, "validate.invalidValue");
 
 		//Validate the work Item Priority
-		value = settings.get(ReportWorkItem.REPORT_WORK_ITEM_PRIORITY);
+		value = getIntegerValue(settings.get(ReportWorkItem.REPORT_WORK_ITEM_PRIORITY));
 		if(value != null)
 			if (!Common.WORK_ITEM_CODES.isValidId((Integer)value))
 				response.addContextualMessage(ReportWorkItem.REPORT_WORK_ITEM_PRIORITY, "validate.invalidValue");
