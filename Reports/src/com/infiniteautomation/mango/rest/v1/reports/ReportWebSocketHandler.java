@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Systems. All rights reserved.
  * http://infiniteautomation.com/
  */
-package com.infiniteautomation.mango.web.mvc.rest.v1.reports;
+package com.infiniteautomation.mango.rest.v1.reports;
 
 import com.serotonin.m2m2.reports.vo.ReportModel;
 import com.serotonin.m2m2.reports.vo.ReportVO;

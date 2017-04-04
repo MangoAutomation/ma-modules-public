@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
-import com.infiniteautomation.mango.web.mvc.rest.v1.reports.ReportWebSocketConfiguration;
+import com.infiniteautomation.mango.rest.v1.reports.ReportWebSocketConfiguration;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
