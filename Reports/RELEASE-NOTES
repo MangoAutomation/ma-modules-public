@@ -1,5 +1,5 @@
-*Version 3.0.0
-* Upgraded for core 3.0.0
+*Version 3.0.0*
+* Upgraded to work with core version 3.0.x
 
 *Version 2.3.2*
 * Bugfix for running report to 'latest' and not getting any data with NoSQL data store.

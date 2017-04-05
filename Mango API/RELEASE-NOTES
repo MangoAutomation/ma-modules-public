@@ -1,4 +1,14 @@
-*Version 1.3.0*
+*Version 3.0.0*
+* Upgraded to work with core version 3.0.x
+* New REST v2 infrastructure to add new endpoints
+* Fully implementing ALL Rollup Type to return all rollups at once
+* Only allow users to save JSON Data that they have permissions for
+* Enhanced Event RQL Queries
+* Adding /rest/v2/exception endpoint to return map of latest exceptions for the user
+* Adding /rest/v2/login endpoints to login and switch user
+* Modify /rest/v1/login endpoints for new Spring Security (some endpoints now removed)
+* Allow GET/DELETE of User Comments by XID
+* Adding /rest/v1/audit RQL Endpoints to allow viewing the Audit trail
 * Adding support for Serotonin JSON Output via Content-Type "application/sero-json"
 * Adding Configuration Import/Export Endpoints and Websocket
 
