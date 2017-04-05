@@ -60,7 +60,7 @@ import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
 import com.serotonin.m2m2.vo.export.ExportDataValue;
 import com.serotonin.m2m2.vo.export.ExportPointInfo;
 import com.serotonin.m2m2.web.taglib.Functions;
-import com.serotonin.util.ColorUtils;
+import com.serotonin.m2m2.util.ColorUtils;
 
 import freemarker.template.Template;
 

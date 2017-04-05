@@ -45,7 +45,7 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 import com.serotonin.timer.CronTimerTrigger;
-import com.serotonin.util.ColorUtils;
+import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.util.SerializationHelper;
 
 /**

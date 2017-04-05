@@ -45,7 +45,7 @@ import com.serotonin.m2m2.util.chart.ImageChartUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.util.ColorUtils;
+import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.web.mail.EmailAttachment;
 import com.serotonin.web.mail.EmailContent;
 import com.serotonin.web.mail.EmailInline;

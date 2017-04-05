@@ -42,7 +42,7 @@ import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 import com.serotonin.timer.CronTimerTrigger;
-import com.serotonin.util.ColorUtils;
+import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.validation.StringValidation;
 
 /**
