@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.serotonin.m2m2.web.mvc.rest.v1;
+package com.infiniteautomation.mango.rest.v2;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,8 +24,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
  */
 @Api(value="Logout", description="Logout")
 @RestController
-@RequestMapping("/v1/logout")
-public class LogoutRestController extends MangoRestController{
+@RequestMapping("/v2/logout")
+public class LogoutV2RestController {
 
 	/**
 	 * POST Logout action

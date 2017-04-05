@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 import com.wordnik.swagger.annotations.Api;
@@ -38,7 +39,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class LoginRestV2Controller {
 
 	//private static final Log LOG = LogFactory.getLog(LoginRestController.class);
-	public static final String LOGIN_DEFAULT_URI_HEADER = "user-home-uri";
+    public static final String LOGIN_DEFAULT_URI_HEADER = "X-Mango-Default-URI";
 
 	/**
 	 * The actual authentication for the login occurs in the core, by the time this
@@ -67,6 +68,8 @@ public class LoginRestV2Controller {
 	    if (user == null) {
 	        return new ResponseEntity<>(HttpStatus.OK);
 	    } else {
+            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
 	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
 	    }
 	}
@@ -100,6 +103,8 @@ public class LoginRestV2Controller {
 	    if (user == null) {
 	        return new ResponseEntity<>(HttpStatus.OK);
 	    } else {
+            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
 	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
 	    }
 	}
@@ -131,6 +136,8 @@ public class LoginRestV2Controller {
 	    if (user == null) {
 	        return new ResponseEntity<>(HttpStatus.OK);
 	    } else {
+            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
 	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
 	    }
 	}
