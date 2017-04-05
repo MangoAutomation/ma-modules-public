@@ -254,6 +254,18 @@ public class UserModel extends AbstractRestModel<User> {
         // no op
     }
     
+    @CSVColumnGetter(order=16, header="id")
+    @JsonGetter("id")
+    public int getId() {
+        return data.getId();
+    }
+
+    @CSVColumnSetter(order=16, header="id")
+    @JsonSetter("id")
+    public void setId(int id) {
+        // no op
+    }
+    
 	public List<RestValidationMessage> getMessages() {
 		return messages;
 	}
