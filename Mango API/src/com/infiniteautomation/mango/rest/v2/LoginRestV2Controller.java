@@ -29,7 +29,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 /**
  * Login/Switch User Actions
  * 
- * This controller 
+ * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
  * 
  * @author Terry Packer
  */
@@ -45,6 +45,9 @@ public class LoginRestV2Controller {
 	 * The actual authentication for the login occurs in the core, by the time this
 	 * end point is actually reached the user is either already authenticated or not
 	 * The Spring Security authentication success handler forwards the request here
+	 * 
+     * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
+	 * 
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "Login", notes = "Used to login using POST and JSON credentials")
@@ -54,11 +57,7 @@ public class LoginRestV2Controller {
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 	    
 	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-	    // TODO throw this here or maybe just throw it in login failure handler
-	    // and catch it and turn it into a proper response elsewhere
-	    // if we can do this perhaps add the @Secured annotation to this method
-	    // or maybe use object mapper to write the response in the failure handler
-	    
+
 	    if (ex != null) {
             //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	        response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
@@ -78,6 +77,9 @@ public class LoginRestV2Controller {
 	 * The actual authentication for the switch user occurs in the core by the SwitchUserFilter,
 	 *  by the time this end point is actually reached the user is either already authenticated or not
 	 * The Spring Security authentication success handler forwards the request here
+	 * 
+	 * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
+	 * 
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "Switch User", notes = "Used to switch User using GET")
@@ -89,11 +91,7 @@ public class LoginRestV2Controller {
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 	    
 	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-	    // TODO throw this here or maybe just throw it in login failure handler
-	    // and catch it and turn it into a proper response elsewhere
-	    // if we can do this perhaps add the @Secured annotation to this method
-	    // or maybe use object mapper to write the response in the failure handler
-	    
+
 	    if (ex != null) {
             //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	        response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
@@ -113,6 +111,9 @@ public class LoginRestV2Controller {
 	 * The actual authentication for the exit user occurs in the core by the SwitchUserFilter,
 	 *  by the time this end point is actually reached the user is either already authenticated or not
 	 * The Spring Security authentication success handler forwards the request here
+	 * 
+     * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
+	 * 
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "Exit Switch User", notes = "Used to switch User using GET")
@@ -122,10 +123,6 @@ public class LoginRestV2Controller {
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 	    
 	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-	    // TODO throw this here or maybe just throw it in login failure handler
-	    // and catch it and turn it into a proper response elsewhere
-	    // if we can do this perhaps add the @Secured annotation to this method
-	    // or maybe use object mapper to write the response in the failure handler
 	    
 	    if (ex != null) {
             //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
