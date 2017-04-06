@@ -65,7 +65,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
+        return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
     }
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.module.ModuleElementDefinition#install()
@@ -90,11 +90,13 @@ public class InternalMenuItem extends MenuItemDefinition {
      */
     @Override
     public void upgrade() {
+    	File safeFile = new File(Common.MA_HOME, "SAFE");
+        final boolean safe = (safeFile.exists() && safeFile.isFile());
     	Providers.get(ILifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
             	try{
-            		maybeInstallSystemMonitor();
+            		maybeInstallSystemMonitor(safe);
             	}catch(Exception e){
             		LOG.error(e.getMessage(), e);
             	}
@@ -213,7 +215,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 			
 		}else{
 			//Ensure all points are added
-			maybeCreatePoints(ds);
+			maybeCreatePoints(safe, ds);
 		}
 	}
 
