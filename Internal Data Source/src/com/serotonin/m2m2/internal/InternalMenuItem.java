@@ -1,5 +1,6 @@
 package com.serotonin.m2m2.internal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,11 +72,13 @@ public class InternalMenuItem extends MenuItemDefinition {
      */
     @Override
     public void install() {
+    	File safeFile = new File(Common.MA_HOME, "SAFE");
+        final boolean safe = (safeFile.exists() && safeFile.isFile());
     	Providers.get(ILifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
             	try{
-            		maybeInstallSystemMonitor();
+            		maybeInstallSystemMonitor(safe);
             	}catch(Exception e){
             		LOG.error(e.getMessage(), e);
             	}
@@ -183,7 +186,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 	/**
 	 * 
 	 */
-	private void maybeInstallSystemMonitor() {
+	private void maybeInstallSystemMonitor(boolean safe) {
 		DataSourceVO<?> ds = DataSourceDao.instance.getByXid(SYSTEM_DATASOURCE_XID);
 		if(ds == null){
 			//Create Data Source
@@ -196,10 +199,13 @@ public class InternalMenuItem extends MenuItemDefinition {
 			vo.setUpdatePeriods(10);
 			vo.setUpdatePeriodType(TimePeriods.SECONDS);
 			
-			Common.runtimeManager.saveDataSource(vo);
+			if(safe)
+				DataSourceDao.instance.saveDataSource(vo);
+			else
+				Common.runtimeManager.saveDataSource(vo);
 			
 			//Setup the Points
-			maybeCreatePoints(ds);
+			maybeCreatePoints(safe, ds);
 			
 			//Enable the data source
 			vo.setEnabled(true);
@@ -214,7 +220,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 	/**
 	 * 
 	 */
-	private void maybeCreatePoints(DataSourceVO<?> vo) {
+	private void maybeCreatePoints(boolean safe, DataSourceVO<?> vo) {
 		Map<String, ValueMonitor<?>> monitors = getAllHomePageMonitors();
 		Iterator<String> it = monitors.keySet().iterator();
 		while(it.hasNext()){
@@ -246,7 +252,10 @@ public class InternalMenuItem extends MenuItemDefinition {
 					ProcessResult result = new ProcessResult();
 					dp.validate(result);
 					if(!result.getHasMessages()){
-						Common.runtimeManager.saveDataPoint(dp);
+						if(safe)
+							DataPointDao.instance.saveDataPoint(dp);
+						else
+							Common.runtimeManager.saveDataPoint(dp);
 					}else{
 						for(ProcessMessage message : result.getMessages()){
 							LOG.error(message.toString(Common.getTranslations()));
