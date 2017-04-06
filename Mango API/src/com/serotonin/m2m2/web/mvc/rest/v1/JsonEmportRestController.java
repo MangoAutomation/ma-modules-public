@@ -144,8 +144,8 @@ public class JsonEmportRestController extends MangoRestController{
 			value = "Update an Import in Progress",
 			notes = "Currently only cancel action is supported"
 			)
-	@RequestMapping(method = RequestMethod.PUT, value = "/import/{id}", produces={"application/json"}, consumes={"application/json"})
-    public ResponseEntity<Void> putPointValue(
+	@RequestMapping(method = RequestMethod.PUT, value = "/import/{resourceId}", produces={"application/json"}, consumes={"application/json"})
+    public ResponseEntity<Void> updateImport(
     		HttpServletRequest request, 
     		@RequestBody(required=true) JsonEmportControlModel model, 
     		@ApiParam(value="Resource id", required=true, allowMultiple=false)
