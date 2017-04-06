@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -50,6 +51,7 @@ import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -74,7 +76,9 @@ import com.serotonin.m2m2.web.dwr.emport.importers.UserImporter;
 import com.serotonin.m2m2.web.dwr.emport.importers.VirtualSerialPortImporter;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStateEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStatusModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
@@ -363,12 +367,24 @@ public class JsonEmportRestController extends MangoRestController{
 
 		private final ImportBackgroundTask task;
 		private final JsonConfigImportWebSocketHandler websocket;
-		private final JsonConfigImportStatusModel model;
+		//private final JsonConfigImportStatusModel model;
+		
+		//Our Status Parameters for the Model
+		private final String username;
+		private final String resourceId;
+		private final Date start;
+		private Date finish;
+		private JsonConfigImportStateEnum state;
+		private float progress;
 		
 		public ImportStatusProvider(JsonObject root, String resourceId, User user, JsonConfigImportWebSocketHandler websocket){
 			super(resourceId);
 			this.websocket = websocket;
-			this.model = new JsonConfigImportStatusModel(resourceId, user.getUsername(), new Date());
+			this.username = user.getUsername();
+			this.resourceId = resourceId;
+			this.start = new Date();
+			this.state = JsonConfigImportStateEnum.RUNNING;
+			this.progress = 0.0f;
 			this.task = new ImportBackgroundTask(root, Common.getTranslations(), user, this);
 		}
 		
@@ -377,7 +393,35 @@ public class JsonEmportRestController extends MangoRestController{
 		 */
 		@Override
 		public JsonConfigImportStatusModel createModel() {
-			return model;
+			List<ProcessMessage> messages = this.task.getResponseMessagesCopy();
+			
+			List<RestValidationMessage> validation = new ArrayList<RestValidationMessage>();
+			List<String> generic = new ArrayList<String>();
+			Translations translations = Common.getTranslations();
+			
+			for(ProcessMessage message : messages){
+				if(StringUtils.isEmpty(message.getContextKey())){
+					//Generic Message
+					generic.add(message.getGenericMessage().translate(translations));
+				}else{
+					switch(message.getLevel()){
+					case info:
+						validation.add(new RestValidationMessage(message.getContextualMessage(), RestMessageLevel.INFORMATION, message.getContextKey()));
+						break;
+					case warning:
+						validation.add(new RestValidationMessage(message.getContextualMessage(), RestMessageLevel.WARNING, message.getContextKey()));
+						break;
+					case error:
+						validation.add(new RestValidationMessage(message.getContextualMessage(), RestMessageLevel.ERROR, message.getContextKey()));
+						break;
+					}
+				}
+			}
+			
+			
+			return new JsonConfigImportStatusModel(
+					resourceId, username, start, finish, 
+					progress, state, validation, generic);
 		}
 
 		public void cancel(){
@@ -386,25 +430,24 @@ public class JsonEmportRestController extends MangoRestController{
 		
 		@Override
 		public void progressUpdate(float progress) {
-			this.model.setProgress(progress);
-			this.websocket.notify(this.model);
+			this.progress = progress;
+			this.websocket.notify(createModel());
 		}
 
 		@Override
 		public void taskCancelled() {
-			this.model.setProgress(0.0f);
-			this.model.setState(JsonConfigImportStateEnum.CANCELLED);
-			this.websocket.notify(this.model);
+			this.progress = 0.0f;
+			this.state = JsonConfigImportStateEnum.CANCELLED;
+			this.websocket.notify(createModel());
 		}
 
 		@Override
 		public void taskCompleted() {
-			this.model.setFinish(new Date());
-			this.model.setProgress(100.0f);
-			this.model.setState(JsonConfigImportStateEnum.COMPLETED);
-			this.model.updateMessages(this.task.getResponse());
-			this.websocket.notify(this.model);
-		}
+			this.finish = new Date();
+			this.progress = 100.0f;
+			this.state = JsonConfigImportStateEnum.COMPLETED;
+			this.websocket.notify(createModel());
+		}		
 	}
 	
 	/**
@@ -415,6 +458,7 @@ public class JsonEmportRestController extends MangoRestController{
 	 */
 	public class ImportBackgroundTask extends ProgressiveTask{
 
+		private final Object messageLock = new Object(); //To prevent modifying the messages list when it is being requested
 		private final ImportContext importContext;
 	    private final User user;
 
@@ -490,8 +534,10 @@ public class JsonEmportRestController extends MangoRestController{
 	        importers.add(importer);
 	    }
 
-	    public ProcessResult getResponse() {
-	        return importContext.getResult();
+	    public List<ProcessMessage> getResponseMessagesCopy() {
+	    	synchronized(messageLock){
+	    		return new ArrayList<ProcessMessage>(this.importContext.getResult().getMessages());
+	    	}
 	    }
 
 	    private int importerIndex;
@@ -515,7 +561,9 @@ public class JsonEmportRestController extends MangoRestController{
 	        	            try {
 	                            for (ImportItem importItem : importItems) {
 	                                if (!importItem.isComplete()) {
-	                                    importItem.importNext(importContext);
+	                                	synchronized(messageLock){
+	                                		importItem.importNext(importContext);
+	                                	}
 	                                    return;
 	                                }
 	                            }
@@ -529,9 +577,11 @@ public class JsonEmportRestController extends MangoRestController{
 	                        // There are importers left in the list, but there were no successful imports in the last run
 	                        // of the set. So, all that is left is stuff that will always fail. Copy the validation 
 	                        // messages to the context for each.
-	                        for (Importer importer : importers){
-	                            importer.copyMessages();
-	                        }
+	                    	synchronized(messageLock){
+		                        for (Importer importer : importers){
+		                            importer.copyMessages();
+		                        }
+	                    	}
 	                        importers.clear();
 	                        completed = true;
 	                        return;
@@ -541,7 +591,9 @@ public class JsonEmportRestController extends MangoRestController{
 	                // Run the next importer
 	                Importer importer = importers.get(importerIndex);
 	                try {
-	                    importer.doImport();
+	                	synchronized(messageLock){
+	                		importer.doImport();
+	                	}
 	                    if (importer.success()) {
 	                        // The import was successful. Note the success and remove the importer from the list.
 	                        importerSuccess = true;
@@ -556,7 +608,9 @@ public class JsonEmportRestController extends MangoRestController{
 	                catch (Exception e) {
 	                    // Uh oh...
 	                	LOG.error(e.getMessage(),e);
-	                    addException(e);
+	                	synchronized(messageLock){
+	                		addException(e);
+	                	}
 	                    importers.remove(importerIndex);
 	                }
 
@@ -567,7 +621,9 @@ public class JsonEmportRestController extends MangoRestController{
 	            try {
 	                for (ImportItem importItem : importItems) {
 	                    if (!importItem.isComplete()) {
-	                        importItem.importNext(importContext);
+	                    	synchronized(messageLock){
+	                    		importItem.importNext(importContext);
+	                    	}
 	                        return;
 	                    }
 	                }
@@ -575,7 +631,9 @@ public class JsonEmportRestController extends MangoRestController{
 	                completed = true;
 	            }
 	            catch (Exception e) {
-	                addException(e);
+	            	synchronized(messageLock){
+	            		addException(e);
+	            	}
 	            }
 	        }
 	        finally {

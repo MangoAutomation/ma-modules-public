@@ -4,13 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessMessage;
-import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.MangoRestTemporaryResourceModel;
 
@@ -32,6 +25,19 @@ public class JsonConfigImportStatusModel extends MangoRestTemporaryResourceModel
 		this.state = JsonConfigImportStateEnum.RUNNING;
 		this.validationMessages = new ArrayList<RestValidationMessage>();
 		this.genericMessages = new ArrayList<String>();
+	}
+	
+	public JsonConfigImportStatusModel(String resourceId, String username, Date start, Date finish, 
+			float progress, JsonConfigImportStateEnum state, 
+			List<RestValidationMessage> validation,
+			List<String> generic){
+		super(resourceId);
+		this.owner = username;
+		this.start = start;
+		this.progress = progress;
+		this.state = state;
+		this.validationMessages = validation;
+		this.genericMessages = generic;
 	}
 
 	public JsonConfigImportStatusModel(){
@@ -94,32 +100,4 @@ public class JsonConfigImportStatusModel extends MangoRestTemporaryResourceModel
 	public void setOwner(String owner) {
 		this.owner = owner;
 	}
-
-	/**
-	 * Strip the messages from the result of an ImportBackgroundTask
-	 * @param result
-	 */
-	public void updateMessages(ProcessResult result){
-		Translations translations = Common.getTranslations();
-		
-		for(ProcessMessage message : result.getMessages()){
-			if(StringUtils.isEmpty(message.getContextKey())){
-				//Generic Message
-				this.genericMessages.add(message.getGenericMessage().translate(translations));
-			}else{
-				switch(message.getLevel()){
-				case info:
-					this.validationMessages.add(new RestValidationMessage(message.getContextualMessage(), RestMessageLevel.INFORMATION, message.getContextKey()));
-					break;
-				case warning:
-					this.validationMessages.add(new RestValidationMessage(message.getContextualMessage(), RestMessageLevel.WARNING, message.getContextKey()));
-					break;
-				case error:
-					this.validationMessages.add(new RestValidationMessage(message.getContextualMessage(), RestMessageLevel.ERROR, message.getContextKey()));
-					break;
-				}
-			}
-		}
-	}
-	
 }
