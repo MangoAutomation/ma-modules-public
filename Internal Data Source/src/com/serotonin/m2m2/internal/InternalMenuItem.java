@@ -201,17 +201,16 @@ public class InternalMenuItem extends MenuItemDefinition {
 			vo.setUpdatePeriods(10);
 			vo.setUpdatePeriodType(TimePeriods.SECONDS);
 			
-			if(safe)
-				DataSourceDao.instance.saveDataSource(vo);
-			else
-				Common.runtimeManager.saveDataSource(vo);
+			DataSourceDao.instance.saveDataSource(vo);
 			
 			//Setup the Points
 			maybeCreatePoints(safe, ds);
 			
 			//Enable the data source
-			vo.setEnabled(true);
-			Common.runtimeManager.saveDataSource(vo);
+			if(!safe){
+				vo.setEnabled(true);
+				Common.runtimeManager.saveDataSource(vo);
+			}
 			
 		}else{
 			//Ensure all points are added
