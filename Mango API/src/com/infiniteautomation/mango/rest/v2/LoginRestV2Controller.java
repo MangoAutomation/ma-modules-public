@@ -116,7 +116,7 @@ public class LoginRestV2Controller {
 	 * 
 	 * @throws IOException 
 	 */
-	@ApiOperation(value = "Exit Switch User", notes = "Used to switch User using GET")
+	@ApiOperation(value = "Exit Switch User", notes = "Used to switch User using POST")
 	@RequestMapping(method = RequestMethod.POST,  value="/exit-su", produces={"application/json"})
 	public ResponseEntity<UserModel> exitSwitchUser(
             @AuthenticationPrincipal User user,
@@ -138,5 +138,4 @@ public class LoginRestV2Controller {
 	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
 	    }
 	}
-	
 }

@@ -21,11 +21,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,6 +55,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.system.DiskInfoModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.SystemInfoModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSecurityConfiguration;
 import com.serotonin.util.DirectoryInfo;
 import com.serotonin.util.DirectoryUtils;
 import com.wordnik.swagger.annotations.Api;
@@ -231,4 +236,25 @@ public class ServerRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 
+	@PreAuthorize("isAdmin()")
+	@ApiOperation(value = "List session information for all sessions", notes = "Admin only")
+	@RequestMapping(method = RequestMethod.GET,  value="/http-sessions", produces={"application/json"})
+	public ResponseEntity<List<SessionInformation>> listSessions(
+            @AuthenticationPrincipal User user,
+			HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		List<SessionInformation> sessions = new ArrayList<SessionInformation>();
+    	final List<Object> allPrincipals = MangoSecurityConfiguration.sessionRegistry().getAllPrincipals();
+    	
+        for (final Object principal : allPrincipals) {
+        	List<SessionInformation> sessionInfo = MangoSecurityConfiguration.sessionRegistry().getAllSessions(principal, true);
+    		//Expire sessions, the user was deleted
+    		for(SessionInformation info : sessionInfo){
+    			sessions.add(info);
+    		}
+        }
+        return new ResponseEntity<>(sessions, HttpStatus.OK);
+	}
+	
+	
 }
