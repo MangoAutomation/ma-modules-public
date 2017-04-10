@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -174,7 +176,19 @@ public class PointValueRestController extends MangoRestController{
 		    							all.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
 	    						}
 	    						models = new ArrayList<>(all);
-	    						Collections.sort(models);
+	    						//Override the comparison method
+	    						Collections.sort(models, new Comparator<RecentPointValueTimeModel>(){
+									//Compare such that data sets are returned in time descending order
+									// which turns out is opposite of compare to method for PointValueTime objects
+									@Override
+									public int compare(RecentPointValueTimeModel o1, RecentPointValueTimeModel o2) {
+								        if (o1.getTimestamp() < o2.getTimestamp())
+								            return -1;
+								        if (o1.getTimestamp() > o2.getTimestamp())
+								            return 1;
+								        return 0;
+									}
+	    						});
 	    					}
 	    					
 	    				}else{
@@ -189,7 +203,18 @@ public class PointValueRestController extends MangoRestController{
    						for(PointValueTime pvt : pvts)
 							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
 	    			}
+	    			//Ensure models are in time descending order
+	    			RecentPointValueTimeModel last = null;
+	    			for(RecentPointValueTimeModel model : models){
+	    				if(last != null){
+	    					if(last.getTimestamp() > model.getTimestamp())
+	    						throw new ShouldNeverHappenException("Noooo");
+	    				}
+	    				
+	    				last = model;
+	    			}
 	    			return result.createResponseEntity(models);
+	    				
 	    		}else{
 	    	 		result.addRestMessage(getUnauthorizedMessage());
 	    	 		return result.createResponseEntity();
