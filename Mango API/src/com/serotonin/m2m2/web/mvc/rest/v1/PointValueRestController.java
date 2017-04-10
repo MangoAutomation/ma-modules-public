@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -183,9 +182,9 @@ public class PointValueRestController extends MangoRestController{
 									@Override
 									public int compare(RecentPointValueTimeModel o1, RecentPointValueTimeModel o2) {
 								        if (o1.getTimestamp() < o2.getTimestamp())
-								            return -1;
-								        if (o1.getTimestamp() > o2.getTimestamp())
 								            return 1;
+								        if (o1.getTimestamp() > o2.getTimestamp())
+								            return -1;
 								        return 0;
 									}
 	    						});
@@ -202,16 +201,6 @@ public class PointValueRestController extends MangoRestController{
 	    				List<PointValueTime> pvts = Common.databaseProxy.newPointValueDao().getLatestPointValues(vo.getId(), limit);
    						for(PointValueTime pvt : pvts)
 							models.add(createRecentPointValueTimeModel(vo, pvt, imageServletBuilder, useRendered, unitConversion, false));
-	    			}
-	    			//Ensure models are in time descending order
-	    			RecentPointValueTimeModel last = null;
-	    			for(RecentPointValueTimeModel model : models){
-	    				if(last != null){
-	    					if(last.getTimestamp() > model.getTimestamp())
-	    						throw new ShouldNeverHappenException("Noooo");
-	    				}
-	    				
-	    				last = model;
 	    			}
 	    			return result.createResponseEntity(models);
 	    				
