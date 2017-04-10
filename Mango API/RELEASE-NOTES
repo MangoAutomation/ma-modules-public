@@ -11,6 +11,7 @@
 * Adding /rest/v1/audit RQL Endpoints to allow viewing the Audit trail
 * Adding support for Serotonin JSON Output via Content-Type "application/sero-json"
 * Adding Configuration Import/Export Endpoints and Websocket
+* Must have edit permission for a data source after it is saved to save it
 
 *Version 1.2.0*
 * Upgraded to work with core version 2.8.x

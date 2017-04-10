@@ -208,7 +208,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        
 	        //Check permissions
 	    	try{
-	    		if(!Permissions.hasDataSourcePermission(user, existing.getId())){
+	    		if(!Permissions.hasDataSourcePermission(user, existing)){
 	    			result.addRestMessage(getUnauthorizedMessage());
 	        		return result.createResponseEntity();
 	    		}
@@ -223,11 +223,11 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        ProcessResult validation = new ProcessResult();
 	        vo.validate(validation);
 	        
-	        if(!model.validate()){
-	        	result.addRestMessage(this.getValidationFailedError());
-	        	return result.createResponseEntity(model); 
+	        if(model.validate() && Permissions.hasDataSourcePermission(user, vo)){
+	        	Common.runtimeManager.saveDataSource(vo);
 	        }else{
-	            Common.runtimeManager.saveDataSource(vo);
+	            result.addRestMessage(this.getValidationFailedError());
+	        	return result.createResponseEntity(model); 
 	        }
 	        
 	        //Put a link to the updated data in the header?
