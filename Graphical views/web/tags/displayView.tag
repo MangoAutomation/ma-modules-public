@@ -6,7 +6,7 @@
 --%><%@tag body-content="empty"%><%--
 --%><%@attribute name="view" type="com.serotonin.m2m2.gviews.GraphicalView" required="true" rtexprvalue="true"%><%--
 --%><%@attribute name="emptyMessageKey" required="true"%>
-<div id="viewContent" ma-app="maDashboards" ng-cloak>
+<div id="viewContent">
   <c:choose>
     <c:when test="${empty view}"><fmt:message key="${emptyMessageKey}"/></c:when>
     <c:when test="${empty view.backgroundFilename}">

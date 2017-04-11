@@ -6,11 +6,6 @@
 <%@page import="com.serotonin.m2m2.view.ShareUser"%>
 
 <tag:page dwr="GraphicalViewDwr" js="/resources/view.js,${modulePath}/web/graphicalViews.js,${modulePath}/web/wz_jsgraphics.js">
-<jsp:attribute name="styles">
-  <link rel="stylesheet" href="/resources/angular-csp.css"></link>
-  <script src="/resources/loaderConfig.js" data-loader="Dojo"></script>
-</jsp:attribute>
-<jsp:body>
   <style type="text/css">
     #viewContent #compCoords {
         position: absolute; 
@@ -135,25 +130,8 @@
     function updateHtmlComponentContent(id, content) {
         if (!content || content == "")
             $set(id +"Content", '<img src="images/html.png" alt=""/>');
-        else {
-            if (typeof angular !== 'undefined') {
-                var $elem = angular.element('#' + id + 'Content');
-            	var injector = $elem.injector();
-            	if (injector) {
-            		// we have an injector so the angular app has already bootstrapped
-            		// compile the html using the element's scope and replace the contents
-            		injector.invoke(['$compile', '$rootScope', function($compile, $rootScope) {
-            			var scope = $elem.scope();
-                		$elem.html($compile(content)(scope));
-                		scope.$digest();
-                	}]);
-            		return;
-            	}
-            }
-            
-         	// pre angular bootstrap, i.e. initial page load
+        else
             $set(id +"Content", content);
-        }
     }
     
     function openStaticEditor(viewComponentId) {
@@ -250,22 +228,6 @@
         
         // Unregister the moveable from the DnD manager.
         div.moveable.destroy();
-
-        if (typeof angular !== 'undefined') {
-            // find the any angularjs scopes and destroy them
-           	var $parent = angular.element(div);
-           	var parentScope = $parent.scope();
-           	var children = $parent.find('.ng-scope, .ng-isolate-scope');
-           	for (var i = 0; i < children.length; i++) {
-           		var $child = angular.element(children[i]);
-           		var childScope = $child.data('$scope') || $child.data('$isolateScope');
-           		if (childScope && childScope !== parentScope) {
-           			// child scope may have already been destroyed by parent scope cascading destroy
-           			// $destroy() checks for this and returns straight away
-           			childScope.$destroy();
-           		}
-           	}
-        }
 
         // Disconnect the event handling for drag ends on this guy.
         $("viewContent").removeChild(div);
@@ -505,7 +467,7 @@
           <tr>
             <td colspan="3">
               <div id="viewContent" class="borderDiv" style="left:0px;top:0px;float:left;
-                      padding-right:1px;padding-bottom:1px;" ma-app="maDashboards" ng-cloak>
+                      padding-right:1px;padding-bottom:1px;">
                 <span id="compCoords" style="display:none;"></span>
                 
                 <c:choose>
@@ -629,6 +591,4 @@
       </td>
     </tr>
   </table>
-  <script>require(['mango-3.0/bootstrap']);</script>
-</jsp:body>
 </tag:page>
