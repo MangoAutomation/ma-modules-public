@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.ILifecycle;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -33,6 +34,7 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.UpgradeCheck;
 import com.serotonin.m2m2.rt.maint.WorkItemMonitor;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -244,11 +246,25 @@ public class InternalMenuItem extends MenuItemDefinition {
 					dp.setChartColour("");
 
 					dp.setPointLocator(pl);
+					
+					//Use default template
 					DataPointPropertiesTemplateVO template = TemplateDao.instance.getDefaultDataPointTemplate(pl.getDataTypeId());
 					if(template != null){
 						template.updateDataPointVO(dp);
 						dp.setTemplateId(template.getId());
+					}	
+					
+					//If we are numeric then we want to log on change
+					switch(pl.getDataTypeId()){
+						case DataTypes.NUMERIC:
+							//Setup to Log on Change
+							dp.setLoggingType(LoggingTypes.ON_CHANGE);
+
+							//No template in use here
+							dp.setTemplateId(null);
+						break;
 					}
+
 					
 					ProcessResult result = new ProcessResult();
 					dp.validate(result);
