@@ -10,7 +10,7 @@ return angular.module('maSqlConsole', [])
 .config(['MENU_ITEMS', 'mangoStateProvider', function(MENU_ITEMS, mangoStateProvider) {
 //    var menuItem = {
 //        url: '/sql-console',
-//        name: 'dashboard.settings.sqlConsole',
+//        name: 'ui.settings.sqlConsole',
 //        template: '<iframe-view src="/sqlConsole.shtm"></iframe-view>',
 //        menuTr: 'header.sql',
 //        menuIcon: 'storage',
@@ -20,7 +20,7 @@ return angular.module('maSqlConsole', [])
 //    
 //    mangoStateProvider.addStates([menuItem]);
 //    for (var i = 0; i < MENU_ITEMS.length; i++) {
-//        if (MENU_ITEMS[i].name === 'dashboard.settings') {
+//        if (MENU_ITEMS[i].name === 'ui.settings') {
 //            MENU_ITEMS[i].children.splice(0, 0, menuItem);
 //            break;
 //        }
