@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -74,16 +75,19 @@ public class ModulesRestController extends MangoRestController {
 
 	@ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version")
 	@RequestMapping(method = RequestMethod.GET, value = "/core", produces = { "application/json" })
-	public ResponseEntity<ModuleModel> getCore(HttpServletRequest request) {
+	public ResponseEntity<MappingJacksonValue> getCore(HttpServletRequest request) {
 
-		RestProcessResult<ModuleModel> result = new RestProcessResult<ModuleModel>(HttpStatus.OK);
+		RestProcessResult<MappingJacksonValue> result = new RestProcessResult<>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if (result.isOk()) {
+		    ModuleModel coreModule = getCoreModule();
+		    MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModule);
 			if (Permissions.hasAdmin(user)) {
-				return result.createResponseEntity(getCoreModule());
+			    jacksonValue.setSerializationView(ModuleModel.AdminView.class);
 			} else {
-				result.addRestMessage(this.getUnauthorizedMessage());
+                jacksonValue.setSerializationView(Object.class);
 			}
+            return result.createResponseEntity(jacksonValue);
 		}
 		return result.createResponseEntity();
 	}

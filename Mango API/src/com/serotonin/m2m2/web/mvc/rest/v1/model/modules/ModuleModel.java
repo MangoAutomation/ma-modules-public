@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.modules;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -14,19 +15,31 @@ import com.serotonin.m2m2.module.Module;
  * @author Terry Packer
  */
 public class ModuleModel {
+    
+    public interface AdminView {}
 	
 	private String name;
 	private String version;
+    @JsonView(AdminView.class)
 	private int buildNumber;
 	private String licenseType;
+    @JsonView(AdminView.class)
     private String description;
+    @JsonView(AdminView.class)
     private String longDescription;
+    @JsonView(AdminView.class)
     private String vendor;
+    @JsonView(AdminView.class)
     private String vendorUrl;
+    @JsonView(AdminView.class)
     private String dependencies;
+    @JsonView(AdminView.class)
     private String releaseNotes;
+    @JsonView(AdminView.class)
     private boolean markedForDeletion;
+    @JsonView(AdminView.class)
     private String versionState;
+    @JsonView(AdminView.class)
     private boolean unloaded;
     
 	public ModuleModel(){ }
@@ -85,12 +98,15 @@ public class ModuleModel {
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getVersion() {
 		return version;
 	}
+
 	public void setVersion(String version) {
 		this.version = version;
 	}
@@ -158,19 +174,19 @@ public class ModuleModel {
 	public void setReleaseNotes(String releaseNotes) {
 		this.releaseNotes = releaseNotes;
 	}
-	
+
 	public String getVersionState(){
 		return this.versionState;
 	}
-	
+
 	public boolean markedForDeletion(){
 		return this.markedForDeletion;
 	}
-	
+
 	public void setUnloaded(boolean unloaded){
 		this.unloaded = unloaded;
 	}
-	
+
 	public boolean isUnloaded(){
 		return this.unloaded;
 	}
