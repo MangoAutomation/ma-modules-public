@@ -35,11 +35,13 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
     public static final int EVENT_UPDATE = 1;
     public static final int EVENT_CHANGE = 2;
+    public static final int EVENT_LOGGED = 3;
 
     public static ExportCodes EVENT_CODES = new ExportCodes();
     static {
         EVENT_CODES.addElement(EVENT_UPDATE, "UPDATE", "pointLinks.event.update");
         EVENT_CODES.addElement(EVENT_CHANGE, "CHANGE", "pointLinks.event.change");
+        EVENT_CODES.addElement(EVENT_LOGGED, "CHANGE", "pointLinks.event.logged");
     }
 
     private int id = Common.NEW_ID;
@@ -228,3 +230,4 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 		return null;
 	}
 }
+

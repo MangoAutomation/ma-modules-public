@@ -293,6 +293,7 @@
                 <select id="event">
                   <option value="<c:out value="<%= PointLinkVO.EVENT_CHANGE %>"/>"><fmt:message key="pointLinks.event.change"/></option>
                   <option value="<c:out value="<%= PointLinkVO.EVENT_UPDATE %>"/>"><fmt:message key="pointLinks.event.update"/></option>
+                  <option value="<c:out value="<%= PointLinkVO.EVENT_LOGGED %>"/>"><fmt:message key="pointLinks.event.logged"/></option>
                 </select>
               </td>
             </tr>

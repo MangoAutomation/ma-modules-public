@@ -218,6 +218,12 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         if (vo.getEvent() == PointLinkVO.EVENT_UPDATE)
             execute(newValue);
     }
+    
+    @Override
+	public void pointLogged(PointValueTime value) {
+		if (vo.getEvent() == PointLinkVO.EVENT_LOGGED)
+			execute(value);
+	}
 
     //
     //
@@ -263,9 +269,4 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public static File getLogFile(int pointId) {
         return new File(Common.getLogsDir(), "pointLink-" + pointId + ".log");
     }
-
-	@Override
-	public void pointLogged(PointValueTime value) {
-		//Nothing
-	}
 }
