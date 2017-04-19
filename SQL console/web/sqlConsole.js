@@ -6,8 +6,8 @@
 define(['angular', 'require'], function(angular, require) {
 'use strict';
 
-return angular.module('maSqlConsole', [])
-.config(['MENU_ITEMS', 'mangoStateProvider', function(MENU_ITEMS, mangoStateProvider) {
+return angular.module('maSqlConsole', []);
+//.config(['MenuProvider', function(MenuProvider) {
 //    var menuItem = {
 //        url: '/sql-console',
 //        name: 'ui.settings.sqlConsole',
@@ -18,13 +18,7 @@ return angular.module('maSqlConsole', [])
 //        weight: 2000
 //    };
 //    
-//    mangoStateProvider.addStates([menuItem]);
-//    for (var i = 0; i < MENU_ITEMS.length; i++) {
-//        if (MENU_ITEMS[i].name === 'ui.settings') {
-//            MENU_ITEMS[i].children.splice(0, 0, menuItem);
-//            break;
-//        }
-//    }
-}]);
+//    MenuProvider.registerMenuItems([menuItem]);
+//}]);
 
 }); // require
