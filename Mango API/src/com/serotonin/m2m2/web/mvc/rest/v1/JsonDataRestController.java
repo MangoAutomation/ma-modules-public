@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +27,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.serotonin.m2m2.db.dao.JsonDataDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
@@ -57,12 +63,16 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	enum MapOperation {
 		APPEND,REPLACE,DELETE
 	}
+
+    private ObjectMapper mapper;
 	
 	/**
 	 * @param dao
 	 */
-	public JsonDataRestController() {
+	@Autowired
+	public JsonDataRestController(ObjectMapper mapper) {
 		super(JsonDataDao.instance);
+	    this.mapper = mapper;
 	}
 
 	@ApiOperation(
@@ -171,7 +181,11 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 		    			pathParts = path.split("\\.");
 		    		else
 		    			pathParts = new String[]{ path };
-		    		Object data = getSubset(pathParts, vo.getJsonData());
+		    		
+		    		Object data = vo.getJsonData();
+		    		if (data instanceof JsonNode) {
+		    		    data = getSubset(pathParts, (JsonNode) data);
+		    		}
 		    		if(data == null){
 		    			result.addRestMessage(getDoesNotExistMessage());
 		    			return result.createResponseEntity();
@@ -396,7 +410,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 					this.dao.delete(vo.getId());
 				}else{
 					//Delete something from the map
-					Object existingData = vo.getJsonData();
+					Object existingData = convertToMap(vo.getJsonData());
 
 					//Find the Object to replace with this map
 					String[] pathParts;
@@ -468,8 +482,8 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
 
 				//Merge the maps
-				Object existingData = vo.getJsonData();
-				
+				Object existingData = convertToMap(vo.getJsonData());
+
 				if(path == null){
 					vo.setJsonData(data);
 				}else{
@@ -584,32 +598,35 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 		}
 		return false;
 	}
-	
-	/**
-	 * @param copyOfRange
-	 * @param jsonData
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private Object getSubset(String[] dataPath,
-			Object jsonData) {
 
-		Object sub = jsonData;
-		int count = 0;
-		for(String path : dataPath){
-			if((sub != null)&&(sub instanceof Map)){
-				sub = ((Map<String,Object>)sub).get(path);
-				count ++;
-				if(count == dataPath.length){
-					return sub;
-				}
-			}
+	private JsonNode getSubset(String[] dataPath, JsonNode node) {
+	    if (node == null) return null;
+	    
+		for (String path : dataPath) {
+		    node = node.get(path);
+		    if (node == null) {
+		        return null;
+		    }
 		}
-		return null;
+		return node;
 	}
 	
-	
-	
+	private Object convertToMap(Object existingData) {
+        // TODO this conversion to Map type used to happen in the DAO, we should re-work the REST controller code to work
+	    // directly with JsonNodes (as per the get by path method)
+        if (existingData instanceof JsonNode) {
+            TypeFactory typeFactory = mapper.getTypeFactory();
+            MapType mapType = typeFactory.constructMapType(HashMap.class, String.class, Object.class);
+            try {
+                existingData = mapper.convertValue(existingData, mapType);
+            } catch(Exception e) {
+                LOG.error(e.getMessage(), e);
+                existingData = null;
+            }
+        }
+        return existingData;
+	}
+
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
 	 */
