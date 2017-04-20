@@ -273,7 +273,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		User user = this.checkUser(request, result);
         if(result.isOk()){
 
-        	EventDao dao = new EventDao();
+        	EventDao dao = EventDao.instance;
 	        EventInstance existingEvent = dao.get(id);
 	        if (existingEvent == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
