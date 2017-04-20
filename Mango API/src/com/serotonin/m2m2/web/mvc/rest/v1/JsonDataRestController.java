@@ -229,7 +229,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody(required=false)
-    		Map<String, Object> data,
+    		JsonNode data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		return updateJsonData(xid, null, readPermission, editPermission, name, publicData, data, builder, request);
@@ -267,7 +267,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody(required=true)
-    		Object data,
+    		JsonNode data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
@@ -304,7 +304,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody(required=true)
-    		Map<String, Object> data,
+    		JsonNode data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		return replaceJsonData(xid, null, readPermission, editPermission, name, publicData, data, builder, request);
@@ -342,7 +342,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody(required=true)
-    		Object data,
+    		JsonNode data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
