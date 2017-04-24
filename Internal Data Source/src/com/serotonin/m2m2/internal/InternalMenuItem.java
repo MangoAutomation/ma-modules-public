@@ -33,6 +33,7 @@ import com.serotonin.m2m2.module.MenuItemDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.UpgradeCheck;
 import com.serotonin.m2m2.rt.maint.WorkItemMonitor;
+import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -259,6 +260,10 @@ public class InternalMenuItem extends MenuItemDefinition {
 						case DataTypes.NUMERIC:
 							//Setup to Log on Change
 							dp.setLoggingType(LoggingTypes.ON_CHANGE);
+							if(dp.getTextRenderer() instanceof AnalogRenderer) {
+								// This are count points, no need for decimals.
+								((AnalogRenderer)dp.getTextRenderer()).setFormat("0");
+							}
 
 							//No template in use here
 							dp.setTemplateId(null);
