@@ -260,7 +260,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 						case DataTypes.NUMERIC:
 							//Setup to Log on Change
 							dp.setLoggingType(LoggingTypes.ON_CHANGE);
-							if(dp.getTextRenderer() instanceof AnalogRenderer) {
+							if(dp.getTextRenderer() instanceof AnalogRenderer && !dp.getXid().equals(SYSTEM_UPTIME_POINT_XID)) {
 								// This are count points, no need for decimals.
 								((AnalogRenderer)dp.getTextRenderer()).setFormat("0");
 							}
