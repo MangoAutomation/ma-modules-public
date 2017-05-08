@@ -41,7 +41,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     static {
         EVENT_CODES.addElement(EVENT_UPDATE, "UPDATE", "pointLinks.event.update");
         EVENT_CODES.addElement(EVENT_CHANGE, "CHANGE", "pointLinks.event.change");
-        EVENT_CODES.addElement(EVENT_LOGGED, "CHANGE", "pointLinks.event.logged");
+        EVENT_CODES.addElement(EVENT_LOGGED, "LOGGED", "pointLinks.event.logged");
     }
 
     private int id = Common.NEW_ID;
