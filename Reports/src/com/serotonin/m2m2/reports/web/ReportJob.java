@@ -61,7 +61,7 @@ public class ReportJob extends TimerTask {
     private final int port;
 
     private ReportJob(TimerTrigger trigger, ReportVO report, String host, int port) {
-        super(trigger);
+        super(trigger, "Report Queue Job " + report.getXid(), "RPRT_Q_" + report.getXid(), 5);
         this.report = report;
         this.host = host;
         this.port = port;

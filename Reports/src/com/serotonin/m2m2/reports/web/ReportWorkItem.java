@@ -45,6 +45,7 @@ import com.serotonin.m2m2.util.chart.ImageChartUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.web.mail.EmailAttachment;
 import com.serotonin.web.mail.EmailContent;
@@ -288,5 +289,28 @@ public class ReportWorkItem implements WorkItem {
 	@Override
 	public String getDescription() {
 		return "Generating report: " + this.reportInstance.getName();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getTaskId()
+	 */
+	@Override
+	public String getTaskId() {
+		return "RPRT_" + this.reportConfig.getXid();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getQueueSize()
+	 */
+	@Override
+	public int getQueueSize() {
+		return 5;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#rejected(com.serotonin.timer.RejectedTaskReason)
+	 */
+	@Override
+	public void rejected(RejectedTaskReason reason) {
 	}
 }
