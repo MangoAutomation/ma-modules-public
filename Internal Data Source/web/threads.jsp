@@ -64,7 +64,10 @@
   <div>
     <a href="/internal/status.shtm"><fmt:message key="internal.status"/></a> |
     <fmt:message key="internal.threads"/> |
-    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a>
+    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a> |
+    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a> |
+    <a href="/internal/queueStats.shtm"><fmt:message key="internal.queue.stats"/></a> |
+    <a href="/internal/tasks.shtm"><fmt:message key="internal.tasks.stats"/></a>
   </div>
   <br/>
   
@@ -72,8 +75,8 @@
   <table>
     <thead>
       <tr class="rowHeader">
-        <td><fmt:message key="internal.thread.id"/></td>
-        <td><fmt:message key="internal.thread.name"/></td>
+        <td><fmt:message key="internal.id"/></td>
+        <td><fmt:message key="common.name"/></td>
         <td><fmt:message key="internal.thread.tenSecCpuTime"/></td>
         <td><fmt:message key="internal.thread.cpuTime"/></td>
         <td><fmt:message key="internal.thread.state"/></td>

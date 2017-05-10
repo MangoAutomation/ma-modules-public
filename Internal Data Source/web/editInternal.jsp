@@ -5,7 +5,7 @@
 <%@page import="com.serotonin.m2m2.internal.InternalDataSourceVO"%>
 <%@page import="com.serotonin.m2m2.internal.InternalPointLocatorVO"%>
 <%@page import="com.serotonin.m2m2.Common" %>
-<%@page import="com.serotonin.monitor.MonitoredValues" %>
+<%@page import="com.infiniteautomation.mango.monitor.MonitoredValues" %>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <script type="text/javascript">

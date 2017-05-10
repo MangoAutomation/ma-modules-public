@@ -366,4 +366,12 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	public void pointLogged(PointValueTime value) {
 		//Do nothing for now
 	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#getListenerName()
+	 */
+	@Override
+	public String getListenerName() {
+		return "Websocket for DP " + this.vo.getXid() + "'s point values.";
+	}
 }

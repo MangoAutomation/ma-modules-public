@@ -190,4 +190,29 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
         }
         return cronTrigger;
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getThreadName()
+	 */
+	@Override
+	public String getThreadName() {
+		return "Scheduled Event " + this.vo.getXid();
+	}
+
+	final String PREFIX = "SCHED_EVT_";
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
+	 */
+	@Override
+	public String getTaskId() {
+		return PREFIX + this.vo.getXid();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getQueueSize()
+	 */
+	@Override
+	public int getQueueSize() {
+		return 0;
+	}
 }

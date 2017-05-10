@@ -6,27 +6,26 @@
 <tag:page dwr="ThreadsDwr">
   <script type="text/javascript">
     require(["dojo/ready"], function(ready) {
-        ready(getWorkItems);
+        ready(getTaskStats);
     });
     
-    function getWorkItems() {
-        ThreadsDwr.getWorkItems(function(result) {
-        	draw(result.data.highClassCounts, "highList");
-            draw(result.data.medClassCounts, "medList");
-            draw(result.data.lowClassCounts, "lowList");
-            //setTimeout(getStatusVars, 2000);
+    function getTaskStats() {
+        ThreadsDwr.getTaskStats(function(result) {
+        	draw(result.data.highStats, "highList");
+        	draw(result.data.mediumStats, "mediumList");
         });            
     }
     
-    function draw(counts, listId) {
-        var list = [];
-        for (p in counts)
-            list.push({name: p, count: counts[p]});
+    function draw(list, listId) {
         
         dwr.util.removeAllRows(listId);
         dwr.util.addRows(listId, list, [
+                function(t) { return t.id; },
                 function(t) { return t.name; },
-                function(t) { return t.count; },
+                function(t) { return t.currentlyRunning; },
+                function(t) { return t.poolFull; },
+                function(t) { return t.queueFull; },
+                function(t) { return t.totalRejections; }
             ],
             {
                 rowCreator: function(options) {
@@ -57,9 +56,9 @@
   <div>
     <a href="/internal/status.shtm"><fmt:message key="internal.status"/></a> |
     <a href="/internal/threads.shtm"><fmt:message key="internal.threads"/></a> |
-    <fmt:message key="internal.workItems"/> |
-	<a href="/internal/queueStats.shtm"><fmt:message key="internal.queue.stats"/></a> |
-	<a href="/internal/tasks.shtm"><fmt:message key="internal.tasks.stats"/></a>
+    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a> |
+    <a href="/internal/queueStats.shtm"><fmt:message key="internal.queue.stats"/></a> | 
+    <fmt:message key="internal.tasks.stats"/>
   </div>
   <br/>
   <div>
@@ -67,8 +66,12 @@
     <table>
       <thead>
         <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
+          <td><fmt:message key="internal.id"/></td>
+          <td><fmt:message key="common.name"/></td>
+          <td><fmt:message key="internal.tasks.currentlyRunningRejections"/></td>
+          <td><fmt:message key="internal.tasks.poolFullRejections"/></td>
+          <td><fmt:message key="internal.tasks.queueFullRejections"/></td>
+          <td><fmt:message key="internal.tasks.totalRejections"/></td>
         </tr>
       </thead>
       <tbody id="highList"></tbody>
@@ -79,25 +82,16 @@
     <table>
       <thead>
         <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
+          <td><fmt:message key="internal.id"/></td>
+          <td><fmt:message key="common.name"/></td>
+          <td><fmt:message key="internal.tasks.currentlyRunningRejections"/></td>
+          <td><fmt:message key="internal.tasks.poolFullRejections"/></td>
+          <td><fmt:message key="internal.tasks.queueFullRejections"/></td>
+          <td><fmt:message key="internal.tasks.totalRejections"/></td>
         </tr>
       </thead>
-      <tbody id="medList"></tbody>
+      <tbody id="mediumList"></tbody>
     </table>
   </div>
-  <div>
-    <span class="copyTitle"><fmt:message key="internal.workItems.low"/></span>
-    <table>
-      <thead>
-        <tr class="rowHeader">
-          <td><fmt:message key="internal.workItems.class"/></td>
-          <td><fmt:message key="internal.workItems.count"/></td>
-        </tr>
-      </thead>
-      <tbody id="lowList"></tbody>
-    </table>
-  </div>
-  
-  <button onclick="getWorkItems()"><fmt:message key="common.refresh"/></button>
+  <button onclick="getTaskStats()"><fmt:message key="common.refresh"/></button>
 </tag:page>

@@ -12,7 +12,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.MangoRestTemporaryResourceModel;
  * 
  * @author Terry Packer
  */
-public abstract class MangoRestTemporaryResource implements TimeoutClient{
+public abstract class MangoRestTemporaryResource extends TimeoutClient{
 	
 	protected final String resourceId;
 	protected long expiration = 0;
@@ -66,5 +66,22 @@ public abstract class MangoRestTemporaryResource implements TimeoutClient{
 		if(this.expiration >= 0)
 			model.setExpires(expiration);
 		return model;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.maint.work.WorkItem#getTaskId()
+	 */
+	@Override
+	public String getTaskId() {
+		return "TR_" + this.resourceId;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#getThreadName()
+	 */
+	@Override
+	public String getThreadName() {
+		return "Temporary Resource Timeout for : " + this.resourceId;
 	}
 }

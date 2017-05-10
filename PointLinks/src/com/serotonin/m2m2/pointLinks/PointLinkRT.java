@@ -269,4 +269,12 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public static File getLogFile(int pointId) {
         return new File(Common.getLogsDir(), "pointLink-" + pointId + ".log");
     }
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.dataImage.DataPointListener#getListenerName()
+	 */
+	@Override
+	public String getListenerName() {
+		return "Point Link " + this.vo.getXid();
+	}
 }

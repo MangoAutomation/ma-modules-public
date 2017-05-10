@@ -554,7 +554,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     }
     
     
-    class SerialTimeoutClient implements TimeoutClient{
+    class SerialTimeoutClient extends TimeoutClient{
 
     	private SerialDataSourceRT rt;
     	
@@ -568,6 +568,14 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 		@Override
 		public void scheduleTimeout(long fireTime) {
 			rt.serialEvent(new TimeoutSerialEvent(fireTime));
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#getThreadName()
+		 */
+		@Override
+		public String getThreadName() {
+			return "Serial DS Timeout Detector " + rt.getVo().getXid();
 		}
     	
     }
