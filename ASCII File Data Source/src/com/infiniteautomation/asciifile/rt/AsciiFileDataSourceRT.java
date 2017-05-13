@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -331,9 +333,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	@Override
 	public void SystemSettingsSaved(String key, Object oldValue, Object newValue) {
-		if(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH.equals(key)) {
-			this.restrictedPath = isPathRestricted((String)newValue);
-		}
+		this.restrictedPath = isPathRestricted((String)newValue);
 	}
 	
 	private boolean isPathRestricted(String restrictedPaths) {
@@ -348,8 +348,16 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	@Override
 	public void SystemSettingsRemoved(String key, Object lastValue) {
-		if(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH.equals(key)) {
-			this.restrictedPath = false;
-		}
+		this.restrictedPath = false;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener#getKeys()
+	 */
+	@Override
+	public List<String> getKeys() {
+		List<String> keys = new ArrayList<String>();
+		keys.add(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+		return keys;
 	}
 }

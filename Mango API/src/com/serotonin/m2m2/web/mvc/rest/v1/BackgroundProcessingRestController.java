@@ -101,10 +101,9 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
 	    			if(model.getCorePoolSize() != null){
 	    				executor.setCorePoolSize(model.getCorePoolSize());
-	        			systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
+	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.HIGH_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int corePoolSize = executor.getCorePoolSize();
@@ -112,7 +111,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	    			}
 	    			if(model.getMaximumPoolSize() != null){
 	    				executor.setMaximumPoolSize(model.getMaximumPoolSize());
-	    				systemSettingsDao.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
+	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.HIGH_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int maximumPoolSize = executor.getMaximumPoolSize();
@@ -189,10 +188,9 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
 	    			if(model.getCorePoolSize() != null){
 	    				Common.backgroundProcessing.setMediumPriorityServiceCorePoolSize(model.getCorePoolSize());
-	        			systemSettingsDao.setIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
+	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int corePoolSize = Common.backgroundProcessing.getMediumPriorityServiceCorePoolSize();
@@ -200,7 +198,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	    			}
 	    			if(model.getMaximumPoolSize() != null){
 	    				Common.backgroundProcessing.setMediumPriorityServiceMaximumPoolSize(model.getMaximumPoolSize());
-	    				systemSettingsDao.setIntValue(SystemSettingsDao.MED_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
+	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.MED_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int maximumPoolSize = Common.backgroundProcessing.getMediumPriorityServiceMaximumPoolSize();
@@ -279,10 +277,9 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	        	SystemSettingsDao systemSettingsDao = new SystemSettingsDao();
 	    			if(model.getCorePoolSize() != null){
 	    				Common.backgroundProcessing.setLowPriorityServiceCorePoolSize(model.getCorePoolSize());
-	        			systemSettingsDao.setIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
+	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE, model.getCorePoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int corePoolSize = Common.backgroundProcessing.getLowPriorityServiceCorePoolSize();
@@ -290,7 +287,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	    			}
 	    			if(model.getMaximumPoolSize() != null){
 	    				Common.backgroundProcessing.setLowPriorityServiceMaximumPoolSize(model.getMaximumPoolSize());
-	    				systemSettingsDao.setIntValue(SystemSettingsDao.LOW_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
+	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.LOW_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
 	    			}else{
 	    				//Get the info for the user
 	        			int maximumPoolSize = Common.backgroundProcessing.getLowPriorityServiceMaximumPoolSize();

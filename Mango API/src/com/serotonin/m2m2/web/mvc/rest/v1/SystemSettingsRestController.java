@@ -40,7 +40,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RequestMapping("/v1/system-settings")
 public class SystemSettingsRestController extends MangoRestController{
 	
-	private SystemSettingsDao dao = new SystemSettingsDao();
+	private SystemSettingsDao dao = SystemSettingsDao.instance;
 
 	@ApiOperation(
 			value = "Get System Setting By key",
