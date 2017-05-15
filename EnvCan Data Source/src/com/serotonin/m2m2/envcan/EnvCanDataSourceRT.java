@@ -81,7 +81,7 @@ public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
             }
 
             if (nextValueTime == 0)
-                nextValueTime = new DateTime(2008, 1, 1, 0, 0, 0, 0).getMillis();
+                nextValueTime = vo.getDataStartTime();
             else
                 nextValueTime += 1000 * 60 * 60;
         }

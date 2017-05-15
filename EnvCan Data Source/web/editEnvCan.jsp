@@ -8,7 +8,7 @@
 
 <script type="text/javascript">
   function saveDataSourceImpl(basic) {
-	  EnvCanEditDwr.saveEnvCanDataSource(basic, $get("stationId"), 
+	  EnvCanEditDwr.saveEnvCanDataSource(basic, $get("stationId"), document.getElementById("dataStartTime").valueAsDate,
 			  saveDataSourceCB);
   }
   
@@ -38,6 +38,11 @@
     <td class="formLabelRequired"><fmt:message key="envcands.stationId"/></td>
     <td class="formField"><input id="stationId" type="text" value="${dataSource.stationId}"/></td>
   </tr>
+  <tr>
+  	<td class="formLabelRequired"><fmt:message key="envcands.dataStartTime"/></td>
+  	<td class="formField"><input id="dataStartTime" type="date"/></td>
+  </tr>
+  <script>document.getElementById("dataStartTime").valueAsDate = new Date(${dataSource.dataStartTime});</script>
 </tag:dataSourceAttrs>
 
 <tag:pointList pointHelpId="envcanPP">

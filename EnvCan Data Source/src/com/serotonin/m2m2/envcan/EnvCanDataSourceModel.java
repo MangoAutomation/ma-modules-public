@@ -35,7 +35,15 @@ public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSou
 	public void setStationId(int stationId) {
 	    this.data.setStationId(stationId);
 	}
+	@JsonGetter("dataStartTime")
+	public long getDataStartTime() {
+	    return this.data.getDataStartTime();
+	}
 
+	@JsonSetter("dataStartTime")
+	public void setDataStartTime(long dataStartTime) {
+	    this.data.setDataStartTime(dataStartTime);
+	}
 
 
 	
