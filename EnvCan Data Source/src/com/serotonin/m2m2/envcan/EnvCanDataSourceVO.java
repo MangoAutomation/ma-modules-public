@@ -67,6 +67,8 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
 
     @JsonProperty
     private int stationId;
+    @JsonProperty
+    private long dataStartTime = 1199145600000L; //Jan 1 2008 GMT
 
     public int getStationId() {
         return stationId;
@@ -74,6 +76,14 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
 
     public void setStationId(int stationId) {
         this.stationId = stationId;
+    }
+    
+    public long getDataStartTime() {
+    	return dataStartTime;
+    }
+    
+    public void setDataStartTime(long dataStartTime) {
+    	this.dataStartTime = dataStartTime;
     }
 
     @Override
@@ -89,11 +99,12 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         out.writeInt(stationId);
+        out.writeLong(dataStartTime);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
@@ -102,6 +113,10 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
         // Switch on the version of the class so that version changes can be elegantly handled.
         if (ver == 1) {
             stationId = in.readInt();
+            dataStartTime = 1199145600000L;
+        } else if (ver == 2) {
+            stationId = in.readInt();
+            dataStartTime = in.readLong();
         }
     }
 
