@@ -25,7 +25,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api(value="Logout", description="Logout")
 @RestController
 @RequestMapping("/v2/logout")
-public class LogoutV2RestController {
+public class LogoutRestV2Controller {
 
 	/**
 	 * POST Logout action

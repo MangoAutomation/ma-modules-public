@@ -164,9 +164,10 @@ public class ServerRestController extends MangoRestController{
     	        model.setSqlDbSizeBytes(Common.databaseProxy.getDatabaseSizeInBytes());
 
     	        //Do we have any NoSQL Data
-    	        if (Common.databaseProxy.getNoSQLProxy() != null)
-    	        	model.setNoSqlDbSizeBytes(Common.databaseProxy.getNoSQLProxy().getDatabaseSizeInBytes());
-
+    	        if (Common.databaseProxy.getNoSQLProxy() != null){
+    	        	String pointValueStoreName = Common.envProps.getString("db.nosql.pointValueStoreName", "mangoTSDB");
+    	        	model.setNoSqlDbSizeBytes(Common.databaseProxy.getNoSQLProxy().getDatabaseSizeInBytes(pointValueStoreName));
+    	        }
     	        // Filedata data
     	        DirectoryInfo fileDatainfo = DirectoryUtils.getSize(new File(Common.getFiledataPath()));
     	        model.setFileDataSizeBytes(fileDatainfo.getSize());
