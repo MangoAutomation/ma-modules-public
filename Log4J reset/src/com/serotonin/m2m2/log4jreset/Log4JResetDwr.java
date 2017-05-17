@@ -14,7 +14,7 @@ public class Log4JResetDwr extends ModuleDwr {
     @DwrPermission(admin = true)
     public void resetLog4J() {
         LOG.info("Reloading Log4J configuration");
-    	((LoggerContext)LogManager.getContext(false)).reconfigure();;
+    	((LoggerContext)LogManager.getContext(false)).reconfigure();
         LOG.info("Finished reloading Log4J configuration");
     }
 
