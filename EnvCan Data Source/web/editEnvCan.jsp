@@ -33,7 +33,7 @@
   }
 </script>
 
-<tag:dataSourceAttrs descriptionKey="envcands.desc" helpId="envcanDS">
+<tag:dataSourceAttrs descriptionKey="envcands.desc" helpId="envCanDS">
   <tr>
     <td class="formLabelRequired"><fmt:message key="envcands.stationId"/></td>
     <td class="formField"><input id="stationId" type="text" value="${dataSource.stationId}"/></td>
@@ -45,7 +45,7 @@
   <script>document.getElementById("dataStartTime").valueAsDate = new Date(${dataSource.dataStartTime});</script>
 </tag:dataSourceAttrs>
 
-<tag:pointList pointHelpId="envcanPP">
+<tag:pointList pointHelpId="envCanPP">
   <tr>
     <td class="formLabelRequired"><fmt:message key="envcands.attr"/></td>
     <td class="formField">

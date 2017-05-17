@@ -28,6 +28,8 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
                 "event.ds.dataSource"), EventType.DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));
         ets.add(createPollAbortedEventType(EnvCanDataSourceRT.POLL_ABORTED_EVENT));
+        ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("envcands.event.noTemperatureData"),
+        		EventType.DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.INFORMATION));
     }
 	/*
 	 * (non-Javadoc)
@@ -43,6 +45,7 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
         EVENT_CODES.addElement(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, "DATA_RETRIEVAL_FAILURE_EVENT");
         EVENT_CODES.addElement(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, "PARSE_EXCEPTION");
         EVENT_CODES.addElement(EnvCanDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
+        EVENT_CODES.addElement(EnvCanDataSourceRT.NO_DATA_RETRIEVED_EVENT, "NO_DATA_RETRIEVED_EVENT");
     }
 
     @Override
