@@ -40,6 +40,7 @@ public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
     public static final int DATA_RETRIEVAL_FAILURE_EVENT = 1;
     public static final int PARSE_EXCEPTION_EVENT = 2;
     public static final int POLL_ABORTED_EVENT = 3;
+    public static final int NO_DATA_RETRIEVED_EVENT = 4;
 
     private long nextValueTime = -1;
     private long tzOffset;
@@ -88,6 +89,11 @@ public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
 
         long previousValueTime = nextValueTime;
         doPollImpl(time);
+        
+        if(nextValueTime == previousValueTime)
+        	raiseEvent(NO_DATA_RETRIEVED_EVENT, time, true, new TranslatableMessage("envcands.event.noTemperatureData"));
+    	else
+    		returnToNormal(NO_DATA_RETRIEVED_EVENT, time);
 
         while (nextValueTime != previousValueTime) {
             // Something was changed.
