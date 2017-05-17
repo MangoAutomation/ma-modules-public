@@ -696,7 +696,7 @@ public class JsonEmportRestController extends MangoRestController{
 	        if (ArrayUtils.contains(exportElements, EmportDwr.POINT_HIERARCHY))
 	            data.put(EmportDwr.POINT_HIERARCHY, DataPointDao.instance.getPointHierarchy(true).getRoot().getSubfolders());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.SYSTEM_SETTINGS))
-	            data.put(EmportDwr.SYSTEM_SETTINGS, SystemSettingsDao.instance.getSystemSettingsForExport());
+	            data.put(EmportDwr.SYSTEM_SETTINGS, SystemSettingsDao.instance.getAllSystemSettingsAsCodes());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.TEMPLATES))
 	            data.put(EmportDwr.TEMPLATES, TemplateDao.instance.getAll());
 	        if (ArrayUtils.contains(exportElements, EmportDwr.VIRTUAL_SERIAL_PORTS))

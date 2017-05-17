@@ -192,6 +192,8 @@ public class SystemSettingsRestController extends MangoRestController{
 		this.checkUser(request, result);
         if(result.isOk()){
     		ProcessResult response = new ProcessResult();
+    		//Convert incoming ExportCodes to int values
+    		settings = this.dao.convertCodesToValues(settings);
     		this.dao.validate(settings, response);
     		if(response.getHasMessages()){
     			//Invalid
