@@ -7,6 +7,8 @@ package com.serotonin.m2m2.reports;
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.SystemActionDefinition;
@@ -33,8 +35,24 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 	 * @see com.serotonin.m2m2.module.SystemActionDefinition#getWorkItem(com.fasterxml.jackson.databind.JsonNode)
 	 */
 	@Override
-	public SystemActionTask getTask(final JsonNode input) {
+	public SystemActionTask getTaskImpl(final JsonNode input) {
 		return new Action();
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.SystemActionDefinition#getPermissionTypeName()
+	 */
+	@Override
+	protected String getPermissionTypeName() {
+		return ReportPurgeActionPermissionDefinition.PERMISSION;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.SystemActionDefinition#validate(com.fasterxml.jackson.databind.JsonNode)
+	 */
+	@Override
+	protected RestValidationResult validateImpl(JsonNode input) throws ValidationFailedRestException {
+		return null;
 	}
 	
 	/**
@@ -46,7 +64,7 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 	class Action extends SystemActionTask{
 		
 		public Action(){
-			super(new OneTimeTrigger(0l), "Purge Reports", "REPORT_PURGE", 5);
+			super(new OneTimeTrigger(0l), "Purge Reports Status Poller", "REPORT_PURGE_POLLER", 5);
 		}
 
 		/* (non-Javadoc)
