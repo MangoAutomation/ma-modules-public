@@ -8,6 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.m2m2.module.SystemActionDefinition;
 import com.serotonin.m2m2.util.timeout.SystemActionTask;
 import com.serotonin.timer.OneTimeTrigger;
@@ -24,7 +26,7 @@ import com.serotonin.timer.OneTimeTrigger;
  * 
  * @author Terry Packer
  */
-public class ResetLog4JActionDefinition extends SystemActionDefinition{
+public class Log4JResetActionDefinition extends SystemActionDefinition{
 
 	private final String KEY = "log4JUtil";
 	
@@ -40,8 +42,42 @@ public class ResetLog4JActionDefinition extends SystemActionDefinition{
 	 * @see com.serotonin.m2m2.module.SystemActionDefinition#getWorkItem(com.fasterxml.jackson.databind.JsonNode)
 	 */
 	@Override
-	public SystemActionTask getTask(final JsonNode input) {
+	public SystemActionTask getTaskImpl(final JsonNode input) {
 		return new Action(input.get("action").asText());
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.SystemActionDefinition#getPermissionTypeName()
+	 */
+	@Override
+	protected String getPermissionTypeName() {
+		return Log4JResetActionPermissionDefinition.PERMISSION;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.SystemActionDefinition#validate(com.fasterxml.jackson.databind.JsonNode)
+	 */
+	@Override
+	protected RestValidationResult validateImpl(JsonNode input) throws ValidationFailedRestException {
+		RestValidationResult result = new RestValidationResult();
+		
+		JsonNode node = input.get("action");
+		if(node == null)
+			result.addRequiredError("action");
+		else{
+			switch(node.asText()){
+			case "RESET":
+			case "TEST_DEBUG":
+			case "TEST_INFO":
+			case "TEST_WARN":
+			case "TEST_ERROR":
+			case "TEST_FATAL":
+				break;
+			default:
+				result.addInvalidValueError("action");
+			}
+		}
+		return result;
 	}
 	
 	/**
@@ -56,6 +92,7 @@ public class ResetLog4JActionDefinition extends SystemActionDefinition{
 		
 		public Action(String action){
 			super(new OneTimeTrigger(0l), "Reset Log4J", "RESET_LOG4J", 5);
+			this.action = action;
 		}
 
 		/* (non-Javadoc)
