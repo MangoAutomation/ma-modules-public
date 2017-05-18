@@ -1009,11 +1009,11 @@ public class ReportDao extends AbstractDao<ReportVO> {
 	@Override
 	protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
 		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+		map.put("data", Types.BINARY);
 		map.put("id", Types.INTEGER);
 		map.put("xid", Types.VARCHAR);
 		map.put("userId", Types.INTEGER);
 		map.put("name", Types.VARCHAR);
-		map.put("data", Types.BINARY);
 		return map;
 	}
 

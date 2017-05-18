@@ -168,7 +168,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	
 	@ApiOperation(
 			value = "Save a new event handler",
-			notes = ""
+			notes = "User must have event type permission"
 			)
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"})
     public ResponseEntity<AbstractEventHandlerModel<?>> save(
@@ -208,6 +208,35 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
         }
         //Not logged in
         return result.createResponseEntity();
+    }
+	
+	@ApiOperation(
+			value = "Delete an event handler",
+			notes = "The user must have event type permission"
+			)
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json"})
+    public ResponseEntity<AbstractEventHandlerModel<?>> delete(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
+		RestProcessResult<AbstractEventHandlerModel<?>> result = new RestProcessResult<AbstractEventHandlerModel<?>>(HttpStatus.OK);
+		User user = this.checkUser(request, result);
+		if(result.isOk()) {
+			AbstractEventHandlerVO<?> existing = EventHandlerDao.instance.getByXid(xid);
+			if(existing == null) {
+				result.addRestMessage(this.getDoesNotExistMessage());
+				return result.createResponseEntity();
+			}else {
+		        //Check Event Type Permission
+		        if(!hasEventTypePermission(user, existing.asModel().getEventType())){
+					result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", existing.asModel().getEventType().getEventTypeInstance()));
+					return result.createResponseEntity();
+		        }
+		        //All Good Delete It
+		        EventHandlerDao.instance.delete(existing.getId());
+				return result.createResponseEntity(existing.asModel());
+			}
+		}
+		else {
+			return result.createResponseEntity();
+		}
     }
 	
 	

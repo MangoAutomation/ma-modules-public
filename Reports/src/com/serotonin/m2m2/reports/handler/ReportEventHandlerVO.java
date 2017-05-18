@@ -13,6 +13,7 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.rt.event.handlers.EventHandlerRT;
@@ -60,7 +61,29 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
 		return new ReportEventHandlerModel(this);
 	}
 	
-	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.event.AbstractEventHandlerVO#validate(com.serotonin.m2m2.i18n.ProcessResult)
+	 */
+	@Override
+	public void validate(ProcessResult response) {
+		super.validate(response);
+		
+		if(activeReportId != Common.NEW_ID){
+			ReportVO vo = ReportDao.instance.get(activeReportId);
+			if(vo == null)
+				response.addContextualMessage("activeReportId", "validate.invalidValue");
+		}
+		if(inactiveReportId != Common.NEW_ID){
+			ReportVO vo = ReportDao.instance.get(inactiveReportId);
+			if(vo == null)
+				response.addContextualMessage("inactiveReportId", "validate.invalidValue");
+		}
+		
+		if((inactiveReportId != Common.NEW_ID)&&(activeReportId != Common.NEW_ID)){
+			response.addContextualMessage("activeReportId", "validate.atLeast1");
+			response.addContextualMessage("inactiveReportId", "validate.atLeast1");
+		}
+	}
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.vo.event.AbstractEventHandlerVO#jsonRead(com.serotonin.json.JsonReader, com.serotonin.json.type.JsonObject)
@@ -105,7 +128,7 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 8;
+    private static final int version = 1;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);

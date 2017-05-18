@@ -19,5 +19,21 @@ public class ReportEventHandlerModel extends AbstractEventHandlerModel<ReportEve
 	public ReportEventHandlerModel(ReportEventHandlerVO data) {
 		super(data);
 	}
+	
+	public int getActiveReportId() {
+		return this.data.getActiveReportId();
+	}
 
+	public void setActiveReportId(int activeReportId) {
+		this.data.setActiveReportId(activeReportId);
+	}
+
+	public int getInactiveReportId() {
+		return this.data.getInactiveReportId();
+	}
+
+	public void setInactiveReportId(int inactiveReportId) {
+		this.data.setInactiveReportId(inactiveReportId);
+	}
+	
 }

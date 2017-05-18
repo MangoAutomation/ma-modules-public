@@ -41,12 +41,14 @@ public class ReportEventHandlerRT extends EventHandlerRT<ReportEventHandlerVO>{
 	@Override
 	public void eventRaised(EventInstance evt) {
     	try {
-			String host = InetAddress.getLocalHost().getHostName();
-		   	int port = Common.envProps.getInt("web.port", 8080);
 		   	if(vo.getActiveReportId() != Common.NEW_ID){
 				//Schedule the Active Report To Run
 				ReportVO report = ReportDao.instance.get(vo.getActiveReportId());
-				ReportWorkItem.queueReport(host, port, report);
+				if(report != null){
+					String host = InetAddress.getLocalHost().getHostName();
+				   	int port = Common.envProps.getInt("web.port", 8080);
+					ReportWorkItem.queueReport(host, port, report);
+				}
 		   	}
 		} catch (UnknownHostException e) {
 			LOG.error(e.getMessage(), e);
@@ -60,12 +62,14 @@ public class ReportEventHandlerRT extends EventHandlerRT<ReportEventHandlerVO>{
 	@Override
 	public void eventInactive(EventInstance evt) {
 		try{
-			String host = InetAddress.getLocalHost().getHostName();
-			int port = Common.envProps.getInt("web.port", 8080);
 			if(vo.getInactiveReportId() != Common.NEW_ID){
 				//Schedule the Inactive Report to run
 				ReportVO report = ReportDao.instance.get(vo.getInactiveReportId());
-				ReportWorkItem.queueReport(host, port, report);
+				if(report != null){
+					String host = InetAddress.getLocalHost().getHostName();
+					int port = Common.envProps.getInt("web.port", 8080);
+					ReportWorkItem.queueReport(host, port, report);
+				}
 			}
 		} catch (UnknownHostException e) {
 			LOG.error(e.getMessage(), e);
