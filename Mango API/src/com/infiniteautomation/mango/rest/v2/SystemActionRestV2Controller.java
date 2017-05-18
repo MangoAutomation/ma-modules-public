@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,11 +76,13 @@ public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
 		@ApiResponse(code = 404, message = "Not Found", response=ResponseEntity.class),
 	})
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/{action}")
-    public ResponseEntity<Void> sendTestEmail(
+    public ResponseEntity<Void> performAction(
     		@ApiParam(value = "Valid System Action", required = true, allowMultiple = false)
 			@PathVariable String action,
 			@ApiParam(value = "Input for task", required = false, allowMultiple = false)
+    		@RequestBody(required=false)
     		JsonNode input,
+    		@AuthenticationPrincipal User user,
     		UriComponentsBuilder builder) {
 		try{
 			RestProcessResult<Void> result = new RestProcessResult<Void>(HttpStatus.OK);
@@ -90,11 +93,11 @@ public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
 				throw new NotFoundRestException();
 			
 			String resourceId = resources.generateResourceId();
-			SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(input));
+			SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input));
 			
 			//Resource can live for up to 10 minutes (TODO Configurable?)
 			resources.put(resourceId, resource, System.currentTimeMillis() + 600000);
-	    	URI location = builder.path("/v2/data-file/import/{resourceId}").buildAndExpand(resourceId).toUri();
+	    	URI location = builder.path("/v2/actions/status/{resourceId}").buildAndExpand(resourceId).toUri();
 	    	result.addHeader("Location", location.toString());
 	    	
 			return result.createResponseEntity();
@@ -110,8 +113,8 @@ public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
 		@ApiResponse(code = 404, message = "No resource exists with given id", response=ResponseEntity.class),
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/import/{resourceId}"}, produces = {"application/json"} )
-	public ResponseEntity<SystemActionTemporaryResource> getProgress(HttpServletRequest request, 
+	@RequestMapping( method = {RequestMethod.GET}, value = {"/status/{resourceId}"}, produces = {"application/json"} )
+	public ResponseEntity<SystemActionTemporaryResource> getStatus(HttpServletRequest request, 
 			@ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
 			@AuthenticationPrincipal User user) {
 		RestProcessResult<SystemActionTemporaryResource> result = new RestProcessResult<>(HttpStatus.OK);
