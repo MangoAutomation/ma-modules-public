@@ -20,8 +20,7 @@ public class ModuleModel {
 	
 	private String name;
 	private String version;
-    @JsonView(AdminView.class)
-	private int buildNumber;
+    private String normalVersion;
 	private String licenseType;
     @JsonView(AdminView.class)
     private String description;
@@ -38,8 +37,6 @@ public class ModuleModel {
     @JsonView(AdminView.class)
     private boolean markedForDeletion;
     @JsonView(AdminView.class)
-    private String versionState;
-    @JsonView(AdminView.class)
     private boolean unloaded;
     @JsonView(AdminView.class)
     private boolean signed;
@@ -53,7 +50,8 @@ public class ModuleModel {
 
 	public ModuleModel(Module module){
 		this.name = module.getName();
-		this.version = module.getVersion();
+        this.version = module.getVersion().toString();
+        this.normalVersion = module.getVersion().getNormalVersion();
 		this.licenseType = module.getLicenseType();
 		TranslatableMessage m = module.getDescription();
 		if(m != null)
@@ -62,11 +60,6 @@ public class ModuleModel {
 		this.vendorUrl = module.getVendorUrl();
 		this.dependencies = module.getDependencies();
 		this.markedForDeletion = module.isMarkedForDeletion();
-		this.buildNumber = module.getBuildNumber();
-		int versionState = module.getVersionState();
-		if(versionState >= 0){
-			this.versionState = Module.VERSION_STATE_CODES.getCode(versionState);
-		}
 		this.signed = module.isSigned();
 	}
 	
@@ -114,12 +107,12 @@ public class ModuleModel {
 		this.version = version;
 	}
 
-	public int getBuildNumber() {
-		return buildNumber;
+   public String getNormalVersion() {
+        return normalVersion;
 	}
 
-	public void setBuildNumber(int buildNumber) {
-		this.buildNumber = buildNumber;
+    public void setNormalVersion(String normalVersion) {
+        this.normalVersion = normalVersion;
 	}
 
 	public String getLicenseType() {
@@ -176,10 +169,6 @@ public class ModuleModel {
 
 	public void setReleaseNotes(String releaseNotes) {
 		this.releaseNotes = releaseNotes;
-	}
-
-	public String getVersionState(){
-		return this.versionState;
 	}
 
 	public boolean markedForDeletion(){

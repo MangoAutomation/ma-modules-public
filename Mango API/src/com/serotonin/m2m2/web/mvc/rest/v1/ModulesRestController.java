@@ -25,13 +25,11 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AngularJSModuleDefinition;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.ModuleRegistry;
-import com.serotonin.m2m2.shared.DependencyData;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
@@ -127,9 +125,9 @@ public class ModulesRestController extends MangoRestController {
 	
 	@ApiOperation(value = "List Current Missing Module Dependencies", notes = "List all installed")
 	@RequestMapping(method = RequestMethod.GET, value = "/list-missing-dependencies", produces = { "application/json" })
-	public ResponseEntity<Map<String, DependencyData>> listMissingModuleDependencies(HttpServletRequest request) {
+	public ResponseEntity<Map<String, String>> listMissingModuleDependencies(HttpServletRequest request) {
 
-		RestProcessResult<Map<String, DependencyData>> result = new RestProcessResult<Map<String, DependencyData>>(HttpStatus.OK);
+		RestProcessResult<Map<String, String>> result = new RestProcessResult<>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if (result.isOk()) {
 			if (Permissions.hasAdmin(user)) {
@@ -306,8 +304,6 @@ public class ModulesRestController extends MangoRestController {
 	 * @return
 	 */
 	private ModuleModel getCoreModule() {
-		ModuleModel model = new ModuleModel(ModuleRegistry.getCoreModule());
-		model.setVersion(Common.getVersion().getFullString());
-		return model;
+		return new ModuleModel(ModuleRegistry.getCoreModule());
 	}
 }
