@@ -125,10 +125,9 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        }
 	        //Check permissions
 	    	try{
-	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			DataPointDao.instance.setEventDetectors(vo);
+	    		if(Permissions.hasDataPointReadPermission(user, vo))
 	    			return result.createResponseEntity(new DataPointModel(vo));
-	    		}else{
+	    		else{
 	    			LOG.warn("User: " + user.getUsername() + " tried to access data point with xid " + vo.getXid());
 	    			result.addRestMessage(getUnauthorizedMessage());
 	        		return result.createResponseEntity();
@@ -163,10 +162,9 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        }
 	        //Check permissions
 	    	try{
-	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    			DataPointDao.instance.setEventDetectors(vo);
+	    		if(Permissions.hasDataPointReadPermission(user, vo))
 	    			return result.createResponseEntity(new DataPointModel(vo));
-	    		}else{
+	    		else{
 	    			LOG.warn("User: " + user.getUsername() + " tried to access data point with xid " + vo.getXid());
 	    			result.addRestMessage(getUnauthorizedMessage());
 	        		return result.createResponseEntity();
@@ -648,7 +646,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			result.addRestMessage(getUnauthorizedMessage());
         		return result.createResponseEntity();	    		
 	    	}
-        	//This method collects the event detectors
+        	
            	List<DataPointVO> dataPoints = DaoRegistry.dataPointDao.getDataPoints(dataSource.getId(), null);
             List<DataPointModel> userDataPoints = new ArrayList<DataPointModel>();
         	
@@ -907,7 +905,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	 */
 	@Override
 	public DataPointModel createModel(DataPointVO vo) {
-		DataPointDao.instance.setEventDetectors(vo);
 		return new DataPointModel(vo);
 	}
 	

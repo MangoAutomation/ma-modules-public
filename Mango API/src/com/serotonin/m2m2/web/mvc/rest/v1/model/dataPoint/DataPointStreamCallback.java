@@ -37,13 +37,7 @@ public class DataPointStreamCallback extends FilteredVoStreamCallback<DataPointV
 	 */
 	@Override
 	protected boolean filter(DataPointVO vo) {
-		 if(!this.filter.hasDataPointReadPermission(vo)){
-			 DataPointDao.instance.setEventDetectors(vo);
-			 return false;
-		}else
-			 return true;
-		 
-			 
+		return !this.filter.hasDataPointReadPermission(vo);
 	}
 	
 }
