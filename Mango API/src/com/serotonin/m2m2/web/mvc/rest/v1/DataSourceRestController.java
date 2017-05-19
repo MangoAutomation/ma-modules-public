@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,6 +30,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -322,6 +325,94 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 		return result.createResponseEntity();
 	}
 
+	/**
+	 * Put a data source into the system
+	 * @param xid
+	 * @param model
+     * @param builder
+	 * @param request
+	 * @return
+	 */
+	@ApiOperation(value = "Copy data source", notes="Copy the data source with optional new XID and Name and enable/disable state (default disabled)")
+	@RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}", produces={"application/json"})
+    public ResponseEntity<AbstractDataSourceModel<?>> copy(
+    		@PathVariable String xid,
+            @ApiParam(value = "Copy's new XID", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyXid,
+            @ApiParam(value = "Copy's name", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyName,
+            @ApiParam(value = "Enable/disabled state", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean enabled,
+    		UriComponentsBuilder builder, 
+    		HttpServletRequest request) {
+
+		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+	        DataSourceVO<?> existing = DaoRegistry.dataSourceDao.getByXid(xid);
+	        if (existing == null) {
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	        }
+	        
+	        //Check permissions
+	    	try{
+	    		if(!Permissions.hasDataSourcePermission(user, existing)){
+	    			result.addRestMessage(getUnauthorizedMessage());
+	        		return result.createResponseEntity();
+	    		}
+	    	}catch(PermissionException e){
+	    		LOG.warn(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+        	}
+	    	
+	    	//Determine the new name
+	    	String name;
+	    	if(StringUtils.isEmpty(copyName))
+	    		name = StringUtils.abbreviate(
+	                TranslatableMessage.translate(Common.getTranslations(), "common.copyPrefix", existing.getName()), 40);
+	    	else
+	    		name = copyName;
+	    	
+	    	//Determine the new xid
+	    	String newXid;
+	    	if(StringUtils.isEmpty(copyXid))
+	    		newXid = dao.generateUniqueXid();
+	    	else
+	    		newXid = copyXid;
+
+	    	
+	        //Setup the Copy
+	        DataSourceVO<?> copy = existing.copy();
+	        copy.setId(Common.NEW_ID);
+	        copy.setName(name);
+	        copy.setXid(newXid);
+	        copy.setEnabled(enabled);
+	        
+	        ProcessResult validation = new ProcessResult();
+	        copy.validate(validation);
+	        
+	        AbstractDataSourceModel<?> model = copy.asModel();
+	        
+	        if(model.validate()){
+	        	Common.runtimeManager.saveDataSource(copy);
+	        	this.dao.copyDataSourcePoints(existing.getId(), copy.getId());
+	        }else{
+	            result.addRestMessage(this.getValidationFailedError());
+	        	return result.createResponseEntity(model); 
+	        }
+	        
+	        //Put a link to the updated data in the header?
+	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(copy.getXid()).toUri();
+	    	result.addRestMessage(getResourceUpdatedMessage(location));
+	        return result.createResponseEntity(model);
+        }
+        //Not logged in
+        return result.createResponseEntity();
+    }
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
 	 */
