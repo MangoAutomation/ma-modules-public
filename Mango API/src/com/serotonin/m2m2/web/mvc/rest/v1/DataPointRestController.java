@@ -70,8 +70,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	public DataPointRestController(){
 		super(DaoRegistry.dataPointDao);
 		LOG.info("Creating Data Point Rest Controller.");
-		//Fill in any model mappings
-		//TODO this.modelMap.put("", "");
 	}
 
 	
@@ -235,7 +233,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	
 	        vo.setId(existingDp.getId());
     		//Set all properties that are not in the template or the spreadsheet
-    		//TODO probably move these into one or the other
 	        DataPointDao.instance.setEventDetectors(vo); //Use ID to get detectors
     		vo.setPointFolderId(existingDp.getPointFolderId());
     		
@@ -309,7 +306,15 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         		contentTypeCsv = true;
         	
 			DataPointVO vo = model.getData();
-	        
+			//Check to see if the point already exists
+			if(StringUtils.isEmpty(vo.getXid())){
+				DataPointVO existing = this.dao.getByXid(vo.getXid());
+				if(existing != null){
+	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("rest.error.pointExists", model.getXid()));
+	            	return result.createResponseEntity();
+				}
+			}
+			
 			//Ensure ds exists
 			DataSourceVO<?> dataSource = DaoRegistry.dataSourceDao.getByXid(model.getDataSourceXid());
         	//We will always override the DS Info with the one from the XID Lookup
@@ -428,7 +433,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	        }else{
     	        	vo.setId(existingDp.getId());  //Must Do this as ID is NOT in the model
             		//Set all properties that are not in the template or the spreadsheet
-            		//TODO probably move these into one or the other
             		vo.setPointFolderId(existingDp.getPointFolderId());
     	        	DataPointDao.instance.setEventDetectors(vo); //Use ID to get detectors
     	        }
@@ -594,6 +598,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        copy.setName(name);
 	        copy.setXid(newXid);
 	        copy.setEnabled(enabled);
+	        //TODO Handle Event Detectors Copy
 	        
 	        ProcessResult validation = new ProcessResult();
 	        copy.validate(validation);
