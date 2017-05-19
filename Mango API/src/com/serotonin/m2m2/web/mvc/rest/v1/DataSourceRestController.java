@@ -325,14 +325,6 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 		return result.createResponseEntity();
 	}
 
-	/**
-	 * Put a data source into the system
-	 * @param xid
-	 * @param model
-     * @param builder
-	 * @param request
-	 * @return
-	 */
 	@ApiOperation(value = "Copy data source", notes="Copy the data source with optional new XID and Name and enable/disable state (default disabled)")
 	@RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}", produces={"application/json"})
     public ResponseEntity<AbstractDataSourceModel<?>> copy(

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -533,6 +535,85 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		else {
 			return result.createResponseEntity();
 		}
+    }
+	
+	@ApiOperation(value = "Copy data point", notes="Copy the data point with optional new XID and Name and enable/disable state (default disabled)")
+	@RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}", produces={"application/json"})
+    public ResponseEntity<DataPointModel> copy(
+    		@PathVariable String xid,
+            @ApiParam(value = "Copy's new XID", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyXid,
+            @ApiParam(value = "Copy's name", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyName,
+            @ApiParam(value = "Enable/disabled state", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean enabled,
+    		UriComponentsBuilder builder, 
+    		HttpServletRequest request) {
+
+		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
+
+		User user = this.checkUser(request, result);
+        if(result.isOk()){
+	        DataPointVO existing = this.dao.getByXid(xid);
+	        if (existing == null) {
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	        }
+	        
+	        //Check permissions
+	    	try{
+	    		if(!Permissions.hasDataSourcePermission(user, existing.getDataSourceId())){
+	    			result.addRestMessage(getUnauthorizedMessage());
+	        		return result.createResponseEntity();
+	    		}
+	    	}catch(PermissionException e){
+	    		LOG.warn(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+        		return result.createResponseEntity();
+        	}
+	    	
+	    	//Determine the new name
+	    	String name;
+	    	if(StringUtils.isEmpty(copyName))
+	    		name = StringUtils.abbreviate(
+	                TranslatableMessage.translate(Common.getTranslations(), "common.copyPrefix", existing.getName()), 40);
+	    	else
+	    		name = copyName;
+	    	
+	    	//Determine the new xid
+	    	String newXid;
+	    	if(StringUtils.isEmpty(copyXid))
+	    		newXid = dao.generateUniqueXid();
+	    	else
+	    		newXid = copyXid;
+
+	    	
+	        //Setup the Copy
+	        DataPointVO copy = existing.copy();
+	        copy.setId(Common.NEW_ID);
+	        copy.setName(name);
+	        copy.setXid(newXid);
+	        copy.setEnabled(enabled);
+	        
+	        ProcessResult validation = new ProcessResult();
+	        copy.validate(validation);
+	        
+	        DataPointModel model = new DataPointModel(copy);
+	        
+	        if(model.validate()){
+	        	Common.runtimeManager.saveDataPoint(copy);
+	        }else{
+	            result.addRestMessage(this.getValidationFailedError());
+	        	return result.createResponseEntity(model); 
+	        }
+	        
+	        //Put a link to the updated data in the header?
+	    	URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(copy.getXid()).toUri();
+	    	result.addRestMessage(getResourceUpdatedMessage(location));
+	        return result.createResponseEntity(model);
+        }
+        //Not logged in
+        return result.createResponseEntity();
     }
 	
 	@ApiOperation(
