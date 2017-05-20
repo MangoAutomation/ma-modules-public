@@ -74,12 +74,12 @@ public class TranslationsController extends MangoRestController {
         
         RestProcessResult<Map<String, ?>> result =
                 new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
-        this.checkUser(request, result);
+        User user = this.checkUser(request, result);
         
         if (result.isOk()) {
            
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = this.getLocale(language, server, browser, request);
+            Locale locale = this.getLocale(language, server, browser, request, user);
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             
@@ -114,7 +114,7 @@ public class TranslationsController extends MangoRestController {
         if (result.isOk()) {
 
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = this.getLocale(language, server, browser, request);
+            Locale locale = this.getLocale(language, server, browser, request, null);
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             
@@ -130,7 +130,7 @@ public class TranslationsController extends MangoRestController {
 	 * @param request
 	 * @return
 	 */
-	private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request) {
+	private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request, User user) {
 	    if (!StringUtils.isBlank(language)) {
 	        return Locale.forLanguageTag(language.replace('_', '-'));
 	    }
@@ -140,8 +140,7 @@ public class TranslationsController extends MangoRestController {
 	    } else if (server) {
             return Common.getLocale();
         }
-	    
-        User user = Common.getUser(request);
+
         String userLocale = null;
         if (user != null) {
             userLocale = user.getLocale();

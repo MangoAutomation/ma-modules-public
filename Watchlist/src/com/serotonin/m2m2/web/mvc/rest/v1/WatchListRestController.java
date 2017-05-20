@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -92,7 +92,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     				return result.createResponseEntity(stream);
 	    		}else
 	    			return result.createResponseEntity(getPageStream(query));
-    		}catch(UnsupportedEncodingException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();

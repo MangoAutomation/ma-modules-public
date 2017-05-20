@@ -7,7 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController;
+import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredVoStreamCallback;
 
@@ -25,7 +25,7 @@ public class DataPointStreamCallback extends FilteredVoStreamCallback<DataPointV
 	 * @param controller
 	 */
 	public DataPointStreamCallback(
-			MangoVoRestController<DataPointVO, DataPointModel, DataPointDao> controller,
+			IMangoVoRestController<DataPointVO, DataPointModel, DataPointDao> controller,
 			User user) {
 		super(controller);
 		this.filter = new DataPointFilter(user);

@@ -39,8 +39,6 @@ import com.serotonin.m2m2.module.SystemInfoDefinition;
 import com.serotonin.m2m2.rt.maint.work.EmailWorkItem;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
-import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
@@ -82,11 +80,9 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(HttpServletRequest request) {
 		ASTNode root = this.parseRQLtoAST(request);
-		RestProcessResult<PageQueryResultModel<TimezoneModel>> result = new RestProcessResult<>(HttpStatus.OK);
 		List<TimezoneModel> list = root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
-		
 		PageQueryResultModel<TimezoneModel> model = new PageQueryResultModel<TimezoneModel>(list, allTimezones.size() + 1);
-		return result.createResponseEntity(model);
+		return new ResponseEntity<PageQueryResultModel<TimezoneModel>>(model, HttpStatus.OK);
 	}
 
 	@PreAuthorize("isAdmin()")
@@ -95,17 +91,16 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
     public ResponseEntity<String> sendTestEmail(
     		@RequestParam(value = "email", required = true, defaultValue = "") String email,
     		@RequestParam(value = "username", required = true, defaultValue = "") String username,
-    		HttpServletRequest request) throws RestValidationFailedException {
+    		HttpServletRequest request){
 
 		try{
-			RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
 	        Translations translations = Common.getTranslations();
 	        Map<String, Object> model = new HashMap<>();
 	        model.put("message", new TranslatableMessage("ftl.userTestEmail", username));
 	        MangoEmailContent cnt = new MangoEmailContent("testEmail", model, translations,
 	                translations.translate("ftl.testEmail"), Common.UTF8);
 	        EmailWorkItem.queueEmail(email, cnt);
-	        return result.createResponseEntity(new TranslatableMessage("common.testEmailSent", email).translate(Common.getTranslations()));
+	        return new ResponseEntity<String>(new TranslatableMessage("common.testEmailSent", email).translate(Common.getTranslations()), HttpStatus.OK);
 		}catch(Exception e){
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
 		}
@@ -114,19 +109,16 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "Restart Mango", notes="Returns location url in header for status updates while web interface is still active")
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/restart")
-    public ResponseEntity<String> restart(UriComponentsBuilder builder, HttpServletRequest request) throws RestValidationFailedException {
-
-		RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
+    public ResponseEntity<Void> restart(UriComponentsBuilder builder, HttpServletRequest request) {
 		ProcessResult r = ModulesDwr.scheduleShutdown();
 		if(r.getData().get("shutdownUri") != null){
 			//TODO Make SystemStatus web socket and push out message around shutdown
             URI location = builder.path("/status/mango").buildAndExpand().toUri();
-	    	result.addHeader("location", location.toString());
+	    	return getResourceCreated(null, location.toString());
         }
         else {
-            result.addRestMessage(HttpStatus.NOT_MODIFIED, new TranslatableMessage("modules.restartAlreadyScheduled"));
+        	return getMessageResponse(null, HttpStatus.NOT_MODIFIED, new TranslatableMessage("modules.restartAlreadyScheduled"));
         }
-    	return result.createResponseEntity();
 	}
 	
 	@PreAuthorize("isAdmin()")
@@ -156,11 +148,10 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	})
 	@RequestMapping( method = {RequestMethod.GET}, produces = {"application/json"}, value="system-info" )
 	public ResponseEntity<Map<String, Object>> getAll(@AuthenticationPrincipal User user) {
-		RestProcessResult<Map<String, Object>> result = new RestProcessResult<>(HttpStatus.OK);
 		Map<String, Object> map = new HashMap<String, Object>();
 		for(SystemInfoDefinition<?> def : ModuleRegistry.getSystemInfoDefinitions().values())
 			map.put(def.getKey(), def.getValue());
-		return result.createResponseEntity(map);
+		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 
 	@PreAuthorize("isAdmin()")
@@ -173,11 +164,10 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	public ResponseEntity<Object> getOne(@AuthenticationPrincipal User user,
 			@ApiParam(value = "Valid System Info Key", required = true, allowMultiple = false)
 			@PathVariable String key) {
-		RestProcessResult<Object> result = new RestProcessResult<>(HttpStatus.OK);
 		
 		SystemInfoDefinition<?> setting = ModuleRegistry.getSystemInfoDefinition(key);
 		if(setting != null)
-			return result.createResponseEntity(setting.getValue());
+			return new ResponseEntity<Object>(setting.getValue(), HttpStatus.OK);
 		throw new NotFoundRestException();
 	}
 	

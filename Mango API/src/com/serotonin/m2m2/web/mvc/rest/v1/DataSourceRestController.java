@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
+import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -78,7 +77,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
     			ASTNode node = this.parseRQLtoAST(request);
     			DataSourceStreamCallback callback = new DataSourceStreamCallback(this, user);
     			return result.createResponseEntity(getPageStream(node, callback));
-    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();

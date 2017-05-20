@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
+import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
@@ -117,7 +117,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		try{
 	    		ASTNode query = this.parseRQLtoAST(request);
 	    		return result.createResponseEntity(getPageStream(query));
-    		}catch(UnsupportedEncodingException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();

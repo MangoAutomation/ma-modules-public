@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.RQLToSQLParseException;
+import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DaoRegistry;
@@ -307,10 +306,10 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         	
 			DataPointVO vo = model.getData();
 			//Check to see if the point already exists
-			if(StringUtils.isEmpty(vo.getXid())){
+			if(!StringUtils.isEmpty(vo.getXid())){
 				DataPointVO existing = this.dao.getByXid(vo.getXid());
 				if(existing != null){
-	            	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("rest.error.pointExists", model.getXid()));
+	            	result.addRestMessage(HttpStatus.CONFLICT, new TranslatableMessage("rest.exception.alreadyExists", model.getXid()));
 	            	return result.createResponseEntity();
 				}
 			}
@@ -734,7 +733,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	    			stream.setupQuery();
 	    			return result.createResponseEntity(stream);
     			}
-    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -771,7 +770,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			
     			long changed = this.dao.bulkUpdatePermissions(node, permissions, true);
     			return result.createResponseEntity(changed);
-    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -808,7 +807,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			
     			long changed = this.dao.bulkUpdatePermissions(node, permissions, false);
     			return result.createResponseEntity(changed);
-    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -840,7 +839,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			
     			long changed = this.dao.bulkClearPermissions(node, true);
     			return result.createResponseEntity(changed);
-    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
@@ -872,7 +871,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     			
     			long changed = this.dao.bulkClearPermissions(node, false);
     			return result.createResponseEntity(changed);
-    		}catch(UnsupportedEncodingException | RQLToSQLParseException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();

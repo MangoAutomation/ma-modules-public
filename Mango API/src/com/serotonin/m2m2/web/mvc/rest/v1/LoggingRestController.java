@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.QueryModel;
 import com.infiniteautomation.mango.db.query.TableModel;
+import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
@@ -101,7 +101,7 @@ public class LoggingRestController extends MangoRestController{
 	    		}else{
 	    			result.addRestMessage(getDoesNotExistMessage());
 	    		}
-    		}catch(UnsupportedEncodingException e){
+    		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				return result.createResponseEntity();
