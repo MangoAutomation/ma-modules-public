@@ -237,7 +237,8 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		produces={"application/json", "text/csv", "application/sero-json"},
 		value={"/{xid}"})
     public ResponseEntity<AbstractEventDetectorModel<?>> delete(
-    		@PathVariable String xid,
+       		@ApiParam(value = "Valid Event Detector XID", required = true, allowMultiple = false)
+       	 	@PathVariable String xid,
     		@AuthenticationPrincipal User user,
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
@@ -311,7 +312,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-point/{xid")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-source/{xid")
     public ResponseEntity<List<AbstractEventDetectorModel<?>>> getForDataSource(
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
