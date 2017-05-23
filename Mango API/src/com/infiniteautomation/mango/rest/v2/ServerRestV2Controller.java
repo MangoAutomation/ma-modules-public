@@ -112,13 +112,12 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
     public ResponseEntity<Void> restart(UriComponentsBuilder builder, HttpServletRequest request) {
 		ProcessResult r = ModulesDwr.scheduleShutdown();
 		if(r.getData().get("shutdownUri") != null){
-			//TODO Make SystemStatus web socket and push out message around shutdown
             URI location = builder.path("/status/mango").buildAndExpand().toUri();
 	    	return getResourceCreated(null, location.toString());
         }
-        else {
-        	return getMessageResponse(null, HttpStatus.NOT_MODIFIED, new TranslatableMessage("modules.restartAlreadyScheduled"));
-        }
+		else
+        	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("modules.restartAlreadyScheduled"));
+        
 	}
 	
 	@PreAuthorize("isAdmin()")
