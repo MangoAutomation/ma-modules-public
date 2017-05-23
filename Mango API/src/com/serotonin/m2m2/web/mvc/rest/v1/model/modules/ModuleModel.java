@@ -41,6 +41,8 @@ public class ModuleModel {
     private String versionState;
     @JsonView(AdminView.class)
     private boolean unloaded;
+    @JsonView(AdminView.class)
+    private boolean signed;
     
 	public ModuleModel(){ }
 	
@@ -65,6 +67,7 @@ public class ModuleModel {
 		if(versionState >= 0){
 			this.versionState = Module.VERSION_STATE_CODES.getCode(versionState);
 		}
+		this.signed = module.isSigned();
 	}
 	
 	/**
@@ -189,5 +192,13 @@ public class ModuleModel {
 
 	public boolean isUnloaded(){
 		return this.unloaded;
+	}
+	
+	public void setSigned(boolean signed) {
+		this.signed = signed;
+	}
+	
+	public boolean isSigned() {
+		return signed;
 	}
 }
