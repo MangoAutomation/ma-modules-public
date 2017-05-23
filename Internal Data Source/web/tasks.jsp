@@ -20,7 +20,12 @@
         
         dwr.util.removeAllRows(listId);
         dwr.util.addRows(listId, list, [
-                function(t) { return t.id; },
+                function(t) { 
+                	if(t.id != null)
+                		return t.id;
+                	else
+                		return 'N/A';
+                },
                 function(t) { return t.name; },
                 function(t) { return t.currentlyRunning; },
                 function(t) { return t.poolFull; },
