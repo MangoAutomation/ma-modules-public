@@ -100,10 +100,10 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		File root = def.getRoot();
 		if(!root.exists())
 			return new ResponseEntity<>(found, HttpStatus.OK);
-		
+
 		Collection<File> files = FileUtils.listFiles(root, null, true);
 		for(File file : files)
-			found.add(removeToRoot(root, file));
+		    found.add(removeToRoot(root, file));
 		
 		return new ResponseEntity<>(found, HttpStatus.OK);
 	}
@@ -130,10 +130,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		String pathInStore = parsePath(request);
 		
 		File root = def.getRoot();
-		String[] parts = pathInStore.split("/");
-		File toSave = new File(root.getAbsolutePath());
-		for(String part : parts)
-			toSave = new File(toSave, part);
+		File toSave = new File(root, pathInStore);
+		
+		if (toSave.exists() && !toSave.isDirectory()) {
+		    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+		}
+
 		if(!toSave.exists()){
 			if(!toSave.mkdirs())
 				throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
@@ -144,15 +146,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		Iterator<String> itr =  multipartRequest.getFileNames();
 		while(itr.hasNext()){
             MultipartFile file = multipartRequest.getFile(itr.next());
-    		if (!file.isEmpty()) {
-    			File newFile = new File(toSave, file.getName());
-    			filenames.add(removeToRoot(root, newFile));
-            	byte[] bytes = file.getBytes();
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(newFile, false));
+			File newFile = new File(toSave, file.getName());
+			filenames.add(removeToRoot(root, newFile));
+        	byte[] bytes = file.getBytes();
+            try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile, false))) {
                 stream.write(bytes);
-                stream.close();
-    		}
+            }
 		}
 		return new ResponseEntity<>(filenames, HttpStatus.OK);
 	}
@@ -161,7 +160,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			value = "Download a file from a store",
 			notes = "Must have write access to the store"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/octet-stream", "application/json", "image/webp", "image/*", "*/*;q=0.8"}, value="/{name}/**")
+	@RequestMapping(method = RequestMethod.GET, produces={"*/*"}, value="/{name}/**")
     public ResponseEntity<FileSystemResource> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
@@ -198,7 +197,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	    AntPathMatcher apm = new AntPathMatcher();
 	    return apm.extractPathWithinPattern(bestMatchPattern, path);
     }
-    
+
 	/**
 	 * Remove the path up to the root folder
 	 * @param root
@@ -206,7 +205,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	 * @return
 	 */
 	protected String removeToRoot(File root, File file){
-		return file.getAbsolutePath().replaceAll(root.getParentFile().getAbsolutePath(), "");
+	    return root.toURI().relativize(file.toURI()).toString();
 	}
 	
 }
