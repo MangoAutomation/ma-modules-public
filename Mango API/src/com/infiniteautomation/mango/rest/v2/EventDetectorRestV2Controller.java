@@ -98,7 +98,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{xid")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{xid}")
     public ResponseEntity<AbstractEventDetectorModel<?>> get(
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Event Detector XID", required = true, allowMultiple = false)
@@ -286,7 +286,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-point/{xid")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-point/{xid}")
     public ResponseEntity<List<AbstractEventDetectorModel<?>>> getForDataPoint(
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
@@ -312,7 +312,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-source/{xid")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-source/{xid}")
     public ResponseEntity<List<AbstractEventDetectorModel<?>>> getForDataSource(
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
