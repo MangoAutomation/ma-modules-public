@@ -8,7 +8,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -18,6 +17,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -161,8 +161,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			value = "Download a file from a store",
 			notes = "Must have write access to the store"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/octet-stream", "application/json"}, value="/{name}/**")
-    public ResponseEntity<byte[]> download(
+	@RequestMapping(method = RequestMethod.GET, produces={"application/octet-stream", "application/json", "image/webp", "image/*", "*/*;q=0.8"}, value="/{name}/**")
+    public ResponseEntity<FileSystemResource> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
     		@AuthenticationPrincipal User user,
@@ -182,7 +182,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		if(!f.isFile())
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.fileStore.notAFile"));
 		
-		return new ResponseEntity<byte[]>(Files.readAllBytes(f.toPath()), HttpStatus.OK);
+		return new ResponseEntity<>(new FileSystemResource(f), HttpStatus.OK);
 	}
 	
     /**
