@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -26,6 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -164,8 +166,11 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     public ResponseEntity<FileSystemResource> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
+       	 	@ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean download,
     		@AuthenticationPrincipal User user,
-    		HttpServletRequest request) throws IOException {
+    		HttpServletRequest request,
+    		HttpServletResponse response) throws IOException {
     	
 		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
 		if(def == null)
@@ -180,7 +185,11 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			throw new NotFoundRestException();
 		if(!f.isFile())
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.fileStore.notAFile"));
-		
+
+		if(download)
+			response.setHeader("Content-Disposition", "attachment; filename=" + f.getName());
+		else
+			response.setHeader("Content-Disposition", "inline; filename=" + f.getName());
 		return new ResponseEntity<>(new FileSystemResource(f), HttpStatus.OK);
 	}
 	
