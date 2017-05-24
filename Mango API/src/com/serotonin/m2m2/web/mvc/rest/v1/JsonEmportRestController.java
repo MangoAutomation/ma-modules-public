@@ -240,7 +240,7 @@ public class JsonEmportRestController extends MangoRestController{
 	@RequestMapping(
 			method = {RequestMethod.POST},
 			produces = {"application/json"},
-			consumes = {"application/json"}
+			consumes = {"application/json", "application/sero-json"}
 	)
 	public ResponseEntity<Void> importConfiguration(
 			HttpServletRequest request,

@@ -4,14 +4,14 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import com.serotonin.m2m2.ILifecycle;
+import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 
 /**
  * @author Terry Packer
  *
  */
-public class MockLifecycle implements ILifecycle{
+public class MockLifecycle implements IMangoLifecycle{
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.ILifecycle#isTerminated()

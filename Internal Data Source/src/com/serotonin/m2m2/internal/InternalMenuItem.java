@@ -16,7 +16,7 @@ import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.Common.TimePeriods;
-import com.serotonin.m2m2.ILifecycle;
+import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
@@ -77,7 +77,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     public void install() {
     	File safeFile = new File(Common.MA_HOME, "SAFE");
         final boolean safe = (safeFile.exists() && safeFile.isFile());
-    	Providers.get(ILifecycle.class).addStartupTask(new Runnable() {
+    	Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
             	try{
@@ -95,7 +95,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     public void upgrade() {
     	File safeFile = new File(Common.MA_HOME, "SAFE");
         final boolean safe = (safeFile.exists() && safeFile.isFile());
-    	Providers.get(ILifecycle.class).addStartupTask(new Runnable() {
+    	Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
             	try{

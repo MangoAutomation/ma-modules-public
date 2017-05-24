@@ -18,7 +18,7 @@ import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.ILifecycle;
+import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -88,12 +88,12 @@ public class WatchlistSqlVisitorTest{
 			throw new ShouldNeverHappenException("ma.home system property not defined.");
 		
 		MockLifecycle lifecycle = new MockLifecycle();
-        Providers.add(ILifecycle.class, lifecycle);
+        Providers.add(IMangoLifecycle.class, lifecycle);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                Providers.get(ILifecycle.class).terminate();
+                Providers.get(IMangoLifecycle.class).terminate();
             }
         });
 		

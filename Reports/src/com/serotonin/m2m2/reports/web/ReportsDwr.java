@@ -261,7 +261,7 @@ public class ReportsDwr extends ModuleDwr {
     public ProcessResult purgeAllNow(){
     	ProcessResult response = new ProcessResult();
 
-        int deleteCount = ReportDao.instance.purgeReportsBefore(Common.backgroundProcessing.currentTimeMillis());
+        int deleteCount = ReportDao.instance.purgeReportsBefore(Common.timer.currentTimeMillis());
         LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
 
     	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));

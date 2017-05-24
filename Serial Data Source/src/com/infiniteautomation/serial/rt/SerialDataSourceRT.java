@@ -209,7 +209,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
 		//Are we connected?
 		if(this.port == null && !connect()){
-			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.backgroundProcessing.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
+			raiseEvent(POINT_WRITE_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailedPortNotSetup"));
 			return;
 		}
 		
