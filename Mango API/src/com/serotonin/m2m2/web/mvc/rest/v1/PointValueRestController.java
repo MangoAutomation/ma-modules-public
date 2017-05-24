@@ -33,9 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -49,6 +51,7 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.quantize2.TimePeriodBucketCalculator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
@@ -256,6 +259,146 @@ public class PointValueRestController extends MangoRestController{
 		return model;
 	}
 
+	/**
+     * Get the latest point values a set of points
+     * return as map of xid to array of values
+     * @param xid
+     * @param limit
+     * @return
+     */
+    @ApiOperation(
+            value = "Get Latest Point Values for all points on a data source directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
+            notes = "Default limit 100, time descending order, Default to return cached data. Returns as single time ordered array."
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/{dataSourceXid}/latest-data-source-single-array", produces={"application/json", "text/csv"})
+    public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getLatestPointValuesForDataSourceAsSingleArray(
+            HttpServletRequest request, 
+            
+            @ApiParam(value = "Data sourc xid", required = true, allowMultiple = false)
+            @PathVariable String dataSourceXid,
+            
+            @ApiParam(value = "Return rendered value as String", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean useRendered,
+            
+            @ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean unitConversion,
+            
+            @ApiParam(value = "Limit results", allowMultiple = false, defaultValue="100")
+            @RequestParam(value="limit", defaultValue="100") int limit,
+
+            @ApiParam(value = "Return cached data?", allowMultiple = false, defaultValue="true")
+            @RequestParam(value="useCache", defaultValue="true") boolean useCache
+            ){
+    	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
+    	User user = this.checkUser(request, result);
+    	if(result.isOk()){
+    		DataSourceVO<?> ds = DataSourceDao.instance.getByXid(dataSourceXid);
+    		
+    		if(ds == null)
+    			throw new NotFoundRestException();
+    		
+    		List<DataPointVO> points = DataPointDao.instance.getDataPointsForDataSourceStart(ds.getId());
+    		
+    		Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(points.size());
+    		for(DataPointVO vo : points){
+				 if(Permissions.hasDataPointReadPermission(user, vo))
+					 pointIdMap.put(vo.getId(), vo);
+				 else{
+					 //Abort, invalid permissions
+					 result.addRestMessage(getUnauthorizedMessage());
+					 return result.createResponseEntity();
+				 }
+    		}
+    		
+    		//Do we have any valid points?
+	    	if(pointIdMap.size() == 0){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+
+	    	try{
+	    		IdPointValueTimeLatestPointValueFacadeStream pvtDatabaseStream = new IdPointValueTimeLatestPointValueFacadeStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, limit, useCache);
+    			return result.createResponseEntity(pvtDatabaseStream);
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+    	}else{
+    		return result.createResponseEntity();
+    	}
+    }
+	
+	/**
+     * Get the latest point values a set of points
+     * return as map of xid to array of values
+     * @param xid
+     * @param limit
+     * @return
+     */
+    @ApiOperation(
+            value = "Get Latest Point Values for all points on a data source directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
+            notes = "Default limit 100, time descending order, Default to return cached data. Returns data as map of xid to values."
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/{dataSourceXid}/latest-data-source-multiple-arrays", produces={"application/json", "text/csv"})
+    public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getLatestPointValuesForDataSourceAsMultipleArrays(
+            HttpServletRequest request, 
+            
+            @ApiParam(value = "Data source xid", required = true, allowMultiple = true)
+            @PathVariable String dataSourceXid,
+            
+            @ApiParam(value = "Return rendered value as String", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean useRendered,
+            
+            @ApiParam(value = "Return converted value using displayed unit", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean unitConversion,
+            
+            @ApiParam(value = "Limit results", allowMultiple = false, defaultValue="100")
+            @RequestParam(value="limit", defaultValue="100") int limit,
+
+            @ApiParam(value = "Return cached data?", allowMultiple = false, defaultValue="true")
+            @RequestParam(value="useCache", defaultValue="true") boolean useCache
+            ){
+        
+    	RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>> result = new RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+        	DataSourceVO<?> ds = DataSourceDao.instance.getByXid(dataSourceXid);
+        	if(ds == null)
+        		throw new NotFoundRestException();
+        			
+    		List<DataPointVO> points = DataPointDao.instance.getDataPointsForDataSourceStart(ds.getId());
+        	Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(points.size());
+    		
+    		for(DataPointVO vo : points){
+				if(Permissions.hasDataPointReadPermission(user, vo))
+					pointIdMap.put(vo.getId(), vo);
+				else{
+					//Abort, invalid permissions
+					result.addRestMessage(getUnauthorizedMessage());
+					return result.createResponseEntity();
+				}
+    		}
+    		
+    		//Do we have any valid points?
+	    	if(pointIdMap.size() == 0){
+	    		result.addRestMessage(getDoesNotExistMessage());
+	    		return result.createResponseEntity();
+	    	}
+        	
+	    	try{
+				XidPointValueTimeLatestPointFacadeStream pvtDatabaseStream = new XidPointValueTimeLatestPointFacadeStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, limit, useCache);
+    			return result.createResponseEntity(pvtDatabaseStream);
+	    	}catch(PermissionException e){
+	    		LOG.error(e.getMessage(), e);
+	    		result.addRestMessage(getUnauthorizedMessage());
+	    		return result.createResponseEntity();
+	    	}
+        }else{
+            return result.createResponseEntity();
+        }
+    }
+    
 	/**
      * Get the latest point values a set of points
      * return as map of xid to array of values
