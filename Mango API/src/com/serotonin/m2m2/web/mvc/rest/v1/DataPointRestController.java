@@ -37,6 +37,7 @@ import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
@@ -597,7 +598,13 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        copy.setName(name);
 	        copy.setXid(newXid);
 	        copy.setEnabled(enabled);
-	        //TODO Handle Event Detectors Copy
+            copy.getComments().clear();
+
+            // Copy the event detectors
+            for (AbstractPointEventDetectorVO<?> ped : copy.getEventDetectors()) {
+                ped.setId(Common.NEW_ID);
+                ped.njbSetDataPoint(copy);
+            }
 	        
 	        ProcessResult validation = new ProcessResult();
 	        copy.validate(validation);
