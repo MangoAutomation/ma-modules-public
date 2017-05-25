@@ -13,10 +13,12 @@ import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> {
 	
 	public static final int POLL_ABORTED_EVENT = 1;
+	private final long delay;
 	
     public VirtualDataSourceRT(VirtualDataSourceVO vo) {
         super(vo);
         setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+        delay = vo.getDelay();
     }
     
     @Override
@@ -35,6 +37,11 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
 
     @Override
     public void doPoll(long time) {
+    	if(delay > 0){
+	    	try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) { }
+    	}
         for (DataPointRT dataPoint : dataPoints) {
             VirtualPointLocatorRT locator = dataPoint.getPointLocator();
 

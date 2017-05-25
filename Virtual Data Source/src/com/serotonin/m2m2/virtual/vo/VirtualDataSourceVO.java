@@ -72,6 +72,7 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     private int updatePeriods = 5;
     @JsonProperty
     private boolean polling = true;
+    private long delay;
 
     public int getUpdatePeriods() {
         return updatePeriods;
@@ -95,6 +96,14 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     	this.polling = polling;
     }
 
+	public long getDelay(){
+		return delay;
+	}
+	
+	public void setDelay(long delay){
+		this.delay = delay;
+	}
+    
     @Override
     public void validate(ProcessResult response) {
         super.validate(response);
@@ -151,6 +160,9 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
         Integer value = readUpdatePeriodType(jsonObject);
         if (value != null)
             updatePeriodType = value;
+		//Hidden value to allow testing aborted polls by setting delay to longer than poll period
+		if(jsonObject.containsKey("delay"))
+			delay = jsonObject.getLong("delay");
     }
 
 	/* (non-Javadoc)
