@@ -62,9 +62,6 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/event-detectors")
 public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>{
 
-	/**
-	 * @param dao
-	 */
 	public EventDetectorRestV2Controller() {
 		super(EventDetectorDao.instance);
 	}
@@ -223,7 +220,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		//Save the data point
     	Common.runtimeManager.saveDataPoint(dp);
 		
-        //Put a link to the updated data in the header?
     	URI location = builder.path("/v2/event-detectors/{id}").buildAndExpand(vo.getId()).toUri();
     	return getResourceUpdated(vo.asModel(), location.toString());
     }

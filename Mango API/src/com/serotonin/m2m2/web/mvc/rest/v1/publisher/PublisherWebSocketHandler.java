@@ -22,7 +22,7 @@ public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<P
 		if(user.isAdmin())
 			return true;
 		else 
-			return true; //TODO Implement permissions for publishers... Permissions.hasPublisherPermission(user, vo);
+			return false; //TODO Implement permissions for publishers... Permissions.hasPublisherPermission(user, vo);
 	}
 
 	/* (non-Javadoc)

@@ -146,7 +146,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 		@ApiResponse(code = 500, message = "Internal error", response=ResponseEntity.class),
 	})
 	@RequestMapping( method = {RequestMethod.GET}, produces = {"application/json"}, value="system-info" )
-	public ResponseEntity<Map<String, Object>> getAll(@AuthenticationPrincipal User user) {
+	public ResponseEntity<Map<String, Object>> getSystemInfo(@AuthenticationPrincipal User user) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		for(SystemInfoDefinition<?> def : ModuleRegistry.getSystemInfoDefinitions().values())
 			map.put(def.getKey(), def.getValue());
