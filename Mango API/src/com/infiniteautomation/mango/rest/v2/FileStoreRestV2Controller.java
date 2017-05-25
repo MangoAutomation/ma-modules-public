@@ -46,6 +46,8 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.FileStoreDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -184,17 +186,17 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     	
 		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
 		if(def == null)
-			throw new NotFoundRestException();
+			throw new ResourceNotFoundException("File store: " + name);
 		
 		//Check permissions
 		def.ensureStoreReadPermission(user);
-		
-		File f = new File(def.getRoot(), parsePath(request));
+		String path = parsePath(request);
+		File f = new File(def.getRoot(), path);
 		//TODO Allow downloading directory as a zip
 		if(!f.exists())
-			throw new NotFoundRestException();
+			throw new ResourceNotFoundException("filestore/" + name + "/" + path);
 		if(!f.isFile())
-			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.fileStore.notAFile"));
+			throw new ResourceNotFoundException(new TranslatableMessage("rest.fileStore.notAFile").translate(Common.getTranslations()));
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
