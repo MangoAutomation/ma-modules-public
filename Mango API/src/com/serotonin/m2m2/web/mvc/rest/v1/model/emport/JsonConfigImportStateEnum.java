@@ -4,5 +4,6 @@ public enum JsonConfigImportStateEnum {
 
 	RUNNING,
 	CANCELLED,
-	COMPLETED;
+	COMPLETED,
+	REJECTED;
 }

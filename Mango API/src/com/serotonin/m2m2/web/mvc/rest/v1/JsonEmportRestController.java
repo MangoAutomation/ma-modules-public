@@ -85,6 +85,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.config.JsonConfigImportWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.rest.v1.util.MangoRestTemporaryResource;
 import com.serotonin.m2m2.web.mvc.rest.v1.util.MangoRestTemporaryResourceContainer;
+import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.ProgressiveTask;
 import com.serotonin.util.ProgressiveTaskListener;
 import com.wordnik.swagger.annotations.Api;
@@ -447,6 +448,17 @@ public class JsonEmportRestController extends MangoRestController{
 			this.progress = 100.0f;
 			this.state = JsonConfigImportStateEnum.COMPLETED;
 			this.websocket.notify(createModel());
+		}
+
+		/* (non-Javadoc)
+		 * @see com.serotonin.util.ProgressiveTaskListener#taskRejected(com.serotonin.timer.RejectedTaskReason)
+		 */
+		@Override
+		public void taskRejected(RejectedTaskReason reason) {
+			this.finish = new Date();
+			this.progress = 100.0f;
+			this.state = JsonConfigImportStateEnum.REJECTED;
+			this.websocket.notify(createModel());
 		}		
 	}
 	
@@ -470,7 +482,7 @@ public class JsonEmportRestController extends MangoRestController{
 	    private float progressChunk;
 	    
 	    public ImportBackgroundTask(JsonObject root, Translations translations, User user, ProgressiveTaskListener listener) {
-	    	super(listener);
+	    	super("Background Import Task", "BACKGROUND_IMPORT_TASK", 10, listener);
 	    	
 	        JsonReader reader = new JsonReader(Common.JSON_CONTEXT, root);
 	        this.importContext = new ImportContext(reader, new ProcessResult(), translations);
@@ -659,6 +671,16 @@ public class JsonEmportRestController extends MangoRestController{
 	        if(msg == null)
 	        	msg = e.getClass().getCanonicalName();
 	        importContext.getResult().addGenericMessage("common.default", msg);
+	    }
+	    
+	    /* (non-Javadoc)
+	     * @see com.serotonin.util.ProgressiveTask#rejected(com.serotonin.timer.RejectedTaskReason)
+	     */
+	    @Override
+	    public void rejected(RejectedTaskReason reason) {
+	    	//Add message then allow rejection
+	        importContext.getResult().addGenericMessage("common.default", "Task Rejected, " + reason.getDescription());
+	    	super.rejected(reason);
 	    }
 	}
 	

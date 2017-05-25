@@ -5,7 +5,7 @@
 package com.serotonin.m2m2.watchlist;
 
 import com.serotonin.m2m2.IMangoLifecycle;
-import com.serotonin.m2m2.util.timeout.TimeoutTask;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -89,7 +89,7 @@ public class MockLifecycle implements IMangoLifecycle{
 	 * @see com.serotonin.m2m2.ILifecycle#scheduleShutdown(long, boolean)
 	 */
 	@Override
-	public TimeoutTask scheduleShutdown(long timeout, boolean b) {
+	public Thread scheduleShutdown(long timeout, boolean b, User user) {
 		// TODO Auto-generated method stub
 		return null;
 	}
