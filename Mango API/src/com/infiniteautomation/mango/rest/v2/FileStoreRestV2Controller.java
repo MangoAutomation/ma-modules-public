@@ -200,11 +200,13 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         // * Wildcards like image/* dont work
         // * Does not trigger HTTP 406 Not Acceptable if file MIME does not match the Accept header
         
+        MediaType mediaType = null;
+        
         // ResourceHttpMessageConverter uses ActivationMediaTypeFactory.getMediaType(resource) but this is not visible
 		String mimeType = request.getServletContext().getMimeType(f.getName());
         if (StringUtils.hasText(mimeType)) {
             try {
-                MediaType mediaType = MediaType.parseMediaType(mimeType);
+                mediaType = MediaType.parseMediaType(mimeType);
                 MediaType compatibleType = null;
 
                 HeaderContentNegotiationStrategy strategy = new HeaderContentNegotiationStrategy();
@@ -228,16 +230,18 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
                     @SuppressWarnings("unchecked")
                     Set<MediaType> mediaTypes = (Set<MediaType>) request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
                     mediaTypes.add(mediaType);
-                    
-                    responseHeaders.setContentType(mediaType);
                 } else {
                     throw new HttpMediaTypeNotAcceptableException(Arrays.asList(mediaType, MediaType.APPLICATION_OCTET_STREAM));
                 }
             } catch (InvalidMediaTypeException e) {
-                // Dont set content-type header and just let spring do its thing
+                // Shouldn't happen - ServletContext.getMimeType() should return valid mime types
             }
         }
 
+        // always set the content type header or AbstractHttpMessageConverter.addDefaultHeaders() will set the Content-Type
+        // to whatever the Accept header was
+        responseHeaders.setContentType(mediaType != null ? mediaType : MediaType.APPLICATION_OCTET_STREAM);
+        
         return new ResponseEntity<>(new FileSystemResource(f), responseHeaders, HttpStatus.OK);
 	}
 	
