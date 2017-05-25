@@ -9,26 +9,34 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StringUtils;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.accept.HeaderContentNegotiationStrategy;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.HandlerMapping;
@@ -162,15 +170,14 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			value = "Download a file from a store",
 			notes = "Must have write access to the store"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"*/*"}, value="/{name}/**")
+	@RequestMapping(method = RequestMethod.GET, produces={"application/octet-stream", "*/*"}, value="/{name}/**")
     public ResponseEntity<FileSystemResource> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
        	 	@ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="false", allowMultiple = false)
-            @RequestParam(required=false, defaultValue="false") boolean download,
+            @RequestParam(required=false, defaultValue="true") boolean download,
     		@AuthenticationPrincipal User user,
-    		HttpServletRequest request,
-    		HttpServletResponse response) throws IOException {
+    		HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
     	
 		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
 		if(def == null)
@@ -186,11 +193,52 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		if(!f.isFile())
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.fileStore.notAFile"));
 
-		if(download)
-			response.setHeader("Content-Disposition", "attachment; filename=" + f.getName());
-		else
-			response.setHeader("Content-Disposition", "inline; filename=" + f.getName());
-		return new ResponseEntity<>(new FileSystemResource(f), HttpStatus.OK);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, String.format("%s; filename=\"%s\"", download ? "attachment" : "inline", f.getName()));
+
+        // We need to do our own custom MIME handling as the Spring implementation does handle this correctly
+        // * Wildcards like image/* dont work
+        // * Does not trigger HTTP 406 Not Acceptable if file MIME does not match the Accept header
+        
+        // ResourceHttpMessageConverter uses ActivationMediaTypeFactory.getMediaType(resource) but this is not visible
+		String mimeType = request.getServletContext().getMimeType(f.getName());
+        if (StringUtils.hasText(mimeType)) {
+            try {
+                MediaType mediaType = MediaType.parseMediaType(mimeType);
+                MediaType compatibleType = null;
+
+                HeaderContentNegotiationStrategy strategy = new HeaderContentNegotiationStrategy();
+                List<MediaType> requestedMediaTypes = strategy.resolveMediaTypes(new ServletWebRequest(request));
+
+                if (requestedMediaTypes.isEmpty()) {
+                    compatibleType = mediaType;
+                } else {
+                    for (MediaType requestedType : requestedMediaTypes) {
+                        if (requestedType.isCompatibleWith(mediaType) || requestedType.isCompatibleWith(MediaType.APPLICATION_OCTET_STREAM)) {
+                            compatibleType = mediaType;
+                            break;
+                        }
+                    }
+                }
+
+                if (compatibleType != null) {
+                    // setting this request attribute essentially modifies the @RequestMapping(produces=xxx) property
+                    // we need to do this because otherwise AbstractMessageConverterMethodProcessor fails on partial wildcard Accept headers like image/*
+                    // and causes HTTP 406 Not Acceptable errors
+                    @SuppressWarnings("unchecked")
+                    Set<MediaType> mediaTypes = (Set<MediaType>) request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
+                    mediaTypes.add(mediaType);
+                    
+                    responseHeaders.setContentType(mediaType);
+                } else {
+                    throw new HttpMediaTypeNotAcceptableException(Arrays.asList(mediaType, MediaType.APPLICATION_OCTET_STREAM));
+                }
+            } catch (InvalidMediaTypeException e) {
+                // Dont set content-type header and just let spring do its thing
+            }
+        }
+
+        return new ResponseEntity<>(new FileSystemResource(f), responseHeaders, HttpStatus.OK);
 	}
 	
     /**
