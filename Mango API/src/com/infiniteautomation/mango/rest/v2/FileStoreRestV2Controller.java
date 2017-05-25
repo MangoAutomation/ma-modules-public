@@ -8,6 +8,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -194,7 +197,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.fileStore.notAFile"));
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, String.format("%s; filename=\"%s\"", download ? "attachment" : "inline", f.getName()));
+        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
 
         // We need to do our own custom MIME handling as the Spring implementation does handle this correctly
         // * Wildcards like image/* dont work
@@ -249,14 +252,15 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
      * Get the path within the store off the URL
      * @param request
      * @return
+     * @throws UnsupportedEncodingException 
      */
-    protected String parsePath(HttpServletRequest request){
+    protected String parsePath(HttpServletRequest request) throws UnsupportedEncodingException{
 	    String path = (String) request.getAttribute(
 	            HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 	    String bestMatchPattern = (String ) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
 
 	    AntPathMatcher apm = new AntPathMatcher();
-	    return apm.extractPathWithinPattern(bestMatchPattern, path);
+	    return URLDecoder.decode(apm.extractPathWithinPattern(bestMatchPattern, path), StandardCharsets.UTF_8.name());
     }
 
 	/**
