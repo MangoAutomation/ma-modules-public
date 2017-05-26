@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.http.client.HttpClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -46,12 +44,13 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.CredentialsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.AngularJSModuleDefinitionGroupModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpdateLicensePayloadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpgradeStatusModel;
 import com.serotonin.provider.Providers;
-import com.serotonin.web.http.HttpUtils4;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -290,8 +289,7 @@ public class ModulesRestController extends MangoRestController {
 	@RequestMapping(method = RequestMethod.PUT, consumes = { "application/json" }, produces = {
 			"application/json" }, value = "/deletion-state")
 	public ResponseEntity<ModuleModel> markForDeletion(
-			@ApiParam(value = "Deletion Statue", required = false, defaultValue = "false", allowMultiple = false) @RequestParam(required = true) boolean delete,
-
+			@ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false) @RequestParam(required = true) boolean delete,
 			@ApiParam(value = "Desired Upgrades", required = true) @RequestBody(required = true) ModuleModel model,
 			HttpServletRequest request) {
 
@@ -320,6 +318,9 @@ public class ModulesRestController extends MangoRestController {
 				produces = { "application/json" }, 
 				value = "/download-license")
 	public ResponseEntity<Void> downloadLicense(
+			@ApiParam(value = "Connection retries", required = false, defaultValue = "0", allowMultiple = false)
+			@RequestParam(required = false, defaultValue="0") int retries,
+
 			@ApiParam(value = "User Credentials", required = true) 
 			@RequestBody(required = true) CredentialsModel model,
 			HttpServletRequest request) {
@@ -328,29 +329,18 @@ public class ModulesRestController extends MangoRestController {
 			String storeUrl = Common.envProps.getString("store.url");
 			//Login to the store
 			MangoStoreClient client = new MangoStoreClient(storeUrl);
-			HttpClient httpClient = client.login(model.getUsername(), model.getPassword());
+			client.login(model.getUsername(), model.getPassword(), retries);
 			
 	        // Send the token request
-	        StringBuilder baseUrl = new StringBuilder(storeUrl);
 	        String guid = Providers.get(ICoreLicense.class).getGuid();
 	        String distributor = Common.envProps.getString("distributor");
-
-	        //TODO Modify store to allow responses without a redirect
-	        baseUrl.append("/account/servlet/getDownloadToken?g=");
-	        baseUrl.append(guid);
-	        baseUrl.append("&d=");
-	        baseUrl.append(distributor);
-	        
-	        
-	        ByteArrayOutputStream response = new ByteArrayOutputStream();
-	        HttpUtils4.transferResponse(httpClient, baseUrl.toString(), response);
-
-	        // Parse the response to get the token
-	        String token = response.toString(Common.UTF8);
-	        System.out.println(token);
+	        String token = client.getLicenseToken(guid, distributor, retries);
 	        
 	        //With the token we can make the request to download the file
-	        downloadLicense(storeUrl, token);
+	        String license = client.getLicense(token, retries);
+	        
+	        saveLicense(license);
+	        
 	        return new ResponseEntity<Void>(HttpStatus.OK);
 		}catch(Exception e){
 			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
@@ -382,80 +372,7 @@ public class ModulesRestController extends MangoRestController {
 				Common.envProps.getString("distributor"),
 				jsonModules), HttpStatus.OK);
 	}
-	
-	public class UpdateLicensePayloadModel{
-		private String guid;
-		private String description;
-		private String distributor;
-		private Map<String, String> modules;
-		
-		public UpdateLicensePayloadModel(){ }
 
-		/**
-		 * @param guid
-		 * @param description
-		 * @param distributor
-		 * @param modules
-		 */
-		public UpdateLicensePayloadModel(String guid, String description, String distributor,
-				Map<String, String> modules) {
-			super();
-			this.guid = guid;
-			this.description = description;
-			this.distributor = distributor;
-			this.modules = modules;
-		}
-
-		public String getGuid() {
-			return guid;
-		}
-
-		public void setGuid(String guid) {
-			this.guid = guid;
-		}
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-		public String getDistributor() {
-			return distributor;
-		}
-
-		public void setDistributor(String distributor) {
-			this.distributor = distributor;
-		}
-
-		public Map<String, String> getModules() {
-			return modules;
-		}
-
-		public void setModules(Map<String, String> modules) {
-			this.modules = modules;
-		}
-	}
-	
-	public class CredentialsModel{
-		private String username;
-		private String password;
-		public String getUsername() {
-			return username;
-		}
-		public void setUsername(String username) {
-			this.username = username;
-		}
-		public String getPassword() {
-			return password;
-		}
-		public void setPassword(String password) {
-			this.password = password;
-		}
-		
-	}
 	
 	/**
 	 * Create a Core Module Model
@@ -466,18 +383,7 @@ public class ModulesRestController extends MangoRestController {
 		return new ModuleModel(ModuleRegistry.getCoreModule());
 	}
 	
-    private void downloadLicense(String storeUrl, String token) throws Exception {
-        // Send the request
-        String url = storeUrl = "/servlet/downloadLicense?token=" + token;
-
-        String responseData = HttpUtils4.getTextContent(Common.getHttpClient(), url);
-
-        // Should be an XML file. If it doesn't start with "<", it's an error.
-        if (!responseData.startsWith("<")) {
-            // Only log as info, because refreshes of a page where a previous download was successful will result in
-            // an error being returned.
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "License download failed.");
-        }
+    private void saveLicense(String license) throws Exception {
 
         // If there is an existing license file, move it to a backup name. First check if the backup name exists, and 
         // if so, delete it.
@@ -491,7 +397,7 @@ public class ModulesRestController extends MangoRestController {
         }
 
         // Save the data
-        StreamUtils.writeFile(licenseFile, responseData);
+        StreamUtils.writeFile(licenseFile, license);
 
         // Reload the license file.
         Providers.get(IMangoLifecycle.class).loadLic();
