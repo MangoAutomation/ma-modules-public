@@ -114,7 +114,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 	}
 	
 	@ApiOperation(
-			value = "Create an event detector",
+			value = "Create an Event Detector",
 			notes = "Cannot already exist, must have data source permission for the point"
 			)
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "application/sero-json"}, produces={"application/json", "text/csv", "application/sero-json"})
@@ -161,7 +161,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     }
 	
 	@ApiOperation(
-			value = "Update an event detector",
+			value = "Update an Event Detector",
 			notes = ""
 			)
 	@RequestMapping(method = RequestMethod.PUT, 
@@ -225,7 +225,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     }
 	
 	@ApiOperation(
-			value = "Delete an event detector",
+			value = "Delete an Event Detector",
 			notes = ""
 			)
 	@RequestMapping(method = RequestMethod.DELETE, 
