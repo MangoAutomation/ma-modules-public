@@ -65,7 +65,6 @@
     <a href="/internal/status.shtm"><fmt:message key="internal.status"/></a> |
     <fmt:message key="internal.threads"/> |
     <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a> |
-    <a href="/internal/workItems.shtm"><fmt:message key="internal.workItems"/></a> |
     <a href="/internal/queueStats.shtm"><fmt:message key="internal.queue.stats"/></a> |
     <a href="/internal/tasks.shtm"><fmt:message key="internal.tasks.stats"/></a>
   </div>
