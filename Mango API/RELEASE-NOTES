@@ -1,5 +1,11 @@
 *Version 3.1.0*
 * Upgraded to work with core version 3.1.x
+* Adding event detector endpoints @ rest/v2/event-detectors
+* Adding publisher endpoints @ rest/v2/publishers
+* Adding system action endpoints @ rest/v2/actions to fire off various system tasks
+* Adding virtual serial port endpoints @ rest/v2/virtual-serial-ports
+* Adding file store endpoints to save and retrieve files @ rest/v2/file-store
+* Adding server information endpoints rest/v2/server/system-info
 
 *Version 3.0.0*
 * Upgraded to work with core version 3.0.x
