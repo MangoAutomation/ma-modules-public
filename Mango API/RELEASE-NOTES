@@ -1,3 +1,6 @@
+*Version 3.1.0*
+* Upgraded to work with core version 3.1.x
+
 *Version 3.0.0*
 * Upgraded to work with core version 3.0.x
 * New REST v2 infrastructure to add new endpoints
