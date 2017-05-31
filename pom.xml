@@ -3,12 +3,12 @@
     <parent>
         <artifactId>modules-parent</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
         <relativePath>../ma-core-public/Modules/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ma-modules-public</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Mango Public Modules</name>
     <issueManagement>
@@ -19,7 +19,7 @@
         <connection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</connection>
         <developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</developerConnection>
         <url>https://github.com/infiniteautomation/ma-modules-public</url>
-      <tag>m2m2-core-3.1.0</tag>
+      <tag>HEAD</tag>
   </scm>
     <modules>
         <module>ASCII File Data Source</module>
