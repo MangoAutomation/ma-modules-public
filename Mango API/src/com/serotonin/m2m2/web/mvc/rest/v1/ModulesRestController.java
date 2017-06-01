@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.CredentialsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.AngularJSModuleDefinitionGroupModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpdateLicensePayloadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpgradeStatusModel;
@@ -166,20 +168,32 @@ public class ModulesRestController extends MangoRestController {
 					if (jsonResponse instanceof JsonString) {
 						result.addRestMessage(getInternalServerErrorMessage(jsonResponse.toString()));
 					} else {
-						List<ModuleModel> upgrades = new ArrayList<ModuleModel>();
-						List<ModuleModel> newInstalls = new ArrayList<ModuleModel>();
+						List<ModuleUpgradeModel> upgrades = new ArrayList<>();
+						List<ModuleUpgradeModel> newInstalls = new ArrayList<>();
 						ModuleUpgradesModel model = new ModuleUpgradesModel(upgrades, newInstalls);
 
 						JsonObject root = jsonResponse.toJsonObject();
 						JsonValue jsonUpgrades = root.get("upgrades");
 						JsonArray jsonUpgradesArray = jsonUpgrades.toJsonArray();
-						for (JsonValue v : jsonUpgradesArray) {
-							upgrades.add(new ModuleModel(v));
+						Iterator<JsonValue> it = jsonUpgradesArray.iterator();
+						while(it.hasNext()) {
+						    JsonValue v = it.next();
+						    if (v.getJsonValue("name") == null) {
+						        it.remove();
+						        continue;
+						    }
+                            String name = v.getJsonValue("name").toString();
+                            Module module = ModuleRegistry.getModule(name);
+                            if (module == null) {
+                                it.remove();
+                                continue;
+                            }
+                            upgrades.add(new ModuleUpgradeModel(module, v));
 						}
 						JsonValue jsonInstalls = root.get("newInstalls");
 						JsonArray jsonInstallsArray = jsonInstalls.toJsonArray();
 						for (JsonValue v : jsonInstallsArray) {
-							newInstalls.add(new ModuleModel(v));
+							newInstalls.add(new ModuleUpgradeModel(v));
 						}
 						return result.createResponseEntity(model);
 					}

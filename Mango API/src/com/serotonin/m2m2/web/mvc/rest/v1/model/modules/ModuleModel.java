@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.modules;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.Module;
@@ -18,28 +17,26 @@ public class ModuleModel {
     
     public interface AdminView {}
 	
-	private String name;
-	private String version;
-    private String normalVersion;
-	private String licenseType;
+	String name;
+	String version;
+    String normalVersion;
+	String licenseType;
     @JsonView(AdminView.class)
-    private String description;
+    String description;
     @JsonView(AdminView.class)
-    private String longDescription;
+    String longDescription;
     @JsonView(AdminView.class)
-    private String vendor;
+    String vendor;
     @JsonView(AdminView.class)
-    private String vendorUrl;
+    String vendorUrl;
     @JsonView(AdminView.class)
-    private String dependencies;
+    String dependencies;
     @JsonView(AdminView.class)
-    private String releaseNotes;
+    boolean markedForDeletion;
     @JsonView(AdminView.class)
-    private boolean markedForDeletion;
+    boolean unloaded;
     @JsonView(AdminView.class)
-    private boolean unloaded;
-    @JsonView(AdminView.class)
-    private boolean signed;
+    boolean signed;
     
 	public ModuleModel(){ }
 	
@@ -61,34 +58,6 @@ public class ModuleModel {
 		this.dependencies = module.getDependencies();
 		this.markedForDeletion = module.isMarkedForDeletion();
 		this.signed = module.isSigned();
-	}
-	
-	/**
-	 * Create a model out of the JSON Store Response
-	 * @param v
-	 */
-	public ModuleModel(JsonValue v) {
-		JsonValue sub = v.getJsonValue("name");
-		if(sub != null)
-			this.name = sub.toString();
-		sub = v.getJsonValue("version");
-		if(sub != null)
-			this.version = sub.toString();
-		sub = v.getJsonValue("shortDescription");
-		if(sub!= null)
-			this.description = sub.toString();
-		sub = v.getJsonValue("longDescription");
-		if(sub != null)
-			this.longDescription = sub.toString();
-		sub = v.getJsonValue("vendorName");
-		if(sub != null)
-			this.vendor = sub.toString();
-		sub = v.getJsonValue("vendorUrl");
-		if(sub != null)
-			this.vendorUrl = sub.toString();
-		sub = v.getJsonValue("releaseNotes");
-		if(sub != null)
-			this.releaseNotes = sub.toString();
 	}
 
 	public String getName() {
@@ -161,14 +130,6 @@ public class ModuleModel {
 
 	public void setDependencies(String dependencies) {
 		this.dependencies = dependencies;
-	}
-
-	public String getReleaseNotes() {
-		return releaseNotes;
-	}
-
-	public void setReleaseNotes(String releaseNotes) {
-		this.releaseNotes = releaseNotes;
 	}
 
 	public boolean markedForDeletion(){
