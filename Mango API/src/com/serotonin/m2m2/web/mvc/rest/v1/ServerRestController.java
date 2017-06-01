@@ -212,7 +212,7 @@ public class ServerRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Restart Mango", notes="Returns URL for status updates while web interface is still active")
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/restart")
+	@RequestMapping(method = RequestMethod.PUT, produces={"application/json"}, value = "/restart")
     public ResponseEntity<String> restart(UriComponentsBuilder builder, HttpServletRequest request) throws RestValidationFailedException {
 
 		RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);

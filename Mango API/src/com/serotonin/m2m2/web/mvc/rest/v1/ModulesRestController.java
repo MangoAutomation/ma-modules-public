@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,6 +49,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.CredentialsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.AngularJSModuleDefinitionGroupModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpdateLicensePayloadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpgradeStatusModel;
@@ -166,20 +169,32 @@ public class ModulesRestController extends MangoRestController {
 					if (jsonResponse instanceof JsonString) {
 						result.addRestMessage(getInternalServerErrorMessage(jsonResponse.toString()));
 					} else {
-						List<ModuleModel> upgrades = new ArrayList<ModuleModel>();
-						List<ModuleModel> newInstalls = new ArrayList<ModuleModel>();
+						List<ModuleUpgradeModel> upgrades = new ArrayList<>();
+						List<ModuleUpgradeModel> newInstalls = new ArrayList<>();
 						ModuleUpgradesModel model = new ModuleUpgradesModel(upgrades, newInstalls);
 
 						JsonObject root = jsonResponse.toJsonObject();
 						JsonValue jsonUpgrades = root.get("upgrades");
 						JsonArray jsonUpgradesArray = jsonUpgrades.toJsonArray();
-						for (JsonValue v : jsonUpgradesArray) {
-							upgrades.add(new ModuleModel(v));
+						Iterator<JsonValue> it = jsonUpgradesArray.iterator();
+						while(it.hasNext()) {
+						    JsonValue v = it.next();
+						    if (v.getJsonValue("name") == null) {
+						        it.remove();
+						        continue;
+						    }
+                            String name = v.getJsonValue("name").toString();
+                            Module module = "core".equals(name) ? ModuleRegistry.getCoreModule() : ModuleRegistry.getModule(name);
+                            if (module == null) {
+                                it.remove();
+                                continue;
+                            }
+                            upgrades.add(new ModuleUpgradeModel(module, v));
 						}
 						JsonValue jsonInstalls = root.get("newInstalls");
 						JsonArray jsonInstallsArray = jsonInstalls.toJsonArray();
 						for (JsonValue v : jsonInstallsArray) {
-							newInstalls.add(new ModuleModel(v));
+							newInstalls.add(new ModuleUpgradeModel(v));
 						}
 						return result.createResponseEntity(model);
 					}
@@ -286,20 +301,30 @@ public class ModulesRestController extends MangoRestController {
 	}
 
 	@ApiOperation(value = "Set Marked For Deletion state of Module", notes = "Marking a module for deletion will un-install it upon restart")
-	@RequestMapping(method = RequestMethod.PUT, consumes = { "application/json" }, produces = {
-			"application/json" }, value = "/deletion-state")
+	@RequestMapping(method = RequestMethod.PUT, produces = {"application/json" }, value = "/deletion-state/{moduleName}")
 	public ResponseEntity<ModuleModel> markForDeletion(
-			@ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false) @RequestParam(required = true) boolean delete,
-			@ApiParam(value = "Desired Upgrades", required = true) @RequestBody(required = true) ModuleModel model,
+	        @ApiParam(value = "Module name", required = false, allowMultiple = false)
+	        @PathVariable(required = false)
+	        String moduleName,
+	        
+			@ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false)
+			@RequestParam(required = true)
+	        boolean delete,
+	        
+			@ApiParam(value = "Module model", required = false)
+	        @RequestBody(required = false)
+	        ModuleModel model,
+	        
 			HttpServletRequest request) {
 
 		RestProcessResult<ModuleModel> result = new RestProcessResult<ModuleModel>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if (result.isOk()) {
 			if (user.isAdmin()) {
-				Module module = ModuleRegistry.getModule(model.getName());
+				Module module = ModuleRegistry.getModule(moduleName == null ? model.getName() : moduleName);
 				if (module != null) {
 					module.setMarkedForDeletion(delete);
+			        return result.createResponseEntity(new ModuleModel(module));
 				} else {
 					result.addRestMessage(getDoesNotExistMessage());
 				}

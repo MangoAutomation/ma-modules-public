@@ -15,8 +15,8 @@ import com.serotonin.db.pair.StringStringPair;
  */
 public class ModuleUpgradesModel {
 	
-	private List<ModuleModel> upgrades;
-	private List<ModuleModel> newInstalls;
+	private List<ModuleUpgradeModel> upgrades;
+	private List<ModuleUpgradeModel> newInstalls;
 	
 	public ModuleUpgradesModel(){ }
 	
@@ -24,21 +24,21 @@ public class ModuleUpgradesModel {
 	 * @param upgrades
 	 * @param newInstalls
 	 */
-	public ModuleUpgradesModel(List<ModuleModel> upgrades, List<ModuleModel> newInstalls) {
+	public ModuleUpgradesModel(List<ModuleUpgradeModel> upgrades, List<ModuleUpgradeModel> newInstalls) {
 		this.upgrades = upgrades;
 		this.newInstalls = newInstalls;
 	}
 
-	public List<ModuleModel> getUpgrades() {
+	public List<ModuleUpgradeModel> getUpgrades() {
 		return upgrades;
 	}
-	public void setUpgrades(List<ModuleModel> upgrades) {
+	public void setUpgrades(List<ModuleUpgradeModel> upgrades) {
 		this.upgrades = upgrades;
 	}
-	public List<ModuleModel> getNewInstalls() {
+	public List<ModuleUpgradeModel> getNewInstalls() {
 		return newInstalls;
 	}
-	public void setNewInstalls(List<ModuleModel> newInstalls) {
+	public void setNewInstalls(List<ModuleUpgradeModel> newInstalls) {
 		this.newInstalls = newInstalls;
 	}
 
@@ -48,17 +48,14 @@ public class ModuleUpgradesModel {
 	public List<StringStringPair> fullModulesList() {
 		List<StringStringPair> list = new ArrayList<StringStringPair>();
 		if(upgrades != null){
-			for(ModuleModel model : upgrades)
-				list.add(new StringStringPair(model.getName(), model.getVersion()));
+			for(ModuleUpgradeModel model : upgrades)
+				list.add(new StringStringPair(model.getName(), model.getNewVersion()));
 		}
 		if(newInstalls != null){
-			for(ModuleModel model : newInstalls)
-				list.add(new StringStringPair(model.getName(), model.getVersion()));
+			for(ModuleUpgradeModel model : newInstalls)
+				list.add(new StringStringPair(model.getName(), model.getNewVersion()));
 		}
 		return list;
 
 	}
-
-	
-	
 }
