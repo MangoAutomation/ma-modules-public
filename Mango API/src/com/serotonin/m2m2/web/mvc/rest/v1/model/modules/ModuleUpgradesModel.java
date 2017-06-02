@@ -49,11 +49,11 @@ public class ModuleUpgradesModel {
 		List<StringStringPair> list = new ArrayList<StringStringPair>();
 		if(upgrades != null){
 			for(ModuleUpgradeModel model : upgrades)
-				list.add(new StringStringPair(model.getName(), model.getVersion()));
+				list.add(new StringStringPair(model.getName(), model.getNewVersion()));
 		}
 		if(newInstalls != null){
 			for(ModuleUpgradeModel model : newInstalls)
-				list.add(new StringStringPair(model.getName(), model.getVersion()));
+				list.add(new StringStringPair(model.getName(), model.getNewVersion()));
 		}
 		return list;
 
