@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -183,7 +184,7 @@ public class ModulesRestController extends MangoRestController {
 						        continue;
 						    }
                             String name = v.getJsonValue("name").toString();
-                            Module module = ModuleRegistry.getModule(name);
+                            Module module = "core".equals(name) ? ModuleRegistry.getCoreModule() : ModuleRegistry.getModule(name);
                             if (module == null) {
                                 it.remove();
                                 continue;
@@ -300,20 +301,30 @@ public class ModulesRestController extends MangoRestController {
 	}
 
 	@ApiOperation(value = "Set Marked For Deletion state of Module", notes = "Marking a module for deletion will un-install it upon restart")
-	@RequestMapping(method = RequestMethod.PUT, consumes = { "application/json" }, produces = {
-			"application/json" }, value = "/deletion-state")
+	@RequestMapping(method = RequestMethod.PUT, produces = {"application/json" }, value = "/deletion-state/{moduleName}")
 	public ResponseEntity<ModuleModel> markForDeletion(
-			@ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false) @RequestParam(required = true) boolean delete,
-			@ApiParam(value = "Desired Upgrades", required = true) @RequestBody(required = true) ModuleModel model,
+	        @ApiParam(value = "Module name", required = false, allowMultiple = false)
+	        @PathVariable(required = false)
+	        String moduleName,
+	        
+			@ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false)
+			@RequestParam(required = true)
+	        boolean delete,
+	        
+			@ApiParam(value = "Module model", required = false)
+	        @RequestBody(required = false)
+	        ModuleModel model,
+	        
 			HttpServletRequest request) {
 
 		RestProcessResult<ModuleModel> result = new RestProcessResult<ModuleModel>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if (result.isOk()) {
 			if (user.isAdmin()) {
-				Module module = ModuleRegistry.getModule(model.getName());
+				Module module = ModuleRegistry.getModule(moduleName == null ? model.getName() : moduleName);
 				if (module != null) {
 					module.setMarkedForDeletion(delete);
+			        return result.createResponseEntity(new ModuleModel(module));
 				} else {
 					result.addRestMessage(getDoesNotExistMessage());
 				}
