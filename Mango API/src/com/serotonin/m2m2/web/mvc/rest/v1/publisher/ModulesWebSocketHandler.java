@@ -39,7 +39,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    	if(hasPermission(getUser(session))){
+    	if(!hasPermission(getUser(session))){
     		this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED, new TranslatableMessage("common.default", "Permission Denied"));
     		session.close();
     	}
