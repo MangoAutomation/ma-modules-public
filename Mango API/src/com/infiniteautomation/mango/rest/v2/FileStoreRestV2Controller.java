@@ -14,11 +14,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
@@ -47,6 +49,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
+import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.FileStoreDefinition;
@@ -99,26 +102,37 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			value = "List all files within a store",
 			notes = "Must have read access to see the store"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{name}")
-    public ResponseEntity<List<String>> listStoreContents(
+	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{name}/**")
+    public ResponseEntity<List<FileModel>> listStoreContents(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable String name,
     		@AuthenticationPrincipal User user,
-    		HttpServletRequest request) {
+            @ApiParam(value = "Recursive list of all files", required = false, allowMultiple = false)
+    		@RequestParam(defaultValue = "false", required = false)
+    		boolean recursive,
+    		HttpServletRequest request) throws IOException {
 		
 		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
 		if(def == null)
 			throw new NotFoundRestException();
 		
 		//List the contents of the store
-		List<String> found = new ArrayList<String>();
-		File root = def.getRoot();
-		if(!root.exists())
-			return new ResponseEntity<>(found, HttpStatus.OK);
-
-		Collection<File> files = FileUtils.listFiles(root, null, true);
-		for(File file : files)
-		    found.add(removeToRoot(root, file));
+		
+        String pathInStore = parsePath(request);
+        
+        File root = def.getRoot();
+        File directory = new File(root, pathInStore);
+        
+		if(!directory.exists())
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if(!directory.isDirectory())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		
+		Collection<File> files = FileUtils.listFiles(directory, null, recursive);
+        List<FileModel> found = new ArrayList<>(files.size());
+        
+		for (File file : files)
+		    found.add(fileToModel(file, directory, request.getServletContext()));
 		
 		return new ResponseEntity<>(found, HttpStatus.OK);
 	}
@@ -128,7 +142,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			notes = "Must have write access to the store, will overwrite existing files"
 			)
 	@RequestMapping(method = RequestMethod.POST, produces={"application/json"}, value="/{name}/**")
-    public ResponseEntity<List<String>> uploadWithPath(
+    public ResponseEntity<List<FileModel>> uploadWithPath(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
     		@AuthenticationPrincipal User user,
@@ -157,18 +171,18 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		}
 		
 		//Put the file where it belongs
-		List<String> filenames = new ArrayList<String>();
+		List<FileModel> fileModels = new ArrayList<>();
 		Iterator<String> itr =  multipartRequest.getFileNames();
 		while(itr.hasNext()){
             MultipartFile file = multipartRequest.getFile(itr.next());
 			File newFile = new File(toSave, file.getName());
-			filenames.add(removeToRoot(root, newFile));
+			fileModels.add(fileToModel(newFile, root, request.getServletContext()));
         	byte[] bytes = file.getBytes();
             try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile, false))) {
                 stream.write(bytes);
             }
 		}
-		return new ResponseEntity<>(filenames, HttpStatus.OK);
+		return new ResponseEntity<>(fileModels, HttpStatus.OK);
 	}
 	
 	@ApiOperation(
@@ -271,8 +285,16 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	 * @param file
 	 * @return
 	 */
-	protected String removeToRoot(File root, File file){
+    public static String removeToRoot(File root, File file){
 	    return root.toURI().relativize(file.toURI()).toString();
 	}
 	
+	public static FileModel fileToModel(File file, File relativeTo, ServletContext context) {
+	    FileModel model = new FileModel();
+	    model.setFilename(removeToRoot(relativeTo, file));
+	    model.setDirectory(file.isDirectory());
+        model.setLastModified(new Date(file.lastModified()));
+	    model.setMimeType(context.getMimeType(file.getName()));
+	    return model;
+	}
 }
