@@ -23,7 +23,6 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,7 +49,6 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.FileStoreDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -99,45 +97,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	}
 
 	@ApiOperation(
-			value = "List all files within a store",
-			notes = "Must have read access to see the store"
-			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{name}/**")
-    public ResponseEntity<List<FileModel>> listStoreContents(
-       		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
-       	 	@PathVariable String name,
-    		@AuthenticationPrincipal User user,
-            @ApiParam(value = "Recursive list of all files", required = false, allowMultiple = false)
-    		@RequestParam(defaultValue = "false", required = false)
-    		boolean recursive,
-    		HttpServletRequest request) throws IOException {
-		
-		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
-		if(def == null)
-			throw new NotFoundRestException();
-		
-		//List the contents of the store
-		
-        String pathInStore = parsePath(request);
-        
-        File root = def.getRoot();
-        File directory = new File(root, pathInStore);
-        
-		if(!directory.exists())
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if(!directory.isDirectory())
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		
-		Collection<File> files = FileUtils.listFiles(directory, null, recursive);
-        List<FileModel> found = new ArrayList<>(files.size());
-        
-		for (File file : files)
-		    found.add(fileToModel(file, directory, request.getServletContext()));
-		
-		return new ResponseEntity<>(found, HttpStatus.OK);
-	}
-	
-	@ApiOperation(
 			value = "Upload a file to a store with a path",
 			notes = "Must have write access to the store, will overwrite existing files"
 			)
@@ -185,12 +144,9 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		return new ResponseEntity<>(fileModels, HttpStatus.OK);
 	}
 	
-	@ApiOperation(
-			value = "Download a file from a store",
-			notes = "Must have write access to the store"
-			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/octet-stream", "*/*"}, value="/{name}/**")
-    public ResponseEntity<FileSystemResource> download(
+	@ApiOperation(value = "List a directory or download a file from a store")
+	@RequestMapping(method = RequestMethod.GET, produces={"*/*"}, value="/{name}/**")
+    public ResponseEntity<?> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
        	 	@ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="false", allowMultiple = false)
@@ -199,30 +155,55 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     		HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
     	
 		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
-		if(def == null)
+		if (def == null)
 			throw new ResourceNotFoundException("File store: " + name);
 		
 		//Check permissions
 		def.ensureStoreReadPermission(user);
+		
 		String path = parsePath(request);
-		File f = new File(def.getRoot(), path);
-		//TODO Allow downloading directory as a zip
-		if(!f.exists())
+		File file = new File(def.getRoot(), path);
+		if(!file.exists())
 			throw new ResourceNotFoundException("filestore/" + name + "/" + path);
-		if(!f.isFile())
-			throw new ResourceNotFoundException(new TranslatableMessage("rest.fileStore.notAFile").translate(Common.getTranslations()));
 
+        // TODO Allow downloading directory as a zip
+		if (file.isFile()) {
+		    return getFile(file, download, request);
+		} else {
+		    return listStoreContents(file, request);
+		}
+	}
+
+	protected ResponseEntity<List<FileModel>> listStoreContents(File directory, HttpServletRequest request) throws IOException {
+        Collection<File> files = Arrays.asList(directory.listFiles());
+        List<FileModel> found = new ArrayList<>(files.size());
+        
+        for (File file : files)
+            found.add(fileToModel(file, directory, request.getServletContext()));
+        
+        @SuppressWarnings("unchecked")
+        Set<MediaType> mediaTypes = (Set<MediaType>) request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
+        mediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
+        
+        return new ResponseEntity<>(found, HttpStatus.OK);
+    }
+	
+	protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request) throws HttpMediaTypeNotAcceptableException {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
 
-        // We need to do our own custom MIME handling as the Spring implementation does handle this correctly
-        // * Wildcards like image/* dont work
-        // * Does not trigger HTTP 406 Not Acceptable if file MIME does not match the Accept header
+        // We need to do our own custom MIME handling as the Spring implementation doesnt handle this correctly:
+        // - Wildcards like image/* dont work
+        // - Does not trigger HTTP 406 Not Acceptable if file MIME does not match the Accept header
         
         MediaType mediaType = null;
         
+        @SuppressWarnings("unchecked")
+        Set<MediaType> mediaTypes = (Set<MediaType>) request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
+        mediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
+        
         // ResourceHttpMessageConverter uses ActivationMediaTypeFactory.getMediaType(resource) but this is not visible
-		String mimeType = request.getServletContext().getMimeType(f.getName());
+        String mimeType = request.getServletContext().getMimeType(file.getName());
         if (StringUtils.hasText(mimeType)) {
             try {
                 mediaType = MediaType.parseMediaType(mimeType);
@@ -246,8 +227,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
                     // setting this request attribute essentially modifies the @RequestMapping(produces=xxx) property
                     // we need to do this because otherwise AbstractMessageConverterMethodProcessor fails on partial wildcard Accept headers like image/*
                     // and causes HTTP 406 Not Acceptable errors
-                    @SuppressWarnings("unchecked")
-                    Set<MediaType> mediaTypes = (Set<MediaType>) request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
                     mediaTypes.add(mediaType);
                 } else {
                     throw new HttpMediaTypeNotAcceptableException(Arrays.asList(mediaType, MediaType.APPLICATION_OCTET_STREAM));
@@ -261,7 +240,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         // to whatever the Accept header was
         responseHeaders.setContentType(mediaType != null ? mediaType : MediaType.APPLICATION_OCTET_STREAM);
         
-        return new ResponseEntity<>(new FileSystemResource(f), responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
 	}
 	
     /**
@@ -286,7 +265,11 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	 * @return
 	 */
     public static String removeToRoot(File root, File file){
-	    return root.toURI().relativize(file.toURI()).toString();
+	    String name = root.toURI().relativize(file.toURI()).toString();
+	    if (file.isDirectory() && name.endsWith("/")) {
+	        name = name.substring(0, name.length() - 1);
+	    }
+	    return name;
 	}
 	
 	public static FileModel fileToModel(File file, File relativeTo, ServletContext context) {
