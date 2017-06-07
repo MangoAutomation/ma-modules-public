@@ -134,7 +134,11 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		Iterator<String> itr =  multipartRequest.getFileNames();
 		while(itr.hasNext()){
             MultipartFile file = multipartRequest.getFile(itr.next());
-			File newFile = new File(toSave, file.getName());
+            String filename = file.getOriginalFilename();
+            if (filename == null) {
+                filename = file.getName();
+            }
+			File newFile = new File(toSave, filename);
 			fileModels.add(fileToModel(newFile, root, request.getServletContext()));
         	byte[] bytes = file.getBytes();
             try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile, false))) {
@@ -185,7 +189,10 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         Set<MediaType> mediaTypes = (Set<MediaType>) request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
         mediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
         
-        return new ResponseEntity<>(found, HttpStatus.OK);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        
+        return new ResponseEntity<>(found, responseHeaders, HttpStatus.OK);
     }
 	
 	protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request) throws HttpMediaTypeNotAcceptableException {
@@ -278,6 +285,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	    model.setDirectory(file.isDirectory());
         model.setLastModified(new Date(file.lastModified()));
 	    model.setMimeType(context.getMimeType(file.getName()));
+	    if (!file.isDirectory())
+	        model.setSize(file.length());
 	    return model;
 	}
 }

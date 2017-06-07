@@ -7,6 +7,8 @@ public class FileModel {
     String filename;
     String mimeType;
     Date lastModified;
+    Long size;
+
     boolean directory;
 
     public FileModel() {
@@ -42,5 +44,13 @@ public class FileModel {
 
     public void setDirectory(boolean directory) {
         this.directory = directory;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
     }
 }
