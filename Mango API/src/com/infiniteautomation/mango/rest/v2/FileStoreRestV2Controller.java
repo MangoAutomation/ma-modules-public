@@ -267,16 +267,17 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	 * @param root
 	 * @param file
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-    public static String removeToRoot(File root, File file){
-	    String name = root.toURI().relativize(file.toURI()).toString();
+    public static String removeToRoot(File root, File file) throws UnsupportedEncodingException {
+	    String name = URLDecoder.decode(root.toURI().relativize(file.toURI()).toString(), StandardCharsets.UTF_8.name());
 	    if (file.isDirectory() && name.endsWith("/")) {
 	        name = name.substring(0, name.length() - 1);
 	    }
 	    return name;
 	}
 	
-	public static FileModel fileToModel(File file, File relativeTo, ServletContext context) {
+	public static FileModel fileToModel(File file, File relativeTo, ServletContext context) throws UnsupportedEncodingException {
 	    FileModel model = new FileModel();
 	    model.setFilename(removeToRoot(relativeTo, file));
 	    model.setDirectory(file.isDirectory());
