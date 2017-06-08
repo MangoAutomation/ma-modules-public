@@ -119,8 +119,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 
 		String pathInStore = parsePath(request);
 		
-		File root = def.getRoot();
-		File toSave = new File(root, pathInStore);
+		File root = def.getRoot().getCanonicalFile();
+		File toSave = new File(root, pathInStore).getCanonicalFile();
+
+        if (!toSave.toPath().startsWith(root.toPath())) {
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
+        }
 		
 		if (toSave.exists() && !toSave.isDirectory()) {
 		    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
@@ -186,8 +190,13 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		//Check permissions
 		def.ensureStoreReadPermission(user);
 		
+		File root = def.getRoot().getCanonicalFile();
 		String path = parsePath(request);
-		File file = new File(def.getRoot(), path);
+		File file = new File(root, path).getCanonicalFile();
+		
+		if (!file.toPath().startsWith(root.toPath())) {
+            throw new AccessDeniedException("Path is below file store root");
+		}
 		if(!file.exists())
 			throw new ResourceNotFoundException("filestore/" + name + "/" + path);
 
