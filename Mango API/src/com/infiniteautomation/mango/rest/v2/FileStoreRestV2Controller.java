@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -172,13 +173,50 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	    
 	    return file;
 	}
+	
+    @ApiOperation(value = "Delete a file or directory")
+    @RequestMapping(method = RequestMethod.DELETE, produces={}, value="/{name}/**")
+    public ResponseEntity<Void> delete(
+            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @PathVariable("name") String name,
+            @ApiParam(value = "Recurisve delete of directory", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean recursive,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
+        
+        FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
+        if (def == null)
+            throw new ResourceNotFoundException("File store: " + name);
+        
+        //Check permissions
+        def.ensureStoreWritePermission(user);
+        
+        File root = def.getRoot().getCanonicalFile();
+        String path = parsePath(request);
+        File file = new File(root, path).getCanonicalFile();
+        
+        if (!file.toPath().startsWith(root.toPath())) {
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", path));
+        }
+        if(!file.exists())
+            throw new NotFoundRestException();
+
+        if (file.isDirectory() && recursive) {
+            FileUtils.deleteDirectory(file);
+        } else {
+            if (!file.delete()) {
+                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.errorDeletingFile"));
+            }
+        }
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
 
 	@ApiOperation(value = "List a directory or download a file from a store")
 	@RequestMapping(method = RequestMethod.GET, produces={}, value="/{name}/**")
     public ResponseEntity<?> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
-       	 	@ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="false", allowMultiple = false)
+       	 	@ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean download,
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
