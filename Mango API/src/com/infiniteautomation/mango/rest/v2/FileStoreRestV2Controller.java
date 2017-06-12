@@ -34,6 +34,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +47,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
@@ -146,7 +146,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	            File newFile = findUniqueFileName(toSave, filename);
 	            try (OutputStream output = new FileOutputStream(newFile, false)) {
 	                try (InputStream input  = file.getInputStream()) {
-	                    ByteStreams.copy(input, output);
+	                    StreamUtils.copy(input, output);
 	                }
 	            }
                 fileModels.add(fileToModel(newFile, toSave, request.getServletContext()));
