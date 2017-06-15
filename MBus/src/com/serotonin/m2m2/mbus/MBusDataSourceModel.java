@@ -9,6 +9,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+import net.sf.mbus4j.Connection;
 
 /**
  * @author Terry Packer
@@ -39,6 +42,7 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 		return MBusDataSourceDefinition.DATA_SOURCE_TYPE;
 	}
 	
+	@ApiModelProperty(value = "Poll period", required = false)
 	@JsonGetter(value="pollPeriod")
 	public TimePeriod getPollPeriod(){
 	    return new TimePeriod(this.data.getUpdatePeriods(), 
@@ -50,5 +54,26 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 	    this.data.setUpdatePeriods(pollPeriod.getPeriods());
 	    this.data.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
 	}
+	
+	@ApiModelProperty(value = "Quantize", required = false)
+	@JsonGetter(value="quantize")
+	public boolean getQuantize(){
+	    return this.data.isQuantize();
+	}
+
+	@JsonSetter(value="quantize")
+	public void setQuantize(boolean quantize){
+	    this.data.setQuantize(quantize);
+	}
+	
+//	@JsonGetter(value="connection")
+//	public Connection getConnection(){
+//	    return this.data.getConnection();
+//	}
+//
+//	@JsonSetter(value="connection")
+//	public void setConnection(Connection connection){
+//	    this.data.setConnection(connection);
+//	}
 
 }
