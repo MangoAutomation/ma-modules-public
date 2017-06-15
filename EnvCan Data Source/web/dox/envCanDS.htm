@@ -1,0 +1,9 @@
+<h1>Overview</h1>
+<p>The EnvCan data source pulls data from the Canadian Weather service's API based on station ID. The best method of resolving
+station IDs may be unknown, but one method is to navigate to http://climate.weather.gc.ca/historical_data/search_historic_data_e.html
+and search for a location. Select it, then, find the "StationID=" component of the URL.</p>
+
+<h3>Notes</h3>
+<p>The data source will only advance time if it found temperature data for the station it is polling. This means it can
+become stuck if it begins polling for data before there is data. <b>Data start time</b> can be set by the date input. Data
+start time applies when any point on the data source has no history when polling beings.</p>

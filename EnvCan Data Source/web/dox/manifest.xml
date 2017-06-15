@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2017 Infinite Automation Systems. All rights reserved.
+    @author Phillip Dunlap
+-->
+
+<doxManifest>
+  <item id="envCanDS" key="dox.envCanDS" filename="envCanDS.htm">
+    <relation id="envCanPP"/>
+  </item>
+  
+  <item id="envCanPP" key="dox.envCanPP" filename="envCanPP.htm">
+    <relation id="envCanDS"/>
+  </item>
+</doxManifest>
