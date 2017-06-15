@@ -155,7 +155,49 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 
 		return new ResponseEntity<>(fileModels, HttpStatus.OK);
 	}
-	
+
+    @ApiOperation(
+            value = "Create a folder in a file store with a path",
+            notes = "Must have write access to the store"
+            )
+    @RequestMapping(method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{name}/**")
+    public ResponseEntity<FileModel> createNewFolder(
+            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @PathVariable("name") String name,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) throws IOException {
+        
+        FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
+        if (def == null)
+            throw new NotFoundRestException();
+
+        // Check Permissions
+        def.ensureStoreWritePermission(user);
+
+        String pathInStore = parsePath(request);
+        
+        File root = def.getRoot().getCanonicalFile();
+        File toSave = new File(root, pathInStore).getCanonicalFile();
+
+        if (!toSave.toPath().startsWith(root.toPath())) {
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
+        }
+        
+        if (toSave.exists() && !toSave.isDirectory()) {
+            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+        }
+
+        if(!toSave.exists()){
+            if(!toSave.mkdirs())
+                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+        }
+        
+        //Put the file where it belongs
+        FileModel fileModel = fileToModel(toSave, toSave.getParentFile(), request.getServletContext());
+
+        return new ResponseEntity<>(fileModel, HttpStatus.CREATED);
+    }
+
 	private File findUniqueFileName(File directory, String filename) {
 	    File file = new File(directory, filename);
 	    
