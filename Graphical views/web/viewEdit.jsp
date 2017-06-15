@@ -394,7 +394,7 @@
               <td class="formLabelRequired"><fmt:message key="viewEdit.background"/></td>
               <td class="formField">
                 <iframe id="target_upload" name="target_upload" src="" style="display: none;"></iframe>
-                <form id="daform" action="/graphicalViewsBackgroundUpload" method="post" enctype="multipart/form-data" target="target_upload">
+                <form id="daform" action="/graphicalViewsBackgroundUpload?${_csrf.parameterName}=${_csrf.token}" method="post" enctype="multipart/form-data" target="target_upload">
                   <input type="file" name="backgroundImage"/><br/>
                   <input type="button" value="<fmt:message key="viewEdit.upload"/>" onclick="bgUpload();"/>&nbsp;
                   <input type="button" value="<fmt:message key="viewEdit.clearImage"/>" onclick="bgClear();"/>
