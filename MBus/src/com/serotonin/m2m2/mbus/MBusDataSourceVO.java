@@ -21,16 +21,23 @@ package com.serotonin.m2m2.mbus;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.serotonin.json.JsonException;
+import com.serotonin.json.JsonReader;
+import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.mbus.rest.MBusDataSourceModel;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.util.ExportCodes;
@@ -61,13 +68,11 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         EVENT_CODES.addElement(MBusDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
         EVENT_CODES.addElement(MBusDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, "POINT_WRITE_EXCEPTION");
     }
-    @JsonProperty
     private int updatePeriodType = Common.TimePeriods.DAYS;
     @JsonProperty
     private int updatePeriods = 1;
     @JsonProperty
     private boolean quantize;
-    @JsonProperty
     private Connection connection;
 
     @Override
@@ -283,6 +288,63 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         return SiPrefix.values();
     }
 
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#jsonRead(com.serotonin.json.JsonReader, com.serotonin.json.type.JsonObject)
+     */
+    @Override
+    public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
+    	super.jsonRead(reader, jsonObject);
+    	
+    	 Integer value = readUpdatePeriodType(jsonObject);
+         if (value != null)
+             updatePeriodType = value;
+         
+         String s = jsonObject.getString("connectionType");
+         if(s == null){
+        	 List<String> codes = new ArrayList<String>();
+        	 codes.add("mbusSerial");
+        	 codes.add("mbusTcpIp");
+        	 throw new TranslatableJsonException("emport.error.missing", "connectionType", codes);
+         }else{
+    		 int bitPerSecond = jsonObject.getInt("bitPerSecond");
+    		 int responseTimeoutOffset = jsonObject.getInt("responseTimeoutOffset");
+        	 switch(s){
+        	 case "mbusSerial":
+        		 String portName = jsonObject.getString("portName");
+        		 connection = new SerialPortConnection(portName, bitPerSecond, responseTimeoutOffset);
+        		 break;
+        	 case "mbusTcpIp":
+        		 String host = jsonObject.getString("host");
+        		 int port = jsonObject.getInt("port");
+        		 connection = new TcpIpConnection(host, port, bitPerSecond, responseTimeoutOffset);
+        		 break;
+        	 }
+         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#jsonWrite(com.serotonin.json.ObjectWriter)
+     */
+    @Override
+    public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
+    	super.jsonWrite(writer);
+    	writeUpdatePeriodType(writer, this.updatePeriodType);
+    	if(connection instanceof SerialPortConnection){
+    		writer.writeEntry("connectionType", "mbusSerial");
+    		SerialPortConnection conn = (SerialPortConnection)connection;
+    		writer.writeEntry("bitPerSecond", conn.getBitPerSecond());
+    		writer.writeEntry("responseTimeoutOffset", conn.getResponseTimeOutOffset());
+    		writer.writeEntry("portName", conn.getPortName());
+    	}else if(connection instanceof TcpIpConnection){
+    		writer.writeEntry("connectionType", "mbusTcpIp");
+    		TcpIpConnection conn = (TcpIpConnection)connection;
+    		writer.writeEntry("bitPerSecond", conn.getBitPerSecond());
+    		writer.writeEntry("responseTimeoutOffset", conn.getResponseTimeOutOffset());
+    		writer.writeEntry("host", conn.getHost());
+    		writer.writeEntry("port", conn.getPort());
+    	}
+    }
+    
     /* (non-Javadoc)
 	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
      */

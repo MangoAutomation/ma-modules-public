@@ -551,7 +551,9 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
      * @return the siPrefix
      */
     public String getSiPrefix() {
-	return siPrefix.getLabel();
+    	if(siPrefix == null)
+    		return null;
+    	return siPrefix.getLabel();
     }
 
     /**

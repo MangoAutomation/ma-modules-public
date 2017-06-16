@@ -2,10 +2,12 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.serotonin.m2m2.mbus;
+package com.serotonin.m2m2.mbus.rest;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.serotonin.m2m2.mbus.MBusDataSourceDefinition;
+import com.serotonin.m2m2.mbus.MBusDataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
@@ -19,14 +21,8 @@ import net.sf.mbus4j.Connection;
  */
 public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceVO>{
 
-	private MBusDataSourceVO data;
-	/**
-	 * @param data
-	 */
 	public MBusDataSourceModel(MBusDataSourceVO data) {
 		super(data);
-		this.data = data;
-                throw new RuntimeException("IMPLEMENT ME");
 	}
 
 	public MBusDataSourceModel() {
@@ -66,14 +62,14 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 	    this.data.setQuantize(quantize);
 	}
 	
-//	@JsonGetter(value="connection")
-//	public Connection getConnection(){
-//	    return this.data.getConnection();
-//	}
-//
-//	@JsonSetter(value="connection")
-//	public void setConnection(Connection connection){
-//	    this.data.setConnection(connection);
-//	}
+	@JsonGetter(value="connection")
+	public Connection getConnection(){
+	    return this.data.getConnection();
+	}
+
+	@JsonSetter(value="connection")
+	public void setConnection(Connection connection){
+	    this.data.setConnection(connection);
+	}
 
 }
