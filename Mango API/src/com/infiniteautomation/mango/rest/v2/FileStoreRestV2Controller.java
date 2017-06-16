@@ -183,8 +183,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
         }
         
-        if (toSave.exists() && !toSave.isDirectory()) {
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+        if (toSave.exists()) {
+            if (toSave.isDirectory()) {
+                throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.directoryExists", removeToRoot(root, toSave), name));
+            } else {
+                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+            }
         }
 
         if(!toSave.exists()){
