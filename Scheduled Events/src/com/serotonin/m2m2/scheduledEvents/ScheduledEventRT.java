@@ -45,7 +45,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
     }
 
     private void returnToNormal(long time) {
-        Common.eventManager.returnToNormal(eventType, time);
+        Common.eventManager.returnToNormal(eventType, time, vo.getAlarmLevel());
         eventActive = false;
     }
 
