@@ -277,4 +277,5 @@ public class MBusPointLocatorModel extends PointLocatorModel<MBusPointLocatorVO>
         this.data.setEffectiveSiPrefix(effectiveSiPrefix);
     }
 
+    
 }

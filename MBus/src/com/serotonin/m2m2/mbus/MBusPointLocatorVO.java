@@ -22,7 +22,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import com.serotonin.json.JsonException;
+import com.serotonin.json.JsonReader;
+import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.json.spi.JsonSerializable;
+import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -38,7 +43,7 @@ import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
 import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 import net.sf.mbus4j.dataframes.datablocks.vif.UnitOfMeasurement;
 
-public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorVO> {
+public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorVO> implements JsonSerializable{
 
 //    private static Log LOG = LogFactory.getLog(MBusPointLocatorVO.class);
 
@@ -48,10 +53,8 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
      */
     @JsonProperty
     private byte address;
-    @JsonProperty
-    private DataFieldCode difCode;
-    @JsonProperty
-    private FunctionField functionField;
+    private DataFieldCode difCode = DataFieldCode._12_DIGIT_BCD;
+    private FunctionField functionField = FunctionField.INSTANTANEOUS_VALUE;
     @JsonProperty
     private int subUnit;
     @JsonProperty
@@ -62,18 +65,15 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
     private String vifType;
     @JsonProperty
     private String vifLabel;
-    @JsonProperty
-    private UnitOfMeasurement unitOfMeasurement;
-    @JsonProperty
-    private SiPrefix siPrefix;
+    private UnitOfMeasurement unitOfMeasurement = UnitOfMeasurement.DIMENSIONLESS;
+    private SiPrefix siPrefix = SiPrefix.ONE;
     @JsonProperty
     private Integer exponent;
     @JsonProperty
     private String[] vifeLabels = EMPTY_STRING_ARRAY;
     @JsonProperty
     private String[] vifeTypes = EMPTY_STRING_ARRAY;
-    @JsonProperty
-    private MBusMedium medium;
+    private MBusMedium medium = MBusMedium.OTHER;
     @JsonProperty
     private String responseFrame;
     @JsonProperty
@@ -84,9 +84,8 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
     private String manufacturer;
     @JsonProperty
     private int dbIndex;
-    @JsonProperty
     private SiPrefix effectiveSiPrefix = SiPrefix.ONE;
-    private MBusAddressing addressing;
+    private MBusAddressing addressing = MBusAddressing.PRIMARY;
 
     @Override
     public int getDataTypeId() {
@@ -738,6 +737,50 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
         this.effectiveSiPrefix = SiPrefix.fromLabel(effectiveSiPrefix);
     }
     
+	@Override
+	public void jsonWrite(ObjectWriter writer) throws IOException,
+			JsonException {
+		writer.writeEntry("difCode", difCode.getLabel());
+		writer.writeEntry("functionField", functionField.getLabel());
+		writer.writeEntry("unitOfMeasurement", unitOfMeasurement);
+	    writer.writeEntry("siPrefix", siPrefix);
+	    writer.writeEntry("effectiveSiPrefix", effectiveSiPrefix);
+		writer.writeEntry("medium", medium.getLabel());
+		writer.writeEntry("addressing", addressing.getLabel());
+	}
+    
+	@Override
+	public void jsonRead(JsonReader reader, JsonObject jsonObject)
+			throws JsonException {
+		String text = jsonObject.getString("difCode");
+		if(text != null)
+			difCode = DataFieldCode.fromLabel(text);
+		
+		text = jsonObject.getString("functionField");
+		if(text != null)
+			functionField = FunctionField.fromLabel(text);
+		
+		text = jsonObject.getString("unitOfMeasurement");
+		if(text != null)
+			unitOfMeasurement = UnitOfMeasurement.fromLabel(text);
+		
+		text = jsonObject.getString("siPrefix");
+		if(text != null)
+			siPrefix = SiPrefix.fromLabel(text);
+		
+		text = jsonObject.getString("effectiveSiPrefix");
+		if(text != null)
+			effectiveSiPrefix = SiPrefix.fromLabel(text);
+		
+		text = jsonObject.getString("addressing");
+		if(text != null)
+			addressing = MBusAddressing.fromLabel(text);
+		
+		text = jsonObject.getString("medium");
+		if(text != null)
+			medium = MBusMedium.fromLabel(text);
+	}
+	
     /* (non-Javadoc)
 	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
 	 */
