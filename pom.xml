@@ -8,7 +8,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ma-modules-public</artifactId>
-  <version>3.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Mango Public Modules</name>
     <issueManagement>
