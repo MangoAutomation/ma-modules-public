@@ -101,13 +101,17 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 
 	@ApiOperation(
 			value = "Upload a file to a store with a path",
-			notes = "Must have write access to the store, will overwrite existing files"
+			notes = "Must have write access to the store"
 			)
 	@RequestMapping(method = RequestMethod.POST, consumes=MediaType.MULTIPART_FORM_DATA_VALUE, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{name}/**")
     public ResponseEntity<List<FileModel>> uploadWithPath(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
-    		@AuthenticationPrincipal User user,
+    		
+       	 	@AuthenticationPrincipal User user,
+    		
+    		@RequestParam(required=false, defaultValue="false") boolean overwrite,
+    		
     		MultipartHttpServletRequest multipartRequest,
     		HttpServletRequest request) throws IOException {
 		
@@ -143,7 +147,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		for (String nameField : filemap.keySet()) {
 		    for (MultipartFile file : filemap.get(nameField)) {
 	            String filename = file.getOriginalFilename();
-	            File newFile = findUniqueFileName(toSave, filename);
+	            File newFile;
+                if (overwrite) {
+                    newFile = new File(toSave, filename);
+                } else {
+                    newFile = findUniqueFileName(toSave, filename);
+                }
 	            try (OutputStream output = new FileOutputStream(newFile, false)) {
 	                try (InputStream input  = file.getInputStream()) {
 	                    StreamUtils.copy(input, output);
