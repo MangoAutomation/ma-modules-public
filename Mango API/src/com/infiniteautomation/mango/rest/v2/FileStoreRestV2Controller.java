@@ -22,6 +22,7 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -52,10 +53,12 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.FileStoreDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.filter.MangoShallowEtagHeaderFilter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -70,6 +73,14 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RequestMapping("/v2/file-stores")
 public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 
+    final String cacheControlHeader;
+    
+    public FileStoreRestV2Controller() {
+        boolean resourcesNoStore = Common.envProps.getBoolean("web.cache.noStore.resources", false);
+        cacheControlHeader = resourcesNoStore ? MangoShallowEtagHeaderFilter.NO_STORE :
+            String.format(MangoShallowEtagHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.resources", 86400L));
+    }
+    
 	@ApiOperation(
 			value = "List all file store names",
 			notes = "Must have read access to see the store"
@@ -274,7 +285,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
        	 	@ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean download,
     		@AuthenticationPrincipal User user,
-    		HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
+    		HttpServletRequest request,
+    		HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
     	
 		FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
 		if (def == null)
@@ -295,7 +307,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 
         // TODO Allow downloading directory as a zip
 		if (file.isFile()) {
-		    return getFile(file, download, request);
+		    return getFile(file, download, request, response);
 		} else {
 		    return listStoreContents(file, request);
 		}
@@ -317,7 +329,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         return new ResponseEntity<>(found, responseHeaders, HttpStatus.OK);
     }
 	
-	protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request) throws HttpMediaTypeNotAcceptableException {
+	protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request, HttpServletResponse response)
+	        throws HttpMediaTypeNotAcceptableException {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
 
@@ -345,6 +358,10 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             mediaTypes.add(mediaType);
             responseHeaders.setContentType(mediaType);
         }
+
+        // this doesn't work as a header from ResponseEntity wont be set if it is already set in the response
+        //responseHeaders.setCacheControl(cacheControlHeader);
+        response.setHeader(HttpHeaders.CACHE_CONTROL, cacheControlHeader);
         
         return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
 	}
