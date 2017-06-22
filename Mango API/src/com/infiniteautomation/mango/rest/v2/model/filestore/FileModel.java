@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class FileModel {
 
+    String folderPath;
     String filename;
     String mimeType;
     Date lastModified;
@@ -52,5 +53,13 @@ public class FileModel {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public String getFolderPath() {
+        return folderPath;
+    }
+
+    public void setFolderPath(String folderPath) {
+        this.folderPath = folderPath;
     }
 }

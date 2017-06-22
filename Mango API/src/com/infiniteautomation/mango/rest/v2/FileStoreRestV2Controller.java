@@ -139,19 +139,19 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		String pathInStore = parsePath(request);
 		
 		File root = def.getRoot().getCanonicalFile();
-		File toSave = new File(root, pathInStore).getCanonicalFile();
+		File outputDirectory = new File(root, pathInStore).getCanonicalFile();
 
-        if (!toSave.toPath().startsWith(root.toPath())) {
+        if (!outputDirectory.toPath().startsWith(root.toPath())) {
             throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
         }
 		
-		if (toSave.exists() && !toSave.isDirectory()) {
-		    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+		if (outputDirectory.exists() && !outputDirectory.isDirectory()) {
+		    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, outputDirectory), name));
 		}
 
-		if(!toSave.exists()){
-			if(!toSave.mkdirs())
-				throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+		if(!outputDirectory.exists()){
+			if(!outputDirectory.mkdirs())
+				throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, outputDirectory), name));
 		}
 		
 		//Put the file where it belongs
@@ -163,16 +163,16 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	            String filename = file.getOriginalFilename();
 	            File newFile;
                 if (overwrite) {
-                    newFile = new File(toSave, filename);
+                    newFile = new File(outputDirectory, filename);
                 } else {
-                    newFile = findUniqueFileName(toSave, filename);
+                    newFile = findUniqueFileName(outputDirectory, filename);
                 }
 	            try (OutputStream output = new FileOutputStream(newFile, false)) {
 	                try (InputStream input  = file.getInputStream()) {
 	                    StreamUtils.copy(input, output);
 	                }
 	            }
-                fileModels.add(fileToModel(newFile, toSave, request.getServletContext()));
+                fileModels.add(fileToModel(newFile, root, request.getServletContext()));
 		    }
 		}
 
@@ -236,7 +236,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         Path movedPath = java.nio.file.Files.move(srcPath, dstPath);
         File movedFile = new File(movedPath.toUri());
         
-        FileModel fileModel = fileToModel(movedFile, movedFile.getParentFile(), request.getServletContext());
+        FileModel fileModel = fileToModel(movedFile, root, request.getServletContext());
         return new ResponseEntity<>(fileModel, HttpStatus.OK);
     }
     
@@ -252,7 +252,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         if (!folder.mkdirs())
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, folder), fileStoreName));
 
-        FileModel fileModel = fileToModel(folder, folder.getParentFile(), request.getServletContext());
+        FileModel fileModel = fileToModel(folder, root, request.getServletContext());
         return new ResponseEntity<>(fileModel, HttpStatus.CREATED);
     }
 
@@ -343,16 +343,16 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		if (file.isFile()) {
 		    return getFile(file, download, request, response);
 		} else {
-		    return listStoreContents(file, request);
+		    return listStoreContents(file, root, request);
 		}
 	}
 
-	protected ResponseEntity<List<FileModel>> listStoreContents(File directory, HttpServletRequest request) throws IOException {
+	protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {
         Collection<File> files = Arrays.asList(directory.listFiles());
         List<FileModel> found = new ArrayList<>(files.size());
         
         for (File file : files)
-            found.add(fileToModel(file, directory, request.getServletContext()));
+            found.add(fileToModel(file, root, request.getServletContext()));
 
         Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_JSON_UTF8);
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
@@ -430,9 +430,10 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	    return name;
 	}
 	
-	public static FileModel fileToModel(File file, File relativeTo, ServletContext context) throws UnsupportedEncodingException {
+	public static FileModel fileToModel(File file, File root, ServletContext context) throws UnsupportedEncodingException {
 	    FileModel model = new FileModel();
-	    model.setFilename(removeToRoot(relativeTo, file));
+	    model.setFilename(file.getName());
+	    model.setFolderPath(URLDecoder.decode(root.toURI().relativize(file.getParentFile().toURI()).toString(), StandardCharsets.UTF_8.name()));
 	    model.setDirectory(file.isDirectory());
         model.setLastModified(new Date(file.lastModified()));
 	    model.setMimeType(context.getMimeType(file.getName()));
