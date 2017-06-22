@@ -10,8 +10,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -177,17 +180,19 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	}
 
     @ApiOperation(
-            value = "Create a folder in a file store with a path",
+            value = "Create a folder or move/rename an existing file or folder",
             notes = "Must have write access to the store"
             )
-    @RequestMapping(method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{name}/**")
+    @RequestMapping(method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{fileStoreName}/**")
     public ResponseEntity<FileModel> createNewFolder(
             @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
-            @PathVariable("name") String name,
+            @PathVariable("fileStoreName") String fileStoreName,
+            @ApiParam(value = "Move file/folder to", required = false, allowMultiple = false)
+            @RequestParam(required=false) String moveTo,
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) throws IOException {
+            HttpServletRequest request) throws IOException, URISyntaxException {
         
-        FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(name);
+        FileStoreDefinition def = ModuleRegistry.getFileStoreDefinition(fileStoreName);
         if (def == null)
             throw new NotFoundRestException();
 
@@ -197,28 +202,57 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         String pathInStore = parsePath(request);
         
         File root = def.getRoot().getCanonicalFile();
-        File toSave = new File(root, pathInStore).getCanonicalFile();
+        File fileOrFolder = new File(root, pathInStore).getCanonicalFile();
 
-        if (!toSave.toPath().startsWith(root.toPath())) {
+        if (!fileOrFolder.toPath().startsWith(root.toPath())) {
             throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
         }
         
-        if (toSave.exists()) {
-            if (toSave.isDirectory()) {
-                throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.directoryExists", removeToRoot(root, toSave), name));
+        if (moveTo == null) {
+            return createFolder(request, fileStoreName, root, fileOrFolder);
+        } else {
+            return moveFileOrFolder(request, fileStoreName, root, fileOrFolder, moveTo);
+        }
+    }
+    
+    private ResponseEntity<FileModel> moveFileOrFolder(HttpServletRequest request, String fileStoreName, File root, File fileOrFolder, String moveTo) throws IOException, URISyntaxException {
+        if (!fileOrFolder.exists()) {
+            throw new NotFoundRestException();
+        }
+
+        Path srcPath = fileOrFolder.toPath();
+        URI moveToUri = new URI(moveTo);
+        
+        File dstFile = new File(fileOrFolder.getParentFile().toURI().resolve(moveToUri)).getCanonicalFile();
+        Path dstPath = dstFile.toPath();
+        if (!dstPath.startsWith(root.toPath())) {
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", moveToUri.toString()));
+        }
+        
+        if (dstFile.isDirectory()) {
+            dstPath = dstPath.resolve(srcPath.getFileName());
+        }
+
+        Path movedPath = java.nio.file.Files.move(srcPath, dstPath);
+        File movedFile = new File(movedPath.toUri());
+        
+        FileModel fileModel = fileToModel(movedFile, movedFile.getParentFile(), request.getServletContext());
+        return new ResponseEntity<>(fileModel, HttpStatus.OK);
+    }
+    
+    private ResponseEntity<FileModel> createFolder(HttpServletRequest request, String fileStoreName, File root, File folder) throws IOException {
+        if (folder.exists()) {
+            if (folder.isDirectory()) {
+                throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.directoryExists", removeToRoot(root, folder), fileStoreName));
             } else {
-                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
+                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, folder), fileStoreName));
             }
         }
 
-        if(!toSave.exists()){
-            if(!toSave.mkdirs())
-                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, toSave), name));
-        }
-        
-        //Put the file where it belongs
-        FileModel fileModel = fileToModel(toSave, toSave.getParentFile(), request.getServletContext());
+        if (!folder.mkdirs())
+            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir", removeToRoot(root, folder), fileStoreName));
 
+        FileModel fileModel = fileToModel(folder, folder.getParentFile(), request.getServletContext());
         return new ResponseEntity<>(fileModel, HttpStatus.CREATED);
     }
 
