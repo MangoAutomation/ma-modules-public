@@ -80,9 +80,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     final String cacheControlHeader;
     
     public FileStoreRestV2Controller() {
-        boolean resourcesNoStore = Common.envProps.getBoolean("web.cache.noStore.resources", false);
-        cacheControlHeader = resourcesNoStore ? MangoShallowEtagHeaderFilter.NO_STORE :
-            String.format(MangoShallowEtagHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.resources", 86400L));
+        // use the rest max age setting but dont honor the nocache setting
+        cacheControlHeader = String.format(MangoShallowEtagHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.rest", 0L));
     }
     
 	@ApiOperation(
