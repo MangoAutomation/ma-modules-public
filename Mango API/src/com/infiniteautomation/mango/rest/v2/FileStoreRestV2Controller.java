@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -180,7 +181,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	}
 
     @ApiOperation(
-            value = "Create a folder or move/rename an existing file or folder",
+            value = "Create a folder or copy/move/rename an existing file or folder",
             notes = "Must have write access to the store"
             )
     @RequestMapping(method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{fileStoreName}/**")
@@ -189,6 +190,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             @PathVariable("fileStoreName") String fileStoreName,
             @ApiParam(value = "Move file/folder to", required = false, allowMultiple = false)
             @RequestParam(required=false) String moveTo,
+            @ApiParam(value = "Copy file/folder to", required = false, allowMultiple = false)
+            @RequestParam(required=false) String copyTo,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, URISyntaxException {
         
@@ -208,10 +211,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
         }
         
-        if (moveTo == null) {
-            return createFolder(request, fileStoreName, root, fileOrFolder);
-        } else {
+        if (copyTo != null) {
+            return copyFileOrFolder(request, fileStoreName, root, fileOrFolder, copyTo);
+        } else if (moveTo != null) {
             return moveFileOrFolder(request, fileStoreName, root, fileOrFolder, moveTo);
+        } else {
+            return createFolder(request, fileStoreName, root, fileOrFolder);
         }
     }
     
@@ -233,10 +238,48 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             dstPath = dstPath.resolve(srcPath.getFileName());
         }
 
-        Path movedPath = java.nio.file.Files.move(srcPath, dstPath);
+        Path movedPath;
+        try {
+            movedPath = java.nio.file.Files.move(srcPath, dstPath);
+        } catch (FileAlreadyExistsException e) {
+            throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileExists", dstPath.getFileName()));
+        }
         File movedFile = new File(movedPath.toUri());
         
         FileModel fileModel = fileToModel(movedFile, root, request.getServletContext());
+        return new ResponseEntity<>(fileModel, HttpStatus.OK);
+    }
+    
+    private ResponseEntity<FileModel> copyFileOrFolder(HttpServletRequest request, String fileStoreName, File root, File srcFile, String dst) throws IOException, URISyntaxException {
+        if (!srcFile.exists()) {
+            throw new NotFoundRestException();
+        }
+        if (srcFile.isDirectory()) {
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, new TranslatableMessage("filestore.cantCopyDirectory"));
+        }
+
+        Path srcPath = srcFile.toPath();
+        URI dstUri = new URI(dst);
+        
+        File dstFile = new File(srcFile.getParentFile().toURI().resolve(dstUri)).getCanonicalFile();
+        Path dstPath = dstFile.toPath();
+        if (!dstPath.startsWith(root.toPath())) {
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", dstUri.toString()));
+        }
+        
+        if (dstFile.isDirectory()) {
+            dstPath = dstPath.resolve(srcPath.getFileName());
+        }
+
+        Path copiedPath;
+        try {
+            copiedPath = java.nio.file.Files.copy(srcPath, dstPath);
+        } catch (FileAlreadyExistsException e) {
+            throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileExists", dstPath.getFileName()));
+        }
+        File copiedFile = new File(copiedPath.toUri());
+        
+        FileModel fileModel = fileToModel(copiedFile, root, request.getServletContext());
         return new ResponseEntity<>(fileModel, HttpStatus.OK);
     }
     
