@@ -376,8 +376,7 @@ public class ModulesRestController extends MangoRestController {
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "Get the update license payload, to make requests to store", notes = "Admin Only")
 	@RequestMapping(
-				method = RequestMethod.GET, 
-				consumes = { "application/json" }, 
+				method = RequestMethod.GET,
 				produces = { "application/json" }, 
 				value = "/update-license-payload")
 	public ResponseEntity<UpdateLicensePayloadModel> getUpdateLicensePayload(HttpServletRequest request) {
@@ -391,12 +390,14 @@ public class ModulesRestController extends MangoRestController {
 		for (Module module : modules) {
             jsonModules.put(module.getName(), module.getVersion().toString());
         }
+		
+		String storeUrl = Common.envProps.getString("store.url");
 
 		return new ResponseEntity<>(new UpdateLicensePayloadModel(
 				Providers.get(ICoreLicense.class).getGuid(),
 				SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION),
 				Common.envProps.getString("distributor"),
-				jsonModules), HttpStatus.OK);
+				jsonModules, storeUrl), HttpStatus.OK);
 	}
 
 	

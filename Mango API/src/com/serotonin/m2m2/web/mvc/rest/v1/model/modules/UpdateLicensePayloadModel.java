@@ -15,6 +15,7 @@ public class UpdateLicensePayloadModel{
 	private String description;
 	private String distributor;
 	private Map<String, String> modules;
+    private String storeUrl;
 	
 	public UpdateLicensePayloadModel(){ }
 
@@ -25,12 +26,13 @@ public class UpdateLicensePayloadModel{
 	 * @param modules
 	 */
 	public UpdateLicensePayloadModel(String guid, String description, String distributor,
-			Map<String, String> modules) {
+			Map<String, String> modules, String storeUrl) {
 		super();
 		this.guid = guid;
 		this.description = description;
 		this.distributor = distributor;
 		this.modules = modules;
+		this.storeUrl = storeUrl;
 	}
 
 	public String getGuid() {
@@ -64,4 +66,12 @@ public class UpdateLicensePayloadModel{
 	public void setModules(Map<String, String> modules) {
 		this.modules = modules;
 	}
+
+    public String getStoreUrl() {
+        return storeUrl;
+    }
+
+    public void setStoreUrl(String storeUrl) {
+        this.storeUrl = storeUrl;
+    }
 }
