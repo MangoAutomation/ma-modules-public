@@ -48,6 +48,7 @@ import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.CredentialsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.AngularJSModuleDefinitionGroupModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.CoreModuleModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
@@ -405,7 +406,12 @@ public class ModulesRestController extends MangoRestController {
 	 * @return
 	 */
 	private ModuleModel getCoreModule() {
-		return new ModuleModel(ModuleRegistry.getCoreModule());
+	    CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getCoreModule());
+	    coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
+        coreModel.setInstanceDescription(SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        coreModel.setDistributor(Common.envProps.getString("distributor"));
+        coreModel.setUpgradeVersionState(SystemSettingsDao.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+	    return coreModel;
 	}
 	
     private void saveLicense(String license) throws Exception {
