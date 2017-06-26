@@ -1,3 +1,9 @@
+*Version 3.1.2*
+* Set cache control header for filestore GET
+* Add move/copy operations to the filestore API
+* Return more information in core module model
+* Return store url in update license model
+
 *Version 3.1.1*
 * Improvements to filestore API
 * Improvements to module API
