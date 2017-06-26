@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -225,12 +224,11 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         }
 
         Path srcPath = fileOrFolder.toPath();
-        URI moveToUri = new URI(moveTo);
         
-        File dstFile = new File(fileOrFolder.getParentFile().toURI().resolve(moveToUri)).getCanonicalFile();
+        File dstFile = new File(fileOrFolder.getParentFile(), moveTo).getCanonicalFile();
         Path dstPath = dstFile.toPath();
         if (!dstPath.startsWith(root.toPath())) {
-            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", moveToUri.toString()));
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", moveTo));
         }
         
         if (dstFile.isDirectory()) {
@@ -258,12 +256,11 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         }
 
         Path srcPath = srcFile.toPath();
-        URI dstUri = new URI(dst);
         
-        File dstFile = new File(srcFile.getParentFile().toURI().resolve(dstUri)).getCanonicalFile();
+        File dstFile = new File(srcFile.getParentFile(), dst).getCanonicalFile();
         Path dstPath = dstFile.toPath();
         if (!dstPath.startsWith(root.toPath())) {
-            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", dstUri.toString()));
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", dst));
         }
         
         if (dstFile.isDirectory()) {
@@ -465,17 +462,22 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	 * @throws UnsupportedEncodingException 
 	 */
     public static String removeToRoot(File root, File file) throws UnsupportedEncodingException {
-	    String name = URLDecoder.decode(root.toURI().relativize(file.toURI()).toString(), StandardCharsets.UTF_8.name());
-	    if (file.isDirectory() && name.endsWith("/")) {
-	        name = name.substring(0, name.length() - 1);
+        Path relativePath = root.toPath().relativize(file.toPath());
+        String relativePathStr = relativePath.toString().replace(File.separatorChar, '/');
+
+	    if (file.isDirectory() && relativePathStr.endsWith("/")) {
+	        relativePathStr = relativePathStr.substring(0, relativePathStr.length() - 1);
 	    }
-	    return name;
+	    return relativePathStr;
 	}
 	
 	public static FileModel fileToModel(File file, File root, ServletContext context) throws UnsupportedEncodingException {
+        Path relativeFolderPath = root.toPath().relativize(file.getParentFile().toPath());
+        String relativeFolderPathStr = relativeFolderPath.toString().replace(File.separatorChar, '/');
+	    
 	    FileModel model = new FileModel();
 	    model.setFilename(file.getName());
-	    model.setFolderPath(URLDecoder.decode(root.toURI().relativize(file.getParentFile().toURI()).toString(), StandardCharsets.UTF_8.name()));
+	    model.setFolderPath(relativeFolderPathStr);
 	    model.setDirectory(file.isDirectory());
         model.setLastModified(new Date(file.lastModified()));
 	    model.setMimeType(context.getMimeType(file.getName()));
