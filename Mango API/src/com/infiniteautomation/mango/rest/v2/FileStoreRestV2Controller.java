@@ -62,7 +62,6 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.FileStoreDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.filter.MangoShallowEtagHeaderFilter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -81,7 +80,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     
     public FileStoreRestV2Controller() {
         // use the rest max age setting but dont honor the nocache setting
-        cacheControlHeader = String.format(MangoShallowEtagHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.rest", 0L));
+        cacheControlHeader = String.format("max-age=%d, must-revalidate", Common.envProps.getLong("web.cache.maxAge.rest", 0L));
     }
     
 	@ApiOperation(
