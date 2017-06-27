@@ -110,7 +110,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	@ApiOperation(value = "Restart Mango", notes="Returns location url in header for status updates while web interface is still active")
 	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/restart")
     public ResponseEntity<Void> restart(UriComponentsBuilder builder, HttpServletRequest request) {
-		ProcessResult r = ModulesDwr.scheduleShutdown();
+		ProcessResult r = ModulesDwr.scheduleRestart();
 		if(r.getData().get("shutdownUri") != null){
             URI location = builder.path("/status/mango").buildAndExpand().toUri();
 	    	return getResourceCreated(null, location.toString());

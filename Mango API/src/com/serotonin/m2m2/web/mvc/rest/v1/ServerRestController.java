@@ -219,7 +219,7 @@ public class ServerRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		if(Permissions.hasAdmin(user)){
-    			ProcessResult r = ModulesDwr.scheduleShutdown();
+    			ProcessResult r = ModulesDwr.scheduleRestart();
     			if(r.getData().get("shutdownUri") != null){
     				//TODO Make SystemStatus web socket and push out message around shutdown
     	            URI location = builder.path("/status/mango").buildAndExpand().toUri();
