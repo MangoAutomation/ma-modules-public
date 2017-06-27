@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +26,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
  * @author Jared Wiltshire
  */
 @Api(value="Permissions", description="Lists permissions and their system setting keys")
+@PreAuthorize("isAdmin()")
 @RestController
 @RequestMapping("/v2/permissions")
 public class PermissionsRestController {
@@ -34,8 +34,7 @@ public class PermissionsRestController {
     @ApiOperation(
         value = "List permissions and their system setting keys"
     )
-    @PreAuthorize("isAdmin()")
-    @RequestMapping(method = RequestMethod.GET, produces={MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<PermissionDefinitionModel>> listPermissions() {
         List<PermissionDefinitionModel> permissions = new ArrayList<>();
 

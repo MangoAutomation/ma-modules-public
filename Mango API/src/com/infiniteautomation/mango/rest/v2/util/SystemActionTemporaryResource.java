@@ -38,6 +38,10 @@ public class SystemActionTemporaryResource extends MangoRestTemporaryResource{
 		return this.task.getResults();
 	}
 	
+	public boolean isFinished() {
+        return this.task.isFinished();
+    }
+	
 	public void cancel(){
 		this.task.cancel();
 	}
