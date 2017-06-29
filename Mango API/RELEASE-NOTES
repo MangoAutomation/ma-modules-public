@@ -6,6 +6,7 @@
 * Adding virtual serial port endpoints @ rest/v2/virtual-serial-ports
 * Adding file store endpoints to save and retrieve files @ rest/v2/file-store
 * Adding server information endpoints rest/v2/server/system-info
+* Fixing API restart to restart instead of shutdown.
 
 *Version 3.0.0*
 * Upgraded to work with core version 3.0.x
