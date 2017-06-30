@@ -271,8 +271,6 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 				result.addRestMessage(this.getAlreadyExistsMessage());
 				return result.createResponseEntity();
 			} else {
-				ProcessResult validation = new ProcessResult();
-				vo.validate(validation);
 				if(!model.validate() || !Permissions.hasPermission(vo.getEditPermission(), user.getPermissions())) {
 					result.addRestMessage(this.getValidationFailedError());
 					return result.createResponseEntity(model);
