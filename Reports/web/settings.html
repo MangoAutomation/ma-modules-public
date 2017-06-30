@@ -1,0 +1,24 @@
+<div layout layout-wrap>
+  <ma-system-setting-editor flex="100" flex-gt-md="50" label-tr="systemSettings.purgeReports" key="reports.REPORT_PURGE_PERIODS" type="INTEGER" min="1" step="1">
+  </ma-system-setting-editor>
+  <ma-system-setting-editor flex="100" flex-gt-md="50" label-tr="systemSettings.purgeReports" key="reports.REPORT_PURGE_PERIOD_TYPE" type="INTEGER" input-type="select">
+    <md-option ng-value="4"><span ma-tr="common.tp.days"></span></md-option>
+    <md-option ng-value="5"><span ma-tr="common.tp.weeks"></span></md-option>
+    <md-option ng-value="6"><span ma-tr="common.tp.months"></span></md-option>
+    <md-option ng-value="7"><span ma-tr="common.tp.years"></span></md-option>
+  </ma-system-setting-editor>
+  <ma-system-setting-editor flex="100" flex-gt-md="50" label-tr="systemSettings.workItemPriority" key="reports.REPORT_WORK_ITEM_PRIORITY" type="INTEGER" input-type="select">
+    <md-option ng-value="1"><span ma-tr="systemSettings.reports.highPriority"></span></md-option>
+    <md-option ng-value="2"><span ma-tr="systemSettings.reports.mediumPriority"></span></md-option>
+    <md-option ng-value="3"><span ma-tr="systemSettings.reports.lowPriority"></span></md-option>
+  </ma-system-setting-editor>
+</div>
+
+<div layout="row" layout-align="start start">
+  <md-button class="md-raised md-warn md-hue-3" ng-click="$ctrl.purgeReports($event, false)">
+    <md-icon>delete</md-icon>&nbsp;<span ma-tr="systemSettings.purgeNow"></span>
+  </md-button>
+  <md-button class="md-raised md-warn" ng-click="$ctrl.purgeReports($event, true)">
+    <md-icon>delete_forever</md-icon>&nbsp;<span ma-tr="systemSettings.reports.purgeAllNow"></span>
+  </md-button>
+</div>

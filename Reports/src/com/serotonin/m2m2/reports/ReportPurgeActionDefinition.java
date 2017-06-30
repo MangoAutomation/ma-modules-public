@@ -22,7 +22,7 @@ import com.serotonin.timer.OneTimeTrigger;
  */
 public class ReportPurgeActionDefinition extends SystemActionDefinition{
 
-	private final String KEY = "reportPurgeUsingSettings";
+	private final String KEY = "reportPurge";
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.SystemActionDefinition#getKey()
 	 */
@@ -36,7 +36,11 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 	 */
 	@Override
 	public SystemActionTask getTaskImpl(final JsonNode input) {
-		return new Action();
+	    boolean purgeAll = false;
+	    if (input != null && input.has("purgeAll")) {
+	        purgeAll = input.get("purgeAll").asBoolean();
+	    }
+		return new Action(purgeAll);
 	}
 	
 	/* (non-Javadoc)
@@ -62,9 +66,11 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 	 * @author Terry Packer
 	 */
 	class Action extends SystemActionTask{
-		
-		public Action(){
+	    boolean purgeAll;
+	    
+		public Action(boolean purgeAll){
 			super(new OneTimeTrigger(0l), "Purge Reports Status Poller", "REPORT_PURGE_POLLER", 5);
+			this.purgeAll = purgeAll;
 		}
 
 		/* (non-Javadoc)
@@ -77,7 +83,7 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 	                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE, Common.TimePeriods.MONTHS),
 	                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS, 1));
 
-	        int cnt = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
+	        int cnt = ReportDao.instance.purgeReportsBefore(purgeAll ? Common.timer.currentTimeMillis() : cutoff.getMillis());
 	        if (cnt > 0)
 	            LOG.info("Report purge ended, " + cnt + " report instances deleted");
 
