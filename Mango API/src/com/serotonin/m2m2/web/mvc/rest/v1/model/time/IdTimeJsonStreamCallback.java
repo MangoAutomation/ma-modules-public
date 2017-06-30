@@ -56,6 +56,18 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 		this.objectOpen = false;
 		this.limiter = new LimitCounter(limit);
 	}
+
+	/**
+	 * For compatibility with NoSQL in 3.1.x
+	 * @param writer
+	 * @param jgen
+	 * @param voMap
+	 */
+	public IdTimeJsonStreamCallback(XidTimeJsonWriter<T> writer, JsonGenerator jgen, Map<Integer, DataPointVO> voMap){
+		this(writer, jgen, voMap, null);
+	}
+
+	
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.db.MappedRowCallback#row(java.lang.Object, int)
