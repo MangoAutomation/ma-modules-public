@@ -77,13 +77,21 @@ public class IdPointValueTimeLatestPointValueFacadeStream implements QueryArrayS
 
 		//Sort it all
 		Collections.sort(ipvts, new Comparator<IdPointValueTime>(){
+			//Compare such that data sets are returned in time descending order
+			// which turns out is opposite of compare to method for PointValueTime objects
 			@Override
 			public int compare(IdPointValueTime o1, IdPointValueTime o2) {
-				return Long.compare(o1.getTime(), o2.getTime());
+		        if (o1.getTime() < o2.getTime())
+		            return 1;
+		        if (o1.getTime() > o2.getTime())
+		            return -1;
+		        return 0;
 			}
 		});
+		
 		for(int i=0; i<ipvts.size(); i++)
 			callback.row(ipvts.get(i), i);
+		
 		callback.finish();
 	}
 
