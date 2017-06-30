@@ -77,7 +77,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 			response=TimezoneModel.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/timezones")
+	@RequestMapping(method = RequestMethod.GET, value="/timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(HttpServletRequest request) {
 		ASTNode root = this.parseRQLtoAST(request);
 		List<TimezoneModel> list = root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
@@ -87,7 +87,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "Send a test email", notes="Sends email to supplied address")
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/email/test")
+	@RequestMapping(method = RequestMethod.PUT, value = "/email/test")
     public ResponseEntity<String> sendTestEmail(
     		@RequestParam(value = "email", required = true, defaultValue = "") String email,
     		@RequestParam(value = "username", required = true, defaultValue = "") String username,
@@ -108,7 +108,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "Restart Mango", notes="Returns location url in header for status updates while web interface is still active")
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/restart")
+	@RequestMapping(method = RequestMethod.PUT, value = "/restart")
     public ResponseEntity<Void> restart(UriComponentsBuilder builder, HttpServletRequest request) {
 		ProcessResult r = ModulesDwr.scheduleRestart();
 		if(r.getData().get("shutdownUri") != null){
@@ -122,7 +122,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "List session information for all sessions", notes = "Admin only")
-	@RequestMapping(method = RequestMethod.GET,  value="/http-sessions", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET,  value="/http-sessions")
 	public ResponseEntity<List<SessionInformation>> listSessions(
             @AuthenticationPrincipal User user,
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -145,7 +145,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 	@ApiResponses({
 		@ApiResponse(code = 500, message = "Internal error", response=ResponseEntity.class),
 	})
-	@RequestMapping( method = {RequestMethod.GET}, produces = {"application/json"}, value="system-info" )
+	@RequestMapping( method = {RequestMethod.GET}, value="system-info" )
 	public ResponseEntity<Map<String, Object>> getSystemInfo(@AuthenticationPrincipal User user) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		for(SystemInfoDefinition<?> def : ModuleRegistry.getSystemInfoDefinitions().values())
@@ -159,7 +159,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller{
 		@ApiResponse(code = 500, message = "Internal error", response=ResponseEntity.class),
 		@ApiResponse(code = 404, message = "Not Found", response=ResponseEntity.class),
 	})
-	@RequestMapping( method = {RequestMethod.GET}, value="/system-info/{key}", produces = {"application/json"} )
+	@RequestMapping( method = {RequestMethod.GET}, value="/system-info/{key}")
 	public ResponseEntity<Object> getOne(@AuthenticationPrincipal User user,
 			@ApiParam(value = "Valid System Info Key", required = true, allowMultiple = false)
 			@PathVariable String key) {
