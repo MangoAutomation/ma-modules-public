@@ -42,8 +42,8 @@ public class IdPointValueTimeJsonStreamCallback extends IdTimeJsonStreamCallback
 	/**
 	 * @param jgen
 	 */
-	public IdPointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, Map<Integer,DataPointVO> voMap, boolean useRendered,  boolean unitConversion) {
-		super(new XidPointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion), jgen, voMap );
+	public IdPointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, Map<Integer,DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit) {
+		super(new XidPointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion), jgen, voMap, limit);
 	}
 	
 }

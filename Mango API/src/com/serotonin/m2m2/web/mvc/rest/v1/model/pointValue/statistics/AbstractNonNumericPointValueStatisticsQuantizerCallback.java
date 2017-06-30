@@ -14,6 +14,7 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
@@ -27,6 +28,7 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	private RollupEnum rollup;
 	private PointValueTimeWriter writer;
 	private final DataPointVO vo;
+	private final LimitCounter limiter;
 	
 
 	/**
@@ -34,10 +36,11 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	 * @param writer
 	 * @param rollup
 	 */
-	public AbstractNonNumericPointValueStatisticsQuantizerCallback(DataPointVO vo, PointValueTimeWriter writer, RollupEnum rollup) {
+	public AbstractNonNumericPointValueStatisticsQuantizerCallback(DataPointVO vo, PointValueTimeWriter writer, RollupEnum rollup, Integer limit) {
 		this.vo = vo;
 		this.writer= writer;
 		this.rollup = rollup;
+		this.limiter = new LimitCounter(limit);
 	}
 
 	/* (non-Javadoc)
@@ -45,6 +48,9 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	 */
 	@Override
     public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
+		if(this.limiter.limited())
+			return;
+		
 		try{
 	            switch(rollup){
 	            case ALL:

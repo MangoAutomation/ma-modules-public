@@ -13,6 +13,7 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
@@ -27,22 +28,26 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	private RollupEnum rollup;
 	private PointValueTimeWriter writer;
 	private final DataPointVO vo;
+	private final LimitCounter limiter;
 
 	/**
 	 * 
 	 * @param writer
 	 * @param rollup
 	 */
-	public AbstractNumericPointValueStatisticsQuantizerCallback(DataPointVO vo, PointValueTimeWriter writer, RollupEnum rollup) {
+	public AbstractNumericPointValueStatisticsQuantizerCallback(DataPointVO vo, PointValueTimeWriter writer, RollupEnum rollup, Integer limit) {
 		this.vo = vo;
 		this.writer = writer;
 		this.rollup = rollup;
+		this.limiter = new LimitCounter(limit);
 	}	
 	
 	
 	@Override
     public void quantizedStatistics(AnalogStatistics statisticsGenerator, boolean done) {
-
+		if(this.limiter.limited())
+			return;
+		
 		try{
 //	        if (statisticsGenerator.getCount() > 0 || !done) {
 	            switch(rollup){

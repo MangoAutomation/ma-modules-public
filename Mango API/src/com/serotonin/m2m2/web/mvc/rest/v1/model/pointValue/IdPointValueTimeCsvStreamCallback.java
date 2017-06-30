@@ -35,6 +35,7 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	private final Log LOG = LogFactory.getLog(PointValueTimeJsonStreamCallback.class);
 	private final String TIMESTAMP = "timestamp";
 	
+	private final LimitCounter limiter;
 	private final Map<Integer, DataPointVO> voMap;
 	private long currentTime;
 	
@@ -47,8 +48,9 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	/**
 	 * @param jgen
 	 */
-	public IdPointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion) {
+	public IdPointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit) {
 		super(host, port, writer, useRendered, unitConversion);
+		this.limiter = new LimitCounter(limit);
 		this.voMap = voMap;
 		this.currentTime = Long.MIN_VALUE;
 		
@@ -77,6 +79,7 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	 */
 	@Override
 	public void row(IdPointValueTime pvt, int index) {
+		
 		try{
 			DataPointVO vo = this.voMap.get(pvt.getId());
 			long time = pvt.getTime();
@@ -90,6 +93,8 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 					this.wroteHeaders = true;
 				}else{
 					//Write the line
+					if(this.limiter.limited())
+						return;
 					this.writer.writeNext(rowData);
 					for(int i=0; i< this.rowData.length; i++)
 						this.rowData[i] = new String();
@@ -142,7 +147,7 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	 * @throws IOException
 	 */
 	public void finish(){
-		if(this.wroteHeaders){
+		if((this.wroteHeaders)&&(!this.limiter.limited())){
 			this.writer.writeNext(rowData);
 		}
 	}

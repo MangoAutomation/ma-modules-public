@@ -18,6 +18,7 @@ import com.serotonin.m2m2.view.stats.AnalogStatistics;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeJsonWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.statistics.ParentStatisticsQuantizerCallback;
@@ -32,8 +33,9 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 			
 
 	
-	protected RollupEnum rollup;
-	protected Map<Integer, DataPointVO> voMap;
+	protected final RollupEnum rollup;
+	protected final Map<Integer, DataPointVO> voMap;
+	protected final LimitCounter limiter;
 	
 	/**
 	 * @param jgen
@@ -43,10 +45,11 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 	 * @param rollup
 	 */
 	public IdPointValueStatisticsQuantizerJsonCallback(String host, int port, JsonGenerator jgen, Map<Integer, DataPointVO> voMap,
-			boolean useRendered, boolean unitConversion, RollupEnum rollup) {
+			boolean useRendered, boolean unitConversion, RollupEnum rollup, Integer limit) {
 		super(host, port, jgen, useRendered, unitConversion);
 		this.voMap = voMap;
 		this.rollup = rollup;
+		this.limiter = new LimitCounter(limit);
 	}
 
 	/* (non-Javadoc)
@@ -54,6 +57,8 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 	 */
 	@Override
 	public void closePeriod(Map<Integer, StatisticsGenerator> periodStatsMap, long periodStartTime) {
+		if(limiter.limited())
+			return;
 		
 		try{
 			//Write out the period start time

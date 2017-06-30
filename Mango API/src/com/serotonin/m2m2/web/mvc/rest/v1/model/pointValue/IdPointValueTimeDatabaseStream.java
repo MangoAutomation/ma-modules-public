@@ -34,6 +34,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	private long from;
 	private long to;
 	private PointValueDao dao;
+	private final Integer limit;
 
 	private final Map<Integer,DataPointVO> pointMap;
 	
@@ -42,7 +43,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	 * @param from
 	 * @param to
 	 */
-	public IdPointValueTimeDatabaseStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao) {
+	public IdPointValueTimeDatabaseStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit) {
 		this.host = host;
 		this.port = port;
 		this.pointMap = pointMap;
@@ -51,6 +52,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 		this.from = from;
 		this.to = to;
 		this.dao = dao;
+		this.limit = limit;
 	}
 
 	/* (non-Javadoc)
@@ -58,7 +60,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) {
-		IdPointValueTimeJsonStreamCallback callback = new IdPointValueTimeJsonStreamCallback(host, port, jgen, pointMap, useRendered, unitConversion);
+		IdPointValueTimeJsonStreamCallback callback = new IdPointValueTimeJsonStreamCallback(host, port, jgen, pointMap, useRendered, unitConversion, limit);
 		this.dao.getPointValuesBetween(new ArrayList<Integer>(pointMap.keySet()), from, to, callback);
 		callback.finish();
 	}
@@ -69,7 +71,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	@Override
 	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
 			throws IOException {
-		IdPointValueTimeCsvStreamCallback callback = new IdPointValueTimeCsvStreamCallback(host, port, writer.getWriter(), pointMap, useRendered, unitConversion);
+		IdPointValueTimeCsvStreamCallback callback = new IdPointValueTimeCsvStreamCallback(host, port, writer.getWriter(), pointMap, useRendered, unitConversion, limit);
 		this.dao.getPointValuesBetween(new ArrayList<Integer>(pointMap.keySet()), from, to, callback);
 		callback.finish();
 	}

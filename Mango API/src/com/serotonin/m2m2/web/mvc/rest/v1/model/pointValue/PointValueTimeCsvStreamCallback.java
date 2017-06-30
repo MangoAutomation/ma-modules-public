@@ -32,14 +32,16 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 
 	private Translations translations;
 	private DataPointVO vo;
+	private final LimitCounter limiter;
 	
 	/**
 	 * @param jgen
 	 */
-	public PointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders) {
+	public PointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders, Integer limit) {
 		super(host, port, writer, useRendered, unitConversion, writeXid, writeHeaders);
 		this.translations = Common.getTranslations();
 		this.vo = vo;
+		this.limiter = new LimitCounter(limit);
 	}
 
 	/* (non-Javadoc)
@@ -47,6 +49,9 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	 */
 	@Override
 	public void row(PointValueTime pvt, int index) {
+		if(this.limiter.limited())
+			return;
+		
 		try{
 			String annotation = null;
 			if(pvt.isAnnotated())

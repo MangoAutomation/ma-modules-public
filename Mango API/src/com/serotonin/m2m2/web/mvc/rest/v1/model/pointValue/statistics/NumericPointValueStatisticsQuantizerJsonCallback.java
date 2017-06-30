@@ -25,8 +25,8 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends AbstractNu
 	 * @param rollup
 	 */
 	public NumericPointValueStatisticsQuantizerJsonCallback(String host, int port, JsonGenerator jgen, DataPointVO vo, 
-			boolean useRendered,  boolean unitConversion, RollupEnum rollup) {
-		super(vo, new PointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion), rollup);
+			boolean useRendered,  boolean unitConversion, RollupEnum rollup, Integer limit) {
+		super(vo, new PointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion), rollup, limit);
 	}	
 	
 }

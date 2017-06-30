@@ -27,8 +27,8 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	 */
 	public NonNumericPointValueStatisticsQuantizerCsvCallback(String host, int port,
 			CSVWriter writer, DataPointVO vo, boolean useRendered, 
-			boolean unitConversion, RollupEnum rollup) {
-		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true);
+			boolean unitConversion, RollupEnum rollup, Integer limit) {
+		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true, limit);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	public NonNumericPointValueStatisticsQuantizerCsvCallback(String host, int port,
 			CSVWriter writer, DataPointVO vo, boolean useRendered,
 			boolean unitConversion, RollupEnum rollup, boolean writeXidColumn,
-			boolean writeHeaders) {
-		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup);
+			boolean writeHeaders, Integer limit) {
+		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup, limit);
 	}
 }
