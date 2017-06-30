@@ -39,13 +39,14 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 	private long to;
 	private PointValueDao dao;
 	private final Map<Integer,DataPointVO> pointMap;
+	private final Integer limit;
 	
 	/**
 	 * @param id
 	 * @param from
 	 * @param to
 	 */
-	public XidPointValueTimeMapDatabaseStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao) {
+	public XidPointValueTimeMapDatabaseStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit) {
 		this.host = host;
 		this.port = port;
 		this.pointMap = pointMap;
@@ -54,6 +55,7 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 		this.from = from;
 		this.to = to;
 		this.dao = dao;
+		this.limit = limit;
 	}
 
 	/*
@@ -67,7 +69,7 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 			DataPointVO vo = this.pointMap.get(it.next());
 			try {
 				jgen.writeArrayFieldStart(vo.getXid());
-				PointValueTimeJsonStreamCallback callback = new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion);
+				PointValueTimeJsonStreamCallback callback = new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion, limit);
 				this.dao.getPointValuesBetween(vo.getId(), from, to, callback);
 				jgen.writeEndArray();
 			} catch (IOException e) {
@@ -88,7 +90,7 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 		boolean writeHeaders = true;
 		while(it.hasNext()){
 			DataPointVO vo = this.pointMap.get(it.next());
-			PointValueTimeCsvStreamCallback callback = new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, true, writeHeaders);
+			PointValueTimeCsvStreamCallback callback = new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, true, writeHeaders, limit);
 			this.dao.getPointValuesBetween(vo.getId(), from, to, callback);
 			writeHeaders = false;
 		}

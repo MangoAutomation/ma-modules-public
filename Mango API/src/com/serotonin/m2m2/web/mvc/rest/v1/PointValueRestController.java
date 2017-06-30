@@ -659,7 +659,7 @@ public class PointValueRestController extends MangoRestController{
 
 	@ApiOperation(
 			value = "Query Time Range for Multiple Points",
-			notes = "From time inclusive, To time exclusive. Return in single array",
+			notes = "From time inclusive, To time exclusive. Return in single array, use limit if provided",
 			response=PointValueTimeModel.class,
 			responseContainer="List"
 			)
@@ -700,7 +700,11 @@ public class PointValueRestController extends MangoRestController{
             
             @ApiParam(value = "Time zone", required = false, allowMultiple = false)
             @RequestParam(value="timezone", required=false)
-            String timezone
+            String timezone,
+            
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
+            @RequestParam(value="limit", required=false)
+            Integer limit
     		){
         
     	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
@@ -755,12 +759,12 @@ public class PointValueRestController extends MangoRestController{
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
-	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from, to);
+	    				IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from, to, limit);
 	    				return result.createResponseEntity(calc);
     				}
     				return result.createResponseEntity();
     			}else{
-    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao);
+    				IdPointValueTimeDatabaseStream pvtDatabaseStream = new IdPointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao, limit);
 	    			return result.createResponseEntity(pvtDatabaseStream);
     			}
 	    			
@@ -777,7 +781,7 @@ public class PointValueRestController extends MangoRestController{
 	
 	@ApiOperation(
 			value = "Query Time Range for Multiple Points",
-			notes = "From time inclusive, To time exclusive.  Returns a map of xid to values",
+			notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays",
 			response=PointValueTimeModel.class,
 			responseContainer="List"
 			)
@@ -818,7 +822,11 @@ public class PointValueRestController extends MangoRestController{
             
             @ApiParam(value = "Time zone", required = false, allowMultiple = false)
             @RequestParam(value="timezone", required=false)
-            String timezone
+            String timezone,
+            
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
+            @RequestParam(value="limit", required=false)
+            Integer limit
     		){
         
     	RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>> result = new RestProcessResult<ObjectStream<Map<String, List<PointValueTime>>>>(HttpStatus.OK);
@@ -873,12 +881,12 @@ public class PointValueRestController extends MangoRestController{
 	    				if((timePeriodType != null)&&(timePeriods != null)){
 	    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 	    				}
-	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from, to);
+	    				XidPointValueMapRollupCalculator calc = new XidPointValueMapRollupCalculator(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, rollup, timePeriod, from, to, limit);
 	    				return result.createResponseEntity(calc);
     				}
     				return result.createResponseEntity();
     			}else{
-    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao);
+    				XidPointValueTimeMapDatabaseStream pvtDatabaseStream = new XidPointValueTimeMapDatabaseStream(request.getServerName(), request.getServerPort(), pointIdMap, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao, limit);
 	    			return result.createResponseEntity(pvtDatabaseStream);
     			}
 	    	}catch(PermissionException e){
@@ -934,7 +942,11 @@ public class PointValueRestController extends MangoRestController{
     		
     		@ApiParam(value = "Time zone", required = false, allowMultiple = false)
             @RequestParam(value="timezone", required=false)
-            String timezone
+            String timezone,
+            
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
+            @RequestParam(value="limit", required=false)
+            Integer limit
     		){
         
     	RestProcessResult<QueryArrayStream<PointValueTimeModel>> result = new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
@@ -975,11 +987,11 @@ public class PointValueRestController extends MangoRestController{
 		    				if((timePeriodType != null)&&(timePeriods != null)){
 		    					timePeriod = new TimePeriod(timePeriods, timePeriodType);
 		    				}
-		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, rollup, timePeriod, from, to);
+		    				PointValueRollupCalculator calc = new PointValueRollupCalculator(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, rollup, timePeriod, from, to, limit);
 		    				return result.createResponseEntity(calc);
 	    				}
 	    			}else{
-	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao);
+	    				PointValueTimeDatabaseStream pvtDatabaseStream = new PointValueTimeDatabaseStream(request.getServerName(), request.getServerPort(), vo, useRendered, unitConversion, from.getMillis(), to.getMillis(), this.dao, limit);
 		    			return result.createResponseEntity(pvtDatabaseStream);
 	    			}
 	    			

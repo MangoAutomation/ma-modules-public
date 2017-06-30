@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.rt.dataImage.IdTime;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
 
 /**
  * Abstract Base Class to Write IdTime Objects
@@ -43,16 +44,17 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 	protected final Map<DataPointVO, T> currentValueMap;
 	protected long currentTime;
 	protected boolean objectOpen;
+	protected final LimitCounter limiter;
 
 	
-	public IdTimeJsonStreamCallback(XidTimeJsonWriter<T> writer, JsonGenerator jgen, Map<Integer, DataPointVO> voMap){
+	public IdTimeJsonStreamCallback(XidTimeJsonWriter<T> writer, JsonGenerator jgen, Map<Integer, DataPointVO> voMap, Integer limit){
 		this.writer = writer;
 		this.jgen = jgen;
 		this.voMap = voMap;
 		this.currentValueMap = new HashMap<DataPointVO, T>(voMap.size());
 		this.currentTime = Long.MIN_VALUE;
 		this.objectOpen = false;
-
+		this.limiter = new LimitCounter(limit);
 	}
 	
 	/* (non-Javadoc)
@@ -60,7 +62,7 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 	 */
 	@Override
 	public void row(T item, int index) {
-
+		
 		try{
 			DataPointVO vo = this.voMap.get(item.getId());
 			long time = item.getTime();
@@ -68,7 +70,9 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 			//Ensure we are writing into the appropriate entry
 			if(this.currentTime != time){
 				//Flush an entry if we have one
-				if(objectOpen){
+				if(this.objectOpen){
+					if(this.limiter.limited())
+						return;
 					writeEntry();
 				}
 				this.objectOpen = true;
@@ -107,7 +111,7 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 	 * @throws IOException
 	 */
 	public void finish(){
-		if(this.objectOpen){
+		if((this.objectOpen)&&(!this.limiter.limited())){
 			try {
 				this.writeEntry();
 			} catch (IOException e) {

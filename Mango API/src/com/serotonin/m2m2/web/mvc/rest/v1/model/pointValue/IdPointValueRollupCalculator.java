@@ -55,8 +55,9 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 	private TimePeriod period;
 	private DateTime from;
 	private DateTime to;
+	private final Integer limit;
 	
-	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to){
+	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit){
 		this.host = host;
 		this.port = port;
 		this.voMap = voMap;
@@ -66,6 +67,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
 		this.period = period;
 		this.from = from;
 		this.to = to;
+		this.limit = limit;
 	}
 
 	
@@ -99,7 +101,7 @@ public class IdPointValueRollupCalculator implements QueryArrayStream<PointValue
         BucketCalculator bc = this.getBucketCalculator(startTime, endTime);
         IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(this.host, this.port, jgen, 
         		this.voMap, this.useRendered,
-				this.unitConversion, this.rollup);
+				this.unitConversion, this.rollup, this.limit);
 		try {
 			//Time ordered list of end values
 			Map<Integer, DataValue> endValues = new HashMap<Integer, DataValue>(this.voMap.size());

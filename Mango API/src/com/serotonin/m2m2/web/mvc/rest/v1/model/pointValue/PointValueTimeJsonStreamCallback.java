@@ -30,13 +30,16 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 
 	private Translations translations;
 	private DataPointVO vo;
+	private final LimitCounter limiter;
+	
 	/**
 	 * @param jgen
 	 */
-	public PointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered,  boolean unitConversion) {
+	public PointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered,  boolean unitConversion, Integer limit) {
 		super(host, port, jgen, useRendered, unitConversion);
 		this.vo = vo;
-		this.translations = Common.getTranslations();
+		this.limiter = new LimitCounter(limit);
+		this.translations = Common.getTranslations();		
 	}
 
 	/* (non-Javadoc)
@@ -44,6 +47,9 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 	 */
 	@Override
 	public void row(PointValueTime pvt, int index) {
+		if(this.limiter.limited())
+			return;
+		
 		try{
 			String annotation = null;
 			if(pvt.isAnnotated())

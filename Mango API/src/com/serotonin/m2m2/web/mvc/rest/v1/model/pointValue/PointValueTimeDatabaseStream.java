@@ -26,13 +26,14 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	private long from;
 	private long to;
 	private PointValueDao dao;
+	private Integer limit;
 	
 	/**
 	 * @param id
 	 * @param from
 	 * @param to
 	 */
-	public PointValueTimeDatabaseStream(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao) {
+	public PointValueTimeDatabaseStream(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit) {
         this.host = host;
         this.port = port;
         this.vo = vo;
@@ -41,6 +42,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 		this.from = from;
 		this.to = to;
 		this.dao = dao;
+		this.limit = limit;
 	}
 
 	/* (non-Javadoc)
@@ -48,7 +50,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) {
-		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion));
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion, limit));
 	}
 
 	/* (non-Javadoc)
@@ -57,7 +59,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	@Override
 	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
 			throws IOException {
-		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, false, false));
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, false, false, limit));
 	}
 
 }
