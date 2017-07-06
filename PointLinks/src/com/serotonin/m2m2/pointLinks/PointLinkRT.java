@@ -24,12 +24,18 @@ import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
+import com.serotonin.m2m2.rt.script.PointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Matthew Lohbihler
@@ -43,6 +49,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private ScriptLog scriptLog;
     private CompiledScript compiledScript;
     private boolean compiled;
+    private PointValueSetter setCallback = new SetCallback();
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -152,7 +159,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             	}
             		
                 PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, newValue.getTime(),
-                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog);
+                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog, setCallback);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;
@@ -163,6 +170,11 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             catch (ScriptException e) {
                 raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
                 ready = true;
+                return;
+            }
+            catch(SetPermissionException e) {
+            	raiseFailureEvent(newValue.getTime(), e.getTranslatableMessage());
+            	ready = true;
                 return;
             }
             catch (ResultTypeException e) {
@@ -276,5 +288,48 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 	@Override
 	public String getListenerName() {
 		return "Point Link " + this.vo.getXid();
+	}
+	
+	class SetCallback implements PointValueSetter {
+        /*
+         * (non-Javadoc)
+         * 
+         * @see
+         * com.serotonin.mango.util.script.PointValueSetter#set(com.serotonin.mango.rt.dataImage.IDataPointValueSource,
+         * java.lang.Object, long)
+         */
+        @Override
+        public void set(IDataPointValueSource point, Object value, long timestamp) {
+            DataPointRT dprt = (DataPointRT) point;
+            if(!dprt.getVO().getPointLocator().isSettable())
+            	return;
+            
+            if(!Permissions.hasPermission(dprt.getVO().getSetPermission(), vo.getScriptPermissions().getDataPointSetPermissions()))
+            	throw new SetPermissionException(new TranslatableMessage("pointLinks.set.permissionDenied", vo.getXid(),
+            			dprt.getVO().getXid()));
+
+            // We may, however, need to coerce the given value.
+            try {
+                DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
+                PointValueTime newValue = new PointValueTime(mangoValue, timestamp);
+                DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
+                dsrt.setPointValue(dprt, newValue, PointLinkRT.this);
+            }
+            catch (ResultTypeException e) {
+                // Raise an event
+            	raiseFailureEvent(Common.timer.currentTimeMillis(), e.getTranslatableMessage());
+            }
+        }
+    }
+	
+	class SetPermissionException extends RuntimeException {
+		private static final long serialVersionUID = -1L;
+		private TranslatableMessage tm;
+		public SetPermissionException(TranslatableMessage tm) {
+			this.tm = tm;
+		}
+		public TranslatableMessage getTranslatableMessage() {
+			return tm;
+		}
 	}
 }
