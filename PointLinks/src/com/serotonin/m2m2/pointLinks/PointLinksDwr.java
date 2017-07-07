@@ -164,13 +164,17 @@ public class PointLinksDwr extends ModuleDwr {
 	                @Override
 	                public void set(IDataPointValueSource point, Object value, long timestamp) {
 	                	DataPointRT dprt = (DataPointRT) point;
-	                    if(!dprt.getVO().getPointLocator().isSettable())
+ 	                	if(!dprt.getVO().getPointLocator().isSettable()) {
+	                    	scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
 	                    	return;
+	                	}
 	                    
-	                    if(!Permissions.hasPermission(dprt.getVO().getSetPermission(), permissions.getDataPointSetPermissions()))
+	                    if(!Permissions.hasPermission(dprt.getVO().getSetPermission(), permissions.getDataPointSetPermissions())) {
 	                    	scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
+	                    	return;
+	                    }
 
-	                    scriptOut.append("Setting point " + ((DataPointRT) point).getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
+	                    scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
 	                }
 	            };
 	
