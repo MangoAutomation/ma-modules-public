@@ -28,7 +28,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
@@ -65,7 +64,6 @@ public class ScriptUtilRestController {
 	@RequestMapping(method = RequestMethod.POST, value = {"/test"}, consumes={"application/json"}, produces = {"application/json"})
 	public ResponseEntity<ScriptRestResult> testScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
 		if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
-		RestProcessResult<ScriptRestResult> result = new RestProcessResult<>();
 		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext());
 		try {
 			CompiledScript script = CompiledScriptExecutor.compile(scriptModel.getScript());
@@ -106,7 +104,7 @@ public class ScriptUtilRestController {
 				PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(), 
 						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, loggingSetter, true);
 				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
-				return result.createResponseEntity(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)));
+				return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
             } catch(ResultTypeException e) {
             	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
@@ -125,7 +123,6 @@ public class ScriptUtilRestController {
 	@RequestMapping(method = RequestMethod.POST, value = {"/run"}, consumes={"application/json"}, produces = {"application/json"})
 	public ResponseEntity<ScriptRestResult> runScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
 		if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
-		RestProcessResult<ScriptRestResult> result = new RestProcessResult<>();
 		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext());
 		try {
 			CompiledScript script = CompiledScriptExecutor.compile(scriptModel.getScript());
@@ -147,7 +144,7 @@ public class ScriptUtilRestController {
 				PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(), 
 						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, new SetCallback(permissions, user), false);
 				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
-				return result.createResponseEntity(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)));
+				return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
             } catch(ResultTypeException e) {
             	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
