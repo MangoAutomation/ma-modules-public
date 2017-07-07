@@ -50,15 +50,11 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-@Api(value="SNMP Tools", description="Read SNMP data or perform a walk with a MIB file")
+@Api(value="Script Utils", description="Run or test a Mango JavaScript script")
 @RestController
 @RequestMapping("/v2/script")
 public class ScriptUtilRestController {
 	private static final Log LOG = LogFactory.getLog(ScriptUtilRestController.class);
-	
-	public ScriptUtilRestController() {
-		
-	}
 	
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "Test a script")
@@ -109,6 +105,7 @@ public class ScriptUtilRestController {
             try {
 				PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(), 
 						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, loggingSetter);
+				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
 				return result.createResponseEntity(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)));
             } catch(ResultTypeException e) {
             	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
@@ -127,7 +124,7 @@ public class ScriptUtilRestController {
 	})
 	@RequestMapping(method = RequestMethod.POST, value = {"/run"}, consumes={"application/json"}, produces = {"application/json"})
 	public ResponseEntity<ScriptRestResult> runScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
-		if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
+		if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
 		RestProcessResult<ScriptRestResult> result = new RestProcessResult<>();
 		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext());
 		try {
@@ -149,6 +146,7 @@ public class ScriptUtilRestController {
             try {
 				PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(), 
 						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, new SetCallback(permissions, user));
+				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
 				return result.createResponseEntity(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)));
             } catch(ResultTypeException e) {
             	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
