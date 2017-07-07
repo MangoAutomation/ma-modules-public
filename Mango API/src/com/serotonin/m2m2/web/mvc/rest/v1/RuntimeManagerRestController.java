@@ -79,7 +79,7 @@ public class RuntimeManagerRestController extends MangoRestController{
 	    		}
 	    		DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
 	    		if(rt == null){
-	    			result.addRestMessage(getPointNotEnabledMessage());
+	    			result.addRestMessage(getPointNotEnabledMessage(xid));
 	        		return result.createResponseEntity();
 	    		}
 	    		
@@ -95,8 +95,8 @@ public class RuntimeManagerRestController extends MangoRestController{
 	/**
 	 * @return
 	 */
-	private RestMessage getPointNotEnabledMessage() {
-		return new RestMessage(HttpStatus.PRECONDITION_FAILED, new TranslatableMessage("rest.error.pointNotEnabled"));
+	private RestMessage getPointNotEnabledMessage(String dpXid) {
+		return new RestMessage(HttpStatus.PRECONDITION_FAILED, new TranslatableMessage("rest.error.pointNotEnabled", dpXid));
 	}
 	
 	
