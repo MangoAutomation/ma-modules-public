@@ -159,7 +159,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             	}
             		
                 PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, newValue.getTime(),
-                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog, setCallback);
+                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog, setCallback, false);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;
