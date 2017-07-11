@@ -29,13 +29,14 @@ import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
-import com.serotonin.m2m2.rt.script.PointValueSetter;
+import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.rt.script.ScriptPermissions;
+import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Matthew Lohbihler
@@ -49,7 +50,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private ScriptLog scriptLog;
     private CompiledScript compiledScript;
     private boolean compiled;
-    private PointValueSetter setCallback = new SetCallback();
+    private ScriptPointValueSetter setCallback;
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -63,6 +64,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         compiledScript = null;
         compiled = false;
         ready = true;
+        setCallback = new SetCallback(vo.getScriptPermissions());
     }
 
     public void initialize() {
@@ -172,7 +174,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                 ready = true;
                 return;
             }
-            catch(SetPermissionException e) {
+            catch(ScriptPermissionsException e) {
             	raiseFailureEvent(newValue.getTime(), e.getTranslatableMessage());
             	ready = true;
                 return;
@@ -290,23 +292,21 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 		return "Point Link " + this.vo.getXid();
 	}
 	
-	class SetCallback implements PointValueSetter {
-        /*
+	class SetCallback extends ScriptPointValueSetter {
+        public SetCallback(ScriptPermissions permissions) {
+			super(permissions);
+		}
+
+		/*
          * (non-Javadoc)
          * 
          * @see
-         * com.serotonin.mango.util.script.PointValueSetter#set(com.serotonin.mango.rt.dataImage.IDataPointValueSource,
+         * com.serotonin.mango.util.script.ScriptPointValueSetter#setImpl(com.serotonin.mango.rt.dataImage.IDataPointValueSource,
          * java.lang.Object, long)
          */
         @Override
-        public void set(IDataPointValueSource point, Object value, long timestamp) {
+        public void setImpl(IDataPointValueSource point, Object value, long timestamp) {
             DataPointRT dprt = (DataPointRT) point;
-            if(!dprt.getVO().getPointLocator().isSettable())
-            	return;
-            
-            if(!Permissions.hasPermission(dprt.getVO().getSetPermission(), vo.getScriptPermissions().getDataPointSetPermissions()))
-            	throw new SetPermissionException(new TranslatableMessage("pointLinks.set.permissionDenied", vo.getXid(),
-            			dprt.getVO().getXid()));
 
             // We may, however, need to coerce the given value.
             try {
@@ -321,15 +321,4 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             }
         }
     }
-	
-	class SetPermissionException extends RuntimeException {
-		private static final long serialVersionUID = -1L;
-		private TranslatableMessage tm;
-		public SetPermissionException(TranslatableMessage tm) {
-			this.tm = tm;
-		}
-		public TranslatableMessage getTranslatableMessage() {
-			return tm;
-		}
-	}
 }

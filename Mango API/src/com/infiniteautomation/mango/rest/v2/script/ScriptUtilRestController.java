@@ -34,10 +34,11 @@ import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
-import com.serotonin.m2m2.rt.script.PointValueSetter;
+import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
+import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -82,7 +83,7 @@ public class ScriptUtilRestController {
             final ScriptPermissions permissions = scriptModel.getPermissions().toPermissions();
             final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
             
-            PointValueSetter loggingSetter = new PointValueSetter() {
+            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
                 @Override
                 public void set(IDataPointValueSource point, Object value, long timestamp) {
                 	DataPointRT dprt = (DataPointRT) point;
@@ -98,6 +99,11 @@ public class ScriptUtilRestController {
 
                     scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
                 }
+
+				@Override
+				protected void setImpl(IDataPointValueSource point, Object value, long timestamp) {
+					// not really setting
+				}
             };
             
             try {
@@ -145,7 +151,7 @@ public class ScriptUtilRestController {
 						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, new SetCallback(permissions, user), false);
 				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
 				return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
-            } catch(ResultTypeException e) {
+            } catch(ResultTypeException|ScriptPermissionsException e) {
             	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
 					
@@ -171,25 +177,18 @@ public class ScriptUtilRestController {
 		return context;
 	}
 	
-	class SetCallback implements PointValueSetter {
+	class SetCallback extends ScriptPointValueSetter {
         
-		private final ScriptPermissions permissions;
 		private final User user;
 		
 		public SetCallback(ScriptPermissions permissions, User user) {
-			this.permissions = permissions;
+			super(permissions);
 			this.user = user;
 		}
         @Override
-        public void set(IDataPointValueSource point, Object value, long timestamp) {
+        public void setImpl(IDataPointValueSource point, Object value, long timestamp) {
             DataPointRT dprt = (DataPointRT) point;
-            if(!dprt.getVO().getPointLocator().isSettable())
-            	return;
             
-            if(!Permissions.hasPermission(dprt.getVO().getSetPermission(), permissions.getDataPointSetPermissions()))
-            	throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.script.error.setPermissionDenied", 
-            			dprt.getVO().getXid()));
-
             try {
                 DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
                 PointValueTime newValue = new PointValueTime(mangoValue, timestamp);

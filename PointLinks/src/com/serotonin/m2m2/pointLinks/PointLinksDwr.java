@@ -27,7 +27,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
-import com.serotonin.m2m2.rt.script.PointValueSetter;
+import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
@@ -160,7 +160,7 @@ public class PointLinksDwr extends ModuleDwr {
 	            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
 	            
 	            final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
-	            PointValueSetter loggingSetter = new PointValueSetter() {
+	            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
 	                @Override
 	                public void set(IDataPointValueSource point, Object value, long timestamp) {
 	                	DataPointRT dprt = (DataPointRT) point;
@@ -176,6 +176,11 @@ public class PointLinksDwr extends ModuleDwr {
 
 	                    scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
 	                }
+
+					@Override
+					protected void setImpl(IDataPointValueSource point, Object value, long timestamp) {
+						// not really setting
+					}
 	            };
 	
 	            try {
