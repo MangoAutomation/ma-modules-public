@@ -357,7 +357,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 	vo.setChartColour(""); //Can happen when CSV comes in without template       
             }
 	        
-	        if(vo.getXid() == null)
+	        if(StringUtils.isEmpty(vo.getXid()))
 	        	vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());       
 	        
 	        if(!model.validate()){
