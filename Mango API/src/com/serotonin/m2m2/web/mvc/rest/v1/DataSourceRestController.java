@@ -266,23 +266,29 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 			}
 			
 			DataSourceVO<?> vo = model.getData();
-			DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
-			if(existing != null) {
-				result.addRestMessage(this.getAlreadyExistsMessage());
-				return result.createResponseEntity();
-			} else {
-				if(!model.validate() || !Permissions.hasPermission(vo.getEditPermission(), user.getPermissions())) {
-					result.addRestMessage(this.getValidationFailedError());
-					return result.createResponseEntity(model);
-				}
-				else {
-					Common.runtimeManager.saveDataSource(vo);
-					DataSourceVO<?> created = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
-					URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
-					result.addRestMessage(this.getResourceCreatedMessage(location));
-					return result.createResponseEntity(created.asModel());
-				}
-			}
+			//Check to see if the data source already exists
+            if(!StringUtils.isEmpty(vo.getXid())){
+                DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+                if(existing != null){
+                    result.addRestMessage(HttpStatus.CONFLICT, new TranslatableMessage("rest.exception.alreadyExists", model.getXid()));
+                    return result.createResponseEntity();
+                }
+            }
+            
+            if (StringUtils.isEmpty(vo.getXid()))
+                vo.setXid(DaoRegistry.dataSourceDao.generateUniqueXid());
+			
+            if(!model.validate() || !Permissions.hasPermission(vo.getEditPermission(), user.getPermissions())) {
+                result.addRestMessage(this.getValidationFailedError());
+                return result.createResponseEntity(model);
+            }
+            else {
+                Common.runtimeManager.saveDataSource(vo);
+                DataSourceVO<?> created = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+                URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
+                result.addRestMessage(this.getResourceCreatedMessage(location));
+                return result.createResponseEntity(created.asModel());
+            }
 		} else {
 			return result.createResponseEntity();
 		}
