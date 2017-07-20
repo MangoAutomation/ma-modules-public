@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.util;
 
+import java.util.Date;
+
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.MangoRestTemporaryResourceModel;
@@ -15,7 +17,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.MangoRestTemporaryResourceModel;
 public abstract class MangoRestTemporaryResource extends TimeoutClient{
 	
 	protected final String resourceId;
-	protected long expiration = 0;
+	protected Date expiration;
 	private MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container;
 	private TimeoutTask task;
 
@@ -29,9 +31,10 @@ public abstract class MangoRestTemporaryResource extends TimeoutClient{
 	 * @param expiration
 	 * @param container
 	 */
-	public void schedule(long expiration, MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container){
+	public void schedule(Date expiration, MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container){
 		this.expiration = expiration;
 		this.container = container;
+		this.cancelTimeout();
 		this.task = new TimeoutTask(expiration, this);
 	}
 	
@@ -63,8 +66,8 @@ public abstract class MangoRestTemporaryResource extends TimeoutClient{
 	 */
 	public MangoRestTemporaryResourceModel getModel(){
 		MangoRestTemporaryResourceModel model = createModel();
-		if(this.expiration >= 0)
-			model.setExpires(expiration);
+		if(expiration != null)
+			model.setExpires(expiration.getTime());
 		return model;
 	}
 	

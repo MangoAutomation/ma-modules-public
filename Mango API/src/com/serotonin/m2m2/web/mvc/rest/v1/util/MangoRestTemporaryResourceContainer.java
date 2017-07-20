@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.util;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,9 +45,9 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	 * @param id
 	 * @param resource
 	 */
-	public void put(String id, T resource, long expiration){
+	public void put(String id, T resource, Date expiration){
 		this.resources.put(id, resource);
-		if(expiration > 0)
+		if(expiration != null)
 			resource.schedule(expiration, this);
 	}
 	

@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -90,10 +91,10 @@ public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
             throw new NotFoundRestException();
         
         String resourceId = resources.generateResourceId();
-        SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input));
+        SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input), resources, new Date(System.currentTimeMillis() + 600000));
         
         //Resource can live for up to 10 minutes (TODO Configurable?)
-        resources.put(resourceId, resource, System.currentTimeMillis() + 600000);
+        resources.put(resourceId, resource);
         URI location = builder.path("/v2/actions/status/{resourceId}").buildAndExpand(resourceId).toUri();
 
         HttpHeaders headers = new HttpHeaders();

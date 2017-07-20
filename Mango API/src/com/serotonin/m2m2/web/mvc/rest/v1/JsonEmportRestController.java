@@ -20,6 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -195,7 +197,7 @@ public class JsonEmportRestController extends MangoRestController{
     		UriComponentsBuilder builder,
     		HttpServletRequest request,
     		@ApiParam(value = "Optional Date for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
-    		@RequestParam(value="expiration", required=false) DateTime expiration,
+    		@RequestParam(value="expiration", required=false) @DateTimeFormat(iso=ISO.DATE_TIME) DateTime expiration,
     		
     		@ApiParam(value = "Time zone", required = false, allowMultiple = false)
             @RequestParam(value="timezone", required=false)
@@ -222,7 +224,7 @@ public class JsonEmportRestController extends MangoRestController{
 	                    
 	                    //Setup the Temporary Resource
 	                	String resourceId = importStatusResources.generateResourceId();
-	                	this.importStatusResources.put(resourceId, new ImportStatusProvider(jo, resourceId, user, websocket), expiration.getMillis());
+	                	this.importStatusResources.put(resourceId, new ImportStatusProvider(jo, resourceId, user, websocket), expiration.toDate());
 	                	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
 	                	result.addHeader("Location", location.toString());
 	                } catch (Exception e) {
@@ -247,7 +249,7 @@ public class JsonEmportRestController extends MangoRestController{
 			HttpServletRequest request,
 			UriComponentsBuilder builder,
     		@ApiParam(value = "Optional Date for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
-    		@RequestParam(value="expiration", required=false) DateTime expiration,
+    		@RequestParam(value="expiration", required=false) @DateTimeFormat(iso=ISO.DATE_TIME) DateTime expiration,
     		
     		@ApiParam(value = "Time zone", required = false, allowMultiple = false)
             @RequestParam(value="timezone", required=false)
@@ -273,7 +275,7 @@ public class JsonEmportRestController extends MangoRestController{
                 }
                 //Setup the Temporary Resource
             	String resourceId = importStatusResources.generateResourceId();
-            	this.importStatusResources.put(resourceId, new ImportStatusProvider(config.toJsonObject(), resourceId, user, websocket), expiration.getMillis());
+            	this.importStatusResources.put(resourceId, new ImportStatusProvider(config.toJsonObject(), resourceId, user, websocket), expiration.toDate());
             	URI location = builder.path("/v1/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
             	result.addHeader("Location", location.toString());
             }

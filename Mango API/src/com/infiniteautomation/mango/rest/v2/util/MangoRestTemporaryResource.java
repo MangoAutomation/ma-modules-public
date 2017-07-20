@@ -4,6 +4,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.util;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
@@ -13,33 +15,51 @@ import com.serotonin.m2m2.util.timeout.TimeoutTask;
  * 
  * @author Terry Packer
  */
-public abstract class MangoRestTemporaryResource extends TimeoutClient{
+public abstract class MangoRestTemporaryResource<T extends MangoRestTemporaryResource<?>> extends TimeoutClient{
 	
 	protected final String resourceId;
-	protected long expiration = 0;
+	protected Date expiration;
 	@JsonIgnore
-	private MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container;
+	private final MangoRestTemporaryResourceContainer<T> container;
 	@JsonIgnore
 	private TimeoutTask task;
 
+
 	/**
-	 * 
+	 * Create the resource and plan to schedule it's timeout later
 	 * @param resourceId
+	 * @param container
 	 */
-	public MangoRestTemporaryResource(String resourceId){
+	@SuppressWarnings("unchecked")
+	public MangoRestTemporaryResource(String resourceId, MangoRestTemporaryResourceContainer<T> container){
 		this.resourceId = resourceId;
+		this.container = container;
+		this.container.put(resourceId, (T) this);
 	}
 
+	/**
+	 * Create and schedule the resource to expire
+	 * @param resourceId
+	 * @param expiration
+	 * @param container
+	 */
+	@SuppressWarnings("unchecked")
+	public MangoRestTemporaryResource(String resourceId, MangoRestTemporaryResourceContainer<T> container, Date expiration){
+		this.resourceId = resourceId;
+		this.expiration = expiration;
+		this.container = container;
+		this.container.put(resourceId, (T)this);
+		this.task = new TimeoutTask(expiration, this);
+	}
+	
 	/**
 	 * Schedule a timeout for the resource
 	 * @param expiration
 	 * @param container
 	 */
-	public void schedule(long expiration, MangoRestTemporaryResourceContainer<? extends MangoRestTemporaryResource> container){
+	public void schedule(Date expiration){
 		this.expiration = expiration;
-		this.container = container;
-		if(this.task != null)
-			this.task.cancel();
+		this.cancelTimeout();
 		this.task = new TimeoutTask(expiration, this);
 	}
 	
@@ -72,7 +92,10 @@ public abstract class MangoRestTemporaryResource extends TimeoutClient{
 	 * @return
 	 */
 	public long getExpires(){
-		return this.expiration;
+		if(this.expiration != null)
+			return this.expiration.getTime();
+		else
+			return -1;
 	}
 	
 	/* (non-Javadoc)

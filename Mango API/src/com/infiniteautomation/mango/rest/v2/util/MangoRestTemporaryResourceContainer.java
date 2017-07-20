@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.util;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,14 +21,14 @@ import com.serotonin.m2m2.Common;
  * 
  * @author Terry Packer
  */
-public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryResource> {
+public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryResource<?>> {
 
 	//Map for recently run imports
-	private final ConcurrentHashMap<String,T> resources;
+	private final ConcurrentHashMap<String, T> resources;
 	private final String resourcePrefix;
 	
 	public MangoRestTemporaryResourceContainer(String prefix){
-		this.resources = new ConcurrentHashMap<String,T>();
+		this.resources = new ConcurrentHashMap<>();
 		this.resourcePrefix = prefix;
 	}
 	
@@ -38,7 +39,7 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	 * @throws NotFoundRestException
 	 */
 	public T get(String id) throws NotFoundRestException{
-		T resource = this.resources.get(id);
+		T resource =  this.resources.get(id);
 		if(resource == null)
 			throw new NotFoundRestException();
 		else
@@ -46,14 +47,22 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	}
 	
 	/**
-	 * Add a Resource, with a timeout of not null
+	 * Add a Resource, with an expiration date
 	 * @param id
 	 * @param resource
 	 */
-	public void put(String id, T resource, long expiration){
+	public void put(String id, T resource, Date expiration){
 		this.resources.put(id, resource);
-		if(expiration > 0)
-			resource.schedule(expiration, this);
+		resource.schedule(expiration);
+	}
+	
+	/**
+	 * Add a resource, no expiration
+	 * @param id
+	 * @param mangoRestTemporaryResource
+	 */
+	public void put(String id, T mangoRestTemporaryResource){
+		this.resources.put(id, mangoRestTemporaryResource);
 	}
 	
 	/**
@@ -61,14 +70,13 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	 * @param resourceId
 	 * @return
 	 */
-	public boolean remove(String resourceId){
+	public T remove(String resourceId){
 		T resource = this.resources.remove(resourceId);
 		if(resource != null){
 			resource.cancelTimeout();
-			return true;
-		}else{
-			return false;
+
 		}
+		return resource;
 	}
 	
 	/**

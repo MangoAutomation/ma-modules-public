@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.util;
 
+import java.util.Date;
 import java.util.Map;
 
 import com.serotonin.m2m2.Common;
@@ -13,15 +14,15 @@ import com.serotonin.m2m2.util.timeout.SystemActionTask;
  * 
  * @author Terry Packer
  */
-public class SystemActionTemporaryResource extends MangoRestTemporaryResource{
+public class SystemActionTemporaryResource extends MangoRestTemporaryResource<SystemActionTemporaryResource>{
 
 	private SystemActionTask task;
 	
 	/**
 	 * @param resourceId
 	 */
-	public SystemActionTemporaryResource(String resourceId, SystemActionTask task) {
-		super(resourceId);
+	public SystemActionTemporaryResource(String resourceId, SystemActionTask task, MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> container, Date expiration) {
+		super(resourceId, container, expiration);
 		this.task = task;
 		switch(this.task.getPriority()){
 		case SystemActionTask.PRIORITY_HIGH:
