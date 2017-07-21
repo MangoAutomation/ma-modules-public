@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -374,8 +375,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		if (!file.toPath().startsWith(root.toPath())) {
             throw new AccessDeniedException("Path is below file store root");
 		}
-		if(!file.exists())
-			throw new ResourceNotFoundException("filestore/" + name + "/" + path);
 
         // TODO Allow downloading directory as a zip
 		if (file.isFile()) {
@@ -386,7 +385,17 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	}
 
 	protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {
-        Collection<File> files = Arrays.asList(directory.listFiles());
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+	    
+	    if (directory.equals(root) && !root.exists())
+	        return new ResponseEntity<>(Collections.emptyList(), responseHeaders, HttpStatus.OK);
+	    
+	    if (!directory.exists()) {
+	        throw new ResourceNotFoundException(relativePath(root, directory));
+	    }
+	    
+	    Collection<File> files = Arrays.asList(directory.listFiles());
         List<FileModel> found = new ArrayList<>(files.size());
         
         for (File file : files)
@@ -395,14 +404,13 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_JSON_UTF8);
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
         
         return new ResponseEntity<>(found, responseHeaders, HttpStatus.OK);
     }
 	
 	protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request, HttpServletResponse response)
 	        throws HttpMediaTypeNotAcceptableException {
+	    
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
 
@@ -471,17 +479,19 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	}
 	
 	public static FileModel fileToModel(File file, File root, ServletContext context) throws UnsupportedEncodingException {
-        Path relativeFolderPath = root.toPath().relativize(file.getParentFile().toPath());
-        String relativeFolderPathStr = relativeFolderPath.toString().replace(File.separatorChar, '/');
-	    
 	    FileModel model = new FileModel();
 	    model.setFilename(file.getName());
-	    model.setFolderPath(relativeFolderPathStr);
+	    model.setFolderPath(relativePath(root, file.getParentFile()));
 	    model.setDirectory(file.isDirectory());
         model.setLastModified(new Date(file.lastModified()));
 	    model.setMimeType(context.getMimeType(file.getName()));
 	    if (!file.isDirectory())
 	        model.setSize(file.length());
 	    return model;
+	}
+	
+	public static String relativePath(File relativeTo, File file) {
+	    Path relativePath = relativeTo.toPath().relativize(file.toPath());
+        return relativePath.toString().replace(File.separatorChar, '/');
 	}
 }
