@@ -108,7 +108,7 @@ public class ScriptUtilRestController {
             
             try {
 				PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(), 
-						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, loggingSetter, true);
+						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, loggingSetter, null, true);
 				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
 				return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
             } catch(ResultTypeException e) {
@@ -148,7 +148,7 @@ public class ScriptUtilRestController {
             
             try {
 				PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(), 
-						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, new SetCallback(permissions, user), false);
+						DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, new SetCallback(permissions, user), null, false);
 				if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
 				return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
             } catch(ResultTypeException|ScriptPermissionsException e) {

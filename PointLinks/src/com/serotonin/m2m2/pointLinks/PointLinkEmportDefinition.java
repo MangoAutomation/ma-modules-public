@@ -15,9 +15,11 @@ import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class PointLinkEmportDefinition extends EmportDefinition {
+	static final String POINT_LINKS = "pointLinks";
+	
     @Override
     public String getElementId() {
-        return "pointLinks";
+        return POINT_LINKS;
     }
 
     @Override

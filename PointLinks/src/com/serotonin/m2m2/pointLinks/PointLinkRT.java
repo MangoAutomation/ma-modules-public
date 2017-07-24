@@ -7,7 +7,9 @@ package com.serotonin.m2m2.pointLinks;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.script.CompiledScript;
@@ -29,6 +31,7 @@ import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
+import com.serotonin.m2m2.rt.script.JsonImportExclusion;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
@@ -51,6 +54,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private CompiledScript compiledScript;
     private boolean compiled;
     private ScriptPointValueSetter setCallback;
+    private final List<JsonImportExclusion> importExclusions;
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -65,6 +69,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         compiled = false;
         ready = true;
         setCallback = new SetCallback(vo.getScriptPermissions());
+        importExclusions = new ArrayList<>();
+        importExclusions.add(new PointLinkJsonImportExclusion("xid", vo.getXid()));
     }
 
     public void initialize() {
@@ -161,7 +167,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             	}
             		
                 PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, newValue.getTime(),
-                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog, setCallback, false);
+                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), 
+                        scriptLog, setCallback, importExclusions, false);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;
