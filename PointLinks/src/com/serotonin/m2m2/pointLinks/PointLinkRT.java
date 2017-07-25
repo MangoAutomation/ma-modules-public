@@ -70,7 +70,12 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         ready = true;
         setCallback = new SetCallback(vo.getScriptPermissions());
         importExclusions = new ArrayList<>();
-        importExclusions.add(new PointLinkJsonImportExclusion("xid", vo.getXid()));
+        importExclusions.add(new JsonImportExclusion("xid", vo.getXid()) {
+			@Override
+			public String getImporterType() {
+				return PointLinkEmportDefinition.POINT_LINKS;
+			}
+        });
     }
 
     public void initialize() {
