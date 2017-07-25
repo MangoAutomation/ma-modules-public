@@ -358,7 +358,12 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 	        
 	        if(StringUtils.isEmpty(vo.getXid()))
-	        	vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());       
+	        	vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());
+	        
+	        // allow empty string, but if its null use the data source name
+	        if (vo.getDeviceName() == null) {
+	            vo.setDeviceName(dataSource.getName());
+	        }
 	        
 	        if(!model.validate()){
 	        	result.addRestMessage(this.getValidationFailedError());
@@ -481,6 +486,14 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                         	vo.setChartColour(""); //Can happen when CSV comes in without template
                 	}
                     
+                }
+    	        
+    	        if(StringUtils.isEmpty(vo.getXid()))
+                    vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());
+                
+                // allow empty string, but if its null use the data source name
+                if (vo.getDeviceName() == null) {
+                    vo.setDeviceName(myDataSource.getName());
                 }
     	        
     	        if(model.validate()){
