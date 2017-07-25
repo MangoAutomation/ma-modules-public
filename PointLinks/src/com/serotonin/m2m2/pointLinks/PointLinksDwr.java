@@ -162,7 +162,7 @@ public class PointLinksDwr extends ModuleDwr {
 	            final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
 	            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
 	                @Override
-	                public void set(IDataPointValueSource point, Object value, long timestamp) {
+	                public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
 	                	DataPointRT dprt = (DataPointRT) point;
  	                	if(!dprt.getVO().getPointLocator().isSettable()) {
 	                    	scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
@@ -178,7 +178,7 @@ public class PointLinksDwr extends ModuleDwr {
 	                }
 
 					@Override
-					protected void setImpl(IDataPointValueSource point, Object value, long timestamp) {
+					protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
 						// not really setting
 					}
 	            };

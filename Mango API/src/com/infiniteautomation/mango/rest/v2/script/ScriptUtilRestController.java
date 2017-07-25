@@ -29,6 +29,7 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
+import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -85,7 +86,7 @@ public class ScriptUtilRestController {
             
             ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
                 @Override
-                public void set(IDataPointValueSource point, Object value, long timestamp) {
+                public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
                 	DataPointRT dprt = (DataPointRT) point;
 	                	if(!dprt.getVO().getPointLocator().isSettable()) {
                     	scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
@@ -101,7 +102,7 @@ public class ScriptUtilRestController {
                 }
 
 				@Override
-				protected void setImpl(IDataPointValueSource point, Object value, long timestamp) {
+				protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
 					// not really setting
 				}
             };
@@ -186,12 +187,16 @@ public class ScriptUtilRestController {
 			this.user = user;
 		}
         @Override
-        public void setImpl(IDataPointValueSource point, Object value, long timestamp) {
+        public void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
             DataPointRT dprt = (DataPointRT) point;
             
             try {
                 DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
-                PointValueTime newValue = new PointValueTime(mangoValue, timestamp);
+                PointValueTime newValue;
+                if(StringUtils.isBlank(annotation))
+                	newValue = new PointValueTime(mangoValue, timestamp);
+                else
+                	newValue = new AnnotatedPointValueTime(mangoValue, timestamp, new TranslatableMessage("literal", annotation));
                 DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
                 dsrt.setPointValue(dprt, newValue, user);
             }
