@@ -33,6 +33,7 @@ import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
@@ -42,6 +43,7 @@ import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
+import com.serotonin.m2m2.rt.script.OneTimePointAnnotation;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -192,13 +194,15 @@ public class ScriptUtilRestController {
             
             try {
                 DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
-                PointValueTime newValue;
+                SetPointSource source;
+                PointValueTime newValue = new PointValueTime(mangoValue, timestamp);
                 if(StringUtils.isBlank(annotation))
-                	newValue = new PointValueTime(mangoValue, timestamp);
+                	source = user;
                 else
-                	newValue = new AnnotatedPointValueTime(mangoValue, timestamp, new TranslatableMessage("literal", annotation));
+                	source = new OneTimePointAnnotation(user, annotation);
+
                 DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
-                dsrt.setPointValue(dprt, newValue, user);
+                dsrt.setPointValue(dprt, newValue, source);
             }
             catch (ResultTypeException e) {
                 throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
