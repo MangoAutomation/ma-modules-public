@@ -6,7 +6,9 @@ package com.serotonin.m2m2.pointLinks;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
+import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
@@ -155,11 +158,35 @@ public class PointLinksDwr extends ModuleDwr {
 	            final StringWriter scriptOut = new StringWriter();
 	            final PrintWriter scriptWriter = new PrintWriter(scriptOut);
 	            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
+	            
+	            final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
+	            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
+	                @Override
+	                public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+	                	DataPointRT dprt = (DataPointRT) point;
+ 	                	if(!dprt.getVO().getPointLocator().isSettable()) {
+	                    	scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
+	                    	return;
+	                	}
+	                    
+	                    if(!Permissions.hasPermission(dprt.getVO().getSetPermission(), permissions.getDataPointSetPermissions())) {
+	                    	scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
+	                    	return;
+	                    }
+
+	                    scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
+	                }
+
+					@Override
+					protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+						// not really setting
+					}
+	            };
 	
 	            try {
 	            	CompiledScript compiledScript = CompiledScriptExecutor.compile(script);
 	                PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, System.currentTimeMillis(),
-	                        targetDataType, -1, permissions ,scriptWriter, scriptLog);
+	                        targetDataType, -1, permissions ,scriptWriter, scriptLog, loggingSetter, null, true);
 	                if (pvt.getValue() == null)
 	                    message = new TranslatableMessage("event.pointLink.nullResult");
 	                else if (pvt.getTime() == -1)

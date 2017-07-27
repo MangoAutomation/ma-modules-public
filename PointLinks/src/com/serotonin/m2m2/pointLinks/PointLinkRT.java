@@ -7,7 +7,9 @@ package com.serotonin.m2m2.pointLinks;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.script.CompiledScript;
@@ -20,16 +22,25 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
+import com.serotonin.m2m2.rt.script.JsonImportExclusion;
+import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.rt.script.ScriptPermissions;
+import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
+import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 /**
  * @author Matthew Lohbihler
@@ -43,6 +54,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private ScriptLog scriptLog;
     private CompiledScript compiledScript;
     private boolean compiled;
+    private ScriptPointValueSetter setCallback;
+    private final List<JsonImportExclusion> importExclusions;
     
     //Added to stop excessive point link calls
     private volatile Boolean ready;
@@ -56,6 +69,14 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         compiledScript = null;
         compiled = false;
         ready = true;
+        setCallback = new SetCallback(vo.getScriptPermissions());
+        importExclusions = new ArrayList<>();
+        importExclusions.add(new JsonImportExclusion("xid", vo.getXid()) {
+			@Override
+			public String getImporterType() {
+				return PointLinkEmportDefinition.POINT_LINKS;
+			}
+        });
     }
 
     public void initialize() {
@@ -152,7 +173,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             	}
             		
                 PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, newValue.getTime(),
-                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), scriptLog);
+                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), new PrintWriter(new NullWriter()), 
+                        scriptLog, setCallback, importExclusions, false);
                 if (pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;
@@ -163,6 +185,11 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             catch (ScriptException e) {
                 raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
                 ready = true;
+                return;
+            }
+            catch(ScriptPermissionsException e) {
+            	raiseFailureEvent(newValue.getTime(), e.getTranslatableMessage());
+            	ready = true;
                 return;
             }
             catch (ResultTypeException e) {
@@ -277,4 +304,38 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 	public String getListenerName() {
 		return "Point Link " + this.vo.getXid();
 	}
+	
+	class SetCallback extends ScriptPointValueSetter {
+        public SetCallback(ScriptPermissions permissions) {
+			super(permissions);
+		}
+
+		/*
+         * (non-Javadoc)
+         * 
+         * @see
+         * com.serotonin.mango.util.script.ScriptPointValueSetter#setImpl(com.serotonin.mango.rt.dataImage.IDataPointValueSource,
+         * java.lang.Object, long)
+         */
+        @Override
+        public void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+            DataPointRT dprt = (DataPointRT) point;
+
+            // We may, however, need to coerce the given value.
+            try {
+                DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
+                PointValueTime newValue;
+                if(StringUtils.isBlank(annotation))
+                	newValue = new PointValueTime(mangoValue, timestamp);
+                else
+                	newValue = new AnnotatedPointValueTime(mangoValue, timestamp, new TranslatableMessage("literal", annotation));
+                DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
+                dsrt.setPointValue(dprt, newValue, PointLinkRT.this);
+            }
+            catch (ResultTypeException e) {
+                // Raise an event
+            	raiseFailureEvent(Common.timer.currentTimeMillis(), e.getTranslatableMessage());
+            }
+        }
+    }
 }
