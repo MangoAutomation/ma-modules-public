@@ -22,22 +22,23 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
 import com.serotonin.m2m2.rt.script.JsonImportExclusion;
-import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
+import com.serotonin.m2m2.rt.script.OneTimePointAnnotation;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
+import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -324,13 +325,15 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             // We may, however, need to coerce the given value.
             try {
                 DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
-                PointValueTime newValue;
+                SetPointSource source;
+                PointValueTime newValue = new PointValueTime(mangoValue, timestamp);
                 if(StringUtils.isBlank(annotation))
-                	newValue = new PointValueTime(mangoValue, timestamp);
+                	source = PointLinkRT.this;
                 else
-                	newValue = new AnnotatedPointValueTime(mangoValue, timestamp, new TranslatableMessage("literal", annotation));
+                	source = new OneTimePointAnnotation(PointLinkRT.this, annotation);
+                
                 DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
-                dsrt.setPointValue(dprt, newValue, PointLinkRT.this);
+                dsrt.setPointValue(dprt, newValue, source);
             }
             catch (ResultTypeException e) {
                 // Raise an event
