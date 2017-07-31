@@ -1,3 +1,9 @@
+*Version 3.1.5*
+* Generate a data point XID when creating if it is null or empty
+* Generate a data source XID when creating if it is null or empty
+* Set device name to the data source name when creating a data point if it is null
+* Return an empty list if the filestore folder doesnt exist
+
 *Version 3.1.4*
 * Fixing API restart endpoints to restart instead of shutdown
 * Adding Limit to point value query endpoints to limit results within a time range
