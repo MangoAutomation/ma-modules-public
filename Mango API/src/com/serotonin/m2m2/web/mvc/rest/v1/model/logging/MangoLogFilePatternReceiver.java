@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,25 +24,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import net.jazdw.rql.parser.ASTNode;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.component.helpers.Constants;
-import org.apache.log4j.component.plugins.Receiver;
-import org.apache.log4j.rule.ExpressionRule;
-import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.logging.log4j.Level;
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.QueryComparison;
 import com.infiniteautomation.mango.db.query.RQLToLimitVisitor;
 import com.infiniteautomation.mango.db.query.pojo.RQLToQueryComparisonVisitor;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * 
@@ -54,7 +45,7 @@ import com.infiniteautomation.mango.db.query.pojo.RQLToQueryComparisonVisitor;
  * @author Terry Packer
  *
  */
-public class MangoLogFilePatternReceiver extends Receiver{
+public class MangoLogFilePatternReceiver{
 
 	private static final Log LOG = LogFactory.getLog(MangoLogFilePatternReceiver.class);
 	
@@ -75,6 +66,8 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	
 	private long timeValue;
 	
+	private Level thresholdLevel;
+	boolean active;
 	
 	public MangoLogFilePatternReceiver(ASTNode query, JsonGenerator jgen){
 
@@ -123,16 +116,15 @@ public class MangoLogFilePatternReceiver extends Receiver{
      *
      * @param event the log event to post to the local log4j environment.
      */
-	@Override
     public void doPost(final LoggingEvent event) {
 
         if(levelComparison != null){
         	switch(levelComparison.getComparison()){
         	case GREATER_THAN:
-        		if(event.getLevel().toInt() <= thresholdLevel.toInt())
+        		if(event.getLevel().intLevel() <= thresholdLevel.intLevel())
         			return;
         	case GREATER_THAN_EQUAL_TO:
-        		if(!event.getLevel().isGreaterOrEqual(thresholdLevel))
+        		if(event.getLevel().intLevel() < thresholdLevel.intLevel())
         			return;
         	break;
         	case EQUAL_TO:
@@ -144,10 +136,10 @@ public class MangoLogFilePatternReceiver extends Receiver{
         			return;
         	break;
         	case LESS_THAN:
-        		if(event.getLevel().toInt() >= thresholdLevel.toInt())
+        		if(event.getLevel().intLevel() >= thresholdLevel.intLevel())
         			return;
         	case LESS_THAN_EQUAL_TO:
-        		if(event.getLevel().isGreaterOrEqual(thresholdLevel))
+        		if(event.getLevel().intLevel() > thresholdLevel.intLevel())
         			return;
         	break;
         	default:
@@ -191,10 +183,10 @@ public class MangoLogFilePatternReceiver extends Receiver{
         Integer lineNumber = null;
         String message = event.getMessage().toString();
         
-        if(event.getLocationInformation() != null){
-            method = event.getLocationInformation().getMethodName();
-        	classname = event.getLocationInformation().getClassName();
-        	lineNumber = Integer.parseInt(event.getLocationInformation().getLineNumber());
+        if(event.hasLocationInformation()){
+            method = event.getMethodName();
+        	classname = event.getClassName();
+        	lineNumber = Integer.parseInt(event.getLineNumber());
         	
         	
             if(classComparison != null){
@@ -258,9 +250,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 
         }
 
-        
-        String[] stackTrace = event.getThrowableStrRep();
-       //TODO Filter on stack trace here
+        String[] stackTrace = event.getStackTrace();
         
         Date time = new Date(event.getTimeStamp());
 		try {
@@ -311,14 +301,14 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	  private final String[] emptyException = new String[] { "" };
 
 	  private SimpleDateFormat dateFormat;
-	  private String timestampFormat = "yyyy-MM-d HH:mm:ss,SSS";
+	  private String timestampFormat = "yyyy-MM-dTHH:mm:ss,SSS";
 	  private String logFormat;
 	  private String customLevelDefinitions;
 	  private String fileURL;
 	  private String host;
 	  private String path;
 	  private boolean tailing;
-	  private String filterExpression;
+	  //private String filterExpression;
 
 	  private static final int MISSING_FILE_RETRY_ATTEMPTS = 3;
 	  private int missingFileRetries;
@@ -326,7 +316,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	  private static final String VALID_DATEFORMAT_CHARS = "GyMwWDdFEaHkKhmsSzZ";
 	  private static final String VALID_DATEFORMAT_CHAR_PATTERN = "[" + VALID_DATEFORMAT_CHARS + "]";
 
-	  private Rule expressionRule;
+	  //private Rule expressionRule;
 
 	  private Map<String, String> currentMap;
 	  private List<String> additionalLines;
@@ -390,24 +380,6 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	   */
 	  public void setAppendNonMatches(boolean appendNonMatches) {
 	      this.appendNonMatches = appendNonMatches;
-	  }
-
-	  /**
-	   * Accessor
-	   * 
-	   * @return filter expression
-	   */
-	  public String getFilterExpression() {
-	    return filterExpression;
-	  }
-
-	  /**
-	   * Mutator
-	   * 
-	   * @param filterExpression
-	   */
-	  public void setFilterExpression(String filterExpression) {
-	    this.filterExpression = filterExpression;
 	  }
 
 	  /**
@@ -624,7 +596,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	        while ((line = bufferedReader.readLine()) != null) {
 	        	
 	        	//Finish when we hit our count
-	        	if((this.limit != null)&&(this.limit < this.count))
+	        	if((this.limit != null)&&(this.count >= this.limit))
 	        		return;
 	        	
 	            //skip empty line entries
@@ -635,9 +607,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	                //build an event from the previous match (held in current map)
 	                LoggingEvent event = buildEvent();
 	                if (event != null) {
-	                    if (passesExpression(event)) {
-	                        doPost(event);
-	                    }
+	                	doPost(event);
 	                }
 	                currentMap.putAll(processEvent(eventMatcher.toMatchResult()));
 	            } else if (exceptionMatcher.matches()) {
@@ -655,9 +625,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	                    if (currentMap.size() > 0) {
 	                        LoggingEvent event = buildEvent();
 	                        if (event != null) {
-	                            if (passesExpression(event)) {
-	                              doPost(event);
-	                            }
+                              doPost(event);
 	                        }
 	                    }
 	                    if (lastTime != null) {
@@ -673,9 +641,7 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	        //process last event if one exists
 	        LoggingEvent event = buildEvent();
 	        if (event != null) {
-	            if (passesExpression(event)) {
-	                doPost(event);
-	            }
+                doPost(event);
 	        }
 	    }
 
@@ -683,20 +649,20 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	        regexpPattern = Pattern.compile(regexp);
 	    }
 
-	    /**
-	   * Helper method that supports the evaluation of the expression
-	   *
-	   * @param event
-	   * @return true if expression isn't set, or the result of the evaluation otherwise
-	   */
-	  private boolean passesExpression(LoggingEvent event) {
-	    if (event != null) {
-	      if (expressionRule != null) {
-	        return (expressionRule.evaluate(event, null));
-	      }
-	    }
-	    return true;
-	  }
+//	    /**
+//	   * Helper method that supports the evaluation of the expression
+//	   *
+//	   * @param event
+//	   * @return true if expression isn't set, or the result of the evaluation otherwise
+//	   */
+//	  private boolean passesExpression(LoggingEvent event) {
+//	    if (event != null) {
+//	      if (expressionRule != null) {
+//	        return (expressionRule.evaluate(event, null));
+//	      }
+//	    }
+//	    return true;
+//	  }
 
 	    /**
 	   * Convert the match into a map.
@@ -778,14 +744,6 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	    }
 	    //if custom level definitions exist, parse them
 	    updateCustomLevelDefinitionMap();
-	    try {
-	      if (filterExpression != null) {
-	        expressionRule = ExpressionRule.getRule(filterExpression);
-	      }
-	    } catch (Exception e) {
-	      getLogger().warn("Invalid filter expression: " + filterExpression, e);
-	    }
-
 	    List<String> buildingKeywords = new ArrayList<String>();
 
 	    String newPattern = logFormat;
@@ -1000,19 +958,15 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	      exception = emptyException;
 	    }
 
-	    Logger logger = null;
 	    long timeStamp = 0L;
 	    String level = null;
-	    String threadName = null;
-	    Object message = null;
-	    String ndc = null;
+	    //String threadName = null;
+	    String message = null;
+	    //String ndc = null;
 	    String className = null;
 	    String methodName = null;
 	    String eventFileName = null;
 	    String lineNumber = null;
-	    Hashtable<String, String> properties = new Hashtable<String, String>();
-
-	    logger = Logger.getLogger((String) fieldMap.remove(LOGGER));
 
 	    if ((dateFormat != null) && fieldMap.containsKey(TIMESTAMP)) {
 	      try {
@@ -1053,9 +1007,9 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	        }
 	    }
 
-	    threadName = (String) fieldMap.remove(THREAD);
+	    //threadName = (String) fieldMap.remove(THREAD);
 
-	    ndc = (String) fieldMap.remove(NDC);
+	    //ndc = (String) fieldMap.remove(NDC);
 
 	    className = (String) fieldMap.remove(CLASS);
 
@@ -1065,29 +1019,16 @@ public class MangoLogFilePatternReceiver extends Receiver{
 
 	    lineNumber = (String) fieldMap.remove(LINE);
 
-	    properties.put(Constants.HOSTNAME_KEY, host);
-	    properties.put(Constants.APPLICATION_KEY, path);
-	    properties.put(Constants.RECEIVER_NAME_KEY, getName());
-
-	    //all remaining entries in fieldmap are properties
-	    properties.putAll(fieldMap);
-
-	    LocationInfo info = null;
-
-	    if ((eventFileName != null) || (className != null) || (methodName != null)
-	        || (lineNumber != null)) {
-	      info = new LocationInfo(eventFileName, className, methodName, lineNumber);
-	    } else {
-	      info = LocationInfo.NA_LOCATION_INFO;
-	    }
-
-	    LoggingEvent event = new LoggingEvent(null,
-	            logger, timeStamp, levelImpl, message,
-	            threadName,
-	            new ThrowableInformation(exception),
-	            ndc,
-	            info,
-	            properties);
+	    LoggingEvent event = new LoggingEvent(
+	    		levelImpl,
+	    		timeStamp,
+	    		message,
+	    		exception,
+	    		eventFileName,
+	    		className,
+	    		methodName,
+	    		lineNumber
+	    		);
 
 	    return event;
 	  }
@@ -1185,4 +1126,11 @@ public class MangoLogFilePatternReceiver extends Receiver{
 	        }
 	    }
 	
+	  protected String getName(){
+		  return "MangoApi";
+	  }
+	  
+	  protected Log getLogger(){
+		  return LOG;
+	  }
 }
