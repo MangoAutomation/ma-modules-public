@@ -5,6 +5,8 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -199,6 +201,10 @@ public class ModulesRestController extends MangoRestController {
 						}
 						return result.createResponseEntity(model);
 					}
+				} catch(SocketTimeoutException e) {
+					result.addRestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.requestTimeout", Common.envProps.getString("store.url")));
+				} catch(UnknownHostException e) {
+					result.addRestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.unknownHost", Common.envProps.getString("store.url")));
 				} catch (Exception e) {
 					result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				}
