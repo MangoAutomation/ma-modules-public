@@ -36,10 +36,10 @@ public class AnalogStatisticsChildQuantizer extends AbstractChildDataQuantizer {
     }
 
     @Override
-    protected void closePeriod(DataValue endValue) {
+    protected void closePeriod() {
         if (analogStatistics != null) {
-            analogStatistics.done(endValue == null ? null : endValue.getDoubleValue());
-            callback.quantizedStatistics(id, analogStatistics, endValue == null);
+            analogStatistics.done();
+            callback.quantizedStatistics(id, analogStatistics);
         }
     }
 }

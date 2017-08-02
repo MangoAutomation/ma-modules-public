@@ -44,7 +44,7 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	
 	
 	@Override
-    public void quantizedStatistics(AnalogStatistics statisticsGenerator, boolean done) {
+    public void quantizedStatistics(AnalogStatistics statisticsGenerator) {
 		if(this.limiter.limited())
 			return;
 		

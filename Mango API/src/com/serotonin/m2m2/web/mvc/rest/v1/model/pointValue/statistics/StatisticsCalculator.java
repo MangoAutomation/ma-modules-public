@@ -66,9 +66,8 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 	 * Signal we are finished
 	 * @throws IOException 
 	 */
-	public void done(PointValueTime last) throws IOException{
-		this.statsGenerator.done(last);
-		
+	public void done() throws IOException{
+		this.statsGenerator.done();
 	}
 	
 }

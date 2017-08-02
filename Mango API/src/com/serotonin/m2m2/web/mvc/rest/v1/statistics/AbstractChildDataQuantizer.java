@@ -21,16 +21,12 @@ abstract public class AbstractChildDataQuantizer {
     	openPeriod(start, end, value);
     }
     
-    public void done(DataValue endValue) {
-        closePeriod(endValue);
+    public void done() {
+        closePeriod();
     }
 
     void openPeriod(DateTime start, DateTime end){
     	this.openPeriod(start, end, this.lastValue);
-    }
-    
-    void closePeriod(){
-    	this.closePeriod(this.lastValue);
     }
     
     void addDataInPeriod(DataValue value, long time){
@@ -62,9 +58,6 @@ abstract public class AbstractChildDataQuantizer {
 
     /**
      * Tells the quantizer that there is no more data for the period.
-     * 
-     * @param done
-     *            indicates that there will never be any more data given to any other
      */
-    abstract protected void closePeriod(DataValue endValue);
+    abstract protected void closePeriod();
 }

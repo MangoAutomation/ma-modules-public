@@ -11,5 +11,5 @@ import com.serotonin.m2m2.view.stats.StatisticsGenerator;
  *
  */
 public interface ChildStatisticsQuantizerCallback {
-	public void quantizedStatistics(int dataPointId, StatisticsGenerator stats, boolean done);
+	public void quantizedStatistics(int dataPointId, StatisticsGenerator stats);
 }

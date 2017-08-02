@@ -35,10 +35,10 @@ public class ValueChangeCounterChildQuantizer extends AbstractChildDataQuantizer
     }
 
     @Override
-    protected void closePeriod(DataValue endValue) {
+    protected void closePeriod() {
         if (valueChangeCounter != null) {
             valueChangeCounter.done();
-            callback.quantizedStatistics(id, valueChangeCounter, endValue == null);
+            callback.quantizedStatistics(id, valueChangeCounter);
         }
     }
 

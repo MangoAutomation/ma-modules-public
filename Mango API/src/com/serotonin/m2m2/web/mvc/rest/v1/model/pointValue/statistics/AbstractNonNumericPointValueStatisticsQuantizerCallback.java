@@ -47,7 +47,7 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	 * @see com.serotonin.m2m2.view.quantize2.StatisticsGeneratorQuantizerCallback#quantizedStatistics(com.serotonin.m2m2.view.stats.StatisticsGenerator, boolean)
 	 */
 	@Override
-    public void quantizedStatistics(ValueChangeCounter statisticsGenerator, boolean done) {
+    public void quantizedStatistics(ValueChangeCounter statisticsGenerator) {
 		if(this.limiter.limited())
 			return;
 		

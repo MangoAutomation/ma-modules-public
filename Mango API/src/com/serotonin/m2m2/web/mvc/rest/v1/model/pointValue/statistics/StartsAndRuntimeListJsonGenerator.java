@@ -8,7 +8,6 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.StartsAndRuntime;
 import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -40,8 +39,8 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.StatisticsJsonGenerator#writeStatistics()
 	 */
 	@Override
-	public void done(PointValueTime last) throws IOException {
-		this.generator.done(last);
+	public void done() throws IOException {
+		this.generator.done();
 		
 		//Do we have any data
 		if(this.statistics.getCount() > 0){

@@ -5,12 +5,10 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.statistics;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.joda.time.DateTime;
 
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.quantize2.BucketCalculator;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
@@ -87,13 +85,10 @@ public class ParentDataQuantizer implements ChildStatisticsQuantizerCallback{
     }
 
     /**
-     * 
-     * @param endValues - Map of data point to last value, null if DNE. Map must contain an entry for all data points used.
+     * Called when completed processing all data
+     * @param endValues
      */
-    public void done(Map<Integer, DataValue> endValues) {
-
-    	if(endValues.size() != this.quantizers.size())
-    		throw new ShouldNeverHappenException("Invalid number of endValues, must be one for every data point quantizer.");
+    public void done() {
     	
         //Finish to our end time
         while (periodTo.isBefore(bucketCalculator.getEndTime())){
@@ -109,16 +104,6 @@ public class ParentDataQuantizer implements ChildStatisticsQuantizerCallback{
         	this.periodStatsMap.clear();
         }
 
-        //Send in the last values
-        Iterator<Integer> it = endValues.keySet().iterator();
-    	while(it.hasNext()){
-    		Integer pointId = it.next();
-	        //Close 
-	    	AbstractChildDataQuantizer quantizer = this.quantizers.get(pointId);
-	    	if(quantizer != null){
-	    		quantizer.done(endValues.get(pointId));
-	    	}
-    	}
 
     	this.callback.closePeriod(this.periodStatsMap, this.periodFrom.getMillis());
     	this.periodStatsMap.clear();
@@ -132,7 +117,7 @@ public class ParentDataQuantizer implements ChildStatisticsQuantizerCallback{
 	 * @param done
 	 */
     @Override
-	public void quantizedStatistics(int dataPointId, StatisticsGenerator stats, boolean done) {
+	public void quantizedStatistics(int dataPointId, StatisticsGenerator stats) {
     	this.periodStatsMap.put(dataPointId, stats);
 	}
 

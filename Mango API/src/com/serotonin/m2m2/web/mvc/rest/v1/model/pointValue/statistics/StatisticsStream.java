@@ -72,15 +72,9 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 
 		//Do the main work
 		DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from, to, calculator);
-		PointValueTime after = DaoRegistry.pointValueDao.getPointValueAfter(vo.getId(), to);
 		//Finish
-		calculator.done(after);
-
-		
+		calculator.done();
 	}
-
-
-
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)

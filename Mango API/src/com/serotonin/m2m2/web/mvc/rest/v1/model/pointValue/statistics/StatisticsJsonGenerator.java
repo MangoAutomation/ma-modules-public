@@ -7,7 +7,6 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.stats.IValueTime;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -47,7 +46,7 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
     /**
      * Used to end a period
      */
-    public void done(PointValueTime last) throws IOException{
-    	this.generator.done(last);
+    public void done() throws IOException{
+    	this.generator.done();
     }
 }

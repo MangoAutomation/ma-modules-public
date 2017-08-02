@@ -34,9 +34,9 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.m2m2.util.chart.DiscreteTimeSeries;
 import com.serotonin.m2m2.util.chart.ImageChartUtils;
 import com.serotonin.m2m2.util.chart.NumericTimeSeries;
@@ -60,7 +60,6 @@ import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
 import com.serotonin.m2m2.vo.export.ExportDataValue;
 import com.serotonin.m2m2.vo.export.ExportPointInfo;
 import com.serotonin.m2m2.web.taglib.Functions;
-import com.serotonin.m2m2.util.ColorUtils;
 
 import freemarker.template.Template;
 
@@ -686,7 +685,7 @@ public class ReportChartCreator {
                 quantizer.done();
             if (point != null)
                 // Add in an end value to calculate stats until the end of the report. 
-                point.getStats().done(new PointValueTime(0D, end));
+                point.getStats().done();
         }
 
         @Override
