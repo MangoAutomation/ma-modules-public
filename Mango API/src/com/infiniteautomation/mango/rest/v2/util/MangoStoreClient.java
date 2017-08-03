@@ -80,7 +80,7 @@ public class MangoStoreClient {
 		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 
 		//Execute and get the response.
-		HttpResponse response = executeRequest(httppost, HttpStatus.SC_OK, retries);
+		HttpResponse response = executeRequest(httppost, 302, retries);
 		HttpEntity entity = response.getEntity();
 		if (entity != null) {
 		    InputStream instream = entity.getContent();
@@ -207,7 +207,11 @@ public class MangoStoreClient {
                 response = httpClient.execute(request);
                 if(response != null && response.getStatusLine().getStatusCode() == 308) { //Not in HttpStatus TODO 
                 	try {
-                		request.setURI(new URI(response.getLastHeader("Location").getValue()));
+                		String location = response.getLastHeader("Location").getValue();
+                		String secureStore = storeUrl.replaceFirst("^http://", "https://");
+                		request.setURI(new URI(location));
+                		if(location.startsWith(secureStore))
+                			storeUrl = secureStore;
                 		continue;
                 	} catch(URISyntaxException e) {
                 		throw new HttpException("Syntax exception in returned location from redirect to: " + response.getLastHeader("Location").getValue());
