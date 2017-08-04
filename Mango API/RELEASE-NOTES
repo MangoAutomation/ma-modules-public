@@ -1,3 +1,10 @@
+*Version 3.2.0*
+* Upgraded to work with core version 3.2.x
+* Adding script utils endpoint test and run scripts
+* Better error handling on modules endpoint
+* Temporary resource expiration time is now accurate
+* Generate XID for new data points if one is not supplied
+
 *Version 3.1.0*
 * Upgraded to work with core version 3.1.x
 * Adding event detector endpoints @ rest/v2/event-detectors
