@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -90,6 +91,9 @@ public class LoggingRestController extends MangoRestController{
 	    		ASTNode query = this.parseRQLtoAST(request);
 	    		File file = new File(Common.getLogsDir(), filename);
 	    		if(file.exists()){
+	    		    // content disposition header gets filename=f.txt somehow without this
+	    		    result.getHeaders().set(HttpHeaders.CONTENT_DISPOSITION, null);
+	    		    
 	    			if(filename.startsWith("ma.")){
 	    				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
 	    				return result.createResponseEntity(stream);
