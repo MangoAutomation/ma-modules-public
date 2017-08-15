@@ -132,7 +132,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	@Override
 	public void onDirectoryChange(File dir) {
-		fileEvent();
+		fileEvent(dataPoints);
 	}
 
 	@Override
@@ -157,20 +157,27 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	@Override
 	public void onFileChange(File f) {
-		fileEvent();
+		fileEvent(dataPoints);
 	}
 
 	@Override
 	public void onStart(FileAlterationObserver obs) {
-		fileEvent();
+		fileEvent(dataPoints);
 	}
 
 	@Override
 	public void onStop(FileAlterationObserver obs) {
 		// no-op
 	}
+	
+	@Override //Read the file for only the one point.
+	public void forcePointRead(DataPointRT dataPoint) {
+		List<DataPointRT> dataPoints = new ArrayList<>(1);
+		dataPoints.add(dataPoint);
+		fileEvent(dataPoints);
+	}
 
-	private void fileEvent() {
+	private void fileEvent(List<DataPointRT> dataPoints) {
 		// Should never happen
 		if (this.file == null) {
 			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
@@ -189,12 +196,12 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 			BufferedReader reader = new BufferedReader(new FileReader(this.file));
 
 			String msg;
-			if (!this.dataPoints.isEmpty()) {
+			if (!dataPoints.isEmpty()) {
 
 				// TODO optimize to be better than numLines*numPoints
 				while ((msg = reader.readLine()) != null) {
 					// Give all points the chance to find their data
-					for (final DataPointRT dp : this.dataPoints) {
+					for (final DataPointRT dp : dataPoints) {
 						AsciiFilePointLocatorRT pl = dp.getPointLocator();
 						final AsciiFilePointLocatorVO plVo = pl.getVo();
 
