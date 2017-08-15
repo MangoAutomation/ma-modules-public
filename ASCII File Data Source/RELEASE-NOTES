@@ -1,3 +1,6 @@
+*Version 3.2.1*
+* Implemented forcePointRead, now refresh point value possible
+
 *Version 3.2.0*
 * Upgraded to work with core version 3.2.x
 
