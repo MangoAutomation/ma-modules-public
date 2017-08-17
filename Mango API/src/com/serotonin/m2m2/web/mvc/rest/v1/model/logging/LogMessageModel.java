@@ -4,8 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.logging;
 
-import java.util.Date;
-
 /**
  * @author Terry Packer
  *
@@ -18,7 +16,7 @@ public class LogMessageModel {
 	private Integer lineNumber;
 	private String message;
 	private String[] stackTrace;
-	private Date time;
+	private long time;
 	
 	public LogMessageModel(){ }
 	
@@ -27,7 +25,7 @@ public class LogMessageModel {
 	 * @param message
 	 * @param time
 	 */
-	public LogMessageModel(String level, String classname, String method, Integer lineNumber, String message, String[] stackTrace, Date time) {
+	public LogMessageModel(String level, String classname, String method, Integer lineNumber, String message, String[] stackTrace, long time) {
 		super();
 		this.level = level;
 		this.classname = classname;
@@ -57,10 +55,10 @@ public class LogMessageModel {
 		this.stackTrace = stackTrace;
 	}
 
-	public Date getTime() {
+	public long getTime() {
 		return time;
 	}
-	public void setTime(Date time) {
+	public void setTime(long time) {
 		this.time = time;
 	}
 

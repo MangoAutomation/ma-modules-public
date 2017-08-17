@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +54,7 @@ public class LoggingRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(LoggingRestController.class);
 	
+	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "List Log Files", notes = "Returns a list of logfile names")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/files")
     public ResponseEntity<List<String>> list(
@@ -61,9 +63,9 @@ public class LoggingRestController extends MangoRestController{
 		RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);
     	
 		this.checkUser(request, result);
-    	if(result.isOk()){
-    		QueryModel query = new QueryModel();
-    		query.setLimit(limit);
+    	    if(result.isOk()){
+        		QueryModel query = new QueryModel();
+        		query.setLimit(limit);
 			List<String> modelList = new ArrayList<String>();
 			File logsDir = Common.getLogsDir();
 			for(String filename : logsDir.list()){
@@ -71,11 +73,12 @@ public class LoggingRestController extends MangoRestController{
 				modelList.add(filename);
 			}
 			return result.createResponseEntity(modelList);
-    	}
+    	    }
     	
-    	return result.createResponseEntity();
+    	    return result.createResponseEntity();
     }
 	
+	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "Query ma.log logs", 
 			notes = "Returns a list of recent logs, ie. /by-filename/ma.log?limit(10)\n" + 
 					"<br>Query Examples: \n" + 
@@ -88,31 +91,30 @@ public class LoggingRestController extends MangoRestController{
     		@PathVariable String filename, 
     		HttpServletRequest request) {
 		RestProcessResult<QueryArrayStream<?>> result = new RestProcessResult<QueryArrayStream<?>>(HttpStatus.OK);
-		this.checkUser(request, result);
-		if(result.isOk()){
-        		try{
-        	    		ASTNode query = this.parseRQLtoAST(request);
-        	    		File file = new File(Common.getLogsDir(), filename);
-        	    		if(file.exists()){
-        	    		    //Pattern pattern = new 
-        	    			if(filename.matches(LogQueryArrayStream.LOGFILE_REGEX)){
-        	    				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
-        	    				return result.createResponseEntity(stream);
-        	    			}else{
-        	    			    throw new AccessDeniedException("Non ma.log files are not accessible on this endpoint.");
-        	    			}
-        	    		}else{
-        	    			result.addRestMessage(getDoesNotExistMessage());
-        	    		}
-        		}catch(InvalidRQLRestException e){
-        			LOG.error(e.getMessage(), e);
-        			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-    				return result.createResponseEntity();
-        		}
-        	}
+    		try{
+    	    		ASTNode query = this.parseRQLtoAST(request);
+    	    		File file = new File(Common.getLogsDir(), filename);
+    	    		if(file.exists()){
+    	    		    //Pattern pattern = new 
+    	    			if(filename.matches(LogQueryArrayStream.LOGFILE_REGEX)){
+    	    				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
+    	    				return result.createResponseEntity(stream);
+    	    			}else{
+    	    			    throw new AccessDeniedException("Non ma.log files are not accessible on this endpoint.");
+    	    			}
+    	    		}else{
+    	    			result.addRestMessage(getDoesNotExistMessage());
+    	    		}
+    		}catch(InvalidRQLRestException e){
+    			LOG.error(e.getMessage(), e);
+    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+			return result.createResponseEntity();
+    		}
+
     	    return result.createResponseEntity();
     }
 	
+	@PreAuthorize("isAdmin()")
     @ApiOperation(value = "Download log as file", notes = "")
     @RequestMapping(method = RequestMethod.GET, produces={}, value = "/download/{filename}")
     public ResponseEntity<FileSystemResource> download(
@@ -146,15 +148,15 @@ public class LoggingRestController extends MangoRestController{
         
         this.checkUser(request, result);
         if(result.isOk()){
-        	TableModel model = new TableModel();
-        	List<QueryAttribute> attributes = new ArrayList<QueryAttribute>();
-        	attributes.add(new QueryAttribute("level", null, Types.VARCHAR));
-        	attributes.add(new QueryAttribute("classname", null, Types.VARCHAR));
-        	attributes.add(new QueryAttribute("method", null, Types.VARCHAR));
-        	attributes.add(new QueryAttribute("time", null, Types.INTEGER));
-        	attributes.add(new QueryAttribute("message", null, Types.VARCHAR));
+            	TableModel model = new TableModel();
+            	List<QueryAttribute> attributes = new ArrayList<QueryAttribute>();
+            	attributes.add(new QueryAttribute("level", null, Types.VARCHAR));
+            	attributes.add(new QueryAttribute("classname", null, Types.VARCHAR));
+            	attributes.add(new QueryAttribute("method", null, Types.VARCHAR));
+            	attributes.add(new QueryAttribute("time", null, Types.INTEGER));
+            	attributes.add(new QueryAttribute("message", null, Types.VARCHAR));
         	
-        	model.setAttributes(attributes);
+        	    model.setAttributes(attributes);
  	        result.addRestMessage(getSuccessMessage());
 	        return result.createResponseEntity();
         }

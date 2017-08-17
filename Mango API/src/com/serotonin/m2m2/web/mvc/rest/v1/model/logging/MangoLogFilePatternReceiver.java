@@ -13,7 +13,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -185,74 +184,72 @@ public class MangoLogFilePatternReceiver{
         
         if(event.hasLocationInformation()){
             method = event.getMethodName();
-        	classname = event.getClassName();
-        	lineNumber = Integer.parseInt(event.getLineNumber());
+            classname = event.getClassName();
+            lineNumber = Integer.parseInt(event.getLineNumber());
         	
         	
             if(classComparison != null){
-            	switch(classComparison.getComparison()){
-            	case EQUAL_TO:
-            		if(!classname.equals((String)classComparison.getArgument(0)))
-            			return;
-            	break;
-            	case NOT_EQUAL_TO:
-            		if(classname.equals((String)classComparison.getArgument(0)))
-            			return;
-            	break;
-            	case LIKE:
-            		if(!classname.matches((String)classComparison.getArgument(0)))
-            			return;
-            	break;
-            	default:
-            		break;
-            		
-            	}
+                	switch(classComparison.getComparison()){
+                	case EQUAL_TO:
+                		if(!classname.equals((String)classComparison.getArgument(0)))
+                			return;
+                	break;
+                	case NOT_EQUAL_TO:
+                		if(classname.equals((String)classComparison.getArgument(0)))
+                			return;
+                	break;
+                	case LIKE:
+                		if(!classname.matches((String)classComparison.getArgument(0)))
+                			return;
+                	break;
+                	default:
+                		break;
+                		
+                	}
             }
 
             if(methodComparison != null){
-            	switch(methodComparison.getComparison()){
-            	case EQUAL_TO:
-            		if(!method.equals(methodComparison.getArgument(0)))
-            			return;
-            	break;
-            	case NOT_EQUAL_TO:
-            		if(method.equals(methodComparison.getArgument(0)))
-            			return;
-            	break;
-            	case LIKE:
-            		if(!method.matches((String)methodComparison.getArgument(0)))
-            			return;
-            	break;
-            	default:
-            		return;
-            	}
+                	switch(methodComparison.getComparison()){
+                	case EQUAL_TO:
+                		if(!method.equals(methodComparison.getArgument(0)))
+                			return;
+                	break;
+                	case NOT_EQUAL_TO:
+                		if(method.equals(methodComparison.getArgument(0)))
+                			return;
+                	break;
+                	case LIKE:
+                		if(!method.matches((String)methodComparison.getArgument(0)))
+                			return;
+                	break;
+                	default:
+                		return;
+                	}
             }
             
-            //TODO Filter on Message Here need to implement 'contains' in RQL first
             if(messageComparison != null){
-            	switch(messageComparison.getComparison()){
-            	case EQUAL_TO:
-            		if(!message.equals(messageComparison.getArgument(0)))
-            			return;
-            	break;
-            	case NOT_EQUAL_TO:
-            		if(message.equals(messageComparison.getArgument(0)))
-            			return;
-            	break;
-            	case LIKE:
-            		if(!message.matches((String)messageComparison.getArgument(0)))
-            			return;
-            	break;
-            	default:
-            		return;
-            	}
+                	switch(messageComparison.getComparison()){
+                	case EQUAL_TO:
+                		if(!message.equals(messageComparison.getArgument(0)))
+                			return;
+                	break;
+                	case NOT_EQUAL_TO:
+                		if(message.equals(messageComparison.getArgument(0)))
+                			return;
+                	break;
+                	case LIKE:
+                		if(!message.matches((String)messageComparison.getArgument(0)))
+                			return;
+                	break;
+                	default:
+                		return;
+                	}
             }
 
         }
 
         String[] stackTrace = event.getStackTrace();
         
-        Date time = new Date(event.getTimeStamp());
 		try {
 			jgen.writeObject(new LogMessageModel(
 					event.getLevel().toString(),
@@ -261,7 +258,7 @@ public class MangoLogFilePatternReceiver{
 					lineNumber,
 					message, 
 					stackTrace,
-					time));
+					event.getTimestamp()));
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
