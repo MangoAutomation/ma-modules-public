@@ -1,8 +1,9 @@
 *Version 3.2.1*
 * Removed point counts from the v2/server/system-info endpoint
 * Added v2/server/point-history-counts to get all point counts
+* Returning log file meta data on v1/logging/files
 * Fixing up v1/logging/by-filename endpoint to only allow querying on Log4J ma.log files
-* Adding v1/logging/download endpoint
+* Adding v1/logging/view endpoint to view and download logfiles
 
 *Version 3.2.0*
 * Upgraded to work with core version 3.2.x

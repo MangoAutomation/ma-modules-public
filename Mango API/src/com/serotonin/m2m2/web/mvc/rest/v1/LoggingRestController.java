@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +28,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.QueryAttribute;
-import com.infiniteautomation.mango.db.query.QueryModel;
 import com.infiniteautomation.mango.db.query.TableModel;
+import com.infiniteautomation.mango.rest.v2.FileStoreRestV2Controller;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -38,6 +40,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.logging.LogQueryArrayStream;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
@@ -55,27 +58,26 @@ public class LoggingRestController extends MangoRestController{
 	private static Log LOG = LogFactory.getLog(LoggingRestController.class);
 	
 	@PreAuthorize("isAdmin()")
-	@ApiOperation(value = "List Log Files", notes = "Returns a list of logfile names")
+	@ApiOperation(value = "List Log Files", notes = "Returns a list of logfile metadata")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/files")
-    public ResponseEntity<List<String>> list(
-    		@RequestParam(value = "limit", required = false, defaultValue="100") int limit,
-    		HttpServletRequest request) {
-		RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);
-    	
-		this.checkUser(request, result);
-    	    if(result.isOk()){
-        		QueryModel query = new QueryModel();
-        		query.setLimit(limit);
-			List<String> modelList = new ArrayList<String>();
-			File logsDir = Common.getLogsDir();
-			for(String filename : logsDir.list()){
-				if(!filename.startsWith("."))
-				modelList.add(filename);
+    public ResponseEntity<List<FileModel>> list (
+    		@RequestParam(value = "limit", required = false) Integer limit,
+    		HttpServletRequest request) throws IOException{
+
+		List<FileModel> modelList = new ArrayList<FileModel>();
+		File logsDir = Common.getLogsDir();
+		int count = 0;
+		for(File file : logsDir.listFiles()){
+	        if((limit != null)&&(count >= limit.intValue()))
+	            break;
+			if(!file.getName().startsWith(".")){
+			    FileModel model = FileStoreRestV2Controller.fileToModel(file, logsDir, request.getServletContext());
+			    model.setMimeType("text/plain");
+			    modelList.add(model);
+			    count++;
 			}
-			return result.createResponseEntity(modelList);
-    	    }
-    	
-    	    return result.createResponseEntity();
+		}
+		return ResponseEntity.ok(modelList);
     }
 	
 	@PreAuthorize("isAdmin()")
@@ -115,17 +117,17 @@ public class LoggingRestController extends MangoRestController{
     }
 	
 	@PreAuthorize("isAdmin()")
-    @ApiOperation(value = "Download log as file", notes = "")
-    @RequestMapping(method = RequestMethod.GET, produces={}, value = "/download/{filename}")
+    @ApiOperation(value = "View log", notes = "Optionally download file as attachment")
+    @RequestMapping(method = RequestMethod.GET, produces={"text/plain"}, value = "/view/{filename}")
     public ResponseEntity<FileSystemResource> download(
+            @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean download,
             @AuthenticationPrincipal User user,
             @PathVariable String filename, HttpServletRequest request) {
         File file = new File(Common.getLogsDir(), filename);
         if (file.exists()) {
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment");
-            //TODO Cache Control
-            //TODO Mime Types
+            responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
             return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
         }else {
             throw new NotFoundRestException();
