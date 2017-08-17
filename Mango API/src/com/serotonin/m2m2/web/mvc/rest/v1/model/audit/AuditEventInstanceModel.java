@@ -4,6 +4,13 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.audit;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.json.JsonException;
+import com.serotonin.json.JsonWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
@@ -72,8 +79,23 @@ public class AuditEventInstanceModel extends AbstractBasicVoModel<AuditEventInst
 	public void setTimestamp(long timestamp) {
 		this.data.setTimestamp(timestamp);
 	}
-	public JsonObject getContext() {
-		return this.data.getContext();
+	@JsonRawValue
+	public String getContext() {
+	    //Since the JsonData table can contain JSON within the context, return raw JSON all the time here
+	    StringWriter stringWriter = new StringWriter();
+        JsonWriter writer = new JsonWriter(Common.JSON_CONTEXT, stringWriter);
+        writer.setPrettyIndent(3);
+        writer.setPrettyOutput(true);
+        try {
+            writer.writeObject(this.data.getContext());
+            return stringWriter.toString();
+        }
+        catch (JsonException e) {
+            throw new ShouldNeverHappenException(e);
+        }
+        catch (IOException e) {
+            throw new ShouldNeverHappenException(e);
+        }
 	}
 	public void setContext(JsonObject context) {
 		this.data.setContext(context);
