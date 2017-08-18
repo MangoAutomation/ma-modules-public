@@ -143,6 +143,7 @@ public class WorkItemRestController extends MangoRestController{
         return ResponseEntity.ok(model);
     }
     
+    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get Running Work Item Statistics", notes = "Returns information on all tasks running in the High and Medium thread pools")
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/running-stats")
     public ResponseEntity<BackgroundProcessingRunningStats> getRunningStats(HttpServletRequest request) throws IOException {
@@ -154,6 +155,7 @@ public class WorkItemRestController extends MangoRestController{
         return ResponseEntity.ok(model);
     }
 
+    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get Rejected Task Statistics", notes = "Returns information on all tasks rejected from the High and Medium thread pools")
     @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/rejected-stats")
     public ResponseEntity<BackgroundProcessingRejectedTaskStats> getRejectedStats(HttpServletRequest request) throws IOException {
