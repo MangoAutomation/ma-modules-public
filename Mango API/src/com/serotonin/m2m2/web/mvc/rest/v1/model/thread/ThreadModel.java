@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.thread;
 
 import java.lang.Thread.State;
+import java.lang.management.LockInfo;
 import java.lang.management.ThreadInfo;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -34,7 +35,6 @@ public class ThreadModel {
 		return this.info.getThreadId();
 	}
 	
-	
 	@JsonGetter("name")
 	public String getName(){
 		return this.info.getThreadName();
@@ -63,6 +63,21 @@ public class ThreadModel {
 	@JsonGetter("location")
 	public StackTraceElement[] getLocation(){
 		return this.info.getStackTrace();
+	}
+	
+	@JsonGetter("lockOwnerName")
+	public String getLockOwnerName() {
+	    return this.info.getLockOwnerName();
+	}
+	
+	@JsonGetter("lockOwnerId")
+	public long getLockOwnerId() {
+	    return this.info.getLockOwnerId();
+	}
+	
+	@JsonGetter("lockInfo")
+	public LockInfo getLockInfo() {
+	    return this.info.getLockInfo();
 	}
 
 }

@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,6 +25,9 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.workItem.BackgroundProcessingQueueCounts;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.workItem.BackgroundProcessingRejectedTaskStats;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.workItem.BackgroundProcessingRunningStats;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.workitem.WorkItemModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -124,4 +129,40 @@ public class WorkItemRestController extends MangoRestController{
     	return result.createResponseEntity();
 	}
 	
+	
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Get Queued Work Item Counts", notes = "Returns Work Item names to instance count for High, Medium and Low thread pools")
+    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/queue-counts")
+    public ResponseEntity<BackgroundProcessingQueueCounts> getQueueCounts(HttpServletRequest request) throws IOException {
+        
+        BackgroundProcessingQueueCounts model = new BackgroundProcessingQueueCounts();
+        model.setHighPriorityServiceQueueClassCounts(Common.backgroundProcessing.getHighPriorityServiceQueueClassCounts());
+        model.setMediumPriorityServiceQueueClassCounts(Common.backgroundProcessing.getMediumPriorityServiceQueueClassCounts());
+        model.setLowPriorityServiceQueueClassCounts(Common.backgroundProcessing.getLowPriorityServiceQueueClassCounts());
+        
+        return ResponseEntity.ok(model);
+    }
+    
+    @ApiOperation(value = "Get Running Work Item Statistics", notes = "Returns information on all tasks running in the High and Medium thread pools")
+    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/running-stats")
+    public ResponseEntity<BackgroundProcessingRunningStats> getRunningStats(HttpServletRequest request) throws IOException {
+        
+        BackgroundProcessingRunningStats model = new BackgroundProcessingRunningStats();
+        model.setHighPriorityOrderedQueueStats(Common.backgroundProcessing.getHighPriorityOrderedQueueStats());
+        model.setMediumPriorityOrderedQueueStats(Common.backgroundProcessing.getMediumPriorityOrderedQueueStats());
+        
+        return ResponseEntity.ok(model);
+    }
+
+    @ApiOperation(value = "Get Rejected Task Statistics", notes = "Returns information on all tasks rejected from the High and Medium thread pools")
+    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/rejected-stats")
+    public ResponseEntity<BackgroundProcessingRejectedTaskStats> getRejectedStats(HttpServletRequest request) throws IOException {
+        
+        BackgroundProcessingRejectedTaskStats model = new BackgroundProcessingRejectedTaskStats();
+        model.setHighPriorityRejectedTaskStats(Common.backgroundProcessing.getHighPriorityRejectionHandler().getRejectedTaskStats());
+        model.setMediumPriorityRejectedTaskStats(Common.backgroundProcessing.getMediumPriorityRejectionHandler().getRejectedTaskStats());
+        
+        return ResponseEntity.ok(model);
+    }
+    
 }
