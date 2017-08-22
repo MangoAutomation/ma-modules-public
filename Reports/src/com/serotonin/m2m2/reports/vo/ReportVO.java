@@ -595,12 +595,12 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
         
         DataPointDao dataPointDao = DataPointDao.instance;
         for (ReportPointVO point : points) {
-        	DataPointVO vo  = dataPointDao.getDataPoint(point.getPointId());
+        	DataPointVO vo  = dataPointDao.getDataPoint(point.getPointId(), false);
         	String pointXid = "unknown";
         	if(vo != null){
         		pointXid = vo.getXid();
             	try{
-            		Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId()));
+            		Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId(), false));
             	}catch(PermissionException e){
             		
             		response.addContextualMessage("points", "reports.vaildate.pointDNE");

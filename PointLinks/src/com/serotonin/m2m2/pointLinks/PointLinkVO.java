@@ -169,11 +169,11 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
         writer.writeEntry("xid", xid);
 
-        DataPointVO dp = dataPointDao.getDataPoint(sourcePointId);
+        DataPointVO dp = dataPointDao.getDataPoint(sourcePointId, false);
         if (dp != null)
             writer.writeEntry("sourcePointId", dp.getXid());
 
-        dp = dataPointDao.getDataPoint(targetPointId);
+        dp = dataPointDao.getDataPoint(targetPointId, false);
         if (dp != null)
             writer.writeEntry("targetPointId", dp.getXid());
 

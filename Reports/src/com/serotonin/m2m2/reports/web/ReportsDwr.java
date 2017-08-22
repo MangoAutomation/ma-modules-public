@@ -366,7 +366,7 @@ public class ReportsDwr extends ModuleDwr {
         User user = Common.getUser();
         DataPointDao dataPointDao = DataPointDao.instance;
         for (ReportPointVO point : points) {
-            Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId()));
+            Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId(), false));
 
             try {
                 if (!StringUtils.isBlank(point.getColour()))
@@ -434,7 +434,7 @@ public class ReportsDwr extends ModuleDwr {
         report.setXid(Common.generateXid("REP_"));
         DataPointDao dataPointDao = DataPointDao.instance;
         for (int id : dataPointIds) {
-            DataPointVO dp = dataPointDao.getDataPoint(id);
+            DataPointVO dp = dataPointDao.getDataPoint(id, false);
             if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
                 continue;
 

@@ -145,7 +145,7 @@ public class PointLinksDwr extends ModuleDwr {
         if (source == null)
             message = new TranslatableMessage("event.pointLink.sourceUnavailable");
         else {
-            DataPointVO target = DataPointDao.instance.getDataPoint(targetPointId);
+            DataPointVO target = DataPointDao.instance.getDataPoint(targetPointId, false);
             if(target == null){
             	message = new TranslatableMessage("pointLinks.validate.targetRequired");
             }else{
