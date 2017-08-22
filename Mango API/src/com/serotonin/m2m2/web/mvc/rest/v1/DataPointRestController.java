@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
@@ -68,7 +67,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 	
 	public DataPointRestController(){
-		super(DaoRegistry.dataPointDao);
+		super(DataPointDao.instance);
 		LOG.info("Creating Data Point Rest Controller.");
 	}
 
@@ -316,7 +315,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 			}
 			
 			//Ensure ds exists
-			DataSourceVO<?> dataSource = DaoRegistry.dataSourceDao.getByXid(model.getDataSourceXid());
+			DataSourceVO<?> dataSource = DataSourceDao.instance.getByXid(model.getDataSourceXid());
         	//We will always override the DS Info with the one from the XID Lookup
             if (dataSource == null){
             	result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("emport.dataPoint.badReference", model.getDataSourceXid()));
@@ -358,7 +357,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 	        
 	        if(StringUtils.isEmpty(vo.getXid()))
-	        	vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());
+	        	vo.setXid(DataPointDao.instance.generateUniqueXid());
 	        
 	        // allow empty string, but if its null use the data source name
 	        if (vo.getDeviceName() == null) {
@@ -407,12 +406,12 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         	DataSourceVO<?> ds = null;
         	if(models.size() > 0){
         		first = models.get(0);
-        		ds = DaoRegistry.dataSourceDao.getByXid(first.getDataSourceXid());
+        		ds = DataSourceDao.instance.getByXid(first.getDataSourceXid());
         	}
         	
         	for(DataPointModel model : models){
     			DataPointVO vo = model.getData();
-    			DataSourceVO<?> myDataSource = DaoRegistry.dataSourceDao.getByXid(vo.getDataSourceXid());
+    			DataSourceVO<?> myDataSource = DataSourceDao.instance.getByXid(vo.getDataSourceXid());
     			if(myDataSource == null){
     				model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "dataSourceXid");
     				continue;
@@ -489,7 +488,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 }
     	        
     	        if(StringUtils.isEmpty(vo.getXid()))
-                    vo.setXid(DaoRegistry.dataPointDao.generateUniqueXid());
+                    vo.setXid(DataPointDao.instance.generateUniqueXid());
                 
                 // allow empty string, but if its null use the data source name
                 if (vo.getDeviceName() == null) {
@@ -526,7 +525,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		RestProcessResult<DataPointModel> result = new RestProcessResult<DataPointModel>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
-			DataPointVO existing = DaoRegistry.dataPointDao.getByXid(xid);
+			DataPointVO existing = DataPointDao.instance.getByXid(xid);
 			if(existing == null) {
 				result.addRestMessage(this.getDoesNotExistMessage());
 				return result.createResponseEntity();
@@ -654,7 +653,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		User user = this.checkUser(request, result);
         if(result.isOk()){
         	
-        	DataSourceVO<?> dataSource = DaoRegistry.dataSourceDao.getDataSource(xid);
+        	DataSourceVO<?> dataSource = DataSourceDao.instance.getDataSource(xid);
         	if(dataSource == null){
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -671,7 +670,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         		return result.createResponseEntity();	    		
 	    	}
         	
-           	List<DataPointVO> dataPoints = DaoRegistry.dataPointDao.getDataPoints(dataSource.getId(), null);
+           	List<DataPointVO> dataPoints = DataPointDao.instance.getDataPoints(dataSource.getId(), null);
             List<DataPointModel> userDataPoints = new ArrayList<DataPointModel>();
         	
 	        for(DataPointVO vo : dataPoints){

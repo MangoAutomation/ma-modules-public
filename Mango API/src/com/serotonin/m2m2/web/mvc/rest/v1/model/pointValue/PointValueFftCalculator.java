@@ -12,7 +12,8 @@ import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.db.MappedRowCallback;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.quantize2.FftGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -174,12 +175,12 @@ public class PointValueFftCalculator implements QueryArrayStream<PointValueTimeM
 	 * @return
 	 */
 	public FftGenerator calculate(DateTime from, DateTime to){
-		
-		long count = DaoRegistry.pointValueDao.dateRangeCount(vo.getId(), from.getMillis(), to.getMillis());
+		PointValueDao pvd = Common.databaseProxy.newPointValueDao();
+		long count = pvd.dateRangeCount(vo.getId(), from.getMillis(), to.getMillis());
 	
 		final FftGenerator generator = new FftGenerator(count);
         //Make the call to get the data and quantize it
-        DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from.getMillis(), to.getMillis(),
+        pvd.getPointValuesBetween(vo.getId(), from.getMillis(), to.getMillis(),
                 new MappedRowCallback<PointValueTime>() {
                     @Override
                     public void row(PointValueTime pvt, int row) {
@@ -198,7 +199,7 @@ public class PointValueFftCalculator implements QueryArrayStream<PointValueTimeM
         // Determine the start and end times.
         if (from == -1) {
             // Get the start and end from the point values table.
-            LongPair lp = DaoRegistry.pointValueDao.getStartAndEndTime(Collections.singletonList(vo.getId()));
+            LongPair lp = Common.databaseProxy.newPointValueDao().getStartAndEndTime(Collections.singletonList(vo.getId()));
             from = lp.getL1();
             to = lp.getL2();
         }
@@ -210,7 +211,7 @@ public class PointValueFftCalculator implements QueryArrayStream<PointValueTimeM
 	 * @return
 	 */
 	private PointValueTime getEndValue(){
-		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to);
+		PointValueTime endPvt = Common.databaseProxy.newPointValueDao().getPointValueAt(vo.getId(), to);
         return endPvt;
 	}
 

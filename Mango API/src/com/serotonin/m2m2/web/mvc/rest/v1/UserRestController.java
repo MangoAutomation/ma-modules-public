@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -71,7 +70,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     		
     		if(Permissions.hasAdmin(user)){
     	    	List<UserModel> userModelList = new ArrayList<UserModel>();
-    	    	List<User> users = DaoRegistry.userDao.getUsers();
+    	    	List<User> users = UserDao.instance.getUsers();
     	    	for(User u : users){
     	    		userModelList.add(new UserModel(u));
     	    	}
@@ -109,7 +108,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		User u = DaoRegistry.userDao.getUser(username);
+    		User u = UserDao.instance.getUser(username);
     		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
@@ -156,7 +155,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		User u = DaoRegistry.userDao.getUser(username);
+    		User u = UserDao.instance.getUser(username);
     		
     		if(Permissions.hasAdmin(user)){
     			if (u == null) {
@@ -183,7 +182,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
                 //Cannot Rename a User to an existing Username
                 if(!model.getUsername().equals(username)){
-                	User existingUser = DaoRegistry.userDao.getUser(model.getUsername());
+                	User existingUser = UserDao.instance.getUser(model.getUsername());
                 	if(existingUser != null){
                 		model.addValidationMessage(new ProcessMessage("username", new TranslatableMessage("users.validate.usernameInUse")));
                 		result.addRestMessage(getValidationFailedError());
@@ -202,7 +201,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         				newUser.setPassword(Common.encrypt(model.getData().getPassword()));
         			else
         				newUser.setPassword(u.getPassword());
-        			DaoRegistry.userDao.saveUser(newUser);
+        			UserDao.instance.saveUser(newUser);
     	        	this.maybeUpdateSessionUser(user, newUser, request);
     	        }
     			return result.createResponseEntity(model);
@@ -260,7 +259,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                             	return result.createResponseEntity(model);
                             }
                         }
-                		DaoRegistry.userDao.saveUser(newUser);
+                		UserDao.instance.saveUser(newUser);
                         this.maybeUpdateSessionUser(user, newUser, request);
        	        	 	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
        	        	 	result.addRestMessage(getResourceCreatedMessage(location));
@@ -300,7 +299,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.CREATED);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		User u = DaoRegistry.userDao.getUser(model.getUsername());
+    		User u = UserDao.instance.getUser(model.getUsername());
     		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				//Create new user
@@ -309,7 +308,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	    				try{
 	    					User newUser = model.getData();
 	    					newUser.setPassword(Common.encrypt(model.getData().getPassword()));
-	    		        	DaoRegistry.userDao.saveUser(newUser);
+	    		        	UserDao.instance.saveUser(newUser);
 	        		    	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
 	        		    	result.addRestMessage(getResourceCreatedMessage(location));
 	        		        return result.createResponseEntity(model);
@@ -351,7 +350,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		User u = DaoRegistry.userDao.getUser(username);
+    		User u = UserDao.instance.getUser(username);
     		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
@@ -362,7 +361,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	            DaoRegistry.userDao.saveHomeUrl(u.getId(), url);
+    	            UserDao.instance.saveHomeUrl(u.getId(), url);
     	            this.maybeUpdateSessionUser(user, u, request);
     	        }
     			return result.createResponseEntity(model);
@@ -380,7 +379,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
         	        	//We have confirmed that we are the user
-         	            DaoRegistry.userDao.saveHomeUrl(u.getId(), url);
+         	            UserDao.instance.saveHomeUrl(u.getId(), url);
         	            this.maybeUpdateSessionUser(user, u, request);
         	        }
     				return result.createResponseEntity(model);
@@ -408,7 +407,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		User u = DaoRegistry.userDao.getUser(username);
+    		User u = UserDao.instance.getUser(username);
     		if(Permissions.hasAdmin(user)){
     			if (u == null) {
     				result.addRestMessage(getDoesNotExistMessage());
@@ -423,7 +422,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	    		DaoRegistry.userDao.saveUser(model.getData());
+    	    		UserDao.instance.saveUser(model.getData());
     	        	this.maybeUpdateSessionUser(user, model.getData(), request);
     	        }
     			return result.createResponseEntity(model);
@@ -444,7 +443,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        if(!model.validate()){
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
-        	    		DaoRegistry.userDao.saveUser(model.getData());
+        	    		UserDao.instance.saveUser(model.getData());
         	        	this.maybeUpdateSessionUser(user, model.getData(), request);
         	        }
     				return result.createResponseEntity(model);
@@ -630,7 +629,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		User u = DaoRegistry.userDao.getUser(username);
+    		User u = UserDao.instance.getUser(username);
 			if (u == null) {
 				result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -643,7 +642,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 	result.addRestMessage(getValidationFailedError());
                 	return result.createResponseEntity(model);
     			}
-    			DaoRegistry.userDao.deleteUser(u.getId());
+    			UserDao.instance.deleteUser(u.getId());
     			return result.createResponseEntity(model);
     		}else{
     			LOG.warn("Non admin user: " + user.getUsername() + " attempted to delete user : " + u.getUsername());

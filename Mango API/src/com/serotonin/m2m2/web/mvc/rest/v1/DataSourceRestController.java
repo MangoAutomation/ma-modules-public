@@ -26,7 +26,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -54,7 +53,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>>{
 
 	public DataSourceRestController(){
-		super(DaoRegistry.dataSourceDao);
+		super(DataSourceDao.instance);
 		LOG.info("Creating DS Rest Controller");
 	}
 	private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
@@ -98,7 +97,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
     	
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-	        List<DataSourceVO<?>> dataSources = DaoRegistry.dataSourceDao.getAll();
+	        List<DataSourceVO<?>> dataSources = DataSourceDao.instance.getAll();
 	        List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
 	        for(DataSourceVO<?> ds : dataSources){
 	        	try{
@@ -124,7 +123,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
     	if(result.isOk()){
-            DataSourceVO<?> vo = DaoRegistry.dataSourceDao.getByXid(xid);
+            DataSourceVO<?> vo = DataSourceDao.instance.getByXid(xid);
 
             if (vo == null) {
                 return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
@@ -158,7 +157,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	    RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            DataSourceVO<?> vo = DaoRegistry.dataSourceDao.get(id);
+            DataSourceVO<?> vo = DataSourceDao.instance.get(id);
 
             if (vo == null) {
                 return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
@@ -202,7 +201,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         if(result.isOk()){
 			DataSourceVO<?> vo = model.getData();
 			
-	        DataSourceVO<?> existing = DaoRegistry.dataSourceDao.getByXid(xid);
+	        DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
 	        if (existing == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -268,7 +267,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 			DataSourceVO<?> vo = model.getData();
 			//Check to see if the data source already exists
             if(!StringUtils.isEmpty(vo.getXid())){
-                DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+                DataSourceVO<?> existing = (DataSourceVO<?>)DataSourceDao.instance.getByXid(model.getXid());
                 if(existing != null){
                     result.addRestMessage(HttpStatus.CONFLICT, new TranslatableMessage("rest.exception.alreadyExists", model.getXid()));
                     return result.createResponseEntity();
@@ -276,7 +275,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }
             
             if (StringUtils.isEmpty(vo.getXid()))
-                vo.setXid(DaoRegistry.dataSourceDao.generateUniqueXid());
+                vo.setXid(DataSourceDao.instance.generateUniqueXid());
 			
             if(!model.validate() || !Permissions.hasPermission(vo.getEditPermission(), user.getPermissions())) {
                 result.addRestMessage(this.getValidationFailedError());
@@ -284,7 +283,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }
             else {
                 Common.runtimeManager.saveDataSource(vo);
-                DataSourceVO<?> created = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(model.getXid());
+                DataSourceVO<?> created = (DataSourceVO<?>)DataSourceDao.instance.getByXid(model.getXid());
                 URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
                 result.addRestMessage(this.getResourceCreatedMessage(location));
                 return result.createResponseEntity(created.asModel());
@@ -305,7 +304,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
-			DataSourceVO<?> existing = (DataSourceVO<?>)DaoRegistry.dataSourceDao.getByXid(xid);
+			DataSourceVO<?> existing = (DataSourceVO<?>)DataSourceDao.instance.getByXid(xid);
 			if(existing == null) {
 				result.addRestMessage(this.getDoesNotExistMessage());
 				return result.createResponseEntity();
@@ -345,7 +344,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 
 		User user = this.checkUser(request, result);
         if(result.isOk()){
-	        DataSourceVO<?> existing = DaoRegistry.dataSourceDao.getByXid(xid);
+	        DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
 	        if (existing == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();

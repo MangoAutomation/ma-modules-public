@@ -17,7 +17,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -63,7 +63,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 			
 			synchronized (map) {
 				// Handle message.getPayload() here
-				DataPointVO vo = DaoRegistry.dataPointDao.getByXid(model.getDataPointXid());
+				DataPointVO vo = DataPointDao.instance.getByXid(model.getDataPointXid());
 				if (vo != null) {
 					
 					//Check permissions

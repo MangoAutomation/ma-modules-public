@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -54,10 +56,10 @@ public class UserAccessRestController extends MangoRestController{
     	this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		DataPointVO vo = DaoRegistry.dataPointDao.getByXid(xid);
+    		DataPointVO vo = DataPointDao.instance.getByXid(xid);
     		if(vo != null){
     			List<UserAccessModel> models = new ArrayList<UserAccessModel>();
-    			List<User> allUsers = DaoRegistry.userDao.getUsers();
+    			List<User> allUsers = UserDao.instance.getUsers();
                 int accessType;
                 for (User mangoUser : allUsers) {
                     accessType = Permissions.getDataPointAccessType(mangoUser, vo);
@@ -82,10 +84,10 @@ public class UserAccessRestController extends MangoRestController{
     	this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		DataSourceVO<?> vo = DaoRegistry.dataSourceDao.getByXid(xid);
+    		DataSourceVO<?> vo = DataSourceDao.instance.getByXid(xid);
     		if(vo != null){
     			List<UserAccessModel> models = new ArrayList<UserAccessModel>();
-    			List<User> allUsers = DaoRegistry.userDao.getUsers();
+    			List<User> allUsers = UserDao.instance.getUsers();
                 for (User mangoUser : allUsers) {
                     if(Permissions.hasDataSourcePermission(mangoUser, vo)){
                         models.add(new UserAccessModel(Permissions.ACCESS_TYPE_CODES.getCode(DataPointAccessTypes.DATA_SOURCE), new UserModel(mangoUser)));

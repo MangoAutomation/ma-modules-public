@@ -13,8 +13,9 @@ import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.util.DateUtils;
@@ -75,7 +76,7 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 	public void calculate(final AbstractDataQuantizer quantizer, DateTime from, DateTime to){
 		
         //Make the call to get the data and quantize it
-        DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from.getMillis(), to.getMillis(),
+        Common.databaseProxy.newPointValueDao().getPointValuesBetween(vo.getId(), from.getMillis(), to.getMillis(),
                 new MappedRowCallback<PointValueTime>() {
                     @Override
                     public void row(PointValueTime pvt, int row) {
@@ -156,7 +157,7 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
         // Determine the start and end times.
         if (from == null) {
             // Get the start and end from the point values table.
-            LongPair lp = DaoRegistry.pointValueDao.getStartAndEndTime(Collections.singletonList(vo.getId()));
+            LongPair lp = Common.databaseProxy.newPointValueDao().getStartAndEndTime(Collections.singletonList(vo.getId()));
             from = new DateTime(lp.getL1());
             to = new DateTime(lp.getL2());
         }
@@ -190,16 +191,17 @@ public class PointValueRollupCalculator implements QueryArrayStream<PointValueTi
 	private DataValue getStartValue(){
         // Determine the start and end values. This is important for
         // properly calculating average.
-        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), from.getMillis());
+	    PointValueDao pvd = Common.databaseProxy.newPointValueDao();
+        PointValueTime startPvt = pvd.getPointValueAt(vo.getId(), from.getMillis());
         //Try our best to get the closest value
         if(startPvt == null)
-        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from.getMillis());
+        	startPvt = pvd.getPointValueBefore(vo.getId(), from.getMillis());
         DataValue startValue = PointValueTime.getValue(startPvt);
         return startValue;
 	}
 	
 	private DataValue getEndValue(){
-		PointValueTime endPvt = DaoRegistry.pointValueDao.getPointValueAt(vo.getId(), to.getMillis());
+		PointValueTime endPvt = Common.databaseProxy.newPointValueDao().getPointValueAt(vo.getId(), to.getMillis());
         return PointValueTime.getValue(endPvt);
 	}
 	

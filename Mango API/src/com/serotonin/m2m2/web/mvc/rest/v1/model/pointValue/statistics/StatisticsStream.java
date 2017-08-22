@@ -8,7 +8,8 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -64,15 +65,16 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 		//PointValueFacade pointValueFacade = new PointValueFacade(this.dataPointId);
 		
 		//First find the start value
-		PointValueTime startPvt  = DaoRegistry.pointValueDao.getPointValueBefore(vo.getId(), from);
+	    PointValueDao pvd = Common.databaseProxy.newPointValueDao();
+		PointValueTime startPvt  = pvd.getPointValueBefore(vo.getId(), from);
 		DataValue startValue = null;
 		if(startPvt != null)
 			startValue = startPvt.getValue();
 		StatisticsCalculator calculator = new StatisticsCalculator(host, port, jgen, vo, useRendered, unitConversion, this.from, this.to, startValue);
 
 		//Do the main work
-		DaoRegistry.pointValueDao.getPointValuesBetween(vo.getId(), from, to, calculator);
-		PointValueTime after = DaoRegistry.pointValueDao.getPointValueAfter(vo.getId(), to);
+		pvd.getPointValuesBetween(vo.getId(), from, to, calculator);
+		PointValueTime after = pvd.getPointValueAfter(vo.getId(), to);
 		//Finish
 		calculator.done(after);
 
