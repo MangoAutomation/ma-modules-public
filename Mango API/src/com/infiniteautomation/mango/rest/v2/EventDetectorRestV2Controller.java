@@ -270,10 +270,8 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		//Save the data point
     	Common.runtimeManager.saveDataPoint(dp);
-		
-        //Put a link to the updated data in the header?
-    	URI location = builder.path("/v2/event-detectors/{id}").buildAndExpand(existing.getId()).toUri();
-    	return getResourceDeleted(existing.asModel(), location.toString());
+
+        return new ResponseEntity<>(existing.asModel(), HttpStatus.OK);
     }
 	
 	@ApiOperation(

@@ -166,11 +166,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		
 		//Save it
 		VirtualSerialPortConfigDao.instance.remove(existing);
-		
-        //Put a link to the updated data in the header
-    	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(existing.getXid()).toUri();
-    	
-    	return getResourceDeleted(existing, location.toString());
+
+        return new ResponseEntity<>(existing, HttpStatus.OK);
     }
-	
 }
