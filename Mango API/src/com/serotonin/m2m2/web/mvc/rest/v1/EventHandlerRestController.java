@@ -180,7 +180,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
         if(result.isOk()){
         	
 	        //Check Event Type Permission
-	        if(!hasEventTypePermission(user, model.getEventType())){
+	        if(!Permissions.hasAdmin(user)){
 				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", model.getEventType().getEventTypeInstance()));
 				return result.createResponseEntity();
 	        }
