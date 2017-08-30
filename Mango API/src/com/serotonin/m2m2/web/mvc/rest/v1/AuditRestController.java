@@ -11,19 +11,20 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
-import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.db.dao.AuditEventDao;
-import com.serotonin.m2m2.module.AuditEventTypeDefinition;
-import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
@@ -82,7 +83,6 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
     	return result.createResponseEntity();
 	}
 
-	@PreAuthorize("isAdmin()")
 	@ApiOperation(
             value = "List all Audit Event Types in the system",
             notes = "Admin access only",
@@ -90,16 +90,22 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
             responseContainer="Array"
             )
     @RequestMapping(method = RequestMethod.GET, value = "list-event-types")
-    public ResponseEntity<List<StringStringPair>> listEventTypes(HttpServletRequest request) {
-        
-        List<AuditEventTypeDefinition> definitions = ModuleRegistry.getDefinitions(AuditEventTypeDefinition.class);
-        List<StringStringPair> types = new ArrayList<>();
-        for(AuditEventTypeDefinition def : definitions) {
-            StringStringPair pair = new StringStringPair();
-            pair.setKey(def.getTypeName());
-            pair.setValue( def.getDescriptionKey());
-            types.add(pair);
-        }
+    public ResponseEntity<List<EventTypeInfo>> listEventTypes(
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
+ 
+	    if(!user.isAdmin())
+	        throw new AccessDeniedException(user.getUsername() + " not admin, permission denied.");
+	    List<EventTypeInfo> types = new ArrayList<>(AuditEventType.EVENT_TYPES.size());
+	    for(EventTypeVO vo : AuditEventType.EVENT_TYPES) {
+	        EventTypeInfo info = new EventTypeInfo();
+	        info.type = vo.getType();
+	        info.subtype = vo.getSubtype();
+	        info.description = vo.getDescription();
+	        info.alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
+	        types.add(info);
+	    }
+	    
         return ResponseEntity.ok(types);
     }
 	
@@ -109,6 +115,62 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
 	@Override
 	public AuditEventInstanceModel createModel(AuditEventInstanceVO vo) {
 		return new AuditEventInstanceModel(vo);
+	}
+	
+	class EventTypeInfo {
+	    
+	    String type;
+	    String subtype;
+	    TranslatableMessage description;
+	    String alarmLevel;
+        /**
+         * @return the type
+         */
+        public String getType() {
+            return type;
+        }
+        /**
+         * @param type the type to set
+         */
+        public void setType(String type) {
+            this.type = type;
+        }
+        /**
+         * @return the subtype
+         */
+        public String getSubtype() {
+            return subtype;
+        }
+        /**
+         * @param subtype the subtype to set
+         */
+        public void setSubtype(String subtype) {
+            this.subtype = subtype;
+        }
+        /**
+         * @return the description
+         */
+        public TranslatableMessage getDescription() {
+            return description;
+        }
+        /**
+         * @param description the description to set
+         */
+        public void setDescription(TranslatableMessage description) {
+            this.description = description;
+        }
+        /**
+         * @return the alarmLevel
+         */
+        public String getAlarmLevel() {
+            return alarmLevel;
+        }
+        /**
+         * @param alarmLevel the alarmLevel to set
+         */
+        public void setAlarmLevel(String alarmLevel) {
+            this.alarmLevel = alarmLevel;
+        }
 	}
 
 }

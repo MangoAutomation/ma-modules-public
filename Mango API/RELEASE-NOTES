@@ -1,3 +1,6 @@
+*Version 3.2.2*
+* View all Audit Event types at v1/audit/list-event-types
+
 *Version 3.2.1*
 * Removed point counts from the v2/server/system-info endpoint
 * Added v2/server/point-history-counts to get all point counts
