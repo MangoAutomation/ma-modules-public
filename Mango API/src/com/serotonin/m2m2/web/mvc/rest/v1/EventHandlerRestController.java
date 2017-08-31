@@ -22,7 +22,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.db.dao.EventHandlerDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.definitions.permissions.SuperadminPermissionDefinition;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
@@ -76,10 +78,10 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	    		return result.createResponseEntity();
 	        }else{
 	        	//Check Permissions
-	        	if(Permissions.hasEventTypePermission(user, vo.getEventType()))
+	        	if(Permissions.hasAdmin(user))
 	        		return result.createResponseEntity(vo.asModel());
 	        	else
-	        		result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("common.default", "No Event Type Permission"));
+	        	    result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 	        }
 	        
         }
@@ -139,8 +141,8 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }
 	
 	        //Check Event Type Permission
-	        if(!hasEventTypePermission(user, model.getEventType())){
-				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", model.getEventType().getTypeName()));
+	        if(!Permissions.hasAdmin(user)){
+				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 				return result.createResponseEntity();
 	        }
 	        
@@ -181,7 +183,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
         	
 	        //Check Event Type Permission
 	        if(!Permissions.hasAdmin(user)){
-				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", model.getEventType().getEventTypeInstance()));
+	            result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 				return result.createResponseEntity();
 	        }
 	        
@@ -224,8 +226,8 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 				return result.createResponseEntity();
 			}else {
 		        //Check Event Type Permission
-		        if(!hasEventTypePermission(user, existing.asModel().getEventType())){
-					result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("rest.validation.noEvenTypePermission", existing.asModel().getEventType().getEventTypeInstance()));
+		        if(!Permissions.hasAdmin(user)){
+		            result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 					return result.createResponseEntity();
 		        }
 		        //All Good Delete It
