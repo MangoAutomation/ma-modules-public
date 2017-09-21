@@ -1,3 +1,7 @@
+/**
+ * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
+ * @author Phillip Dunlap
+ */
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.ArrayList;
