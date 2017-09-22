@@ -147,7 +147,7 @@ public class EventTypeV2RestController {
     
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
-            value = "Get current data point event types for a point",
+            value = "Get current data source event types for a source",
             notes = "",
             response=EventTypeModel.class,
             responseContainer="List"
@@ -223,11 +223,12 @@ public class EventTypeV2RestController {
     public void getAllModuleEventTypes(List<EventTypeModel> types, User user, String typeName, String subtypeName, 
             Integer typeRef1, Integer typeRef2, boolean adminOnly) {
         for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class))
-            for(EventTypeVO etvo : def.getEventTypeVOs())
-                if(typeName == null || typeName.equals(etvo.getType()))
-                    if(subtypeName == null || subtypeName.equals(etvo.getSubtype()))
-                        if(typeRef1 == null || typeRef1.intValue() == etvo.getTypeRef1())
-                            if(typeRef2 == null || typeRef2.intValue() == etvo.getTypeRef2())
-                                types.add(etvo.createEventType().asModel());
+            if(!adminOnly || def.getHandlersRequireAdmin())
+                for(EventTypeVO etvo : def.getEventTypeVOs())
+                    if(typeName == null || typeName.equals(etvo.getType()))
+                        if(subtypeName == null || subtypeName.equals(etvo.getSubtype()))
+                            if(typeRef1 == null || typeRef1.intValue() == etvo.getTypeRef1())
+                                if(typeRef2 == null || typeRef2.intValue() == etvo.getTypeRef2())
+                                    types.add(etvo.createEventType().asModel());
     }
 }
