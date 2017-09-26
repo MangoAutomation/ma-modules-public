@@ -41,6 +41,7 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
+import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
  * @author Matthew Lohbihler
@@ -51,15 +52,21 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance = new WatchListDao();
 	private ObjectMapper mapper;
+	DaoNotificationWebSocketHandler<WatchListVO> wsHandler;
 	
-	private WatchListDao() {
-		super(ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME),
+    /**
+     * Pass null through to super constructor for websocket handler so we have full control over where it is notified
+     */
+    @SuppressWarnings("unchecked")
+    private WatchListDao() {
+		super((DaoNotificationWebSocketHandler<WatchListVO>) null,
 				AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"}, //to allow filtering on username
 		        false,
 		        new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
 		        );
 		mapper = new ObjectMapper();
+        wsHandler = (DaoNotificationWebSocketHandler<WatchListVO>) ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME).getHandlerInstance();
 	}
 
 	
@@ -242,59 +249,25 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     		
     	});
     }
-
-    public void delete(int id, String initiatorId) {
-        WatchListVO vo = get(id);
-        delete(vo, initiatorId);
-    }
-
-    @Override
-    public void delete(WatchListVO vo) {
-        delete(vo, null);
-    }
-
-    public void delete(WatchListVO vo, String initiatorId) {
-        super.delete(vo, initiatorId);
-    }
-
-    @Override
-    protected void insert(WatchListVO vo) {
-        insert(vo, null);
-    }
-
-    protected void insert(WatchListVO vo, String initiatorId) {
-        super.insert(vo, initiatorId);
-    }
-
-    @Override
-    protected void update(WatchListVO vo) {
-        update(vo, null);
-    }
-
-    protected void update(WatchListVO vo, String initiatorId) {
-        super.update(vo, initiatorId);
-    }
     
     @Override
-    public void save(WatchListVO vo) {
-        save(vo, null);
+    public void delete(WatchListVO vo, String initiatorId) {
+        super.delete(vo, initiatorId);
+        wsHandler.notify("delete", vo, initiatorId);
     }
-   
+
     public void save(final WatchListVO wl, final String initiatorId) {
     	final ExtendedJdbcTemplate ejt2 = ejt;
         getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
             @SuppressWarnings("synthetic-access")
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // manually call super insert or update methods so websocket is not notified
                 boolean isNew = wl.getId() == Common.NEW_ID;
-            	if (isNew) {
-            	    WatchListDao.super.insert(wl);
-                } else {
-                    WatchListDao.super.update(wl);
-                }
+                WatchListDao.super.save(wl, initiatorId);
             	
-                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
+                if (!isNew) {
+                    ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
+                }
                 ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
                     @Override
                     public int getBatchSize() {
@@ -310,9 +283,9 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
                 
                 // manually trigger websocket after saving points
                 if (isNew) {
-                    handler.notify("add", wl);
+                    wsHandler.notify("add", wl, initiatorId);
                 } else {
-                    handler.notify("update", wl);
+                    wsHandler.notify("update", wl, initiatorId);
                 }
             }
         });
