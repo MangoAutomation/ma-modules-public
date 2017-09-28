@@ -32,8 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.JoinClause;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
-import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -75,7 +73,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      */
     public List<WatchListVO> getWatchLists(final User user) {
         final List<WatchListVO> result = new ArrayList<>();
-        query(SELECT_ALL + "ORDER BY w.name", new Object[0], rowMapper, new MappedRowCallback<WatchListVO>() {
+        query(SELECT_ALL_FIXED_SORT, new Object[0], rowMapper, new MappedRowCallback<WatchListVO>() {
             @Override
             public void row(WatchListVO wl, int index) {
                 if (wl.isReader(user))
@@ -89,12 +87,11 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
     public List<WatchListVO> getWatchLists() {
-        return query(SELECT_ALL + "ORDER BY w.name", rowMapper);
+        return getAll();
     }
 
     public WatchListVO getWatchList(int watchListId) {
-        // Get the watch lists.
-        WatchListVO watchList = queryForObject(SELECT_ALL + "WHERE w.id=?", new Object[] { watchListId }, rowMapper);
+        WatchListVO watchList = get(watchListId);
         populateWatchlistData(watchList);
         return watchList;
     }
@@ -122,7 +119,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
     public WatchListVO getWatchList(String xid) {
-        return queryForObject(SELECT_ALL + " WHERE w.xid=?", new Object[] { xid }, rowMapper, null);
+        return getByXid(xid);
     }
 
     public WatchListVO getSelectedWatchList(int userId) {
@@ -143,60 +140,16 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 
     public WatchListVO createNewWatchList(WatchListVO wl, int userId) {
         wl.setUserId(userId);
-        wl.setXid(generateUniqueXid());
-        wl.setId(ejt.doInsert(
-                "INSERT INTO watchLists (xid, userId, name, readPermission, editPermission, type) VALUES (?,?,?,?,?, 'static')",
-                new Object[] { wl.getXid(), userId, wl.getName(), wl.getReadPermission(), wl.getEditPermission() }));
-        this.countMonitor.increment();
+        save(wl);
         return wl;
     }
 
     public void saveWatchList(final WatchListVO wl) {
-        final ExtendedJdbcTemplate ejt2 = ejt;
-        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @SuppressWarnings("synthetic-access")
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                if (wl.getId() == Common.NEW_ID){
-                    wl.setId(ejt.doInsert(
-                            "INSERT INTO watchLists (xid, name, userId, readPermission, editPermission, type) " //
-                                    + "values (?,?,?,?,?, 'static')",
-                            new Object[] { wl.getXid(), wl.getName(), wl.getUserId(), wl.getReadPermission(),
-                                    wl.getEditPermission() }));
-                    countMonitor.increment();
-                }else
-                    ejt2.update("UPDATE watchLists SET xid=?, name=?, readPermission=?, editPermission=? WHERE id=?",
-                            new Object[] { wl.getXid(), wl.getName(), wl.getReadPermission(), wl.getEditPermission(),
-                                    wl.getId() });
-                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
-                ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
-                    @Override
-                    public int getBatchSize() {
-                        return wl.getPointList().size();
-                    }
-
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, wl.getId());
-                        ps.setInt(2, wl.getPointList().get(i).getId());
-                        ps.setInt(3, i);
-                    }
-                });
-            }
-        });
+        save(wl);
     }
 
     public void deleteWatchList(final int watchListId) {
-        final ExtendedJdbcTemplate ejt2 = ejt;
-        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { watchListId });
-                ejt2.update("DELETE FROM selectedWatchList WHERE watchListId=?", new Object[] { watchListId });
-                ejt2.update("DELETE FROM watchLists WHERE id=?", new Object[] { watchListId });
-                countMonitor.decrement();
-            }
-        });
+        delete(watchListId);
     }
 	
     /**
@@ -256,39 +209,64 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         wsHandler.notify("delete", vo, initiatorId);
     }
 
-    public void save(final WatchListVO wl, final String initiatorId) {
-    	final ExtendedJdbcTemplate ejt2 = ejt;
+    @Override
+    protected void insert(WatchListVO vo, String initiatorId) {
         getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @SuppressWarnings("synthetic-access")
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                boolean isNew = wl.getId() == Common.NEW_ID;
-                WatchListDao.super.save(wl, initiatorId);
-            	
-                if (!isNew) {
-                    ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
-                }
-                ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
-                    @Override
-                    public int getBatchSize() {
-                        return wl.getPointList().size();
-                    }
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, wl.getId());
-                        ps.setInt(2, wl.getPointList().get(i).getId());
-                        ps.setInt(3, i);
-                    }
-                });
+                WatchListDao.super.insert(vo, initiatorId);
+                
+                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
                 
                 // manually trigger websocket after saving points
-                if (isNew) {
-                    wsHandler.notify("add", wl, initiatorId);
-                } else {
-                    wsHandler.notify("update", wl, initiatorId);
-                }
+                wsHandler.notify("add", vo, initiatorId);
             }
         });
+    }
+    
+    @Override
+    protected void update(WatchListVO vo, String initiatorId, String originalXid) {
+        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                String oldXid = originalXid;
+                if (oldXid == null) {
+                    oldXid = getXid(vo.getId());
+                }
+
+                WatchListDao.super.update(vo, initiatorId, originalXid);
+
+                ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
+                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+
+                // manually trigger websocket after saving points
+                wsHandler.notify("update", vo, initiatorId, oldXid);
+            }
+        });
+    }
+    
+    protected String getXid(int id) {
+        return ejt.queryForObject("SELECT xid FROM " + tableName + " WHERE id=?", String.class, id);
+    }
+    
+    private static class InsertPoints implements BatchPreparedStatementSetter {
+        WatchListVO vo;
+        
+        InsertPoints(WatchListVO vo) {
+            this.vo = vo;
+        }
+        
+        @Override
+        public int getBatchSize() {
+            return vo.getPointList().size();
+        }
+        
+        @Override
+        public void setValues(PreparedStatement ps, int i) throws SQLException {
+            ps.setInt(1, vo.getId());
+            ps.setInt(2, vo.getPointList().get(i).getId());
+            ps.setInt(3, i);
+        }
     }
     
 	/* (non-Javadoc)
