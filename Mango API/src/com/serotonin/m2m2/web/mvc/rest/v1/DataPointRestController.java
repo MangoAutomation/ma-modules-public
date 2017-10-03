@@ -273,6 +273,14 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	        DataPointDao.instance.setEventDetectors(vo); //Use ID to get detectors
     		vo.setPointFolderId(existingDp.getPointFolderId());
     		
+            if (vo.getTextRenderer() == null) {
+                vo.setTextRenderer(new PlainRenderer());
+            }
+
+            if (vo.getChartColour() == null) {
+                vo.setChartColour("");
+            }
+    		
 	        //Check the Template and see if we need to use it
 	        if(model.getTemplateXid() != null){
             	
@@ -290,9 +298,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             		result.addRestMessage(this.getValidationFailedError());
             		return result.createResponseEntity(model);
         		}
-                vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
-                if(vo.getChartColour() == null)
-                	vo.setChartColour(""); //Can happen when CSV comes in without template       
             }
 	        
 	        if(!model.validate()){
@@ -374,10 +379,17 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 	    		result.addRestMessage(getUnauthorizedMessage());
         		return result.createResponseEntity();
         	}
+
+            if (vo.getTextRenderer() == null) {
+                vo.setTextRenderer(new PlainRenderer());
+            }
+
+            if (vo.getChartColour() == null) {
+                vo.setChartColour("");
+            }
     		
 	        //Check the Template and see if we need to use it
 	        if(model.getTemplateXid() != null){
-            	
             	DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
             	if(template == null){
             		model.addValidationMessage("validate.invalidReference", RestMessageLevel.ERROR, "templateXid");
@@ -389,9 +401,6 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             		result.addRestMessage(this.getValidationFailedError());
             		return result.createResponseEntity(model);
         		}
-                vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
-                if(vo.getChartColour() == null)
-                	vo.setChartColour(""); //Can happen when CSV comes in without template       
             }
 	        
 	        if(StringUtils.isEmpty(vo.getXid()))
@@ -490,6 +499,14 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	    		result.addRestMessage(getUnauthorizedMessage()); //TODO add what point
             		continue;
             	}
+
+                if (vo.getTextRenderer() == null) {
+                    vo.setTextRenderer(new PlainRenderer());
+                }
+
+                if (vo.getChartColour() == null) {
+                    vo.setChartColour("");
+                }
   
     	        //Check the Template and see if we need to use it
     	        if(model.getTemplateXid() != null){
@@ -518,11 +535,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                     		result.addRestMessage(this.getValidationFailedError());
                     		continue;
                 		}
-                		vo.setTextRenderer(new PlainRenderer()); //Could use None Renderer here
-                		if(vo.getChartColour() == null)
-                        	vo.setChartColour(""); //Can happen when CSV comes in without template
                 	}
-                    
                 }
     	        
     	        if(StringUtils.isEmpty(vo.getXid()))
