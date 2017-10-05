@@ -15,6 +15,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -34,6 +37,7 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceStreamCallback;
@@ -406,6 +410,38 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         //Not logged in
         return result.createResponseEntity();
     }
+	
+	@ApiOperation(value = "Enable/disable/restart a data source")
+	@RequestMapping(method = RequestMethod.PUT, value = "/enable-disable/{xid}")
+	public ResponseEntity<DataPointModel> enableDisable(
+            @AuthenticationPrincipal User user,
+            
+            @PathVariable String xid,
+            
+            @ApiParam(value = "Enable or disable the data source", required = true, allowMultiple = false)
+            @RequestParam(required=true) boolean enabled,
+            
+            @ApiParam(value = "Restart the data point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean restart) {
+	    DataSourceVO dsvo = DataSourceDao.instance.getByXid(xid);
+	    if(dsvo == null)
+	        throw new NotFoundRestException();
+	    
+	    try {
+	        Permissions.ensureDataSourcePermission(user, dsvo);
+	    } catch(PermissionException e) {
+	        throw new AccessDeniedException("User does not have permission to edit the data source", e);
+	    }
+	    
+	    if(enabled && restart)
+	        Common.runtimeManager.saveDataSource(dsvo); //saving will restart it
+	    else if(dsvo.isEnabled() != enabled) {
+	        dsvo.setEnabled(enabled);
+	        Common.runtimeManager.saveDataSource(dsvo);
+	    }
+	    
+	    return new ResponseEntity<>(HttpStatus.OK);
+	}
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)

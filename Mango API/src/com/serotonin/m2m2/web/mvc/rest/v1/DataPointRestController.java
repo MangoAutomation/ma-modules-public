@@ -203,11 +203,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         }
         
         // need to get the event detectors so we can save it
-        DataPointDao.instance.setEventDetectors(dataPoint);
-        
         if (enabled && restart) {
+            DataPointDao.instance.setEventDetectors(dataPoint); //In unusual circumstances the restart can cause a save
             Common.runtimeManager.restartDataPoint(dataPoint);
-        } else {
+        } else if(dataPoint.isEnabled() != enabled){
+            DataPointDao.instance.setEventDetectors(dataPoint);
             dataPoint.setEnabled(enabled);
             Common.runtimeManager.saveDataPoint(dataPoint);
         }
