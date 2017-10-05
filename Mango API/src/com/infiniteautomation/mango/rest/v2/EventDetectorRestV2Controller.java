@@ -132,7 +132,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         }
         
 		//Check to see if it already exists
-        AbstractEventDetectorVO<?> existing = this.dao.getByXid(vo.getXid(), vo.getDefinition().getSourceTypeName(), vo.getSourceId());
+        AbstractEventDetectorVO<?> existing = this.dao.getByXid(vo.getXid());
         if(existing != null){
             throw new AlreadyExistsRestException(vo.getXid());
         }
