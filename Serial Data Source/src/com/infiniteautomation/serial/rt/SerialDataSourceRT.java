@@ -138,6 +138,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     
     private void setPointValueImplTransport(DataPointRT dataPoint, PointValueTime valueTime) throws IOException {
     	OutputStream os = this.port.getOutputStream();
+    	if(os == null)
+    	    throw new IOException("Port is closed.");
 
 		//Create Message from Message Start 
         SerialPointLocatorRT pl = dataPoint.getPointLocator();
@@ -217,16 +219,29 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 			setPointValueImplTransport(dataPoint, valueTime);
 			returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
 		} catch (IOException e) {
-			LOG.error(e.getMessage(), e);
+		    if(vo.getRetries() == 0)
+		        LOG.error("Failed setting serial point " + dataPoint.getVO().getExtendedName() + ": " + e.getMessage(), e);
 			//Try and reset the connection
-			try{
-				if(this.port != null)
-					Common.serialPortManager.close(this.port);
-				if(this.connect())
-					setPointValueImplTransport(dataPoint, valueTime);
-			}catch(Exception e2){
-				raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
-				LOG.error("Error re-connecting to serial port.", e2);
+			Exception ex = e;
+			int retries = vo.getRetries();
+			while(retries > 0) {
+    			try{
+    			    retries -= 1;
+    				if(this.port != null)
+    					Common.serialPortManager.close(this.port);
+    				if(this.connect()) {
+    					setPointValueImplTransport(dataPoint, valueTime);
+    					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
+    					return;
+    				}
+    			}catch(Exception e2){
+    				ex = e2;
+    			}
+			}
+			
+			if(ex != null) {
+			    raiseEvent(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.writeFailed",e.getMessage()));
+                LOG.error("Error re-connecting to serial port.", ex);
 			}
 		}
 	}

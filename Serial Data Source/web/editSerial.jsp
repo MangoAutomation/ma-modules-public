@@ -50,7 +50,7 @@
 	              $get("commPortId"),$get("baudRate"),$get("flowControlIn"),$get("flowControlOut"),$get("dataBits"), 
 	              $get("stopBits"),$get("parity"),$get("readTimeout"),$get("useTerminator"),$get("messageTerminator"),
 	              $get("messageRegex"),$get("pointIdentifierIndex"),$get("isHex"),$get("isLogIO"),$get("maxMessageSize"),
-	              $get("ioLogFileSizeMBytes"), $get("maxHistoricalIOLogs"),saveDataSourceCB);
+	              $get("ioLogFileSizeMBytes"), $get("maxHistoricalIOLogs"), $get("retries"), saveDataSourceCB);
 
 	}
 
@@ -198,6 +198,10 @@
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.serial.readTimeout"/></td>
  <td><input id="readTimeout" type="number" value="${dataSource.readTimeout}"></input></td>
+</tr>
+<tr>
+ <td class="formLabelRequired"><fmt:message key="dsEdit.serial.retries"/></td>
+ <td><input id="retries" type="number" value="${dataSource.retries}"></input></td>
 </tr>
 <tr>
  <td class="formLabelRequired"><fmt:message key="dsEdit.serial.useTerminator"/></td>
