@@ -203,7 +203,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         }
         
         // need to get the full data point with event detectors so we can save it
-        dataPoint = DataPointDao.instance.getFull(dataPoint.getId());
+        DataPointDao.instance.setEventDetectors(dataPoint);
         
         if (enabled && restart) {
             Common.runtimeManager.restartDataPoint(dataPoint);
