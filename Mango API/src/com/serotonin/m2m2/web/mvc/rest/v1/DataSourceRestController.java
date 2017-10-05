@@ -423,7 +423,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             
             @ApiParam(value = "Restart the data point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart) {
-	    DataSourceVO dsvo = DataSourceDao.instance.getByXid(xid);
+	    DataSourceVO<?> dsvo = DataSourceDao.instance.getByXid(xid);
 	    if(dsvo == null)
 	        throw new NotFoundRestException();
 	    
@@ -433,9 +433,10 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        throw new AccessDeniedException("User does not have permission to edit the data source", e);
 	    }
 	    
-	    if(enabled && restart)
+	    if (enabled && restart) {
+	        dsvo.setEnabled(true);
 	        Common.runtimeManager.saveDataSource(dsvo); //saving will restart it
-	    else if(dsvo.isEnabled() != enabled) {
+	    } else if(dsvo.isEnabled() != enabled) {
 	        dsvo.setEnabled(enabled);
 	        Common.runtimeManager.saveDataSource(dsvo);
 	    }
