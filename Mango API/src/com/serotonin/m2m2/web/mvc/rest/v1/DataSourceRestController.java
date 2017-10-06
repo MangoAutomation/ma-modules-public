@@ -421,7 +421,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             @ApiParam(value = "Enable or disable the data source", required = true, allowMultiple = false)
             @RequestParam(required=true) boolean enabled,
             
-            @ApiParam(value = "Restart the data point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
+            @ApiParam(value = "Restart the data source, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart) {
 	    DataSourceVO<?> dsvo = DataSourceDao.instance.getByXid(xid);
 	    if(dsvo == null)
