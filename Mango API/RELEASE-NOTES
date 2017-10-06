@@ -1,3 +1,11 @@
+*Version 3.2.2*
+* Return full version strings and dependency versions for upgrades in /rest/v1/modules/upgrades-available
+* Add /rest/v2/event-types end point for returning all event types including system events
+* Fixes for script validation
+* Fix always setting data point text renderer to plain
+* Add data source enable/disable/restart
+* Use XID instead of ID for all event detector end points
+
 *Version 3.2.1*
 * Removed point counts from the v2/server/system-info endpoint
 * Added v2/server/point-history-counts to get all point counts
