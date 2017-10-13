@@ -6,17 +6,17 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,9 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.MissingNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.db.dao.JsonDataDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
@@ -61,18 +63,14 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 
 	private static Log LOG = LogFactory.getLog(JsonDataRestController.class);
 	enum MapOperation {
-		APPEND,REPLACE,DELETE
+	    APPEND, REPLACE, DELETE
 	}
 
-    private ObjectMapper mapper;
-	
 	/**
 	 * @param dao
 	 */
-	@Autowired
-	public JsonDataRestController(ObjectMapper mapper) {
+	public JsonDataRestController() {
 		super(JsonDataDao.instance);
-	    this.mapper = mapper;
 	}
 
 	@ApiOperation(
@@ -166,33 +164,22 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		JsonDataVO vo = JsonDataDao.instance.getByXid(xid);
     		if(vo == null){
     			result.addRestMessage(getDoesNotExistMessage());
-    		}else{
+    		} else {
     			//Check existing permissions
 				if(!Permissions.hasPermission(user, vo.getReadPermission())){
 					result.addRestMessage(getUnauthorizedMessage());
 					return result.createResponseEntity();
 				}
 				
-				if(path == null)
+				String[] pathParts;
+				if (path == null || (pathParts = path.split("\\.")).length == 0) {
 					return result.createResponseEntity(new JsonDataModel(vo));
-				else{
-		    		String[] pathParts;
-		    		if(path.contains("."))
-		    			pathParts = path.split("\\.");
-		    		else
-		    			pathParts = new String[]{ path };
-		    		
-		    		Object data = vo.getJsonData();
-		    		if (data instanceof JsonNode) {
-		    		    data = getSubset(pathParts, (JsonNode) data);
-		    		}
-		    		if(data == null){
-		    			result.addRestMessage(getDoesNotExistMessage());
-		    			return result.createResponseEntity();
-		    		}else{
-		    			vo.setJsonData(data);
-		    			return result.createResponseEntity(new JsonDataModel(vo));
-		    		}
+				} else {
+				    JsonNode data = (JsonNode) vo.getJsonData();
+				    JsonNode subNode = getNode(data, pathParts);
+				    
+				    vo.setJsonData(subNode);
+                    return result.createResponseEntity(new JsonDataModel(vo));
 				}
     		}
     	}
@@ -405,35 +392,30 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				}
 				JsonDataModel model = new JsonDataModel(vo);
 				
-				if(path == null){
+				String[] pathParts;
+                if (path == null || (pathParts = path.split("\\.")).length == 0) {
 					//Delete the whole thing
 					this.dao.delete(vo.getId());
-				}else{
+				} else {
 					//Delete something from the map
-					Object existingData = convertToMap(vo.getJsonData());
-
-					//Find the Object to replace with this map
-					String[] pathParts;
-		    		if(path.contains("."))
-		    			pathParts = path.split("\\.");
-		    		else
-		    			pathParts = new String[]{ path };
-					if(!modify(MapOperation.DELETE, pathParts, existingData, null)){
-						result.addRestMessage(getDoesNotExistMessage());
-						return result.createResponseEntity();
-					}else{		    		
-			    		if(!model.validate()){
-			    		    result.addRestMessage(this.getValidationFailedError());
-			    		    return result.createResponseEntity(model);
-			    		}
-			    		try {
-			                String initiatorId = request.getHeader("initiatorId");
-			                this.dao.save(vo, initiatorId);
-			            } catch (Exception e) {
-			                LOG.error(e.getMessage(),e);
-			                result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-			            }
-					}
+                    JsonNode existingData = (JsonNode) vo.getJsonData();
+                    boolean deleted = deleteNode(existingData, pathParts);
+                    if (!deleted) {
+                        result.addRestMessage(getDoesNotExistMessage());
+                        return result.createResponseEntity();
+                    }
+                    
+                    if (!model.validate()) {
+                        result.addRestMessage(this.getValidationFailedError());
+                        return result.createResponseEntity(model);
+                    }
+                    try {
+                        String initiatorId = request.getHeader("initiatorId");
+                        this.dao.save(vo, initiatorId);
+                    } catch (Exception e) {
+                        LOG.error(e.getMessage(),e);
+                        result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+                    }
 				}
 				return result.createResponseEntity(model);	
 			}else{
@@ -460,7 +442,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	 */
 	private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation, RestProcessResult<JsonDataModel> result,
 			String xid, String path, Set<String> readPermissions, Set<String> editPermissions, String name, boolean publicData, 
-			Object data, UriComponentsBuilder builder, HttpServletRequest request){
+			JsonNode data, UriComponentsBuilder builder, HttpServletRequest request){
 
 		User user = this.checkUser(request, result);
     	if(result.isOk()){
@@ -481,25 +463,22 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 				vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
 				vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
 
-				//Merge the maps
-				Object existingData = convertToMap(vo.getJsonData());
+				String[] pathParts;
+                if (path == null || (pathParts = path.split("\\.")).length == 0) {
+                    vo.setJsonData(data);
+                } else {
+                    JsonNode existingData = (JsonNode) vo.getJsonData();
+                    JsonNode newData = existingData;
+                    
+                    if (operation == MapOperation.REPLACE) {
+                        newData = replaceNode(existingData, pathParts, data);
+                    } else if (operation == MapOperation.APPEND) {
+                        newData = mergeNode(existingData, pathParts, data);
+                    }
 
-				if(path == null){
-					vo.setJsonData(data);
-				}else{
-					//Find the Object to replace with this map
-					String[] pathParts;
-		    		if(path.contains("."))
-		    			pathParts = path.split("\\.");
-		    		else
-		    			pathParts = new String[]{ path };
-					if(!modify(operation, pathParts, existingData, data)){
-						result.addRestMessage(getDoesNotExistMessage());
-						return result.createResponseEntity();
-					}
-						
-				}				
-			}else{
+                    vo.setJsonData(newData);
+                }
+			} else {
 				if(operation == MapOperation.APPEND){
 					result.addRestMessage(getDoesNotExistMessage());
 					return result.createResponseEntity();
@@ -552,79 +531,100 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     	
     	return result.createResponseEntity();
 	}
-	
-	/**
-	 * Modify the data at the path
-	 * 
-	 * @param pathParts
-	 * @param existingData
-	 * @return true if found
-	 */
-	@SuppressWarnings("unchecked")
-	private boolean modify(MapOperation operation, String[] dataPath, Object existingData, Object newData) {
-		
-		Object sub = existingData;
-		int count = 0;
-		for(String path : dataPath){
-			if((sub != null)&&(sub instanceof Map)){
-				count ++;
-				if(count == dataPath.length){
-					//Found it
-					switch(operation){
-					case APPEND:
-						Object existingValue = ((Map<String, Object>)sub).get(path);
-						if(existingValue != null){
-							if(existingValue instanceof Map){
-								if(newData instanceof Map)
-									((Map<String, Object>)existingValue).putAll((Map<String, Object>)newData);
-								else
-									return false; //What do we do here?
-							}
-						}else{
-							//New entry
-							((Map<String, Object>)sub).put(path, newData);
-						}
-					case REPLACE:
-						//Update it
-						((Map<String, Object>)sub).put(path, newData);
-						return true;
-					case DELETE:
-						Object removed = ((Map<String, Object>)sub).remove(path);
-						return removed != null;
-					}
-				}
-				sub = ((Map<String,Object>)sub).get(path);
-			}
-		}
-		return false;
-	}
-
-	private JsonNode getSubset(String[] dataPath, JsonNode node) {
-	    if (node == null) return null;
-	    
-		for (String path : dataPath) {
-		    node = node.get(path);
-		    if (node == null) {
-		        return null;
-		    }
-		}
-		return node;
-	}
-	
-	private Object convertToMap(Object existingData) {
-        // TODO this conversion to Map type used to happen in the DAO, we should re-work the REST controller code to work
-	    // directly with JsonNodes (as per the get by path method)
-        if (existingData instanceof JsonNode) {
-            TypeFactory typeFactory = mapper.getTypeFactory();
-            MapType mapType = typeFactory.constructMapType(HashMap.class, String.class, Object.class);
-            try {
-                existingData = mapper.convertValue(existingData, mapType);
-            } catch(Exception e) {
-                LOG.error(e.getMessage(), e);
-                existingData = null;
+	   
+    int toArrayIndex(String fieldName) {
+        try {
+            return Integer.valueOf(fieldName);
+        } catch (NumberFormatException e) {
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Field name " + fieldName + " is invalid index for array");
+        }
+    }
+    
+	JsonNode getNode(final JsonNode existingData, final String[] dataPath) {
+	    JsonNode node = existingData;
+	    for (int i = 0; i < dataPath.length; i++) {
+            String field = dataPath[i];
+            node = node.get(field);
+            
+            if (node instanceof MissingNode) {
+                throw new NotFoundRestException();
             }
         }
+	    return node;
+	}
+	
+	boolean deleteNode(final JsonNode existingData, final String[] dataPath) {
+	    if (dataPath.length == 0) throw new IllegalArgumentException();
+	    
+	    String[] parentPath = Arrays.copyOfRange(dataPath, 0, dataPath.length - 1);
+	    String fieldName = dataPath[dataPath.length - 1];
+	    
+	    JsonNode parent = getNode(existingData, parentPath);
+	    JsonNode deletedValue = null;
+	    
+	    if (parent.isObject()) {
+	        ObjectNode parentObject = (ObjectNode) parent;
+	        deletedValue = parentObject.remove(fieldName);
+	    } else if (parent.isArray()) {
+	        ArrayNode parentArray = (ArrayNode) parent;
+	        int index = toArrayIndex(fieldName);
+            deletedValue = parentArray.remove(index);
+        } else {
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't delete field of " + parent.getNodeType());
+        }
+	    
+	    return deletedValue != null;
+	}
+	
+	JsonNode replaceNode(final JsonNode existingData, final String[] dataPath, final JsonNode newData) {
+	    if (dataPath.length == 0) {
+            return newData;
+        }
+        
+        String[] parentPath = Arrays.copyOfRange(dataPath, 0, dataPath.length - 1);
+        String fieldName = dataPath[dataPath.length - 1];
+        
+        JsonNode parent = getNode(existingData, parentPath);
+        
+        if (parent.isObject()) {
+            ObjectNode parentObject = (ObjectNode) parent;
+            parentObject.set(fieldName, newData);
+        } else if (parent.isArray()) {
+            ArrayNode parentArray = (ArrayNode) parent;
+            int index = toArrayIndex(fieldName);
+            parentArray.set(index, newData);
+        } else {
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't set field of " + parent.getNodeType());
+        }
+        
         return existingData;
+	}
+	
+	JsonNode mergeNode(final JsonNode existingData, final String[] dataPath, final JsonNode newData) {
+	    JsonNode destination = getNode(existingData, dataPath);
+	    
+	    if (destination.isObject()) {
+            // object merge
+            if (!newData.isObject()) {
+                throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't merge " + newData.getNodeType() + " into object");
+            }
+
+            ObjectNode destinationObject = (ObjectNode) destination;
+            
+            Iterator<Entry<String, JsonNode>> it = newData.fields();
+            while (it.hasNext()) {
+                Entry<String, JsonNode> entry = it.next();
+                destinationObject.set(entry.getKey(), entry.getValue());
+            }
+        } else if (destination.isArray()) {
+            // append operation
+            ArrayNode destinationArray = (ArrayNode) destination;
+            destinationArray.add(newData);
+        } else {
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't merge " + newData.getNodeType() + " into " + destination.getNodeType());
+        }
+	    
+	    return existingData;
 	}
 
 	/* (non-Javadoc)
