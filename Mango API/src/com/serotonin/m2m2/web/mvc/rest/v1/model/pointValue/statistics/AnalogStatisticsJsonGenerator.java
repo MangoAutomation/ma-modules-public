@@ -38,11 +38,17 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 
 		if(this.statistics.getMinimumValue() != null){ //The start value would be the minimum in 0 sample windows
 			this.jgen.writeBooleanField("hasData", true);
-			this.jgen.writeFieldName("first");
-			this.writeNonNullDouble(this.statistics.getFirstValue(), this.statistics.getFirstTime(), this.vo);
 			
-			this.jgen.writeFieldName("last");
-			this.writeNonNullDouble(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
+			if(this.statistics.getFirstValue() != null) {
+    			this.jgen.writeFieldName("first");
+    			this.writeNonNullDouble(this.statistics.getFirstValue(), this.statistics.getFirstTime(), this.vo);
+    			
+    			this.jgen.writeFieldName("last");
+    			this.writeNonNullDouble(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
+			} else {
+			    this.jgen.writeNullField("first");
+			    this.jgen.writeNullField("last");
+			}
 			
 			this.jgen.writeFieldName("minimum");
 			this.writeNonNullDouble(this.statistics.getMinimumValue(), this.statistics.getMinimumTime(), this.vo);

@@ -49,15 +49,13 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 			if(this.statistics.getFirstValue() != null) {
 			    this.jgen.writeFieldName("first");
 			    this.writeNonNull(this.statistics.getFirstValue(), this.statistics.getFirstTime(), this.vo);
-			}
-			else
-			    this.jgen.writeNullField("first");
-			
-			if(this.statistics.getLastValue() != null) {
 			    this.jgen.writeFieldName("last");
-			    this.writeNonNull(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
-			} else
+                this.writeNonNull(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
+			}
+			else {
+			    this.jgen.writeNullField("first");
 			    this.jgen.writeNullField("last");
+			}   
 
 			this.jgen.writeNumberField("count", this.statistics.getCount());
 			
