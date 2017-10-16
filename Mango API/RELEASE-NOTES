@@ -1,3 +1,10 @@
+*Version 3.2.3*
+* Fix JSON store so partial get/update/delete works
+* Fix issue with data point restart
+* Fix validation of event detectors so name is not required
+* Changing json generators for zero sample stat periods #1118
+* Feedback for dependency delete #1066
+
 *Version 3.2.2*
 * Return full version strings and dependency versions for upgrades in /rest/v1/modules/upgrades-available
 * Add /rest/v2/event-types end point for returning all event types including system events
