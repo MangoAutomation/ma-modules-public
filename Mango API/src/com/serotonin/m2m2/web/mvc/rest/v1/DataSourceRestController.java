@@ -433,8 +433,8 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        throw new AccessDeniedException("User does not have permission to edit the data source", e);
 	    }
 	    
-	    if (enabled && restart) {
-	        dsvo.setEnabled(true);
+	    if (restart) {
+	        dsvo.setEnabled(enabled);
 	        Common.runtimeManager.saveDataSource(dsvo); //saving will restart it
 	    } else if(dsvo.isEnabled() != enabled) {
 	        dsvo.setEnabled(enabled);
