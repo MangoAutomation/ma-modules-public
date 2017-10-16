@@ -443,95 +443,96 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation, RestProcessResult<JsonDataModel> result,
 			String xid, String path, Set<String> readPermissions, Set<String> editPermissions, String name, boolean publicData, 
 			JsonNode data, UriComponentsBuilder builder, HttpServletRequest request){
+	    
+	    // check we are using this method only for replace and append
+        if (operation != MapOperation.REPLACE && operation != MapOperation.APPEND) throw new IllegalArgumentException();
 
 		User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    		
-    		JsonDataVO vo = this.dao.getByXid(xid);
-			if(vo != null){
-				//Going to merge data
-				
-				//Check existing permissions
-				if(!Permissions.hasPermission(user, vo.getEditPermission())){
-					result.addRestMessage(getUnauthorizedMessage());
-					return result.createResponseEntity();
-				}
-				
-				//Replace the data
-				vo.setName(name);
-				vo.setPublicData(publicData);
-				vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
-				vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
-
-				String[] pathParts;
-                if (path == null || (pathParts = path.split("\\.")).length == 0) {
-                    vo.setJsonData(data);
-                } else {
-                    JsonNode existingData = (JsonNode) vo.getJsonData();
-                    JsonNode newData = existingData;
-                    
-                    if (operation == MapOperation.REPLACE) {
-                        newData = replaceNode(existingData, pathParts, data);
-                    } else if (operation == MapOperation.APPEND) {
-                        newData = mergeNode(existingData, pathParts, data);
-                    }
-
-                    vo.setJsonData(newData);
-                }
-			} else {
-				if(operation == MapOperation.APPEND){
-					result.addRestMessage(getDoesNotExistMessage());
-					return result.createResponseEntity();
-				}
-				
-				//Going to create a new one
-				vo = new JsonDataVO();
-				vo.setXid(xid);
-				vo.setName(name);
-				vo.setPublicData(publicData);
-				vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
-				vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
-				vo.setJsonData(data);
-			}
-    		
-    		JsonDataModel model = new JsonDataModel(vo);
-    		if(!model.validate()){
-    		    result.addRestMessage(this.getValidationFailedError());
-    		    // return only the data that was saved, i.e. the data that we supplied a path to
-                vo.setJsonData(data);
-    		    return result.createResponseEntity(model);
-    		}
-    		
-    		//Ensure we have the correct permissions
-    		//First we must check to ensure that the User actually has editPermission before they can save it otherwise
-    		// they won't be able to modify it.
-    		Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
-    		
-    		if(!user.isAdmin() && Collections.disjoint(userPermissions, editPermissions)){
-    			//Return validation error
-    			result.addRestMessage(this.getValidationFailedError());
-    			model.addValidationMessage("jsonData.editPermissionRequired", RestMessageLevel.ERROR, "editPermission");
-    			vo.setJsonData(data);
-    		    return result.createResponseEntity(model);
-    		}
-    		
-    		try {
-                String initiatorId = request.getHeader("initiatorId");
-                this.dao.save(vo, initiatorId);
-                // return only the data that was saved, i.e. the data that we supplied a path to
-                vo.setJsonData(data);
-                URI location = builder.path("/v1/json-data/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
-                result.addRestMessage(this.getResourceCreatedMessage(location));
-                return result.createResponseEntity(model);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(),e);
-                result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-            }
+    	if (!result.isOk()) {
+            return result.createResponseEntity();
     	}
+	
+	    JsonNode dataToReturn = data;
+        String[] pathParts = path != null ? path.split("\\.") : new String[] {};
+	    
+		JsonDataVO vo = this.dao.getByXid(xid);
+		if (vo != null) {
+			//Going to replace/append/merge data
+			
+			//Check existing permissions
+			if(!Permissions.hasPermission(user, vo.getEditPermission())){
+				result.addRestMessage(getUnauthorizedMessage());
+				return result.createResponseEntity();
+			}
+			
+			//Replace the data
+			vo.setName(name);
+			vo.setPublicData(publicData);
+			vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
+			vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
+			
+			JsonNode existingData = (JsonNode) vo.getJsonData();
+            
+            if (operation == MapOperation.REPLACE) {
+                JsonNode newData = replaceNode(existingData, pathParts, data);
+                vo.setJsonData(newData);
+            } else if (operation == MapOperation.APPEND) {
+                dataToReturn = mergeNode(existingData, pathParts, data);
+            }
+		} else {
+		    // can't append/merge to a non-existing object or replace data at a path of a non existing object 
+			if (operation == MapOperation.APPEND || pathParts.length > 0) {
+				result.addRestMessage(getDoesNotExistMessage());
+				return result.createResponseEntity();
+			}
+			
+			//Going to create a new one
+			vo = new JsonDataVO();
+			vo.setXid(xid);
+			vo.setName(name);
+			vo.setPublicData(publicData);
+			vo.setReadPermission(Permissions.implodePermissionGroups(readPermissions));
+			vo.setEditPermission(Permissions.implodePermissionGroups(editPermissions));
+			vo.setJsonData(data);
+		}
+		
+		JsonDataModel model = new JsonDataModel(vo);
+		if(!model.validate()){
+		    result.addRestMessage(this.getValidationFailedError());
+		    // return only the data that was saved, i.e. the data that we supplied a path to
+            vo.setJsonData(data);
+		    return result.createResponseEntity(model);
+		}
+		
+		//Ensure we have the correct permissions
+		//First we must check to ensure that the User actually has editPermission before they can save it otherwise
+		// they won't be able to modify it.
+		Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+		
+		if(!user.isAdmin() && Collections.disjoint(userPermissions, editPermissions)){
+			//Return validation error
+			result.addRestMessage(this.getValidationFailedError());
+			model.addValidationMessage("jsonData.editPermissionRequired", RestMessageLevel.ERROR, "editPermission");
+			vo.setJsonData(data);
+		    return result.createResponseEntity(model);
+		}
+		
+		try {
+            String initiatorId = request.getHeader("initiatorId");
+            this.dao.save(vo, initiatorId);
+            // return only the data that was saved, i.e. the data that we supplied a path to
+            vo.setJsonData(dataToReturn);
+            URI location = builder.path("/v1/json-data/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+            result.addRestMessage(this.getResourceCreatedMessage(location));
+            return result.createResponseEntity(model);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(),e);
+            result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+        }
     	
     	return result.createResponseEntity();
 	}
-	   
+	
     int toArrayIndex(String fieldName) {
         try {
             return Integer.valueOf(fieldName);
@@ -602,6 +603,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	
 	JsonNode mergeNode(final JsonNode existingData, final String[] dataPath, final JsonNode newData) {
 	    JsonNode destination = getNode(existingData, dataPath);
+	    JsonNode mergedNode;
 	    
 	    if (destination.isObject()) {
             // object merge
@@ -616,15 +618,19 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
                 Entry<String, JsonNode> entry = it.next();
                 destinationObject.set(entry.getKey(), entry.getValue());
             }
+            
+            mergedNode = destinationObject;
         } else if (destination.isArray()) {
             // append operation
             ArrayNode destinationArray = (ArrayNode) destination;
             destinationArray.add(newData);
+            
+            mergedNode = destinationArray;
         } else {
             throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't merge " + newData.getNodeType() + " into " + destination.getNodeType());
         }
 	    
-	    return existingData;
+	    return mergedNode;
 	}
 
 	/* (non-Javadoc)
