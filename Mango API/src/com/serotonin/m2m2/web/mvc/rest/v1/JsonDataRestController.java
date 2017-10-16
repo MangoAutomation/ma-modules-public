@@ -29,7 +29,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
@@ -544,10 +543,20 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	JsonNode getNode(final JsonNode existingData, final String[] dataPath) {
 	    JsonNode node = existingData;
 	    for (int i = 0; i < dataPath.length; i++) {
-            String field = dataPath[i];
-            node = node.get(field);
+            String fieldName = dataPath[i];
             
-            if (node instanceof MissingNode) {
+	        if (node.isObject()) {
+	            ObjectNode objectNode = (ObjectNode) node;
+	            node = objectNode.get(fieldName);
+	        } else if (node.isArray()) {
+	            ArrayNode arrayNode = (ArrayNode) node;
+	            int index = toArrayIndex(fieldName);
+	            node = arrayNode.get(index);
+	        } else {
+	            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't get field of " + node.getNodeType());
+	        }
+            
+            if (node == null) {
                 throw new NotFoundRestException();
             }
         }
