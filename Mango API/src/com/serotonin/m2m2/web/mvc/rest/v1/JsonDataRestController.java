@@ -78,7 +78,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			notes = "Shows any xids that you have read permissions for",
 			response = List.class
 			)
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<String>> list(
     		HttpServletRequest request
    		){
@@ -104,7 +104,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			value = "Get Public JSON Data",
 			notes = "Returns only the data"
 			)
-    @RequestMapping(method = RequestMethod.GET, value="/public/{xid}", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value="/public/{xid}")
     public ResponseEntity<JsonDataModel> getPublicData(
     		HttpServletRequest request, 
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -132,7 +132,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			value = "Get JSON Data",
 			notes = "Returns only the data"
 			)
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public ResponseEntity<JsonDataModel> getData(
     		HttpServletRequest request, 
 
@@ -146,7 +146,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			value = "Get JSON Data using a path",
 			notes = "To get a sub component of the data use a path of member.submember"
 			)
-    @RequestMapping(method = RequestMethod.GET, value="/{xid}/{path:.*}", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> getDataWithPath(
     		HttpServletRequest request, 
 
@@ -197,7 +197,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 409, message = "Data Already Exists")
 			})
-	@RequestMapping(method = RequestMethod.PUT, value="/{xid}", consumes={"application/json"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.PUT, value="/{xid}")
     public ResponseEntity<JsonDataModel> updateJsonData(
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -232,7 +232,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 403, message = "Data Doesn't Exists")
 			})
-	@RequestMapping(method = RequestMethod.PUT, value="/{xid}/{path:.*}", consumes={"application/json"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.PUT, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> updateJsonData(
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -272,7 +272,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 409, message = "Data Already Exists")
 			})
-	@RequestMapping(method = RequestMethod.POST, value="/{xid}", consumes={"application/json"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST, value="/{xid}")
     public ResponseEntity<JsonDataModel> createJsonData(
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -307,7 +307,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 409, message = "Data Already Exists")
 			})
-	@RequestMapping(method = RequestMethod.POST, value="/{xid}/{path:.*}", consumes={"application/json"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> replaceJsonData(
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -346,7 +346,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 403, message = "Data Doesn't Exists")
 			})
-	@RequestMapping(method = RequestMethod.DELETE, value="/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public ResponseEntity<JsonDataModel> deleteJsonData(
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -366,7 +366,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 			@ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
 			@ApiResponse(code = 403, message = "Data Doesn't Exists")
 			})
-	@RequestMapping(method = RequestMethod.DELETE, value="/{xid}/{path:.*}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.DELETE, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> deletePartialJsonData(
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
