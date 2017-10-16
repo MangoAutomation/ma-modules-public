@@ -36,7 +36,7 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	public void done(PointValueTime last) throws IOException {
 		this.generator.done(last);
 
-		if(this.statistics.getFirstValue() != null || this.statistics.getStartValue() != null){
+		if(this.statistics.getMinimumValue() != null){
 			this.jgen.writeBooleanField("hasData", true);
 			
 			if(this.statistics.getFirstValue() != null) {
