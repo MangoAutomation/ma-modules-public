@@ -10,7 +10,7 @@
     <artifactId>log4j-reset</artifactId>
     <name>log4JReset</name>
     <description>Allows the reloading of the log4J configuration file via the system settings page.</description>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>

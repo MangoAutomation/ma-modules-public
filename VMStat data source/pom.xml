@@ -10,7 +10,7 @@
     <artifactId>vmstat-ds</artifactId>
     <name>vmstat</name>
     <description>Data source that reads linux vmstat command data</description>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>

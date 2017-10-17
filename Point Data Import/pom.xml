@@ -10,7 +10,7 @@
     <artifactId>data-import</artifactId>
     <name>dataImport</name>
     <description>Utility module for importing point values from files.</description>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>

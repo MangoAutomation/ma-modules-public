@@ -10,7 +10,7 @@
     <artifactId>lang-de</artifactId>
     <name>lang_de</name>
     <description>Deutsch</description>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>

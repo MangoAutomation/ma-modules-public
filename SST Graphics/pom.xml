@@ -10,7 +10,7 @@
     <artifactId>mango-graphics</artifactId>
     <name>sstGraphics</name>
     <description>Mango default graphics</description>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
