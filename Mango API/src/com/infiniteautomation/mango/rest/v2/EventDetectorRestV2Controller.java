@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -32,9 +31,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
-import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -151,7 +148,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		//Validate
 		ProcessResult response = new ProcessResult();
 		ped.validate(response);
-		removeNameRequired(response);
 		if(response.getHasMessages())
 			throw new ValidationFailedRestException(new RestValidationResult(response));
 		
@@ -166,29 +162,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     	URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
     	return getResourceCreated(vo.asModel(), location.toString());
     }
-	
-	/**
-	 * 
-	 * Hack around incorrect validation in core, name should not be required
-	 * Remove in Mango v3.3
-	 * 
-	 * @param response
-	 */
-	private void removeNameRequired(ProcessResult response) {
-	       List<ProcessMessage> messages = response.getMessages();
-	        Iterator<ProcessMessage> it = messages.iterator();
-	        while (it.hasNext()) {
-	            ProcessMessage msg = it.next();
-	            TranslatableMessage tr = msg.getContextualMessage();
-	            if ("name".equals(msg.getContextKey()) && tr != null) {
-	                if ("validate.required".equals(tr.getKey())) {
-	                    it.remove();
-	                    break;
-	                }
-	            }
-	        }
-	}
-	
+
 	@ApiOperation(
 			value = "Update an Event Detector",
 			notes = ""
@@ -224,7 +198,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		//Validate
 		ProcessResult response = new ProcessResult();
 		ped.validate(response);
-        removeNameRequired(response);
 		if(response.getHasMessages())
 			throw new ValidationFailedRestException(new RestValidationResult(response));
 		
