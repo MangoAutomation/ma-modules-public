@@ -224,40 +224,23 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         });
     }
     
-//    @Override
-//    protected void update(WatchListVO vo, String initiatorId, String originalXid) {
-//        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-//            @Override
-//            protected void doInTransactionWithoutResult(TransactionStatus status) {
-//                String oldXid = originalXid;
-//                if (oldXid == null) {
-//                    oldXid = getXid(vo.getId());
-//                }
-//
-//                WatchListDao.super.update(vo, initiatorId, originalXid);
-//
-//                ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
-//                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
-//
-//                // manually trigger websocket after saving points
-//                wsHandler.notify("update", vo, initiatorId, oldXid);
-//            }
-//        });
-//    }
-    
-    // TODO remove this method and replace with version above in Mango v3.3
     @Override
-    protected void update(WatchListVO vo, String initiatorId) {
+    protected void update(WatchListVO vo, String initiatorId, String originalXid) {
         getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                WatchListDao.super.update(vo, initiatorId);
+                String oldXid = originalXid;
+                if (oldXid == null) {
+                    oldXid = getXid(vo.getId());
+                }
+
+                WatchListDao.super.update(vo, initiatorId, oldXid);
 
                 ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
                 ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
 
                 // manually trigger websocket after saving points
-                wsHandler.notify("update", vo, initiatorId);
+                wsHandler.notify("update", vo, initiatorId, oldXid);
             }
         });
     }
