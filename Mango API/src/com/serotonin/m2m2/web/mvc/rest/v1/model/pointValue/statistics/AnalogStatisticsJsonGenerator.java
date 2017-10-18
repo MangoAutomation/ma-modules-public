@@ -45,7 +45,15 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
     			
     			this.jgen.writeFieldName("last");
     			this.writeNonNullDouble(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
-			} else {
+    			
+    			if(this.statistics.getStartValue() != null) {
+    			    this.jgen.writeFieldName("start");
+    			    this.writeNonNullDouble(this.statistics.getStartValue(), this.statistics.getPeriodStartTime(), this.vo);
+    			} else
+    			    this.jgen.writeNullField("start");
+			} else { //We must have a start value
+			    this.jgen.writeFieldName("start");
+			    this.writeNonNullDouble(this.statistics.getStartValue(), this.statistics.getPeriodStartTime(), this.vo);
 			    this.jgen.writeNullField("first");
 			    this.jgen.writeNullField("last");
 			}
