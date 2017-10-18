@@ -292,9 +292,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	        if(message != null)
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-	        Common.eventManager.acknowledgeEvent(existingEvent, System.currentTimeMillis(), user.getId(), tlm);
-	        
-	        model.setAcknowledged(true);
+	        boolean acked = Common.eventManager.acknowledgeEventById(existingEvent.getId(), System.currentTimeMillis(), user.getId(), tlm);
+	        model.setAcknowledged(acked);
 	        
 	        //Put a link to the updated data in the header?
 	    	URI location = builder.path("/v1/events/{id}").buildAndExpand(id).toUri();
@@ -531,21 +530,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		 */
 		@Override
 		public void row(EventInstanceVO vo, int index) {
-			Common.eventManager.acknowledgeEvent(createEventInstance(vo), ackTimestamp, user.getId(), message);
-			this.count++;
-		}
-		
-		private EventInstance createEventInstance(EventInstanceVO vo){
-			//TODO This is a hack until we redo the Events Page to better work 
-			// with the Events Manager
-			EventInstance evt = new EventInstance(vo.getEventType(), 
-					vo.getActiveTimestamp(),
-					vo.isRtnApplicable(),
-					vo.getAlarmLevel(),
-					vo.getMessage(),
-					vo.getContext());
-			evt.setId(vo.getId());
-			return evt;
+			boolean acked = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user.getId(), message);
+			if (acked) {
+			    this.count++;
+			}
 		}
 		
 		public void finish() throws IOException{
