@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.JoinClause;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
@@ -49,7 +48,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance = new WatchListDao();
-	private ObjectMapper mapper;
 	DaoNotificationWebSocketHandler<WatchListVO> wsHandler;
 	
     /**
@@ -63,7 +61,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 		        false,
 		        new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
 		        );
-		mapper = new ObjectMapper();
         wsHandler = (DaoNotificationWebSocketHandler<WatchListVO>) ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME).getHandlerInstance();
 	}
 
@@ -305,7 +302,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             data.folderIds = vo.getFolderIds();
             data.params = vo.getParams();
             data.data = vo.getData();
-            jsonData =  this.mapper.writeValueAsString(data);
+            jsonData =  this.getObjectWriter(WatchListDbDataModel1.class).writeValueAsString(data);
 		}catch(JsonProcessingException e){
 			LOG.error(e.getMessage(), e);
 		}
@@ -386,7 +383,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 			try{
 				Clob c = rs.getClob(++i);
 				if(c != null) {
-				    WatchListDbDataModel data = mapper.readValue(c.getCharacterStream(), WatchListDbDataModel.class);
+				    WatchListDbDataModel data = getObjectReader(WatchListDbDataModel.class).readValue(c.getCharacterStream());
 				    if (data != null) {
     				    wl.setQuery(data.query);
     				    wl.setFolderIds(data.folderIds);
