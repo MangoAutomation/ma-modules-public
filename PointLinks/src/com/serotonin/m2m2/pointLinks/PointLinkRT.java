@@ -180,6 +180,9 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;
                     return;
+                } else if(pvt.getValue() == CompiledScriptExecutor.UNCHANGED) {
+                    ready = true;
+                    return;
                 }
                 newValue = pvt;
             }

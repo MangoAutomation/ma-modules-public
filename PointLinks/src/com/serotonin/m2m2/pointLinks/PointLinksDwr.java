@@ -210,6 +210,8 @@ public class PointLinksDwr extends ModuleDwr {
                     targetDataType, -1, permissions ,scriptWriter, scriptLog, loggingSetter, null, true);
             if (pvt.getValue() == null)
                 message = new TranslatableMessage("event.pointLink.nullResult");
+            else if(pvt.getValue() == CompiledScriptExecutor.UNCHANGED)
+                message = new TranslatableMessage("pointLinks.validate.successNoValue");
             else if (pvt.getTime() == -1)
                 message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
             else
