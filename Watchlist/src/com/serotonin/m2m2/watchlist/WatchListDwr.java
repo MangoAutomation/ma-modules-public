@@ -24,7 +24,7 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.RuntimeManagerImpl;
+import com.serotonin.m2m2.rt.RuntimeManager;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
@@ -253,7 +253,7 @@ public class WatchListDwr extends ModuleDwr {
     /**
      * Convenience method for creating a populated view state.
      */
-    private WatchListState createWatchListState(HttpServletRequest request, DataPointVO pointVO, RuntimeManagerImpl rtm,
+    private WatchListState createWatchListState(HttpServletRequest request, DataPointVO pointVO, RuntimeManager rtm,
             Map<String, Object> model, User user) {
         // Get the data point status from the data image.
         DataPointRT point = rtm.getDataPoint(pointVO.getId());
