@@ -30,7 +30,6 @@ import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppen
 import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -271,35 +270,25 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
 
 		User user = this.checkUser(request, result);
-        if(result.isOk()){
-
-        	EventDao dao = EventDao.instance;
-	        EventInstance existingEvent = dao.get(id);
-	        if (existingEvent == null) {
-	    		result.addRestMessage(getDoesNotExistMessage());
-	    		return result.createResponseEntity();
-	        }
-	        
-	        if(existingEvent.isAcknowledged()){
-	        	//TODO should create a message that says Already Acknowleged..
-	        	//result.addRestMessage(get);
-	    		return result.createResponseEntity();
-	        }
-
-	        EventInstanceModel model = new EventInstanceModel(existingEvent);
-	        
+        if (result.isOk()) {
 	        TranslatableMessage tlm = null;
-	        if(message != null)
+	        if (message != null)
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-	        boolean acked = Common.eventManager.acknowledgeEventById(existingEvent.getId(), System.currentTimeMillis(), user.getId(), tlm);
-	        model.setAcknowledged(acked);
+	        EventInstance event = Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user.getId(), tlm);
+	        
+	        // if event has a different ack timestamp, user or message it was already acked, we could return a different message
+	        
+	        if (event == null) {
+                result.addRestMessage(getDoesNotExistMessage());
+                return result.createResponseEntity();
+            }
+	        
+	        EventInstanceModel model = new EventInstanceModel(event);
 	        
 	        //Put a link to the updated data in the header?
 	    	URI location = builder.path("/v1/events/{id}").buildAndExpand(id).toUri();
-	    	
 	    	result.addRestMessage(getResourceUpdatedMessage(location));
-	    	//TODO Could get the model from the DB and return it...
 	        return result.createResponseEntity(model);
         }
         //Not logged in
@@ -530,8 +519,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		 */
 		@Override
 		public void row(EventInstanceVO vo, int index) {
-			boolean acked = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user.getId(), message);
-			if (acked) {
+			EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user.getId(), message);
+			if (event != null && event.isAcknowledged()) {
 			    this.count++;
 			}
 		}
