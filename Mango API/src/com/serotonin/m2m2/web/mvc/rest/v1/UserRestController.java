@@ -473,7 +473,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	if(result.isOk()){
     		try{
     			//Parse the RQL Query
-	    		ASTNode query = this.parseRQLtoAST(request);
+	    		ASTNode query = parseRQLtoAST(request.getQueryString());
 	    		if(!user.isAdmin()){
 	    			query = addAndRestriction(query, new ASTNode("eq", "id", user.getId()));
 	    		}

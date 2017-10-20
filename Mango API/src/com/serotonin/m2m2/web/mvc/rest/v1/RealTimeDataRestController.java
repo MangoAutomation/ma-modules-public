@@ -68,7 +68,7 @@ public class RealTimeDataRestController extends MangoRestController{
     	if(result.isOk()){
     		ASTNode model;
 			try{
-				model = this.parseRQLtoAST(request);
+				model = parseRQLtoAST(request.getQueryString());
 				if(model == null){
 					result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Query Required")));
 					return result.createResponseEntity();

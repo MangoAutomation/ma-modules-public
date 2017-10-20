@@ -94,7 +94,7 @@ public class LoggingRestController extends MangoRestController{
     		HttpServletRequest request) {
 		RestProcessResult<QueryArrayStream<?>> result = new RestProcessResult<QueryArrayStream<?>>(HttpStatus.OK);
     		try{
-    	    		ASTNode query = this.parseRQLtoAST(request);
+    	    		ASTNode query = parseRQLtoAST(request.getQueryString());
     	    		File file = new File(Common.getLogsDir(), filename);
     	    		if(file.exists()){
     	    		    //Pattern pattern = new 

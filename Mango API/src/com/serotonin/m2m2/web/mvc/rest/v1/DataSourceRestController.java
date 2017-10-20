@@ -77,7 +77,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-    			ASTNode node = this.parseRQLtoAST(request);
+    			ASTNode node = parseRQLtoAST(request.getQueryString());
     			DataSourceStreamCallback callback = new DataSourceStreamCallback(this, user);
     			return result.createResponseEntity(getPageStream(node, callback));
     		}catch(InvalidRQLRestException e){

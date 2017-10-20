@@ -69,7 +69,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 					//Check permissions
 					if(!Permissions.hasDataPointReadPermission(user, vo)){
 						this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED, 
-								new TranslatableMessage("rest.error.noReadPermissionForPoint", user.getUsername(), vo.getXid()));
+								new TranslatableMessage("rest.error.noReadPermissionForPoint", user.getUsername()));
 						return;
 					}
 					int dataPointId = vo.getId();

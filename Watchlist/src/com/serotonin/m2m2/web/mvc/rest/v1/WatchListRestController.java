@@ -81,7 +81,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-    			ASTNode query = this.parseRQLtoAST(request);
+    			ASTNode query = parseRQLtoAST(request.getQueryString());
     			if(!user.isAdmin()){
     				//We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
     				WatchListStreamCallback callback = new WatchListStreamCallback(this, user);

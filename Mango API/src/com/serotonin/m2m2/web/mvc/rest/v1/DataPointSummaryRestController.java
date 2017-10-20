@@ -78,7 +78,7 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		ASTNode query = this.parseRQLtoAST(request);
+	    		ASTNode query = parseRQLtoAST(request.getQueryString());
 	    		DataPointSummaryStreamCallback callback = new DataPointSummaryStreamCallback(this, user);
 	    		
 	    		return result.createResponseEntity(getPageStream(query,callback));

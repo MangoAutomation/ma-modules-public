@@ -101,7 +101,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-				ASTNode node = this.parseRQLtoAST(request);
+				ASTNode node = parseRQLtoAST(request.getQueryString());
 				EventHandlerStreamCallback callback = new EventHandlerStreamCallback(this, user);
 				FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao> stream = 
 						new FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>(EventHandlerDao.instance, this, node, callback);

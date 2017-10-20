@@ -80,7 +80,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @RequestMapping(method = RequestMethod.GET, value = "/timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(
             HttpServletRequest request) {
-        ASTNode root = this.parseRQLtoAST(request);
+        ASTNode root = parseRQLtoAST(request.getQueryString());
         List<TimezoneModel> list =
                 root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
         PageQueryResultModel<TimezoneModel> model =

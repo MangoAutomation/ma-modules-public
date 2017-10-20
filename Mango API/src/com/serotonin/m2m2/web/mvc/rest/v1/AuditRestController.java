@@ -71,7 +71,7 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
     				return result.createResponseEntity();
     			}else{
     				//Limit our results based on the fact that our permissions should be in the permissions strings
-        			ASTNode root = this.parseRQLtoAST(request);
+        			ASTNode root = parseRQLtoAST(request.getQueryString());
 	    			return result.createResponseEntity(getPageStream(root));
     			}
     		}catch(InvalidRQLRestException e){

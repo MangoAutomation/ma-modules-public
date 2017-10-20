@@ -790,7 +790,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-    			ASTNode node = this.parseRQLtoAST(request);
+    			ASTNode node = parseRQLtoAST(request.getQueryString());
     			if(user.isAdmin()){
     				//Admin Users Don't need to filter the results
     				return result.createResponseEntity(getPageStream(node));
@@ -837,7 +837,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		}
     	
     		try{
-    			ASTNode node = this.parseRQLtoAST(request);
+    			ASTNode node = parseRQLtoAST(request.getQueryString());
     			
     			long changed = this.dao.bulkUpdatePermissions(node, permissions, true);
     			return result.createResponseEntity(changed);
@@ -874,7 +874,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		}
     	
     		try{
-    			ASTNode node = this.parseRQLtoAST(request);
+    			ASTNode node = parseRQLtoAST(request.getQueryString());
     			
     			long changed = this.dao.bulkUpdatePermissions(node, permissions, false);
     			return result.createResponseEntity(changed);
@@ -906,7 +906,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		}
     	
     		try{
-    			ASTNode node = this.parseRQLtoAST(request);
+    			ASTNode node = parseRQLtoAST(request.getQueryString());
     			
     			long changed = this.dao.bulkClearPermissions(node, true);
     			return result.createResponseEntity(changed);
@@ -938,7 +938,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     		}
     	
     		try{
-    			ASTNode node = this.parseRQLtoAST(request);
+    			ASTNode node = parseRQLtoAST(request.getQueryString());
     			
     			long changed = this.dao.bulkClearPermissions(node, false);
     			return result.createResponseEntity(changed);
