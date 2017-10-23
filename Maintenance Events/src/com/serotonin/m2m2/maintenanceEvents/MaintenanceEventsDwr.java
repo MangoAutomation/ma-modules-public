@@ -39,7 +39,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
                         .compareTo(m1.getDescription().translate(translations));
             }
         });
-        response.addData("events", events);
+        response.addData(MODEL_ATTR_EVENTS, events);
 
         List<IntStringPair> dataSources = new ArrayList<IntStringPair>();
         for (DataSourceVO<?> ds : DataSourceDao.instance.getDataSources())
