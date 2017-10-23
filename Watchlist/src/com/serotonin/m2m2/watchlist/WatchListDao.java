@@ -33,6 +33,7 @@ import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SchemaDefinition;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -341,7 +342,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	@Override
 	protected List<JoinClause> getJoins() {
     	List<JoinClause> joins = new ArrayList<JoinClause>();
-    	joins.add(new JoinClause(JOIN, "users", "u", "w.userId = u.id"));
+    	joins.add(new JoinClause(JOIN, SchemaDefinition.USERS_TABLE, "u", "w.userId = u.id"));
     	return joins;
 	}
 	
