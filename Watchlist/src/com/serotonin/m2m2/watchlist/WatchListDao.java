@@ -28,19 +28,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.JoinClause;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
-import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SchemaDefinition;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
+import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
  * @author Matthew Lohbihler
@@ -50,16 +49,20 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance = new WatchListDao();
-	private ObjectMapper mapper;
+	DaoNotificationWebSocketHandler<WatchListVO> wsHandler;
 	
-	private WatchListDao() {
-		super(ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME),
+    /**
+     * Pass null through to super constructor for websocket handler so we have full control over where it is notified
+     */
+    @SuppressWarnings("unchecked")
+    private WatchListDao() {
+		super((DaoNotificationWebSocketHandler<WatchListVO>) null,
 				AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"}, //to allow filtering on username
 		        false,
 		        new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
 		        );
-		mapper = new ObjectMapper();
+        wsHandler = (DaoNotificationWebSocketHandler<WatchListVO>) ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME).getHandlerInstance();
 	}
 
 	
@@ -68,7 +71,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      */
     public List<WatchListVO> getWatchLists(final User user) {
         final List<WatchListVO> result = new ArrayList<>();
-        query(SELECT_ALL + "ORDER BY w.name", new Object[0], rowMapper, new MappedRowCallback<WatchListVO>() {
+        query(SELECT_ALL_FIXED_SORT, new Object[0], rowMapper, new MappedRowCallback<WatchListVO>() {
             @Override
             public void row(WatchListVO wl, int index) {
                 if (wl.isReader(user))
@@ -82,12 +85,11 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
     public List<WatchListVO> getWatchLists() {
-        return query(SELECT_ALL + "ORDER BY w.name", rowMapper);
+        return getAll();
     }
 
     public WatchListVO getWatchList(int watchListId) {
-        // Get the watch lists.
-        WatchListVO watchList = queryForObject(SELECT_ALL + "WHERE w.id=?", new Object[] { watchListId }, rowMapper);
+        WatchListVO watchList = get(watchListId);
         populateWatchlistData(watchList);
         return watchList;
     }
@@ -115,7 +117,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
     public WatchListVO getWatchList(String xid) {
-        return queryForObject(SELECT_ALL + " WHERE w.xid=?", new Object[] { xid }, rowMapper, null);
+        return getByXid(xid);
     }
 
     public WatchListVO getSelectedWatchList(int userId) {
@@ -136,60 +138,16 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 
     public WatchListVO createNewWatchList(WatchListVO wl, int userId) {
         wl.setUserId(userId);
-        wl.setXid(generateUniqueXid());
-        wl.setId(ejt.doInsert(
-                "INSERT INTO watchLists (xid, userId, name, readPermission, editPermission, type) VALUES (?,?,?,?,?, 'static')",
-                new Object[] { wl.getXid(), userId, wl.getName(), wl.getReadPermission(), wl.getEditPermission() }));
-        this.countMonitor.increment();
+        save(wl);
         return wl;
     }
 
     public void saveWatchList(final WatchListVO wl) {
-        final ExtendedJdbcTemplate ejt2 = ejt;
-        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @SuppressWarnings("synthetic-access")
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                if (wl.getId() == Common.NEW_ID){
-                    wl.setId(ejt.doInsert(
-                            "INSERT INTO watchLists (xid, name, userId, readPermission, editPermission, type) " //
-                                    + "values (?,?,?,?,?, 'static')",
-                            new Object[] { wl.getXid(), wl.getName(), wl.getUserId(), wl.getReadPermission(),
-                                    wl.getEditPermission() }));
-                    countMonitor.increment();
-                }else
-                    ejt2.update("UPDATE watchLists SET xid=?, name=?, readPermission=?, editPermission=? WHERE id=?",
-                            new Object[] { wl.getXid(), wl.getName(), wl.getReadPermission(), wl.getEditPermission(),
-                                    wl.getId() });
-                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
-                ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
-                    @Override
-                    public int getBatchSize() {
-                        return wl.getPointList().size();
-                    }
-
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, wl.getId());
-                        ps.setInt(2, wl.getPointList().get(i).getId());
-                        ps.setInt(3, i);
-                    }
-                });
-            }
-        });
+        save(wl);
     }
 
     public void deleteWatchList(final int watchListId) {
-        final ExtendedJdbcTemplate ejt2 = ejt;
-        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { watchListId });
-                ejt2.update("DELETE FROM selectedWatchList WHERE watchListId=?", new Object[] { watchListId });
-                ejt2.update("DELETE FROM watchLists WHERE id=?", new Object[] { watchListId });
-                countMonitor.decrement();
-            }
-        });
+        delete(watchListId);
     }
 	
     /**
@@ -242,80 +200,71 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     		
     	});
     }
-
-    public void delete(int id, String initiatorId) {
-        WatchListVO vo = get(id);
-        delete(vo, initiatorId);
-    }
-
+    
     @Override
-    public void delete(WatchListVO vo) {
-        delete(vo, null);
-    }
-
     public void delete(WatchListVO vo, String initiatorId) {
         super.delete(vo, initiatorId);
+        wsHandler.notify("delete", vo, initiatorId);
     }
 
     @Override
-    protected void insert(WatchListVO vo) {
-        insert(vo, null);
-    }
-
     protected void insert(WatchListVO vo, String initiatorId) {
-        super.insert(vo, initiatorId);
-    }
-
-    @Override
-    protected void update(WatchListVO vo) {
-        update(vo, null);
-    }
-
-    protected void update(WatchListVO vo, String initiatorId) {
-        super.update(vo, initiatorId);
+        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                WatchListDao.super.insert(vo, initiatorId);
+                
+                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+                
+                // manually trigger websocket after saving points
+                wsHandler.notify("add", vo, initiatorId);
+            }
+        });
     }
     
     @Override
-    public void save(WatchListVO vo) {
-        save(vo, null);
-    }
-   
-    public void save(final WatchListVO wl, final String initiatorId) {
-    	final ExtendedJdbcTemplate ejt2 = ejt;
+    protected void update(WatchListVO vo, String initiatorId, String originalXid) {
         getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @SuppressWarnings("synthetic-access")
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // manually call super insert or update methods so websocket is not notified
-                boolean isNew = wl.getId() == Common.NEW_ID;
-            	if (isNew) {
-            	    WatchListDao.super.insert(wl);
-                } else {
-                    WatchListDao.super.update(wl);
+                String oldXid = originalXid;
+                if (oldXid == null) {
+                    oldXid = getXid(vo.getId());
                 }
-            	
-                ejt2.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { wl.getId() });
-                ejt2.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new BatchPreparedStatementSetter() {
-                    @Override
-                    public int getBatchSize() {
-                        return wl.getPointList().size();
-                    }
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, wl.getId());
-                        ps.setInt(2, wl.getPointList().get(i).getId());
-                        ps.setInt(3, i);
-                    }
-                });
-                
+
+                WatchListDao.super.update(vo, initiatorId, oldXid);
+
+                ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
+                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+
                 // manually trigger websocket after saving points
-                if (isNew) {
-                    handler.notify("add", wl);
-                } else {
-                    handler.notify("update", wl);
-                }
+                wsHandler.notify("update", vo, initiatorId, oldXid);
             }
         });
+    }
+
+    protected String getXid(int id) {
+        return ejt.queryForObject("SELECT xid FROM " + tableName + " WHERE id=?", String.class, id);
+    }
+    
+    private static class InsertPoints implements BatchPreparedStatementSetter {
+        WatchListVO vo;
+        
+        InsertPoints(WatchListVO vo) {
+            this.vo = vo;
+        }
+        
+        @Override
+        public int getBatchSize() {
+            return vo.getPointList().size();
+        }
+        
+        @Override
+        public void setValues(PreparedStatement ps, int i) throws SQLException {
+            ps.setInt(1, vo.getId());
+            ps.setInt(2, vo.getPointList().get(i).getId());
+            ps.setInt(3, i);
+        }
     }
     
 	/* (non-Javadoc)
@@ -354,7 +303,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             data.folderIds = vo.getFolderIds();
             data.params = vo.getParams();
             data.data = vo.getData();
-            jsonData =  this.mapper.writeValueAsString(data);
+            jsonData =  this.getObjectWriter(WatchListDbDataModel1.class).writeValueAsString(data);
 		}catch(JsonProcessingException e){
 			LOG.error(e.getMessage(), e);
 		}
@@ -393,7 +342,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	@Override
 	protected List<JoinClause> getJoins() {
     	List<JoinClause> joins = new ArrayList<JoinClause>();
-    	joins.add(new JoinClause(JOIN, "users", "u", "w.userId = u.id"));
+    	joins.add(new JoinClause(JOIN, SchemaDefinition.USERS_TABLE, "u", "w.userId = u.id"));
     	return joins;
 	}
 	
@@ -435,7 +384,7 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 			try{
 				Clob c = rs.getClob(++i);
 				if(c != null) {
-				    WatchListDbDataModel data = mapper.readValue(c.getCharacterStream(), WatchListDbDataModel.class);
+				    WatchListDbDataModel data = getObjectReader(WatchListDbDataModel.class).readValue(c.getCharacterStream());
 				    if (data != null) {
     				    wl.setQuery(data.query);
     				    wl.setFolderIds(data.folderIds);

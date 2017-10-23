@@ -45,7 +45,7 @@ public class RuntimeManagerRestController extends MangoRestController{
 			notes = "Not all data sources implement this feature",
 			response=Void.class
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, value = "/force-refresh/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/force-refresh/{xid}")
 	public ResponseEntity<Void> forceRefreshDataPoint(
 			@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
 			@PathVariable String xid, HttpServletRequest request){

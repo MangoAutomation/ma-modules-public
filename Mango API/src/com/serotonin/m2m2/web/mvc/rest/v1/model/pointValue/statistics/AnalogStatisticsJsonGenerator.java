@@ -36,13 +36,27 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	public void done(PointValueTime last) throws IOException {
 		this.generator.done(last);
 
-		if(this.statistics.getCount() > 0){
+		if(this.statistics.getFirstValue() != null || this.statistics.getStartValue() != null){
 			this.jgen.writeBooleanField("hasData", true);
-			this.jgen.writeFieldName("first");
-			this.writeNonNullDouble(this.statistics.getFirstValue(), this.statistics.getFirstTime(), this.vo);
 			
-			this.jgen.writeFieldName("last");
-			this.writeNonNullDouble(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
+			if(this.statistics.getFirstValue() != null) {
+    			this.jgen.writeFieldName("first");
+    			this.writeNonNullDouble(this.statistics.getFirstValue(), this.statistics.getFirstTime(), this.vo);
+    			
+    			this.jgen.writeFieldName("last");
+    			this.writeNonNullDouble(this.statistics.getLastValue(), this.statistics.getLastTime(), this.vo);
+    			
+    			if(this.statistics.getStartValue() != null) {
+    			    this.jgen.writeFieldName("start");
+    			    this.writeNonNullDouble(this.statistics.getStartValue(), this.statistics.getPeriodStartTime(), this.vo);
+    			} else
+    			    this.jgen.writeNullField("start");
+			} else { //We must have a start value
+			    this.jgen.writeFieldName("start");
+			    this.writeNonNullDouble(this.statistics.getStartValue(), this.statistics.getPeriodStartTime(), this.vo);
+			    this.jgen.writeNullField("first");
+			    this.jgen.writeNullField("last");
+			}
 			
 			this.jgen.writeFieldName("minimum");
 			this.writeNonNullDouble(this.statistics.getMinimumValue(), this.statistics.getMinimumTime(), this.vo);

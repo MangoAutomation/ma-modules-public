@@ -30,7 +30,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
     public ProcessResult saveSerialDataSource(BasicDataSourceVO basic, String commPortId, int baudRate, int flowControlIn,
             int flowControlOut, int dataBits, int stopBits, int parity, int readTimeout, boolean useTerminator,
             String messageTerminator, String messageRegex, int pointIdentifierIndex,
-            boolean hex, boolean logIO, int maxMessageSize, float ioLogFileSizeMBytes, int maxHistoricalIOLogs) {
+            boolean hex, boolean logIO, int maxMessageSize, float ioLogFileSizeMBytes, int maxHistoricalIOLogs, int retries) {
         SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
 
         setBasicProps(ds, basic);
@@ -51,6 +51,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
         ds.setMaxMessageSize(maxMessageSize);
         ds.setIoLogFileSizeMBytes(ioLogFileSizeMBytes);
         ds.setMaxHistoricalIOLogs(maxHistoricalIOLogs);
+        ds.setRetries(retries);
         
         return tryDataSourceSave(ds);
     }	

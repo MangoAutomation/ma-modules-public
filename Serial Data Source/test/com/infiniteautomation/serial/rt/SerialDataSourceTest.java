@@ -35,7 +35,7 @@ import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.H2Proxy;
 import com.serotonin.m2m2.rt.EventManager;
-import com.serotonin.m2m2.rt.RuntimeManager;
+import com.serotonin.m2m2.rt.RuntimeManagerImpl;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.util.properties.ReloadingProperties;
@@ -62,7 +62,7 @@ public class SerialDataSourceTest {
 	TestSerialPortOutputStream outputStream;
 	
 	@Mock
-	RuntimeManager runtimeManager;
+	RuntimeManagerImpl runtimeManager;
 	
 	@Mock
 	EventManager eventManager;

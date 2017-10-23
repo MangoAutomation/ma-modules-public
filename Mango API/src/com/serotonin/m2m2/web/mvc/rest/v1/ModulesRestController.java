@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.io.StreamUtils;
@@ -331,6 +332,8 @@ public class ModulesRestController extends MangoRestController {
 				Module module = ModuleRegistry.getModule(moduleName == null ? model.getName() : moduleName);
 				if (module != null) {
 					module.setMarkedForDeletion(delete);
+					if(module.isMarkedForDeletion() != delete)
+					    throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
 			        return result.createResponseEntity(new ModuleModel(module));
 				} else {
 					result.addRestMessage(getDoesNotExistMessage());

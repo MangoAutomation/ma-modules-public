@@ -258,12 +258,20 @@ public class InternalMenuItem extends MenuItemDefinition {
 					//If we are numeric then we want to log on change
 					switch(pl.getDataTypeId()){
 						case DataTypes.NUMERIC:
-							//Setup to Log on Change
-							dp.setLoggingType(LoggingTypes.ON_CHANGE);
-							if(dp.getTextRenderer() instanceof AnalogRenderer && !dp.getXid().equals(SYSTEM_UPTIME_POINT_XID)) {
-								// This are count points, no need for decimals.
-								((AnalogRenderer)dp.getTextRenderer()).setFormat("0");
-							}
+						    if(SYSTEM_UPTIME_POINT_XID.equals(xid)) { //This changes every time, so just do an interval instant
+						        dp.setLoggingType(LoggingTypes.INTERVAL);
+						        dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
+						        dp.setIntervalLoggingPeriod(5);
+						        dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
+						    } else {
+    							//Setup to Log on Change
+    							dp.setLoggingType(LoggingTypes.ON_CHANGE);
+						    }
+						    
+						    if(dp.getTextRenderer() instanceof AnalogRenderer && !dp.getXid().equals(SYSTEM_UPTIME_POINT_XID)) {
+                                // This are count points, no need for decimals.
+                                ((AnalogRenderer)dp.getTextRenderer()).setFormat("0");
+                            }
 
 							//No template in use here
 							dp.setTemplateId(null);

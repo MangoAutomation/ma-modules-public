@@ -1,5 +1,17 @@
+*Version 3.2.3*
+* Fix JSON store so partial get/update/delete works
+* Fix issue with data point restart
+* Fix validation of event detectors so name is not required
+* Changing json generators for zero sample stat periods #1118
+* Feedback for dependency delete #1066
+
 *Version 3.2.2*
-* View all Audit Event types at v1/audit/list-event-types
+* Return full version strings and dependency versions for upgrades in /rest/v1/modules/upgrades-available
+* Add /rest/v2/event-types end point for returning all event types including system events
+* Fixes for script validation
+* Fix always setting data point text renderer to plain
+* Add data source enable/disable/restart
+* Use XID instead of ID for all event detector end points
 
 *Version 3.2.1*
 * Removed point counts from the v2/server/system-info endpoint
@@ -9,6 +21,8 @@
 * Adding v1/logging/view endpoint to view and download logfiles
 * Adding v1/work-items/queue-counts to return counts for each type of work item on all 3 priority levels
 * Adding lockOwner, lockOwnerId and LockInfo to the Thread output from v1/threads
+* View all Audit Event types at v1/audit/list-event-types
+* New end point for enabling/disabling/restarting data points at v1/data-points/enable-disable/{xid}
 
 *Version 3.2.0*
 * Upgraded to work with core version 3.2.x
