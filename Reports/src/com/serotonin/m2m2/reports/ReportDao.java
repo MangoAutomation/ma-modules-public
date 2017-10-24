@@ -920,7 +920,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
        pointValueDao.getPointValuesBetween(pointIds, startTime, endTime, new MappedRowCallback<IdPointValueTime>(){
 			@Override
 			public void row(final IdPointValueTime ipvt, int rowId) {
-				dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getDataPointId())),ipvt);
+				dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getId())),ipvt);
 				count.increment();
 				if(ipvt.getTime() < firstPointTime.get())
 					firstPointTime.set(ipvt.getTime());
