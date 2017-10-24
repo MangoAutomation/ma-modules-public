@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableException;
@@ -201,7 +201,7 @@ public class DataImportController extends FileUploadController {
     DataSourceVO<?> getDataSource(int dataSourceId) {
         DataSourceVO<?> ds = cachedDataSources.get(dataSourceId);
         if (ds == null) {
-            ds = DaoRegistry.dataSourceDao.get(dataSourceId);
+            ds = DataSourceDao.instance.get(dataSourceId);
             if (ds != null)
                 cachedDataSources.put(dataSourceId, ds);
         }

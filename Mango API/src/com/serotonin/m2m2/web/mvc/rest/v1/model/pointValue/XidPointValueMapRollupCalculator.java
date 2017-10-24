@@ -13,7 +13,6 @@ import java.util.Map;
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.quantize2.AbstractDataQuantizer;
@@ -44,12 +43,11 @@ public class XidPointValueMapRollupCalculator extends AbstractPointValueRollupCa
 		this.voMap = voMap;
 	}
 
-
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream#streamData(java.io.Writer)
 	 */
 	@Override
-	public void generateStream(DateTime from, DateTime to, JsonGenerator jgen) throws IOException {
+	protected void generateStream(DateTime from, DateTime to, JsonGenerator jgen) throws IOException {
 		Iterator<Integer> it = this.voMap.keySet().iterator();
 		while(it.hasNext()){
 			DataPointVO vo = this.voMap.get(it.next());
@@ -65,12 +63,11 @@ public class XidPointValueMapRollupCalculator extends AbstractPointValueRollupCa
 		}
 	}
 
-
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
 	 */
 	@Override
-	public void generateStream(DateTime from, DateTime to, CSVPojoWriter<Map<String, List<PointValueTime>>> writer){
+	protected void generateStream(DateTime from, DateTime to, CSVPojoWriter<Map<String, List<PointValueTime>>> writer){
 
 		Iterator<Integer> it = this.voMap.keySet().iterator();
 		boolean writeHeaders = true;
@@ -89,13 +86,11 @@ public class XidPointValueMapRollupCalculator extends AbstractPointValueRollupCa
 		}
 	}
 
-
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.AbstractPointValueRollupCalculator#getStartEndTimes()
 	 */
 	@Override
 	protected LongPair getStartEndTimes() {
-		return DaoRegistry.pointValueDao.getStartAndEndTime(new ArrayList<Integer>(this.voMap.keySet()));
+		return pvd.getStartAndEndTime(new ArrayList<Integer>(this.voMap.keySet()));
 	}
-	
 }

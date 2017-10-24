@@ -9,7 +9,6 @@ import java.util.Collections;
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.quantize2.AbstractDataQuantizer;
 import com.serotonin.m2m2.view.quantize2.BucketCalculator;
@@ -33,20 +32,6 @@ public class PointValueRollupCalculator extends AbstractPointValueRollupCalculat
         this.vo = vo;
     }
 
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeStream#streamData(java.io.Writer)
-	 */
-	@Override
-	public void streamData(JsonGenerator jgen) {
-
-		DataValue startValue = this.getStartValue(vo.getId());
-        BucketCalculator bc = this.getBucketCalculator(from, to);
-        
-        final AbstractDataQuantizer quantizer = createQuantizer(vo, startValue, bc, jgen);
-		this.calculate(quantizer, vo.getId(), from, to);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.AbstractPointValueRollupCalculator#generateStream(org.joda.time.DateTime, org.joda.time.DateTime, com.fasterxml.jackson.core.JsonGenerator)
@@ -60,9 +45,8 @@ public class PointValueRollupCalculator extends AbstractPointValueRollupCalculat
 		this.calculate(quantizer, vo.getId(), from, to);
 	}
 
-
 	@Override
-	public void generateStream(DateTime from, DateTime to, CSVPojoWriter<PointValueTimeModel> writer){
+	protected void generateStream(DateTime from, DateTime to, CSVPojoWriter<PointValueTimeModel> writer){
 
 		DataValue startValue = this.getStartValue(vo.getId());
 		BucketCalculator bc = this.getBucketCalculator(from, to);
@@ -71,11 +55,8 @@ public class PointValueRollupCalculator extends AbstractPointValueRollupCalculat
 		this.calculate(quantizer, vo.getId(), from, to);
 	}
 
-
-
 	@Override
 	protected LongPair getStartEndTimes(){
-		return DaoRegistry.pointValueDao.getStartAndEndTime(Collections.singletonList(vo.getId()));
+		return pvd.getStartAndEndTime(Collections.singletonList(vo.getId()));
 	}
-
 }

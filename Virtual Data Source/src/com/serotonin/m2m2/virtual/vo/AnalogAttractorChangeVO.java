@@ -96,7 +96,7 @@ public class AnalogAttractorChangeVO extends ChangeTypeVO {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-        DataPointVO dp = DataPointDao.instance.getDataPoint(attractionPointId);
+        DataPointVO dp = DataPointDao.instance.getDataPoint(attractionPointId, false);
         if (dp == null)
             writer.writeEntry("attractionPointId", null);
         else

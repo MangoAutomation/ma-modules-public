@@ -19,7 +19,7 @@ import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.IMangoLifecycle;
-import com.serotonin.m2m2.db.DatabaseProxy;
+import com.serotonin.m2m2.db.AbstractDatabaseProxy;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.provider.Providers;
@@ -102,7 +102,7 @@ public class WatchlistSqlVisitorTest{
 		Common.envProps.setDefaultValue("db.location", baseTestDir.getAbsolutePath() + File.separator + "h2");
 		Common.envProps.setDefaultValue("db.nosql.location", baseTestDir.getAbsolutePath());
 		
-		Common.databaseProxy = DatabaseProxy.createDatabaseProxy();
+		Common.databaseProxy = AbstractDatabaseProxy.createDatabaseProxy();
 		Common.databaseProxy.initialize(ClassLoader.getSystemClassLoader());
 	}
 

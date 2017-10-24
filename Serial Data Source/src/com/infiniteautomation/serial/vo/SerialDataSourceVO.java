@@ -68,6 +68,8 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private float ioLogFileSizeMBytes = 1.0f; //1MB
     @JsonProperty
     private int maxHistoricalIOLogs = 1;
+    @JsonProperty
+    private int retries = 1;
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
@@ -239,6 +241,14 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 	public void setMaxHistoricalIOLogs(int maxHistoricalIOLogs) {
 		this.maxHistoricalIOLogs = maxHistoricalIOLogs;
 	}
+	
+	public int getRetries() {
+	    return retries;
+	}
+	
+	public void setRetries(int retries) {
+	    this.retries = retries;
+	}
 
 	
     public String getIoLogPath() {
@@ -290,7 +300,10 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         if (ioLogFileSizeMBytes <= 0)
             response.addContextualMessage("ioLogFileSizeMBytes", "validate.greaterThanZero");
         if (maxHistoricalIOLogs <= 0)
-            response.addContextualMessage("maxHistoricalIOLogs", "validate.greaterThanZero");        
+            response.addContextualMessage("maxHistoricalIOLogs", "validate.greaterThanZero");     
+        
+        if(retries < 0)
+            response.addContextualMessage("retries", "validate.cannotBeNegative");
 
      }
 
@@ -300,7 +313,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 4;
+    private static final int version = 5;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
@@ -321,6 +334,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         out.writeInt(maxMessageSize);
         out.writeFloat(ioLogFileSizeMBytes);
         out.writeInt(maxHistoricalIOLogs);
+        out.writeInt(retries);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -345,6 +359,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             maxMessageSize = 1024;
             ioLogFileSizeMBytes = 1;
             maxHistoricalIOLogs = 1;
+            retries = 1;
         }
         if (ver == 2) {
             commPortId = SerializationHelper.readSafeUTF(in);
@@ -364,6 +379,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             maxMessageSize = 1024;
             ioLogFileSizeMBytes = 1;
             maxHistoricalIOLogs = 1;
+            retries = 1;
         }
         if (ver == 3) {
             commPortId = SerializationHelper.readSafeUTF(in);
@@ -383,6 +399,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             maxMessageSize = 1024;
             ioLogFileSizeMBytes = 1;
             maxHistoricalIOLogs = 1;
+            retries = 1;
         }
         if(ver == 4){
             commPortId = SerializationHelper.readSafeUTF(in);
@@ -402,6 +419,27 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             maxMessageSize = in.readInt();
             ioLogFileSizeMBytes = in.readFloat();
             maxHistoricalIOLogs = in.readInt();
+            retries = 1;
+        }
+        if(ver == 5){
+            commPortId = SerializationHelper.readSafeUTF(in);
+            baudRate = in.readInt();
+            flowControlIn = in.readInt();
+            flowControlOut = in.readInt();
+            dataBits = in.readInt();
+            stopBits = in.readInt();
+            parity = in.readInt();
+            messageTerminator = SerializationHelper.readSafeUTF(in);
+            readTimeout = in.readInt();
+            messageRegex = SerializationHelper.readSafeUTF(in);
+            pointIdentifierIndex = in.readInt();
+            useTerminator = in.readBoolean();
+            hex = in.readBoolean();
+            logIO = in.readBoolean();
+            maxMessageSize = in.readInt();
+            ioLogFileSizeMBytes = in.readFloat();
+            maxHistoricalIOLogs = in.readInt();
+            retries = in.readInt();
         }
     }
 

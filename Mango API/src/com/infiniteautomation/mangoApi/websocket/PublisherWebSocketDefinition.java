@@ -5,6 +5,7 @@
 package com.infiniteautomation.mangoApi.websocket;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
+import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.PublisherWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
@@ -42,6 +43,6 @@ public class PublisherWebSocketDefinition extends WebSocketDefinition{
 	 */
 	@Override
 	public String getTypeName() {
-		return "PUBLISHER";
+		return EventType.EventTypeNames.PUBLISHER;
 	}
 }

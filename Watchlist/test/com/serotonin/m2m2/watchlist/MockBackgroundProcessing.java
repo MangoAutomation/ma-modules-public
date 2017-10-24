@@ -4,7 +4,7 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import com.serotonin.m2m2.rt.maint.BackgroundProcessing;
+import com.serotonin.m2m2.rt.maint.BackgroundProcessingImpl;
 import com.serotonin.m2m2.rt.maint.work.WorkItem;
 
 /**
@@ -13,7 +13,7 @@ import com.serotonin.m2m2.rt.maint.work.WorkItem;
  * @author Terry Packer
  *
  */
-public class MockBackgroundProcessing extends BackgroundProcessing{
+public class MockBackgroundProcessing extends BackgroundProcessingImpl{
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.rt.maint.BackgroundProcessing#addWorkItem(com.serotonin.m2m2.rt.maint.work.WorkItem)

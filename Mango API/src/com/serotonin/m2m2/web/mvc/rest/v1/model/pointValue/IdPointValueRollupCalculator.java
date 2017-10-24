@@ -12,8 +12,8 @@ import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.quantize2.BucketCalculator;
@@ -50,7 +50,7 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 	public void calculate(final ParentDataQuantizer quantizer, DateTime from, DateTime to){
 		
         //Make the call to get the data and quantize it
-        DaoRegistry.pointValueDao.getPointValuesBetween(new ArrayList<Integer>(this.voMap.keySet()), from.getMillis(), to.getMillis(),
+        Common.databaseProxy.newPointValueDao().getPointValuesBetween(new ArrayList<Integer>(this.voMap.keySet()), from.getMillis(), to.getMillis(),
                 new MappedRowCallback<IdPointValueTime>() {
                     @Override
                     public void row(IdPointValueTime pvt, int row) {
@@ -115,13 +115,12 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 			this.calculate(quantizer, from, to);
 	}
 
-
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.AbstractPointValueRollupCalculator#getStartEndTimes()
 	 */
 	@Override
 	protected LongPair getStartEndTimes() {
-		return  DaoRegistry.pointValueDao.getStartAndEndTime(new ArrayList<Integer>(this.voMap.keySet()));
+		return  pvd.getStartAndEndTime(new ArrayList<Integer>(this.voMap.keySet()));
 	}
-	
+
 }

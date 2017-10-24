@@ -72,7 +72,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<AbstractEventDetectorVO<?>>> queryRQL(
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request) {
@@ -95,12 +95,12 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{id}")
+	@RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public ResponseEntity<AbstractEventDetectorModel<?>> get(
     		@AuthenticationPrincipal User user,
-    		@ApiParam(value = "Valid Event Detector ID", required = true, allowMultiple = false)
-    		@PathVariable int id, HttpServletRequest request) {
-		AbstractEventDetectorVO<?> vo = this.dao.get(id);
+    		@ApiParam(value = "Valid Event Detector XID", required = true, allowMultiple = false)
+    		@PathVariable String xid, HttpServletRequest request) {
+		AbstractEventDetectorVO<?> vo = this.dao.getByXid(xid);
 		if(vo == null)
 			throw new NotFoundRestException();
 		
@@ -117,7 +117,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			value = "Create an Event Detector",
 			notes = "Cannot already exist, must have data source permission for the point"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "application/sero-json"}, produces={"application/json", "text/csv", "application/sero-json"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractEventDetectorModel<?>> save(
     		@ApiParam(value = "Event Detector", required = true)
     		@RequestBody(required=true)  AbstractEventDetectorModel<?> model,
@@ -126,13 +126,16 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 
 		AbstractEventDetectorVO<?> vo = model.getData();
 		
+		// Set XID if required
+        if (StringUtils.isEmpty(vo.getXid())) {
+            vo.setXid(EventDetectorDao.instance.generateUniqueXid());
+        }
+        
 		//Check to see if it already exists
-		if(!StringUtils.isEmpty(vo.getXid())){
-			AbstractEventDetectorVO<?> existing = this.dao.getByXid(vo.getXid(), vo.getDefinition().getSourceTypeName(), vo.getSourceId());
-			if(existing != null){
-				throw new AlreadyExistsRestException(vo.getXid());
- 			}
-		}
+        AbstractEventDetectorVO<?> existing = this.dao.getByXid(vo.getXid());
+        if(existing != null){
+            throw new AlreadyExistsRestException(vo.getXid());
+        }
 		
 		//Check permission
 		DataPointVO dp = DataPointDao.instance.get(vo.getSourceId());
@@ -156,21 +159,18 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     	Common.runtimeManager.saveDataPoint(dp);
 		
         //Put a link to the updated data in the header?
-    	URI location = builder.path("/v2/event-detectors/{id}").buildAndExpand(vo.getId()).toUri();
+    	URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
     	return getResourceCreated(vo.asModel(), location.toString());
     }
-	
+
 	@ApiOperation(
 			value = "Update an Event Detector",
 			notes = ""
 			)
-	@RequestMapping(method = RequestMethod.PUT, 
-		consumes={"application/json", "application/sero-json"}, 
-		produces={"application/json", "text/csv", "application/sero-json"},
-		value={"/{id}"})
+	@RequestMapping(method = RequestMethod.PUT, value={"/{xid}"})
     public ResponseEntity<AbstractEventDetectorModel<?>> update(
-    		@ApiParam(value = "Valid Event Detector ID", required = true, allowMultiple = false)
-    		@PathVariable int id,
+    		@ApiParam(value = "Valid Event Detector XID", required = true, allowMultiple = false)
+    		@PathVariable String xid,
     		@ApiParam(value = "Event Detector", required = true)
     		@RequestBody(required=true)  AbstractEventDetectorModel<?> model,
     		@AuthenticationPrincipal User user,
@@ -179,7 +179,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		AbstractEventDetectorVO<?> vo = model.getData();
 		
 		//Check to see if it already exists
-		AbstractEventDetectorVO<?> existing = this.dao.get(id);
+		AbstractEventDetectorVO<?> existing = this.dao.getByXid(xid);
 		if(existing == null){
 			throw new NotFoundRestException();
 		}else{
@@ -220,7 +220,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		//Save the data point
     	Common.runtimeManager.saveDataPoint(dp);
 		
-    	URI location = builder.path("/v2/event-detectors/{id}").buildAndExpand(vo.getId()).toUri();
+    	URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
     	return getResourceUpdated(vo.asModel(), location.toString());
     }
 	
@@ -228,18 +228,16 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			value = "Delete an Event Detector",
 			notes = ""
 			)
-	@RequestMapping(method = RequestMethod.DELETE, 
-		consumes={"application/json", "application/sero-json"}, 
-		produces={"application/json", "text/csv", "application/sero-json"},
-		value={"/{id}"})
+	@RequestMapping(method = RequestMethod.DELETE,
+		value={"/{xid}"})
     public ResponseEntity<AbstractEventDetectorModel<?>> delete(
-       		@ApiParam(value = "Valid Event Detector ID", required = true, allowMultiple = false)
-       	 	@PathVariable int id,
+       		@ApiParam(value = "Valid Event Detector XID", required = true, allowMultiple = false)
+       	 	@PathVariable String xid,
     		@AuthenticationPrincipal User user,
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		//Check to see if it already exists
-		AbstractEventDetectorVO<?> existing = this.dao.get(id);
+		AbstractEventDetectorVO<?> existing = this.dao.getByXid(xid);
 		if(existing == null){
 			throw new NotFoundRestException();
 		}
@@ -270,10 +268,8 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		//Save the data point
     	Common.runtimeManager.saveDataPoint(dp);
-		
-        //Put a link to the updated data in the header?
-    	URI location = builder.path("/v2/event-detectors/{id}").buildAndExpand(existing.getId()).toUri();
-    	return getResourceDeleted(existing.asModel(), location.toString());
+
+        return new ResponseEntity<>(existing.asModel(), HttpStatus.OK);
     }
 	
 	@ApiOperation(
@@ -282,7 +278,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-point/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value="/data-point/{xid}")
     public ResponseEntity<List<AbstractEventDetectorModel<?>>> getForDataPoint(
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
@@ -308,7 +304,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			response=AbstractEventDetectorModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-source/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value="/data-source/{xid}")
     public ResponseEntity<List<AbstractEventDetectorModel<?>>> getForDataSource(
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)

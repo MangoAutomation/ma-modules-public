@@ -5,6 +5,8 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.io.StreamUtils;
@@ -199,6 +202,10 @@ public class ModulesRestController extends MangoRestController {
 						}
 						return result.createResponseEntity(model);
 					}
+				} catch(SocketTimeoutException e) {
+					result.addRestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.requestTimeout", Common.envProps.getString("store.url")));
+				} catch(UnknownHostException e) {
+					result.addRestMessage(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.unknownHost", Common.envProps.getString("store.url")));
 				} catch (Exception e) {
 					result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
 				}
@@ -325,6 +332,8 @@ public class ModulesRestController extends MangoRestController {
 				Module module = ModuleRegistry.getModule(moduleName == null ? model.getName() : moduleName);
 				if (module != null) {
 					module.setMarkedForDeletion(delete);
+					if(module.isMarkedForDeletion() != delete)
+					    throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
 			        return result.createResponseEntity(new ModuleModel(module));
 				} else {
 					result.addRestMessage(getDoesNotExistMessage());

@@ -27,6 +27,7 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
@@ -67,7 +68,7 @@ public class ScriptUtilRestController {
 	@RequestMapping(method = RequestMethod.POST, value = {"/test"}, consumes={"application/json"}, produces = {"application/json"})
 	public ResponseEntity<ScriptRestResult> testScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
 		if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
-		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext());
+		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext(), true);
 		try {
 			CompiledScript script = CompiledScriptExecutor.compile(scriptModel.getScript());
 			
@@ -131,7 +132,7 @@ public class ScriptUtilRestController {
 	@RequestMapping(method = RequestMethod.POST, value = {"/run"}, consumes={"application/json"}, produces = {"application/json"})
 	public ResponseEntity<ScriptRestResult> runScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
 		if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
-		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext());
+		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext(), false);
 		try {
 			CompiledScript script = CompiledScriptExecutor.compile(scriptModel.getScript());
 			
@@ -162,7 +163,7 @@ public class ScriptUtilRestController {
 		}
 	}
 	
-	private Map<String, IDataPointValueSource> convertContextModel(List<ScriptContextVariableModel> contextModel) {
+	private Map<String, IDataPointValueSource> convertContextModel(List<ScriptContextVariableModel> contextModel, boolean testRun) {
 		Map<String, IDataPointValueSource> context = new HashMap<>();
 		if(contextModel != null)
 			for(ScriptContextVariableModel variable : contextModel) {
@@ -171,8 +172,14 @@ public class ScriptUtilRestController {
 					throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.pointNotFound", variable.getXid()));
 				
 				DataPointRT dprt = Common.runtimeManager.getDataPoint(dpvo.getId());
-				if(dprt == null)
-					throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.pointNotEnabled", variable.getXid()));
+				if(dprt == null) {
+					if(!testRun)
+					    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.pointNotEnabled", variable.getXid()));
+					if(dpvo.getDefaultCacheSize() == 0)
+					    dpvo.setDefaultCacheSize(1);
+					dprt = new DataPointRT(dpvo, dpvo.getPointLocator().createRuntime(), DataSourceDao.instance.getDataSource(dpvo.getDataSourceId()), null);
+					dprt.resetValues();
+				}
 				
 				context.put(variable.getVariableName(), dprt);
 			}

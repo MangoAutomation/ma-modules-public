@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.serotonin.db.MappedRowCallback;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -57,10 +57,10 @@ public class DeviceNameController extends MangoRestController {
         if (result.isOk()) {
             DeviceAndPermissionCallback callback = new DeviceAndPermissionCallback(user);
             if (contains != null) {
-                DaoRegistry.dataPointDao.query(SELECT_DEVICENAME + " WHERE pt.deviceName LIKE ?",
+                DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE pt.deviceName LIKE ?",
                         new Object[] {"%" + contains + "%"}, DEVICE_AND_PERMISSION_MAPPER, callback);
             } else {
-                DaoRegistry.dataPointDao.query(SELECT_DEVICENAME,
+                DataPointDao.instance.query(SELECT_DEVICENAME,
                         new Object[] {}, DEVICE_AND_PERMISSION_MAPPER, callback);
             }
             return result.createResponseEntity(callback.results);
@@ -82,10 +82,10 @@ public class DeviceNameController extends MangoRestController {
         if (result.isOk()) {
             DeviceAndPermissionCallback callback = new DeviceAndPermissionCallback(user);
             if (contains != null) {
-                DaoRegistry.dataPointDao.query(SELECT_DEVICENAME + " WHERE pt.dataSourceId=? AND pt.deviceName LIKE ?",
+                DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE pt.dataSourceId=? AND pt.deviceName LIKE ?",
                         new Object[] {id, "%" + contains + "%"}, DEVICE_AND_PERMISSION_MAPPER, callback);
             } else {
-                DaoRegistry.dataPointDao.query(SELECT_DEVICENAME + " WHERE pt.dataSourceId=?",
+                DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE pt.dataSourceId=?",
                         new Object[] {id}, DEVICE_AND_PERMISSION_MAPPER, callback);
             }
             return result.createResponseEntity(callback.results);
@@ -107,10 +107,10 @@ public class DeviceNameController extends MangoRestController {
         if (result.isOk()) {
             DeviceAndPermissionCallback callback = new DeviceAndPermissionCallback(user);
             if (contains != null) {
-                DaoRegistry.dataPointDao.query(SELECT_DEVICENAME_JOIN_DATASOURCE + " WHERE ds.xid=? AND pt.deviceName LIKE ?",
+                DataPointDao.instance.query(SELECT_DEVICENAME_JOIN_DATASOURCE + " WHERE ds.xid=? AND pt.deviceName LIKE ?",
                         new Object[] {xid, "%" + contains + "%"}, DEVICE_AND_PERMISSION_MAPPER, callback);
             } else {
-                DaoRegistry.dataPointDao.query(SELECT_DEVICENAME_JOIN_DATASOURCE + " WHERE ds.xid=?",
+                DataPointDao.instance.query(SELECT_DEVICENAME_JOIN_DATASOURCE + " WHERE ds.xid=?",
                         new Object[] {xid}, DEVICE_AND_PERMISSION_MAPPER, callback);
             }
             return result.createResponseEntity(callback.results);

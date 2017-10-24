@@ -194,10 +194,8 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 
 		//Delete the Publisher
 		Common.runtimeManager.deletePublisher(existing.getId());
-		
-        //Put a link to the updated data in the header?
-    	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(existing.getXid()).toUri();
-    	return getResourceDeleted(existing.asModel(), location.toString());
+
+        return new ResponseEntity<>(existing.asModel(), HttpStatus.OK);
     }
 
 	/**

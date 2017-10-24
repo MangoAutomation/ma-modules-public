@@ -12,8 +12,9 @@ import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.util.DateUtils;
@@ -53,6 +54,7 @@ public abstract class AbstractPointValueRollupCalculator<T> {
 	protected DateTime from;
 	protected DateTime to;
 	protected final Integer limit;
+	protected final PointValueDao pvd;
 	
 	public AbstractPointValueRollupCalculator(String host, int port, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit){
         this.host = host;
@@ -64,6 +66,7 @@ public abstract class AbstractPointValueRollupCalculator<T> {
         this.from = from;
         this.to = to;
         this.limit = limit;
+        this.pvd = Common.databaseProxy.newPointValueDao();
     }
 
 	protected abstract void generateStream(DateTime from, DateTime to, JsonGenerator jgen) throws IOException;
@@ -104,9 +107,9 @@ public abstract class AbstractPointValueRollupCalculator<T> {
 	 * @return
 	 */
 	protected DataValue getStartValue(int dataPointId){
-        PointValueTime startPvt = DaoRegistry.pointValueDao.getPointValueAt(dataPointId, from.getMillis());
+        PointValueTime startPvt = pvd.getPointValueAt(dataPointId, from.getMillis());
         if(startPvt == null)
-        	startPvt = DaoRegistry.pointValueDao.getPointValueBefore(dataPointId, from.getMillis());
+        	startPvt = pvd.getPointValueBefore(dataPointId, from.getMillis());
         DataValue startValue = PointValueTime.getValue(startPvt);
         return startValue;
 	}
@@ -165,9 +168,9 @@ public abstract class AbstractPointValueRollupCalculator<T> {
 	protected BucketCalculator getBucketCalculator(DateTime startTime, DateTime endTime){
 		
         if(this.period == null){
-        	return  new BucketsBucketCalculator(startTime, endTime, 1);
+            return  new BucketsBucketCalculator(startTime, endTime, 1);
         }else{
-        	return new TimePeriodBucketCalculator(startTime, endTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
+        	    return new TimePeriodBucketCalculator(startTime, endTime, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
         }
 	}
 	
@@ -182,7 +185,7 @@ public abstract class AbstractPointValueRollupCalculator<T> {
 	protected void calculate(final AbstractDataQuantizer quantizer, int dataPointId, DateTime from, DateTime to){
 		
         //Make the call to get the data and quantize it
-        DaoRegistry.pointValueDao.getPointValuesBetween(dataPointId, from.getMillis(), to.getMillis(),
+        pvd.getPointValuesBetween(dataPointId, from.getMillis(), to.getMillis(),
                 new MappedRowCallback<PointValueTime>() {
                     @Override
                     public void row(PointValueTime pvt, int row) {
@@ -195,25 +198,27 @@ public abstract class AbstractPointValueRollupCalculator<T> {
         return;
 	}
 	
-	/**
-	 * Round off the period for rollups and ensure the date bounds are set
-	 */
-	private void setupDates(){
+    /**
+     * Round off the period for rollups and ensure the date bounds are set
+     */
+    private void setupDates() {
         // Determine the start and end times.
         if (from == null) {
             // Get the start and end from the point values table.
             LongPair lp = getStartEndTimes();
             from = new DateTime(lp.getL1());
-            if(to == null)
-            	to = new DateTime(lp.getL2());
-        }else if(to == null){
-        	to = new DateTime();
+            if (to == null)
+                to = new DateTime(lp.getL2());
+        } else if (to == null) {
+            to = new DateTime();
         }
 
-		 //Round off the period if we are using periodic rollup
-       if(period != null){
-    	   from = DateUtils.truncateDateTime(from, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
-    	   to = DateUtils.truncateDateTime(to, TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
-       }
-	}
+        // Round off the period if we are using periodic rollup
+        if (period != null) {
+            from = DateUtils.truncateDateTime(from,
+                    TimePeriodType.convertFrom(this.period.getType()), this.period.getPeriods());
+            to = DateUtils.truncateDateTime(to, TimePeriodType.convertFrom(this.period.getType()),
+                    this.period.getPeriods());
+        }
+    }
 }

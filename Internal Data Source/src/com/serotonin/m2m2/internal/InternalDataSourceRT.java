@@ -43,6 +43,22 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
     }
     
     @Override
+    public void forcePointRead(DataPointRT dataPoint) {
+    	InternalPointLocatorRT locator = dataPoint.getPointLocator();
+        ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
+        if (m != null){
+        	if(m instanceof IntegerMonitor)
+        		dataPoint.updatePointValue(new PointValueTime((double) ((IntegerMonitor)m).getValue(), Common.timer.currentTimeMillis()));
+        	else if(m instanceof LongMonitor)
+        		dataPoint.updatePointValue(new PointValueTime((double) ((LongMonitor)m).getValue(), Common.timer.currentTimeMillis()));
+        	else if(m instanceof DoubleMonitor)
+        		dataPoint.updatePointValue(new PointValueTime((double) ((DoubleMonitor)m).getValue(), Common.timer.currentTimeMillis()));
+        	else if(m instanceof AtomicIntegerMonitor)
+        		dataPoint.updatePointValue(new PointValueTime((double) ((AtomicIntegerMonitor)m).getValue(), Common.timer.currentTimeMillis()));
+        }
+    }
+    
+    @Override
     public void doPoll(long time) {
         for (DataPointRT dataPoint : dataPoints) {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
