@@ -51,7 +51,6 @@ public class PointValueFunctionalTests extends BaseRestTest {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Test
     public void testGetAllAdmin() {
 
         List<User> users = new ArrayList<>();

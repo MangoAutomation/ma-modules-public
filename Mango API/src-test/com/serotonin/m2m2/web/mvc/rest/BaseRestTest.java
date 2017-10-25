@@ -25,12 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.MangoTestInstance;
 import com.serotonin.m2m2.db.H2Proxy;
-import com.serotonin.m2m2.db.dao.DaoRegistry;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.UserDao;
-import com.serotonin.m2m2.web.mvc.rest.v1.ExceptionHandlingController;
 import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
 import com.serotonin.util.properties.ReloadingProperties;
 
@@ -95,9 +93,10 @@ public class BaseRestTest {
     	
         //Mock our Daos so they
         // return exactly what we want.
-    	DaoRegistry.dataPointDao = this.dataPointDao;
-    	DaoRegistry.dataSourceDao = this.dataSourceDao;
-    	DaoRegistry.userDao = this.userDao;
+    //TODO 
+    //DaoRegistry.dataPointDao = this.dataPointDao;
+    	//DaoRegistry.dataSourceDao = this.dataSourceDao;
+    	//DaoRegistry.userDao = this.userDao;
     	//DaoRegistry.pointValueDao = this.pointValueDao;
     	
     	this.objectMapper = MangoRestSpringConfiguration.createNewObjectMapper();
@@ -132,9 +131,10 @@ public class BaseRestTest {
         	@Override
             protected ServletInvocableHandlerMethod getExceptionHandlerMethod(HandlerMethod handlerMethod, Exception exception) {
             	
-                Method method = new ExceptionHandlerMethodResolver(ExceptionHandlingController.class).resolveMethod(exception);
-                return new ServletInvocableHandlerMethod(new ExceptionHandlingController(), method);
-            }
+        	        //Method method = new ExceptionHandlerMethodResolver(ExceptionHandlingController.class).resolveMethod(exception);
+                //return new ServletInvocableHandlerMethod(new ExceptionHandlingController(), method);
+        	        return null;
+        	    }
         };
         exceptionResolver.afterPropertiesSet();
         return exceptionResolver;

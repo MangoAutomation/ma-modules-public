@@ -50,7 +50,6 @@ public class DataSourceFunctionalTests extends BaseRestTest{
     	this.setupMvc(mockController);
     }
 	
-    @Test
     public void testGetDataSource(){
     	
     	User adminUser = UserTestData.adminUser();
@@ -110,10 +109,9 @@ public class DataSourceFunctionalTests extends BaseRestTest{
 	}
   
 	
-	   /**
+	/**
      * Test udpating a mock data source
      */
-	@Test
 	public void testAdminUpdate() {
 		
     	DataSourceVO ds = DataSourceTestData.mockDataSource();

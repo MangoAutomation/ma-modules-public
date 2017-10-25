@@ -26,7 +26,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 public class UserFullStackTests extends BaseFullStackRestTest{
 
 	
-	@Test
 	public void getAll(){
 		//Setup For Rest Call
 		HttpHeaders headers = new HttpHeaders();
