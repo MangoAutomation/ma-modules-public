@@ -1,3 +1,6 @@
+*Version 3.2.1*
+* Fixing bug where splitting messages on terminator did not process the split messages individually.
+
 *Version 3.2.0*
 * Upgraded to work with core version 3.2.x
 

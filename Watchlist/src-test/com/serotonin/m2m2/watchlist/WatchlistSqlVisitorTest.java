@@ -4,52 +4,71 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.infiniteautomation.mango.db.query.StreamableRowCallback;
 import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
-import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.IMangoLifecycle;
-import com.serotonin.m2m2.db.AbstractDatabaseProxy;
+import com.serotonin.m2m2.MangoTestBase;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.provider.Providers;
-import com.serotonin.util.properties.ReloadingProperties;
 
 import net.jazdw.rql.parser.ASTNode;
 import net.jazdw.rql.parser.RQLParser;
 
 /**
+ * 
+ * Simple RQL test for watchlist Dao
+ * 
  * @author Terry Packer
  *
  */
-public class WatchlistSqlVisitorTest{
-	
-	protected final File baseTestDir = new File("junit");
+public class WatchlistSqlVisitorTest extends MangoTestBase{
 	
 	protected Map<String,String> modelMap = new HashMap<String,String>();
 	//Map of Vo member/sql column to value converter
 	protected Map<String, SQLColumnQueryAppender> appenders = new HashMap<String, SQLColumnQueryAppender>();
 	
+	@BeforeClass
+	public static void setupModule() {
+	    definitions.add(new WatchListSchemaDefinition());
+	    definitions.add(new WatchListWebSocketDefinition());
+	    definitions.add(new AuditEvent());
+	}
+	
 	@Test
 	public void testRQL() throws IOException{
-		
-		this.configure(baseTestDir);
 
         //Create a User
         User user = new User();
-        user.setId(1);
         user.setUsername("test");
+        user.setName("test");
+        user.setEmail("test@test.com");
+        user.setPassword("usernametest");
         user.setPermissions("user,test,permission1");
+        validate(user);
+        UserDao.instance.saveUser(user);
+        
+        //Insert some watchlists
+        for(int i=0; i<120; i++) {
+            WatchListVO wl = new WatchListVO();
+            wl.setXid(WatchListDao.instance.generateUniqueXid());
+            wl.setName("Watchilst " + i);
+            wl.setUserId(user.getId());
+            wl.setReadPermission("permission1");
+            WatchListDao.instance.saveWatchList(wl);
+        }
+        
         
 		String rql = "limit(100,0)";
 		RQLParser parser = new RQLParser();
@@ -57,67 +76,44 @@ public class WatchlistSqlVisitorTest{
         ASTNode queryNode = parser.parse(rql);
 
         //Combine the existing query with an AND node
-        
         if(queryNode == null){
-        	root = new ASTNode("eq", "userId", user.getId());
+            root = new ASTNode("eq", "userId", user.getId());
         }else{
-        	//Filter by Permissions
-    		Set<String> permissions = Permissions.explodePermissionGroups(user.getPermissions());
-    		ASTNode permRQL = new ASTNode("in", "readPermission", permissions);
-        	
-        	root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL, queryNode);
+            	//Filter by Permissions
+        		Set<String> permissions = Permissions.explodePermissionGroups(user.getPermissions());
+        		ASTNode permRQL = new ASTNode("in", "readPermission", permissions);
+            	
+            	root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL, queryNode);
         }
         
-        StreamableRowCallback<WatchListVO> selectCallback = null;
-        StreamableRowCallback<Long> countCallback = null;
+        final AtomicLong selectCounter = new AtomicLong();
+        final AtomicLong countValue = new AtomicLong();
+        
+        StreamableRowCallback<WatchListVO> selectCallback = new StreamableRowCallback<WatchListVO>() {
+
+            @Override
+            public void row(WatchListVO row, int index) throws Exception {
+                selectCounter.incrementAndGet();
+            }
+            
+        };
+        
+        StreamableRowCallback<Long> countCallback = new StreamableRowCallback<Long>() {
+
+            @Override
+            public void row(Long row, int index) throws Exception {
+                countValue.set(row);
+            }
+            
+        };
         
         
 		StreamableSqlQuery<WatchListVO> query = WatchListDao.instance.createQuery(root, selectCallback, countCallback, modelMap, appenders, true);
-		
-		System.out.println(query.toString());
+		query.query();
+		query.count();
         
-	}
-	
-	
-	protected void configure(File baseTestDir) throws IOException{
-		
-		delete(baseTestDir);
-		
-		Common.MA_HOME = System.getProperty("ma.home");
-		if(Common.MA_HOME == null)
-			throw new ShouldNeverHappenException("ma.home system property not defined.");
-		
-		MockLifecycle lifecycle = new MockLifecycle();
-        Providers.add(IMangoLifecycle.class, lifecycle);
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                Providers.get(IMangoLifecycle.class).terminate();
-            }
-        });
-		
-		Common.envProps = new ReloadingProperties("test-env");
-		Common.envProps.setDefaultValue("db.url", "jdbc:h2:" + baseTestDir.getAbsolutePath() + File.separator + "h2");
-		Common.envProps.setDefaultValue("db.location", baseTestDir.getAbsolutePath() + File.separator + "h2");
-		Common.envProps.setDefaultValue("db.nosql.location", baseTestDir.getAbsolutePath());
-		
-		Common.databaseProxy = AbstractDatabaseProxy.createDatabaseProxy();
-		Common.databaseProxy.initialize(ClassLoader.getSystemClassLoader());
+		assertEquals(100L, selectCounter.get());
+		assertEquals(120L, countValue.get());
 	}
 
-	
-	/**
-	 * Delete this file or if a directory all files and directories within
-	 * @param f
-	 * @throws IOException
-	 */
-	public static void delete(File f) throws IOException {
-		if (f.isDirectory()) {
-			for (File c : f.listFiles())
-				delete(c);
-		}
-	    if (f.exists() && !f.delete())
-		    throw new FileNotFoundException("Failed to delete file: " + f);
-	}
 }

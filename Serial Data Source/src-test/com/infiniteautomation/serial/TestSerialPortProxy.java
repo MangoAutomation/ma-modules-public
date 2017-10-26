@@ -23,7 +23,7 @@ public class TestSerialPortProxy extends SerialPortProxy{
 	/**
 	 * @param name
 	 */
-	public TestSerialPortProxy(String name, TestSerialPortInputStream input, TestSerialPortOutputStream output) {
+	public TestSerialPortProxy(TestSerialPortInputStream input, TestSerialPortOutputStream output) {
 		super(new SerialPortIdentifier("test", SerialPortTypes.JSSC));
 		this.inputStream = input;
 		this.outputStream = output;
@@ -80,4 +80,12 @@ public class TestSerialPortProxy extends SerialPortProxy{
 		return outputStream;
 	}
 
+    public TestSerialPortInputStream getTestInputStream() {
+        return inputStream;
+    }
+
+    public TestSerialPortOutputStream getTestOutputStream() {
+        return outputStream;
+    }
+	
 }

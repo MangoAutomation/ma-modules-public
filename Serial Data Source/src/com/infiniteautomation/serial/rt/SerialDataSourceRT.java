@@ -361,7 +361,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 	                        		};
 	                        		
 	                        		try{
-	                        			matchPointValue(msg, messageRegex, pointIdentifierIndex, plVo, vo.isHex(), LOG, callback);
+	                        			matchPointValue(message, messageRegex, pointIdentifierIndex, plVo, vo.isHex(), LOG, callback);
 	                        		}catch(Exception e){
 	                        			callback.matchGeneralFailure(e);
 	                        		}
@@ -571,11 +571,11 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     
     class SerialTimeoutClient extends TimeoutClient{
 
-    	private SerialDataSourceRT rt;
-    	
-    	public SerialTimeoutClient(SerialDataSourceRT rt){
-    		this.rt = rt;
-    	}
+        	private SerialDataSourceRT rt;
+        	
+        	public SerialTimeoutClient(SerialDataSourceRT rt){
+        		this.rt = rt;
+        	}
     	
 		/* (non-Javadoc)
 		 * @see com.serotonin.m2m2.util.timeout.TimeoutClient#scheduleTimeout(long)
@@ -619,39 +619,39 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
      * @param log
      */
     public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, boolean isHex, Log log, MatchCallback callback) throws Exception{
-    	Pattern messagePattern = Pattern.compile(messageRegex);
-    	Matcher messageMatcher = messagePattern.matcher(msg);
-        if(messageMatcher.find()){
-        	if(log.isDebugEnabled())
-        		log.debug("Message matched regex: " + messageRegex);
+    	    Pattern messagePattern = Pattern.compile(messageRegex);
+    	    Matcher messageMatcher = messagePattern.matcher(msg);
+    	    if(messageMatcher.find()){
+    	        if(log.isDebugEnabled())
+    	            log.debug("Message matched regex: " + messageRegex);
             
-        	//Parse out the Identifier
-        	String pointIdentifier = null;
-        	try{
-        		pointIdentifier = messageMatcher.group(pointIdentifierIndex);
-        	}catch(Exception e){
-        		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
-        		return;
-        	}
-    		
-        	if(plVo.getPointIdentifier().equals(pointIdentifier)){
-        		if(log.isDebugEnabled())
-            		log.debug("Point Identified: " + pointIdentifier);
-        		Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
-        		Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
-        		if(pointValueMatcher.find()){
-        			String value = pointValueMatcher.group(plVo.getValueIndex());
-        			if(log.isDebugEnabled()){
-        				log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
-        			}
-        			PointValueTime pvt = convertToPointValue(value, plVo.getDataTypeId(), isHex);
-        			callback.onMatch(pointIdentifier, pvt);
-        		} else {
-        			callback.pointPatternMismatch(msg, plVo.getValueRegex());
-        		}
-        	}else{
-        		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
-        	}
+            	//Parse out the Identifier
+            	String pointIdentifier = null;
+            	try{
+            		pointIdentifier = messageMatcher.group(pointIdentifierIndex);
+            	}catch(Exception e){
+            		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
+            		return;
+            	}
+        		
+            	if(plVo.getPointIdentifier().equals(pointIdentifier)){
+            		if(log.isDebugEnabled())
+                		log.debug("Point Identified: " + pointIdentifier);
+            		Pattern pointValuePattern = Pattern.compile(plVo.getValueRegex());
+            		Matcher pointValueMatcher = pointValuePattern.matcher(msg); //Use the index from the above message
+            		if(pointValueMatcher.find()){
+            			String value = pointValueMatcher.group(plVo.getValueIndex());
+            			if(log.isDebugEnabled()){
+            				log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
+            			}
+            			PointValueTime pvt = convertToPointValue(value, plVo.getDataTypeId(), isHex);
+            			callback.onMatch(pointIdentifier, pvt);
+            		} else {
+            			callback.pointPatternMismatch(msg, plVo.getValueRegex());
+            		}
+            	}else{
+            		callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
+            	}
         }
     }
 

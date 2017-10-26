@@ -6,22 +6,14 @@ package com.infiniteautomation.serial.rt;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.collect.Lists;
 import com.infiniteautomation.mango.io.serial.SerialPortException;
@@ -31,59 +23,49 @@ import com.infiniteautomation.serial.SerialDataSourceTestCase;
 import com.infiniteautomation.serial.SerialDataSourceTestData;
 import com.infiniteautomation.serial.TestSerialPortInputStream;
 import com.infiniteautomation.serial.TestSerialPortOutputStream;
+import com.infiniteautomation.serial.TestSerialPortProxy;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.H2Proxy;
-import com.serotonin.m2m2.rt.EventManager;
-import com.serotonin.m2m2.rt.RuntimeManagerImpl;
+import com.serotonin.m2m2.MangoTestBase;
+import com.serotonin.m2m2.MockSerialPortManager;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.util.properties.ReloadingProperties;
 
 /**
  * @author Terry Packer
  *
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Common.class})
-public class SerialDataSourceTest {
+public class SerialDataSourceTest extends MangoTestBase{
 	
-	private static Map<String, DataPointRT> registeredPoints = new HashMap<String, DataPointRT>();
-	private static Map<String, SerialDataSourceTestCase> testCases = new HashMap<String, SerialDataSourceTestCase>();
+    protected static Map<String, SerialDataSourceTestCase> testCases = new HashMap<String, SerialDataSourceTestCase>();
+	protected TestSerialPortProxy proxy;
 
+	protected SerialDataSourceVO vo;
+    protected SerialDataSourceRT rt;
+    protected long time; //Time during simulation
 	
-	@Mock
-	private SerialPortProxy serialPort;
 
-//	@Mock
-	TestSerialPortInputStream inputStream;
-	
-//	@Mock
-	TestSerialPortOutputStream outputStream;
-	
-	@Mock
-	RuntimeManagerImpl runtimeManager;
-	
-	@Mock
-	EventManager eventManager;
-	
+    
     @Before
     public void setup() {
+        this.proxy = new TestSerialPortProxy(new TestSerialPortInputStream(), new TestSerialPortOutputStream());
+        Common.serialPortManager = new SerialDataSourceSerialPortManager(proxy);
 
-		
-    	MockitoAnnotations.initMocks(this);
-    	//Make sure that Common and other classes are properly loaded
-		mockMangoInternals();
-		SerialDataSourceVO vo = SerialDataSourceTestData.getStandardDataSourceVO();
+        vo = SerialDataSourceTestData.getStandardDataSourceVO();
+        rt = (SerialDataSourceRT) vo.createDataSourceRT();		
+
 		testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"Hello World!;"}));
 		testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
 		testCases.put("", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 0, new String[]{}));
 		testCases.put("testStr\n\nabs", new SerialDataSourceTestCase(SerialDataSourceTestData.getNewlineTerminated(vo), "terminator", "\n", 2, new String[]{"testStr", ""}));
 		testCases.put("ok;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"ok;"}));
-				
-		//Commented out as requiring more mocks for timers		testCases.put("Hello World!;", new SerialTestCase("timeout", ";", 1, new String[]{"Hello World!;"}));
+		
+		//Clean out the timer's tasks
+		time = System.currentTimeMillis() - 1000000;
+		timer.setStartTime(time);
+		
+		//TODO requiring more mocks for timers		testCases.put("Hello World!;", new SerialTestCase("timeout", ";", 1, new String[]{"Hello World!;"}));
     }
-	
 	
     /**
      * TODO Break this into pieces to be re-usable
@@ -140,32 +122,6 @@ public class SerialDataSourceTest {
 				"", vo);
 		rt.addDataPoint(ip1);
 		
-		inputStream = new TestSerialPortInputStream();
-		
-		//Mock up the serial port
-        
-        //Mock the is port owned call
-		when(Common.serialPortManager.portOwned(vo.getCommPortId())).thenReturn(false);
-		when(serialPort.getInputStream()).thenReturn(inputStream);
-		when(serialPort.getOutputStream()).thenReturn(outputStream);
-		
-		//Mock the Get Port
-		try {
-			when(Common.serialPortManager.open(
-					"test", 
-					vo.getCommPortId(),
-					vo.getBaudRate(),
-					vo.getFlowControlIn(),
-					vo.getFlowControlOut(),
-					vo.getDataBits(),
-					vo.getStopBits(),
-					vo.getParity()
-					)).thenReturn(this.serialPort);
-		} catch (SerialPortException e1) {
-			e1.printStackTrace();
-			fail(e1.getMessage());
-		}
-		
 		//Connect
 		try {
 			assertTrue(rt.connect());
@@ -177,8 +133,9 @@ public class SerialDataSourceTest {
 
 		vo.setMessageTerminator("\n");
 		vo.setUseTerminator(true);
+		
 		//load a test input
-		inputStream.pushToMockStream(message);
+		proxy.getTestInputStream().pushToMockStream(message);
 		
 		//Create an event to force the Data Source to read the port
 		SerialPortProxyEvent evt = new SerialPortProxyEvent(System.currentTimeMillis());
@@ -208,42 +165,9 @@ public class SerialDataSourceTest {
 		
 	}
 	
-	
+	@Test
 	public void testReadPointValue(){
-		
-		SerialDataSourceVO vo = SerialDataSourceTestData.getStandardDataSourceVO();
-		SerialDataSourceRT rt = (SerialDataSourceRT) vo.createDataSourceRT();
-		DataPointRT dprt = SerialDataSourceTestData.getMatchAllPoint(vo);
-		registeredPoints.put("matchAll", dprt);
-		rt.addDataPoint(dprt);
-		dprt = SerialDataSourceTestData.getNewlineTerminated(vo);
-		registeredPoints.put("newlineTerminated", dprt);
-		rt.addDataPoint(dprt);
-		
-		inputStream = new TestSerialPortInputStream();
-		
-        //Mock the is port owned call
-		when(Common.serialPortManager.portOwned(vo.getCommPortId())).thenReturn(false);
-		when(serialPort.getInputStream()).thenReturn(inputStream);
-		when(serialPort.getOutputStream()).thenReturn(outputStream);
-		
-		//Mock the Get Port
-		try {
-			when(Common.serialPortManager.open(
-					"test", 
-					vo.getCommPortId(),
-					vo.getBaudRate(),
-					vo.getFlowControlIn(),
-					vo.getFlowControlOut(),
-					vo.getDataBits(),
-					vo.getStopBits(),
-					vo.getParity()
-					)).thenReturn(this.serialPort);
-		} catch (SerialPortException e1) {
-			e1.printStackTrace();
-			fail(e1.getMessage());
-		}
-		
+	    
 		//Connect
 		try {
 			assertTrue(rt.connect());
@@ -253,7 +177,10 @@ public class SerialDataSourceTest {
 		}
 		
 		for(String s : testCases.keySet()) {
-			SerialDataSourceTestCase stc = testCases.get(s);
+            SerialDataSourceTestCase stc = testCases.get(s);		    
+		    
+            rt.addDataPoint(stc.getTargetPoint());
+
 			if(stc.getCondition().equals("terminator")) {
 				vo.setMessageTerminator(stc.getTerminator());
 				vo.setUseTerminator(true);
@@ -262,17 +189,17 @@ public class SerialDataSourceTest {
 				vo.setUseTerminator(false);
 			}
 			//load a test input
-			inputStream.pushToMockStream(s);
+			proxy.getTestInputStream().pushToMockStream(s);
 			
 			//Create an event to force the Data Source to read the port
-			SerialPortProxyEvent evt = new SerialPortProxyEvent(System.currentTimeMillis());
+			SerialPortProxyEvent evt = new SerialPortProxyEvent(timer.currentTimeMillis());
 			rt.serialEvent(evt);
 			
-			//test the return value(s), reverse list because Mango stores latest value at [0]
-			dprt = registeredPoints.get(stc.getTargetPoint());
-			if(dprt == null)
-				continue;
-			List<PointValueTime> pvts = Lists.reverse(dprt.getLatestPointValues(stc.getNewValueCount()));
+			//Fast Forward to fire any events
+			time = time + 5;
+			timer.fastForwardTo(time);
+
+			List<PointValueTime> pvts = Lists.reverse(stc.getTargetPoint().getLatestPointValues(stc.getNewValueCount()));
 			
 			boolean found;
 			for(int k = 0; k < stc.getResults().length; k+=1) {
@@ -284,24 +211,30 @@ public class SerialDataSourceTest {
 				if(!found)
 					fail("No value match found for: '" + stc.getResult(k) + "' point value");
 			}
+			
+			//Remove the point for the next test
+			rt.removeDataPoint(stc.getTargetPoint());
 		}
 	}
 	
-	private void mockMangoInternals() {
-		PowerMockito.mockStatic(Common.class);
-		when(Common.getLocale()).thenReturn(new Locale("en"));
-		
-    	Common.envProps = new ReloadingProperties("test-env");
-        Common.MA_HOME =  System.getProperty("ma.home"); 
-    	
-        Common.runtimeManager = this.runtimeManager;
-        Common.eventManager = this.eventManager;
-        
-        //Start the Database so we can use Daos (Base Dao requires this)
-    	H2Proxy proxy = new H2Proxy();
-        Common.databaseProxy = proxy;
-        proxy.initialize(null);
+	
+	class SerialDataSourceSerialPortManager extends MockSerialPortManager {
+	    
+	    protected SerialPortProxy proxy;
+	    
+	    public SerialDataSourceSerialPortManager(SerialPortProxy proxy) {
+	        this.proxy = proxy;
+	    }
+	    
+	    /* (non-Javadoc)
+	     * @see com.serotonin.m2m2.MockSerialPortManager#open(java.lang.String, java.lang.String, int, int, int, int, int, int)
+	     */
+	    @Override
+	    public SerialPortProxy open(String ownerName, String commPortId, int baudRate,
+	            int flowControlIn, int flowControlOut, int dataBits, int stopBits, int parity)
+	            throws SerialPortException {
+	        return proxy;
+	    }
+	    
 	}
-	
-	
 }
