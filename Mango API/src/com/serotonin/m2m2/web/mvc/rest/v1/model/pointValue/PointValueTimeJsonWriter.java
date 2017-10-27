@@ -109,6 +109,11 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
 		if(statisticsGenerator instanceof ValueChangeCounter){
 			ValueChangeCounter stats = (ValueChangeCounter)statisticsGenerator;
 			
+			if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                this.writeImageValue(stats.getStartValue(), stats.getPeriodStartTime(), stats.getPeriodStartTime(), vo, RollupEnum.START.name());
+            else
+                this.writeDataValue(stats.getPeriodStartTime(), stats.getStartValue(), vo, RollupEnum.START.name());
+			
 	    	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
 	    		this.writeImageValue(stats.getFirstValue(), stats.getFirstTime(), stats.getPeriodStartTime(), vo, RollupEnum.FIRST.name());
 	    	else
@@ -131,6 +136,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter{
             }
             this.writeDouble(acc, vo, RollupEnum.ACCUMULATOR.name());
             this.writeDouble(stats.getSum(), vo, RollupEnum.SUM.name());
+            this.writeDouble(stats.getStartValue(), vo, RollupEnum.START.name());
             this.writeDouble(stats.getFirstValue(), vo, RollupEnum.FIRST.name());
             this.writeDouble(stats.getLastValue(), vo, RollupEnum.LAST.name());
             this.writeIntegral(stats.getIntegral(), vo, RollupEnum.INTEGRAL.name());

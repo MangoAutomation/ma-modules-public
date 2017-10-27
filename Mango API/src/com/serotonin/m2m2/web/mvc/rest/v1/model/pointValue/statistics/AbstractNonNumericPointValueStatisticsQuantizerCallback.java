@@ -56,6 +56,12 @@ public abstract class AbstractNonNumericPointValueStatisticsQuantizerCallback im
 	            case ALL:
 	            	this.writer.writeAllStatistics(statisticsGenerator, this.vo);
 	            break;
+	            case START:
+                    if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                        this.writer.writeNonNullImage(statisticsGenerator.getStartValue(), statisticsGenerator.getPeriodStartTime(), statisticsGenerator.getPeriodStartTime(), this.vo);
+                    else
+                        this.writer.writeNonNull(statisticsGenerator.getStartValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
+                break;
 	            case FIRST:
 	            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
 	            		this.writer.writeNonNullImage(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), statisticsGenerator.getPeriodStartTime(), this.vo);
