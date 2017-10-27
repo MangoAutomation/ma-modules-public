@@ -7,7 +7,9 @@ package com.serotonin.m2m2.watchlist;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,6 +22,7 @@ import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.serotonin.m2m2.MangoTestBase;
 import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
@@ -41,9 +44,11 @@ public class WatchlistSqlVisitorTest extends MangoTestBase{
 	
 	@BeforeClass
 	public static void setupModule() {
+	    List<ModuleElementDefinition> definitions = new ArrayList<>();
 	    definitions.add(new WatchListSchemaDefinition());
 	    definitions.add(new WatchListWebSocketDefinition());
 	    definitions.add(new AuditEvent());
+	    addModule("watchlist", definitions);
 	}
 	
 	@Test
