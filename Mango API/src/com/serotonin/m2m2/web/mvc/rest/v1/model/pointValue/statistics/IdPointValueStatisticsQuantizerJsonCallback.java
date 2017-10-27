@@ -89,6 +89,12 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 		            	this.jgen.writeNumberField(RollupEnum.COUNT.name(), statisticsGenerator.getCount());
 		            	this.jgen.writeEndObject();
 		            break;
+		            case START:
+                        if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                            this.writeImageValue(statisticsGenerator.getStartValue(), periodStartTime, periodStartTime, vo, vo.getXid());
+                        else
+                            this.writeDataValue(periodStartTime, statisticsGenerator.getStartValue(), vo, vo.getXid());
+                    break;
 		            case FIRST:
 		            	if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
 		            		this.writeImageValue(statisticsGenerator.getFirstValue(), statisticsGenerator.getFirstTime(), periodStartTime, vo, vo.getXid());
@@ -153,6 +159,9 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 	                case SUM:
 	                	this.writeDouble(statisticsGenerator.getSum(), vo, vo.getXid());
 	                break;
+	                case START:
+                        this.writeDouble(statisticsGenerator.getStartValue(), vo, vo.getXid());
+                    break;
 	                case FIRST:
 	                	this.writeDouble(statisticsGenerator.getFirstValue(), vo, vo.getXid());
 	                break;

@@ -155,6 +155,9 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 	                case SUM:
 	                	this.writeDouble(statisticsGenerator.getSum(), vo);
 	                break;
+	                case START:
+                        this.writeDouble(statisticsGenerator.getStartValue(), vo);
+                    break;
 	                case FIRST:
 	                	this.writeDouble(statisticsGenerator.getFirstValue(), vo);
 	                break;

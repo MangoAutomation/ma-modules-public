@@ -77,6 +77,9 @@ public abstract class AbstractNumericPointValueStatisticsQuantizerCallback imple
 	                case SUM:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getSum(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	                break;
+	                case START:
+                        this.writer.writeNonNullDouble(statisticsGenerator.getStartValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
+                    break;
 	                case FIRST:
 	                	this.writer.writeNonNullDouble(statisticsGenerator.getFirstValue(), statisticsGenerator.getPeriodStartTime(), this.vo);
 	                break;
