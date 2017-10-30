@@ -38,4 +38,9 @@ public class ReportNoSqlDatabaseSizeSystemInfoDefinition extends SystemInfoDefin
 		}
 		return noSqlSize;
 	}
+
+    @Override
+    public String getDescriptionKey() {
+        return "reports.noSqlDatabaseSizeDesc";
+    }
 }
