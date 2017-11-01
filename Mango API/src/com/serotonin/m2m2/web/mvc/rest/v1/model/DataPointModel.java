@@ -9,10 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
+import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.vo.template.BaseTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumn;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
@@ -309,6 +312,18 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
     @JsonSetter("rollup")
     public void setRollup(String rollup) {
         this.data.setRollup(Common.ROLLUP_CODES.getId(rollup));
+    }
+    
+    @JsonGetter("path")
+    public String getPath() {
+        if(SystemSettingsDao.getBooleanValue(SystemSettingsDao.EXPORT_HIERARCHY_PATH))
+            return PointHierarchy.getFlatPath(this.data.getId(), DataPointDao.instance.getPointHierarchy(true).getRoot());
+        return null;
+    }
+
+    @JsonSetter("path")
+    public void setPath(String path) {
+        this.data.setHierarchyPath(path);
     }
 	
 	public BaseTextRendererModel<?> getTextRenderer(){
