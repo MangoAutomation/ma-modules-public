@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -39,7 +37,6 @@ import com.infiniteautomation.mangoApi.websocket.JsonConfigImportWebSocketDefini
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
-import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
@@ -54,28 +51,13 @@ import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
-import com.serotonin.m2m2.util.BackgroundContext;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.dwr.EmportDwr;
-import com.serotonin.m2m2.web.dwr.emport.ImportContext;
-import com.serotonin.m2m2.web.dwr.emport.ImportItem;
-import com.serotonin.m2m2.web.dwr.emport.Importer;
-import com.serotonin.m2m2.web.dwr.emport.importers.DataPointImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.DataSourceImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.EventHandlerImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.JsonDataImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.MailingListImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.PointHierarchyImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.PublisherImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.SystemSettingsImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.TemplateImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.UserImporter;
-import com.serotonin.m2m2.web.dwr.emport.importers.VirtualSerialPortImporter;
+import com.serotonin.m2m2.web.dwr.emport.ImportTask;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
@@ -88,13 +70,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.publisher.config.JsonConfigImportWebSo
 import com.serotonin.m2m2.web.mvc.rest.v1.util.MangoRestTemporaryResource;
 import com.serotonin.m2m2.web.mvc.rest.v1.util.MangoRestTemporaryResourceContainer;
 import com.serotonin.timer.RejectedTaskReason;
-import com.serotonin.util.ProgressiveTask;
 import com.serotonin.util.ProgressiveTaskListener;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-//import com.wordnik.swagger.annotations.ApiResponse;
-//import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @author Terry Packer
@@ -104,8 +83,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping("/v1/json-emport")
 public class JsonEmportRestController extends MangoRestController{
-	
-	private static Log LOG = LogFactory.getLog(JsonEmportRestController.class);
 	
 	private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
 	private final JsonConfigImportWebSocketHandler websocket;
@@ -368,7 +345,7 @@ public class JsonEmportRestController extends MangoRestController{
 	 */
 	public class ImportStatusProvider extends MangoRestTemporaryResource implements ProgressiveTaskListener{
 
-		private final ImportBackgroundTask task;
+		private final ImportTask task;
 		private final JsonConfigImportWebSocketHandler websocket;
 		//private final JsonConfigImportStatusModel model;
 		
@@ -388,7 +365,7 @@ public class JsonEmportRestController extends MangoRestController{
 			this.start = new Date();
 			this.state = JsonConfigImportStateEnum.RUNNING;
 			this.progress = 0.0f;
-			this.task = new ImportBackgroundTask(root, Common.getTranslations(), user, this);
+			this.task = new ImportTask(root, Common.getTranslations(), user, this);
 		}
 		
 		/**
@@ -396,7 +373,8 @@ public class JsonEmportRestController extends MangoRestController{
 		 */
 		@Override
 		public JsonConfigImportStatusModel createModel() {
-			List<ProcessMessage> messages = this.task.getResponseMessagesCopy();
+
+			List<ProcessMessage> messages = this.task.getResponse().getMessages();
 			
 			List<RestValidationMessage> validation = new ArrayList<RestValidationMessage>();
 			List<String> generic = new ArrayList<String>();
@@ -462,228 +440,6 @@ public class JsonEmportRestController extends MangoRestController{
 			this.state = JsonConfigImportStateEnum.REJECTED;
 			this.websocket.notify(createModel());
 		}		
-	}
-	
-	/**
-	 * Class to import a JSON config in the background and 
-	 * publish the results to a websocket
-	 * 
-	 * @author Terry Packer
-	 */
-	public class ImportBackgroundTask extends ProgressiveTask{
-
-		private final Object messageLock = new Object(); //To prevent modifying the messages list when it is being requested
-		private final ImportContext importContext;
-	    private final User user;
-
-	    private final List<Importer> importers = new ArrayList<Importer>();
-	    private final List<ImportItem> importItems = new ArrayList<ImportItem>();
-	    
-	    private float progress = 0f;
-	    //Chunk of progress for each importer
-	    private float progressChunk;
-	    
-	    public ImportBackgroundTask(JsonObject root, Translations translations, User user, ProgressiveTaskListener listener) {
-	    	super("Background Import Task", "BACKGROUND_IMPORT_TASK", 10, listener);
-	    	
-	        JsonReader reader = new JsonReader(Common.JSON_CONTEXT, root);
-	        this.importContext = new ImportContext(reader, new ProcessResult(), translations);
-	        this.user = user;
-
-	        for (JsonValue jv : nonNullList(root, EmportDwr.USERS))
-	            addImporter(new UserImporter(this.user, jv.toJsonObject()));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.DATA_SOURCES))
-	            addImporter(new DataSourceImporter(jv.toJsonObject()));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.DATA_POINTS))
-	            addImporter(new DataPointImporter(jv.toJsonObject()));
-	        
-	        JsonArray phJson = root.getJsonArray(EmportDwr.POINT_HIERARCHY);
-	        if(phJson != null)
-	        	addImporter(new PointHierarchyImporter(phJson));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.MAILING_LISTS))
-	            addImporter(new MailingListImporter(jv.toJsonObject()));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.PUBLISHERS))
-	            addImporter(new PublisherImporter(jv.toJsonObject()));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.EVENT_HANDLERS))
-	            addImporter(new EventHandlerImporter(jv.toJsonObject()));
-	        
-	        JsonObject obj = root.getJsonObject(EmportDwr.SYSTEM_SETTINGS);
-	        if(obj != null)
-	            addImporter(new SystemSettingsImporter(obj));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.TEMPLATES))
-	            addImporter(new TemplateImporter(jv.toJsonObject()));
-	        
-	        for (JsonValue jv : nonNullList(root, EmportDwr.VIRTUAL_SERIAL_PORTS))
-	            addImporter(new VirtualSerialPortImporter(jv.toJsonObject()));
-	        
-	        for(JsonValue jv : nonNullList(root, EmportDwr.JSON_DATA))
-	        	addImporter(new JsonDataImporter(jv.toJsonObject()));
-	        
-	        for (EmportDefinition def : ModuleRegistry.getDefinitions(EmportDefinition.class)) {
-	            ImportItem importItem = new ImportItem(def, root.get(def.getElementId()));
-	            importItems.add(importItem);
-	        }
-	        
-	        this.progressChunk = 100f/((float)importers.size() + (float)importItems.size());
-	        
-	        Common.timer.execute(this);
-	    }
-
-	    private List<JsonValue> nonNullList(JsonObject root, String key) {
-	        JsonArray arr = root.getJsonArray(key);
-	        if (arr == null)
-	            arr = new JsonArray();
-	        return arr;
-	    }
-
-	    private void addImporter(Importer importer) {
-	        importer.setImportContext(importContext);
-	        importer.setImporters(importers);
-	        importers.add(importer);
-	    }
-
-	    public List<ProcessMessage> getResponseMessagesCopy() {
-	    	synchronized(messageLock){
-	    		return new ArrayList<ProcessMessage>(this.importContext.getResult().getMessages());
-	    	}
-	    }
-
-	    private int importerIndex;
-	    private boolean importerSuccess;
-	    private boolean importedItems;
-
-	    @Override
-	    protected void runImpl() {
-	        try {
-	            BackgroundContext.set(user);
-	            if (!importers.isEmpty()) {
-	            	
-	                if (importerIndex >= importers.size()) {
-	                    // A run through the importers has been completed.
-	                    if (importerSuccess) {
-	                        // If there were successes with the importers and there are still more to do, run through 
-	                        // them again.
-	                        importerIndex = 0;
-	                        importerSuccess = false;
-	                    } else if(!importedItems) {
-	        	            try {
-	                            for (ImportItem importItem : importItems) {
-	                                if (!importItem.isComplete()) {
-	                                	synchronized(messageLock){
-	                                		importItem.importNext(importContext);
-	                                	}
-	                                    return;
-	                                }
-	                            }
-	                            importedItems = true;   // We may have imported a dependency in a module
-	                            importerIndex = 0;
-	                        }
-	                        catch (Exception e) {
-	                            addException(e);
-	                        }
-	                    } else {
-	                        // There are importers left in the list, but there were no successful imports in the last run
-	                        // of the set. So, all that is left is stuff that will always fail. Copy the validation 
-	                        // messages to the context for each.
-	                    	synchronized(messageLock){
-		                        for (Importer importer : importers){
-		                            importer.copyMessages();
-		                        }
-	                    	}
-	                        importers.clear();
-	                        completed = true;
-	                        return;
-	                    }
-	                }
-
-	                // Run the next importer
-	                Importer importer = importers.get(importerIndex);
-	                try {
-	                	synchronized(messageLock){
-	                		importer.doImport();
-	                	}
-	                    if (importer.success()) {
-	                        // The import was successful. Note the success and remove the importer from the list.
-	                        importerSuccess = true;
-	                        importers.remove(importerIndex);
-	                    }
-	                    else{
-	                        // The import failed. Leave it in the list since the run of another importer
-	                        // may resolved the problem.
-	                        importerIndex++;
-	                    }
-	                }
-	                catch (Exception e) {
-	                    // Uh oh...
-	                	LOG.error(e.getMessage(),e);
-	                	synchronized(messageLock){
-	                		addException(e);
-	                	}
-	                    importers.remove(importerIndex);
-	                }
-
-	                return;
-	            }
-
-	            // Run the import items.
-	            try {
-	                for (ImportItem importItem : importItems) {
-	                    if (!importItem.isComplete()) {
-	                    	synchronized(messageLock){
-	                    		importItem.importNext(importContext);
-	                    	}
-	                        return;
-	                    }
-	                }
-
-	                completed = true;
-	            }
-	            catch (Exception e) {
-	            	synchronized(messageLock){
-	            		addException(e);
-	            	}
-	            }
-	        }
-	        finally {
-	            BackgroundContext.remove();
-	            //Compute progress, but only declare if we are < 100 since we will declare 100 when done
-	            //Our progress is 100 - chunk*importersLeft
-	            int importItemsLeft = 0;
-	            for(ImportItem item : importItems)
-	            	if(!item.isComplete())
-	            		importItemsLeft++;
-	            this.progress = 100f - progressChunk*((float)importers.size() + (float)importItemsLeft);
-	            if(progress < 100f)
-	            	declareProgress(this.progress);
-	        }
-	    }
-
-	    private void addException(Exception e) {
-	        String msg = e.getMessage();
-	        Throwable t = e;
-	        while ((t = t.getCause()) != null)
-	            msg += ", " + importContext.getTranslations().translate("emport.causedBy") + " '" + t.getMessage() + "'";
-	        //We were missing NPE and others without a msg
-	        if(msg == null)
-	        	msg = e.getClass().getCanonicalName();
-	        importContext.getResult().addGenericMessage("common.default", msg);
-	    }
-	    
-	    /* (non-Javadoc)
-	     * @see com.serotonin.util.ProgressiveTask#rejected(com.serotonin.timer.RejectedTaskReason)
-	     */
-	    @Override
-	    public void rejected(RejectedTaskReason reason) {
-	    	//Add message then allow rejection
-	        importContext.getResult().addGenericMessage("common.default", "Task Rejected, " + reason.getDescription());
-	    	super.rejected(reason);
-	    }
 	}
 	
 	/**
