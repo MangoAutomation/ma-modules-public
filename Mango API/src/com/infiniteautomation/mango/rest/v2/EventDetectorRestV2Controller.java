@@ -191,6 +191,8 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		//Check permission
 		DataPointVO dp = DataPointDao.instance.get(vo.getSourceId());
+		if(dp == null)
+		    throw new NotFoundRestException();
 		Permissions.ensureDataSourcePermission(user, dp.getDataSourceId());
 		
 		//TODO Fix this when we have other types of detectors
