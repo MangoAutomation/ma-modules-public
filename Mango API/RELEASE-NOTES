@@ -1,4 +1,5 @@
 *Version 3.3.0*
+* Removed JsonEmport rest v1 controller and replaced with rest/v2/json-emport
 * Upgraded to work with core version 3.3.x
 
 *Version 3.2.3*
