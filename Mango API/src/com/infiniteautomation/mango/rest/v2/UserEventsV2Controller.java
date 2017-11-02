@@ -64,8 +64,12 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
         
         //Parse the RQL Query
         ASTNode query = this.parseRQLtoAST(request);
+        List<EventInstance> results;
         List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
-        List<EventInstance> results = query.accept(new RQLToObjectListQuery<EventInstance>(), events);
+        if(query != null)
+            results = query.accept(new RQLToObjectListQuery<EventInstance>(), events);
+        else
+            results = events;
         List<EventInstanceModel> models = new ArrayList<>();
         //Convert to models
         for(EventInstance event : results) {
