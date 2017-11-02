@@ -182,7 +182,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request,
             UriComponentsBuilder builder,
             @ApiParam(value = "Optional timeout for resource to expire, defaults to 5 minutes", required = false, allowMultiple = false)
-            @RequestParam(value="expiration", required=false) Long timeout,
+            @RequestParam(value="timeout", required=false) Long timeout,
             @RequestBody(required=true) JsonValue config,
             @AuthenticationPrincipal User user){
         
