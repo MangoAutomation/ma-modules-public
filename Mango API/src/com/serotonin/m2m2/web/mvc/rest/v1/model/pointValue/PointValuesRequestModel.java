@@ -1,11 +1,15 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 public class PointValuesRequestModel {
-    private String[] xids;
-    private boolean useRendered = false;
-    private boolean unitConversion = false;
-    private int limit = 100;
-    private boolean useCache = true;
+    String[] xids;
+    boolean useRendered = false;
+    boolean unitConversion = false;
+    Integer limit;
+    boolean useCache = true;
+    
+    public PointValuesRequestModel() {
+        limit = 100;
+    }
     
     public String[] getXids() {
         return xids;
@@ -28,7 +32,7 @@ public class PointValuesRequestModel {
     public Integer getLimit() {
         return limit;
     }
-    public void setLimit(int limit) {
+    public void setLimit(Integer limit) {
         this.limit = limit;
     }
     public boolean isUseCache() {

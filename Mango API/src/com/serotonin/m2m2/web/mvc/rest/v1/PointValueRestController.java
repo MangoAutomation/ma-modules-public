@@ -781,7 +781,7 @@ public class PointValueRestController extends MangoRestController{
             @RequestBody TimeRangePointValuesRequestModel model
             ){
         return pointValuesForMultiplePointsAsSingleArray(request, model.getXids(), model.isUseRendered(), model.isUnitConversion(), 
-                model.getFrom(), model.getTo(), model.getRollup(), model.getTimePeriodType(), model.getTimePeriods(), model.getTimezone(), model.getLimit());
+                new DateTime(model.getFrom()), new DateTime(model.getTo()), model.getRollup(), model.getTimePeriodType(), model.getTimePeriods(), model.getTimezone(), model.getLimit());
     }
 	
 	private ResponseEntity<QueryArrayStream<PointValueTimeModel>> pointValuesForMultiplePointsAsSingleArray(
@@ -927,7 +927,7 @@ public class PointValueRestController extends MangoRestController{
             @RequestBody TimeRangePointValuesRequestModel model
             ){
         return pointValuesForMultiplePointsAsMultipleArrays(request, model.getXids(), model.isUseRendered(), model.isUnitConversion(), 
-                model.getFrom(), model.getTo(), model.getRollup(), model.getTimePeriodType(), model.getTimePeriods(), model.getTimezone(), model.getLimit());
+                new DateTime(model.getFrom()), new DateTime(model.getTo()), model.getRollup(), model.getTimePeriodType(), model.getTimePeriods(), model.getTimezone(), model.getLimit());
     }
         
 	    

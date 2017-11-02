@@ -1,29 +1,32 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
-import org.joda.time.DateTime;
+import java.util.Date;
 
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 public class TimeRangePointValuesRequestModel extends PointValuesRequestModel {
-    private DateTime from;
-    private DateTime to;
-    private RollupEnum rollup = RollupEnum.NONE;
-    private TimePeriodType timePeriodType;
-    private Integer timePeriods;
-    private String timezone;
-    private Integer limit; //shadow super.limit
+    Date from;
+    Date to;
+    RollupEnum rollup = RollupEnum.NONE;
+    TimePeriodType timePeriodType;
+    Integer timePeriods;
+    String timezone;
     
-    public DateTime getFrom() {
+    TimeRangePointValuesRequestModel() {
+        limit = null;
+    }
+    
+    public Date getFrom() {
         return from;
     }
-    public void setFrom(DateTime from) {
+    public void setFrom(Date from) {
         this.from = from;
     }
-    public DateTime getTo() {
+    public Date getTo() {
         return to;
     }
-    public void setTo(DateTime to) {
+    public void setTo(Date to) {
         this.to = to;
     }
     public RollupEnum getRollup() {
@@ -49,12 +52,5 @@ public class TimeRangePointValuesRequestModel extends PointValuesRequestModel {
     }
     public void setTimezone(String timezone) {
         this.timezone = timezone;
-    }
-    @Override
-    public Integer getLimit() {
-        return limit;
-    }
-    public void setLimit(Integer limit) {
-        this.limit = limit;
     }
 }
