@@ -165,12 +165,13 @@ public class EventTypeV2RestController {
     
     private void getAllDataPointEventTypes(List<EventTypeModel> types, User user, Integer dataPointId, Integer detectorId) {
         List<DataPointVO> dataPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, true);
+        final boolean admin = Permissions.hasAdmin(user);
         for(DataPointVO dpvo : dataPoints)
             if((dataPointId == null || dataPointId.intValue() == dpvo.getId()) && dpvo.getEventDetectors() != null)
                 for(AbstractPointEventDetectorVO<?> ed : dpvo.getEventDetectors())
                     if((detectorId == null || detectorId.intValue() == ed.getId())) {
                         EventType dpet = ed.getEventType().createEventType();
-                        if(Permissions.hasEventTypePermission(user, dpet))
+                        if(admin || Permissions.hasEventTypePermission(user, dpet))
                             types.add(dpet.asModel());
                     }
                         
@@ -178,44 +179,48 @@ public class EventTypeV2RestController {
     
     private void getAllDataSourceEventTypes(List<EventTypeModel> types, User user, Integer dataSourceId, Integer dataSourceEventId) {
         List<DataSourceVO<?>> dataSources = DataSourceDao.instance.getAll();
+        final boolean admin = Permissions.hasAdmin(user);
         for(DataSourceVO<?> dsvo : dataSources)
             if(dataSourceId == null || dataSourceId.intValue() == dsvo.getId())
                 for(EventTypeVO dset : (List<EventTypeVO>)dsvo.getEventTypes())
                     if(dataSourceEventId == null || dataSourceEventId.intValue() == dset.getTypeRef2()) {
                         EventType et = dset.createEventType();
-                        if(Permissions.hasEventTypePermission(user, et))
+                        if(admin || Permissions.hasEventTypePermission(user, et))
                             types.add(et.asModel());
                     }
     }
     
     private void getAllPublisherEventTypes(List<EventTypeModel> types, User user, Integer publisherId, Integer publisherEventId) {
         List<PublisherVO<?>> publishers = PublisherDao.instance.getAll();
+        final boolean admin = Permissions.hasAdmin(user);
         for(PublisherVO<?> pvo : publishers)
             if(publisherId == null || publisherId.intValue() == pvo.getId())
                 for(EventTypeVO pet : pvo.getEventTypes())
                     if(publisherEventId == null || publisherEventId.intValue() == pet.getTypeRef2()) {
                         EventType et = pet.createEventType();
-                        if(Permissions.hasEventTypePermission(user, et))
+                        if(admin || Permissions.hasEventTypePermission(user, et))
                             types.add(et.asModel());
                     }
     }
     
     private void getAllSystemEventTypes(List<EventTypeModel> types, User user, String subtypeName) {
+        final boolean admin = Permissions.hasAdmin(user);
         for(EventTypeVO sets : SystemEventType.EVENT_TYPES)
             if(subtypeName == null || subtypeName.equals(sets.getSubtype())) {
                 EventType set = sets.createEventType();
-                if(Permissions.hasEventTypePermission(user, set))
+                if(admin || Permissions.hasEventTypePermission(user, set))
                     types.add(set.asModel());
                 
             }
     }
     
     public void getAllAuditEventTypes(List<EventTypeModel> types, User user, String subtypeName, Integer typeRef1) {
+        final boolean admin = Permissions.hasAdmin(user);
         for(EventTypeVO aets : AuditEventType.EVENT_TYPES)
             if(typeRef1 == null || aets.getTypeRef1() == typeRef1.intValue())
                 if(subtypeName == null || subtypeName.equals(aets.getSubtype())) {
                     EventType aet = aets.createEventType();
-                    if(Permissions.hasEventTypePermission(user, aet))
+                    if(admin || Permissions.hasEventTypePermission(user, aet))
                         types.add(aet.asModel());
                 }
     }

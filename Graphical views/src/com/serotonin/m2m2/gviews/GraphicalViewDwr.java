@@ -271,8 +271,9 @@ public class GraphicalViewDwr extends ModuleDwr {
         // Available points
         List<DataPointVO> allPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
         List<DataPointBean> availablePoints = new ArrayList<DataPointBean>();
+        final boolean admin = Permissions.hasAdmin(user);
         for (DataPointVO dataPoint : allPoints) {
-            if (Permissions.hasDataPointReadPermission(user, dataPoint))
+            if (admin || Permissions.hasDataPointReadPermission(user, dataPoint))
                 availablePoints.add(new DataPointBean(dataPoint));
         }
         result.put("pointList", availablePoints);

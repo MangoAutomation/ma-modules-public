@@ -53,10 +53,11 @@ public class PointLinksDwr extends ModuleDwr {
         List<DataPointVO> allPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
         List<IntStringPair> sourcePoints = new ArrayList<IntStringPair>();
         List<IntStringPair> targetPoints = new ArrayList<IntStringPair>();
+        final boolean admin = Permissions.hasAdmin(user);
         for (DataPointVO point : allPoints) {
-            if (Permissions.hasDataPointReadPermission(user, point))
+            if (admin || Permissions.hasDataPointReadPermission(user, point))
                 sourcePoints.add(new IntStringPair(point.getId(), point.getExtendedName()));
-            if (point.getPointLocator().isSettable() && Permissions.hasDataPointSetPermission(user, point))
+            if (point.getPointLocator().isSettable() && (admin || Permissions.hasDataPointSetPermission(user, point)))
                 targetPoints.add(new IntStringPair(point.getId(), point.getExtendedName()));
         }
 

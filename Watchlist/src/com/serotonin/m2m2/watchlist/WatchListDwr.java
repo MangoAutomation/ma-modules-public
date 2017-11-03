@@ -53,8 +53,9 @@ public class WatchListDwr extends ModuleDwr {
         PointHierarchy ph = dataPointDao.getPointHierarchy(true).copyFoldersOnly();
         User user = Common.getUser();
         List<DataPointVO> points = dataPointDao.getDataPoints(DataPointExtendedNameComparator.instance, false);
+        final boolean admin = Permissions.hasAdmin(user);
         for (DataPointVO point : points) {
-            if (Permissions.hasDataPointReadPermission(user, point))
+            if (admin || Permissions.hasDataPointReadPermission(user, point))
                 ph.addDataPoint(point.getPointFolderId(), new DataPointSummary(point));
         }
 
