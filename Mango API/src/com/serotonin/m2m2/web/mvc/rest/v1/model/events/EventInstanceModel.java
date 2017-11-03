@@ -38,6 +38,7 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 		this.data.setEventType(evt.getEventType());
 		this.data.setActiveTimestamp(evt.getActiveTimestamp());
 		this.data.setAcknowledgedByUserId(evt.getAcknowledgedByUserId());
+		this.data.setAcknowledgedByUsername(evt.getAcknowledgedByUsername());
 		this.data.setAcknowledgedTimestamp(evt.getAcknowledgedTimestamp());
 		this.data.setRtnApplicable(evt.isRtnApplicable());
 		this.data.setRtnTimestamp(evt.getRtnTimestamp());
@@ -222,4 +223,33 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
 	public void setActive(boolean active){
 		//No op for now
 	}
+	
+    public long getAcknowledgedTimestamp() {
+        return this.data.getAcknowledgedTimestamp();
+    }
+
+
+    public void setAcknowledgedTimestamp(long acknowledgedTimestamp) {
+        this.data.setAcknowledgedTimestamp(acknowledgedTimestamp);
+    }
+    
+    public int getAcknowledgedByUserId() {
+        return this.data.getAcknowledgedByUserId();
+    }
+
+
+    public void setAcknowledgedByUserId(int acknowledgedByUserId) {
+        this.data.setAcknowledgedByUserId(acknowledgedByUserId);
+    }
+
+
+    public String getAcknowledgedByUsername() {
+        return this.data.getAcknowledgedByUsername();
+    }
+
+
+    public void setAcknowledgedByUsername(String acknowledgedByUsername) {
+        this.data.setAcknowledgedByUsername(acknowledgedByUsername);
+    }
+	
 }

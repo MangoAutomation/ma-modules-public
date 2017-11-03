@@ -275,7 +275,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	        if (message != null)
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-	        EventInstance event = Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user.getId(), tlm);
+	        EventInstance event = Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user, tlm);
 	        
 	        // if event has a different ack timestamp, user or message it was already acked, we could return a different message
 	        
@@ -519,7 +519,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		 */
 		@Override
 		public void row(EventInstanceVO vo, int index) {
-			EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user.getId(), message);
+			EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, message);
 			if (event != null && event.isAcknowledged()) {
 			    this.count++;
 			}
