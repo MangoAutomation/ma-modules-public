@@ -77,7 +77,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     public ResponseEntity<QueryDataPageStream<AbstractEventDetectorVO<?>>> queryRQL(
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request) {
-		ASTNode node = this.parseRQLtoAST(request);
+		ASTNode node = parseRQLtoAST(request.getQueryString());
 		if(user.isAdmin()){
 			//admin users don't need to filter the results
 			return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);

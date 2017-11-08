@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -381,4 +383,12 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	public String getModelType() {
 		return DataPointModelDefinition.TYPE_NAME;
 	}
+	
+	public Map<String, String> getTags() {
+	    return this.data.getTags();
+	}
+	
+    public void setTags(Map<String, String> tags) {
+        this.data.setTags(tags);
+    }
 }

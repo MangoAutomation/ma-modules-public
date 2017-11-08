@@ -99,7 +99,7 @@ public class ServerRestController extends MangoRestController{
     	if(result.isOk()){
     		try{
     			//Parse the RQL Query
-	    		ASTNode root = this.parseRQLtoAST(request);
+	    		ASTNode root = parseRQLtoAST(request.getQueryString());
 	    		
 	    		List<TimezoneModel> list = root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
 	    		

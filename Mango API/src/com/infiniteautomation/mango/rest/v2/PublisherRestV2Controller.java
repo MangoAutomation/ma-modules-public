@@ -60,7 +60,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "application/sero-json"})
     public ResponseEntity<QueryDataPageStream<PublisherVO<?>>> queryRQL(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
-		ASTNode node = this.parseRQLtoAST(request);
+		ASTNode node = parseRQLtoAST(request.getQueryString());
 		return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);		
 	}
 	

@@ -241,7 +241,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     	if(result.isOk()){
     		try{
     			//Parse the RQL Query
-	    		ASTNode query = this.parseRQLtoAST(request);
+	    		ASTNode query = parseRQLtoAST(request.getQueryString());
 	    		query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
 	    		return result.createResponseEntity(getPageStream(query, new EventWithCommentsQueryStreamCallback(this)));
     		}catch(InvalidRQLRestException e){
@@ -318,7 +318,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         	//Parse the RQL Query
     		ASTNode query;
 			try {
-				query = this.parseRQLtoAST(request);
+				query = parseRQLtoAST(request.getQueryString());
 				query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
 	    		
 		        TranslatableMessage tlm = null;

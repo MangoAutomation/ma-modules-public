@@ -115,7 +115,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     	this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		ASTNode query = this.parseRQLtoAST(request);
+	    		ASTNode query = parseRQLtoAST(request.getQueryString());
 	    		return result.createResponseEntity(getPageStream(query));
     		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
