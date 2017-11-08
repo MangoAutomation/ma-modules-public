@@ -29,19 +29,24 @@ import com.infiniteautomation.mango.db.query.SQLQueryColumn;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
+import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryObjectStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.TranslatableMessageModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -159,14 +164,14 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			)
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
     public ResponseEntity<QueryArrayStream<EventInstanceVO>> getAll(HttpServletRequest request, 
-    		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
+            @RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
         RestProcessResult<QueryArrayStream<EventInstanceVO>> result = new RestProcessResult<QueryArrayStream<EventInstanceVO>>(HttpStatus.OK);
         
         User user = this.checkUser(request, result);
         if(result.isOk()){
     		ASTNode root = new ASTNode("and", new ASTNode("eq", "userId", user.getId()), new ASTNode("limit", limit));
-        	return result.createResponseEntity(getPageStream(root));
+		    return result.createResponseEntity(getPageStream(root, new EventWithCommentsQueryStreamCallback(this)));
     	}
         return result.createResponseEntity();
 	}
@@ -189,7 +194,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
 	        }
-	        
+
+	        putEventComments(vo);
 	        EventInstanceModel model = new EventInstanceModel(vo);
 	        return result.createResponseEntity(model);
         }
@@ -205,7 +211,6 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 			)
 	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> query(
-    		
     		@ApiParam(value="Query", required=true)
     		@RequestBody(required=true) ASTNode query, 
     		   		
@@ -215,7 +220,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-  			return result.createResponseEntity(getPageStream(query));
+		    return result.createResponseEntity(getPageStream(query, new EventWithCommentsQueryStreamCallback(this)));
     	}
     	
     	return result.createResponseEntity();
@@ -238,7 +243,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     			//Parse the RQL Query
 	    		ASTNode query = this.parseRQLtoAST(request);
 	    		query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-	    		return result.createResponseEntity(getPageStream(query));
+	    		return result.createResponseEntity(getPageStream(query, new EventWithCommentsQueryStreamCallback(this)));
     		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
@@ -459,6 +464,19 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         }
         return result.createResponseEntity();
     }
+	
+	private void putEventComments(EventInstanceVO vo) {
+	    if(vo.isHasComments()) {
+    	    final List<UserCommentVO> comments = new ArrayList<>();
+            UserCommentDao.instance.getEventComments(vo.getId(), new MappedRowCallback<UserCommentVO>() {
+                @Override
+                public void row(UserCommentVO item, int index) {
+                    comments.add(item);
+                }
+            });
+            vo.setEventComments(comments);
+	    }
+	}
 
 
 	/* (non-Javadoc)
@@ -530,4 +548,26 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 		}
 	}
 
+	class EventWithCommentsQueryStreamCallback extends VoStreamCallback<EventInstanceVO, EventInstanceModel, EventInstanceDao> { 
+	    public EventWithCommentsQueryStreamCallback(IMangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao> controller) {
+            super(controller);
+            // TODO Auto-generated constructor stub
+	    }
+	    
+	    /**
+	     * Do the work of writing the VO
+	     * @param vo
+	     * @throws IOException
+	     */
+	    @Override
+	    protected void writeJson(EventInstanceVO vo) throws IOException{
+            putEventComments(vo);
+	        super.writeJson(vo);
+	    }
+	    @Override
+	    protected void writeCsv(EventInstanceVO vo) throws IOException{
+            putEventComments(vo);
+	        super.writeCsv(vo);
+	    }
+	}
 }
