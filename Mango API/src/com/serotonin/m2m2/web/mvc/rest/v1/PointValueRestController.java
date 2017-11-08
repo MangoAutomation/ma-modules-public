@@ -630,7 +630,7 @@ public class PointValueRestController extends MangoRestController{
 
 	        try{
 	            if(Permissions.hasDataPointReadPermission(user, vo)){
-                    long current = System.currentTimeMillis();
+                    long current = Common.timer.currentTimeMillis();
                     if (from == null)
                         from = new DateTime(current);
                     if (to == null)
@@ -814,7 +814,7 @@ public class PointValueRestController extends MangoRestController{
             }
 
             try{
-                long current = System.currentTimeMillis();
+                long current = Common.timer.currentTimeMillis();
                 if (from == null)
                     from = new DateTime(current);
                 if (to == null)
@@ -960,7 +960,7 @@ public class PointValueRestController extends MangoRestController{
 	    	}
 
 	    	try{
-	            long current = System.currentTimeMillis();
+	            long current = Common.timer.currentTimeMillis();
 	            if (from == null)
 	                from = new DateTime(current);
 	            if (to == null)
@@ -1066,7 +1066,7 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-                    long current = System.currentTimeMillis();
+                    long current = Common.timer.currentTimeMillis();
                     if (from == null)
                         from = new DateTime(current);
                     if (to == null)
@@ -1166,7 +1166,7 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    		    long current = System.currentTimeMillis();
+	    		    long current = Common.timer.currentTimeMillis();
                     if (from == null)
                         from = new DateTime(current);
                     if (to == null)
@@ -1252,7 +1252,7 @@ public class PointValueRestController extends MangoRestController{
 
 	    	try{
 	    		if(Permissions.hasDataPointReadPermission(user, vo)){
-	    		    long current = System.currentTimeMillis();
+	    		    long current = Common.timer.currentTimeMillis();
                     if (from == null)
                         from = new DateTime(current);
                     if (to == null)
@@ -1370,7 +1370,7 @@ public class PointValueRestController extends MangoRestController{
     			
     			//Set the time to now if it is not present
     			if(model.getTimestamp() == 0){
-    				model.setTimestamp(System.currentTimeMillis());
+    				model.setTimestamp(Common.timer.currentTimeMillis());
     			}
     			
     			//Validate the model's data type for compatibility
@@ -1380,7 +1380,7 @@ public class PointValueRestController extends MangoRestController{
     			}
     			
     			//Validate the timestamp for future dated
-    			if (model.getTimestamp() > System.currentTimeMillis() + SystemSettingsDao.getFutureDateLimit()) {
+    			if (model.getTimestamp() > Common.timer.currentTimeMillis() + SystemSettingsDao.getFutureDateLimit()) {
     				result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Future dated points not acceptable."));
     				return result;
     		    }
