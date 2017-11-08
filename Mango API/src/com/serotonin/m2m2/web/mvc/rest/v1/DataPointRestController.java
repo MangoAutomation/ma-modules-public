@@ -202,15 +202,15 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             throw new AccessDeniedException("User does not have permission to edit the data source", e);
         }
         
-        // need to get the event detectors so we can save it
+        // need to get the event detectors so we can start it
         if (enabled && restart) {
-            dataPoint.setEnabled(true);
-            DataPointDao.instance.setEventDetectors(dataPoint); //In unusual circumstances the restart can cause a save
-            Common.runtimeManager.saveDataPoint(dataPoint);
-        } else if(dataPoint.isEnabled() != enabled){
-            dataPoint.setEnabled(enabled);
+            Common.runtimeManager.toggleDataPoint(dataPoint, false);
             DataPointDao.instance.setEventDetectors(dataPoint);
-            Common.runtimeManager.saveDataPoint(dataPoint);
+            Common.runtimeManager.toggleDataPoint(dataPoint, true);
+        } else if(dataPoint.isEnabled() != enabled){
+            if(enabled)
+                DataPointDao.instance.setEventDetectors(dataPoint);
+            Common.runtimeManager.toggleDataPoint(dataPoint, enabled);
         }
         
         return new ResponseEntity<>(HttpStatus.OK);
