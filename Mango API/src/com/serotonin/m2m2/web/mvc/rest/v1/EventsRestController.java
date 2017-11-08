@@ -356,7 +356,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         if(result.isOk()){
         	List<EventLevelSummaryModel> list = new ArrayList<EventLevelSummaryModel>();
             
-            List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
+            List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId()); //This method sets comments
             int lifeSafetyTotal = 0;
             EventInstance lifeSafetyEvent = null;
             int criticalTotal = 0;
