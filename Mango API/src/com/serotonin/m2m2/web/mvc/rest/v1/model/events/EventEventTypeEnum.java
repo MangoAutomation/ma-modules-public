@@ -10,8 +10,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.events;
  */
 public enum EventEventTypeEnum {
 	
-	ACKNOWLEDGED,
-	RAISED,
-	RETURN_TO_NORMAL,
-	DEACTIVATED
+	ACKNOWLEDGED, //Event was acknowledged by a user
+	RAISED, //Event was raised due to some alarm condition
+	RETURN_TO_NORMAL, //Event was returned to normal because its cause is no longer active
+	DEACTIVATED //Event was deactivated due to a deletion or termination of its source
 }
