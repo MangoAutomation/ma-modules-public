@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResource;
@@ -146,33 +148,29 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request,
             @ApiParam(value = "timeout for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
             @RequestParam(value="timeout", required=false) Long timeout,
-            @AuthenticationPrincipal User user) throws RestValidationFailedException {
+            @AuthenticationPrincipal User user) throws RestValidationFailedException, IOException, JsonException {
 
         Map<String, MultipartFile> map = multipartRequest.getFileMap();
         if(map.size() != 1)
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "Only support for uploading 1 file at a time.");
+            throw new BadRequestException(new TranslatableMessage("rest.error.oneFileOnly"));
         
         Iterator<String> itr =  multipartRequest.getFileNames();
         MultipartFile file = multipartRequest.getFile(itr.next());
+        
         if (!file.isEmpty()) {
-            try {
-                JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
-                JsonObject jo = jr.read(JsonObject.class);
-                
-                String resourceId = importStatusResources.generateResourceId();
-                ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, jo, user);
-                
-                //Setup the Temporary Resource
-                this.importStatusResources.put(resourceId, statusProvider);
-                URI location = builder.path("/v2/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
-                return getResourceCreated(statusProvider, location.toString());
-            } catch (Exception e) {
-                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-            }
+            JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
+            JsonObject jo = jr.read(JsonObject.class);
+            
+            String resourceId = importStatusResources.generateResourceId();
+            ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, jo, user);
+            
+            //Setup the Temporary Resource
+            this.importStatusResources.put(resourceId, statusProvider);
+            URI location = builder.path("/v2/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
+            return getResourceCreated(statusProvider, location.toString());
         } else {
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "No file provided");
+            throw new BadRequestException(new TranslatableMessage("rest.error.noFileProvided"));
         }
-
     }
     
     @PreAuthorize("isAdmin()")
@@ -239,15 +237,11 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             @ApiParam(value = "Elements To Export", required = true, allowMultiple = true)
             @RequestParam(name="exportElements", required=true)
             String[] exportElements,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws JsonException {
         //Do the Export
         Map<String,Object> data = createExportData(exportElements);
         JsonTypeWriter writer = new JsonTypeWriter(Common.JSON_CONTEXT);
-        try{
-            return new ResponseEntity<>(writer.writeObject(data), HttpStatus.OK);
-        }catch(JsonException e){
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        return new ResponseEntity<>(writer.writeObject(data), HttpStatus.OK);
     }
     
     /**

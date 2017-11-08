@@ -30,9 +30,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.db.dao.JsonDataDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -536,7 +537,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
         try {
             return Integer.valueOf(fieldName);
         } catch (NumberFormatException e) {
-            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Field name " + fieldName + " is invalid index for array");
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidArrayField", fieldName));
         }
     }
     
@@ -553,7 +554,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	            int index = toArrayIndex(fieldName);
 	            node = arrayNode.get(index);
 	        } else {
-	            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't get field of " + node.getNodeType());
+	            throw new BadRequestException(new TranslatableMessage("rest.error.cantGetFieldOfNodeType", node.getNodeType()));
 	        }
             
             if (node == null) {
@@ -580,7 +581,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	        int index = toArrayIndex(fieldName);
             deletedValue = parentArray.remove(index);
         } else {
-            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't delete field of " + parent.getNodeType());
+            throw new BadRequestException(new TranslatableMessage("rest.error.cantDeleteFieldOfNodeType", parent.getNodeType()));
         }
 	    
 	    return deletedValue != null;
@@ -604,7 +605,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
             int index = toArrayIndex(fieldName);
             parentArray.set(index, newData);
         } else {
-            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't set field of " + parent.getNodeType());
+            throw new BadRequestException(new TranslatableMessage("rest.error.cantSetFieldOfNodeType", parent.getNodeType()));
         }
         
         return existingData;
@@ -617,7 +618,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	    if (destination.isObject()) {
             // object merge
             if (!newData.isObject()) {
-                throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't merge " + newData.getNodeType() + " into object");
+                throw new BadRequestException(new TranslatableMessage("rest.error.cantMergeNodeTypeIntoObject", newData.getNodeType()));
             }
 
             ObjectNode destinationObject = (ObjectNode) destination;
@@ -636,7 +637,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
             
             mergedNode = destinationArray;
         } else {
-            throw new GenericRestException(HttpStatus.BAD_REQUEST, "Can't merge " + newData.getNodeType() + " into " + destination.getNodeType());
+            throw new BadRequestException(new TranslatableMessage("rest.error.cantMergeIntoX", destination.getNodeType()));
         }
 	    
 	    return mergedNode;

@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.m2m2.Common;
@@ -32,6 +32,7 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -219,7 +220,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		}
 		
 		if(!replaced)
-			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "Event Detector Not Actually Assigned to this point?");
+			throw new ServerErrorException(new TranslatableMessage("rest.error.eventDetectorNotAssignedToThisPoint"));
 		
 		//Save the data point
     	Common.runtimeManager.saveDataPoint(dp);
@@ -268,7 +269,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		}
 		
 		if(!removed)
-			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "Event Detector Not Actually Assigned to this point?");
+			throw new ServerErrorException(new TranslatableMessage("rest.error.eventDetectorNotAssignedToThisPoint"));
 		
 		//Save the data point
     	Common.runtimeManager.saveDataPoint(dp);

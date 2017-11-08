@@ -17,8 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -51,7 +52,7 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
 		if(session == null)
-			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "No Session");
+			throw new ServerErrorException(new TranslatableMessage("rest.error.noSession"));
 		
 		Map<String,Exception> exceptionMap = new HashMap<String, Exception>();
 		for(String key : exceptionKeys){
@@ -74,7 +75,7 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
 		if(session == null)
-			throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, "No Session");
+            throw new ServerErrorException(new TranslatableMessage("rest.error.noSession"));
 		
 		Map<String,Exception> exceptionMap = new HashMap<String, Exception>();
 		for(String key : exceptionKeys){
