@@ -3,10 +3,13 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.net.URI;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,19 +19,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.TemplateDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
@@ -54,7 +68,7 @@ public class DataPointRestController {
 
 	@ApiOperation(
 			value = "Get data point by XID",
-			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
+			notes = "Only points that user has read permission to are returned"
 			)
 	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public DataPointModel getDataPoint(
@@ -63,10 +77,10 @@ public class DataPointRestController {
     		@AuthenticationPrincipal User user) {
 	    
 	    DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
-	    DataPointDao.instance.loadPartialRelationalData(dataPoint);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
+        DataPointDao.instance.loadPartialRelationalData(dataPoint);
         
         checkDataPointReadPermission(user, dataPoint);
         return new DataPointModel(dataPoint);
@@ -74,7 +88,7 @@ public class DataPointRestController {
 
 	@ApiOperation(
 			value = "Get data point by ID",
-			notes = "Returned as CSV or JSON, only points that user has read permission to are returned"
+			notes = "Only points that user has read permission to are returned"
 			)
 	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{id}")
     public DataPointModel getDataPointById(
@@ -83,10 +97,10 @@ public class DataPointRestController {
     		@AuthenticationPrincipal User user) {
 
         DataPointVO dataPoint = DataPointDao.instance.get(id);
-        DataPointDao.instance.loadPartialRelationalData(dataPoint);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
+        DataPointDao.instance.loadPartialRelationalData(dataPoint);
 
         checkDataPointReadPermission(user, dataPoint);
         return new DataPointModel(dataPoint);
@@ -151,6 +165,80 @@ public class DataPointRestController {
         return doQuery(rql, user);
 	}
 
+    @ApiOperation(
+            value = "Update an existing data point"
+            )
+    @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
+    public ResponseEntity<DataPointModel> updateDataPoint(
+            @PathVariable String xid,
+            
+            @ApiParam(value = "Updated data point model", required = true)
+            @RequestBody(required=true) DataPointModel model,
+            
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+
+        DataPointVO newPoint = model.getData();
+        DataPointVO existingPoint = DataPointDao.instance.getByXid(xid);
+        if (existingPoint == null) {
+            throw new NotFoundRestException();
+        }
+
+        checkDataPointEditPermission(user, existingPoint);
+        newPoint.setId(existingPoint.getId());
+
+        DataSourceVO<?> existingDataSource = DataSourceDao.instance.get(existingPoint.getDataSourceId());
+        if (existingDataSource == null) {
+            // existing data point should always have a data source
+            throw new ServerErrorException(new TranslatableMessage("rest.error.cantGetDatasourceForPoint", xid));
+        }
+        
+        // check if they are trying to move it to another data source
+        String newDataSourceXid = newPoint.getDataSourceXid();
+        if (newDataSourceXid != null && !newDataSourceXid.isEmpty() && !newDataSourceXid.equals(existingDataSource.getXid())) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.movingPointNotPermitted", xid));
+        }
+        
+        // Since we can't move a data point between data sources, we will always reset the data source info
+        newPoint.setDataSourceId(existingDataSource.getId());
+        newPoint.setDataSourceName(existingDataSource.getName());
+
+        //Set all properties that are not in the template or the spreadsheet
+        DataPointDao.instance.setEventDetectors(newPoint);
+        newPoint.setPointFolderId(existingPoint.getPointFolderId());
+        
+        if (newPoint.getTextRenderer() == null) {
+            newPoint.setTextRenderer(new PlainRenderer());
+        }
+
+        if (newPoint.getChartColour() == null) {
+            newPoint.setChartColour("");
+        }
+        
+        //Check the Template and see if we need to use it
+        if (model.getTemplateXid() != null) {
+            DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+            if (template == null) {
+                throw new BadRequestException(new TranslatableMessage("emport.dataPoint.badReference", model.getTemplateXid()));
+            }
+            template.updateDataPointVO(newPoint);
+        }
+
+        ProcessResult response = new ProcessResult();
+        newPoint.validate(response);
+        if (response.getHasMessages()) {
+            throw new ValidationFailedRestException(new RestValidationResult(response));
+        }
+
+        Common.runtimeManager.saveDataPoint(newPoint);
+
+        URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(xid).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        
+        return new ResponseEntity<>(model, headers, HttpStatus.OK);
+    }
+
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (user.isAdmin()) {
             return new StreamedVOQueryWithTotal<>(DataPointDao.instance, rql, item -> {
@@ -181,14 +269,9 @@ public class DataPointRestController {
     }
 
     private static void checkDataPointReadPermission(User user, DataPointVO point) {
-        boolean hasPermission;
         try {
-            hasPermission = Permissions.hasDataPointReadPermission(user, point);
+            Permissions.ensureDataPointReadPermission(user, point);
         } catch (PermissionException e) {
-            hasPermission = false;
-        }
-        
-        if (!hasPermission) {
             TranslatableMessage msg = new TranslatableMessage("rest.error.noReadPermissionForPoint", user.getUsername());
             throw new AccessDeniedException(msg);
         }
