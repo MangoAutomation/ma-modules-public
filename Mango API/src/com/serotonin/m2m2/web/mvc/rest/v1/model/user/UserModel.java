@@ -289,7 +289,7 @@ public class UserModel extends AbstractRestModel<User> {
 			//Add our messages to the list
 			for(ProcessMessage message : validation.getMessages()){
 				this.messages.add(new RestValidationMessage(
-						message.getContextualMessage().translate(Common.getTranslations()),
+						message.getContextualMessage(),
 						RestMessageLevel.ERROR,
 						message.getContextKey()
 						));
@@ -304,7 +304,7 @@ public class UserModel extends AbstractRestModel<User> {
 		if(this.messages == null)
 			this.messages = new ArrayList<RestValidationMessage>();
 		this.messages.add((new RestValidationMessage(
-				message.getContextualMessage().translate(Common.getTranslations()),
+				message.getContextualMessage(),
 				RestMessageLevel.ERROR,
 				message.getContextKey()
 				)));

@@ -94,7 +94,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			if((model.getMaximumPoolSize() != null)&&(model.getMaximumPoolSize() < BackgroundProcessing.HIGH_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
     				model.getMessages().add(new RestValidationMessage(
-    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.HIGH_PRI_MAX_POOL_SIZE_MIN).translate(Common.getTranslations()),
+    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.HIGH_PRI_MAX_POOL_SIZE_MIN),
     						RestMessageLevel.ERROR,
     						"corePoolSize"));
     				result.addRestMessage(this.getValidationFailedError());
@@ -181,7 +181,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
     				model.getMessages().add(new RestValidationMessage(
-    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN).translate(Common.getTranslations()),
+    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN),
     						RestMessageLevel.ERROR,
     						"corePoolSize"));
     				result.addRestMessage(this.getValidationFailedError());
@@ -270,7 +270,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
     				model.getMessages().add(new RestValidationMessage(
-    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN).translate(Common.getTranslations()),
+    						new TranslatableMessage("validate.greaterThanOrEqualTo", BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN),
     						RestMessageLevel.ERROR,
     						"corePoolSize"));
     				result.addRestMessage(this.getValidationFailedError());
@@ -324,7 +324,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		model.setMessages(new ArrayList<RestValidationMessage>());
 		if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < 1)){
 			model.getMessages().add(new RestValidationMessage(
-					"Must be > than 0",
+					new TranslatableMessage("validate.greaterThanZero"),
 					RestMessageLevel.ERROR,
 					"corePoolSize"));
 			passed = false;
@@ -332,7 +332,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 		//Compare both if they are being added
 		if((model.getMaximumPoolSize() != null)&&(model.getCorePoolSize() != null)&&(model.getMaximumPoolSize() < model.getCorePoolSize())){
 			model.getMessages().add(new RestValidationMessage(
-					"Must be >= than core pool size",
+			        new TranslatableMessage("validate.maxGreaterThanMin"),
 					RestMessageLevel.ERROR,
 					"maximumPoolSize"));
 			passed = false;
@@ -343,7 +343,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			if(model.getMaximumPoolSize() < currentCorePoolSize){
 				model.setCorePoolSize(currentCorePoolSize);
 				model.getMessages().add(new RestValidationMessage(
-						"Must be >= than core pool size",
+				        new TranslatableMessage("validate.maxGreaterThanMin"),
 						RestMessageLevel.ERROR,
 						"maximumPoolSize"));
 				passed = false;
@@ -356,7 +356,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			if(model.getCorePoolSize() > currentMaximumPoolSize){
 				model.setMaximumPoolSize(currentMaximumPoolSize);
 				model.getMessages().add(new RestValidationMessage(
-						"Must be <= than maximum pool size",
+				        new TranslatableMessage("validate.minLessThanMax"),
 						RestMessageLevel.ERROR,
 						"corePoolSize"));
 				passed = false;
