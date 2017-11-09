@@ -18,9 +18,7 @@ public class GraphicalViewLongPollDefinition extends LongPollDefinition implemen
     private GraphicalViewDwr graphicalViewDwr;
 
     @Override
-    public void preInitialize() {
-        super.preInitialize();
-
+    public void preInitialize(boolean install, boolean upgrade) {
         graphicalViewDwr = new GraphicalViewDwr();
         graphicalViewDwr.setModule(getModule());
     }

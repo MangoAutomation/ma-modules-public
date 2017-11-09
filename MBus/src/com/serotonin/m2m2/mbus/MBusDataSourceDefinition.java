@@ -15,9 +15,6 @@ public class MBusDataSourceDefinition extends DataSourceDefinition {
 	public static final String DATA_SOURCE_TYPE = "MBUS";
 	
     @Override
-    public void preInitialize() { }
-
-    @Override
     public String getDataSourceTypeName() {
         return DATA_SOURCE_TYPE;
     }

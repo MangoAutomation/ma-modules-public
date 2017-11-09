@@ -8,8 +8,7 @@ public class MobileWatchListLongPollDefinition extends LongPollDefinition{
     private MobileWatchListLongPollHandler handler;
 
     @Override
-    public void preInitialize() {
-        super.preInitialize();
+    public void preInitialize(boolean install, boolean upgrade) {
         WatchListDwr dwr = new WatchListDwr();
         dwr.setModule(getModule());
         handler = new MobileWatchListLongPollHandler(dwr,"mobileWatchlist");

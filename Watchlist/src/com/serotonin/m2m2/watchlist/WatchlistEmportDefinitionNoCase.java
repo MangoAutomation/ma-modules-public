@@ -26,17 +26,12 @@ import com.serotonin.m2m2.web.dwr.emport.ImportContext;
  */
 public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
     
-	public static String elementId = "watchlists";
+	public static final String elementId = "watchlists";
     
 
 	@Override
     public boolean getInView(){
     	return false; 
-    }
-	
-    @Override
-    public void postInitialize() {
-        super.postInitialize();
     }
 
     @Override

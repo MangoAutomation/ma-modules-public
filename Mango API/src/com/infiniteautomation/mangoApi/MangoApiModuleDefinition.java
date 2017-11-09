@@ -12,12 +12,4 @@ import com.serotonin.m2m2.module.ModuleElementDefinition;
  */
 public class MangoApiModuleDefinition extends ModuleElementDefinition{
 	
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.ModuleElementDefinition#postInitialize()
-	 */
-	@Override
-	public void postInitialize() {
-		super.postInitialize();
-	}
 }

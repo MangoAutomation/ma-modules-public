@@ -70,39 +70,45 @@ public class InternalMenuItem extends MenuItemDefinition {
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
         return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
     }
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.ModuleElementDefinition#install()
+    
+    /*
+     * (non-Javadoc)
+     * @see com.serotonin.m2m2.module.ModuleElementDefinition#postDatabase(boolean, boolean)
      */
     @Override
+    public void postDatabase(boolean install, boolean upgrade) {
+        if(install)
+            install();
+        else if(upgrade)
+            upgrade();
+    }
+
     public void install() {
-    	File safeFile = new File(Common.MA_HOME, "SAFE");
+        File safeFile = new File(Common.MA_HOME, "SAFE");
         final boolean safe = (safeFile.exists() && safeFile.isFile());
-    	Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
+        Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
-            	try{
-            		maybeInstallSystemMonitor(safe);
-            	}catch(Exception e){
-            		LOG.error(e.getMessage(), e);
-            	}
+                try {
+                    maybeInstallSystemMonitor(safe);
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
             }
         });
     }
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.ModuleElementDefinition#upgrade()
-     */
-    @Override
+
     public void upgrade() {
-    	File safeFile = new File(Common.MA_HOME, "SAFE");
+        File safeFile = new File(Common.MA_HOME, "SAFE");
         final boolean safe = (safeFile.exists() && safeFile.isFile());
-    	Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
+        Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
             @Override
             public void run() {
-            	try{
-            		maybeInstallSystemMonitor(safe);
-            	}catch(Exception e){
-            		LOG.error(e.getMessage(), e);
-            	}
+                try {
+                    maybeInstallSystemMonitor(safe);
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
             }
         });
     }

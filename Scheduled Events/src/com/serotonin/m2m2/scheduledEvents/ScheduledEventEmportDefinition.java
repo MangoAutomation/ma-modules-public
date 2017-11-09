@@ -15,13 +15,6 @@ import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class ScheduledEventEmportDefinition extends EmportDefinition {
-    private ScheduledEventDao scheduledEventDao;
-
-    @Override
-    public void postInitialize() {
-        super.postInitialize();
-        scheduledEventDao = ScheduledEventDao.instance;
-    }
 
     @Override
     public String getElementId() {
@@ -35,7 +28,7 @@ public class ScheduledEventEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return scheduledEventDao.getScheduledEvents();
+        return ScheduledEventDao.instance.getScheduledEvents();
     }
 
     @Override
@@ -44,9 +37,9 @@ public class ScheduledEventEmportDefinition extends EmportDefinition {
 
         String xid = scheduledEvent.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = scheduledEventDao.generateUniqueXid();
+            xid = ScheduledEventDao.instance.generateUniqueXid();
 
-        ScheduledEventVO vo = scheduledEventDao.getScheduledEvent(xid);
+        ScheduledEventVO vo = ScheduledEventDao.instance.getScheduledEvent(xid);
         if (vo == null) {
             vo = new ScheduledEventVO();
             vo.setXid(xid);

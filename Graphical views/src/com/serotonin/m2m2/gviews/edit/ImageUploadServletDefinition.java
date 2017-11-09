@@ -26,7 +26,7 @@ public class ImageUploadServletDefinition extends ServletDefinition {
     }
 
     @Override
-    public void preInitialize() {
+    public void preInitialize(boolean install, boolean upgrade) {
         IMAGE_DIR = getModule().getWebPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
         UPLOAD_DIR = Common.MA_HOME + getModule().getDirectoryPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
     }

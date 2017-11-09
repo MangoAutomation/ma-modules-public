@@ -28,7 +28,7 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
 	
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-    	return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(PointLinkPermissionDefinition.PERMISSION));
+        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(PointLinkPermissionDefinition.PERMISSION));
     }
     
     /* (non-Javadoc)
@@ -37,7 +37,7 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
     @Override
     public String getHref(HttpServletRequest request,
     		HttpServletResponse response) {
-    	return "/point_links.shtm";
+    	    return "/point_links.shtm";
     }
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.MenuItemDefinition#getTextKey(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -45,7 +45,7 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
 	@Override
 	public String getTextKey(HttpServletRequest request,
 			HttpServletResponse response) {
-		  return "header.pointLinks";
+	    return "header.pointLinks";
 	}
 
 	/* (non-Javadoc)
@@ -60,7 +60,7 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
 	 * @see com.serotonin.m2m2.module.ModuleElementDefinition#postDatabase()
 	 */
 	@Override
-	public void postDatabase() {
+	public void postDatabase(boolean install, boolean upgrade) {
 		//Ensure the Count Monitor is registered so we can access 
 		// it when the Internal Metrics DS module starts
 		PointLinkDao.instance.countMonitor.getValue();

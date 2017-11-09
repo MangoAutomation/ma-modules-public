@@ -19,13 +19,7 @@ import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class WatchListEmportDefinition extends EmportDefinition {
     
-	public static String elementId = "watchLists";
-
-    
-    @Override
-    public void postInitialize() {
-        super.postInitialize();
-    }
+	public static final String elementId = "watchLists";
 
     @Override
     public String getElementId() {

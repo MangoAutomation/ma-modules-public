@@ -25,15 +25,7 @@ import com.serotonin.m2m2.web.dwr.emport.ImportContext;
  */
 public class ReportEmportDefinition extends EmportDefinition {
     
-	public static String elementId = "reports";
-	
-	private ReportDao reportDao;
-    
-    @Override
-    public void postInitialize() {
-        super.postInitialize();
-        reportDao = ReportDao.instance;
-    }
+	public static final String elementId = "reports";
 
     @Override
     public String getElementId() {
@@ -47,7 +39,7 @@ public class ReportEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        List<ReportVO> wls = reportDao.getReports();
+        List<ReportVO> wls = ReportDao.instance.getReports();
         return wls;
     }
 
@@ -57,11 +49,11 @@ public class ReportEmportDefinition extends EmportDefinition {
 
         String xid = reportJson.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = reportDao.generateUniqueXid();
+            xid = ReportDao.instance.generateUniqueXid();
 
         ReportVO report = null; 
         try{
-        	report = reportDao.getReport(xid);
+        	report = ReportDao.instance.getReport(xid);
         }catch(IncorrectResultSizeDataAccessException e){
         	importContext.getResult().addGenericMessage("reports.emport.duplicateXids", xid);
         	return;
@@ -84,7 +76,7 @@ public class ReportEmportDefinition extends EmportDefinition {
             else {
                 // Sweet. Save it.
                 boolean isnew = report.getId() == Common.NEW_ID;
-                reportDao.saveReport(report);
+                ReportDao.instance.saveReport(report);
                 importContext.addSuccessMessage(isnew, "emport.report.prefix", xid);
             }
         }
