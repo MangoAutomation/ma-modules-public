@@ -112,15 +112,10 @@ public class DataPointRestController {
         
         checkDataPointEditPermission(user, dataPoint);
 
-        // need to get the event detectors so we can save it
         if (enabled && restart) {
-            dataPoint.setEnabled(true);
-            DataPointDao.instance.setEventDetectors(dataPoint); //In unusual circumstances the restart can cause a save
-            Common.runtimeManager.saveDataPoint(dataPoint);
-        } else if(dataPoint.isEnabled() != enabled){
-            dataPoint.setEnabled(enabled);
-            DataPointDao.instance.setEventDetectors(dataPoint);
-            Common.runtimeManager.saveDataPoint(dataPoint);
+            Common.runtimeManager.restartDataPoint(dataPoint);
+        } else {
+            Common.runtimeManager.enableDataPoint(dataPoint, enabled);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
