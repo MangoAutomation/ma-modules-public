@@ -74,7 +74,7 @@ public class RealTimeDataRestController extends MangoRestController{
 					return result.createResponseEntity();
 				}
 
-		    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
+		    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user);
 		    	values = model.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 		    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
 		    	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
@@ -118,7 +118,7 @@ public class RealTimeDataRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	
     	if(result.isOk()){
-	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
+	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user);
 	    	ASTNode root = new ASTNode("limit", limit);
 	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 	    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
@@ -153,7 +153,7 @@ public class RealTimeDataRestController extends MangoRestController{
 		
 		//If no messages then go for it
 		if(result.isOk()){
-	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user.getPermissions());
+	    	List<RealTimeDataPointValue> values = RealTimeDataPointValueCache.instance.getUserView(user);
 	    	ASTNode root = new ASTNode("eq", "xid", xid);
 
 	    	values = root.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);

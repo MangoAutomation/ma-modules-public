@@ -47,12 +47,11 @@ public class WatchListDwr extends ModuleDwr {
 	
     @DwrPermission(user = true)
     public Map<String, Object> init() {
-        DataPointDao dataPointDao = DataPointDao.instance;
         Map<String, Object> data = new HashMap<>();
 
-        PointHierarchy ph = dataPointDao.getPointHierarchy(true).copyFoldersOnly();
-        User user = Common.getUser();
-        List<DataPointVO> points = dataPointDao.getDataPoints(DataPointExtendedNameComparator.instance, false);
+        PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true).copyFoldersOnly();
+        User user = Common.getHttpUser();
+        List<DataPointVO> points = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
         final boolean admin = Permissions.hasAdmin(user);
         for (DataPointVO point : points) {
             if (admin || Permissions.hasDataPointReadPermission(user, point))

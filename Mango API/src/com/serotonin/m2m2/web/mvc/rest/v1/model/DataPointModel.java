@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -318,14 +317,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
     
     @JsonGetter("path")
     public String getPath() {
-        if(SystemSettingsDao.getBooleanValue(SystemSettingsDao.EXPORT_HIERARCHY_PATH))
-            return PointHierarchy.getFlatPath(this.data.getId(), DataPointDao.instance.getPointHierarchy(true).getRoot());
-        return null;
-    }
-
-    @JsonSetter("path")
-    public void setPath(String path) {
-        this.data.setHierarchyPath(path);
+        return PointHierarchy.getFlatPath(this.data.getId(), DataPointDao.instance.getPointHierarchy(true).getRoot());
     }
 	
 	public BaseTextRendererModel<?> getTextRenderer(){
