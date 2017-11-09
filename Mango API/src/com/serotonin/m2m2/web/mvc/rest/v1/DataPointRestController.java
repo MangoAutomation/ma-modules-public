@@ -204,13 +204,11 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         
         // need to get the event detectors so we can start it
         if (enabled && restart) {
-            Common.runtimeManager.toggleDataPoint(dataPoint, false);
-            DataPointDao.instance.setEventDetectors(dataPoint);
-            Common.runtimeManager.toggleDataPoint(dataPoint, true);
+            Common.runtimeManager.restartDataPoint(dataPoint);
         } else if(dataPoint.isEnabled() != enabled){
             if(enabled)
                 DataPointDao.instance.setEventDetectors(dataPoint);
-            Common.runtimeManager.toggleDataPoint(dataPoint, enabled);
+            Common.runtimeManager.enableDataPoint(dataPoint, enabled);
         }
         
         return new ResponseEntity<>(HttpStatus.OK);
