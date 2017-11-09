@@ -63,6 +63,7 @@ public class DataPointRestController {
     		@AuthenticationPrincipal User user) {
 	    
 	    DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+	    DataPointDao.instance.loadPartialRelationalData(dataPoint);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
@@ -82,6 +83,7 @@ public class DataPointRestController {
     		@AuthenticationPrincipal User user) {
 
         DataPointVO dataPoint = DataPointDao.instance.get(id);
+        DataPointDao.instance.loadPartialRelationalData(dataPoint);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
@@ -120,7 +122,7 @@ public class DataPointRestController {
             DataPointDao.instance.setEventDetectors(dataPoint);
             Common.runtimeManager.saveDataPoint(dataPoint);
         }
-        
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 	
