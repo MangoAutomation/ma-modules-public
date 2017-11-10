@@ -32,7 +32,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @RestController()
 @RequestMapping("/v2/data-point-tags")
-public class DataPointTagsRestController {
+public class DataPointTagsRestController extends BaseMangoRestController {
     
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
     public Map<String, String> getTagsForDataPoint(@PathVariable String xid) {
@@ -63,7 +63,7 @@ public class DataPointTagsRestController {
             return DataPointTagsDao.instance.getTagValuesForKey(tagKey, user);
         }
         
-        ASTNode rql = BaseMangoRestController.parseRQLtoAST(queryString);
+        ASTNode rql = parseRQLtoAST(queryString);
         return DataPointTagsDao.instance.getTagValuesForKey(tagKey, rql, user);
     }
 
@@ -72,7 +72,7 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
         
-        ASTNode rql = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
+        ASTNode rql = parseRQLtoAST(request.getQueryString());
 
         if (user.isAdmin()) {
             return new StreamedVOQueryWithTotal<>(DataPointDao.instance, rql, item -> {

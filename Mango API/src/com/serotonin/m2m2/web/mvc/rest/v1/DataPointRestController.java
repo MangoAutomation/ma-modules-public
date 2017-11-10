@@ -963,7 +963,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
 		}
 		if(!permissionsLikes.isEmpty()){
 			ASTNode permissionOr = new ASTNode("or", permissionsLikes.toArray());
-			return this.addAndRestriction(query, permissionOr);
+			return addAndRestriction(query, permissionOr);
 		}else{
 			return query;
 		}

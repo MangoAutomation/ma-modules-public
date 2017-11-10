@@ -118,7 +118,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         ProcessResult r = ModulesDwr.scheduleRestart();
         if (r.getData().get("shutdownUri") != null) {
             URI location = builder.path("/status/mango").buildAndExpand().toUri();
-            return getResourceCreated(null, location.toString());
+            return getResourceCreated(null, location);
         } else
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR,
                     new TranslatableMessage("modules.restartAlreadyScheduled"));

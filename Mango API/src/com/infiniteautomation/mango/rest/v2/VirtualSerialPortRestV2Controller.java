@@ -25,9 +25,6 @@ import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.User;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -91,17 +88,14 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		}
 		
 		//Validate
-		ProcessResult response = new ProcessResult();
-		model.validate(response);
-		if(response.getHasMessages())
-			throw new ValidationFailedRestException(new RestValidationResult(response));
+		ensureValid(model);
 
 		//Save it
 		VirtualSerialPortConfigDao.instance.save(model);
 		
         //Put a link to the updated data in the header?
     	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
-    	return getResourceCreated(model, location.toString());
+    	return getResourceCreated(model, location);
     }
 	
 	@PreAuthorize("isAdmin()")
@@ -127,18 +121,15 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			throw new NotFoundRestException();
 		
 		//Validate
-		ProcessResult response = new ProcessResult();
-		model.validate(response);
-		if(response.getHasMessages())
-			throw new ValidationFailedRestException(new RestValidationResult(response));
-		
+		ensureValid(model);
+
 		//Save it
 		VirtualSerialPortConfigDao.instance.save(model);
 		
         //Put a link to the updated data in the header
     	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
 
-    	return getResourceUpdated(model, location.toString());
+    	return getResourceUpdated(model, location);
     }
 	
 	@PreAuthorize("isAdmin()")

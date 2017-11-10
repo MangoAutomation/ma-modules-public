@@ -26,15 +26,12 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -58,7 +55,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data Points", description="Data points")
 @RestController(value="DataPointRestControllerV2")
 @RequestMapping("/v2/data-points")
-public class DataPointRestController {
+public class DataPointRestController extends BaseMangoRestController {
 
 	private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 	
@@ -161,7 +158,7 @@ public class DataPointRestController {
             HttpServletRequest request, 
             @AuthenticationPrincipal User user) {
 
-        ASTNode rql = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
+        ASTNode rql = parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
 	}
 
@@ -224,12 +221,7 @@ public class DataPointRestController {
             template.updateDataPointVO(newPoint);
         }
 
-        ProcessResult response = new ProcessResult();
-        newPoint.validate(response);
-        if (response.getHasMessages()) {
-            throw new ValidationFailedRestException(new RestValidationResult(response));
-        }
-
+        ensureValid(newPoint);
         Common.runtimeManager.saveDataPoint(newPoint);
 
         URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(xid).toUri();

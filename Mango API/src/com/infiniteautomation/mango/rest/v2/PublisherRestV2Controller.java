@@ -23,11 +23,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PublisherDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
@@ -119,16 +116,12 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
         PublisherVO<?> existing = this.dao.getByXid(vo.getXid());
         if (existing != null) 
         	throw new AlreadyExistsRestException(vo.getXid());
-        
-        ProcessResult validation = new ProcessResult();
-        vo.validate(validation);
-		if(validation.getHasMessages())
-			throw new ValidationFailedRestException(new RestValidationResult(validation));
-		else
-			Common.runtimeManager.savePublisher(vo);
+
+        ensureValid(vo);
+		Common.runtimeManager.savePublisher(vo);
         
     	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
-    	return getResourceCreated(vo.asModel(), location.toString());
+    	return getResourceCreated(vo.asModel(), location);
     }
 	
 	/**
@@ -158,18 +151,12 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
         	throw new NotFoundRestException();
 
         vo.setId(existing.getId());
-        
-        ProcessResult validation = new ProcessResult();
-        vo.validate(validation);
-        
-        if(!model.validate()){
-			throw new ValidationFailedRestException(new RestValidationResult(validation));
-        }else{
-            Common.runtimeManager.savePublisher(vo);
-        }
+
+        ensureValid(vo);
+        Common.runtimeManager.savePublisher(vo);
      
     	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(xid).toUri();
-    	return getResourceUpdated(vo.asModel(), location.toString());
+    	return getResourceUpdated(vo.asModel(), location);
     }
 
 	@ApiOperation(

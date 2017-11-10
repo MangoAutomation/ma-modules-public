@@ -25,13 +25,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -149,10 +146,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		ped.njbSetDataPoint(dp);
 		
 		//Validate
-		ProcessResult response = new ProcessResult();
-		ped.validate(response);
-		if(response.getHasMessages())
-			throw new ValidationFailedRestException(new RestValidationResult(response));
+		ensureValid(ped);
 		
 		//Add it to the data point
 		DataPointDao.instance.setEventDetectors(dp);
@@ -163,7 +157,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
         //Put a link to the updated data in the header?
     	URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
-    	return getResourceCreated(vo.asModel(), location.toString());
+    	return getResourceCreated(vo.asModel(), location);
     }
 
 	@ApiOperation(
@@ -201,10 +195,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		ped.njbSetDataPoint(dp);
 		
 		//Validate
-		ProcessResult response = new ProcessResult();
-		ped.validate(response);
-		if(response.getHasMessages())
-			throw new ValidationFailedRestException(new RestValidationResult(response));
+        ensureValid(ped);
 		
 		//Replace it on the data point, if it isn't replaced we fail.
 		boolean replaced = false;
@@ -226,7 +217,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     	Common.runtimeManager.saveDataPoint(dp);
 		
     	URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
-    	return getResourceUpdated(vo.asModel(), location.toString());
+    	return getResourceUpdated(vo.asModel(), location);
     }
 	
 	@ApiOperation(
