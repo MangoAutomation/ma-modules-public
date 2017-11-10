@@ -23,12 +23,19 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
 	protected StatisticsGenerator generator;
 	
 	/**
-	 * @param periodStart
-	 * @param periodEnd
-	 * @param startValue
+	 * 
+	 * @param host
+	 * @param port
+	 * @param jgen
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param generator
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
 	 */
-	public StatisticsJsonGenerator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator) {
-		super(host, port, jgen, vo, useRendered, unitConversion);
+	public StatisticsJsonGenerator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator, String dateTimeFormat, String timezone) {
+		super(host, port, jgen, vo, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.generator = generator;
 	}
 
@@ -40,13 +47,13 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
      *            the value to add
      */
     public void addValueTime(IValueTime vt){
-    	this.generator.addValueTime(vt);
+    	    this.generator.addValueTime(vt);
     }
 
     /**
      * Used to end a period
      */
     public void done() throws IOException{
-    	this.generator.done();
+        this.generator.done();
     }
 }

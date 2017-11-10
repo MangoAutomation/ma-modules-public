@@ -1,11 +1,18 @@
+/**
+ * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
+ */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 public class PointValuesRequestModel {
-    String[] xids;
-    boolean useRendered = false;
-    boolean unitConversion = false;
-    Integer limit;
-    boolean useCache = true;
+    
+    protected String[] xids;
+    protected boolean useRendered = false;
+    protected boolean unitConversion = false;
+    protected Integer limit;
+    protected boolean useCache = true;
+    protected String dateTimeFormat;
+    protected String timezone;
     
     public PointValuesRequestModel() {
         limit = 100;
@@ -40,5 +47,19 @@ public class PointValuesRequestModel {
     }
     public void setUseCache(boolean useCache) {
         this.useCache = useCache;
+    }
+
+    public String getDateTimeFormat() {
+        return dateTimeFormat;
+    }
+
+    public void setDateTimeFormat(String dateTimeFormat) {
+        this.dateTimeFormat = dateTimeFormat;
+    }
+    public String getTimezone() {
+        return timezone;
+    }
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 }

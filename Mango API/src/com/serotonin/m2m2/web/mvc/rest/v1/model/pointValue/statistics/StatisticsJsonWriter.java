@@ -15,11 +15,20 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeJsonWri
 public abstract class StatisticsJsonWriter extends PointValueTimeJsonWriter{
 
 	protected DataPointVO vo;
+
 	/**
+	 * 
+	 * @param host
+	 * @param port
 	 * @param jgen
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
 	 */
-	public StatisticsJsonWriter(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion) {
-		super(host, port, jgen, useRendered, unitConversion);
+	public StatisticsJsonWriter(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, String dateTimeFormat, String timezone) {
+		super(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.vo = vo;
 	}
 	

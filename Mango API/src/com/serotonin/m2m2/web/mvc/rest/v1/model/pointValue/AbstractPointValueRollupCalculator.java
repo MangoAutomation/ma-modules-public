@@ -55,8 +55,24 @@ public abstract class AbstractPointValueRollupCalculator<T> {
 	protected DateTime to;
 	protected final Integer limit;
 	protected final PointValueDao pvd;
+	protected final String dateTimeFormat;
+	protected final String timezone;
 	
-	public AbstractPointValueRollupCalculator(String host, int port, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit){
+	/**
+	 * 
+	 * @param host
+	 * @param port
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param rollup
+	 * @param period
+	 * @param from
+	 * @param to
+	 * @param limit
+	 * @param dateTimeFormat - output string date format, if null then epoch millis number
+	 * @param timezone
+	 */
+	public AbstractPointValueRollupCalculator(String host, int port, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
         this.host = host;
         this.port = port;
         this.useRendered = useRendered;
@@ -67,6 +83,8 @@ public abstract class AbstractPointValueRollupCalculator<T> {
         this.to = to;
         this.limit = limit;
         this.pvd = Common.databaseProxy.newPointValueDao();
+        this.dateTimeFormat = dateTimeFormat;
+        this.timezone = timezone;
     }
 
 	protected abstract void generateStream(DateTime from, DateTime to, JsonGenerator jgen) throws IOException;
@@ -125,14 +143,14 @@ public abstract class AbstractPointValueRollupCalculator<T> {
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
             return new AnalogStatisticsQuantizer(bc, 
             		startValue,
-            		new NumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, this.useRendered, this.unitConversion, this.rollup, this.limit));
+            		new NumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, this.useRendered, this.unitConversion, this.rollup, this.limit, this.dateTimeFormat, this.timezone));
         }else {
             if (!rollup.nonNumericSupport()) {
                 LOG.warn("Invalid non-numeric rollup type: " + rollup);
                 rollup = RollupEnum.FIRST; //Default to first
             }
             return new ValueChangeCounterQuantizer(bc, startValue,
-            		new NonNumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, useRendered, unitConversion, this.rollup, this.limit));
+            		new NonNumericPointValueStatisticsQuantizerJsonCallback(host, port, jgen, vo, useRendered, unitConversion, this.rollup, this.limit, this.dateTimeFormat, this.timezone));
         }
 	}
 	
@@ -150,14 +168,14 @@ public abstract class AbstractPointValueRollupCalculator<T> {
         if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
             return new AnalogStatisticsQuantizer(bc, 
             		startValue,
-            		new NumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, this.useRendered, this.unitConversion, this.rollup, writeXidColumn, writeHeaders, this.limit));
+            		new NumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, this.useRendered, this.unitConversion, this.rollup, writeXidColumn, writeHeaders, this.limit, this.dateTimeFormat, this.timezone));
         }else {
             if (!rollup.nonNumericSupport()) {
                 LOG.warn("Invalid non-numeric rollup type: " + rollup);
                 rollup = RollupEnum.FIRST; //Default to first
             }
             return new ValueChangeCounterQuantizer(bc, startValue,
-            		new NonNumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, this.rollup, writeXidColumn, writeHeaders, this.limit));
+            		new NonNumericPointValueStatisticsQuantizerCsvCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, this.rollup, writeXidColumn, writeHeaders, this.limit, this.dateTimeFormat, this.timezone));
         }
     }
 	

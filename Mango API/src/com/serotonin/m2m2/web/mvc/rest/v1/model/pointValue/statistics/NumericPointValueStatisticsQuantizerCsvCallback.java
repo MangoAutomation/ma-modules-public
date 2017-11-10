@@ -19,29 +19,41 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 
 	/**
 	 * Write CSV with no XID Column
-	 * @param writer
-	 * @param vo
-	 * @param useRendered
-	 * @param unitConversion
-	 * @param rollup
-	 */
+     * 
+     * @param host
+     * @param port
+     * @param writer
+     * @param vo
+     * @param useRendered
+     * @param unitConversion
+     * @param rollup
+     * @param limit
+     * @param dateTimeFormat
+     * @param timezone
+     */
 	public NumericPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, DataPointVO vo, 
-			boolean useRendered,  boolean unitConversion, RollupEnum rollup, Integer limit) {
-		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true, limit);
+			boolean useRendered,  boolean unitConversion, RollupEnum rollup, Integer limit, String dateTimeFormat, String timezone) {
+		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true, limit, dateTimeFormat, timezone);
 	}	
 	
 	/**
 	 * Write a CSV with a xid column, useful for writing a sheet with multiple points (not necessarily in time order)
+	 * @param host
+	 * @param port
 	 * @param writer
 	 * @param vo
 	 * @param useRendered
 	 * @param unitConversion
 	 * @param rollup
 	 * @param writeXidColumn
+	 * @param writeHeaders
+	 * @param limit
+	 * @param dateTimeFormat
+	 * @param timezone
 	 */
 	public NumericPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, DataPointVO vo, 
-			boolean useRendered,  boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders, Integer limit) {
-		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders), rollup, limit);
+			boolean useRendered,  boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders, Integer limit, String dateTimeFormat, String timezone) {
+		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders, dateTimeFormat, timezone), rollup, limit);
 	}
 	
 }

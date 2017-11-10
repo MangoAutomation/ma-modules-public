@@ -33,10 +33,12 @@ public class XidPointValueTimeJsonWriter extends PointValueTimeJsonWriter implem
 	 * @param jgen
 	 * @param useRendered
 	 * @param unitConversion
+	 * @param dateTimeFormat - string format for dates, if null then timestamp numbers used
+	 * @param timezone
 	 */
 	public XidPointValueTimeJsonWriter(String host, int port, JsonGenerator jgen, boolean useRendered,
-			boolean unitConversion) {
-		super(host, port, jgen, useRendered, unitConversion);
+			boolean unitConversion, String dateTimeFormat, String timezone) {
+		super(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone);
 	}
 
 	/* (non-Javadoc)

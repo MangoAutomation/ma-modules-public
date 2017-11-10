@@ -5,9 +5,14 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.time;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,9 +50,19 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 	protected long currentTime;
 	protected boolean objectOpen;
 	protected final LimitCounter limiter;
-
+	protected final DateTimeFormatter dateFormatter;
+	protected final ZoneId zoneId;
 	
-	public IdTimeJsonStreamCallback(XidTimeJsonWriter<T> writer, JsonGenerator jgen, Map<Integer, DataPointVO> voMap, Integer limit){
+	/**
+	 * 
+	 * @param writer
+	 * @param jgen
+	 * @param voMap
+	 * @param limit
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
+	 */
+	public IdTimeJsonStreamCallback(XidTimeJsonWriter<T> writer, JsonGenerator jgen, Map<Integer, DataPointVO> voMap, Integer limit, String dateTimeFormat, String timezone){
 		this.writer = writer;
 		this.jgen = jgen;
 		this.voMap = voMap;
@@ -55,6 +70,17 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 		this.currentTime = Long.MIN_VALUE;
 		this.objectOpen = false;
 		this.limiter = new LimitCounter(limit);
+
+		if(dateTimeFormat != null) {
+            this.dateFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
+            if(timezone == null)
+                this.zoneId = TimeZone.getDefault().toZoneId();
+            else
+                this.zoneId = ZoneId.of(timezone);
+        }else {
+            this.dateFormatter = null;
+            this.zoneId = null;
+        }
 	}
 	
 	/* (non-Javadoc)
@@ -92,7 +118,13 @@ public abstract class IdTimeJsonStreamCallback<T extends IdTime> implements Mapp
 	 */
 	protected void writeEntry() throws IOException{
 		this.jgen.writeStartObject();
-		this.jgen.writeNumberField(TIMESTAMP, this.currentTime);
+		
+		if (dateFormatter == null)
+            jgen.writeNumberField(TIMESTAMP, this.currentTime);
+        else
+            jgen.writeStringField(TIMESTAMP, dateFormatter.format(ZonedDateTime
+                    .ofInstant(Instant.ofEpochMilli(this.currentTime), zoneId)));
+		
 		Iterator<DataPointVO> it = this.currentValueMap.keySet().iterator();
 		DataPointVO vo;
 		while(it.hasNext()){

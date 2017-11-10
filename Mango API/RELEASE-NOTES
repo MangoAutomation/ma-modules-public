@@ -3,6 +3,7 @@
 * Upgraded to work with core version 3.3.x
 * Adding high performance user-events endpoint at rest/v2/user-events to access all un-acknowleged cached events for a user
 * Adding acknowledged userId, username and timestamp to Events when returned from api via REST and Websockets
+* Adding optional dateTimeFormat parameter to PointValue rest requests to format date output as string or number of millis
 
 *Version 3.2.3*
 * Fix JSON store so partial get/update/delete works

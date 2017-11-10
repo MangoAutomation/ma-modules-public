@@ -37,8 +37,23 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 
 	private final Map<Integer, DataPointVO> voMap;
 	
-	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit){
-        super(host, port, useRendered, unitConversion, rollup, period, from, to, limit);
+	/**
+	 * 
+	 * @param host
+	 * @param port
+	 * @param voMap
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param rollup
+	 * @param period
+	 * @param from
+	 * @param to
+	 * @param limit
+	 * @param dateTimeFormat - string date format, if null then epoch millis number
+	 * @param timezone
+	 */
+	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
+        super(host, port, useRendered, unitConversion, rollup, period, from, to, limit, dateTimeFormat, timezone);
 		this.voMap = voMap;
 	}
 
@@ -70,7 +85,7 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
         BucketCalculator bc = this.getBucketCalculator(from, to);
         IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(this.host, this.port, jgen, 
         		this.voMap, this.useRendered,
-				this.unitConversion, this.rollup, this.limit);
+				this.unitConversion, this.rollup, this.limit, this.dateTimeFormat, timezone);
 
 		Iterator<Integer> it = this.voMap.keySet().iterator();
 		ParentDataQuantizer quantizer = new ParentDataQuantizer(bc, callback);
@@ -97,7 +112,7 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
         BucketCalculator bc = this.getBucketCalculator(from, to);
         IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(this.host, this.port, writer.getWriter(), 
         		this.voMap, this.useRendered,
-				this.unitConversion, this.rollup);
+				this.unitConversion, this.rollup, this.dateTimeFormat, timezone);
 
 			Iterator<Integer> it = this.voMap.keySet().iterator();
 			ParentDataQuantizer quantizer = new ParentDataQuantizer(bc, callback);

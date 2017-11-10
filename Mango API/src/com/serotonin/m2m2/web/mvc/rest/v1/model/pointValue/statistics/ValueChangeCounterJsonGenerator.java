@@ -19,13 +19,21 @@ public class ValueChangeCounterJsonGenerator extends StatisticsJsonGenerator{
 	private ValueChangeCounter statistics;
 	
 	/**
+	 * 
+	 * @param host
+	 * @param port
 	 * @param jgen
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
 	 * @param valueChangeCounter
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone;
 	 */
 	public ValueChangeCounterJsonGenerator(String host, int port, JsonGenerator jgen,
 			DataPointVO vo, boolean useRendered, boolean unitConversion,
-			ValueChangeCounter valueChangeCounter) {
-		super(host, port, jgen, vo, useRendered, unitConversion, valueChangeCounter);
+			ValueChangeCounter valueChangeCounter, String dateTimeFormat, String timezone) {
+		super(host, port, jgen, vo, useRendered, unitConversion, valueChangeCounter, dateTimeFormat, timezone);
 		this.statistics = valueChangeCounter;
 	}
 	

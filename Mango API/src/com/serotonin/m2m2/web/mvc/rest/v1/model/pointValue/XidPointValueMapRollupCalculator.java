@@ -38,8 +38,23 @@ public class XidPointValueMapRollupCalculator extends AbstractPointValueRollupCa
 
 	private final Map<Integer, DataPointVO> voMap;
 	
-	public XidPointValueMapRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit){
-        super(host, port, useRendered, unitConversion, rollup, period, from, to, limit);
+	/**
+	 * 
+	 * @param host
+	 * @param port
+	 * @param voMap
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param rollup
+	 * @param period
+	 * @param from
+	 * @param to
+	 * @param limit
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
+	 */
+	public XidPointValueMapRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
+        super(host, port, useRendered, unitConversion, rollup, period, from, to, limit, dateTimeFormat, timezone);
 		this.voMap = voMap;
 	}
 

@@ -32,17 +32,22 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 	private final boolean unitConversion;
 	private final long from;
 	private final long to;
-	
-
+	private final String dateTimeFormat;
+	private final String timezone;
 
 	/**
 	 * 
+	 * @param host
+	 * @param port
 	 * @param vo - Data Point in question
 	 * @param useRendered - Return statistics as Text rendered Strings
+	 * @param unitConversion
 	 * @param from
 	 * @param to
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
 	 */
-	public StatisticsStream(String host, int port, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to) {
+	public StatisticsStream(String host, int port, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, String dateTimeFormat, String timezone) {
 		this.host = host;
 		this.port = port;
 		this.vo = vo;
@@ -50,6 +55,8 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 		this.unitConversion = unitConversion;
 		this.from = from;
 		this.to = to;
+		this.dateTimeFormat = dateTimeFormat;
+		this.timezone = timezone;
 	}
 
 	
@@ -70,7 +77,7 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 		DataValue startValue = null;
 		if(startPvt != null)
 			startValue = startPvt.getValue();
-		StatisticsCalculator calculator = new StatisticsCalculator(host, port, jgen, vo, useRendered, unitConversion, this.from, this.to, startValue);
+		StatisticsCalculator calculator = new StatisticsCalculator(host, port, jgen, vo, useRendered, unitConversion, this.from, this.to, startValue, dateTimeFormat, timezone);
 
 		//Do the main work
 		pvd.getPointValuesBetween(vo.getId(), from, to, calculator);

@@ -5,9 +5,12 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,16 +52,22 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 	protected final String[] rowData;
 	protected boolean wroteHeaders;
 	
+
 	/**
+	 * 
+	 * @param host
+	 * @param port
 	 * @param writer
 	 * @param voMap
 	 * @param useRendered
 	 * @param unitConversion
 	 * @param rollup
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
 	 */
 	public IdPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap,
-			boolean useRendered, boolean unitConversion, RollupEnum rollup) {
-		super(host, port, writer, useRendered, unitConversion);
+			boolean useRendered, boolean unitConversion, RollupEnum rollup, String dateTimeFormat, String timezone) {
+		super(host, port, writer, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.writer = writer;
 		this.voMap = voMap;
 		this.useRendered = useRendered;
@@ -100,7 +109,12 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 			}
 			
 			//Write out the period start time
-			this.rowData[1] = Long.toString(periodStartTime);
+			if(dateFormatter == null)
+			    this.rowData[1] = Long.toString(periodStartTime);
+			else
+			    this.rowData[1] = dateFormatter.format(ZonedDateTime
+	                    .ofInstant(Instant.ofEpochMilli(periodStartTime), TimeZone.getDefault().toZoneId()));
+			
 			Iterator<Integer> it = periodStatsMap.keySet().iterator();
 			while(it.hasNext()){
 				Integer id = it.next();

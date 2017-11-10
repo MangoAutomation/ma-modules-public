@@ -5,6 +5,11 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 import javax.measure.converter.ConversionException;
 
@@ -31,8 +36,10 @@ public abstract class PointValueTimeWriter {
 	protected boolean unitConversion;
 	protected final String noDataMessage;
 	protected UriComponentsBuilder imageServletBuilder;
+	protected final DateTimeFormatter dateFormatter;  //Write a timestamp or string date
+	protected final ZoneId zoneId;
 	
-	public PointValueTimeWriter(String host, int port, boolean useRendered, boolean unitConversion){
+	public PointValueTimeWriter(String host, int port, boolean useRendered, boolean unitConversion, String dateTimeFormat, String timezone){
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
 		this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod").translate(Common.getTranslations());
@@ -45,6 +52,17 @@ public abstract class PointValueTimeWriter {
 			imageServletBuilder.scheme("http");
 		imageServletBuilder.host(host);
 		imageServletBuilder.port(port);
+		if(dateTimeFormat != null) {
+		    this.dateFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
+		    if(timezone == null)
+		        this.zoneId = TimeZone.getDefault().toZoneId();
+		    else
+		        this.zoneId = ZoneId.of(timezone);
+		}else {
+            this.dateFormatter = null;
+            this.zoneId = null;
+		}
+		
 	}
 	
 	public abstract void writePointValueTime(double value, long timestamp, String annotation, DataPointVO vo) throws IOException;
@@ -170,5 +188,8 @@ public abstract class PointValueTimeWriter {
 	 */
 	public abstract void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo) throws IOException;
 	
+	public String writeTimestampString(long timestamp) {
+	    return dateFormatter.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId));
+	}
 	
 }

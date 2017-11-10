@@ -35,10 +35,21 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	private final LimitCounter limiter;
 	
 	/**
-	 * @param jgen
+	 * 
+	 * @param host
+	 * @param port
+	 * @param writer
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param writeXid
+	 * @param writeHeaders
+	 * @param limit
+	 * @param dateTimeFormat - format for string dates, if null then epoch millis number
+	 * @param timezone
 	 */
-	public PointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders, Integer limit) {
-		super(host, port, writer, useRendered, unitConversion, writeXid, writeHeaders);
+	public PointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders, Integer limit, String dateTimeFormat, String timezone) {
+		super(host, port, writer, useRendered, unitConversion, writeXid, writeHeaders, dateTimeFormat, timezone);
 		this.translations = Common.getTranslations();
 		this.vo = vo;
 		this.limiter = new LimitCounter(limit);

@@ -19,12 +19,20 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	private AnalogStatistics statistics;
 	
 	/**
+	 * 
+	 * @param host
+	 * @param port
 	 * @param jgen
+	 * @param vo
+	 * @param useRendered
+	 * @param unitConversion
 	 * @param generator
+	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
+	 * @param timezone
 	 */
 	public AnalogStatisticsJsonGenerator(String host, int port, JsonGenerator jgen,
-			DataPointVO vo, boolean useRendered, boolean unitConversion, AnalogStatistics generator) {
-		super(host, port, jgen, vo, useRendered, unitConversion, generator);
+			DataPointVO vo, boolean useRendered, boolean unitConversion, AnalogStatistics generator, String dateTimeFormat, String timezone) {
+		super(host, port, jgen, vo, useRendered, unitConversion, generator, dateTimeFormat, timezone);
 		this.statistics = generator;
 	}
 

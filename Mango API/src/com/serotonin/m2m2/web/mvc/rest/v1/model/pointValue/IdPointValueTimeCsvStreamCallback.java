@@ -5,9 +5,12 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,10 +49,19 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	private boolean wroteHeaders;
 	
 	/**
-	 * @param jgen
+	 * 
+	 * @param host
+	 * @param port
+	 * @param writer
+	 * @param voMap
+	 * @param useRendered
+	 * @param unitConversion
+	 * @param limit
+	 * @param dateTimeFormat - format for date strings, if null then use epoch millis number
+	 * @param timezone
 	 */
-	public IdPointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit) {
-		super(host, port, writer, useRendered, unitConversion);
+	public IdPointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
+		super(host, port, writer, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.limiter = new LimitCounter(limit);
 		this.voMap = voMap;
 		this.currentTime = Long.MIN_VALUE;
@@ -83,7 +95,11 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 		try{
 			DataPointVO vo = this.voMap.get(pvt.getId());
 			long time = pvt.getTime();
-			this.rowData[0] = Long.toString(time);
+			if(dateFormatter == null)
+			    this.rowData[0] = Long.toString(time);
+			else
+			    this.rowData[0] = dateFormatter.format(ZonedDateTime
+	                    .ofInstant(Instant.ofEpochMilli(time), TimeZone.getDefault().toZoneId()));
 			
 			//Ensure we are saving into the correct time entry
 			if(this.currentTime != time){
