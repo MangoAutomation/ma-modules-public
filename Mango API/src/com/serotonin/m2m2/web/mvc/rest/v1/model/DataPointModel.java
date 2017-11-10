@@ -361,14 +361,6 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	 */
 	@Override
 	public DataPointVO getData(){
-		
-		if(templateXid != null){
-			BaseTemplateVO<?> template = TemplateDao.instance.getByXid(templateXid);
-			if(template != null)
-				this.data.setTemplateId(template.getId());
-			
-		}
-
 		return this.data;
 	}
 	
