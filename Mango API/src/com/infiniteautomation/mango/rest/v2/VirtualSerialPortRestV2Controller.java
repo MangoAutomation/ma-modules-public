@@ -88,7 +88,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		}
 		
 		//Validate
-		ensureValid(model);
+		model.ensureValid();
 
 		//Save it
 		VirtualSerialPortConfigDao.instance.save(model);
@@ -121,7 +121,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			throw new NotFoundRestException();
 		
 		//Validate
-		ensureValid(model);
+		model.ensureValid();
 
 		//Save it
 		VirtualSerialPortConfigDao.instance.save(model);

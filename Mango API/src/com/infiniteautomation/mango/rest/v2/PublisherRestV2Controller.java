@@ -117,7 +117,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
         if (existing != null) 
         	throw new AlreadyExistsRestException(vo.getXid());
 
-        ensureValid(vo);
+        vo.ensureValid();
 		Common.runtimeManager.savePublisher(vo);
         
     	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -152,7 +152,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 
         vo.setId(existing.getId());
 
-        ensureValid(vo);
+        vo.ensureValid();
         Common.runtimeManager.savePublisher(vo);
      
     	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(xid).toUri();

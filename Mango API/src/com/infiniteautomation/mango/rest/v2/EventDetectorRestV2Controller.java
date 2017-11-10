@@ -146,7 +146,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		ped.njbSetDataPoint(dp);
 		
 		//Validate
-		ensureValid(ped);
+		ped.ensureValid();
 		
 		//Add it to the data point
 		DataPointDao.instance.setEventDetectors(dp);
@@ -195,7 +195,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		ped.njbSetDataPoint(dp);
 		
 		//Validate
-        ensureValid(ped);
+        ped.ensureValid();
 		
 		//Replace it on the data point, if it isn't replaced we fail.
 		boolean replaced = false;

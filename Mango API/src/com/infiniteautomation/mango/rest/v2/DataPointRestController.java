@@ -221,7 +221,7 @@ public class DataPointRestController extends BaseMangoRestController {
             template.updateDataPointVO(newPoint);
         }
 
-        ensureValid(newPoint);
+        newPoint.ensureValid();
         Common.runtimeManager.saveDataPoint(newPoint);
 
         URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(xid).toUri();
