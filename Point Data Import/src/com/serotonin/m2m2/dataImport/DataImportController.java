@@ -46,7 +46,7 @@ public class DataImportController extends FileUploadController {
 	protected void ensurePermission(User user)
 			throws PermissionException {
         if(!Permissions.hasPermission(user, SystemSettingsDao.getValue(DataImportPermissionDefinition.PERMISSION)))
-        		throw new PermissionException("No " + DataImportPermissionDefinition.PERMISSION  + " permission", user);
+        		throw new PermissionException(new TranslatableMessage("common.default", "No " + DataImportPermissionDefinition.PERMISSION  + " permission"), user);
 	}
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.controller.FileUploadController#parseFile(java.io.InputStream, java.util.Map, com.serotonin.m2m2.i18n.Translations, javax.servlet.http.HttpServletRequest)

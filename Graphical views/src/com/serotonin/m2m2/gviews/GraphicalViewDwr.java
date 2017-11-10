@@ -36,6 +36,7 @@ import com.serotonin.m2m2.gviews.component.SimplePointComponent;
 import com.serotonin.m2m2.gviews.component.ThumbnailComponent;
 import com.serotonin.m2m2.gviews.component.ViewComponent;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RuntimeManager;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -76,10 +77,10 @@ public class GraphicalViewDwr extends ModuleDwr {
     public String setViewPointAnon(int viewId, String viewComponentId, String valueStr) {
         GraphicalView view = GraphicalViewsCommon.getAnonymousViewDwr(viewId);
         if (view == null)
-            throw new PermissionException("View is not in session", null);
+            throw new PermissionException(new TranslatableMessage("common.default", "View is not in session"), null);
 
         if (view.getAnonymousAccess() != ShareUser.ACCESS_SET)
-            throw new PermissionException("Point is not anonymously settable", null);
+            throw new PermissionException(new TranslatableMessage("common.default", "Point is not anonymously settable"), null);
 
         // Allow the set.
         setPointImpl(view.findDataPoint(viewComponentId), valueStr, new AnonymousUser());
@@ -369,7 +370,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         if (point != null) {
             // Check that setting is allowed.
         	if(!view.isSetter(user))
-                throw new PermissionException("Not allowed to set this point", user);
+                throw new PermissionException(new TranslatableMessage("permission.exception.setDataPoint", user.getUsername()), user);
 
             // Try setting the point.
             setPointImpl(point, valueStr, user);

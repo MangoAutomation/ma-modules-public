@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
@@ -37,7 +36,6 @@ import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
@@ -79,7 +77,7 @@ public class DataPointRestController extends BaseMangoRestController {
         }
         DataPointDao.instance.loadPartialRelationalData(dataPoint);
         
-        checkDataPointReadPermission(user, dataPoint);
+        Permissions.ensureDataPointReadPermission(user, dataPoint);
         return new DataPointModel(dataPoint);
     }
 
@@ -99,7 +97,7 @@ public class DataPointRestController extends BaseMangoRestController {
         }
         DataPointDao.instance.loadPartialRelationalData(dataPoint);
 
-        checkDataPointReadPermission(user, dataPoint);
+        Permissions.ensureDataPointReadPermission(user, dataPoint);
         return new DataPointModel(dataPoint);
     }
 
@@ -120,8 +118,8 @@ public class DataPointRestController extends BaseMangoRestController {
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
-        
-        checkDataPointEditPermission(user, dataPoint);
+
+        Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
         if (enabled && restart) {
             Common.runtimeManager.restartDataPoint(dataPoint);
@@ -180,8 +178,7 @@ public class DataPointRestController extends BaseMangoRestController {
         if (existingPoint == null) {
             throw new NotFoundRestException();
         }
-
-        checkDataPointEditPermission(user, existingPoint);
+        
         newPoint.setId(existingPoint.getId());
 
         DataSourceVO<?> existingDataSource = DataSourceDao.instance.get(existingPoint.getDataSourceId());
@@ -189,6 +186,8 @@ public class DataPointRestController extends BaseMangoRestController {
             // existing data point should always have a data source
             throw new ServerErrorException(new TranslatableMessage("rest.error.cantGetDatasourceForPoint", xid));
         }
+        
+        Permissions.ensureDataSourcePermission(user, existingDataSource);
         
         // check if they are trying to move it to another data source
         String newDataSourceXid = newPoint.getDataSourceXid();
@@ -257,24 +256,6 @@ public class DataPointRestController extends BaseMangoRestController {
                 DataPointDao.instance.loadPartialRelationalData(item);
                 return new DataPointModel(item);
             });
-        }
-    }
-
-    private static void checkDataPointReadPermission(User user, DataPointVO point) {
-        try {
-            Permissions.ensureDataPointReadPermission(user, point);
-        } catch (PermissionException e) {
-            TranslatableMessage msg = new TranslatableMessage("rest.error.noReadPermissionForPoint", user.getUsername());
-            throw new AccessDeniedException(msg);
-        }
-    }
-
-    private static void checkDataPointEditPermission(User user, DataPointVO point) {
-        try {
-            Permissions.ensureDataSourcePermission(user, point.getDataSourceId());
-        } catch (PermissionException e) {
-            TranslatableMessage msg = new TranslatableMessage("rest.error.noEditPermissionForPoint", user.getUsername());
-            throw new AccessDeniedException(msg);
         }
     }
 

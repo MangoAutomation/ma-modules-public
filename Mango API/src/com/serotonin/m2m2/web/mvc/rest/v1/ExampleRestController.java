@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.wordnik.swagger.annotations.Api;
@@ -32,7 +33,7 @@ public class ExampleRestController {
 	})
 	@RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"}, produces = {"application/json"} )
 	public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal User user) {
-		throw new PermissionException("I always fail.", user);
+		throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
 	}
 	
 }

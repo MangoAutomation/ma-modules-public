@@ -34,12 +34,12 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
         User user = this.getUser(session);
         if (user == null) {
             this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN,
-                    new TranslatableMessage("rest.error.notLoggedIn"));
+                    new TranslatableMessage("permission.exception.notAuthenticated"));
             session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         } else if (!user.isAdmin()) {
             this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                    new TranslatableMessage("rest.error.permissionDenied"));
+                    new TranslatableMessage("permission.exception.mustBeAdmin"));
             session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         }
@@ -67,10 +67,15 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
             User user = this.getUser(session);
-            if (user == null || !user.isAdmin()) {
-                // TODO Can anyone cancel the import?
+            // TODO Can anyone cancel the import?
+            if (user == null) {
+                this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN,
+                        new TranslatableMessage("permission.exception.notAuthenticated"));
+                session.close(CloseStatus.NOT_ACCEPTABLE);
+                return;
+            } else if (!user.isAdmin()) {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                        new TranslatableMessage("rest.error.permissionDenied"));
+                        new TranslatableMessage("permission.exception.mustBeAdmin"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
             }

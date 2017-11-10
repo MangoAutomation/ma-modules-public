@@ -19,6 +19,7 @@ import org.directwebremoting.WebContextFactory;
 
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.edit.ImageUploadServletDefinition;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -51,17 +52,17 @@ public class GraphicalViewsCommon {
 
     public static void ensureViewPermission(User user, GraphicalView view) throws PermissionException {
         if(!view.isReader(user)&&!view.isSetter(user))
-            throw new PermissionException("User does not have permission to the view", user);
+            throw new PermissionException(new TranslatableMessage("common.default", "User does not have permission to the view"), user);
     }
 
     public static void ensureViewEditPermission(User user, GraphicalView view) throws PermissionException {
         if (!view.isEditor(user))
-            throw new PermissionException("User does not have permission to edit the view", user);
+            throw new PermissionException(new TranslatableMessage("common.default", "User does not have permission to edit the view"), user);
     }
     
     public static void ensureCanCreate(User user) {
     	if(user == null || !Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewAddViewPermissionDefinition.PERMISSION)))
-    		throw new PermissionException("User does not have permission to create new views", user);
+    		throw new PermissionException(new TranslatableMessage("common.default", "User does not have permission to create new views"), user);
     }
 
     //
