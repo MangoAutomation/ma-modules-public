@@ -9,13 +9,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +30,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResource;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.util.ConfigurationExportData;
 import com.infiniteautomation.mangoApi.websocket.JsonConfigImportWebSocketDefinition;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
@@ -46,22 +44,11 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.db.dao.EventHandlerDao;
-import com.serotonin.m2m2.db.dao.JsonDataDao;
-import com.serotonin.m2m2.db.dao.MailingListDao;
-import com.serotonin.m2m2.db.dao.PublisherDao;
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
-import com.serotonin.m2m2.db.dao.TemplateDao;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.dwr.EmportDwr;
 import com.serotonin.m2m2.web.dwr.emport.ImportTask;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
@@ -206,24 +193,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             )
     @RequestMapping(method = RequestMethod.GET, value = "/list")
     public ResponseEntity<List<StringStringPair>> listExportElements(HttpServletRequest request) {
-        
-        List<StringStringPair> elements = new ArrayList<StringStringPair>();
-        elements.add(new StringStringPair("header.dataSources", EmportDwr.DATA_SOURCES));
-        elements.add(new StringStringPair("header.dataPoints", EmportDwr.DATA_POINTS));
-        elements.add(new StringStringPair("header.users", EmportDwr.USERS));
-        elements.add(new StringStringPair("header.mailingLists", EmportDwr.MAILING_LISTS));
-        elements.add(new StringStringPair("header.publishers", EmportDwr.PUBLISHERS));
-        elements.add(new StringStringPair("header.eventHandlers", EmportDwr.EVENT_HANDLERS));
-        elements.add(new StringStringPair("header.pointHierarchy", EmportDwr.POINT_HIERARCHY));
-        elements.add(new StringStringPair("header.systemSettings", EmportDwr.SYSTEM_SETTINGS));
-        elements.add(new StringStringPair("header.pointPropertyTemplates", EmportDwr.TEMPLATES));
-        elements.add(new StringStringPair("header.virtualSerialPorts", EmportDwr.VIRTUAL_SERIAL_PORTS));
-        elements.add(new StringStringPair("header.jsonData", EmportDwr.JSON_DATA));
-        
-        for (EmportDefinition def : ModuleRegistry.getDefinitions(EmportDefinition.class)) {
-            elements.add(new StringStringPair(def.getDescriptionKey(), def.getElementId()));
-        }
-        return new ResponseEntity<>(elements, HttpStatus.OK);
+        return new ResponseEntity<>(ConfigurationExportData.getAllExportDescriptions(), HttpStatus.OK);
     }
     
     @PreAuthorize("isAdmin()")
@@ -239,7 +209,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             String[] exportElements,
             HttpServletRequest request) throws JsonException {
         //Do the Export
-        Map<String,Object> data = createExportData(exportElements);
+        Map<String,Object> data = ConfigurationExportData.createExportDataMap(exportElements);
         JsonTypeWriter writer = new JsonTypeWriter(Common.JSON_CONTEXT);
         return new ResponseEntity<>(writer.writeObject(data), HttpStatus.OK);
     }
@@ -390,45 +360,4 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         if(provider != null)
             provider.cancel();
     }
-    
-    /**
-     * Get the export data
-     * @param exportElements
-     * @return
-     */
-    private Map<String, Object> createExportData(String[] exportElements){
-         Map<String, Object> data = new LinkedHashMap<>();
-
-            if (ArrayUtils.contains(exportElements, EmportDwr.DATA_SOURCES))
-                data.put(EmportDwr.DATA_SOURCES, DataSourceDao.instance.getDataSources());
-            if (ArrayUtils.contains(exportElements, EmportDwr.DATA_POINTS))
-                data.put(EmportDwr.DATA_POINTS, DataPointDao.instance.getDataPoints(null, true));
-            if (ArrayUtils.contains(exportElements, EmportDwr.USERS))
-                data.put(EmportDwr.USERS, UserDao.instance.getUsers());
-            if (ArrayUtils.contains(exportElements, EmportDwr.MAILING_LISTS))
-                data.put(EmportDwr.MAILING_LISTS, MailingListDao.instance.getMailingLists());
-            if (ArrayUtils.contains(exportElements, EmportDwr.PUBLISHERS))
-                data.put(EmportDwr.PUBLISHERS, PublisherDao.instance.getPublishers());
-            if (ArrayUtils.contains(exportElements, EmportDwr.EVENT_HANDLERS))
-                data.put(EmportDwr.EVENT_HANDLERS, EventHandlerDao.instance.getEventHandlers());
-            if (ArrayUtils.contains(exportElements, EmportDwr.POINT_HIERARCHY))
-                data.put(EmportDwr.POINT_HIERARCHY, DataPointDao.instance.getPointHierarchy(true).getRoot().getSubfolders());
-            if (ArrayUtils.contains(exportElements, EmportDwr.SYSTEM_SETTINGS))
-                data.put(EmportDwr.SYSTEM_SETTINGS, SystemSettingsDao.instance.getAllSystemSettingsAsCodes());
-            if (ArrayUtils.contains(exportElements, EmportDwr.TEMPLATES))
-                data.put(EmportDwr.TEMPLATES, TemplateDao.instance.getAll());
-            if (ArrayUtils.contains(exportElements, EmportDwr.VIRTUAL_SERIAL_PORTS))
-                data.put(EmportDwr.VIRTUAL_SERIAL_PORTS, VirtualSerialPortConfigDao.instance.getAll());
-            if (ArrayUtils.contains(exportElements, EmportDwr.JSON_DATA))
-                data.put(EmportDwr.JSON_DATA, JsonDataDao.instance.getAll());
-            
-            
-            for (EmportDefinition def : ModuleRegistry.getDefinitions(EmportDefinition.class)) {
-                if (ArrayUtils.contains(exportElements, def.getElementId()))
-                    data.put(def.getElementId(), def.getExportData());
-            }
-            
-            return data;
-    }
-    
 }
