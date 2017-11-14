@@ -183,10 +183,12 @@ public class DataPointRestController extends BaseMangoRestController {
         }
 
         DataPointPropertiesTemplateVO template = null;
-        if (model.getTemplateXid() != null) {
-            template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
-            if (template == null) {
-                throw new BadRequestException(new TranslatableMessage("invalidTemplateXid"));
+        if (model.isTemplateXidWasSet()) {
+            if (model.getTemplateXid() != null) {
+                template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+                if (template == null) {
+                    throw new BadRequestException(new TranslatableMessage("invalidTemplateXid"));
+                }
             }
         } else if (dataPoint.getTemplateId() != null) {
             template = (DataPointPropertiesTemplateVO) TemplateDao.instance.get(dataPoint.getTemplateId());

@@ -5,11 +5,14 @@ package com.infiniteautomation.mango.rest.v2.model.dataPoint;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.BaseChartRendererModel;
@@ -49,9 +52,17 @@ public class DataPointModel {
     String plotType;
     Map<String, String> tags;
     LoggingPropertiesModel loggingProperties;
+    @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseTextRendererModel<?> textRenderer;
+    @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseChartRendererModel<?> chartRenderer;
 
+    /**
+     * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
+     * initialized to null by Java.
+     */
+    @JsonIgnore
+    boolean templateXidWasSet = false;
     String templateXid;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String templateName;
@@ -184,7 +195,7 @@ public class DataPointModel {
         }
         
         // template XID is allowed to be null, if it is then clear the template properties on the point
-        if (templateXid == null) {
+        if (templateXidWasSet && templateXid == null) {
             point.setTemplateId(null);
             point.setTemplateXid(null);
             point.setTemplateName(null);
@@ -373,6 +384,7 @@ public class DataPointModel {
 
     public void setTemplateXid(String templateXid) {
         this.templateXid = templateXid;
+        this.templateXidWasSet = true;
     }
 
     public String getTemplateName() {
@@ -413,5 +425,9 @@ public class DataPointModel {
 
     public void setDataSourceTypeName(String dataSourceTypeName) {
         this.dataSourceTypeName = dataSourceTypeName;
+    }
+
+    public boolean isTemplateXidWasSet() {
+        return templateXidWasSet;
     }
 }
