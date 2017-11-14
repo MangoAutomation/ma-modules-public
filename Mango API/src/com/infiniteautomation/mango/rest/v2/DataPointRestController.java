@@ -26,17 +26,18 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.view.text.PlainRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -157,9 +158,7 @@ public class DataPointRestController extends BaseMangoRestController {
         return doQuery(rql, user);
     }
 
-    @ApiOperation(
-            value = "Update an existing data point"
-            )
+    @ApiOperation(value = "Update an existing data point")
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(
             @PathVariable String xid,
@@ -170,74 +169,84 @@ public class DataPointRestController extends BaseMangoRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        DataPointVO newPoint = model.getData();
-        DataPointVO existingPoint = DataPointDao.instance.getByXid(xid);
-        if (existingPoint == null) {
+        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        if (dataPoint == null) {
             throw new NotFoundRestException();
         }
 
-        Permissions.ensureDataSourcePermission(user, existingPoint.getDataSourceId());
+        Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
         // check if they are trying to move it to another data source
-        String newDataSourceXid = newPoint.getDataSourceXid();
-        if (newDataSourceXid != null && !newDataSourceXid.isEmpty() && !newDataSourceXid.equals(existingPoint.getDataSourceXid())) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.pointChangeDataSource", xid));
-        }
-        
-        if (newPoint.getPointFolderId() != existingPoint.getPointFolderId()) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.pointChangeHierarchyFolder", xid));
+        String newDataSourceXid = model.getDataSourceXid();
+        if (newDataSourceXid != null && !newDataSourceXid.isEmpty() && !newDataSourceXid.equals(dataPoint.getDataSourceXid())) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.pointChangeDataSource"));
         }
 
-        setDefaultsFromExisting(existingPoint, newPoint);
-
-        //Check the Template and see if we need to use it
+        DataPointPropertiesTemplateVO template = null;
         if (model.getTemplateXid() != null) {
-            DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+            template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
             if (template == null) {
-                throw new BadRequestException(new TranslatableMessage("rest.error.templateNotFound", model.getTemplateXid()));
+                throw new BadRequestException(new TranslatableMessage("invalidTemplateXid"));
             }
-            template.updateDataPointVO(newPoint);
+        } else if (dataPoint.getTemplateId() != null) {
+            template = (DataPointPropertiesTemplateVO) TemplateDao.instance.get(dataPoint.getTemplateId());
+        }
+
+        model.copyPropertiesTo(dataPoint);
+
+        // load the template after copying the properties, template properties override the ones in the data point
+        if (template != null) {
+            dataPoint.withTemplate(template);
         }
         
-        newPoint.ensureValid();
-        DataPointDao.instance.setEventDetectors(newPoint);
-        Common.runtimeManager.saveDataPoint(newPoint);
+        dataPoint.ensureValid();
+        
+        // have to load any existing event detectors for the data point as we are about to replace the VO in the runtime manager
+        DataPointDao.instance.setEventDetectors(dataPoint);
+        Common.runtimeManager.saveDataPoint(dataPoint);
 
         URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(xid).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(model, headers, HttpStatus.OK);
+        return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.OK);
     }
     
-    
-    public void setDefaults(DataPointVO point) {
-        if (point.getTextRenderer() == null) {
-            point.setTextRenderer(new PlainRenderer());
-        }
-        if (point.getChartColour() == null) {
-            point.setChartColour("");
-        }
-    }
-    
-    public void setDefaultsFromExisting(DataPointVO existing, DataPointVO newPoint) {
-        newPoint.setId(existing.getId());
+    @ApiOperation(value = "Create a new data point")
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<DataPointModel> createDataPoint(
+            @ApiParam(value = "Data point model", required = true)
+            @RequestBody(required=true) DataPointModel model,
 
-        // Since we can't move a data point between data sources, we will always reset the data source info
-        newPoint.setDataSourceId(existing.getDataSourceId());
-        newPoint.setDataSourceXid(existing.getDataSourceXid());
-        newPoint.setDataSourceName(existing.getDataSourceName());
-        newPoint.setDataSourceTypeName(existing.getDataSourceTypeName());
-        
-        // also can't move a data point to a new folder, always reset the folder id
-        newPoint.setPointFolderId(existing.getPointFolderId());
-        
-        if (newPoint.getTextRenderer() == null) {
-            newPoint.setTextRenderer(existing.getTextRenderer());
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+
+        DataSourceVO<?> dataSource = DataSourceDao.instance.getByXid(model.getDataSourceXid());
+        if (dataSource == null) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidDataSourceXid"));
         }
-        if (newPoint.getChartColour() == null) {
-            newPoint.setChartColour(existing.getChartColour());
+
+        Permissions.ensureDataSourcePermission(user, dataSource);
+
+        DataPointVO dataPoint = new DataPointVO(dataSource);
+        model.copyPropertiesTo(dataPoint);
+
+        if (model.getTemplateXid() != null) {
+            DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+            if (template == null) {
+                throw new BadRequestException(new TranslatableMessage("rest.error.invalidTemplateXid"));
+            }
+            dataPoint.withTemplate(template);
         }
+        
+        dataPoint.ensureValid();
+        Common.runtimeManager.saveDataPoint(dataPoint);
+
+        URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+
+        return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.CREATED);
     }
 
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
