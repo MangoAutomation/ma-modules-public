@@ -17,10 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
-import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
@@ -50,20 +48,12 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             if (dataPoint == null) {
                 throw new NotFoundRestException();
             }
-
-            // we set the tags on the data point then retrieve them so that the device and name tags are correct
-            dataPoint.setTags(tags);
-
-            Map<String, String> updatedTags = dataPoint.getTags();
-            DataPointTagsDao.instance.setTagsForDataPointId(dataPoint.getId(), updatedTags);
-
-            DataPointRT rt = Common.runtimeManager.getDataPoint(dataPoint.getId());
-            if (rt != null) {
-                DataPointVO rtVo = rt.getVO();
-                rtVo.setTags(tags);
-            }
             
-            return updatedTags;
+            dataPoint.setTags(tags);
+            DataPointTagsDao.instance.saveDataPointTags(dataPoint);
+            
+            // we set the tags on the data point then retrieve them so that the device and name tags are correct
+            return dataPoint.getTags();
         });
     }
     
@@ -83,19 +73,11 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             newTags.putAll(existingTags);
             newTags.putAll(tags);
 
-            // we set the tags on the data point then retrieve them so that the device and name tags are correct
             dataPoint.setTags(newTags);
+            DataPointTagsDao.instance.saveDataPointTags(dataPoint);
 
-            Map<String, String> updatedTags = dataPoint.getTags();
-            DataPointTagsDao.instance.setTagsForDataPointId(dataPoint.getId(), updatedTags);
-            
-            DataPointRT rt = Common.runtimeManager.getDataPoint(dataPoint.getId());
-            if (rt != null) {
-                DataPointVO rtVo = rt.getVO();
-                rtVo.setTags(tags);
-            }
-            
-            return updatedTags;
+            // we set the tags on the data point then retrieve them so that the device and name tags are correct
+            return dataPoint.getTags();
         });
     }
 
