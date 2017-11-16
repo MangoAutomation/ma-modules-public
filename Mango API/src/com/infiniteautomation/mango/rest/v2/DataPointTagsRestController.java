@@ -35,7 +35,15 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
     public Map<String, String> getTagsForDataPoint(@PathVariable String xid) {
         DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
-        return DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+        if (dataPoint == null) {
+            throw new NotFoundRestException();
+        }
+        
+        Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+        dataPoint.setTags(tags);
+        
+        // we set the tags on the data point then retrieve them so that the device and name tags are removed
+        return dataPoint.getTags();
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/point/{xid}")
@@ -52,7 +60,6 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             dataPoint.setTags(tags);
             DataPointTagsDao.instance.saveDataPointTags(dataPoint);
             
-            // we set the tags on the data point then retrieve them so that the device and name tags are correct
             return dataPoint.getTags();
         });
     }
@@ -76,7 +83,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             dataPoint.setTags(newTags);
             DataPointTagsDao.instance.saveDataPointTags(dataPoint);
 
-            // we set the tags on the data point then retrieve them so that the device and name tags are correct
+            // we set the tags on the data point then retrieve them so that the device and name tags are removed
             return dataPoint.getTags();
         });
     }

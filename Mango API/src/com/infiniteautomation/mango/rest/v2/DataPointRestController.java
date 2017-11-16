@@ -194,6 +194,7 @@ public class DataPointRestController extends BaseMangoRestController {
             template = (DataPointPropertiesTemplateVO) TemplateDao.instance.get(dataPoint.getTemplateId());
         }
 
+        DataPointDao.instance.loadPartialRelationalData(dataPoint);
         model.copyPropertiesTo(dataPoint);
 
         // load the template after copying the properties, template properties override the ones in the data point
