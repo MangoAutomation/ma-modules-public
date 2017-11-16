@@ -141,6 +141,9 @@ public class DataPointModel {
         if (setPermission != null) {
             point.setSetPermission(setPermission);
         }
+        if (pointFolderId != null) {
+            point.setPointFolderId(pointFolderId);
+        }
         if (purgeOverride != null) {
             point.setPurgeOverride(purgeOverride);
         }
