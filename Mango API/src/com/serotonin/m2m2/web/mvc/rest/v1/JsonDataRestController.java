@@ -4,7 +4,9 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -138,7 +140,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 
     		@ApiParam(value = "XID", required = true, allowMultiple = false)
     		@PathVariable String xid
-   		){
+   		) throws UnsupportedEncodingException{
 		return getDataWithPath(request, xid, null);
 	}
 	
@@ -155,7 +157,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		
     		@ApiParam(value = "Data path using dots as separator", required = true, allowMultiple = false)
     		@PathVariable String path
-   		){
+   		) throws UnsupportedEncodingException {
         
     	RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -171,8 +173,8 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 					return result.createResponseEntity();
 				}
 				
-				String[] pathParts;
-				if (path == null || (pathParts = path.split("\\.")).length == 0) {
+				String[] pathParts = splitAndDecodePath(path);
+				if (pathParts.length == 0) {
 					return result.createResponseEntity(new JsonDataModel(vo));
 				} else {
 				    JsonNode data = (JsonNode) vo.getJsonData();
@@ -189,7 +191,6 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 
 	@ApiOperation(
 			value = "Append JSON Data to existing",
-			notes = "{path} is the path to data starting with xid/member/sub-member",
 			response=JsonDataModel.class
 			)
 	@ApiResponses({
@@ -219,7 +220,9 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		JsonNode data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
-		return updateJsonData(xid, null, readPermission, editPermission, name, publicData, data, builder, request);
+	    
+        RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
+        return modifyJsonData(MapOperation.APPEND, result, xid, new String[] {}, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -256,15 +259,16 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@RequestBody(required=true)
     		JsonNode data,
     		UriComponentsBuilder builder,
-    		HttpServletRequest request) throws RestValidationFailedException {
-		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
-		return modifyJsonData(MapOperation.APPEND, result, xid, path, readPermission, editPermission, name, publicData, data, builder, request);
+    		HttpServletRequest request) throws RestValidationFailedException, UnsupportedEncodingException {
+	    
+		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
+        String[] pathParts = splitAndDecodePath(path);
+		return modifyJsonData(MapOperation.APPEND, result, xid, pathParts, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	
 	@ApiOperation(
 			value = "Create JSON Data",
-			notes = "{path} is the path to data starting with xid/member/sub-member",
 			response=JsonDataModel.class
 			)
 	@ApiResponses({
@@ -294,7 +298,9 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		JsonNode data,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
-		return replaceJsonData(xid, null, readPermission, editPermission, name, publicData, data, builder, request);
+
+        RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
+        return modifyJsonData(MapOperation.REPLACE, result, xid, new String[] {}, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -331,9 +337,11 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@RequestBody(required=true)
     		JsonNode data,
     		UriComponentsBuilder builder,
-    		HttpServletRequest request) throws RestValidationFailedException {
+    		HttpServletRequest request) throws RestValidationFailedException, UnsupportedEncodingException {
+	    
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
-		return modifyJsonData(MapOperation.REPLACE, result, xid, path, readPermission, editPermission, name, publicData, data, builder, request);
+        String[] pathParts = splitAndDecodePath(path);
+		return modifyJsonData(MapOperation.REPLACE, result, xid, pathParts, readPermission, editPermission, name, publicData, data, builder, request);
 	}
 	
 	@ApiOperation(
@@ -377,7 +385,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 
-		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
+		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
@@ -426,6 +434,13 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     	return result.createResponseEntity();
 	}
 	
+	private String[] splitAndDecodePath(String path) throws UnsupportedEncodingException {
+	    String[] pathParts = path != null ? path.split("\\.") : new String[] {};
+	    for (int i = 0; i < pathParts.length; i++) {
+	        pathParts[i] = URLDecoder.decode(pathParts[i], "UTF-8");
+	    }
+	    return pathParts;
+	}
 
 	/**
 	 * Helper to modify data
@@ -441,8 +456,8 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	 * @return
 	 */
 	private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation, RestProcessResult<JsonDataModel> result,
-			String xid, String path, Set<String> readPermissions, Set<String> editPermissions, String name, boolean publicData, 
-			JsonNode data, UriComponentsBuilder builder, HttpServletRequest request){
+			String xid, String[] pathParts, Set<String> readPermissions, Set<String> editPermissions, String name, boolean publicData, 
+			JsonNode data, UriComponentsBuilder builder, HttpServletRequest request) {
 	    
 	    // check we are using this method only for replace and append
         if (operation != MapOperation.REPLACE && operation != MapOperation.APPEND) throw new IllegalArgumentException();
@@ -453,7 +468,6 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     	}
 	
 	    JsonNode dataToReturn = data;
-        String[] pathParts = path != null ? path.split("\\.") : new String[] {};
 	    
 		JsonDataVO vo = this.dao.getByXid(xid);
 		if (vo != null) {
