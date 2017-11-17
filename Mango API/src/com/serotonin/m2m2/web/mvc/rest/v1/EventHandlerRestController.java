@@ -22,10 +22,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.db.dao.EventHandlerDao;
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.definitions.permissions.SuperadminPermissionDefinition;
-import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -33,7 +31,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventHandler.EventHandlerStreamCallback;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.handlers.AbstractEventHandlerModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -267,19 +264,4 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 		return user;
 	}
 	
-	/**
-	 * Does the user have the event type permission for this Event Handler?
-	 * @param user
-	 * @return
-	 */
-	private boolean hasEventTypePermission(User user, EventTypeModel eventType){
-		if(eventType != null){
-			EventType type = eventType.getEventTypeInstance();
-			if(type != null)
-				return Permissions.hasEventTypePermission(user, type);
-			else
-				return true;
-		}else
-			return true;
-	}
 }
