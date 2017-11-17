@@ -103,5 +103,19 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         jgen.writeEndObject();
     }
 
-    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#startWriteArray()
+     */
+    @Override
+    public void startWriteArray(String name) throws IOException {
+        jgen.writeArrayFieldStart(name);
+    }
+
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#endWriteArray()
+     */
+    @Override
+    public void endWriteArray() throws IOException {
+        jgen.writeEndArray();
+    }
 }

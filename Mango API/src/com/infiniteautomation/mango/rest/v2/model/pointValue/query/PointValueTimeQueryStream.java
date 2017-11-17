@@ -6,8 +6,8 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
 import java.util.Map;
 
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 
 /**
  * 
@@ -18,7 +18,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
  *
  * @author Terry Packer
  */
-public abstract class PointValueTimeQueryArrayStream<T> implements QueryArrayStream<T>{
+public abstract class PointValueTimeQueryStream<T> implements PointValueTimeStream<T>{
 
     public enum StreamType {
         JSON,
@@ -30,9 +30,17 @@ public abstract class PointValueTimeQueryArrayStream<T> implements QueryArrayStr
     protected StreamType  streamType;
     protected PointValueTimeWriter writer;
     
-    public PointValueTimeQueryArrayStream(ZonedDateTimeRangeQueryInfo info, Map<Integer, DataPointVO> voMap) {
+    public PointValueTimeQueryStream(ZonedDateTimeRangeQueryInfo info, Map<Integer, DataPointVO> voMap) {
         this.info = info;
         this.voMap = voMap;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#isSingleArray()
+     */
+    @Override
+    public boolean isSingleArray() {
+        return info.isSingleArray();
     }
 
 }

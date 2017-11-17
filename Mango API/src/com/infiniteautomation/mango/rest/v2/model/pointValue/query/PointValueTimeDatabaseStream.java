@@ -19,7 +19,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
  *
  * @author Terry Packer
  */
-public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQueryArrayStream<T> implements WideQueryCallback<IdPointValueTime>{
+public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQueryStream<T> implements WideQueryCallback<IdPointValueTime>{
     
     protected PointValueDao dao;
 
@@ -35,7 +35,7 @@ public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQuer
     public void streamData(JsonGenerator jgen) throws IOException {
         this.streamType = StreamType.JSON;
         this.writer = new PointValueTimeJsonWriter(info, jgen);
-        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), info.getLimit(), this);
+        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
 
     /* (non-Javadoc)
@@ -45,6 +45,6 @@ public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQuer
     public void streamData(CSVPojoWriter<T> writer) throws IOException {
         this.streamType = StreamType.CSV;
         this.writer = new PointValueTimeCsvWriter(info, writer.getWriter());
-        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFrom().toInstant().toEpochMilli(), info.getTo().toInstant().toEpochMilli(), info.getLimit(), this);
+        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
 }

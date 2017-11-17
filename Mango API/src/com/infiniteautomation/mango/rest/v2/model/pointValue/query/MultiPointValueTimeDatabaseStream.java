@@ -10,18 +10,15 @@ import java.util.Map;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 
 /**
  * Concrete Implementation for a single data point
  *
  * @author Terry Packer
  */
-public class SinglePointValueTimeDatabaseStream extends PointValueTimeDatabaseStream<PointValueTimeModel>{
-
+public class MultiPointValueTimeDatabaseStream<T> extends PointValueTimeDatabaseStream<T>{
     
-    
-    public SinglePointValueTimeDatabaseStream(ZonedDateTimeRangeQueryInfo info,
+    public MultiPointValueTimeDatabaseStream(ZonedDateTimeRangeQueryInfo info,
             Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
     }
@@ -31,7 +28,12 @@ public class SinglePointValueTimeDatabaseStream extends PointValueTimeDatabaseSt
      */
     @Override
     public void preQuery(IdPointValueTime value, boolean bookend) throws IOException{
-        writer.writePointValueTime(this.voMap.get(value.getId()), value, bookend);
+        DataPointVO vo = this.voMap.get(value.getId());
+        
+        if(!info.isSingleArray())
+            writer.startWriteArray(vo.getXid());
+
+        writer.writePointValueTime(vo, value, bookend);
     }
 
     /* (non-Javadoc)
@@ -48,6 +50,8 @@ public class SinglePointValueTimeDatabaseStream extends PointValueTimeDatabaseSt
     @Override
     public void postQuery(IdPointValueTime value, boolean bookend) throws IOException{
         writer.writePointValueTime(this.voMap.get(value.getId()), value, bookend);
+        if(!info.isSingleArray())
+            writer.endWriteArray();
     }
     
 }

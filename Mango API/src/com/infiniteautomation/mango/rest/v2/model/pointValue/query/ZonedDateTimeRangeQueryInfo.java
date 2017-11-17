@@ -32,7 +32,6 @@ import com.serotonin.m2m2.web.taglib.Functions;
  */
 public class ZonedDateTimeRangeQueryInfo {
 
-
     private ZonedDateTime from;
     private ZonedDateTime to;
     private ZoneId zoneId;
@@ -45,6 +44,7 @@ public class ZonedDateTimeRangeQueryInfo {
     private final boolean unitConversion;
     private final boolean bothRenderedAndRaw;
     private final boolean useXidAsFieldName;
+    private final boolean singleArray;
 
     protected final String noDataMessage;
     protected final UriComponentsBuilder imageServletBuilder;
@@ -63,7 +63,7 @@ public class ZonedDateTimeRangeQueryInfo {
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
             Integer limit, boolean useRendered, boolean unitConversion, boolean bothRenderedAndRaw,
-            boolean useXidAsFieldName) {
+            boolean useXidAsFieldName, boolean singleArray) {
 
         // Quick validation
         validateTimezone(timezone);
@@ -124,6 +124,7 @@ public class ZonedDateTimeRangeQueryInfo {
         this.unitConversion = unitConversion;
         this.bothRenderedAndRaw = bothRenderedAndRaw;
         this.useXidAsFieldName = useXidAsFieldName;
+        this.singleArray = singleArray;
 
     }
 
@@ -321,30 +322,24 @@ public class ZonedDateTimeRangeQueryInfo {
         this.limit = limit;
     }
 
-
-    /**
-     * @return the useRendered
-     */
     public boolean isUseRendered() {
         return useRendered;
     }
 
-    /**
-     * @return the unitConversion
-     */
     public boolean isUnitConversion() {
         return unitConversion;
     }
-
-    /**
-     * @return the bothRenderedAndRaw
-     */
+    
     public boolean isBothRenderedAndRaw() {
         return bothRenderedAndRaw;
     }
 
     public boolean isUseXidAsFieldName() {
         return useXidAsFieldName;
+    }
+
+    public boolean isSingleArray() {
+        return singleArray;
     }
 
 }

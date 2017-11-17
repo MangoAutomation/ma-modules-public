@@ -147,5 +147,23 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter {
         
     }
 
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#startWriteArray()
+     */
+    @Override
+    public void startWriteArray(String name) throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#endWriteArray()
+     */
+    @Override
+    public void endWriteArray() throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
 
 }

@@ -54,7 +54,9 @@ public abstract class PointValueTimeWriter {
 	public abstract void writeLongField(String name, Long value) throws IOException;
 	public abstract void writeBooleanField(String name, Boolean value) throws IOException;
 	public abstract void writeNullField(String name) throws IOException;
-	
+    public abstract void startWriteArray(String name) throws IOException;
+    public abstract void endWriteArray() throws IOException;
+    
 	/* For statistics */
 	public abstract void startWriteStatistics() throws IOException;
 	public abstract void endWriteStatistics() throws IOException;
@@ -69,7 +71,7 @@ public abstract class PointValueTimeWriter {
             writeBooleanField(BOOKEND, true);
         if(pvt == null) {
             writeStringField(ANNOTATION, info.noDataMessage);
-            //TODO Could write out null based on requested rendering parts
+            //TODO Could write out null value fields based on requested rendering parts
         }else { 
             if(pvt.isAnnotated())
                 writeStringField(ANNOTATION, ((AnnotatedPointValueTime) pvt).getAnnotation(translations));
@@ -179,7 +181,7 @@ public abstract class PointValueTimeWriter {
 
     public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo)
             throws IOException {
-        writeTimestamp(statisticsGenerator.getPeriodStartTime());
+
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
@@ -209,7 +211,9 @@ public abstract class PointValueTimeWriter {
             writeAllStatistics(statisticsGenerator, vo);
             return;
         }
-        
+        if(info.isUseXidAsFieldName())
+            name = vo.getXid();
+
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
