@@ -35,7 +35,7 @@ public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQuer
     public void streamData(JsonGenerator jgen) throws IOException {
         this.streamType = StreamType.JSON;
         this.writer = new PointValueTimeJsonWriter(info, jgen);
-        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), info.isAscending(), !info.isSingleArray(), info.getLimit(), this);
     }
 
     /* (non-Javadoc)
@@ -45,6 +45,6 @@ public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQuer
     public void streamData(CSVPojoWriter<T> writer) throws IOException {
         this.streamType = StreamType.CSV;
         this.writer = new PointValueTimeCsvWriter(info, writer.getWriter());
-        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), info.isAscending(), !info.isSingleArray(), info.getLimit(), this);
     }
 }

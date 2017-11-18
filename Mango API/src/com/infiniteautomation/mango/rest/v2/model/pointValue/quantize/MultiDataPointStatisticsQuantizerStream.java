@@ -96,7 +96,7 @@ public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQu
         this.streamType = StreamType.JSON;
         this.writer = new PointValueTimeJsonWriter(info, jgen);
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), true, info.getLimit(), this);
     }
 
     /* (non-Javadoc)
@@ -107,7 +107,7 @@ public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQu
         this.streamType = StreamType.CSV;
         this.writer = new PointValueTimeCsvWriter(info, writer.getWriter());
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), true, info.getLimit(), this);
     }
     
     protected void createQuantizerMap() {

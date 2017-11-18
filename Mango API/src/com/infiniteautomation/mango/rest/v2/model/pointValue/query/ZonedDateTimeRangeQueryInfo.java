@@ -44,6 +44,7 @@ public class ZonedDateTimeRangeQueryInfo {
     private final boolean unitConversion;
     private final boolean bothRenderedAndRaw;
     private final boolean useXidAsFieldName;
+    private final boolean ascending;
     private final boolean singleArray;
 
     protected final String noDataMessage;
@@ -62,7 +63,7 @@ public class ZonedDateTimeRangeQueryInfo {
      */
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
-            Integer limit, boolean useRendered, boolean unitConversion, boolean bothRenderedAndRaw,
+            Integer limit, boolean ascending, boolean useRendered, boolean unitConversion, boolean bothRenderedAndRaw,
             boolean useXidAsFieldName, boolean singleArray) {
 
         // Quick validation
@@ -124,6 +125,7 @@ public class ZonedDateTimeRangeQueryInfo {
         this.unitConversion = unitConversion;
         this.bothRenderedAndRaw = bothRenderedAndRaw;
         this.useXidAsFieldName = useXidAsFieldName;
+        this.ascending = ascending;
         this.singleArray = singleArray;
 
     }
@@ -337,9 +339,13 @@ public class ZonedDateTimeRangeQueryInfo {
     public boolean isUseXidAsFieldName() {
         return useXidAsFieldName;
     }
-
+    
+    public boolean isAscending() {
+        return ascending;
+    }
+    
     public boolean isSingleArray() {
         return singleArray;
     }
-
+    
 }

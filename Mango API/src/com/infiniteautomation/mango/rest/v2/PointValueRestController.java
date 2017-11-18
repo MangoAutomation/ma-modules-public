@@ -116,11 +116,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         if ((timePeriodType != null) && (timePeriods != null)) {
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
-        
+ 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                useRendered, unitConversion, bothRenderedAndRaw, false, true);
+                useRendered, unitConversion, bothRenderedAndRaw, true, false, true);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -186,7 +186,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                useRendered, unitConversion, bothRenderedAndRaw, true, true);
+                useRendered, unitConversion, bothRenderedAndRaw, true, true, true);
         return generateStream(user, info, xids);
     }
     
@@ -251,7 +251,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                useRendered, unitConversion, bothRenderedAndRaw, false, false);
+                useRendered, unitConversion, bothRenderedAndRaw, true, false, false);
         
         return generateStream(user, info, xids);
     }
