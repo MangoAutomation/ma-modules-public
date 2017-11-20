@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppen
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -39,6 +40,7 @@ import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
@@ -187,12 +189,17 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 
 		RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
 
-		this.checkUser(request, result);
+		User user = this.checkUser(request, result);
         if(result.isOk()){
 	        EventInstanceVO vo = EventInstanceDao.instance.get(id);
 	        if (vo == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
+	        }
+	        
+	        if(!Permissions.hasEventTypePermission(user, vo.getEventType())) {
+	            result.addRestMessage(getUnauthorizedMessage());
+	            return result.createResponseEntity();
 	        }
 
 	        putEventComments(vo);
@@ -280,15 +287,19 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	        if (message != null)
 	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-	        EventInstance event = Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user, tlm);
-	        
-	        // if event has a different ack timestamp, user or message it was already acked, we could return a different message
-	        
+	        EventInstance event = EventDao.instance.get(id);
 	        if (event == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
+            } else if(!Permissions.hasEventTypePermission(user, event.getEventType())) {
+                result.addRestMessage(getUnauthorizedMessage());
+                return result.createResponseEntity();
             }
 	        
+	        Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user, tlm);
+	        
+	        // if event has a different ack timestamp, user or message it was already acked, we could return a different message
+
 	        EventInstanceModel model = new EventInstanceModel(event);
 	        
 	        //Put a link to the updated data in the header?
