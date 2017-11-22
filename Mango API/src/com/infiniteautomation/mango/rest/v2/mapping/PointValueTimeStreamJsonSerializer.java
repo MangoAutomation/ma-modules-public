@@ -11,31 +11,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 
 /**
  *
  * @author Terry Packer
  */
-public class PointValueTimeStreamJsonSerializer<T> extends JsonSerializer<PointValueTimeStream<T>>{
+public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo> extends JsonSerializer<PointValueTimeStream<T, INFO>>{
 
     /* (non-Javadoc)
      * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
      */
     @Override
-    public void serialize(PointValueTimeStream<T> value, JsonGenerator jgen,
+    public void serialize(PointValueTimeStream<T, INFO> value, JsonGenerator jgen,
             SerializerProvider provider) throws IOException,
             JsonProcessingException {
-        if(value.getQueryInfo().isSingleArray()) {
-            jgen.writeStartArray();
-            value.start();
-            value.streamData(jgen);
-            value.finish();
-            jgen.writeEndArray();
-        }else {
-            jgen.writeStartObject();
-            value.streamData(jgen);
-            jgen.writeEndObject();
-        }
+        PointValueTimeWriter writer = new PointValueTimeJsonWriter(value.getQueryInfo(), jgen);
+        value.start(writer);
+        value.streamData(writer);
+        value.finish(writer);
+        jgen.flush();
     }
 
 }

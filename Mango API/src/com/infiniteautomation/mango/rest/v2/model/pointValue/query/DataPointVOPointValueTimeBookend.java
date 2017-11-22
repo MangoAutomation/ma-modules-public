@@ -14,17 +14,18 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class DataPointVOPointValueTimeBookend {
 
     final DataPointVO vo;
-    final boolean bookend;
     final IdPointValueTime pvt;
-    
+    final boolean bookend;
+    final boolean cached;
     public DataPointVOPointValueTimeBookend(DataPointVO vo, IdPointValueTime pvt) {
-        this(vo, pvt, false);
+        this(vo, pvt, false, false);
     }
     
-    public DataPointVOPointValueTimeBookend(DataPointVO vo, IdPointValueTime pvt, boolean bookend) {
+    public DataPointVOPointValueTimeBookend(DataPointVO vo, IdPointValueTime pvt, boolean bookend, boolean cached) {
         this.vo = vo;
         this.pvt = pvt;
         this.bookend = bookend;
+        this.cached = cached;
     }
 
     /**
@@ -33,18 +34,21 @@ public class DataPointVOPointValueTimeBookend {
     public DataPointVO getVo() {
         return vo;
     }
-
+    /**
+     * @return the pvt
+     */
+    public IdPointValueTime getPvt() {
+        return pvt;
+    }
+    
     /**
      * @return the bookend
      */
     public boolean isBookend() {
         return bookend;
     }
-
-    /**
-     * @return the pvt
-     */
-    public IdPointValueTime getPvt() {
-        return pvt;
+    
+    public boolean isCached() {
+        return cached;
     }
 }

@@ -24,7 +24,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointValueTimeDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -117,9 +119,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         JsonEncoding encoding = getJsonEncoding(contentType);
         JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
         try {
-            PointValueTimeStream<?> stream = (PointValueTimeStream<?>)object;
+            PointValueTimeStream<?,?> stream = (PointValueTimeStream<?,?>)object;
             //Set the schema
-            if(stream instanceof MultiPointValueTimeDatabaseStream) {
+            if(stream instanceof MultiPointTimeRangeDatabaseStream) {
                 
                 CsvSchema.Builder builder = CsvSchema.builder();
                 builder.setUseHeader(true);
@@ -155,9 +157,10 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                 }
                 generator.setSchema(builder.build());
             }
-            stream.start();
-            stream.streamData(generator);
-            stream.finish();
+            PointValueTimeWriter writer = new PointValueTimeJsonWriter(stream.getQueryInfo(), generator);
+            stream.start(writer);
+            stream.streamData(writer);
+            stream.finish(writer);
             
 //            writePrefix(generator, object);
 //
@@ -203,7 +206,6 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 //
 //            writeSuffix(generator, object);
             generator.flush();
-            generator.close();
 
         }
         catch (JsonProcessingException ex) {

@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
+import java.io.IOException;
 import java.util.Map;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
@@ -18,14 +19,13 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public abstract class PointValueTimeQueryStream<T> implements PointValueTimeStream<T>{
+public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo> implements PointValueTimeStream<T, INFO>{
 
 
-    protected final ZonedDateTimeRangeQueryInfo info;
+    protected final INFO info;
     protected final Map<Integer, DataPointVO> voMap; //Point id to Vo
-    protected PointValueTimeWriter writer;
     
-    public PointValueTimeQueryStream(ZonedDateTimeRangeQueryInfo info, Map<Integer, DataPointVO> voMap) {
+    public PointValueTimeQueryStream(INFO info, Map<Integer, DataPointVO> voMap) {
         this.info = info;
         this.voMap = voMap;
     }
@@ -35,7 +35,7 @@ public abstract class PointValueTimeQueryStream<T> implements PointValueTimeStre
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getQueryInfo()
      */
     @Override
-    public ZonedDateTimeRangeQueryInfo getQueryInfo() {
+    public INFO getQueryInfo() {
         return info;
     }
     
@@ -45,5 +45,28 @@ public abstract class PointValueTimeQueryStream<T> implements PointValueTimeStre
     @Override
     public Map<Integer, DataPointVO> getVoMap() {
         return voMap;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#start()
+     */
+    @Override
+    public void start(PointValueTimeWriter writer) throws IOException {
+        if(info.isSingleArray())
+            writer.writeStartArray();
+        else
+            writer.writeStartObject();
+    }
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#finish()
+     */
+    @Override
+    public void finish(PointValueTimeWriter writer) throws IOException {
+        if(info.isSingleArray())
+            writer.writeEndArray();
+        else
+            writer.writeEndObject();
+        
     }
 }

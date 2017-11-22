@@ -38,11 +38,12 @@ public abstract class PointValueTimeWriter {
     public final static String INTEGRAL = "integral";
     public final static String RENDERED_INTEGRAL = "renderedIntegral";
     public final static String BOOKEND = "bookend"; //Virtual point on the ends of the list
+    public final static String CACHED = "cached";
 	
-	protected final ZonedDateTimeRangeQueryInfo info;
+	protected final LatestQueryInfo info;
 	protected final Translations translations;
 	
-	public PointValueTimeWriter(ZonedDateTimeRangeQueryInfo info){
+	public PointValueTimeWriter(LatestQueryInfo info){
 	    this.info = info;
 	    this.translations = Common.getTranslations();
 	}
@@ -55,18 +56,18 @@ public abstract class PointValueTimeWriter {
 	public abstract void writeLongField(String name, Long value) throws IOException;
 	public abstract void writeBooleanField(String name, Boolean value) throws IOException;
 	public abstract void writeNullField(String name) throws IOException;
-    public abstract void startWriteArray(String name) throws IOException;
-    public abstract void endWriteArray() throws IOException;
+    public abstract void writeStartArray() throws IOException;
+	public abstract void writeStartArray(String name) throws IOException;
+    public abstract void writeEndArray() throws IOException;
+    public abstract void writeStartObject() throws IOException;
+    public abstract void writeEndObject() throws IOException;
     
-	/* For statistics */
-	public abstract void startWriteStatistics() throws IOException;
-	public abstract void endWriteStatistics() throws IOException;
 	
 	public void writePointValueTime(DataPointVO vo, PointValueTime pvt) throws IOException {
-	    writePointValueTime(vo, pvt, false);
+	    writePointValueTime(vo, pvt, false, false);
 	}
 	
-    public abstract void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend) throws IOException;
+    public abstract void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend, boolean cached) throws IOException;
     
     /**
      * 
@@ -77,9 +78,10 @@ public abstract class PointValueTimeWriter {
      * @throws IOException
      */
     protected void writeDataValue(String name, DataPointVO vo, DataValue value, long timestamp) throws IOException{
-        if(value == null)
+        if(value == null) {
+            writeStringField(ANNOTATION, info.noDataMessage);
             writeNullField(name);
-        else
+        }else
             switch(value.getDataType()) {
                 case DataTypes.ALPHANUMERIC:
                     writeStringField(name, value.getStringValue());
@@ -112,6 +114,7 @@ public abstract class PointValueTimeWriter {
 	
     public void writeIntegral(String name, DataPointVO vo, Double integral) throws IOException {
         if (integral == null) {
+            writeStringField(ANNOTATION, info.noDataMessage);
             writeNullField(name);
         } else {
             writeDoubleField(name, integral);
@@ -122,6 +125,7 @@ public abstract class PointValueTimeWriter {
     
     public void writeAnalogStatistic(String name, DataPointVO vo, Double value) throws IOException {
         if (value == null) {
+            writeStringField(ANNOTATION, info.noDataMessage);
             writeNullField(name);
         } else {
             writeDoubleField(name, value);

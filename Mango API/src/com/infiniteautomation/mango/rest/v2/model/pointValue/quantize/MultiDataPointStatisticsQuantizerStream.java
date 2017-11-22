@@ -13,10 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.BookendQueryCallback;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeQueryStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -32,17 +31,15 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  *
  * @author Terry Packer
  */
-public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQueryStream<T> implements ChildStatisticsGeneratorCallback, BookendQueryCallback<IdPointValueTime>{
+public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTimeRangeQueryInfo> extends PointValueTimeDatabaseStream<T, INFO> implements ChildStatisticsGeneratorCallback, BookendQueryCallback<IdPointValueTime>{
 
     protected final Map<Integer, DataPointStatisticsQuantizer<?>> quantizerMap;
-    protected final PointValueDao dao;
-    //Preserve the order
     protected LinkedHashMap<Long,List<DataPointStatisticsGenerator>> periodStats;
+
     
-    public MultiDataPointStatisticsQuantizerStream(ZonedDateTimeRangeQueryInfo info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
-        super(info, voMap);
+    public MultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
+        super(info, voMap, dao);
         this.quantizerMap = new HashMap<>(voMap.size());
-        this.dao = dao;
         this.periodStats = new LinkedHashMap<>();
     }
 
@@ -58,14 +55,6 @@ public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQu
         }
     }
     
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#start()
-     */
-    @Override
-    public void start() {
-        //No-op
-    }
-    
     /*
      * (non-Javadoc)
      * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
@@ -74,7 +63,7 @@ public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQu
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());        
         if(!info.isSingleArray())
-            writer.startWriteArray(quantizer.vo.getXid());
+            writer.writeStartArray(quantizer.vo.getXid());
         quantizer.firstValue(value, index, bookend);
     }
 
@@ -86,20 +75,6 @@ public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQu
     public void row(IdPointValueTime value, int index) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.row(value, index);
-        
-//        if(info.isSingleArray()) {
-//            //Data will be returned in time order so we track time and fast forward the quantizers 
-//            while (value.getTime() >= periodToMillis) {
-//                periodFrom = periodTo;
-//                periodTo = bucketCalculator.getNextPeriodTo().toInstant();
-//                periodToMillis = periodTo.toEpochMilli();
-//                
-//                for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values()) {
-//                    q.fastForward(periodToMillis);
-//                }
-//            }
-//        }
-        
     }
 
     /*
@@ -111,25 +86,16 @@ public class MultiDataPointStatisticsQuantizerStream<T> extends PointValueTimeQu
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.lastValue(value, index);
         if(!info.isSingleArray())
-            writer.endWriteArray();
+            writer.writeEndArray();
     }
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
      */
     @Override
-    public void streamData(JsonGenerator jgen) throws IOException {
-        this.writer = new PointValueTimeJsonWriter(info, jgen);
+    public void streamData(PointValueTimeWriter writer) throws IOException {
         createQuantizerMap();
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#finish()
-     */
-    @Override
-    public void finish() throws IOException{
-
     }
     
     protected void createQuantizerMap() {

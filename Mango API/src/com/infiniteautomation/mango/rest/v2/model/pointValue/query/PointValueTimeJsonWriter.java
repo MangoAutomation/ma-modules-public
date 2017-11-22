@@ -10,7 +10,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -22,7 +22,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
 
     protected final JsonGenerator jgen;
 
-    public PointValueTimeJsonWriter(ZonedDateTimeRangeQueryInfo info, JsonGenerator jgen) {
+    public PointValueTimeJsonWriter(LatestQueryInfo info, JsonGenerator jgen) {
         super(info);
         this.jgen = jgen;
     }
@@ -30,7 +30,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
 
     
     @Override
-    public void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend) throws IOException {
+    public void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend, boolean cached) throws IOException {
         this.jgen.writeStartObject();
         
         if(info.isUseXidAsFieldName()) {
@@ -40,9 +40,11 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             }else {
                 writeTimestamp(pvt.getTime());
                 if(pvt.isAnnotated())
-                    writeStringField(ANNOTATION, ((AnnotatedPointValueTime) pvt).getAnnotation(translations));
+                    writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
                 if(bookend)
                     writeBooleanField(BOOKEND, true);
+                if(cached)
+                    writeBooleanField(CACHED, true);
                 writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                 if(info.isUseRendered())
                     writeStringField(RENDERED, info.getRenderedString(vo, pvt));
@@ -54,9 +56,11 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             }else {
                 writeTimestamp(pvt.getTime());
                 if(pvt.isAnnotated())
-                    writeStringField(ANNOTATION, ((AnnotatedPointValueTime) pvt).getAnnotation(translations));
+                    writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
                 if(bookend)
                     writeBooleanField(BOOKEND, true);
+                if(cached)
+                    writeBooleanField(CACHED, true);
                 writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                 if(info.isUseRendered())
                     writeStringField(RENDERED, info.getRenderedString(vo, pvt));
@@ -79,15 +83,18 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             PointValueTime pvt = value.pvt;
             DataPointVO vo = value.vo;
             boolean bookend = value.bookend; 
+            boolean cached = value.cached;
             if(info.isUseXidAsFieldName()) {
                 this.jgen.writeObjectFieldStart(vo.getXid());
                 if(pvt == null) {
                     writeStringField(ANNOTATION, info.noDataMessage);
                 }else {
                     if(pvt.isAnnotated())
-                        writeStringField(ANNOTATION, ((AnnotatedPointValueTime) pvt).getAnnotation(translations));
+                        writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
                     if(bookend)
                         writeBooleanField(BOOKEND, true);
+                    if(cached)
+                        writeBooleanField(CACHED, true);
                     writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                     if(info.isUseRendered())
                         writeStringField(RENDERED, info.getRenderedString(vo, pvt));
@@ -99,6 +106,8 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                 }else {
                     if(bookend)
                         writeBooleanField(BOOKEND, true);
+                    if(cached)
+                        writeBooleanField(CACHED, true);
                     writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                     if(info.isUseRendered())
                         writeStringField(RENDERED, info.getRenderedString(vo, pvt));
@@ -206,26 +215,10 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     }
 
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#startWriteStatistics()
-     */
-    @Override
-    public void startWriteStatistics() throws IOException {
-        jgen.writeStartObject();
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#endWriteStatistics()
-     */
-    @Override
-    public void endWriteStatistics() throws IOException {
-        jgen.writeEndObject();
-    }
-
-    /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#startWriteArray()
      */
     @Override
-    public void startWriteArray(String name) throws IOException {
+    public void writeStartArray(String name) throws IOException {
         jgen.writeArrayFieldStart(name);
     }
 
@@ -233,7 +226,37 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#endWriteArray()
      */
     @Override
-    public void endWriteArray() throws IOException {
+    public void writeEndArray() throws IOException {
         jgen.writeEndArray();
+    }
+
+
+
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeStartArray()
+     */
+    @Override
+    public void writeStartArray() throws IOException {
+        this.jgen.writeStartArray();
+    }
+
+
+
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeStartObject()
+     */
+    @Override
+    public void writeStartObject() throws IOException {
+        this.jgen.writeStartObject();
+    }
+
+
+
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeEndObject()
+     */
+    @Override
+    public void writeEndObject() throws IOException {
+        this.jgen.writeEndObject();       
     }
 }
