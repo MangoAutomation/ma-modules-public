@@ -5,13 +5,15 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
 import java.io.IOException;
+import java.util.List;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
+import javax.measure.unit.Unit;
+
+import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
@@ -65,42 +67,7 @@ public abstract class PointValueTimeWriter {
 	    writePointValueTime(vo, pvt, false);
 	}
 	
-    public void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend) throws IOException {
-        startWritePointValueTime();
-        if(bookend)
-            writeBooleanField(BOOKEND, true);
-        if(pvt == null) {
-            writeStringField(ANNOTATION, info.noDataMessage);
-            //TODO Could write out null value fields based on requested rendering parts
-        }else { 
-            if(pvt.isAnnotated())
-                writeStringField(ANNOTATION, ((AnnotatedPointValueTime) pvt).getAnnotation(translations));
-                
-            if(info.isBothRenderedAndRaw()) {
-                if(info.isUseXidAsFieldName()) {
-                    writeStringField(vo.getXid() + "_" + RENDERED, info.getRenderedString(vo, pvt));
-                    writeDataValue(vo.getXid() + "_" + VALUE, vo, pvt.getValue(), pvt.getTime());
-                }else {
-                    writeStringField(RENDERED, info.getRenderedString(vo, pvt));
-                    writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
-                }
-            }else if(info.isUseRendered()) {
-                if(info.isUseXidAsFieldName()) {
-                    writeStringField(vo.getXid(), info.getRenderedString(vo, pvt));
-                }else {
-                    writeStringField(RENDERED, info.getRenderedString(vo, pvt));
-                }
-            }else {
-                if(info.isUseXidAsFieldName()) {
-                    writeDataValue(vo.getXid(), vo, pvt.getValue(), pvt.getTime());
-                }else {
-                    writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
-                }
-            }
-            writeTimestamp(pvt.getTime());
-        }
-        endWritePointValueTime();
-    }
+    public abstract void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend) throws IOException;
     
     /**
      * 
@@ -110,7 +77,7 @@ public abstract class PointValueTimeWriter {
      * @param timestamp - Only used for generating Image File Links
      * @throws IOException
      */
-    private void writeDataValue(String name, DataPointVO vo, DataValue value, long timestamp) throws IOException{
+    protected void writeDataValue(String name, DataPointVO vo, DataValue value, long timestamp) throws IOException{
         if(value == null)
             writeNullField(name);
         else
@@ -125,7 +92,10 @@ public abstract class PointValueTimeWriter {
                     writeIntegerField(name, value.getIntegerValue());
                     break;
                 case DataTypes.NUMERIC:
-                    writeDoubleField(name, value.getDoubleValue());
+                    if(vo.getRenderedUnit() != Unit.ONE)
+                        writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()));
+                    else
+                        writeDoubleField(name, value.getDoubleValue());
                     break;
                 case DataTypes.IMAGE:
                     writeStringField(name, info.writeImageLink(timestamp, vo.getId()));
@@ -145,14 +115,9 @@ public abstract class PointValueTimeWriter {
         if (integral == null) {
             writeNullField(name);
         } else {
-            if(info.isBothRenderedAndRaw()) {
-                writeStringField(name + "_" + RENDERED, info.getIntegralString(vo, integral));
-                writeDoubleField(name + "_" + VALUE, integral);
-            }else if(info.isUseRendered()) {
-                writeStringField(name, info.getIntegralString(vo, integral));
-            }else {
-                writeDoubleField(name, integral);
-            }
+            writeDoubleField(name, integral);
+            if(info.isUseRendered())
+                writeStringField(RENDERED, info.getIntegralString(vo, integral));
         }
     }
     
@@ -160,14 +125,9 @@ public abstract class PointValueTimeWriter {
         if (value == null) {
             writeNullField(name);
         } else {
-            if(info.isBothRenderedAndRaw()) {
-                writeStringField(name + "_" + RENDERED, info.getRenderedString(vo, value));
-                writeDoubleField(name + "_" + VALUE, value);
-            }else if(info.isUseRendered()) {
-                writeStringField(name, info.getIntegralString(vo, value));
-            }else {
-                writeDoubleField(name, value);
-            }
+            writeDoubleField(name, value);
+            if(info.isUseRendered())
+                writeStringField(RENDERED, info.getRenderedString(vo, value));
         }
     }
     
@@ -211,8 +171,6 @@ public abstract class PointValueTimeWriter {
             writeAllStatistics(statisticsGenerator, vo);
             return;
         }
-        if(info.isUseXidAsFieldName())
-            name = vo.getXid();
 
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
@@ -274,5 +232,8 @@ public abstract class PointValueTimeWriter {
             }
         }
     }
-    
+
+    public abstract void writeMultiplePointsAsObject(List<DataPointVOPointValueTimeBookend> currentValues) throws IOException;
+    public abstract void writeMultipleStatsAsObject(List<DataPointStatisticsGenerator> periodStats) throws IOException;
+    public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
 }

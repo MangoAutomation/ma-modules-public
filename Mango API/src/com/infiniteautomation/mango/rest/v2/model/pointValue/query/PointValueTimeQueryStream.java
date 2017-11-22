@@ -20,27 +20,30 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public abstract class PointValueTimeQueryStream<T> implements PointValueTimeStream<T>{
 
-    public enum StreamType {
-        JSON,
-        CSV
-    }
-    
+
     protected final ZonedDateTimeRangeQueryInfo info;
     protected final Map<Integer, DataPointVO> voMap; //Point id to Vo
-    protected StreamType  streamType;
     protected PointValueTimeWriter writer;
     
     public PointValueTimeQueryStream(ZonedDateTimeRangeQueryInfo info, Map<Integer, DataPointVO> voMap) {
         this.info = info;
         this.voMap = voMap;
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#isSingleArray()
+
+    /*
+     * (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getQueryInfo()
      */
     @Override
-    public boolean isSingleArray() {
-        return info.isSingleArray();
+    public ZonedDateTimeRangeQueryInfo getQueryInfo() {
+        return info;
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getVoMap()
+     */
+    @Override
+    public Map<Integer, DataPointVO> getVoMap() {
+        return voMap;
+    }
 }

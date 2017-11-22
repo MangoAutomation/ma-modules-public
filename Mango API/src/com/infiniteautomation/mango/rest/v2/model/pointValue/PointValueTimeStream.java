@@ -5,9 +5,11 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import java.io.IOException;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  *
@@ -15,9 +17,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
  */
 public interface PointValueTimeStream<T> {
     
-    public boolean isSingleArray();
+    public ZonedDateTimeRangeQueryInfo getQueryInfo();
+    public Map<Integer, DataPointVO> getVoMap();
     
+    public void start() throws IOException ;
     public void streamData(JsonGenerator jgen) throws IOException;
-    
-    public void streamData(CSVPojoWriter<T> writer) throws IOException;
+    public void finish() throws IOException ;
 }

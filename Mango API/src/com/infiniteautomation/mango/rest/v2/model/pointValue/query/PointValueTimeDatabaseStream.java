@@ -9,17 +9,16 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.serotonin.db.WideQueryCallback;
+import com.infiniteautomation.mango.db.query.BookendQueryCallback;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 
 /**
  *
  * @author Terry Packer
  */
-public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQueryStream<T> implements WideQueryCallback<IdPointValueTime>{
+public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQueryStream<T> implements BookendQueryCallback<IdPointValueTime>{
     
     protected PointValueDao dao;
 
@@ -29,22 +28,27 @@ public abstract class PointValueTimeDatabaseStream<T> extends PointValueTimeQuer
     }
     
     /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#start()
+     */
+    @Override
+    public void start() throws IOException {
+        //no-op
+    }
+    
+    /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
      */
     @Override
     public void streamData(JsonGenerator jgen) throws IOException {
-        this.streamType = StreamType.JSON;
         this.writer = new PointValueTimeJsonWriter(info, jgen);
-        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), info.isAscending(), !info.isSingleArray(), info.getLimit(), this);
+        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
-
+    
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#finish()
      */
     @Override
-    public void streamData(CSVPojoWriter<T> writer) throws IOException {
-        this.streamType = StreamType.CSV;
-        this.writer = new PointValueTimeCsvWriter(info, writer.getWriter());
-        this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), info.isAscending(), !info.isSingleArray(), info.getLimit(), this);
+    public void finish() throws IOException {
+        //no-op
     }
 }

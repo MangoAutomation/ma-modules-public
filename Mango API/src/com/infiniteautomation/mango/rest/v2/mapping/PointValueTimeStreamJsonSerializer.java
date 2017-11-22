@@ -16,7 +16,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStrea
  *
  * @author Terry Packer
  */
-public class PointValueTimeStreamSerializer<T> extends JsonSerializer<PointValueTimeStream<T>>{
+public class PointValueTimeStreamJsonSerializer<T> extends JsonSerializer<PointValueTimeStream<T>>{
 
     /* (non-Javadoc)
      * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
@@ -25,10 +25,11 @@ public class PointValueTimeStreamSerializer<T> extends JsonSerializer<PointValue
     public void serialize(PointValueTimeStream<T> value, JsonGenerator jgen,
             SerializerProvider provider) throws IOException,
             JsonProcessingException {
-        
-        if(value.isSingleArray()) {
+        if(value.getQueryInfo().isSingleArray()) {
             jgen.writeStartArray();
+            value.start();
             value.streamData(jgen);
+            value.finish();
             jgen.writeEndArray();
         }else {
             jgen.writeStartObject();

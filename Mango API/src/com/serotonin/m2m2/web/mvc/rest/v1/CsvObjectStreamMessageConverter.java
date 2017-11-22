@@ -40,7 +40,7 @@ public class CsvObjectStreamMessageConverter extends AbstractHttpMessageConverte
 
 	  @Override
 	  protected boolean supports(Class<?> clazz) {
-		  return Object.class.isAssignableFrom(clazz);
+		  return ObjectStream.class.isAssignableFrom(clazz);
 	  }
 
 	/* (non-Javadoc)

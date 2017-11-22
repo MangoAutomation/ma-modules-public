@@ -60,6 +60,21 @@ public class ZonedDateTimeRangeQueryInfo {
      * are applied in this order: use timezone of from if not null use timezone of to if not null
      * use server timezone
      * 
+     * @param host
+     * @param port
+     * @param from
+     * @param to
+     * @param dateTimeFormat
+     * @param timezone
+     * @param rollup
+     * @param timePeriod
+     * @param limit
+     * @param ascending
+     * @param useRendered
+     * @param unitConversion
+     * @param bothRenderedAndRaw
+     * @param useXidAsFieldName
+     * @param singleArray
      */
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
@@ -220,7 +235,7 @@ public class ZonedDateTimeRangeQueryInfo {
             }
         }
     }
-
+    
     public long getFromMillis() {
         return from.toInstant().toEpochMilli();
     }
@@ -228,98 +243,51 @@ public class ZonedDateTimeRangeQueryInfo {
     public long getToMillis() {
         return to.toInstant().toEpochMilli();
     }
-
-    /**
-     * @return the from
-     */
+    
     public ZonedDateTime getFrom() {
         return from;
     }
 
-
-    /**
-     * @param from the from to set
-     */
     public void setFrom(ZonedDateTime from) {
         this.from = from;
     }
 
-
-    /**
-     * @return the to
-     */
     public ZonedDateTime getTo() {
         return to;
     }
 
-
-    /**
-     * @param to the to to set
-     */
     public void setTo(ZonedDateTime to) {
         this.to = to;
     }
 
-
-    /**
-     * @return the zoneId
-     */
     public ZoneId getZoneId() {
         return zoneId;
     }
 
-
-    /**
-     * @param zoneId the zoneId to set
-     */
     public void setZoneId(ZoneId zoneId) {
         this.zoneId = zoneId;
     }
 
-
-    /**
-     * @return the rollup
-     */
     public RollupEnum getRollup() {
         return rollup;
     }
 
-
-    /**
-     * @param rollup the rollup to set
-     */
     public void setRollup(RollupEnum rollup) {
         this.rollup = rollup;
     }
 
-
-    /**
-     * @return the timePeriod
-     */
     public TimePeriod getTimePeriod() {
         return timePeriod;
     }
 
-
-    /**
-     * @param timePeriod the timePeriod to set
-     */
     public void setTimePeriod(TimePeriod timePeriod) {
         this.timePeriod = timePeriod;
     }
 
-
-    /**
-     * @return the limit
-     */
     public Integer getLimit() {
         return limit;
     }
 
-
-    /**
-     * @param limit the limit to set
-     */
     public void setLimit(Integer limit) {
         this.limit = limit;
     }

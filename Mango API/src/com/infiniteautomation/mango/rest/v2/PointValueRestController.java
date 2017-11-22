@@ -4,11 +4,14 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
@@ -63,52 +67,119 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             response = PointValueTimeModel.class, 
             responseContainer = "Array"
             )
-    @RequestMapping(method = RequestMethod.GET, value = "/{xid}")
+    @RequestMapping(method = RequestMethod.GET, value = "/time-period/{xid}")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel>> getPointValues(
             HttpServletRequest request,
-            @ApiParam(value = "Point xid", required = true,
-                    allowMultiple = false) @PathVariable String xid,
+            @ApiParam(value = "Point xid", required = true, allowMultiple = false) 
+            @PathVariable String xid,
 
             @ApiParam(value = "Return rendered value as String", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean useRendered,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean useRendered,
             
             @ApiParam(value = "Return rendered value and raw value", required = false,
-            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                    defaultValue = "false") boolean bothRenderedAndRaw,
+            defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean bothRenderedAndRaw,
 
             @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean unitConversion,
-
-            @ApiParam(value = "From time", required = false,
-                    allowMultiple = false) @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime from,
-
-            @ApiParam(value = "To time", required = false,
-                    allowMultiple = false) @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
-
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) @RequestParam(
-                    value = "rollup", required = false, defaultValue="NONE") RollupEnum rollup,
-
-            @ApiParam(value = "Time Period Type", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriodType",
-                            required = false) TimePeriodType timePeriodType,
-
-            @ApiParam(value = "Time Periods", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriods",
-                            required = false) Integer timePeriods,
-
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
-                    value = "timezone", required = false) String timezone,
-
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) @RequestParam(
-                    value = "limit", required = false) Integer limit,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean unitConversion,
 
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-                    required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
+            required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) 
+            String dateTimeFormat,
+    
+            @ApiParam(value = "From time", required = false, allowMultiple = false)
+            @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime from,
+
+            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime to,
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
+            @RequestParam(value = "timezone", required = false) 
+            String timezone,
+            
+            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @RequestParam(value = "limit", required = false) 
+            Integer limit,
+            
+            @AuthenticationPrincipal User user
+            ) {
+
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
+                request.getServerPort(), 
+                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
+                true, useRendered, unitConversion, bothRenderedAndRaw, false, true);
+        
+        return generateStream(user, info, new String[] {xid});
+    }
+    
+    @ApiOperation(
+            value = "Rollup values For 1 Data Point", 
+            notes = "From time inclusive, To time exclusive.",
+            response = PointValueTimeModel.class, 
+            responseContainer = "Array"
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/time-period/{xid}/{rollup}")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel>> getRollupPointValues(
+            HttpServletRequest request,
+            @ApiParam(value = "Point xid", required = true,  allowMultiple = false) 
+            @PathVariable String xid,
+
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
+            @PathVariable(value = "rollup") 
+            RollupEnum rollup,
+            
+            @ApiParam(value = "Return rendered value as String", required = false,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean useRendered,
+            
+            @ApiParam(value = "Return rendered value and raw value", required = false,
+                defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean bothRenderedAndRaw,
+
+            @ApiParam(value = "Return converted value using displayed unit", required = false,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean unitConversion,
+            
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
+            required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) 
+            String dateTimeFormat,
+    
+            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+            @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime from,
+
+            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime to,
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
+            @RequestParam(value = "timezone", required = false) 
+            String timezone,
+            
+            @ApiParam(value = "Time Period Type", required = false, allowMultiple = false) 
+            @RequestParam(value = "timePeriodType",required = false) 
+            TimePeriodType timePeriodType,
+
+            @ApiParam(value = "Time Periods", required = false,allowMultiple = false) 
+            @RequestParam(value = "timePeriods", required = false) 
+            Integer timePeriods,
+            
             @AuthenticationPrincipal User user
             ) {
 
@@ -119,62 +190,127 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
  
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                useRendered, unitConversion, bothRenderedAndRaw, true, false, true);
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
+                true, useRendered, unitConversion, bothRenderedAndRaw, false, true);
         
         return generateStream(user, info, new String[] {xid});
     }
     
-    @ApiOperation(value = "Query Time Range for Multiple Points",
-            notes = "From time inclusive, To time exclusive. Return in single array, use limit if provided",
+    @ApiOperation(value = "Query Time Range for multiple data points",
+            notes = "From time inclusive, To time exclusive. Return in single array with bookends, use limit if provided.",
             response = PointValueTimeModel.class, responseContainer = "Array")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xids}/multiple-points-single-array")
-    public ResponseEntity<PointValueTimeStream<PointValueTimeModel>> getPointValuesForMultiplePointsAsSingleArray(
+    @RequestMapping(method = RequestMethod.GET, value = "/single-array/time-period/{xids}")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel>> getPointValuesAsSingleArray(
             HttpServletRequest request,
 
             @ApiParam(value = "Point xids", required = true,
-                    allowMultiple = true) @PathVariable String[] xids,
+                    allowMultiple = true) 
+            @PathVariable String[] xids,
 
             @ApiParam(value = "Return rendered value as String", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean useRendered,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean useRendered,
 
             @ApiParam(value = "Return converted value using displayed unit", required = false,
                     defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean unitConversion,
+                            defaultValue = "false") 
+            boolean unitConversion,
             
             @ApiParam(value = "Return rendered value and raw value", required = false,
-            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                    defaultValue = "false") boolean bothRenderedAndRaw,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean bothRenderedAndRaw,
             
             @ApiParam(value = "From time", required = false, allowMultiple = false) 
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime from,
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime from,
 
             @ApiParam(value = "To time", required = false, allowMultiple = false) 
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime to,
 
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) @RequestParam(
-                    value = "rollup", required = false, defaultValue="NONE") RollupEnum rollup,
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false) 
+            String timezone,
 
-            @ApiParam(value = "Time Period Type", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriodType",
-                            required = false) TimePeriodType timePeriodType,
-
-            @ApiParam(value = "Time Periods", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriods",
-                            required = false) Integer timePeriods,
-
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
-                    value = "timezone", required = false) String timezone,
-
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) @RequestParam(
-                    value = "limit", required = false) Integer limit,
+            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @RequestParam(value = "limit", required = false) 
+            Integer limit,
 
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-            required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
+                    required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) 
+            String dateTimeFormat,
+            @AuthenticationPrincipal User user
+            ) {
+        
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
+                request.getServerName(), request.getServerPort(), 
+                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
+                true, useRendered, unitConversion, bothRenderedAndRaw, true, true);
+        return generateStream(user, info, xids);
+    }
+    
+    @ApiOperation(value = "Rollup values for multiple data points",
+            notes = "From time inclusive, To time exclusive. Return in single array.",
+            response = PointValueTimeModel.class, responseContainer = "Array")
+    @RequestMapping(method = RequestMethod.GET, value = "/single-array/time-period/{xids}/{rollup}")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel>> getRollupPointValuesAsSingleArray(
+            HttpServletRequest request,
+
+            @ApiParam(value = "Point xids", required = true,
+                    allowMultiple = true) 
+            @PathVariable String[] xids,
+
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
+            @PathVariable(value = "rollup") 
+            RollupEnum rollup,
+            
+            @ApiParam(value = "Return rendered value as String", required = false,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean useRendered,
+
+            @ApiParam(value = "Return converted value using displayed unit", required = false,
+                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
+                            defaultValue = "false") 
+            boolean unitConversion,
+            
+            @ApiParam(value = "Return rendered value and raw value", required = false,
+                    defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean bothRenderedAndRaw,
+            
+            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+            @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime from,
+
+            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime to,
+
+            @ApiParam(value = "Time Period Type", required = false,
+                    allowMultiple = false) 
+            @RequestParam(value = "timePeriodType", required = false) 
+            TimePeriodType timePeriodType,
+
+            @ApiParam(value = "Time Periods", required = false, allowMultiple = false) 
+            @RequestParam(value = "timePeriods", required = false) 
+            Integer timePeriods,
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false) 
+            String timezone,
+
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
+                    required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) 
+            String dateTimeFormat,
             @AuthenticationPrincipal User user
             ) {
         
@@ -185,15 +321,17 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                useRendered, unitConversion, bothRenderedAndRaw, true, true, true);
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
+                useRendered, unitConversion, bothRenderedAndRaw, true, true);
         return generateStream(user, info, xids);
     }
     
-    @ApiOperation(value = "Query Time Range for Multiple Points",
-            notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays",
+   
+    
+    @ApiOperation(value = "Query time range for multiple data points",
+            notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays with bookends.",
             response = PointValueTimeModel.class, responseContainer = "Array")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xids}/multiple-points-multiple-arrays")
+    @RequestMapping(method = RequestMethod.GET, value = "/multiple-arrays/time-period/{xids}")
     public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>>> getPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request,
 
@@ -220,17 +358,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                     allowMultiple = false) @RequestParam(value = "to", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
 
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) @RequestParam(
-                    value = "rollup", required = false, defaultValue="NONE") RollupEnum rollup,
-
-            @ApiParam(value = "Time Period Type", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriodType",
-                            required = false) TimePeriodType timePeriodType,
-
-            @ApiParam(value = "Time Periods", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriods",
-                            required = false) Integer timePeriods,
-
             @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
                     value = "timezone", required = false) String timezone,
 
@@ -243,20 +370,78 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
         
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
+                request.getServerName(), request.getServerPort(), 
+                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
+                true, useRendered, unitConversion, bothRenderedAndRaw, false, false);
+        
+        return generateStream(user, info, xids);
+    }
+    
+    @ApiOperation(value = "Rollup values for multiple data points",
+            notes = "From time inclusive, To time exclusive.  Returns a map of xid to point value time arrays.",
+            response = PointValueTimeModel.class, responseContainer = "Array")
+    @RequestMapping(method = RequestMethod.GET, value = "/multiple-arrays/time-period/{xids}/{rollup}")
+    public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>>> getRollupPointValuesAsMultipleArrays(
+            HttpServletRequest request,
+
+            @ApiParam(value = "Point xids", required = true,
+                    allowMultiple = true) @PathVariable String[] xids,
+
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
+            @PathVariable(value = "rollup") 
+            RollupEnum rollup,
+            
+            @ApiParam(value = "Return rendered value as String", required = false,
+                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
+                            defaultValue = "false") boolean useRendered,
+
+            @ApiParam(value = "Return converted value using displayed unit", required = false,
+                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
+                            defaultValue = "false") boolean unitConversion,
+            
+            @ApiParam(value = "Return rendered value and raw value", required = false,
+            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
+                    defaultValue = "false") boolean bothRenderedAndRaw,
+
+            @ApiParam(value = "From time", required = false,
+                    allowMultiple = false) @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime from,
+
+            @ApiParam(value = "To time", required = false,
+                    allowMultiple = false) @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
+
+            @ApiParam(value = "Time Period Type", required = false,
+                    allowMultiple = false) @RequestParam(value = "timePeriodType",
+                            required = false) TimePeriodType timePeriodType,
+
+            @ApiParam(value = "Time Periods", required = false,
+                    allowMultiple = false) @RequestParam(value = "timePeriods",
+                            required = false) Integer timePeriods,
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
+                    value = "timezone", required = false) String timezone,
+
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
+                    required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
+            @AuthenticationPrincipal User user
+            ) {
+        
         TimePeriod timePeriod = null;
         if ((timePeriodType != null) && (timePeriods != null)) {
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
         
-        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
-                request.getServerPort(), 
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                useRendered, unitConversion, bothRenderedAndRaw, true, false, false);
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
+                request.getServerName(), request.getServerPort(), 
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
+                true, useRendered, unitConversion, bothRenderedAndRaw, false, false);
         
         return generateStream(user, info, xids);
     }
     
-
     /**
      * The Hard Working Value Generation Logic
      * @param user
@@ -317,5 +502,71 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         return ResponseEntity.ok(results.values());
     }
+    
+    @ApiOperation(
+            value = "Delete point values >= from  and < to",
+            notes = "The user must have set permission to the data point. If date is not supplied it defaults to now."
+            )
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv", "application/sero-json"})
+    public ResponseEntity<Long> deletePointValues(
+            @ApiParam(value = "Point xids", required = true)
+            @PathVariable 
+            String xid,
+            
+            @ApiParam(value = "From time", required = false,
+                allowMultiple = false)
+            @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime from,
+
+            @ApiParam(value = "To time", required = false,
+                allowMultiple = false) 
+            @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime to,
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
+            @RequestParam(value = "timezone", required = false) 
+            String timezone,
+
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder, 
+            HttpServletRequest request) {
+    
+        
+        DataPointVO vo = DataPointDao.instance.getByXid(xid);
+        if (vo == null) {
+            throw new NotFoundRestException();
+        }else {
+            if(!Permissions.hasDataPointSetPermission(user, vo))
+                throw new AccessDeniedException();
+        }
+        
+        ZoneId zoneId;
+        if (timezone == null) {
+            if (from != null) {
+                zoneId = from.getZone();
+            } else if (to != null)
+                zoneId = to.getZone();
+            else
+                zoneId = TimeZone.getDefault().toZoneId();
+        } else {
+            zoneId = ZoneId.of(timezone);
+        }
+
+        // Set the timezone on the from and to dates
+        long current = Common.timer.currentTimeMillis();
+        if (from != null)
+            from = from.withZoneSameInstant(zoneId);
+        else
+            from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
+        if (to != null)
+            to = to.withZoneSameInstant(zoneId);
+        else
+            to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
+
+        return ResponseEntity.ok(Common.runtimeManager.purgeDataPointValuesBetween(vo.getId(), from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli()));
+    }
+
     
 }
