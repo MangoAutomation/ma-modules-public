@@ -40,9 +40,8 @@ public class ZonedDateTimeRangeQueryInfo {
     private TimePeriod timePeriod;
     private Integer limit;
 
+    private final boolean bookend; //Do we want virtual values at the to/from time if they don't already exist?
     private final boolean useRendered;
-    private final boolean unitConversion;
-    private final boolean bothRenderedAndRaw;
     private final boolean useXidAsFieldName;
     private final boolean ascending;
     private final boolean singleArray;
@@ -58,7 +57,7 @@ public class ZonedDateTimeRangeQueryInfo {
      * 
      * if 'timezone' is supplied use that for all timezones if 'timezone' is not supplied the rules
      * are applied in this order: use timezone of from if not null use timezone of to if not null
-     * use server timezone
+     * use server timezone 
      * 
      * @param host
      * @param port
@@ -71,14 +70,12 @@ public class ZonedDateTimeRangeQueryInfo {
      * @param limit
      * @param ascending
      * @param useRendered
-     * @param unitConversion
-     * @param bothRenderedAndRaw
      * @param useXidAsFieldName
      * @param singleArray
      */
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
-            Integer limit, boolean ascending, boolean useRendered, boolean unitConversion, boolean bothRenderedAndRaw,
+            Integer limit, boolean ascending, boolean bookend, boolean useRendered, 
             boolean useXidAsFieldName, boolean singleArray) {
 
         // Quick validation
@@ -137,10 +134,9 @@ public class ZonedDateTimeRangeQueryInfo {
             this.dateTimeFormatter = null;
 
         this.useRendered = useRendered;
-        this.unitConversion = unitConversion;
-        this.bothRenderedAndRaw = bothRenderedAndRaw;
         this.useXidAsFieldName = useXidAsFieldName;
         this.ascending = ascending;
+        this.bookend = bookend;
         this.singleArray = singleArray;
 
     }
@@ -296,14 +292,6 @@ public class ZonedDateTimeRangeQueryInfo {
         return useRendered;
     }
 
-    public boolean isUnitConversion() {
-        return unitConversion;
-    }
-    
-    public boolean isBothRenderedAndRaw() {
-        return bothRenderedAndRaw;
-    }
-
     public boolean isUseXidAsFieldName() {
         return useXidAsFieldName;
     }
@@ -316,4 +304,7 @@ public class ZonedDateTimeRangeQueryInfo {
         return singleArray;
     }
     
+    public boolean isBookend() {
+        return bookend;
+    }
 }

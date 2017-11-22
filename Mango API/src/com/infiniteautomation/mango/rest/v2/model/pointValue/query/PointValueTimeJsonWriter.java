@@ -156,21 +156,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     
     
     
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#startWritePointValueTime()
-     */
-    @Override
-    public void startWritePointValueTime() throws IOException {
-        jgen.writeStartObject();
-    }
-    
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#endWritePointValueTime()
-     */
-    @Override
-    public void endWritePointValueTime() throws IOException {
-        jgen.writeEndObject();
-    }
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#writeStringField(java.lang.String, java.lang.String)

@@ -73,21 +73,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Point xid", required = true, allowMultiple = false) 
             @PathVariable String xid,
 
-            @ApiParam(value = "Return rendered value as String", required = false,
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
                     defaultValue = "false", allowMultiple = false) 
             @RequestParam(required = false, defaultValue = "false") 
             boolean useRendered,
             
-            @ApiParam(value = "Return rendered value and raw value", required = false,
-            defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean bothRenderedAndRaw,
-
-            @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean unitConversion,
-
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) 
@@ -111,13 +101,17 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "limit", required = false) 
             Integer limit,
             
+            @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
+            @RequestParam(value = "bookend", required = false, defaultValue="false") 
+            boolean bookend,
+            
             @AuthenticationPrincipal User user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, useRendered, unitConversion, bothRenderedAndRaw, false, true);
+                true, bookend, useRendered, false, true);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -138,20 +132,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @PathVariable(value = "rollup") 
             RollupEnum rollup,
             
-            @ApiParam(value = "Return rendered value as String", required = false,
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
                     defaultValue = "false", allowMultiple = false) 
             @RequestParam(required = false, defaultValue = "false") 
             boolean useRendered,
-            
-            @ApiParam(value = "Return rendered value and raw value", required = false,
-                defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean bothRenderedAndRaw,
-
-            @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean unitConversion,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
@@ -191,7 +175,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, useRendered, unitConversion, bothRenderedAndRaw, false, true);
+                true, true, useRendered, false, true);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -207,20 +191,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                     allowMultiple = true) 
             @PathVariable String[] xids,
 
-            @ApiParam(value = "Return rendered value as String", required = false,
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
                     defaultValue = "false", allowMultiple = false) 
             @RequestParam(required = false, defaultValue = "false") 
             boolean useRendered,
-
-            @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") 
-            boolean unitConversion,
-            
-            @ApiParam(value = "Return rendered value and raw value", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean bothRenderedAndRaw,
             
             @ApiParam(value = "From time", required = false, allowMultiple = false) 
             @RequestParam(value = "from", required = false)
@@ -239,7 +213,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Limit", required = false, allowMultiple = false) 
             @RequestParam(value = "limit", required = false) 
             Integer limit,
-
+            
+            @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
+            @RequestParam(value = "bookend", required = false, defaultValue="false") 
+            boolean bookend,
+            
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) 
@@ -250,7 +228,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, useRendered, unitConversion, bothRenderedAndRaw, true, true);
+                true, bookend, useRendered, true, true);
         return generateStream(user, info, xids);
     }
     
@@ -269,20 +247,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @PathVariable(value = "rollup") 
             RollupEnum rollup,
             
-            @ApiParam(value = "Return rendered value as String", required = false,
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
                     defaultValue = "false", allowMultiple = false) 
             @RequestParam(required = false, defaultValue = "false") 
             boolean useRendered,
-
-            @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") 
-            boolean unitConversion,
-            
-            @ApiParam(value = "Return rendered value and raw value", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean bothRenderedAndRaw,
             
             @ApiParam(value = "From time", required = false, allowMultiple = false) 
             @RequestParam(value = "from", required = false)
@@ -322,7 +290,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
-                useRendered, unitConversion, bothRenderedAndRaw, true, true);
+                true, useRendered, true, true);
         return generateStream(user, info, xids);
     }
     
@@ -338,17 +306,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Point xids", required = true,
                     allowMultiple = true) @PathVariable String[] xids,
 
-            @ApiParam(value = "Return rendered value as String", required = false,
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
                     defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
                             defaultValue = "false") boolean useRendered,
-
-            @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean unitConversion,
-            
-            @ApiParam(value = "Return rendered value and raw value", required = false,
-            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                    defaultValue = "false") boolean bothRenderedAndRaw,
 
             @ApiParam(value = "From time", required = false,
                     allowMultiple = false) @RequestParam(value = "from", required = false)
@@ -364,6 +324,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Limit", required = false, allowMultiple = false) @RequestParam(
                     value = "limit", required = false) Integer limit,
 
+            @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
+            @RequestParam(value = "bookend", required = false, defaultValue="false") 
+            boolean bookend,
+            
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
@@ -373,7 +337,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, useRendered, unitConversion, bothRenderedAndRaw, false, false);
+                true, bookend, useRendered, false, false);
         
         return generateStream(user, info, xids);
     }
@@ -392,17 +356,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @PathVariable(value = "rollup") 
             RollupEnum rollup,
             
-            @ApiParam(value = "Return rendered value as String", required = false,
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
                     defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
                             defaultValue = "false") boolean useRendered,
-
-            @ApiParam(value = "Return converted value using displayed unit", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean unitConversion,
-            
-            @ApiParam(value = "Return rendered value and raw value", required = false,
-            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                    defaultValue = "false") boolean bothRenderedAndRaw,
 
             @ApiParam(value = "From time", required = false,
                     allowMultiple = false) @RequestParam(value = "from", required = false)
@@ -437,7 +393,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, useRendered, unitConversion, bothRenderedAndRaw, false, false);
+                true, true, useRendered, false, false);
         
         return generateStream(user, info, xids);
     }

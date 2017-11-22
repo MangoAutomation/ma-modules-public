@@ -48,8 +48,7 @@ public abstract class PointValueTimeWriter {
 	}
     
 	/* Methods Used for Point Values */
-	public abstract void startWritePointValueTime() throws IOException;
-	public abstract void endWritePointValueTime() throws IOException;
+	
 	public abstract void writeStringField(String name, String value) throws IOException;
 	public abstract void writeDoubleField(String name, Double value) throws IOException;
 	public abstract void writeIntegerField(String name, Integer value) throws IOException;
