@@ -25,8 +25,11 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
 
 /**
+ * 
+ * Stream data in reverse time order before 'from' up to 'limit' number of samples
  *
  * @author Terry Packer
  */
@@ -40,6 +43,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     protected final boolean isSql;
     //List of cached values per data point id, sorted in descending time order
     protected final Map<Integer, List<IdPointValueTime>> cache;
+    protected final Map<Integer,LimitCounter> limiters;  //For use with cache so we don't return too many values, assuming that caches sizes are small this should have minimal effects
     
     public MultiPointLatestDatabaseStream(INFO info,
             Map<Integer, DataPointVO> voMap, PointValueDao dao) {
@@ -58,6 +62,9 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             cache = buildCache();
         else
             this.cache = null;
+        this.limiters = new HashMap<>();
+        for(Integer id : voMap.keySet())
+            this.limiters.put(id, new LimitCounter(info.getLimit()));
     }
     
     /* (non-Javadoc)
@@ -65,8 +72,15 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      */
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
-        //If there is a limit we can only use 1 point at a time in SQL
+        
+        //Can we use just the cache?
+        if(info.isUseCache() && info.getLimit() != null && canUseOnlyCache(info.getLimit())) {
+            processCacheOnly();
+            return;
+        }
+        
         if(info.getLimit() != null && isSql) {
+            //If there is a limit we can only use 1 point at a time in SQL
             Iterator<Integer> it = voMap.keySet().iterator();
             while(it.hasNext()) {
                 List<Integer> singleList = new ArrayList<>(1);
@@ -115,8 +129,13 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * @throws IOException
      */
     protected void processRow(IdPointValueTime value, int index, boolean bookend, boolean cached) throws IOException {
+        
         if(info.isUseCache() && !cached)
             if(!processValueThroughCache(value, index, bookend))
+                return;
+
+        if(info.useCache)
+            if(limiters.get(value.getId()).limited())
                 return;
         
         if(info.isSingleArray() && info.getLimit() != null && isSql && voMap.size() > 1) {
@@ -170,10 +189,14 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                     //Could be a bookend
                     processRow(pvt, index, bookend, true);
                     it.remove();
+                    if(pointCache.size() == 0)
+                        this.cache.remove(value.getId());
                     return false;
                 }else
                     break; //No more since we are in time order of the query
             }
+            if(pointCache.size() == 0)
+                this.cache.remove(value.getId());
         }
         return true;
     }
@@ -264,4 +287,40 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         return map;
     }
 
+    /**
+     * Does the limit fit within the cache size of all points in query?
+     * 
+     * @return
+     */
+    protected boolean canUseOnlyCache(int limit) {
+        
+        Iterator<Integer> it = voMap.keySet().iterator();
+        while(it.hasNext()) {
+            List<IdPointValueTime> values = cache.get(it.next());
+            if(values == null || values.size() < limit)
+                return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Process all data from the cache respecting the query restrictions
+     * @throws IOException
+     */
+    protected void processCacheOnly() throws IOException{
+        //Performance enhancement to return data within cache only
+        Iterator<Integer> it = voMap.keySet().iterator();
+        int index = 0;
+        while(it.hasNext()) {
+            List<IdPointValueTime> values = cache.get(it.next());
+            int limitCount = 0;
+            for(IdPointValueTime value : values) {
+                processRow(value, index, false, true);
+                index++;
+                limitCount++;
+                if(limitCount >= info.getLimit())
+                    break;
+            }
+        }
+    }
 }

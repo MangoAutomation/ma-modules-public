@@ -98,7 +98,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "limit", required = false) 
             Integer limit,
 
-            @ApiParam(value = "Use cached intra-interval logging data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
             @RequestParam(value = "useCache", required = false, defaultValue="false") 
             boolean useCache,
             
@@ -147,7 +147,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "limit", required = false) 
             Integer limit,
 
-            @ApiParam(value = "Use cached intra-interval logging data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
             @RequestParam(value = "useCache", required = false, defaultValue="false") 
             boolean useCache,
             
@@ -196,7 +196,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "limit", required = false) 
             Integer limit,
 
-            @ApiParam(value = "Use cached intra-interval logging data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
             @RequestParam(value = "useCache", required = false, defaultValue="false") 
             boolean useCache,
             
@@ -254,13 +254,17 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "bookend", required = false, defaultValue="false") 
             boolean bookend,
             
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
+            @RequestParam(value = "useCache", required = false, defaultValue="false") 
+            boolean useCache,
+            
             @AuthenticationPrincipal User user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, bookend, useRendered, false, true, false);
+                true, bookend, useRendered, false, true, useCache);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -345,6 +349,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false, defaultValue = "false") 
             boolean useRendered,
             
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) 
+            String dateTimeFormat,
+            
             @ApiParam(value = "From time", required = false, allowMultiple = false) 
             @RequestParam(value = "from", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) 
@@ -367,17 +375,17 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "bookend", required = false, defaultValue="false") 
             boolean bookend,
             
-            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-                    required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
-            String dateTimeFormat,
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
+            @RequestParam(value = "useCache", required = false, defaultValue="false") 
+            boolean useCache,
+
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, bookend, useRendered, true, true, false);
+                true, bookend, useRendered, true, true, useCache);
         return generateStream(user, info, xids);
     }
     
@@ -452,41 +460,44 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>, ZonedDateTimeRangeQueryInfo>> getPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request,
 
-            @ApiParam(value = "Point xids", required = true,
-                    allowMultiple = true) @PathVariable String[] xids,
+            @ApiParam(value = "Point xids", required = true, allowMultiple = true) 
+            @PathVariable String[] xids,
 
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean useRendered,
-
-            @ApiParam(value = "From time", required = false,
-                    allowMultiple = false) @RequestParam(value = "from", required = false)
+            @ApiParam(value = "Return rendered value as 'rendered' field", required = false, defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") boolean useRendered,
+            
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
+    
+            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+            @RequestParam(value = "from", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false,
-                    allowMultiple = false) @RequestParam(value = "to", required = false)
+            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @RequestParam(value = "to", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
 
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
-                    value = "timezone", required = false) String timezone,
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
+            @RequestParam(value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) @RequestParam(
-                    value = "limit", required = false) Integer limit,
+            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @RequestParam(value = "limit", required = false) Integer limit,
 
             @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
             @RequestParam(value = "bookend", required = false, defaultValue="false") 
             boolean bookend,
             
-            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-                    required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
+            @RequestParam(value = "useCache", required = false, defaultValue="false") 
+            boolean useCache,
+            
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, bookend, useRendered, false, false, false);
+                true, bookend, useRendered, false, false, useCache);
         
         return generateStream(user, info, xids);
     }
