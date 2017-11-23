@@ -38,11 +38,17 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
             while(it.hasNext()) {
                 List<Integer> singleList = new ArrayList<>(1);
                 singleList.add(it.next());
-                this.dao.wideBookendQuery(singleList, info.getFromMillis(), info.getToMillis(), false, info.getLimit(), this);
+                if(info.isBookend())
+                    this.dao.wideBookendQuery(singleList, info.getFromMillis(), info.getToMillis(), false, info.getLimit(), this);
+                else
+                    this.dao.getPointValuesBetween(singleList, info.getFromMillis(), info.getToMillis(), false, info.getLimit(), this);
             }
         }else {
             //Maybe NoSQL or no limit
-            this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+            if(info.isBookend())
+                this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+            else
+                this.dao.getPointValuesBetween(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
         }
     }
     
