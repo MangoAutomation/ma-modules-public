@@ -112,9 +112,8 @@ public class TranslationsController extends MangoRestController {
         }
         
         if (result.isOk()) {
-
         	Map<String, Object> resultMap = new HashMap<String, Object>();
-            Locale locale = this.getLocale(language, server, browser, request, null);
+            Locale locale = this.getLocale(language, server, browser, request, Common.getHttpUser());
             resultMap.put("locale", locale.toLanguageTag());
         	resultMap.put("translations", getTranslationMap(namespaces, locale));
             
