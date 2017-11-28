@@ -58,7 +58,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }else {
             this.isSql = this.dao instanceof PointValueDaoSQL;
         }
-        if(info.isUseCache())
+        if(info.isUseCache() != PointValueTimeCacheControl.NONE)
             cache = buildCache();
         else
             this.cache = null;
@@ -73,8 +73,8 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
         
-        //Can we use just the cache?
-        if(info.isUseCache() && info.getLimit() != null && canUseOnlyCache(info.getLimit())) {
+        //Are we to use just the cache?
+        if(info.isUseCache() == PointValueTimeCacheControl.CACHE_ONLY) {
             processCacheOnly();
             return;
         }
@@ -130,12 +130,13 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      */
     protected void processRow(IdPointValueTime value, int index, boolean bookend, boolean cached) throws IOException {
         
-        if(info.isUseCache() && !cached)
+        if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
             if(!processValueThroughCache(value, index, bookend))
                 return;
 
-        if(info.useCache)
+        if(info.useCache != PointValueTimeCacheControl.NONE)
             if(limiters.get(value.getId()).limited())
+                if(!bookend)
                 return;
         
         if(info.isSingleArray() && info.getLimit() != null && isSql && voMap.size() > 1) {
@@ -285,22 +286,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             }
         }
         return map;
-    }
-
-    /**
-     * Does the limit fit within the cache size of all points in query?
-     * 
-     * @return
-     */
-    protected boolean canUseOnlyCache(int limit) {
-        
-        Iterator<Integer> it = voMap.keySet().iterator();
-        while(it.hasNext()) {
-            List<IdPointValueTime> values = cache.get(it.next());
-            if(values == null || values.size() < limit)
-                return false;
-        }
-        return true;
     }
     
     /**

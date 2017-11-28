@@ -23,6 +23,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
 
     protected ZonedDateTime to;
+    protected final RollupEnum rollup;
+    protected final TimePeriod timePeriod;
+    protected final boolean bookend; //Do we want virtual values at the to/from time if they don't already exist?
+
 
     /**
      * This class with use an optional timzone to ensure that the to/from dates are correct and
@@ -42,17 +46,17 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * @param rollup
      * @param timePeriod
      * @param limit
-     * @param ascending
+     * @param bookend
      * @param useRendered
-     * @param useXidAsFieldName
+     * @param multiplePointsPerArray
      * @param singleArray
      */
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
-            Integer limit, boolean ascending, boolean bookend, boolean useRendered, 
-            boolean useXidAsFieldName, boolean singleArray, boolean useCache) {
-        super(host, port, from, dateTimeFormat, timezone, rollup, timePeriod, 
-                limit, ascending, bookend, useRendered, useXidAsFieldName, 
+            Integer limit, boolean bookend, boolean useRendered, 
+            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache) {
+        super(host, port, from, dateTimeFormat, timezone,
+                limit, useRendered, multiplePointsPerArray, 
                 singleArray, useCache);
 
 
@@ -76,6 +80,10 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
             vr.addError("validate.invalidValue", "to");
             throw new ValidationFailedRestException(vr);
         }
+        
+        this.rollup = rollup;
+        this.timePeriod = timePeriod;
+        this.bookend = bookend;
     }
 
     /**
@@ -99,8 +107,16 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
     public ZonedDateTime getTo() {
         return to;
     }
+    
+    @Override
+    public RollupEnum getRollup() {
+        return rollup;
+    }
 
-    public void setTo(ZonedDateTime to) {
-        this.to = to;
+    public TimePeriod getTimePeriod() {
+        return timePeriod;
+    }
+    public boolean isBookend() {
+        return bookend;
     }
 }

@@ -104,9 +104,13 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             DataPointStatisticsQuantizer<?> quantizer;
             switch(vo.getPointLocator().getDataTypeId()) {
                 case DataTypes.ALPHANUMERIC:
+                case DataTypes.IMAGE:
+                    quantizer = new ValueChangeCounterDataPointQuantizer(vo, getBucketCalculator(), this);
+                break;
                 case DataTypes.BINARY:
                 case DataTypes.MULTISTATE:
-                case DataTypes.IMAGE:
+                    quantizer = new StartsAndRuntimeListDataPointQuantizer(vo, getBucketCalculator(), this);
+                break;
                 case DataTypes.NUMERIC:
                     quantizer = new AnalogStatisticsDataPointQuantizer(vo, getBucketCalculator(), this);
                 break;

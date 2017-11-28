@@ -33,7 +33,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     public void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend, boolean cached) throws IOException {
         this.jgen.writeStartObject();
         
-        if(info.isUseXidAsFieldName()) {
+        if(info.isMultiplePointsPerArray()) {
             this.jgen.writeObjectFieldStart(vo.getXid());
             if(pvt == null) {
                 writeStringField(ANNOTATION, info.noDataMessage);
@@ -84,7 +84,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             DataPointVO vo = value.vo;
             boolean bookend = value.bookend; 
             boolean cached = value.cached;
-            if(info.isUseXidAsFieldName()) {
+            if(info.isMultiplePointsPerArray()) {
                 this.jgen.writeObjectFieldStart(vo.getXid());
                 if(pvt == null) {
                     writeStringField(ANNOTATION, info.noDataMessage);
@@ -129,7 +129,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         writeTimestamp(periodStats.get(0).getGenerator().getPeriodStartTime());
         for(DataPointStatisticsGenerator gen : periodStats) {
             DataPointVO vo = gen.getVo();
-            if(info.isUseXidAsFieldName()) {
+            if(info.isMultiplePointsPerArray()) {
                 this.jgen.writeObjectFieldStart(vo.getXid());
                 writeStatistic(VALUE, gen.getGenerator(), gen.getVo());
                 this.jgen.writeEndObject();
@@ -149,7 +149,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         this.jgen.writeStartObject();
         writeTimestamp(periodStats.getGenerator().getPeriodStartTime());
         DataPointVO vo = periodStats.getVo();
-        if(info.isUseXidAsFieldName()) {
+        if(info.isMultiplePointsPerArray()) {
             this.jgen.writeObjectFieldStart(vo.getXid());
             writeStatistic(VALUE, periodStats.getGenerator(), periodStats.getVo());
             this.jgen.writeEndObject();

@@ -127,7 +127,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                 builder.setUseHeader(true);
                 
                 if(stream.getQueryInfo().isSingleArray()) {
-                    if(stream.getQueryInfo().isUseXidAsFieldName()) {
+                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         //TODO Logic for Rendered, RenderedAndRaw
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
                         Iterator<Integer> it = voMap.keySet().iterator();
@@ -141,7 +141,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     builder.addColumn("annotation", ColumnType.STRING);
                     builder.addColumn("bookend", ColumnType.BOOLEAN);
                 }else {
-                    if(stream.getQueryInfo().isUseXidAsFieldName()) {
+                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         //TODO Logic for Rendered, RenderedAndRaw
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
                         Iterator<Integer> it = voMap.keySet().iterator();

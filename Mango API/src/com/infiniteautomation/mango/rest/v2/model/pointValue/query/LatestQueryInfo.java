@@ -20,7 +20,6 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
@@ -32,25 +31,21 @@ public class LatestQueryInfo {
     protected ZoneId zoneId;
     protected ZonedDateTime from;
 
-    protected final RollupEnum rollup;
-    protected final TimePeriod timePeriod;
     protected final Integer limit;
 
-    protected final boolean bookend; //Do we want virtual values at the to/from time if they don't already exist?
     protected final boolean useRendered;
-    protected final boolean useXidAsFieldName;
-    protected final boolean ascending;
+    protected final boolean multiplePointsPerArray;
+
     protected final boolean singleArray;
-    protected final boolean useCache;
+    protected final PointValueTimeCacheControl useCache;
 
     protected final String noDataMessage;
     protected final UriComponentsBuilder imageServletBuilder;
     protected final DateTimeFormatter dateTimeFormatter; // Write a timestamp or string date
 
     public LatestQueryInfo(String host, int port, ZonedDateTime from, String dateTimeFormat, String timezone, 
-            RollupEnum rollup, TimePeriod timePeriod,
-            Integer limit, boolean ascending, boolean bookend, boolean useRendered, 
-            boolean useXidAsFieldName, boolean singleArray, boolean useCache) {
+            Integer limit, boolean useRendered, 
+            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache) {
         
         // Quick validation
         validateTimezone(timezone);
@@ -72,8 +67,7 @@ public class LatestQueryInfo {
         else
             this.from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
         
-        this.rollup = rollup;
-        this.timePeriod = timePeriod;
+
         this.limit = limit;
         
         this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod")
@@ -94,9 +88,7 @@ public class LatestQueryInfo {
             this.dateTimeFormatter = null;
 
         this.useRendered = useRendered;
-        this.useXidAsFieldName = useXidAsFieldName;
-        this.ascending = ascending;
-        this.bookend = bookend;
+        this.multiplePointsPerArray = multiplePointsPerArray;
         this.singleArray = singleArray;
         this.useCache = useCache;
     }
@@ -110,14 +102,6 @@ public class LatestQueryInfo {
         this.zoneId = zoneId;
     }
 
-    public RollupEnum getRollup() {
-        return rollup;
-    }
-
-    public TimePeriod getTimePeriod() {
-        return timePeriod;
-    }
-
     public Integer getLimit() {
         return limit;
     }
@@ -126,23 +110,15 @@ public class LatestQueryInfo {
         return useRendered;
     }
 
-    public boolean isUseXidAsFieldName() {
-        return useXidAsFieldName;
+    public boolean isMultiplePointsPerArray() {
+        return multiplePointsPerArray;
     }
-    
-    public boolean isAscending() {
-        return ascending;
-    }
-    
+
     public boolean isSingleArray() {
         return singleArray;
     }
     
-    public boolean isBookend() {
-        return bookend;
-    }
-    
-    public boolean isUseCache() {
+    public PointValueTimeCacheControl isUseCache() {
         return useCache;
     }
     
@@ -152,6 +128,10 @@ public class LatestQueryInfo {
 
     public ZonedDateTime getFrom() {
         return from;
+    }
+    
+    public RollupEnum getRollup() {
+        return RollupEnum.NONE;
     }
     
     /**

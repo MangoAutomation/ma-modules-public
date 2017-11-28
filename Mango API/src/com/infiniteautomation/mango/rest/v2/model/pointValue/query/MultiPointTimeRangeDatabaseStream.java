@@ -37,12 +37,12 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     public void streamData(PointValueTimeWriter writer) throws IOException {
     
         //Can we use just the cache?
-        if(info.isUseCache() && info.getLimit() != null && canUseOnlyCache(info.getLimit())) {
+        if(info.isUseCache() == PointValueTimeCacheControl.CACHE_ONLY) {
             processCacheOnly();
             return;
         }
         
-        //If there is a limit we can only use 1 point at a time for multiple array results
+        //If there is a limit we can only use 1 point at a time for multiple array results in SQL
         if(info.getLimit() != null && isSql) {
             Iterator<Integer> it = voMap.keySet().iterator();
             while(it.hasNext()) {
@@ -103,8 +103,9 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                     //Could be a bookend
                     processRow(pvt, index, bookend, true);
                     it.remove();
-                    if(pointCache.size() == 0)
+                    if(pointCache.size() == 0) {
                         this.cache.remove(value.getId());
+                    }
                     return false;
                 }else
                     break; //No more since we are in time order of the query
@@ -154,9 +155,9 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                 if(last.getTime() != info.getToMillis()) {
                     IdPointValueTime bookend;
                     if(last.isAnnotated())
-                        bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getFromMillis(),((AnnotatedIdPointValueTime)last).getSourceMessage());
+                        bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getToMillis(),((AnnotatedIdPointValueTime)last).getSourceMessage());
                     else
-                        bookend = new IdPointValueTime(last.getId(), last.getValue(), info.getFromMillis());
+                        bookend = new IdPointValueTime(last.getId(), last.getValue(), info.getToMillis());
                     processRow(bookend, index, true, true);
                 }
             }

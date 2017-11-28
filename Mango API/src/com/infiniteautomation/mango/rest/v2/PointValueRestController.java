@@ -35,6 +35,10 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataP
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidLatestQueryInfoModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidRollupTimeRangeQueryModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -99,15 +103,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             Integer limit,
 
             @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="false") 
-            boolean useCache,
+            @RequestParam(value = "useCache", required = false, defaultValue="BOTH") 
+            PointValueTimeCacheControl useCache,
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
-                request.getServerPort(), before, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, false, useRendered, false, true, useCache);
+                request.getServerPort(), before, dateTimeFormat, timezone, limit, 
+                useRendered, false, true, useCache);
         
         return generateLatestStream(user, info, new String[] {xid});
     }    
@@ -147,22 +151,42 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "limit", required = false) 
             Integer limit,
 
-            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="false") 
-            boolean useCache,
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
+            @RequestParam(value = "useCache", required = false, defaultValue="BOTH") 
+            PointValueTimeCacheControl useCache,
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
-                request.getServerPort(), before, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, false, useRendered, true, true, useCache);
+                request.getServerPort(), before, dateTimeFormat, timezone, limit, 
+                useRendered, true, true, useCache);
         
         return generateLatestStream(user, info, xids);
     }
+
+    @ApiOperation(
+            value = "POST for latest values For 1 or more Data Points in time descending order in a single array", 
+            notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
+            response = PointValueTimeModel.class, 
+            responseContainer = "Array"
+            )
+    @RequestMapping(method = RequestMethod.POST, value = "/single-array/latest/{xids}")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> postLatestPointValuesAsSingleArray(
+            HttpServletRequest request,
+            
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+            @RequestBody
+            XidLatestQueryInfoModel info,
+            
+            @AuthenticationPrincipal User user
+            ) {
+
+        return generateLatestStream(user, info.createLatestQueryInfo(request.getServerName(), request.getServerPort(), true, true), info.getXids());
+    }
     
     @ApiOperation(
-            value = "Get latest values For 1 or more Data Points in time descending order in multiple arrays", 
+            value = "GET latest values For 1 or more Data Points in time descending order in multiple arrays", 
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
             response = PointValueTimeModel.class, 
             responseContainer = "Object"
@@ -196,19 +220,39 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "limit", required = false) 
             Integer limit,
 
-            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="false") 
-            boolean useCache,
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
+            @RequestParam(value = "useCache", required = false, defaultValue="BOTH") 
+            PointValueTimeCacheControl useCache,
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
-                request.getServerPort(), before, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, false, useRendered, false, false, useCache);
+                request.getServerPort(), before, dateTimeFormat, timezone, limit, 
+                useRendered, false, false, useCache);
         
         return generateLatestStream(user, info, xids);
     } 
+    
+    @ApiOperation(
+            value = "Get latest values For 1 or more Data Points in time descending order in multiple arrays", 
+            notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
+            response = PointValueTimeModel.class, 
+            responseContainer = "Object"
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/multiple-arrays/latest")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> postLatestPointValuesAsMultipleArrays(
+            HttpServletRequest request,
+            
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+            @RequestBody
+            XidLatestQueryInfoModel info,
+            
+            @AuthenticationPrincipal User user
+            ) {
+        return generateLatestStream(user, info.createLatestQueryInfo(request.getServerName(), request.getServerPort(), false, false), info.getXids());
+    } 
+
     
     @ApiOperation(
             value = "Query Time Range For 1 Data Point, return in time ascending order", 
@@ -255,8 +299,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             boolean bookend,
             
             @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="false") 
-            boolean useCache,
+            @RequestParam(value = "useCache", required = false, defaultValue="BOTH") 
+            PointValueTimeCacheControl useCache,
             
             @AuthenticationPrincipal User user
             ) {
@@ -264,7 +308,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, bookend, useRendered, false, true, useCache);
+                bookend, useRendered, false, true, useCache);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -328,7 +372,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, true, useRendered, false, true, false);
+                true, useRendered, false, true, PointValueTimeCacheControl.NONE);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -377,7 +421,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             
             @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
             @RequestParam(value = "useCache", required = false, defaultValue="false") 
-            boolean useCache,
+            PointValueTimeCacheControl useCache,
 
             @AuthenticationPrincipal User user
             ) {
@@ -385,8 +429,26 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, bookend, useRendered, true, true, useCache);
+                bookend, useRendered, true, true, useCache);
         return generateStream(user, info, xids);
+    }
+    
+    @ApiOperation(value = "POST to query a time range for multiple data points, return in time ascending order",
+            notes = "From time inclusive, To time exclusive. Return in single array with bookends, use limit if provided.",
+            response = PointValueTimeModel.class, responseContainer = "Array")
+    @RequestMapping(method = RequestMethod.POST, value = "/single-array/time-period")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> postPointValuesAsSingleArray(
+            HttpServletRequest request,
+            
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+            @RequestBody
+            XidTimeRangeQueryModel model,
+
+            @AuthenticationPrincipal User user
+            ) {
+        
+        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(request.getServerName(), 
+                request.getServerPort(), true, true), model.getXids());
     }
     
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
@@ -447,11 +509,30 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
-                true, useRendered, true, true, false);
+                useRendered, true, true, PointValueTimeCacheControl.NONE);
         return generateStream(user, info, xids);
     }
     
-   
+    @ApiOperation(value = "POST to get rollup values for multiple data points, return in time ascending order",
+            notes = "From time inclusive, To time exclusive. Return in single array.",
+            response = PointValueTimeModel.class, responseContainer = "Array")
+    @RequestMapping(method = RequestMethod.POST, value = "/single-array/time-period/{rollup}")
+    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> postRollupPointValuesAsSingleArray(
+            HttpServletRequest request,
+
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
+            @PathVariable(value = "rollup") 
+            RollupEnum rollup,
+            
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+            @RequestBody
+            XidRollupTimeRangeQueryModel model,
+            
+            @AuthenticationPrincipal User user
+            ) {
+        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(request.getServerName(), 
+                        request.getServerPort(), true, true, rollup), model.getXids());
+    }
     
     @ApiOperation(value = "Query time range for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays with bookends.",
@@ -488,8 +569,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             boolean bookend,
             
             @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="false") 
-            boolean useCache,
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+            PointValueTimeCacheControl useCache,
             
             @AuthenticationPrincipal User user
             ) {
@@ -497,9 +578,28 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                true, bookend, useRendered, false, false, useCache);
+                bookend, useRendered, false, false, useCache);
         
         return generateStream(user, info, xids);
+    }
+    
+    @ApiOperation(value = "POST to query time range for multiple data points, return in time ascending order",
+            notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays with bookends.",
+            response = PointValueTimeModel.class, responseContainer = "Object")
+    @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/time-period")
+    public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>, ZonedDateTimeRangeQueryInfo>> postPointValuesForMultiplePointsAsMultipleArrays(
+            HttpServletRequest request,
+            
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+            @RequestBody
+            XidTimeRangeQueryModel model,
+            
+            @AuthenticationPrincipal User user
+            ) {
+        return generateStream(user, 
+                model.createZonedDateTimeRangeQueryInfo(request.getServerName(), request.getServerPort(),
+                        false, false), 
+                model.getXids());
     }
     
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
@@ -553,9 +653,32 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, true, useRendered, false, false, false);
+                true, useRendered, false, false, PointValueTimeCacheControl.NONE);
         
         return generateStream(user, info, xids);
+    }
+    
+    @ApiOperation(value = "POST to rollup values for multiple data points, return in time ascending order",
+            notes = "From time inclusive, To time exclusive.  Returns a map of xid to point value time arrays.",
+            response = PointValueTimeModel.class, responseContainer = "Object")
+    @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/time-period/{rollup}")
+    public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>, ZonedDateTimeRangeQueryInfo>> postRollupPointValuesAsMultipleArrays(
+            HttpServletRequest request,
+            
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
+            @PathVariable(value = "rollup") 
+            RollupEnum rollup,
+            
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+            @RequestBody
+            XidRollupTimeRangeQueryModel model,
+            
+            @AuthenticationPrincipal User user
+            ) {
+        return generateStream(user, 
+                model.createZonedDateTimeRangeQueryInfo(request.getServerName(), request.getServerPort(), 
+                        false, false, rollup), 
+                model.getXids());
     }
     
     @ApiOperation(
