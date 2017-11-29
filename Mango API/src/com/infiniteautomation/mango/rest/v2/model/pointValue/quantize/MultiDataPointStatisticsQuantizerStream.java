@@ -125,7 +125,8 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     
     protected void writePeriodStats(List<DataPointStatisticsGenerator> generators) throws IOException {
         if(info.isSingleArray() && voMap.size() > 1) {
-            this.writer.writeMultipleStatsAsObject(generators);
+            if(generators.size() > 0)
+                this.writer.writeMultiplePointStatsAtSameTime(generators, generators.get(0).getGenerator().getPeriodStartTime());
         }else {
             for(DataPointStatisticsGenerator gen: generators)
                 this.writer.writeStatsAsObject(gen);

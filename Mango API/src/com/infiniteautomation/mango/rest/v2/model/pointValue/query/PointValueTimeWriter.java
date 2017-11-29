@@ -67,6 +67,14 @@ public abstract class PointValueTimeWriter {
 	    writePointValueTime(vo, pvt, false, false);
 	}
 	
+	/**
+	 * General write of one point value time
+	 * @param vo
+	 * @param pvt
+	 * @param bookend
+	 * @param cached
+	 * @throws IOException
+	 */
     public abstract void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend, boolean cached) throws IOException;
     
     /**
@@ -110,7 +118,6 @@ public abstract class PointValueTimeWriter {
         else
             writeStringField(TIMESTAMP, info.getDateTimeString(timestamp));
     }
-	
 	
     public void writeIntegral(String name, DataPointVO vo, Double integral) throws IOException {
         if (integral == null) {
@@ -236,7 +243,7 @@ public abstract class PointValueTimeWriter {
         }
     }
 
-    public abstract void writeMultiplePointsAsObject(List<DataPointVOPointValueTimeBookend> currentValues) throws IOException;
-    public abstract void writeMultipleStatsAsObject(List<DataPointStatisticsGenerator> periodStats) throws IOException;
+    public abstract void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp) throws IOException;
+    public abstract void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException;
     public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
 }

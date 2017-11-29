@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
@@ -29,6 +30,7 @@ public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo>
             SerializerProvider provider) throws IOException,
             JsonProcessingException {
         PointValueTimeWriter writer = new PointValueTimeJsonWriter(value.getQueryInfo(), jgen);
+        value.setContentType(StreamContentType.JSON);
         value.start(writer);
         value.streamData(writer);
         value.finish(writer);

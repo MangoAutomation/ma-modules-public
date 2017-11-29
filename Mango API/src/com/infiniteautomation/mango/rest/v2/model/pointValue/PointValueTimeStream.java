@@ -17,10 +17,17 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public interface PointValueTimeStream<T, INFO extends LatestQueryInfo> {
     
+    public enum StreamContentType {
+        JSON,
+        CSV
+    }
+    
     public INFO getQueryInfo();
     public Map<Integer, DataPointVO> getVoMap();
     
     public void start(PointValueTimeWriter writer) throws IOException ;
     public void streamData(PointValueTimeWriter writer) throws IOException;
     public void finish(PointValueTimeWriter writer) throws IOException ;
+    public void setContentType(StreamContentType type);
+
 }

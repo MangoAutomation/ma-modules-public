@@ -20,8 +20,8 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Terry Packer
  */
 public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo> implements PointValueTimeStream<T, INFO>{
-
-
+    
+    protected StreamContentType contentType;
     protected final INFO info;
     protected final Map<Integer, DataPointVO> voMap; //Point id to Vo
     
@@ -54,8 +54,10 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
     public void start(PointValueTimeWriter writer) throws IOException {
         if(info.isSingleArray())
             writer.writeStartArray();
-        else
-            writer.writeStartObject();
+        else {
+            if(contentType == StreamContentType.JSON)
+                writer.writeStartObject();
+        }
     }
     
     /* (non-Javadoc)
@@ -65,8 +67,15 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
     public void finish(PointValueTimeWriter writer) throws IOException {
         if(info.isSingleArray())
             writer.writeEndArray();
-        else
-            writer.writeEndObject();
+        else {
+            if(contentType == StreamContentType.JSON)
+                writer.writeEndObject();
+        }
         
+    }
+    
+    @Override
+    public void setContentType(StreamContentType type) {
+        this.contentType = type;
     }
 }

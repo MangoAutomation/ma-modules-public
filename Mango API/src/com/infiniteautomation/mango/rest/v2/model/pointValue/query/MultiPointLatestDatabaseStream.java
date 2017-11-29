@@ -111,11 +111,15 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }else {
             //Write out all our current values and the final bookend
             if(info.isSingleArray() && voMap.size() > 0) {
-                writer.writeMultiplePointsAsObject(currentValues);
-                writer.writeMultiplePointsAsObject(finalValues);
+                if(currentValues.size() > 0)
+                    writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).pvt.getTime());
+               if(finalValues.size() > 0)
+                   writer.writeMultiplePointValuesAtSameTime(finalValues, finalValues.get(0).getPvt().getTime());
             }else {
-                if(voMap.size() > 1)
-                    writer.writeEndArray();
+                if(voMap.size() > 1) {
+                    if(contentType == StreamContentType.JSON)
+                        writer.writeEndArray();
+                }
             }
         }
         super.finish(writer);
@@ -147,9 +151,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 if(currentTime == value.getTime())
                     currentValues.add(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getId()), value, bookend, cached));
                 else {
-                    writer.writeMultiplePointsAsObject(currentValues);
+                    if(currentValues.size() > 0) {
+                        writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).pvt.getTime());
+                        currentValues.clear();
+                    }
                     currentTime = value.getTime();
-                    currentValues.clear();
                     currentValues.add(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getId()), value, bookend, cached));
                 }
             }else {
@@ -205,7 +211,8 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     protected void writeSingleArray(PointValueTimeWriter writer) throws IOException {
         //Write out all our values collated
         for(List<DataPointVOPointValueTimeBookend> values : this.singleArrayValues.values()) {
-            writer.writeMultiplePointsAsObject(values);
+            if(values.size() > 0)
+                writer.writeMultiplePointValuesAtSameTime(values, values.get(0).pvt.getTime());
         }
     }
     

@@ -73,12 +73,10 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
      * @param currentValues
      */
     @Override
-    public void writeMultiplePointsAsObject(List<DataPointVOPointValueTimeBookend> currentValues)  throws IOException{
-        if(currentValues.size() == 0)
-            return;
-        
+    public void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp)  throws IOException{
+
         this.jgen.writeStartObject();
-        writeTimestamp(currentValues.get(0).pvt.getTime());
+        writeTimestamp(timestamp);
         for(DataPointVOPointValueTimeBookend value : currentValues) {
             PointValueTime pvt = value.pvt;
             DataPointVO vo = value.vo;
@@ -122,11 +120,9 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
      */
     @Override
-    public void writeMultipleStatsAsObject(List<DataPointStatisticsGenerator> periodStats) throws IOException{
-        if(periodStats.size() == 0)
-            return;
+    public void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException{
         this.jgen.writeStartObject();
-        writeTimestamp(periodStats.get(0).getGenerator().getPeriodStartTime());
+        writeTimestamp(timestamp);
         for(DataPointStatisticsGenerator gen : periodStats) {
             DataPointVO vo = gen.getVo();
             if(info.isMultiplePointsPerArray()) {

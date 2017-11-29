@@ -420,7 +420,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             boolean bookend,
             
             @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="false") 
+            @RequestParam(value = "useCache", required = false, defaultValue="BOTH") 
             PointValueTimeCacheControl useCache,
 
             @AuthenticationPrincipal User user

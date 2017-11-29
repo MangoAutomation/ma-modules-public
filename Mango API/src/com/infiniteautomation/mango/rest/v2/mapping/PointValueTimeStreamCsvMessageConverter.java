@@ -24,15 +24,22 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCsvWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
- * @author Jared Wiltshire
+ * 
+ * TODO Pre-build the various schemas as final members of the class
+ * 
+ * @author Jared Wiltshire, Terry Packer
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
 
@@ -104,10 +111,12 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
      */
     @Override
     public boolean canWrite(Class<?> clazz, MediaType mediaType) {
-        if (!canRead(mediaType))
+        if (!canWrite(mediaType))
             return false;
         
-        if(MultiPointLatestDatabaseStream.class.isAssignableFrom(clazz) || MultiPointTimeRangeDatabaseStream.class.isAssignableFrom(clazz))
+        if(MultiPointLatestDatabaseStream.class.isAssignableFrom(clazz) 
+                || MultiPointTimeRangeDatabaseStream.class.isAssignableFrom(clazz)
+                || MultiDataPointStatisticsQuantizerStream.class.isAssignableFrom(clazz))
             return true;
         else
             return false;
@@ -122,110 +131,127 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
         try {
             PointValueTimeStream<?,?> stream = (PointValueTimeStream<?,?>)object;
+            stream.setContentType(StreamContentType.CSV);
             //Set the schema
             CsvSchema.Builder builder = CsvSchema.builder();
             builder.setUseHeader(true);
             
+            //Setup our rendering parameters
+            LatestQueryInfo info = stream.getQueryInfo();
+            boolean bookend = false;
+            boolean useCache = info.isUseCache() != PointValueTimeCacheControl.NONE;
+            boolean rendered = info.isUseRendered();
+            if(info instanceof ZonedDateTimeRangeQueryInfo)
+                bookend = ((ZonedDateTimeRangeQueryInfo)info).isBookend();
+            
+            
             if(stream instanceof MultiPointTimeRangeDatabaseStream) {
-                if(stream.getQueryInfo().isSingleArray()) {
-                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        //TODO Logic for Rendered, RenderedAndRaw
+                builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+                if(info.isSingleArray()) {
+                    if(info.isMultiplePointsPerArray()) {
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
                         Iterator<Integer> it = voMap.keySet().iterator();
                         while(it.hasNext()) {
-                            builder.addColumn(voMap.get(it.next()).getXid(), ColumnType.NUMBER_OR_STRING);
+                            String xid = voMap.get(it.next()).getXid();
+                            builder.addColumn(xid, ColumnType.NUMBER_OR_STRING);
+                            if(bookend)
+                                builder.addColumn(xid + ".bookend", ColumnType.BOOLEAN);
+                            if(useCache)
+                                builder.addColumn(xid +".cached", ColumnType.BOOLEAN);
+                            if(rendered)
+                                builder.addColumn(xid + ".rendered", ColumnType.STRING);
                         }
                     }else {
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
+                        if(bookend)
+                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                        if(useCache)
+                            builder.addColumn("cached", ColumnType.BOOLEAN);
                     }
-                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
-                    builder.addColumn("annotation", ColumnType.STRING);
-                    builder.addColumn("bookend", ColumnType.BOOLEAN);
                 }else {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        //TODO Logic for Rendered, RenderedAndRaw
+                        builder.addColumn("xid", ColumnType.STRING);
+                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        if(bookend)
+                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                        if(useCache)
+                            builder.addColumn("cached", ColumnType.BOOLEAN);
+                        if(rendered)
+                            builder.addColumn("rendered", ColumnType.STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
+                    }else {
+                        builder.addColumn("xid", ColumnType.STRING);
+                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        if(bookend)
+                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                        if(useCache)
+                            builder.addColumn("cached", ColumnType.BOOLEAN);
+                        if(rendered)
+                            builder.addColumn("rendered", ColumnType.STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
+                    }
+                }
+            }else if(stream instanceof MultiPointLatestDatabaseStream) {
+                builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+                if(stream.getQueryInfo().isSingleArray()) {
+                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
                         Iterator<Integer> it = voMap.keySet().iterator();
                         while(it.hasNext()) {
-                            builder.addColumn(voMap.get(it.next()).getXid(), ColumnType.NUMBER_OR_STRING);
+                            String xid = voMap.get(it.next()).getXid();
+                            builder.addColumn(xid, ColumnType.NUMBER_OR_STRING);
+                            if(bookend)
+                                builder.addColumn(xid + ".bookend", ColumnType.BOOLEAN);
+                            if(useCache)
+                                builder.addColumn(xid +".cached", ColumnType.BOOLEAN);
+                            if(rendered)
+                                builder.addColumn(xid + ".rendered", ColumnType.STRING);
                         }
                     }else {
+                        //Single array
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
+                        if(bookend)
+                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                        if(useCache)
+                            builder.addColumn("cached", ColumnType.BOOLEAN);
                     }
-                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
-                    builder.addColumn("annotation", ColumnType.STRING);
-                    builder.addColumn("bookend", ColumnType.BOOLEAN);
-                    if(stream.getQueryInfo().isUseCache() != PointValueTimeCacheControl.NONE)
-                        builder.addColumn("cached", ColumnType.BOOLEAN);
-                }
-            }else if(stream instanceof MultiPointLatestDatabaseStream) {
-                if(stream.getQueryInfo().isSingleArray()) {
+
+                }else {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         
+                    }
+                }
+            }else if(stream instanceof MultiDataPointStatisticsQuantizerStream) {
+                if(stream.getQueryInfo().isSingleArray()) {
+                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
+                        Map<Integer, DataPointVO> voMap = stream.getVoMap();
+                        Iterator<Integer> it = voMap.keySet().iterator();
+                        
+                        while(it.hasNext()) {
+                            String xid = voMap.get(it.next()).getXid();
+                            builder.addColumn(xid + "." + info.getRollup(), ColumnType.NUMBER_OR_STRING);
+                            if(rendered)
+                                builder.addColumn(xid + ".rendered", ColumnType.STRING);
+                        }
                     }else {
                         //Single array
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
                     }
-                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
-                    builder.addColumn("annotation", ColumnType.STRING);
-                    builder.addColumn("bookend", ColumnType.BOOLEAN);
-                    if(stream.getQueryInfo().isUseCache() != PointValueTimeCacheControl.NONE)
-                        builder.addColumn("cached", ColumnType.BOOLEAN);
                 }else {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         
                     }
                 }
             }
+            
             generator.setSchema(builder.build());
-            PointValueTimeWriter writer = new PointValueTimeJsonWriter(stream.getQueryInfo(), generator);
+            PointValueTimeWriter writer = new PointValueTimeCsvWriter(stream.getQueryInfo(), generator);
             stream.start(writer);
             stream.streamData(writer);
             stream.finish(writer);
-            
-//            writePrefix(generator, object);
-//
-//            Class<?> serializationView = null;
-//            FilterProvider filters = null;
-//            Object value = object;
-//            JavaType javaType = null;
-//            if (object instanceof MappingJacksonValue) {
-//                MappingJacksonValue container = (MappingJacksonValue) object;
-//                value = container.getValue();
-//                serializationView = container.getSerializationView();
-//                filters = container.getFilters();
-//            }
-//            if (type != null && value != null && TypeUtils.isAssignable(type, value.getClass())) {
-//                javaType = getJavaType(type, null);
-//            }
-//            ObjectWriter objectWriter;
-//            if (serializationView != null) {
-//                objectWriter = this.objectMapper.writerWithView(serializationView);
-//            }
-//            else if (filters != null) {
-//                objectWriter = this.objectMapper.writer(filters);
-//            }
-//            else {
-//                objectWriter = this.objectMapper.writer();
-//            }
-//
-//            if (javaType != null && javaType.isContainerType()) {
-//                objectWriter = objectWriter.forType(javaType);
-//            }
-//
-//            if (javaType != null) {
-//                CsvSchema schema = csvMapper.schemaFor(javaType).withHeader();
-//                objectWriter = objectWriter.with(schema);
-//            }
-//            
-////            SerializationConfig config = objectWriter.getConfig();
-////            if (contentType != null && contentType.isCompatibleWith(TEXT_EVENT_STREAM) &&
-////                    config.isEnabled(SerializationFeature.INDENT_OUTPUT)) {
-////                objectWriter = objectWriter.with(this.ssePrettyPrinter);
-////            }
-//            objectWriter.writeValue(generator, value);
-//
-//            writeSuffix(generator, object);
             generator.flush();
 
         }

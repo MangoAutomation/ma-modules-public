@@ -18,6 +18,8 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public abstract class PointValueTimeDatabaseStream<T, INFO extends LatestQueryInfo> extends PointValueTimeQueryStream<T, INFO> implements BookendQueryCallback<IdPointValueTime>{
     
+
+    
     protected PointValueDao dao;
     protected PointValueTimeWriter writer;
     
@@ -34,4 +36,6 @@ public abstract class PointValueTimeDatabaseStream<T, INFO extends LatestQueryIn
         this.writer = writer;
         super.start(writer);
     }
+    
+
 }
