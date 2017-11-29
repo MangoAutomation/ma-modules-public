@@ -24,7 +24,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -105,7 +107,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         if (!canRead(mediaType))
             return false;
         
-        if(PointValueTimeStream.class.isAssignableFrom(clazz))
+        if(MultiPointLatestDatabaseStream.class.isAssignableFrom(clazz) || MultiPointTimeRangeDatabaseStream.class.isAssignableFrom(clazz))
             return true;
         else
             return false;
@@ -121,11 +123,10 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         try {
             PointValueTimeStream<?,?> stream = (PointValueTimeStream<?,?>)object;
             //Set the schema
+            CsvSchema.Builder builder = CsvSchema.builder();
+            builder.setUseHeader(true);
+            
             if(stream instanceof MultiPointTimeRangeDatabaseStream) {
-                
-                CsvSchema.Builder builder = CsvSchema.builder();
-                builder.setUseHeader(true);
-                
                 if(stream.getQueryInfo().isSingleArray()) {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         //TODO Logic for Rendered, RenderedAndRaw
@@ -154,9 +155,29 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
                     builder.addColumn("annotation", ColumnType.STRING);
                     builder.addColumn("bookend", ColumnType.BOOLEAN);
+                    if(stream.getQueryInfo().isUseCache() != PointValueTimeCacheControl.NONE)
+                        builder.addColumn("cached", ColumnType.BOOLEAN);
                 }
-                generator.setSchema(builder.build());
+            }else if(stream instanceof MultiPointLatestDatabaseStream) {
+                if(stream.getQueryInfo().isSingleArray()) {
+                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
+                        
+                    }else {
+                        //Single array
+                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                    }
+                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+                    builder.addColumn("annotation", ColumnType.STRING);
+                    builder.addColumn("bookend", ColumnType.BOOLEAN);
+                    if(stream.getQueryInfo().isUseCache() != PointValueTimeCacheControl.NONE)
+                        builder.addColumn("cached", ColumnType.BOOLEAN);
+                }else {
+                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
+                        
+                    }
+                }
             }
+            generator.setSchema(builder.build());
             PointValueTimeWriter writer = new PointValueTimeJsonWriter(stream.getQueryInfo(), generator);
             stream.start(writer);
             stream.streamData(writer);
