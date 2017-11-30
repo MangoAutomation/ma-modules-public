@@ -43,9 +43,19 @@ public class LatestQueryInfo {
     protected final UriComponentsBuilder imageServletBuilder;
     protected final DateTimeFormatter dateTimeFormatter; // Write a timestamp or string date
 
+    //TODO Remove when simplify is fully implemented
     public LatestQueryInfo(String host, int port, ZonedDateTime from, String dateTimeFormat, String timezone, 
             Integer limit, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache) {
+        this(host, port, from, dateTimeFormat, timezone, limit, useRendered,
+                multiplePointsPerArray, singleArray, useCache, null, null, false);
+    }
+    
+    
+    public LatestQueryInfo(String host, int port, ZonedDateTime from, String dateTimeFormat, String timezone, 
+            Integer limit, boolean useRendered, 
+            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
+            Double simplifyTolerance, Integer simplifyTarget, boolean simplifyHighQuality) {
         
         // Quick validation
         validateTimezone(timezone);
@@ -61,11 +71,12 @@ public class LatestQueryInfo {
             this.zoneId = ZoneId.of(timezone);
         }
         
-        long current = Common.timer.currentTimeMillis();
         if (from != null)
             this.from = from.withZoneSameInstant(zoneId);
-        else
+        else {
+            long current = Common.timer.currentTimeMillis();
             this.from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
+        }
         
 
         this.limit = limit;

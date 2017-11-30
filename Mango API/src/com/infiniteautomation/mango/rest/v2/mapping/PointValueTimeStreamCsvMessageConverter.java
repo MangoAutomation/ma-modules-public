@@ -163,14 +163,17 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                                 builder.addColumn(xid +".cached", ColumnType.BOOLEAN);
                             if(rendered)
                                 builder.addColumn(xid + ".rendered", ColumnType.STRING);
+                            builder.addColumn(xid + ".annotation", ColumnType.STRING);
                         }
                     }else {
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
                         if(bookend)
                             builder.addColumn("bookend", ColumnType.BOOLEAN);
                         if(useCache)
                             builder.addColumn("cached", ColumnType.BOOLEAN);
+                        if(rendered)
+                            builder.addColumn("rendered", ColumnType.STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
                     }
                 }else {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
@@ -214,11 +217,13 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     }else {
                         //Single array
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
                         if(bookend)
                             builder.addColumn("bookend", ColumnType.BOOLEAN);
                         if(useCache)
                             builder.addColumn("cached", ColumnType.BOOLEAN);
+                        if(rendered)
+                            builder.addColumn("rendered", ColumnType.STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
                     }
 
                 }else {
@@ -245,8 +250,8 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     }
                 }
             }else if(stream instanceof MultiDataPointStatisticsQuantizerStream) {
+                builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
                 if(stream.getQueryInfo().isSingleArray()) {
-                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
                         Iterator<Integer> it = voMap.keySet().iterator();
@@ -268,7 +273,6 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     }
                 }else {
                     builder.addColumn("xid", ColumnType.STRING);
-                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
                     if(info.getRollup() == RollupEnum.ALL) {
                         for(RollupEnum rollup : getAllRollups()) {
                             builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
