@@ -138,9 +138,9 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             if(!processValueThroughCache(value, index, bookend))
                 return;
 
-        if(info.useCache != PointValueTimeCacheControl.NONE)
+        //Don't limit bookends and don't virtually limit non-cached requests
+        if(info.useCache != PointValueTimeCacheControl.NONE && !bookend)
             if(limiters.get(value.getId()).limited())
-                if(!bookend)
                 return;
         
         if(info.isSingleArray() && info.getLimit() != null && isSql && voMap.size() > 1) {
