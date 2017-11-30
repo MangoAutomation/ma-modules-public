@@ -34,6 +34,8 @@ public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo>
         value.start(writer);
         value.streamData(writer);
         value.finish(writer);
+        if(value.cancelled())
+            throw value.getError();
         jgen.flush();
     }
 

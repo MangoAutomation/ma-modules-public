@@ -24,6 +24,7 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
     protected StreamContentType contentType;
     protected final INFO info;
     protected final Map<Integer, DataPointVO> voMap; //Point id to Vo
+    protected IOException error;
     
     public PointValueTimeQueryStream(INFO info, Map<Integer, DataPointVO> voMap) {
         this.info = info;
@@ -77,5 +78,21 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
     @Override
     public void setContentType(StreamContentType type) {
         this.contentType = type;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getError()
+     */
+    @Override
+    public IOException getError() {
+        return error;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#cancelled()
+     */
+    @Override
+    public boolean cancelled() {
+        return this.error != null;
     }
 }

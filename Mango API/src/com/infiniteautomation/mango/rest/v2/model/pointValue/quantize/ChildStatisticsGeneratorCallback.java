@@ -18,5 +18,10 @@ public interface ChildStatisticsGeneratorCallback {
      * @param generator
      */
     void quantizedStatistics(DataPointStatisticsGenerator generator) throws IOException;
-
+    
+    /**
+     * Called if the query was cancelled
+     * @param e
+     */
+    void cancelled(IOException e);
 }

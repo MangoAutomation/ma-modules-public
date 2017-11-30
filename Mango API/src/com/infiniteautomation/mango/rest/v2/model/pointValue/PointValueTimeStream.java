@@ -28,6 +28,23 @@ public interface PointValueTimeStream<T, INFO extends LatestQueryInfo> {
     public void start(PointValueTimeWriter writer) throws IOException ;
     public void streamData(PointValueTimeWriter writer) throws IOException;
     public void finish(PointValueTimeWriter writer) throws IOException ;
+    
+    /**
+     * Set the content type of the stream CSV or JSON
+     * @param type
+     */
     public void setContentType(StreamContentType type);
+    
+    /**
+     * Did something go wrong during streaming
+     * @return
+     */
+    public boolean cancelled();
+    
+    /**
+     * Return the error if it was cancelled, if not this should return null
+     * @return
+     */
+    public IOException getError();
 
 }

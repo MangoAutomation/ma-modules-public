@@ -59,6 +59,14 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     }
     
     /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#cancelled(java.io.IOException)
+     */
+    @Override
+    public void cancelled(IOException e) {
+        this.callback.cancelled(e);
+    }
+    
+    /* (non-Javadoc)
      * @see com.serotonin.m2m2.view.quantize3.StatisticsGeneratorQuantizerCallback#quantizedStatistics(com.serotonin.m2m2.view.stats.StatisticsGenerator)
      */
     @Override

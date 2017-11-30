@@ -5,7 +5,9 @@ package com.infiniteautomation.mango.rest.v2.mapping;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpInputMessage;
@@ -34,6 +36,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTim
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  * 
@@ -125,7 +128,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     @Override
     protected void writeInternal(Object object, Type type, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
-        
+
         MediaType contentType = outputMessage.getHeaders().getContentType();
         JsonEncoding encoding = getJsonEncoding(contentType);
         JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
@@ -220,7 +223,25 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 
                 }else {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        
+                        builder.addColumn("xid", ColumnType.STRING);
+                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        if(bookend)
+                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                        if(useCache)
+                            builder.addColumn("cached", ColumnType.BOOLEAN);
+                        if(rendered)
+                            builder.addColumn("rendered", ColumnType.STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
+                    }else {
+                        builder.addColumn("xid", ColumnType.STRING);
+                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        if(bookend)
+                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                        if(useCache)
+                            builder.addColumn("cached", ColumnType.BOOLEAN);
+                        if(rendered)
+                            builder.addColumn("rendered", ColumnType.STRING);
+                        builder.addColumn("annotation", ColumnType.STRING);
                     }
                 }
             }else if(stream instanceof MultiDataPointStatisticsQuantizerStream) {
@@ -238,12 +259,24 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         }
                     }else {
                         //Single array
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        if(info.getRollup() == RollupEnum.ALL) {
+                            for(RollupEnum rollup : getAllRollups()) {
+                                builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
+                            }
+                        }else
+                            builder.addColumn(info.getRollup().name(), ColumnType.NUMBER_OR_STRING);
                     }
                 }else {
-                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        
-                    }
+                    builder.addColumn("xid", ColumnType.STRING);
+                    builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+                    if(info.getRollup() == RollupEnum.ALL) {
+                        for(RollupEnum rollup : getAllRollups()) {
+                            builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
+                        }
+                    }else
+                        builder.addColumn(info.getRollup().toString(), ColumnType.NUMBER_OR_STRING);
+                    if(rendered)
+                        builder.addColumn("rendered", ColumnType.STRING);
                 }
             }
             
@@ -252,11 +285,32 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             stream.start(writer);
             stream.streamData(writer);
             stream.finish(writer);
+            if(stream.cancelled())
+                throw new HttpMessageNotWritableException(stream.getError().getMessage());
             generator.flush();
-
+            
         }
         catch (JsonProcessingException ex) {
             throw new HttpMessageNotWritableException("Could not write content: " + ex.getMessage(), ex);
         }
+    }
+    
+    /**
+     * Helper to get all valid enums for writing
+     * @return
+     */
+    protected RollupEnum[] getAllRollups() {
+        List<RollupEnum> enums = new ArrayList<>();
+        for(RollupEnum rollup : RollupEnum.values()) {
+            switch(rollup) {
+                case NONE:
+                case FFT:
+                case ALL:
+                break;
+                default:
+                    enums.add(rollup);
+            }
+        }
+        return enums.toArray(new RollupEnum[enums.size()]);
     }
 }

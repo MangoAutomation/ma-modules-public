@@ -246,4 +246,12 @@ public abstract class PointValueTimeWriter {
     public abstract void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp) throws IOException;
     public abstract void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException;
     public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
+
+    /**
+     * @param e
+     */
+    public void sendServerErrorResponse(IOException e) {
+        // TODO Auto-generated method stub
+        
+    }
 }

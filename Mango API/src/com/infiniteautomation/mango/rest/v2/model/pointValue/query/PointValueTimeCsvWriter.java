@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -85,6 +86,26 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         this.jgen.writeEndObject();
     }
     
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
+     */
+    @Override
+    public void writeStatsAsObject(DataPointStatisticsGenerator periodStats) throws IOException{
+        this.writeStartObject();
+        writeTimestamp(periodStats.getGenerator().getPeriodStartTime());
+        DataPointVO vo = periodStats.getVo();
+        if(info.isMultiplePointsPerArray()) {
+            writeStringField("xid", vo.getXid());
+            writeStatistic(vo.getXid() + "." + info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+        }else {
+            if(!info.isSingleArray())
+                writeStringField("xid", vo.getXid());
+            writeStatistic(info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+                
+        }
+        this.writeEndObject();
+    }
+    
     @Override
     public void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp)  throws IOException{
         this.jgen.writeStartObject();
@@ -117,7 +138,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             if(info.isMultiplePointsPerArray()) {
                 writeStatistic(vo.getXid() + "." + info.getRollup(), gen.getGenerator(), gen.getVo());
             }else {
-                
+                throw new ShouldNeverHappenException("Implement me?");
             }
         }
         this.jgen.writeEndObject();
