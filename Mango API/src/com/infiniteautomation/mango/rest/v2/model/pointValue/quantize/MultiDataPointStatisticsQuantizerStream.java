@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;

@@ -3,13 +3,15 @@
  * 
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.DataPointVOPointValueTimeBookend;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -36,7 +38,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         if(info.isMultiplePointsPerArray()) {
             this.jgen.writeObjectFieldStart(vo.getXid());
             if(pvt == null) {
-                writeStringField(ANNOTATION, info.noDataMessage);
+                writeStringField(ANNOTATION, info.getNoDataMessage());
             }else {
                 writeTimestamp(pvt.getTime());
                 if(pvt.isAnnotated())
@@ -52,7 +54,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             this.jgen.writeEndObject();
         }else {
             if(pvt == null) {
-                writeStringField(ANNOTATION, info.noDataMessage);
+                writeStringField(ANNOTATION, info.getNoDataMessage());
             }else {
                 writeTimestamp(pvt.getTime());
                 if(pvt.isAnnotated())
@@ -78,14 +80,14 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         this.jgen.writeStartObject();
         writeTimestamp(timestamp);
         for(DataPointVOPointValueTimeBookend value : currentValues) {
-            PointValueTime pvt = value.pvt;
-            DataPointVO vo = value.vo;
-            boolean bookend = value.bookend; 
-            boolean cached = value.cached;
+            PointValueTime pvt = value.getPvt();
+            DataPointVO vo = value.getVo();
+            boolean bookend = value.isBookend(); 
+            boolean cached = value.isCached();
             if(info.isMultiplePointsPerArray()) {
                 this.jgen.writeObjectFieldStart(vo.getXid());
                 if(pvt == null) {
-                    writeStringField(ANNOTATION, info.noDataMessage);
+                    writeStringField(ANNOTATION, info.getNoDataMessage());
                 }else {
                     if(pvt.isAnnotated())
                         writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
@@ -100,7 +102,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                 this.jgen.writeEndObject();
             }else {
                 if(pvt == null) {
-                    writeStringField(ANNOTATION, info.noDataMessage);
+                    writeStringField(ANNOTATION, info.getNoDataMessage());
                 }else {
                     if(bookend)
                         writeBooleanField(BOOKEND, true);

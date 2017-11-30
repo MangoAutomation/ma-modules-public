@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**

@@ -145,6 +145,14 @@ public class LatestQueryInfo {
         return RollupEnum.NONE;
     }
     
+    public String getNoDataMessage() {
+        return noDataMessage;
+    }
+    
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
+    }
+    
     /**
      * Write a link to an image based on data point id and timestamp
      * 

@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,6 +10,8 @@ import java.util.List;
 import javax.measure.unit.Unit;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.DataPointVOPointValueTimeBookend;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
@@ -87,7 +89,7 @@ public abstract class PointValueTimeWriter {
      */
     protected void writeDataValue(String name, DataPointVO vo, DataValue value, long timestamp) throws IOException{
         if(value == null) {
-            writeStringField(ANNOTATION, info.noDataMessage);
+            writeStringField(ANNOTATION, info.getNoDataMessage());
             writeNullField(name);
         }else
             switch(value.getDataType()) {
@@ -113,7 +115,7 @@ public abstract class PointValueTimeWriter {
     }
     
     public void writeTimestamp(long timestamp) throws IOException {
-        if (info.dateTimeFormatter == null)
+        if (info.getDateTimeFormatter() == null)
             writeLongField(TIMESTAMP, timestamp);
         else
             writeStringField(TIMESTAMP, info.getDateTimeString(timestamp));
@@ -121,7 +123,7 @@ public abstract class PointValueTimeWriter {
 	
     public void writeIntegral(String name, DataPointVO vo, Double integral) throws IOException {
         if (integral == null) {
-            writeStringField(ANNOTATION, info.noDataMessage);
+            writeStringField(ANNOTATION, info.getNoDataMessage());
             writeNullField(name);
         } else {
             writeDoubleField(name, integral);
@@ -132,7 +134,7 @@ public abstract class PointValueTimeWriter {
     
     public void writeAnalogStatistic(String name, DataPointVO vo, Double value) throws IOException {
         if (value == null) {
-            writeStringField(ANNOTATION, info.noDataMessage);
+            writeStringField(ANNOTATION, info.getNoDataMessage());
             writeNullField(name);
         } else {
             writeDoubleField(name, value);

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**

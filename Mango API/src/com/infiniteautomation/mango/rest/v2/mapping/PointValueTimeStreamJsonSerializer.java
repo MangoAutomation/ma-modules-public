@@ -10,11 +10,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeJsonWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter;
 
 /**
  *

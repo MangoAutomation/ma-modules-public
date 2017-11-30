@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
