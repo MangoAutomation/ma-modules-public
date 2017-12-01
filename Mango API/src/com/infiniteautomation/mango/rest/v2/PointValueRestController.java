@@ -266,7 +266,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             response = PointValueTimeModel.class, 
             responseContainer = "Object"
             )
-    @RequestMapping(method = RequestMethod.GET, value = "/multiple-arrays/latest")
+    @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/latest")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> postLatestPointValuesAsMultipleArrays(
             HttpServletRequest request,
             
