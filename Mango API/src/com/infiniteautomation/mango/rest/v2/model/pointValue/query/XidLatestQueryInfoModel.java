@@ -22,20 +22,10 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
         
     }
     
-    /**
-     * 
-     * @param xids
-     * @param useRendered
-     * @param dateTimeFormat
-     * @param timezone
-     * @param before
-     * @param limit
-     * @param useCache
-     */
     public XidLatestQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat, String timezone,
             ZonedDateTime before, Integer limit,
-            PointValueTimeCacheControl useCache) {
-        super(xids, useRendered, dateTimeFormat, timezone);
+            PointValueTimeCacheControl useCache, Double simplifyTolerance, Integer simplifyTarget) {
+        super(xids, useRendered, dateTimeFormat, timezone, simplifyTolerance, simplifyTarget);
         this.before = before;
         this.limit = limit;
         this.useCache = useCache;
@@ -87,6 +77,6 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
      * @throws ValidationFailedRestException
      */
     public  LatestQueryInfo createLatestQueryInfo(String host, int port, boolean multiplePointsPerArray, boolean singleArray) throws ValidationFailedRestException {
-        return new LatestQueryInfo(host, port, before, dateTimeFormat, timezone, limit, useRendered, multiplePointsPerArray, singleArray, useCache);
+        return new LatestQueryInfo(host, port, before, dateTimeFormat, timezone, limit, useRendered, multiplePointsPerArray, singleArray, useCache, simplifyTolerance, simplifyTarget);
     }
 }

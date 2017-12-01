@@ -34,6 +34,8 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStrea
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointSimplifyLatestDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointSimplifyTimeRangeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidLatestQueryInfoModel;
@@ -64,7 +66,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RestController("PointValueV2RestController")
 @RequestMapping("/v2/point-values")
 public class PointValueRestController extends AbstractMangoRestV2Controller{
-
+    
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
     
     @ApiOperation(
@@ -107,23 +109,19 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             PointValueTimeCacheControl useCache,
             
             @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false, defaultValue="null") 
+            @RequestParam(required = false) 
             Double simplifyTolerance,
             
             @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false, defaultValue="null") 
+            @RequestParam(required = false) 
             Integer simplifyTarget,
-            
-            @ApiParam(value = "Simplify using pre-processing for higher quality results", required = false, allowMultiple = false) 
-            @RequestParam(required = false, defaultValue="false") 
-            boolean simplifyHighQuality,            
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
                 request.getServerPort(), before, dateTimeFormat, timezone, limit, 
-                useRendered, false, true, useCache);
+                useRendered, false, true, useCache, simplifyTolerance, simplifyTarget);
         
         return generateLatestStream(user, info, new String[] {xid});
     }    
@@ -167,12 +165,20 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
             PointValueTimeCacheControl useCache,
             
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Double simplifyTolerance,
+            
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Integer simplifyTarget,
+            
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
                 request.getServerPort(), before, dateTimeFormat, timezone, limit, 
-                useRendered, true, true, useCache);
+                useRendered, true, true, useCache, simplifyTolerance, simplifyTarget);
         
         return generateLatestStream(user, info, xids);
     }
@@ -236,12 +242,20 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
             PointValueTimeCacheControl useCache,
             
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Double simplifyTolerance,
+            
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Integer simplifyTarget,
+            
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
                 request.getServerPort(), before, dateTimeFormat, timezone, limit, 
-                useRendered, false, false, useCache);
+                useRendered, false, false, useCache, simplifyTolerance, simplifyTarget);
         
         return generateLatestStream(user, info, xids);
     } 
@@ -314,13 +328,21 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
             PointValueTimeCacheControl useCache,
             
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Double simplifyTolerance,
+            
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Integer simplifyTarget,
+            
             @AuthenticationPrincipal User user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, true, useCache);
+                bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -384,7 +406,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, useRendered, false, true, PointValueTimeCacheControl.NONE);
+                true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -434,14 +456,22 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
             @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
             PointValueTimeCacheControl useCache,
-
+            
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Double simplifyTolerance,
+            
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Integer simplifyTarget,
+            
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, true, true, useCache);
+                bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget);
         return generateStream(user, info, xids);
     }
     
@@ -521,7 +551,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
-                useRendered, true, true, PointValueTimeCacheControl.NONE);
+                useRendered, true, true, PointValueTimeCacheControl.NONE, null, null);
         return generateStream(user, info, xids);
     }
     
@@ -584,13 +614,21 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
             PointValueTimeCacheControl useCache,
             
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Double simplifyTolerance,
+            
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            Integer simplifyTarget,
+
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, false, useCache);
+                bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget);
         
         return generateStream(user, info, xids);
     }
@@ -665,7 +703,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, useRendered, false, false, PointValueTimeCacheControl.NONE);
+                true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null);
         
         return generateStream(user, info, xids);
     }
@@ -795,7 +833,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(User user, INFO info, String[] xids){
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = buildMap(user, xids);
-        return ResponseEntity.ok(new MultiPointLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
+        if(info.isUseSimplify())
+            return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
+        else
+            return ResponseEntity.ok(new MultiPointLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
     }
     
     /**
@@ -814,7 +855,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         if (info.getRollup() != RollupEnum.NONE) {
             return ResponseEntity.ok(new MultiDataPointStatisticsQuantizerStream<T, INFO>(info, voMap, this.dao));
         } else {
-            return ResponseEntity.ok(new MultiPointTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
+            if(info.isUseSimplify())
+                return ResponseEntity.ok(new MultiPointSimplifyTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
+            else
+                return ResponseEntity.ok(new MultiPointTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
         }
     }
     

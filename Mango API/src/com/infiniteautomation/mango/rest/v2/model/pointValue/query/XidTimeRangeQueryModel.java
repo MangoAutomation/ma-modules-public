@@ -36,8 +36,8 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
      */
     public XidTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
             String timezone, ZonedDateTime from, ZonedDateTime to, Integer limit,
-            boolean bookend, PointValueTimeCacheControl useCache) {
-        super(xids, useRendered, dateTimeFormat, timezone);
+            boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance, Integer simplifyTarget) {
+        super(xids, useRendered, dateTimeFormat, timezone, simplifyTolerance, simplifyTarget);
         this.from = from;
         this.to = to;
         this.limit = limit;
@@ -128,7 +128,7 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(String host, int port, boolean multiplePointsPerArray,
             boolean singleArray) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(host, port, from, to, dateTimeFormat, timezone,
-                RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, singleArray, useCache);
+                RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, singleArray, useCache, simplifyTolerance, simplifyTarget);
     };
     
 }

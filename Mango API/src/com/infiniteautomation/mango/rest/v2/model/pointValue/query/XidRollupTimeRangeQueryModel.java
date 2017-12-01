@@ -26,7 +26,7 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     
     public XidRollupTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
             String timezone, ZonedDateTime from, ZonedDateTime to, TimePeriod timePeriod) {
-        super(xids, useRendered, dateTimeFormat, timezone);
+        super(xids, useRendered, dateTimeFormat, timezone, null, null);
         this.from = from;
         this.to = to;
         this.timePeriod = timePeriod;
@@ -87,6 +87,6 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(String host, int port, boolean multiplePointsPerArray,
             boolean singleArray, RollupEnum rollup) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(host, port, from, to, dateTimeFormat, timezone,
-                rollup, timePeriod, null, true, useRendered, multiplePointsPerArray, singleArray, PointValueTimeCacheControl.NONE);
+                rollup, timePeriod, null, true, useRendered, multiplePointsPerArray, singleArray, PointValueTimeCacheControl.NONE, null, null);
     };
 }

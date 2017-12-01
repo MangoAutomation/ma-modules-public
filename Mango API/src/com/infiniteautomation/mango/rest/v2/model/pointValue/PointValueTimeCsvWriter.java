@@ -9,7 +9,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
@@ -31,9 +30,10 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
     }
 
     @Override
-    public void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend, boolean cached) throws IOException {
+    public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
         this.jgen.writeStartObject();
-        
+        DataPointVO vo = value.getVo();
+        PointValueTime pvt = value.getPvt();
         if(info.isMultiplePointsPerArray()) {
             writeStringField("xid", vo.getXid());
             if(pvt == null) {
@@ -42,9 +42,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 writeTimestamp(pvt.getTime());
                 if(pvt.isAnnotated())
                     writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
-                if(bookend)
+                if(value.isBookend())
                     writeBooleanField(BOOKEND, true);
-                if(cached)
+                if(value.isCached())
                     writeBooleanField(CACHED, true);
                 writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                 if(info.isUseRendered())
@@ -58,9 +58,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                     writeTimestamp(pvt.getTime());
                     if(pvt.isAnnotated())
                         writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
-                    if(bookend)
+                    if(value.isBookend())
                         writeBooleanField(BOOKEND, true);
-                    if(cached)
+                    if(value.isCached())
                         writeBooleanField(CACHED, true);
                     writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                     if(info.isUseRendered())
@@ -75,9 +75,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                     writeTimestamp(pvt.getTime());
                     if(pvt.isAnnotated())
                         writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
-                    if(bookend)
+                    if(value.isBookend())
                         writeBooleanField(BOOKEND, true);
-                    if(cached)
+                    if(value.isCached())
                         writeBooleanField(CACHED, true);
                     writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                     if(info.isUseRendered())

@@ -50,14 +50,18 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * @param useRendered
      * @param multiplePointsPerArray
      * @param singleArray
+     * @param useCache
+     * @param simplifyTolerance
+     * @param simplifyTarget
      */
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
             Integer limit, boolean bookend, boolean useRendered, 
-            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache) {
+            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
+            Double simplifyTolerance, Integer simplifyTarget) {
         super(host, port, from, dateTimeFormat, timezone,
                 limit, useRendered, multiplePointsPerArray, 
-                singleArray, useCache);
+                singleArray, useCache, simplifyTolerance, simplifyTarget);
 
 
         // Determine the timezone to use based on the incoming dates

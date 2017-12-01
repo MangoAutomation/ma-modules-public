@@ -14,6 +14,8 @@ public abstract class XidQueryInfoModel {
     protected boolean useRendered;
     protected String dateTimeFormat;
     protected String timezone;
+    protected Double simplifyTolerance;
+    protected Integer simplifyTarget;
     /**
      * 
      */
@@ -27,12 +29,14 @@ public abstract class XidQueryInfoModel {
      * @param timezone
      */
     public XidQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat,
-            String timezone) {
+            String timezone, Double simplifyTolerance, Integer simplifyTarget) {
         super();
         this.xids = xids;
         this.useRendered = useRendered;
         this.dateTimeFormat = dateTimeFormat;
         this.timezone = timezone;
+        this.simplifyTolerance = simplifyTolerance;
+        this.simplifyTarget = simplifyTarget;
     }
     /**
      * @return the xids
@@ -82,4 +86,29 @@ public abstract class XidQueryInfoModel {
     public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
+    /**
+     * @return the simplifyTolerance
+     */
+    public Double getSimplifyTolerance() {
+        return simplifyTolerance;
+    }
+    /**
+     * @param simplifyTolerance the simplifyTolerance to set
+     */
+    public void setSimplifyTolerance(Double simplifyTolerance) {
+        this.simplifyTolerance = simplifyTolerance;
+    }
+    /**
+     * @return the simplifyTarget
+     */
+    public Integer getSimplifyTarget() {
+        return simplifyTarget;
+    }
+    /**
+     * @param simplifyTarget the simplifyTarget to set
+     */
+    public void setSimplifyTarget(Integer simplifyTarget) {
+        this.simplifyTarget = simplifyTarget;
+    }
+    
 }

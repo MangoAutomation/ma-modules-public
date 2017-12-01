@@ -2,7 +2,7 @@
  * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -39,6 +39,14 @@ public class DataPointVOPointValueTimeBookend {
      */
     public IdPointValueTime getPvt() {
         return pvt;
+    }
+    
+    public long getTime() {
+        return pvt.getTime();
+    }
+    
+    public int getId() {
+        return vo.getId();
     }
     
     /**

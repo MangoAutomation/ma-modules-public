@@ -43,19 +43,29 @@ public class LatestQueryInfo {
     protected final UriComponentsBuilder imageServletBuilder;
     protected final DateTimeFormatter dateTimeFormatter; // Write a timestamp or string date
 
-    //TODO Remove when simplify is fully implemented
-    public LatestQueryInfo(String host, int port, ZonedDateTime from, String dateTimeFormat, String timezone, 
-            Integer limit, boolean useRendered, 
-            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache) {
-        this(host, port, from, dateTimeFormat, timezone, limit, useRendered,
-                multiplePointsPerArray, singleArray, useCache, null, null, false);
-    }
+    protected final Double simplifyTolerance;
+    protected final Integer simplifyTarget;
+    protected final boolean simplifyHighQuality = true; //Currently not in api
     
-    
+    /**
+     * 
+     * @param host
+     * @param port
+     * @param from
+     * @param dateTimeFormat
+     * @param timezone
+     * @param limit
+     * @param useRendered
+     * @param multiplePointsPerArray
+     * @param singleArray
+     * @param useCache
+     * @param simplifyTolerance
+     * @param simplifyTarget
+     */
     public LatestQueryInfo(String host, int port, ZonedDateTime from, String dateTimeFormat, String timezone, 
             Integer limit, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
-            Double simplifyTolerance, Integer simplifyTarget, boolean simplifyHighQuality) {
+            Double simplifyTolerance, Integer simplifyTarget) {
         
         // Quick validation
         validateTimezone(timezone);
@@ -102,6 +112,9 @@ public class LatestQueryInfo {
         this.multiplePointsPerArray = multiplePointsPerArray;
         this.singleArray = singleArray;
         this.useCache = useCache;
+        
+        this.simplifyTolerance = simplifyTolerance;
+        this.simplifyTarget = simplifyTarget;
     }
     
     
@@ -153,6 +166,10 @@ public class LatestQueryInfo {
         return dateTimeFormatter;
     }
     
+    public boolean isUseSimplify() {
+        return simplifyTolerance != null || simplifyTarget != null;
+    }
+    
     /**
      * Write a link to an image based on data point id and timestamp
      * 
@@ -175,6 +192,12 @@ public class LatestQueryInfo {
         return Functions.getRenderedText(vo, pvt);
     }
 
+    /**
+     * Render a double value using the data point's text renderer properties
+     * @param vo
+     * @param value
+     * @return
+     */
     public String getRenderedString(DataPointVO vo, Double value) {
         if (vo == null)
             return "-";

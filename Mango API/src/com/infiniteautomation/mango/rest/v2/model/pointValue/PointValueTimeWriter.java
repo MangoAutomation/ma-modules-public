@@ -10,13 +10,11 @@ import java.util.List;
 import javax.measure.unit.Unit;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
@@ -63,21 +61,13 @@ public abstract class PointValueTimeWriter {
     public abstract void writeEndArray() throws IOException;
     public abstract void writeStartObject() throws IOException;
     public abstract void writeEndObject() throws IOException;
-    
-	
-	public void writePointValueTime(DataPointVO vo, PointValueTime pvt) throws IOException {
-	    writePointValueTime(vo, pvt, false, false);
-	}
+
 	
 	/**
 	 * General write of one point value time
-	 * @param vo
-	 * @param pvt
-	 * @param bookend
-	 * @param cached
 	 * @throws IOException
 	 */
-    public abstract void writePointValueTime(DataPointVO vo, PointValueTime pvt, boolean bookend, boolean cached) throws IOException;
+    public abstract void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException;
     
     /**
      * 
