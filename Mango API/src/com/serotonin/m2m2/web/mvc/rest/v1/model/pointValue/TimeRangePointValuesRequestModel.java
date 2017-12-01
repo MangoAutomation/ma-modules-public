@@ -4,20 +4,24 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 
+import java.time.ZonedDateTime;
+
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 public class TimeRangePointValuesRequestModel extends PointValuesRequestModel {
     
     @DateTimeFormat(iso = ISO.DATE_TIME)
-    protected DateTime from;
+    protected ZonedDateTime from;
     
     @DateTimeFormat(iso = ISO.DATE_TIME)
-    protected DateTime to;
+    protected ZonedDateTime to;
     
     protected RollupEnum rollup = RollupEnum.NONE;
     protected TimePeriodType timePeriodType;
@@ -28,21 +32,37 @@ public class TimeRangePointValuesRequestModel extends PointValuesRequestModel {
         this.limit = null;
     }
     
-    public DateTime getFrom() {
+    public ZonedDateTime getFrom() {
         return from;
     }
     
-    public void setFrom(DateTime from) {
+    public void setFrom(ZonedDateTime from) {
         this.from = from;
     }
 
-    public DateTime getTo() {
+    @JsonIgnore
+    public DateTime getFromAsDateTime() {
+       if(from == null)
+           return null;
+       else
+           return new DateTime(from.toInstant().toEpochMilli(), DateTimeZone.forID(from.getOffset().getId()));
+    }
+    public ZonedDateTime getTo() {
         return to;
     }
 
-    public void setTo(DateTime to) {
+    public void setTo(ZonedDateTime to) {
         this.to = to;
     }
+    
+    @JsonIgnore
+    public DateTime getToAsDateTime() {
+        if(to == null)
+            return null;
+        else
+            return new DateTime(to.toInstant().toEpochMilli(), DateTimeZone.forID(to.getOffset().getId()));
+    }
+    
     public RollupEnum getRollup() {
         return rollup;
     }

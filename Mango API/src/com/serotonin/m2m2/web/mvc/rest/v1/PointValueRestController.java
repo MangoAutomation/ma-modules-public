@@ -987,8 +987,8 @@ public class PointValueRestController extends MangoRestController {
             @ApiParam(value = "Time Range Point Values Request model", required = true,
                     allowMultiple = true) @RequestBody TimeRangePointValuesRequestModel model) {
         return pointValuesForMultiplePointsAsSingleArray(request, model.getXids(),
-                model.isUseRendered(), model.isUnitConversion(), model.getFrom(),
-                model.getTo(), model.getRollup(), model.getTimePeriodType(),
+                model.isUseRendered(), model.isUnitConversion(), model.getFromAsDateTime(),
+                model.getToAsDateTime(), model.getRollup(), model.getTimePeriodType(),
                 model.getTimePeriods(), model.getTimezone(), model.getLimit(),
                 model.getDateTimeFormat());
     }
@@ -1161,8 +1161,8 @@ public class PointValueRestController extends MangoRestController {
             @ApiParam(value = "Time Range Point Values Request model", required = true,
                     allowMultiple = true) @RequestBody TimeRangePointValuesRequestModel model) {
         return pointValuesForMultiplePointsAsMultipleArrays(request, model.getXids(),
-                model.isUseRendered(), model.isUnitConversion(), model.getFrom(),
-                model.getTo(), model.getRollup(), model.getTimePeriodType(),
+                model.isUseRendered(), model.isUnitConversion(), model.getFromAsDateTime(),
+                model.getToAsDateTime(), model.getRollup(), model.getTimePeriodType(),
                 model.getTimePeriods(), model.getTimezone(), model.getLimit(),
                 model.getDateTimeFormat());
     }
