@@ -377,6 +377,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             
             Simplify<DataPointVOPointValueTimeBookend> simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
             DataPointVOPointValueTimeBookend[] simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), tolerance, info.simplifyHighQuality);
+            DataPointVOPointValueTimeBookend[] best = simplified;
             while(simplified.length < lowerTarget || simplified.length > upperTarget) {
                 
                 if (simplified.length > info.simplifyTarget) {
@@ -390,8 +391,14 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
                 simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), tolerance, info.simplifyHighQuality);
                 
-                if(iteration > maxIterations)
+                //Keep our best effort
+                if(Math.abs(info.simplifyTarget - simplified.length) < Math.abs(info.simplifyTarget - best.length))
+                    best = simplified;
+
+                if(iteration > maxIterations) {
+                    simplified = best;
                     break;
+                }
 
                 iteration++;
             }
