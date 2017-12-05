@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -49,6 +50,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.google.common.collect.Sets;
@@ -139,9 +141,10 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		String pathInStore = parsePath(request);
 		
 		File root = def.getRoot().getCanonicalFile();
+		Path rootPath = root.toPath();
 		File outputDirectory = new File(root, pathInStore).getCanonicalFile();
 
-        if (!outputDirectory.toPath().startsWith(root.toPath())) {
+        if (!outputDirectory.toPath().startsWith(rootPath)) {
             throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
         }
 		
@@ -160,13 +163,20 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 		MultiValueMap<String, MultipartFile> filemap = multipartRequest.getMultiFileMap();
 		for (String nameField : filemap.keySet()) {
 		    for (MultipartFile file : filemap.get(nameField)) {
-	            String filename = file.getOriginalFilename();
-	            File newFile;
-                if (overwrite) {
-                    newFile = new File(outputDirectory, filename);
-                } else {
-                    newFile = findUniqueFileName(outputDirectory, filename);
+		        String filename;
+		        if (file instanceof CommonsMultipartFile) {
+		            FileItem fileItem = ((CommonsMultipartFile) file).getFileItem();
+		            filename = fileItem.getName();
+		        } else {
+		            filename = file.getName();
+		        }
+
+	            File newFile = findUniqueFileName(outputDirectory, filename, overwrite);
+                File parent = newFile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
                 }
+                
 	            try (OutputStream output = new FileOutputStream(newFile, false)) {
 	                try (InputStream input  = file.getInputStream()) {
 	                    StreamUtils.copy(input, output);
@@ -296,8 +306,18 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         return new ResponseEntity<>(fileModel, HttpStatus.CREATED);
     }
 
-	private File findUniqueFileName(File directory, String filename) {
-	    File file = new File(directory, filename);
+	private File findUniqueFileName(File directory, String filename, boolean overwrite) throws IOException {
+	    File file = new File(directory, filename).getCanonicalFile();
+
+        if (!file.toPath().startsWith(directory.toPath())) {
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowUploadDirectory", filename));
+        }
+        
+	    if (overwrite) {
+	        return file;
+	    }
+	    
+	    File parent = file.getParentFile();
 	    
         String originalName = Files.getNameWithoutExtension(filename);
         String extension = Files.getFileExtension(filename);
@@ -305,9 +325,9 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         
 	    while (file.exists()) {
 	        if (extension.isEmpty()) {
-	            file = new File(directory, String.format("%s_%03d", originalName, i++));
+	            file = new File(parent, String.format("%s_%03d", originalName, i++));
 	        } else {
-	            file = new File(directory, String.format("%s_%03d.%s", originalName, i++, extension));
+	            file = new File(parent, String.format("%s_%03d.%s", originalName, i++, extension));
 	        }
 	    }
 	    
