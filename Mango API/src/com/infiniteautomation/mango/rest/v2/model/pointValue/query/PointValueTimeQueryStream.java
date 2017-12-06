@@ -80,20 +80,4 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
     public void setContentType(StreamContentType type) {
         this.contentType = type;
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getError()
-     */
-    @Override
-    public IOException getError() {
-        return error;
-    }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#cancelled()
-     */
-    @Override
-    public boolean cancelled() {
-        return this.error != null;
-    }
 }

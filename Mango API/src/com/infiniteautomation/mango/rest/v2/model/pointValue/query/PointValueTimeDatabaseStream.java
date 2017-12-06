@@ -37,14 +37,4 @@ public abstract class PointValueTimeDatabaseStream<T, INFO extends LatestQueryIn
         this.writer = writer;
         super.start(writer);
     }
-    
-
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#cancelled(java.io.IOException)
-     */
-    @Override
-    public void cancelled(IOException e) {
-        this.error = e;
-    }
-
 }

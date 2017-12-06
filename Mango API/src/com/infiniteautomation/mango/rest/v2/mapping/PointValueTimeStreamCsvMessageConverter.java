@@ -289,8 +289,6 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             stream.start(writer);
             stream.streamData(writer);
             stream.finish(writer);
-            if(stream.cancelled())
-                throw new HttpMessageNotWritableException(stream.getError().getMessage());
             generator.flush();
             
         }

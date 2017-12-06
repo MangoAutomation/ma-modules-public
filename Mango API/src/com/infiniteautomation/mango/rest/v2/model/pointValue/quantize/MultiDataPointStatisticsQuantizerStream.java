@@ -82,9 +82,9 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
      * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
      */
     @Override
-    public void lastValue(IdPointValueTime value, int index) throws IOException {
+    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-        quantizer.lastValue(value, index);
+        quantizer.lastValue(value, index, bookend);
         if(!info.isSingleArray())
             writer.writeEndArray();
     }

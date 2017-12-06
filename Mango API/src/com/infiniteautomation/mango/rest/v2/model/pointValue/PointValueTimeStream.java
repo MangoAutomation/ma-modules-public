@@ -34,16 +34,4 @@ public interface PointValueTimeStream<T, INFO extends LatestQueryInfo> {
      */
     public void setContentType(StreamContentType type);
     
-    /**
-     * Did something go wrong during streaming
-     * @return
-     */
-    public boolean cancelled();
-    
-    /**
-     * Return the error if it was cancelled, if not this should return null
-     * @return
-     */
-    public IOException getError();
-
 }

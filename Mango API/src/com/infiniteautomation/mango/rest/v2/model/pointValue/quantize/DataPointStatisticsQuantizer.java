@@ -54,16 +54,8 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
      * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
      */
     @Override
-    public void lastValue(IdPointValueTime value, int index) throws IOException {
-        quantizer.lastValue(value, index);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#cancelled(java.io.IOException)
-     */
-    @Override
-    public void cancelled(IOException e) {
-        this.callback.cancelled(e);
+    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+        quantizer.lastValue(value, index, bookend);
     }
     
     /* (non-Javadoc)

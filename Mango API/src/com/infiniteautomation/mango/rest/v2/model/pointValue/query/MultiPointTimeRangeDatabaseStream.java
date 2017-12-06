@@ -42,25 +42,12 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
             processCacheOnly();
             return;
         }
-        
-        //If there is a limit we can only use 1 point at a time for multiple array results in SQL
-        if(info.getLimit() != null && isSql) {
-            Iterator<Integer> it = voMap.keySet().iterator();
-            while(it.hasNext()) {
-                List<Integer> singleList = new ArrayList<>(1);
-                singleList.add(it.next());
-                if(info.isBookend())
-                    this.dao.wideBookendQuery(singleList, info.getFromMillis(), info.getToMillis(), false, info.getLimit(), this);
-                else
-                    this.dao.getPointValuesBetween(singleList, info.getFromMillis(), info.getToMillis(), false, info.getLimit(), this);
-            }
-        }else {
-            //Maybe NoSQL or no limit
-            if(info.isBookend())
-                this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
-            else
-                this.dao.getPointValuesBetween(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
-        }
+
+        //Do we need bookends?
+        if(info.isBookend())
+            this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        else
+            this.dao.getPointValuesBetween(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
     
     /* (non-Javadoc)
@@ -75,8 +62,8 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
      * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
      */
     @Override
-    public void lastValue(IdPointValueTime value, int index) throws IOException {
-        processRow(value, index, true, false);
+    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+        processRow(value, index, bookend, false);
     }
     
     /**

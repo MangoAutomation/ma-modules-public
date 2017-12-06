@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -23,8 +22,6 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyPointValueE
 import com.serotonin.log.LogStopWatch;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
-import com.serotonin.m2m2.db.dao.PointValueDaoMetrics;
-import com.serotonin.m2m2.db.dao.PointValueDaoSQL;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -41,12 +38,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
  */
 public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> extends PointValueTimeDatabaseStream<T, INFO>{
     
-    protected Map<Long, List<DataPointVOPointValueTimeBookend>> singleArrayValues; //For writing multiple points single array SQL
     protected long currentTime; //For writing multiple points single array NoSQL
     protected final List<DataPointVOPointValueTimeBookend> currentValues;
-    protected final List<DataPointVOPointValueTimeBookend> finalValues;
     protected int currentDataPointId;
-    protected final boolean isSql;
     //List of cached values per data point id, sorted in descending time order
     protected final Map<Integer, List<IdPointValueTime>> cache;
     protected final Map<Integer,LimitCounter> limiters;  //For use with cache so we don't return too many values, assuming that caches sizes are small this should have minimal effects
@@ -54,16 +48,9 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     public MultiPointLatestDatabaseStream(INFO info,
             Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
-        this.singleArrayValues = new LinkedHashMap<>();
+        
         this.currentValues = new ArrayList<>(voMap.size());
-        this.finalValues = new ArrayList<>(voMap.size());
         this.currentDataPointId = Common.NEW_ID;
-        if(this.dao instanceof PointValueDaoMetrics) {
-            PointValueDaoMetrics pvdm = (PointValueDaoMetrics)this.dao;
-            this.isSql = pvdm.getBaseDao() instanceof PointValueDaoSQL;
-        }else {
-            this.isSql = this.dao instanceof PointValueDaoSQL;
-        }
         if(info.isUseCache() != PointValueTimeCacheControl.NONE)
             cache = buildCache();
         else
@@ -84,19 +71,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             processCacheOnly();
             return;
         }
-        
-        if(info.getLimit() != null && isSql) {
-            //If there is a limit we can only use 1 point at a time in SQL
-            Iterator<Integer> it = voMap.keySet().iterator();
-            while(it.hasNext()) {
-                List<Integer> singleList = new ArrayList<>(1);
-                singleList.add(it.next());
-                this.dao.getLatestPointValues(singleList, info.getFromMillis(), false, info.getLimit(), this);
-            }
-        }else {
-            //Maybe NoSQL or no limit
-            this.dao.getLatestPointValues(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), !info.isSingleArray(), info.getLimit(), this);
-        }
+        this.dao.getLatestPointValues(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
 
     /* (non-Javadoc)
@@ -112,20 +87,14 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      */
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
-        if(info.isSingleArray() && info.getLimit() != null && isSql) {
-            writeSingleArray(writer);
+        //Write out all our current values and the final bookend
+        if(info.isSingleArray() && voMap.size() > 1) {
+            if(currentValues.size() > 0)
+                writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
         }else {
-            //Write out all our current values and the final bookend
-            if(info.isSingleArray() && voMap.size() > 0) {
-                if(currentValues.size() > 0)
-                    writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
-               if(finalValues.size() > 0)
-                   writer.writeMultiplePointValuesAtSameTime(finalValues, finalValues.get(0).getPvt().getTime());
-            }else {
-                if(voMap.size() > 1) {
-                    if(contentType == StreamContentType.JSON)
-                        writer.writeEndArray();
-                }
+            if(voMap.size() > 1) {
+                if(contentType == StreamContentType.JSON)
+                    writer.writeEndArray();
             }
         }
         super.finish(writer);
@@ -159,33 +128,29 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * @throws IOException 
      */
     protected void writeValue(DataPointVOPointValueTimeBookend value) throws IOException {
-        if(info.isSingleArray() && info.getLimit() != null && isSql && voMap.size() > 1) {
-            //Must collate in memory
-            addToSingleArray(value);
-        }else {
-            if(info.isSingleArray() && voMap.size() > 1) {
-                if(currentTime == value.getTime())
-                    currentValues.add(value);
-                else {
-                    if(currentValues.size() > 0) {
-                        writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
-                        currentValues.clear();
-                    }
-                    currentTime = value.getTime();
-                    currentValues.add(value);
+
+        if(info.isSingleArray() && voMap.size() > 1) {
+            if(currentTime == value.getTime())
+                currentValues.add(value);
+            else {
+                if(currentValues.size() > 0) {
+                    writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
+                    currentValues.clear();
                 }
-            }else {
-                if(!info.isSingleArray()) {
-                    //Writing multi-array, could be a multi-array of 1 though
-                    if(currentDataPointId != value.getId()) {
-                        if(currentDataPointId != -1)
-                            writer.writeEndArray();
-                        writer.writeStartArray(this.voMap.get(value.getId()).getXid());
-                        currentDataPointId = value.getId();
-                    }
-                }
-                writer.writePointValueTime(value);
+                currentTime = value.getTime();
+                currentValues.add(value);
             }
+        }else {
+            if(!info.isSingleArray()) {
+                //Writing multi-array, could be a multi-array of 1 though
+                if(currentDataPointId != value.getId()) {
+                    if(currentDataPointId != -1)
+                        writer.writeEndArray();
+                    writer.writeStartArray(this.voMap.get(value.getId()).getXid());
+                    currentDataPointId = value.getId();
+                }
+            }
+            writer.writePointValueTime(value);
         }
     }
     
@@ -222,27 +187,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 this.cache.remove(value.getId());
         }
         return true;
-    }
-    
-    protected void writeSingleArray(PointValueTimeWriter writer) throws IOException {
-        //Write out all our values collated
-        for(List<DataPointVOPointValueTimeBookend> values : this.singleArrayValues.values()) {
-            if(values.size() > 0)
-                writer.writeMultiplePointValuesAtSameTime(values, values.get(0).getPvt().getTime());
-        }
-    }
-    
-    /**
-     * @param value
-     */
-    protected void addToSingleArray(DataPointVOPointValueTimeBookend value) {
-      //Must collate in memory
-        List<DataPointVOPointValueTimeBookend> values = singleArrayValues.get(value.getTime());
-        if(values == null) {
-            values = new ArrayList<DataPointVOPointValueTimeBookend>();
-            singleArrayValues.put(value.getTime(), values);
-        }
-        values.add(value);
     }
     
     /**
