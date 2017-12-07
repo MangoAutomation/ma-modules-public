@@ -251,6 +251,24 @@ public class DataPointRestController extends BaseMangoRestController {
 
         return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.CREATED);
     }
+    
+    @ApiOperation(value = "Delete a data point")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
+    public DataPointModel deleteDataPoint(
+            @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal User user) {
+
+        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        if (dataPoint == null) {
+            throw new NotFoundRestException();
+        }
+        
+        Permissions.ensureDataPointReadPermission(user, dataPoint);
+        
+        Common.runtimeManager.deleteDataPoint(dataPoint);
+        return new DataPointModel(dataPoint);
+    }
 
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (user.isAdmin()) {
