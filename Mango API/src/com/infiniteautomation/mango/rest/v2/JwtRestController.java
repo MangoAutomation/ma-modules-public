@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
-package com.serotonin.m2m2.web.mvc.rest.v1;
+package com.infiniteautomation.mango.rest.v2;
 
 import java.util.Date;
 
@@ -11,35 +11,37 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
 import com.serotonin.m2m2.web.mvc.spring.components.JwtService;
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
- * TODO This is Currently Disabled
  * JSON Web Token REST endpoint
  *
  * @author Jared Wiltshire
- *
  */
-//@Api(value = "JWT", description = "JSON web tokens")
-//@RestController
-//@RequestMapping("/v1/jwt")
+@Api(value = "JWT", description = "JSON web tokens")
+@RestController
+@RequestMapping("/v2/jwt")
 public class JwtRestController extends MangoRestController {
+    
     @Autowired
     JwtService jwtService;
 
     @ApiOperation(value = "Create token", notes = "Creates a token for the current user")
-    @RequestMapping(path="/create", method = RequestMethod.GET, produces={"application/json"})
+    @RequestMapping(path="/create", method = RequestMethod.POST, produces={"application/json"})
     public ResponseEntity<TokenModel> createToken(
             @RequestParam(required = false) Date expiry,
             @AuthenticationPrincipal User user,
@@ -55,8 +57,9 @@ public class JwtRestController extends MangoRestController {
     }
     
     @ApiOperation(value = "Create token for user", notes = "Creates a token for a given user")
-    @RequestMapping(path="/create/{username}", method = RequestMethod.GET, produces={"application/json"})
-    @Secured("ROLE_SUPERADMIN")
+    @RequestMapping(path="/create/{username}", method = RequestMethod.POST, produces={"application/json"})
+    //@Secured("ROLE_SUPERADMIN")
+    @PreAuthorize("isAdmin()")
     public ResponseEntity<TokenModel> createTokenForUser(
             @PathVariable String username,
             @RequestParam(required = false) Date expiry,
