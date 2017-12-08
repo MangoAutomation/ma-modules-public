@@ -5,9 +5,6 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,11 +38,10 @@ public class JwtRestController extends MangoRestController {
     UserAuthJwtService jwtService;
 
     @ApiOperation(value = "Create token", notes = "Creates a token for the current user")
-    @RequestMapping(path="/create", method = RequestMethod.POST, produces={"application/json"})
+    @RequestMapping(path="/create", method = RequestMethod.POST)
     public ResponseEntity<String> createToken(
             @RequestParam(required = false) Date expiry,
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request, HttpServletResponse response) {
+            @AuthenticationPrincipal User user) {
 
         if (expiry == null) {
             expiry = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000);
@@ -57,13 +53,12 @@ public class JwtRestController extends MangoRestController {
     }
     
     @ApiOperation(value = "Create token for user", notes = "Creates a token for a given user")
-    @RequestMapping(path="/create/{username}", method = RequestMethod.POST, produces={"application/json"})
+    @RequestMapping(path="/create/{username}", method = RequestMethod.POST)
     //@Secured("ROLE_SUPERADMIN")
     @PreAuthorize("isAdmin()")
     public ResponseEntity<String> createTokenForUser(
             @PathVariable String username,
-            @RequestParam(required = false) Date expiry,
-            HttpServletRequest request, HttpServletResponse response) {
+            @RequestParam(required = false) Date expiry) {
 
         if (expiry == null) {
             expiry = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000);
