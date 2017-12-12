@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedExceptio
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -55,9 +57,12 @@ import net.jazdw.rql.parser.ASTNode;
 public class UserRestController extends MangoVoRestController<User, UserModel, UserDao>{
 	
 	private static Log LOG = LogFactory.getLog(UserRestController.class);
+	private final MangoSessionRegistry sessionRegistry;
 	
-	public UserRestController(){
+	@Autowired
+	public UserRestController(MangoSessionRegistry sessionRegistry) {
 		super(UserDao.instance);
+		this.sessionRegistry = sessionRegistry;
 	}
 
 	@ApiOperation(value = "Get all users", notes = "Returns a list of all users")
@@ -202,7 +207,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         			else
         				newUser.setPassword(u.getPassword());
         			UserDao.instance.saveUser(newUser);
-    	        	this.maybeUpdateSessionUser(user, newUser, request);
+        			sessionRegistry.userUpdated(request, newUser);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -260,7 +265,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                             }
                         }
                 		UserDao.instance.saveUser(newUser);
-                        this.maybeUpdateSessionUser(user, newUser, request);
+                        sessionRegistry.userUpdated(request, newUser);
        	        	 	URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
        	        	 	result.addRestMessage(getResourceCreatedMessage(location));
         	        }
@@ -362,7 +367,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
     	            UserDao.instance.saveHomeUrl(u.getId(), url);
-    	            this.maybeUpdateSessionUser(user, u, request);
+                    sessionRegistry.userUpdated(request, u);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -380,7 +385,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        }else{
         	        	//We have confirmed that we are the user
          	            UserDao.instance.saveHomeUrl(u.getId(), url);
-        	            this.maybeUpdateSessionUser(user, u, request);
+                        sessionRegistry.userUpdated(request, u);
         	        }
     				return result.createResponseEntity(model);
     			}
@@ -422,8 +427,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	        if(!model.validate()){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
-    	    		UserDao.instance.saveUser(model.getData());
-    	        	this.maybeUpdateSessionUser(user, model.getData(), request);
+    	    		UserDao.instance.saveUser(u);
+                    sessionRegistry.userUpdated(request, u);
     	        }
     			return result.createResponseEntity(model);
     		}else{
@@ -443,8 +448,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         	        if(!model.validate()){
         	        	result.addRestMessage(this.getValidationFailedError());
         	        }else{
-        	    		UserDao.instance.saveUser(model.getData());
-        	        	this.maybeUpdateSessionUser(user, model.getData(), request);
+        	    		UserDao.instance.saveUser(u);
+                        sessionRegistry.userUpdated(request, u);
         	        }
     				return result.createResponseEntity(model);
     			}
@@ -661,18 +666,5 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	public UserModel createModel(User vo) {
 		return new UserModel(vo);
 	}
-	
-	/**
-	 * Ensure we update the user in the HttpSession if that user is us.  Otherwise 
-	 * the User's session will be expired (at the Dao level) if we are editing another user.
-	 * @param currentUser
-	 * @param newUser
-	 * @param request
-	 */
-	private void maybeUpdateSessionUser(User currentUser, User newUser, HttpServletRequest request){
-		if(currentUser.getId() == newUser.getId()){
-			//Update in HttpSession
-			Common.setHttpUser(request, newUser);
-		}
-	}
+
 }
