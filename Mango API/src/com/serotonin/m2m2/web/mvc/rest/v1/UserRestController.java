@@ -18,6 +18,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
@@ -155,7 +158,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     		@PathVariable String username,
     		@RequestBody(required=true) UserModel model,
     		UriComponentsBuilder builder,
-    		HttpServletRequest request) throws RestValidationFailedException {
+    		HttpServletRequest request,
+            Authentication authentication) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -170,6 +174,10 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
                 // Cannot make yourself disabled or not admin
                 if (user.getId() == u.getId()) {
+                    if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
+                        throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+                    }
+                    
                 	boolean failed = false;
                     if (!model.isAdmin()){
                     	model.addValidationMessage(new ProcessMessage("permissions", new TranslatableMessage("users.validate.adminInvalid")));
@@ -216,6 +224,10 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	    			result.addRestMessage(this.getUnauthorizedMessage());
 	    			return result.createResponseEntity();
     			}else{
+    			    if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
+                        throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+                    }
+    			    
     				//Allow users to update themselves
     				User newUser = model.getData();
         			newUser.setId(u.getId());
@@ -350,7 +362,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     		@ApiParam(value = "Home Url", required = true, allowMultiple = false)
     		@RequestParam(required=true)
     		String url,
-    		HttpServletRequest request) throws RestValidationFailedException {
+    		HttpServletRequest request,
+            Authentication authentication) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -361,6 +374,11 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
     	        }
+    			
+                if (u.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken)) {
+                    throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+                }
+    			
     			u.setHomeUrl(url);
     			UserModel model = new UserModel(u);
     	        if(!model.validate()){
@@ -407,7 +425,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     		@ApiParam(value = "Mute", required = false, defaultValue="Toggle the current setting", allowMultiple = false)
     		@RequestParam(required=false)
     		Boolean mute,
-    		HttpServletRequest request) throws RestValidationFailedException {
+    		HttpServletRequest request,
+            Authentication authentication) throws RestValidationFailedException {
 
 		RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -418,6 +437,11 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     				result.addRestMessage(getDoesNotExistMessage());
     	    		return result.createResponseEntity();
     	        }
+                
+                if (u.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken)) {
+                    throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+                }
+                
     			if(mute == null){
     				u.setMuted(!u.isMuted());
     			}else{
