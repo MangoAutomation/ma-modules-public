@@ -6,6 +6,8 @@ package com.infiniteautomation.mango.rest.v2;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,6 +44,8 @@ import io.jsonwebtoken.Jws;
 @RequestMapping("/v2/auth-tokens")
 public class JwtRestController extends MangoRestController {
 
+    private static final int DEFAULT_EXPIRY = 5 * 60 * 1000; // 5 minutes
+    
     private final UserAuthJwtService jwtService;
     
     @Autowired
@@ -52,7 +56,10 @@ public class JwtRestController extends MangoRestController {
     @ApiOperation(value = "Create token", notes = "Creates a token for the current user")
     @RequestMapping(path="/create", method = RequestMethod.POST)
     public ResponseEntity<String> createToken(
-            @RequestParam(required = false) Date expiry,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME)
+            Date expiry,
+            
             @AuthenticationPrincipal User user,
             Authentication authentication) {
         
@@ -61,9 +68,8 @@ public class JwtRestController extends MangoRestController {
         }
 
         if (expiry == null) {
-            expiry = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000);
+            expiry = new Date(System.currentTimeMillis() + DEFAULT_EXPIRY);
         }
-        // TODO enforce min/max limits on expiry
 
         String token = jwtService.generateToken(user, expiry);
         return new ResponseEntity<>(token, HttpStatus.CREATED);
@@ -75,7 +81,11 @@ public class JwtRestController extends MangoRestController {
     @PreAuthorize("isAdmin()")
     public ResponseEntity<String> createTokenForUser(
             @PathVariable String username,
-            @RequestParam(required = false) Date expiry,
+            
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME)
+            Date expiry,
+            
             Authentication authentication) {
 
         if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
@@ -83,9 +93,8 @@ public class JwtRestController extends MangoRestController {
         }
         
         if (expiry == null) {
-            expiry = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000);
+            expiry = new Date(System.currentTimeMillis() + DEFAULT_EXPIRY);
         }
-        // TODO enforce min/max limits on expiry
 
         User user = UserDao.instance.getUser(username);
         if (user == null) {
