@@ -14,15 +14,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.quantize.BucketCalculator;
+import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
+import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
-import com.serotonin.m2m2.view.quantize3.BucketCalculator;
-import com.serotonin.m2m2.view.quantize3.BucketsBucketCalculator;
-import com.serotonin.m2m2.view.quantize3.TimePeriodBucketCalculator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 

@@ -4,9 +4,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 
-import com.serotonin.m2m2.view.quantize3.AnalogStatisticsQuantizer;
-import com.serotonin.m2m2.view.quantize3.BucketCalculator;
-import com.serotonin.m2m2.view.stats.AnalogStatistics;
+import com.infiniteautomation.mango.quantize.AnalogStatisticsQuantizer;
+import com.infiniteautomation.mango.quantize.BucketCalculator;
+import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**

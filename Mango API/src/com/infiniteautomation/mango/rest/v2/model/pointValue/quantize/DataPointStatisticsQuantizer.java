@@ -7,9 +7,9 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 import java.io.IOException;
 
 import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.quantize.AbstractPointValueTimeQuantizer;
+import com.infiniteautomation.mango.quantize.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
-import com.serotonin.m2m2.view.quantize3.AbstractPointValueTimeQuantizer;
-import com.serotonin.m2m2.view.quantize3.StatisticsGeneratorQuantizerCallback;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -56,6 +56,7 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.lastValue(value, index, bookend);
+        quantizer.done();
     }
     
     /* (non-Javadoc)
