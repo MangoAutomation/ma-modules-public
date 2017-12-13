@@ -23,41 +23,31 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
     
     @Override
     public void beginPolling() {
-    	super.beginPolling();
+        super.beginPolling();
     }
     
     @Override
     protected void doPollNoSync(long time) {
-    	if(vo.isPolling()) {
-	        synchronized (pointListChangeLock) {
-	            doPoll(time);
-	        }
-    	}
+        if (vo.isPolling()) {
+            synchronized (pointListChangeLock) {
+                doPoll(time);
+            }
+        }
     }
 
     @Override
     public void doPoll(long time) {
-    	if(delay > 0){
-	    	try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) { }
-    	}
+        if (delay > 0) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+        }
         for (DataPointRT dataPoint : dataPoints) {
             VirtualPointLocatorRT locator = dataPoint.getPointLocator();
 
-            //DataValue oldValue = locator.getCurrentValue();
-
             // Change the point values according to their definitions.
             locator.change();
-
-            //DataValue newValue = locator.getCurrentValue();
-
-            // Update the data image with the new value if necessary.
-            //TP EDIT, let the data point settings in the core choose the logging settings for us
-            // rather than use only insert changes here
-            //TP TODO: this actually causes issues in high polling data sources.  When setting the value from the UI
-            // it will set the value once from there and another time from here.
-            //if (!DataValue.isEqual(oldValue, newValue))
             dataPoint.updatePointValue(new PointValueTime(locator.getCurrentValue(), time));
         }
     }
