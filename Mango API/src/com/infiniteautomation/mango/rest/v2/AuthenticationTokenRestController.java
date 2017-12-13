@@ -39,17 +39,17 @@ import io.jsonwebtoken.Jws;
  *
  * @author Jared Wiltshire
  */
-@Api(value = "JWT", description = "JSON web tokens")
+@Api(value = "Authentication tokens", description = "Creates and verifies JWT (JSON web token) authentication tokens")
 @RestController
 @RequestMapping("/v2/auth-tokens")
-public class JwtRestController extends MangoRestController {
+public class AuthenticationTokenRestController extends MangoRestController {
 
     private static final int DEFAULT_EXPIRY = 5 * 60 * 1000; // 5 minutes
     
     private final UserAuthJwtService jwtService;
     
     @Autowired
-    public JwtRestController(UserAuthJwtService jwtService) {
+    public AuthenticationTokenRestController(UserAuthJwtService jwtService) {
         this.jwtService = jwtService;
     }
 
