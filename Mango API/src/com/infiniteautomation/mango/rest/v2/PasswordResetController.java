@@ -3,6 +3,10 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.io.IOException;
+
+import javax.mail.internet.AddressException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +25,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -51,7 +56,7 @@ public class PasswordResetController extends MangoRestController {
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,
             
-            @RequestBody SendEmailRequestBody body) {
+            @RequestBody SendEmailRequestBody body) throws AddressException, TemplateException, IOException {
         
         User user = UserDao.instance.getUser(username);
         if (user == null) {
@@ -78,7 +83,7 @@ public class PasswordResetController extends MangoRestController {
         try {
             passwordResetService.resetPassword(body.getToken(), body.getNewPassword());
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.invalidPasswordResetToken"));
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidPasswordResetToken"), e);
         }
     }
 
