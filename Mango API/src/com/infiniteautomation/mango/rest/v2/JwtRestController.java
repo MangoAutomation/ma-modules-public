@@ -118,5 +118,17 @@ public class JwtRestController extends MangoRestController {
             @RequestParam(required=true) String token) {
         return this.jwtService.parse(token);
     }
+    
+    @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all authentication tokens")
+    @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
+    @PreAuthorize("isAdmin()")
+    public void resetKeys(Authentication authentication) {
+
+        if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
+            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+        }
+        
+        jwtService.resetKeys();
+    }
 
 }
