@@ -26,7 +26,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
-import com.serotonin.m2m2.web.mvc.spring.components.UserAuthJwtService;
+import com.serotonin.m2m2.web.mvc.spring.components.TokenAuthenticationService;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -46,11 +46,11 @@ public class AuthenticationTokenRestController extends MangoRestController {
 
     private static final int DEFAULT_EXPIRY = 5 * 60 * 1000; // 5 minutes
     
-    private final UserAuthJwtService jwtService;
+    private final TokenAuthenticationService tokenAuthService;
     
     @Autowired
-    public AuthenticationTokenRestController(UserAuthJwtService jwtService) {
-        this.jwtService = jwtService;
+    public AuthenticationTokenRestController(TokenAuthenticationService jwtService) {
+        this.tokenAuthService = jwtService;
     }
 
     @ApiOperation(value = "Create token", notes = "Creates a token for the current user")
@@ -71,7 +71,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
             expiry = new Date(System.currentTimeMillis() + DEFAULT_EXPIRY);
         }
 
-        String token = jwtService.generateToken(user, expiry);
+        String token = tokenAuthService.generateToken(user, expiry);
         return new ResponseEntity<>(token, HttpStatus.CREATED);
     }
     
@@ -101,14 +101,14 @@ public class AuthenticationTokenRestController extends MangoRestController {
             throw new NotFoundRestException();
         }
         
-        String token = jwtService.generateToken(user, expiry);
+        String token = tokenAuthService.generateToken(user, expiry);
         return new ResponseEntity<>(token, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Gets the public key for verifying authentication tokens")
     @RequestMapping(path="/public-key", method = RequestMethod.GET)
     public String getPublicKey() {
-        return this.jwtService.getPublicKey();
+        return this.tokenAuthService.getPublicKey();
     }
 
     @ApiOperation(value = "Verifies and parses an authentication token")
@@ -116,7 +116,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
     public Jws<Claims> verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
-        return this.jwtService.parse(token);
+        return this.tokenAuthService.parse(token);
     }
     
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all authentication tokens")
@@ -128,7 +128,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
         }
         
-        jwtService.resetKeys();
+        tokenAuthService.resetKeys();
     }
 
 }
