@@ -8,9 +8,11 @@ import java.io.IOException;
 import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
@@ -22,10 +24,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
 import com.serotonin.m2m2.web.mvc.spring.components.PasswordResetService;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 import freemarker.template.TemplateException;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.IncorrectClaimException;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureException;
@@ -34,6 +39,8 @@ import io.jsonwebtoken.UnsupportedJwtException;
 /**
  * Password reset REST endpoints
  *
+ * WARNING! This REST controller is PUBLIC by default. Add @PreAuthorize annotations to restrict individual end-points.
+ * 
  * @author Jared Wiltshire
  */
 @Api(value = "Password reset", description = "Endpoints for resetting user passwords")
@@ -80,6 +87,27 @@ public class PasswordResetController extends MangoRestController {
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidPasswordResetToken"), e);
         }
+    }
+    
+    @ApiOperation(value = "Gets the public key for verifying password reset tokens")
+    @RequestMapping(path="/public-key", method = RequestMethod.GET)
+    public String getPublicKey() {
+        return this.passwordResetService.getPublicKey();
+    }
+
+    @ApiOperation(value = "Verify the sigature and parse a password reset token", notes="Does NOT verify the claims")
+    @RequestMapping(path="/verify", method = RequestMethod.GET)
+    public Jws<Claims> verifyToken(
+            @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
+            @RequestParam(required=true) String token) {
+        return this.passwordResetService.parse(token);
+    }
+    
+    @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all password reset tokens")
+    @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
+    @PreAuthorize("isAdmin()")
+    public void resetKeys() {
+        passwordResetService.resetKeys();
     }
 
     public static class SendEmailRequestBody {
