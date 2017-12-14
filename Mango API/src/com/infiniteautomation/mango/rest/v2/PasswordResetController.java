@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2;
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Locale;
 
 import javax.mail.internet.AddressException;
 
@@ -77,7 +78,9 @@ public class PasswordResetController extends MangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.emailRequired"));
         }
         
-        if (!email.equals(user.getEmail())) {
+        String providedEmail = email.toLowerCase(Locale.ROOT);
+        String userEmail = user.getEmail().toLowerCase(Locale.ROOT);
+        if (!providedEmail.equals(userEmail)) {
             throw new BadRequestException(new TranslatableMessage("rest.error.incorrectEmail"));
         }
         
