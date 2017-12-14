@@ -8,7 +8,6 @@ import java.io.IOException;
 import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +22,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
 import com.serotonin.m2m2.web.mvc.spring.components.PasswordResetService;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
 
 import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -51,14 +49,11 @@ public class PasswordResetController extends MangoRestController {
     }
 
     @ApiOperation(value = "Sends the user an email containing a password reset link")
-    @RequestMapping(method = RequestMethod.POST, value = "/send-email/{username}")
+    @RequestMapping(method = RequestMethod.POST, value = "/send-email")
     public void sendEmail(
-            @ApiParam(value = "Username", required = true, allowMultiple = false)
-            @PathVariable String username,
-            
             @RequestBody SendEmailRequestBody body) throws AddressException, TemplateException, IOException {
         
-        User user = UserDao.instance.getUser(username);
+        User user = UserDao.instance.getUser(body.getUsername());
         if (user == null) {
             throw new NotFoundRestException();
         }
@@ -88,6 +83,7 @@ public class PasswordResetController extends MangoRestController {
     }
 
     public static class SendEmailRequestBody {
+        private String username;
         private String email;
 
         public String getEmail() {
@@ -96,6 +92,14 @@ public class PasswordResetController extends MangoRestController {
 
         public void setEmail(String email) {
             this.email = email;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
         }
     }
     
