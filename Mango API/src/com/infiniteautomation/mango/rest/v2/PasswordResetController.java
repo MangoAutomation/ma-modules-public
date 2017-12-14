@@ -4,17 +4,22 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.UnknownHostException;
 
 import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.db.dao.UserDao;
@@ -105,11 +110,63 @@ public class PasswordResetController extends MangoRestController {
     
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all password reset tokens")
     @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
-    @PreAuthorize("isAdmin()")
+    @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public void resetKeys() {
         passwordResetService.resetKeys();
     }
+    
+    @ApiOperation(value = "Creates a password reset token and link for the given user")
+    @RequestMapping(method = RequestMethod.POST, value = "/create/{username}")
+    @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
+    public CreateTokenResponse createTokenForUser(
+            @ApiParam(value = "Username", required = true, allowMultiple = false)
+            @PathVariable String username,
+            
+            @AuthenticationPrincipal User currentUser) throws UnknownHostException {
+        
+        User user = UserDao.instance.getUser(username);
+        if (user == null) {
+            throw new NotFoundRestException();
+        }
+        
+        if (user.getId() == currentUser.getId()) {
+            throw new AccessDeniedException(new TranslatableMessage("rest.error.cantResetOwnUser"));
+        }
+        
+        CreateTokenResponse response = new CreateTokenResponse();
+        String token = passwordResetService.generateToken(user);
+        response.setToken(token);
+        response.setFullUrl(passwordResetService.generateResetUrl(token));
+        response.setRelativeUrl(passwordResetService.generateRelativeResetUrl(token));
+        
+        return response;
+    }
 
+    public static class CreateTokenResponse {
+        private String token;
+        private URI fullUrl;
+        private URI relativeUrl;
+        
+        public String getToken() {
+            return token;
+        }
+        public void setToken(String token) {
+            this.token = token;
+        }
+        public URI getFullUrl() {
+            return fullUrl;
+        }
+        public void setFullUrl(URI fullUrl) {
+            this.fullUrl = fullUrl;
+        }
+        public URI getRelativeUrl() {
+            return relativeUrl;
+        }
+        public void setRelativeUrl(URI relativeUrl) {
+            this.relativeUrl = relativeUrl;
+        }
+    }
+    
     public static class SendEmailRequestBody {
         private String username;
         private String email;

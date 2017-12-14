@@ -69,6 +69,14 @@ public class AuthenticationTokenRestController extends MangoRestController {
         return new ResponseEntity<>(token, HttpStatus.CREATED);
     }
     
+    @ApiOperation(value = "Revoke all tokens", notes = "Revokes all tokens for the current user")
+    @RequestMapping(path="/revoke", method = RequestMethod.POST)
+    @PreAuthorize("isAuthenticated() and isPasswordAuthenticated()")
+    public void revokeTokens(
+            @AuthenticationPrincipal User user) {
+        tokenAuthService.revokeTokens(user);
+    }
+    
     @ApiOperation(value = "Create token for user", notes = "Creates a token for a given user")
     @RequestMapping(path="/create/{username}", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
@@ -91,7 +99,21 @@ public class AuthenticationTokenRestController extends MangoRestController {
         String token = tokenAuthService.generateToken(user, expiry);
         return new ResponseEntity<>(token, HttpStatus.CREATED);
     }
+    
+    @ApiOperation(value = "Revoke all tokens for user", notes = "Revokes all tokens for a given user")
+    @RequestMapping(path="/revoke/{username}", method = RequestMethod.POST)
+    @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
+    public void createTokenForUser(
+            @PathVariable String username) {
 
+        User user = UserDao.instance.getUser(username);
+        if (user == null) {
+            throw new NotFoundRestException();
+        }
+        
+        tokenAuthService.revokeTokens(user);
+    }
+    
     @ApiOperation(value = "Gets the public key for verifying authentication tokens")
     @RequestMapping(path="/public-key", method = RequestMethod.GET)
     public String getPublicKey() {
