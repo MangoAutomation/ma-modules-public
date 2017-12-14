@@ -5,6 +5,8 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -23,6 +25,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
 import com.serotonin.m2m2.web.mvc.spring.components.TokenAuthenticationService;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -45,10 +48,12 @@ public class AuthenticationTokenRestController extends MangoRestController {
     private static final int DEFAULT_EXPIRY = 5 * 60 * 1000; // 5 minutes
     
     private final TokenAuthenticationService tokenAuthService;
-    
+    private final MangoSessionRegistry sessionRegistry;
+
     @Autowired
-    public AuthenticationTokenRestController(TokenAuthenticationService jwtService) {
+    public AuthenticationTokenRestController(TokenAuthenticationService jwtService, MangoSessionRegistry sessionRegistry) {
         this.tokenAuthService = jwtService;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @ApiOperation(value = "Create token", notes = "Creates a token for the current user")
@@ -72,9 +77,15 @@ public class AuthenticationTokenRestController extends MangoRestController {
     @ApiOperation(value = "Revoke all tokens", notes = "Revokes all tokens for the current user")
     @RequestMapping(path="/revoke", method = RequestMethod.POST)
     @PreAuthorize("isAuthenticated() and isPasswordAuthenticated()")
-    public void revokeTokens(
-            @AuthenticationPrincipal User user) {
+    public ResponseEntity<Void> revokeTokens(
+            @AuthenticationPrincipal User user,
+            
+            HttpServletRequest request) {
+        
         tokenAuthService.revokeTokens(user);
+        sessionRegistry.userUpdated(request, user);
+        
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
     @ApiOperation(value = "Create token for user", notes = "Creates a token for a given user")
@@ -103,8 +114,10 @@ public class AuthenticationTokenRestController extends MangoRestController {
     @ApiOperation(value = "Revoke all tokens for user", notes = "Revokes all tokens for a given user")
     @RequestMapping(path="/revoke/{username}", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
-    public void createTokenForUser(
-            @PathVariable String username) {
+    public ResponseEntity<Void> createTokenForUser(
+            @PathVariable String username,
+            
+            HttpServletRequest request) {
 
         User user = UserDao.instance.getUser(username);
         if (user == null) {
@@ -112,6 +125,9 @@ public class AuthenticationTokenRestController extends MangoRestController {
         }
         
         tokenAuthService.revokeTokens(user);
+        sessionRegistry.userUpdated(request, user);
+        
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
     @ApiOperation(value = "Gets the public key for verifying authentication tokens")
@@ -131,8 +147,9 @@ public class AuthenticationTokenRestController extends MangoRestController {
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all authentication tokens")
     @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
-    public void resetKeys() {
+    public ResponseEntity<Void> resetKeys() {
         tokenAuthService.resetKeys();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

@@ -10,6 +10,8 @@ import java.net.UnknownHostException;
 import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,7 +64,7 @@ public class PasswordResetController extends MangoRestController {
 
     @ApiOperation(value = "Sends the user an email containing a password reset link")
     @RequestMapping(method = RequestMethod.POST, value = "/send-email")
-    public void sendEmail(
+    public ResponseEntity<Void> sendEmail(
             @RequestBody SendEmailRequestBody body) throws AddressException, TemplateException, IOException {
         
         User user = UserDao.instance.getUser(body.getUsername());
@@ -80,11 +82,12 @@ public class PasswordResetController extends MangoRestController {
         }
         
         passwordResetService.sendEmail(user);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @ApiOperation(value = "Resets the user's password if the token is correct")
     @RequestMapping(method = RequestMethod.POST, value = "/reset")
-    public void reset(
+    public ResponseEntity<Void> reset(
             @RequestBody PasswordResetRequestBody body) {
 
         try {
@@ -92,6 +95,7 @@ public class PasswordResetController extends MangoRestController {
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidPasswordResetToken"), e);
         }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
     @ApiOperation(value = "Gets the public key for verifying password reset tokens")
@@ -111,8 +115,9 @@ public class PasswordResetController extends MangoRestController {
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all password reset tokens")
     @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
-    public void resetKeys() {
+    public ResponseEntity<Void> resetKeys() {
         passwordResetService.resetKeys();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
     @ApiOperation(value = "Creates a password reset token and link for the given user")
