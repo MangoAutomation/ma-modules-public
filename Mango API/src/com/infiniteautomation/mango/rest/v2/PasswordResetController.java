@@ -84,6 +84,10 @@ public class PasswordResetController extends MangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.incorrectEmail"));
         }
         
+        if (user.isDisabled()) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.userIsDisabled"));
+        }
+        
         passwordResetService.sendEmail(user);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
