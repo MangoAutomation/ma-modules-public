@@ -342,7 +342,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget);
+                bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, false);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -395,6 +395,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "timePeriods", required = false) 
             Integer timePeriods,
             
+            @ApiParam(value = "Truncate the from and to times based on the time period settings", required = false,allowMultiple = false) 
+            @RequestParam(value = "truncate", required = false, defaultValue="false") 
+            boolean truncate,
+            
             @AuthenticationPrincipal User user
             ) {
 
@@ -406,7 +410,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null);
+                true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null, truncate);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -471,7 +475,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget);
+                bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, false);
         return generateStream(user, info, xids);
     }
     
@@ -540,6 +544,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) 
             String dateTimeFormat,
+            
+            @ApiParam(value = "Truncate the from and to times based on the time period settings", required = false,allowMultiple = false) 
+            @RequestParam(value = "truncate", required = false, defaultValue="false") 
+            boolean truncate,
+            
             @AuthenticationPrincipal User user
             ) {
         
@@ -551,7 +560,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
                 request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
-                useRendered, true, true, PointValueTimeCacheControl.NONE, null, null);
+                useRendered, true, true, PointValueTimeCacheControl.NONE, null, null, truncate);
         return generateStream(user, info, xids);
     }
     
@@ -628,7 +637,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget);
+                bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, false);
         
         return generateStream(user, info, xids);
     }
@@ -692,6 +701,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
+            
+            @ApiParam(value = "Truncate the from and to times based on the time period settings", required = false,allowMultiple = false) 
+            @RequestParam(value = "truncate", required = false, defaultValue="false") 
+            boolean truncate,
+            
             @AuthenticationPrincipal User user
             ) {
         
@@ -703,7 +717,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
-                true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null);
+                true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null, truncate);
         
         return generateStream(user, info, xids);
     }

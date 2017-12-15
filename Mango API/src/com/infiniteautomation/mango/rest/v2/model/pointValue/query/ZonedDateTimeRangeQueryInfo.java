@@ -53,12 +53,13 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * @param useCache
      * @param simplifyTolerance
      * @param simplifyTarget
+     * @param boolean truncate - Truncate the start and end dates to be round numbers
      */
     public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
             Integer limit, boolean bookend, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
-            Double simplifyTolerance, Integer simplifyTarget) {
+            Double simplifyTolerance, Integer simplifyTarget, boolean truncate) {
         super(host, port, from, dateTimeFormat, timezone,
                 limit, useRendered, multiplePointsPerArray, 
                 singleArray, useCache, simplifyTolerance, simplifyTarget);
@@ -85,6 +86,9 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
             throw new ValidationFailedRestException(vr);
         }
         
+        if(truncate)
+            setupDates();
+        
         this.rollup = rollup;
         this.timePeriod = timePeriod;
         this.bookend = bookend;
@@ -93,7 +97,7 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
     /**
      * Round off the period for rollups
      */
-    public void setupDates() {
+    protected void setupDates() {
         // Round off the period if we are using periodic rollup
         if (this.timePeriod != null) {
             TruncateTimePeriodAdjuster adj = new TruncateTimePeriodAdjuster(

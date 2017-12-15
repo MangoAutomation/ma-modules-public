@@ -128,7 +128,8 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(String host, int port, boolean multiplePointsPerArray,
             boolean singleArray) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(host, port, from, to, dateTimeFormat, timezone,
-                RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, singleArray, useCache, simplifyTolerance, simplifyTarget);
+                RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, 
+                singleArray, useCache, simplifyTolerance, simplifyTarget, false);
     };
     
 }

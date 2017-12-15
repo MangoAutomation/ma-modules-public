@@ -19,13 +19,14 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     protected ZonedDateTime from;
     protected ZonedDateTime to;
     protected TimePeriod timePeriod;
+    protected boolean truncate;
    
     public XidRollupTimeRangeQueryModel() {
 
     }
     
     public XidRollupTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
-            String timezone, ZonedDateTime from, ZonedDateTime to, TimePeriod timePeriod) {
+            String timezone, ZonedDateTime from, ZonedDateTime to, TimePeriod timePeriod, boolean truncate) {
         super(xids, useRendered, dateTimeFormat, timezone, null, null);
         this.from = from;
         this.to = to;
@@ -75,6 +76,20 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     }
 
     /**
+     * @return the truncate
+     */
+    public boolean isTruncate() {
+        return truncate;
+    }
+
+    /**
+     * @param truncate the truncate to set
+     */
+    public void setTruncate(boolean truncate) {
+        this.truncate = truncate;
+    }
+
+    /**
      * 
      * @param host
      * @param port
@@ -87,6 +102,6 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(String host, int port, boolean multiplePointsPerArray,
             boolean singleArray, RollupEnum rollup) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(host, port, from, to, dateTimeFormat, timezone,
-                rollup, timePeriod, null, true, useRendered, multiplePointsPerArray, singleArray, PointValueTimeCacheControl.NONE, null, null);
+                rollup, timePeriod, null, true, useRendered, multiplePointsPerArray, singleArray, PointValueTimeCacheControl.NONE, null, null, truncate);
     };
 }
