@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
@@ -481,6 +483,29 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     	}
     	
     	return result.createResponseEntity();
+	}
+
+	@ApiOperation(value = "Locks a user's password", notes = "The user with a locked password cannot login using a username and password. " +
+	        "However the user's auth tokens will still work and the user can still reset their password using a reset token or email link")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}/lock-password")
+    public ResponseEntity<Void> lockPassword(
+            @ApiParam(value = "Username", required = true, allowMultiple = false)
+            @PathVariable String username,
+            
+            @AuthenticationPrincipal User currentUser) {
+	    
+	    if (!currentUser.isAdmin()) {
+	        throw new AccessDeniedException();
+	    }
+	    
+	    User user = UserDao.instance.getUser(username);
+	    if (user == null) {
+	        throw new NotFoundRestException();
+	    }
+	    
+	    UserDao.instance.lockPassword(user);
+	    
+	    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 	@ApiOperation(
