@@ -5,7 +5,6 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.Locale;
 
 import javax.mail.internet.AddressException;
@@ -134,7 +133,15 @@ public class PasswordResetController extends MangoRestController {
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,
             
-            @AuthenticationPrincipal User currentUser) throws UnknownHostException {
+            @ApiParam(value = "Lock the user's current password", required = false, defaultValue = "true", allowMultiple = false)
+            @RequestParam(required = false, defaultValue = "true")
+            boolean lockPassword,
+            
+            @ApiParam(value = "Email the user the reset link", required = false, defaultValue = "false", allowMultiple = false)
+            @RequestParam(required = false, defaultValue = "false")
+            boolean sendEmail,
+            
+            @AuthenticationPrincipal User currentUser) throws AddressException, TemplateException, IOException {
         
         User user = UserDao.instance.getUser(username);
         if (user == null) {
@@ -145,11 +152,19 @@ public class PasswordResetController extends MangoRestController {
             throw new AccessDeniedException(new TranslatableMessage("rest.error.cantResetOwnUser"));
         }
         
+        if (lockPassword) {
+            UserDao.instance.lockPassword(user);
+        }
+        
         CreateTokenResponse response = new CreateTokenResponse();
         String token = passwordResetService.generateToken(user);
         response.setToken(token);
         response.setFullUrl(passwordResetService.generateResetUrl(token));
         response.setRelativeUrl(passwordResetService.generateRelativeResetUrl(token));
+        
+        if (sendEmail) {
+            passwordResetService.sendEmail(user, token);
+        }
         
         return response;
     }
