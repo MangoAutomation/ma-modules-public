@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +31,9 @@ import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -45,6 +48,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSecurityConfiguration;
+import com.serotonin.provider.Providers;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -184,4 +188,21 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         return ResponseEntity.ok(DataPointDao.instance.getTopPointHistoryCounts());
     }
 
+    @ApiOperation(value = "Get general Mango installation info", 
+            notes = "Instance description, GUID, Core version, Normalized Core Version, Server timezone, Server locale")
+    @ApiResponses({
+      @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
+    @RequestMapping(method = {RequestMethod.GET}, value = "/mango-info")
+    public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal User user){
+        Map<String, String> mangoInfo = new HashMap<>();
+
+        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        mangoInfo.put("coreVersion", Common.getVersion().toString());
+        mangoInfo.put("coreVersionNormalized", Common.getVersion().getNormalVersion());
+        mangoInfo.put("locale", Common.getLocale().toString());
+        mangoInfo.put("timezone", TimeZone.getDefault().toZoneId().getId());
+        
+        return ResponseEntity.ok(mangoInfo);
+    }
+    
 }
