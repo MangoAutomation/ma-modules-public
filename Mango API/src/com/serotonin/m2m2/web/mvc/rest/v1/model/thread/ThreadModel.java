@@ -17,27 +17,39 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 public class ThreadModel {
 	
 	private ThreadInfo info;
-	private Thread thread;
+	
+	private long id;
+	private int priority;
+	private String name;
 	private long cpuTime;
 	private long userTime;
 
 	
-	public ThreadModel(ThreadInfo info, Thread thread, long cpuTime, long userTime){
-		this.info = info;
-		this.thread = thread;
+	public ThreadModel(long id, int priority, String name, ThreadInfo info, long cpuTime, long userTime){
+		this.id = id;
+		this.priority = priority;
+		this.name = name;
+	    this.info = info;
 		this.cpuTime = cpuTime;
 		this.userTime = userTime;
 	}
-
+	
+	public ThreadModel(long id, int priority, String name, long cpuTime, long userTime){
+        this.id = id;
+        this.priority = priority;
+        this.name = name;
+        this.cpuTime = cpuTime;
+        this.userTime = userTime;
+    }
 	
 	@JsonGetter("id")
 	public long getId(){
-		return this.info.getThreadId();
+		return id;
 	}
 	
 	@JsonGetter("name")
 	public String getName(){
-		return this.info.getThreadName();
+		return name;
 	}
 
 	@JsonGetter("cpuTime")
@@ -52,32 +64,47 @@ public class ThreadModel {
 
 	@JsonGetter("state")
 	public State getState(){
-		return this.info.getThreadState();
+	    if(this.info != null)
+	        return this.info.getThreadState();
+	    else
+	        return State.TERMINATED;
 	}
 	
 	@JsonGetter("priority")
 	public int getPriority(){
-		return this.thread.getPriority();
+		return priority;
 	}
 
 	@JsonGetter("location")
 	public StackTraceElement[] getLocation(){
-		return this.info.getStackTrace();
+	    if(info != null)
+	        return this.info.getStackTrace();
+	    else 
+	        return null;
 	}
 	
 	@JsonGetter("lockOwnerName")
 	public String getLockOwnerName() {
-	    return this.info.getLockOwnerName();
+	    if(info != null)
+	        return this.info.getLockOwnerName();
+	    else 
+	        return null;
 	}
 	
 	@JsonGetter("lockOwnerId")
 	public long getLockOwnerId() {
-	    return this.info.getLockOwnerId();
+	    if(info != null)
+	        return this.info.getLockOwnerId();
+	    else
+	        return -1l;
 	}
 	
 	@JsonGetter("lockInfo")
 	public LockInfo getLockInfo() {
-	    return this.info.getLockInfo();
+	    if(info != null)
+	        return this.info.getLockInfo();
+	    else
+	        return null;
 	}
 
 }

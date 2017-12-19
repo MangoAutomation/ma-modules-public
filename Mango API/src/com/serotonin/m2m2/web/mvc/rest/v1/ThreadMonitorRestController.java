@@ -76,7 +76,11 @@ public class ThreadMonitorRestController extends MangoRestController {
 			ThreadMXBean manager = ManagementFactory.getThreadMXBean();
 			for(Thread t : allThreads){
 				ThreadInfo info = manager.getThreadInfo(t.getId(), stackDepth);
-				ThreadModel model = new ThreadModel(info, t, manager.getThreadCpuTime(t.getId()), manager.getThreadUserTime(t.getId()));
+				ThreadModel model;
+				if(info != null)
+				    model = new ThreadModel(t.getId(), t.getPriority(), t.getName(), info, manager.getThreadCpuTime(t.getId()), manager.getThreadUserTime(t.getId()));
+				else
+				    model = new ThreadModel(t.getId(), t.getPriority(), t.getName(), manager.getThreadCpuTime(t.getId()), manager.getThreadUserTime(t.getId()));
 				models.add(model);
 			}
 			//Do we need to order this list?
