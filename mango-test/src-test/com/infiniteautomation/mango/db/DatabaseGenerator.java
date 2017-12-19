@@ -87,7 +87,7 @@ public class DatabaseGenerator {
         properties.setDefaultValue("db.password", "mango");
         
         Providers.add(IMangoLifecycle.class, new MockMangoLifecycle(new ArrayList<>()));
-        Common.MA_HOME = "../../ma-core-public/Core";
+        Common.MA_HOME = ".." + File.pathSeparator +  ".." + File.pathSeparator + "ma-core-public" + File.pathSeparator + "Core";
         Common.envProps = properties;
         
         Common.eventManager = new MockEventManager();
@@ -192,6 +192,8 @@ public class DatabaseGenerator {
                 ed.setDefinition(new AnalogChangeEventDetectorDefinition());
                 ed.setLimit(0.01d);
                 ed.setCheckIncrease(true);
+                ed.setDuration(10);
+                ed.setDurationType(TimePeriods.SECONDS);
                 ed.setXid(EventDetectorDao.instance.generateUniqueXid());
                 ed.setName("");
                 ed.setSourceId(dp.getId());
