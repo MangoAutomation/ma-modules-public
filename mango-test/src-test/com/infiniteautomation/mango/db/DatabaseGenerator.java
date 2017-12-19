@@ -87,7 +87,7 @@ public class DatabaseGenerator {
         properties.setDefaultValue("db.password", "mango");
         
         Providers.add(IMangoLifecycle.class, new MockMangoLifecycle(new ArrayList<>()));
-        Common.MA_HOME = ".." + File.pathSeparator +  ".." + File.pathSeparator + "ma-core-public" + File.pathSeparator + "Core";
+        Common.MA_HOME = ".." + File.separator +  ".." + File.separator + "ma-core-public" + File.separator + "Core";
         Common.envProps = properties;
         
         Common.eventManager = new MockEventManager();
