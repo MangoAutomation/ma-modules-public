@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
@@ -53,15 +54,34 @@ import com.serotonin.timer.SimulationTimer;
  */
 public class DatabaseGenerator {
     
-    public static void main(String[] args) {
+    static final int systemEventCount = 1000000;
+    
+    //User settings
+    static final int userCount = 25;
+    
+    //Data source settings
+    static final int dataSourceCount = 100;
+    static final boolean dataSourceEnabled = false;
+    
+    //Data Point settings
+    static final int dataPointPerSourceCount = 300;
+    static final int dataPointEventPerPointCount = 100;
+    
+    private List<User> users;
+   
+    
+    public static void main(String[] args) throws Exception {
         
         DatabaseGenerator gen = new DatabaseGenerator();
 
-        gen.generateSystemEvents(1000000);
+        gen.generateUsers(userCount);
+        gen.generateSystemEvents(systemEventCount);
 
-        for(int i=0; i<50; i++) {
-            DataSourceVO<?> ds = gen.generateVirtualDataSource();
-            gen.generateVirtualPoints(ds, 100, 100);
+        for(int i=0; i<dataSourceCount; i++) {
+            long time = System.currentTimeMillis();
+            DataSourceVO<?> ds = gen.generateVirtualDataSource(i);
+            gen.generateVirtualPoints(ds, dataPointPerSourceCount, dataPointEventPerPointCount);
+            System.out.println("Generating data source " + i + " of " + dataSourceCount + " took " + (System.currentTimeMillis() - time) + "ms");
         }
 
         Common.databaseProxy.terminate(false);
@@ -79,12 +99,10 @@ public class DatabaseGenerator {
             e.printStackTrace();
         }
         
+        this.users = new ArrayList<>();
         
         MockMangoProperties properties = new MockMangoProperties();
-        properties.setDefaultValue("db.type", "h2");
-        properties.setDefaultValue("db.url", "jdbc:h2:./test-databases/mah2");
-        properties.setDefaultValue("db.username", "mango");
-        properties.setDefaultValue("db.password", "mango");
+        configureH2(properties);
         
         Providers.add(IMangoLifecycle.class, new MockMangoLifecycle(new ArrayList<>()));
         Common.MA_HOME = ".." + File.separator +  ".." + File.separator + "ma-core-public" + File.separator + "Core";
@@ -107,9 +125,30 @@ public class DatabaseGenerator {
         admin.setPermissions("superadmin");
         
         UserDao.instance.saveUser(admin);
-        
+        users.add(admin);
     }
     
+    public void configureH2(MockMangoProperties properties) {
+        properties.setDefaultValue("db.type", "h2");
+        properties.setDefaultValue("db.url", "jdbc:h2:./test-databases/mah2;LOG=0;CACHE_SIZE=655360;LOCK_MODE=0;UNDO_LOG=0");
+        properties.setDefaultValue("db.username", "mango");
+        properties.setDefaultValue("db.password", "mango");
+    }
+    
+    public void generateUsers(int count) {
+        for(long i=0; i<count; i++) {
+            System.out.println("Generating User " + i + " of " + count);
+            User user = new User();
+            user.setName("User " + i);
+            user.setEmail("admin@admin.com");
+            user.setUsername("user" + i);
+            user.setPassword(Common.encrypt("user" + i));
+            user.setPermissions("user");
+            
+            UserDao.instance.saveUser(user);
+            users.add(user);
+        }
+    }
     /**
      * Generate some events
      * @param eventCount
@@ -120,20 +159,22 @@ public class DatabaseGenerator {
         long timestamp = System.currentTimeMillis() - eventCount;
 
         for(long i=0; i<eventCount; i++) {
+            if(i %1000 == 0)
+                System.out.println("Generating system event " + i + " of " + eventCount);
             EventInstance event = new EventInstance(system, timestamp, true, AlarmLevels.CRITICAL, new TranslatableMessage("common.default", "Testing " + timestamp), null);
             EventDao.instance.saveEvent(event);
             timestamp++;
         }
     }
     
-    public DataSourceVO<?> generateVirtualDataSource() {
+    public DataSourceVO<?> generateVirtualDataSource(int count) {
         VirtualDataSourceVO ds = new VirtualDataSourceVO();
         DataSourceDefinition def = new VirtualDataSourceDefinition();
         ds = (VirtualDataSourceVO) def.baseCreateDataSourceVO();
         ds.setId(Common.NEW_ID);
         ds.setXid(DataSourceDao.instance.generateUniqueXid());
-        ds.setName("Test Virtual");
-        ds.setEnabled(true);
+        ds.setName("Test Virtual " + count);
+        ds.setEnabled(dataSourceEnabled);
         ds.setUpdatePeriods(5);
         ds.setUpdatePeriodType(TimePeriods.SECONDS);
         ds.setPolling(true);
@@ -149,6 +190,10 @@ public class DatabaseGenerator {
     }
     
     public void generateVirtualPoints(DataSourceVO<?> ds, int count, int eventCount) {
+        List<Integer> userIds = new ArrayList<>();
+        for(User u : users) {
+            userIds.add(u.getId());
+        }
         
         for(int i=0; i<count; i++) {
             ProcessResult response = new ProcessResult();
@@ -211,6 +256,8 @@ public class DatabaseGenerator {
                 for(long j=0; j<eventCount; j++) {
                     EventInstance event = new EventInstance(type, timestamp, true, AlarmLevels.CRITICAL, new TranslatableMessage("common.default", "Changing " + timestamp), null);
                     EventDao.instance.saveEvent(event);
+                    //Need to save a user event for this
+                    EventDao.instance.insertUserEvents(event.getId(), userIds, true);
                     timestamp++;
                 }
             }
