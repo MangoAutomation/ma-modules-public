@@ -177,7 +177,6 @@ public class BackgroundProcessingRestController extends MangoRestController{
     		if(Permissions.hasAdmin(user)){
     			//Validate the settings
     			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE);
-    			int currentMaxPoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_MAX_POOL_SIZE);
     			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
     				model.getMessages().add(new RestValidationMessage(
@@ -185,7 +184,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     						RestMessageLevel.ERROR,
     						"corePoolSize"));
     				result.addRestMessage(this.getValidationFailedError());
-    			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
+    			}else if(!validate(model, currentCorePoolSize, model.getCorePoolSize() == null ? currentCorePoolSize : model.getCorePoolSize())){
     	        	result.addRestMessage(this.getValidationFailedError());
     	        }else{
 	    			if(model.getCorePoolSize() != null){
@@ -196,10 +195,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	        			int corePoolSize = Common.backgroundProcessing.getMediumPriorityServiceCorePoolSize();
 	        			model.setCorePoolSize(corePoolSize);
 	    			}
-	    			if(model.getMaximumPoolSize() != null){
-	    				Common.backgroundProcessing.setMediumPriorityServiceMaximumPoolSize(model.getMaximumPoolSize());
-	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.MED_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
-	    			}else{
+	    			if(model.getMaximumPoolSize() == null){
 	    				//Get the info for the user
 	        			int maximumPoolSize = Common.backgroundProcessing.getMediumPriorityServiceMaximumPoolSize();
 	        			model.setMaximumPoolSize(maximumPoolSize);
@@ -264,8 +260,6 @@ public class BackgroundProcessingRestController extends MangoRestController{
     		if(Permissions.hasAdmin(user)){
     			//Validate the settings
     			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE);
-    			int currentMaxPoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_MAX_POOL_SIZE);
-    			
     			
     			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
@@ -274,8 +268,8 @@ public class BackgroundProcessingRestController extends MangoRestController{
     						RestMessageLevel.ERROR,
     						"corePoolSize"));
     				result.addRestMessage(this.getValidationFailedError());
-    			}else if(!validate(model, currentCorePoolSize, currentMaxPoolSize)){
-    	        	result.addRestMessage(this.getValidationFailedError());
+    			}else if(!validate(model, currentCorePoolSize, model.getCorePoolSize() == null ? currentCorePoolSize : model.getCorePoolSize())){
+    			    result.addRestMessage(this.getValidationFailedError());
     	        }else{
 	    			if(model.getCorePoolSize() != null){
 	    				Common.backgroundProcessing.setLowPriorityServiceCorePoolSize(model.getCorePoolSize());
@@ -285,10 +279,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	        			int corePoolSize = Common.backgroundProcessing.getLowPriorityServiceCorePoolSize();
 	        			model.setCorePoolSize(corePoolSize);
 	    			}
-	    			if(model.getMaximumPoolSize() != null){
-	    				Common.backgroundProcessing.setLowPriorityServiceMaximumPoolSize(model.getMaximumPoolSize());
-	    				SystemSettingsDao.instance.setIntValue(SystemSettingsDao.LOW_PRI_MAX_POOL_SIZE, model.getMaximumPoolSize());
-	    			}else{
+	    			if(model.getMaximumPoolSize() == null){
 	    				//Get the info for the user
 	        			int maximumPoolSize = Common.backgroundProcessing.getLowPriorityServiceMaximumPoolSize();
 	        			model.setMaximumPoolSize(maximumPoolSize);

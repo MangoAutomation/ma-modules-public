@@ -189,23 +189,23 @@ public class SystemSettingsRestController extends MangoRestController{
 
 		RestProcessResult<Map<String,Object>> result = new RestProcessResult<Map<String,Object>>(HttpStatus.OK);
 
-		this.checkUser(request, result);
-        if(result.isOk()){
-    		ProcessResult response = new ProcessResult();
-    		//Convert incoming ExportCodes to int values
-    		settings = this.dao.convertCodesToValues(settings);
-    		this.dao.validate(settings, response);
-    		if(response.getHasMessages()){
-    			//Invalid
-    			result.addValidationMessages(response);
-    			return result.createResponseEntity();
-    		}else{
-            	this.dao.updateSettings(settings);
-    		}
-        	//Put a link to the updated data in the header
-	    	URI location = builder.path("/v1/system-settings").buildAndExpand().toUri();
-	    	result.addRestMessage(getResourceUpdatedMessage(location));
-	    	return result.createResponseEntity(settings);
+        this.checkUser(request, result);
+        if (result.isOk()) {
+            ProcessResult response = new ProcessResult();
+            // Convert incoming ExportCodes to int values
+            settings = this.dao.convertCodesToValues(settings);
+            this.dao.validate(settings, response);
+            if (response.getHasMessages()) {
+                // Invalid
+                result.addValidationMessages(response);
+                return result.createResponseEntity();
+            } else {
+                this.dao.updateSettings(settings);
+            }
+            // Put a link to the updated data in the header
+            URI location = builder.path("/v1/system-settings").buildAndExpand().toUri();
+            result.addRestMessage(getResourceUpdatedMessage(location));
+            return result.createResponseEntity(settings);
         }
         
         return result.createResponseEntity();
