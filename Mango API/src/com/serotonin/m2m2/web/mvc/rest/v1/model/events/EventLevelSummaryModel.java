@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.events;
 
+import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 
 /**
  * @author Terry Packer
@@ -17,6 +19,13 @@ public class EventLevelSummaryModel {
 
 	public EventLevelSummaryModel(){ }
 
+	public EventLevelSummaryModel(UserEventLevelSummary summary) {
+	    this.level = AlarmLevels.CODES.getCode(summary.getAlarmLevel());
+	    this.unsilencedCount = summary.getUnsilencedCount();
+	    if(summary.getLatest() != null)
+	        this.mostRecentUnsilenced = new EventInstanceModel(summary.getLatest());
+	}
+	
 	/**
 	 * @param level
 	 * @param count
