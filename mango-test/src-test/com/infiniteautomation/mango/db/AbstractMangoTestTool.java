@@ -11,9 +11,22 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
+
+import com.infiniteautomation.mangoApi.websocket.DataPointWebSocketDefinition;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.IMangoLifecycle;
+import com.serotonin.m2m2.MangoTestBase;
+import com.serotonin.m2m2.MangoTestModule;
+import com.serotonin.m2m2.MockEventManager;
+import com.serotonin.m2m2.MockMangoLifecycle;
+import com.serotonin.m2m2.MockMangoProperties;
+import com.serotonin.m2m2.MockRuntimeManager;
+import com.serotonin.m2m2.db.AbstractDatabaseProxy;
 import com.serotonin.m2m2.db.DatabaseProxy.DatabaseType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -23,9 +36,11 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.detectors.AnalogChangeEventDetectorDefinition;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.EventType.DuplicateHandling;
@@ -40,48 +55,90 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.event.detector.AnalogChangeDetectorVO;
+import com.serotonin.m2m2.web.mvc.spring.MangoRestSpringConfiguration;
+import com.serotonin.provider.Providers;
+import com.serotonin.timer.SimulationTimer;
 
 /**
  *
  * @author Terry Packer
  */
-public class DatabaseGenerator extends AbstractMangoTestTool {
-    
-    static final int systemEventCount = 1000000;
-    
-    //User settings
-    static final int userCount = 25;
-    
-    //Data source settings
-    static final int dataSourceCount = 100;
-    static final boolean dataSourceEnabled = false;
-    
-    //Data Point settings
-    static final int dataPointPerSourceCount = 300;
-    static final int dataPointEventPerPointCount = 100;
-    
+public abstract class AbstractMangoTestTool {
+
     private List<User> users;
-   
     
-    public static void main(String[] args) throws Exception {
-        DatabaseGenerator gen = new DatabaseGenerator();
-        gen.initialize(DatabaseType.MYSQL);
-
-        gen.generateUsers(userCount);
-        gen.generateSystemEvents(systemEventCount);
-
-        for(int i=0; i<dataSourceCount; i++) {
-            long time = System.currentTimeMillis();
-            DataSourceVO<?> ds = gen.generateVirtualDataSource(i);
-            gen.generateVirtualPoints(ds, dataPointPerSourceCount, dataPointEventPerPointCount);
-            System.out.println("Generating data source " + i + " of " + dataSourceCount + " took " + (System.currentTimeMillis() - time) + "ms");
-        }
-
-        Common.databaseProxy.terminate(false);
+    public AbstractMangoTestTool() {
+        this.users = new ArrayList<>();
     }
+    
+    public void initialize(DatabaseType type) throws Exception{
+        ConfigurationSource source = new ConfigurationSource(MangoTestBase.class.getClass().getResource("/test-log4j2.xml").openStream());
+        Configurator.initialize(null, source);
 
-    public DatabaseGenerator() {
-        super();
+        //Add in the Dao Notification Web Socket Handler
+        MangoTestModule module = new MangoTestModule("DataPointTagger");
+        module.addDefinition(new DataPointWebSocketDefinition());
+        ModuleRegistry.addModule(module);
+        
+        MockMangoProperties properties = new MockMangoProperties();
+        switch(type) {
+            case MYSQL:
+                configureMySQL(properties);
+                break;
+            case H2:
+                configureH2(properties, true);
+                break;
+            default:
+                throw new ShouldNeverHappenException("unsupported database");
+        }
+        
+        Providers.add(IMangoLifecycle.class, new MockMangoLifecycle(new ArrayList<>()));
+        Common.MA_HOME = ".." + File.separator +  ".." + File.separator + "ma-core-public" + File.separator + "Core";
+        Common.envProps = properties;
+        
+        Common.eventManager = new MockEventManager();
+        Common.timer = new SimulationTimer();
+        Common.runtimeManager = new MockRuntimeManager();
+
+        //Setup Object Mapper
+        MangoRestSpringConfiguration.initializeObjectMapper();
+        
+        Common.databaseProxy = AbstractDatabaseProxy.createDatabaseProxy();
+        Common.databaseProxy.initialize(null);
+        AuditEventType.initialize();
+        
+        //Add Admin User
+        User admin = UserDao.instance.getUser("admin");
+        if(admin == null) {
+            admin = new User();
+            admin.setName("admin");
+            admin.setEmail("admin@admin.com");
+            admin.setUsername("admin");
+            admin.setPassword(Common.encrypt("admin"));
+            admin.setPermissions("superadmin");
+            UserDao.instance.saveUser(admin);
+        }
+        users.add(admin);
+    }
+    
+    public void configureH2(MockMangoProperties properties, boolean clean) throws IOException{
+        if(clean) {
+            //Delete existing database
+            File dbDir = new File("test-databases");
+            if(dbDir.exists())
+                delete(dbDir);
+        }
+        properties.setDefaultValue("db.type", "h2");
+        properties.setDefaultValue("db.url", "jdbc:h2:./test-databases/mah2;LOG=0;CACHE_SIZE=655360;LOCK_MODE=0;UNDO_LOG=0");
+        properties.setDefaultValue("db.username", "mango");
+        properties.setDefaultValue("db.password", "mango");
+    }
+    
+    public void configureMySQL(MockMangoProperties properties) {
+        properties.setDefaultValue("db.type", "mysql");
+        properties.setDefaultValue("db.url", "jdbc:mysql://localhost:3306/mango");
+        properties.setDefaultValue("db.username", "mango");
+        properties.setDefaultValue("db.password", "mango");
     }
     
     public void generateUsers(int count) {
@@ -116,7 +173,7 @@ public class DatabaseGenerator extends AbstractMangoTestTool {
         }
     }
     
-    public DataSourceVO<?> generateVirtualDataSource(int count) {
+    public DataSourceVO<?> generateVirtualDataSource(int count, boolean dataSourceEnabled) {
         VirtualDataSourceVO ds = new VirtualDataSourceVO();
         DataSourceDefinition def = new VirtualDataSourceDefinition();
         ds = (VirtualDataSourceVO) def.baseCreateDataSourceVO();
@@ -222,5 +279,4 @@ public class DatabaseGenerator extends AbstractMangoTestTool {
         if (!Files.deleteIfExists(f.toPath()))
             throw new FileNotFoundException("Failed to delete file: " + f);
     }
-    
 }

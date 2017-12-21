@@ -4,10 +4,8 @@
  */
 package com.infiniteautomation.mango.db;
 
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -16,23 +14,17 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 
 import com.serotonin.log.LogStopWatch;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.MangoTestBase;
-import com.serotonin.m2m2.MockEventManager;
-import com.serotonin.m2m2.MockMangoLifecycle;
 import com.serotonin.m2m2.MockMangoProperties;
-import com.serotonin.m2m2.db.AbstractDatabaseProxy;
+import com.serotonin.m2m2.db.DatabaseProxy.DatabaseType;
 import com.serotonin.m2m2.db.dao.EventDao;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
-import com.serotonin.provider.Providers;
-import com.serotonin.timer.SimulationTimer;
 
 /**
  *
  * @author Terry Packer
  */
-public class EventTableIndexTest {
+public class EventTableIndexTest extends AbstractMangoTestTool{
     
     private DummyExtractor extractor =  new DummyExtractor();
 
@@ -40,7 +32,7 @@ public class EventTableIndexTest {
         ConfigurationSource source = new ConfigurationSource(MangoTestBase.class.getClass().getResource("/test-log4j2.xml").openStream());
         Configurator.initialize(null, source);
         EventTableIndexTest test = new EventTableIndexTest();
-        
+        test.initialize(DatabaseType.MYSQL);
         //Add indexes
 //        test.addTypeRef1Index();
 //        test.addTypeNameIndex();
@@ -65,23 +57,11 @@ public class EventTableIndexTest {
     }
     
     public EventTableIndexTest() {
-        MockMangoProperties properties = new MockMangoProperties();
-        configureH2(properties);
-        
-        Providers.add(IMangoLifecycle.class, new MockMangoLifecycle(new ArrayList<>()));
-        Common.MA_HOME = ".." + File.separator +  ".." + File.separator + "ma-core-public" + File.separator + "Core";
-        Common.envProps = properties;
-        
-        Common.eventManager = new MockEventManager();
-        Common.timer = new SimulationTimer();
-        
-        
-        Common.databaseProxy = AbstractDatabaseProxy.createDatabaseProxy();
-        Common.databaseProxy.initialize(null);
-        AuditEventType.initialize();
+        super();
     }
     
-    public void configureH2(MockMangoProperties properties) {
+    @Override
+    public void configureH2(MockMangoProperties properties, boolean clean) {
         properties.setDefaultValue("db.type", "h2");
         properties.setDefaultValue("db.url", "jdbc:h2:./test-databases/copy/mah2");
         properties.setDefaultValue("db.username", "mango");
@@ -102,12 +82,17 @@ public class EventTableIndexTest {
         query = countUnAcknowleged();
         timer = new LogStopWatch();
         EventDao.instance.query(query, extractor);        
-        timer.logInfo(query, 0);        
+        timer.logInfo(query, 0);
+        
+        query = getAllUnsilencedEvents();
+        timer = new LogStopWatch();
+        EventDao.instance.query(query, extractor);
+        timer.logDebug(query, 0);
     }
     
     public String getQueryActive(int limit) {
         return "SELECT COUNT(DISTINCT evt.id) FROM events AS evt "
-                + " LEFT JOIN  users u  ON evt.ackUserId = u.id "
+                + "LEFT JOIN  users u  ON evt.ackUserId = u.id "
                 + "LEFT JOIN  userEvents ue  ON evt.id=ue.eventId "
                 + "WHERE ( typeName = 'DATA_POINT' AND typeRef1 = 1000  AND evt.ackTs IS null AND ue.userId=1 ) ";
     }
@@ -125,6 +110,21 @@ public class EventTableIndexTest {
                 + "LEFT JOIN  users u ON evt.ackUserId = u.id "
                 + "LEFT JOIN  userEvents ue  ON evt.id=ue.eventId "
                 + "WHERE (  typeName = 'DATA_POINT' AND typeRef1 = 1000  AND evt.rtnTs IS null  AND evt.rtnApplicable='Y'  AND ue.userId=1 )";
+    }
+    
+    public String getAllUnsilencedEvents() {
+        return  "select events.id, events.typeName, events.subtypeName, events.typeRef1, events.typeRef2, events.activeTs, events.rtnApplicable, events.rtnTs, events.rtnCause, events.alarmLevel, events.message, events.ackTs, events.ackUserId, events.alternateAckSource," 
+                + "users.username,"
+                + "(select count(1) from userComments where commentType=1 and typeKey=events.id) as cnt,"
+                + "userEvents.silenced "
+
+                + "from userEvents "
+                + "left join events on events.id=userEvents.eventId "
+                + "left join users on events.ackUserId=users.id "
+
+                + "WHERE userEvents.userId=1 AND userEvents.silenced='N' "
+
+                + "order by events.activeTs desc";
     }
    
     public void addTypeRef1Index() throws Exception {
@@ -150,5 +150,6 @@ public class EventTableIndexTest {
         }
     }
     
+   
     
 }
