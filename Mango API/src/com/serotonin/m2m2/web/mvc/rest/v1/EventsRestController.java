@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,7 +37,6 @@ import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
-import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
@@ -356,12 +354,13 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         return result.createResponseEntity();
     }
 	
-	@ApiOperation(
-			value = "Get the active events summary",
-			notes = "List of counts for all active events by type and the most recent active alarm for each."
-			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/active-summary")
-    public ResponseEntity<List<EventLevelSummaryModel>> getActiveSummary(HttpServletRequest request) {
+	   @ApiOperation(
+	            value = "Get the active events summary",
+	            notes = "List of counts for all active events by type and the most recent active alarm for each."
+	            )
+	    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/active-summary")
+    public ResponseEntity<List<EventLevelSummaryModel>> getActiveSummary(
+            HttpServletRequest request) {
 
         RestProcessResult<List<EventLevelSummaryModel>> result =
                 new RestProcessResult<List<EventLevelSummaryModel>>(HttpStatus.OK);
@@ -369,12 +368,120 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         User user = this.checkUser(request, result);
         if (result.isOk()) {
             List<EventLevelSummaryModel> list = new ArrayList<EventLevelSummaryModel>();
-            
-            //TODO Wire these calls into the user events cache but ensure the cache does not require ALL events for a user
-            Map<Integer, UserEventLevelSummary> unsilencedCounts = EventDao.instance.getUnsilencedUserEventSummaries(user.getId());
-            unsilencedCounts.values().stream().forEach((v) -> {
-                list.add(new EventLevelSummaryModel(v));
-            });
+
+            //This query is slow the first time as it must fill the UserEventCache
+            List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
+            int lifeSafetyTotal = 0;
+            EventInstance lifeSafetyEvent = null;
+            int criticalTotal = 0;
+            EventInstance criticalEvent = null;
+            int urgentTotal = 0;
+            EventInstance urgentEvent = null;
+            int warningTotal = 0;
+            EventInstance warningEvent = null;
+            int importantTotal = 0;
+            EventInstance importantEvent = null;
+            int informationTotal = 0;
+            EventInstance informationEvent = null;
+            int noneTotal = 0;
+            EventInstance noneEvent = null;
+            int doNotLogTotal = 0;
+            EventInstance doNotLogEvent = null;
+
+            for (EventInstance event : events) {
+                switch (event.getAlarmLevel()) {
+                    case AlarmLevels.LIFE_SAFETY:
+                        lifeSafetyTotal++;
+                        lifeSafetyEvent = event;
+                        break;
+                    case AlarmLevels.CRITICAL:
+                        criticalTotal++;
+                        criticalEvent = event;
+                        break;
+                    case AlarmLevels.URGENT:
+                        urgentTotal++;
+                        urgentEvent = event;
+                        break;
+                    case AlarmLevels.WARNING:
+                        warningTotal++;
+                        warningEvent = event;
+                        break;
+                    case AlarmLevels.IMPORTANT:
+                        importantTotal++;
+                        importantEvent = event;
+                        break;
+                    case AlarmLevels.INFORMATION:
+                        informationTotal++;
+                        informationEvent = event;
+                        break;
+                    case AlarmLevels.NONE:
+                        noneTotal++;
+                        noneEvent = event;
+                        break;
+                    case AlarmLevels.DO_NOT_LOG:
+                        doNotLogTotal++;
+                        doNotLogEvent = event;
+                        break;
+                }
+            }
+            EventInstanceModel model;
+            // Life Safety
+            if (lifeSafetyEvent != null)
+                model = new EventInstanceModel(lifeSafetyEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.LIFE_SAFETY),
+                    lifeSafetyTotal, model));
+            // Critical Events
+            if (criticalEvent != null)
+                model = new EventInstanceModel(criticalEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.CRITICAL),
+                    criticalTotal, model));
+            // Urgent Events
+            if (urgentEvent != null)
+                model = new EventInstanceModel(urgentEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.URGENT),
+                    urgentTotal, model));
+            // Warning Events
+            if (warningEvent != null)
+                model = new EventInstanceModel(warningEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.WARNING),
+                    warningTotal, model));
+            // Important Events
+            if (importantEvent != null)
+                model = new EventInstanceModel(importantEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.IMPORTANT),
+                    importantTotal, model));
+            // Information Events
+            if (informationEvent != null)
+                model = new EventInstanceModel(informationEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.INFORMATION),
+                    informationTotal, model));
+            // None Events
+            if (noneEvent != null)
+                model = new EventInstanceModel(noneEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.NONE),
+                    noneTotal, model));
+            // Do Not Log Events
+            if (doNotLogEvent != null)
+                model = new EventInstanceModel(doNotLogEvent);
+            else
+                model = null;
+            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.DO_NOT_LOG),
+                    doNotLogTotal, model));
+
             return result.createResponseEntity(list);
         }
         return result.createResponseEntity();
