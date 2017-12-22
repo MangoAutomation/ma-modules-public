@@ -92,7 +92,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             if(currentValues.size() > 0)
                 writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
         }else {
-            if(voMap.size() > 1) {
+            if(!info.isSingleArray() && voMap.size() > 1) {
                 if(contentType == StreamContentType.JSON)
                     writer.writeEndArray();
             }
