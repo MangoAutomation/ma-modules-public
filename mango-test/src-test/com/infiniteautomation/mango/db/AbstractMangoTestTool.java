@@ -65,7 +65,7 @@ import com.serotonin.timer.SimulationTimer;
  */
 public abstract class AbstractMangoTestTool {
 
-    private List<User> users;
+    protected List<User> users;
     
     public AbstractMangoTestTool() {
         this.users = new ArrayList<>();

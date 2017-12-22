@@ -9,13 +9,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.DatabaseProxy.DatabaseType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
@@ -50,17 +53,18 @@ public class DatabaseGenerator extends AbstractMangoTestTool {
     static final int systemEventCount = 1000000;
     
     //User settings
-    static final int userCount = 25;
+    static final int userCount = 10;
     
     //Data source settings
     static final int dataSourceCount = 100;
     static final boolean dataSourceEnabled = false;
     
     //Data Point settings
-    static final int dataPointPerSourceCount = 300;
+    static final int dataPointPerSourceCount = 500;
     static final int dataPointEventPerPointCount = 100;
+    static final int dataPointTagsPerPoint = 100;
     
-    private List<User> users;
+    protected Map<String,String> tags;
    
     
     public static void main(String[] args) throws Exception {
@@ -82,6 +86,10 @@ public class DatabaseGenerator extends AbstractMangoTestTool {
 
     public DatabaseGenerator() {
         super();
+        this.tags = new HashMap<>();
+        for(int i=0; i<dataPointTagsPerPoint; i++) {
+            this.tags.put("tag" + i, "value" + i);
+        }
     }
     
     public void generateUsers(int count) {
@@ -197,6 +205,9 @@ public class DatabaseGenerator extends AbstractMangoTestTool {
             
             DataPointDao.instance.saveDataPoint(dp);
             
+            //Add Tags
+            saveTags(dp);
+            
             if(eventCount > 0) {
                 //Need to add an event detector
                 EventType type = new DataPointEventType(ds.getId(), dp.getId(), ed.getId(), DuplicateHandling.ALLOW);
@@ -212,6 +223,11 @@ public class DatabaseGenerator extends AbstractMangoTestTool {
             }
 
         }
+    }
+    
+    public void saveTags(DataPointVO dataPoint) {
+        dataPoint.setTags(tags);
+        DataPointTagsDao.instance.saveDataPointTags(dataPoint);
     }
     
     public static void delete(File f) throws IOException {
