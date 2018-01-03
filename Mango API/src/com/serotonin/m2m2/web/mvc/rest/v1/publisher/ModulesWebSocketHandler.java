@@ -34,33 +34,34 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
     final ReadWriteLock lock = new ReentrantReadWriteLock();
     
     public ModulesWebSocketHandler(){
-    	ModulesDwr.addModuleNotificationListener(this);
+        ModulesDwr.addModuleNotificationListener(this);
     }
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    	if(!hasPermission(getUser(session))){
-    		this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED, new TranslatableMessage("common.default", "Permission Denied"));
-    		session.close();
+        if (!hasPermission(getUser(session))) {
+            this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
+                    new TranslatableMessage("common.default", "Permission Denied"));
+            session.close();
     	}
 
     	super.afterConnectionEstablished(session);
-    	lock.writeLock().lock();
-    	try{
-    		sessions.add(session);
-    	}finally{
-    		lock.writeLock().unlock();
-    	}
+        lock.writeLock().lock();
+        try {
+            sessions.add(session);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    	lock.writeLock().lock();
-    	try{
-    		sessions.remove(session);
-    	}finally{
-    		lock.writeLock().unlock();
-    	}
+        lock.writeLock().lock();
+        try {
+            sessions.remove(session);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
 	/* (non-Javadoc)
@@ -100,16 +101,16 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 	}
 	
     public void notify(ModuleNotificationModel model) {
-    	lock.readLock().lock();
-    	try{
-	        for (WebSocketSession session : sessions) {
-	            if (hasPermission(getUser(session))) {
-	                notify(session, model);
-	            }
-	        }
-    	}finally{
-    		lock.readLock().unlock();
-    	}
+        lock.readLock().lock();
+        try {
+            for (WebSocketSession session : sessions) {
+                if (hasPermission(getUser(session))) {
+                    notify(session, model);
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 	
     protected void notify(WebSocketSession session, ModuleNotificationModel model) {
@@ -117,7 +118,8 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
             sendMessage(session, model);
         } catch (Exception e) {
             try {
-                this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR, new TranslatableMessage("rest.error.serverError", e.getMessage()));
+                this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
+                        new TranslatableMessage("rest.error.serverError", e.getMessage()));
             } catch (Exception e1) {
                 LOG.error(e1.getMessage(), e1);
             }
@@ -125,7 +127,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
     }
     
     protected boolean hasPermission(User user){
-    	return user.isAdmin();
+        return user.isAdmin();
     }
 	
 }
