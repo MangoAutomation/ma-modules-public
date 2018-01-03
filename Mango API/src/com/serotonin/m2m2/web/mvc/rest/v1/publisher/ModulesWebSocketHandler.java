@@ -32,7 +32,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 			
     final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
     final ReadWriteLock lock = new ReentrantReadWriteLock();
-    
+        
     public ModulesWebSocketHandler(){
         ModulesDwr.addModuleNotificationListener(this);
     }
@@ -69,7 +69,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 	 */
 	@Override
 	public void moduleDownloaded(String name, String version) {
-		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.MODULE_DOWNLOADED, name, version);
+		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.MODULE_DOWNLOADED, name, version, null);
 		notify(model);
 	}
 
@@ -78,7 +78,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 	 */
 	@Override
 	public void moduleUpgradeAvailable(String name, String version) {
-		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.MODULE_UPGRADE_AVAILABLE, name, version);
+		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.MODULE_UPGRADE_AVAILABLE, name, version, null);
 		notify(model);
 	}
 	
@@ -87,7 +87,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 	 */
 	@Override
 	public void newModuleAvailable(String name, String version) {
-		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.NEW_MODULE_AVAILABLE, name, version);
+		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.NEW_MODULE_AVAILABLE, name, version, null);
 		notify(model);
 	}
 	
@@ -95,9 +95,36 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 	 * @see com.serotonin.m2m2.module.ModuleNotificationListener#upgradeStateChanged(java.lang.String)
 	 */
 	@Override
-	public void upgradeStateChanged(String stage) {
+	public void upgradeStateChanged(UpgradeState stage) {
 		ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.UPGRADE_STATE_CHANGE, stage);
 		notify(model);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.ModuleNotificationListener#moduleDownloadFailed(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void moduleDownloadFailed(String name, String version, String reason) {
+        ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.MODULE_DOWNLOAD_FAILED, name, version, reason);
+        notify(model);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.ModuleNotificationListener#upgradeError(java.lang.String)
+	 */
+	@Override
+	public void upgradeError(String error) {
+        ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.UPGRADE_ERROR, null, null, error);
+        notify(model);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.module.ModuleNotificationListener#upgradeTaskFinished()
+	 */
+	@Override
+	public void upgradeTaskFinished() {
+        ModuleNotificationModel model = new ModuleNotificationModel(ModuleNotificationTypeEnum.UPGRADE_FINISHED, null, null, null);
+        notify(model);
 	}
 	
     public void notify(ModuleNotificationModel model) {

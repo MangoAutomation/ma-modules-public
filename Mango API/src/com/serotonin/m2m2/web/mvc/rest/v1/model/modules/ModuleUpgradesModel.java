@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.modules;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.zafarkhaja.semver.Version;
 import com.serotonin.db.pair.StringStringPair;
 
 /**
@@ -49,11 +50,11 @@ public class ModuleUpgradesModel {
 		List<StringStringPair> list = new ArrayList<StringStringPair>();
 		if(upgrades != null){
 			for(ModuleUpgradeModel model : upgrades)
-				list.add(new StringStringPair(model.getName(), model.getNewVersion()));
+				list.add(new StringStringPair(model.getName(), Version.valueOf(model.getNewVersion()).getNormalVersion()));
 		}
 		if(newInstalls != null){
 			for(ModuleUpgradeModel model : newInstalls)
-				list.add(new StringStringPair(model.getName(), model.getNewVersion()));
+				list.add(new StringStringPair(model.getName(), Version.valueOf(model.getNewVersion()).getNormalVersion()));
 		}
 		return list;
 

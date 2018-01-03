@@ -4,16 +4,23 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.modules;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.serotonin.m2m2.module.ModuleNotificationListener.UpgradeState;
+
 /**
  * 
  * @author Terry Packer
  */
+@JsonInclude(Include.NON_NULL)
 public class ModuleNotificationModel {
 
 	private ModuleNotificationTypeEnum type;
 	private String name;
 	private String version;
-	private String upgradeProcessState;
+	private UpgradeState upgradeProcessState;
+	private String error;
 
 	public ModuleNotificationModel(){ }
 	
@@ -22,10 +29,11 @@ public class ModuleNotificationModel {
 	 * @param name
 	 * @param version
 	 */
-	public ModuleNotificationModel(ModuleNotificationTypeEnum type, String name, String version) {
+	public ModuleNotificationModel(ModuleNotificationTypeEnum type, String name, String version, String error) {
 		this.type = type;
 		this.name = name;
 		this.version = version;
+		this.error = error;
 	}
 
 	/**
@@ -35,7 +43,7 @@ public class ModuleNotificationModel {
 	 * @param version
 	 * @param upgradeProcessState
 	 */
-	public ModuleNotificationModel(ModuleNotificationTypeEnum type, String upgradeProcessState) {
+	public ModuleNotificationModel(ModuleNotificationTypeEnum type, UpgradeState upgradeProcessState) {
 		this.type = type;
 		this.upgradeProcessState = upgradeProcessState;
 	}
@@ -58,10 +66,26 @@ public class ModuleNotificationModel {
 	public void setVersion(String version) {
 		this.version = version;
 	}
-	public String getUpgradeProcessState() {
+	public UpgradeState getUpgradeProcessState() {
 		return upgradeProcessState;
 	}
-	public void setUpgradeProcessState(String upgradeProcessState) {
+	public void setUpgradeProcessState(UpgradeState upgradeProcessState) {
 		this.upgradeProcessState = upgradeProcessState;
 	}
+	@JsonGetter
+	public String getStateDescription() {
+	    if(upgradeProcessState != null)
+	        return upgradeProcessState.getDescription();
+	    else
+	        return null;
+	}
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+	
 }
