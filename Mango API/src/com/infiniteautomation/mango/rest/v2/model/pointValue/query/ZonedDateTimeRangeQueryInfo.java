@@ -86,12 +86,12 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
             throw new ValidationFailedRestException(vr);
         }
         
-        if(truncate)
-            setupDates();
-        
         this.rollup = rollup;
         this.timePeriod = timePeriod;
         this.bookend = bookend;
+        
+        if(truncate)
+            setupDates();
     }
 
     /**
