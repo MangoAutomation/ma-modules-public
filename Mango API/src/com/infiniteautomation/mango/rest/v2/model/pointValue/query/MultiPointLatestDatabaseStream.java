@@ -270,7 +270,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 processRow(value, index, false, true);
                 index++;
                 limitCount++;
-                if(limitCount >= info.getLimit())
+                if(info.getLimit() != null && limitCount >= info.getLimit())
                     break;
             }
         }

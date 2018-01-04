@@ -134,7 +134,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                     processRow(value, index, false, true);
                 index++;
                 limitCount++;
-                if(limitCount >= info.getLimit())
+                if(info.getLimit() != null && limitCount >= info.getLimit())
                     break;
             }
             //Send out last value as bookend if necessary
