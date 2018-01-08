@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.modules;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleNotificationListener.UpgradeState;
 
 /**
@@ -72,8 +73,9 @@ public class ModuleNotificationModel {
 	public void setUpgradeProcessState(UpgradeState upgradeProcessState) {
 		this.upgradeProcessState = upgradeProcessState;
 	}
+	
 	@JsonGetter
-	public String getStateDescription() {
+	public TranslatableMessage getStateDescription() {
 	    if(upgradeProcessState != null)
 	        return upgradeProcessState.getDescription();
 	    else
