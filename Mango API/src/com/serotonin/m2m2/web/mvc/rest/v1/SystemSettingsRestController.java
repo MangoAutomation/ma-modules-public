@@ -129,51 +129,53 @@ public class SystemSettingsRestController extends MangoRestController{
     		@RequestParam(required=false, defaultValue="STRING") SystemSettingTypeEnum type,
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
-		RestProcessResult<Object> result = new RestProcessResult<Object>(HttpStatus.OK);
+        RestProcessResult<Object> result = new RestProcessResult<Object>(HttpStatus.OK);
 
-		this.checkUser(request, result);
-        if(result.isOk()){
-    		Map<String,Object> settings = new HashMap<String,Object>();
-    		settings.put(key, model);
-    		ProcessResult response = new ProcessResult();
-    		this.dao.validate(settings, response);
-    		if(response.getHasMessages()){
-    			//Invalid
-    			result.addValidationMessages(response);
-    			return result.createResponseEntity();
-    		}else{
-            	switch(type){
-    			case BOOLEAN:
-    				dao.setBooleanValue(key, (Boolean)model);
-    				break;
-    			case INTEGER:
-    				dao.setIntValue(key, (Integer)model);
-    				break;
-    			case JSON:
-    				try{
-    					dao.setJsonObjectValue(key, model);
-    				}catch(Exception e){
-    					result.addRestMessage(this.getInternalServerErrorMessage(e.getMessage()));
-    					return result.createResponseEntity();
-    				}
-    				break;
-    			case STRING:
-    			default:
-    				//Potentially convert value from its code
-    				Integer code = this.dao.convertToValueFromCode(key, (String)model);
-    				if(code != null)
-    					dao.setIntValue(key, code);
-    				else
-    					dao.setValue(key, (String)model);
-    				break;
-            	}
-            	//Put a link to the updated data in the header
-    	    	URI location = builder.path("/v1/system-settings/{key}").buildAndExpand(key).toUri();
-    	    	result.addRestMessage(getResourceUpdatedMessage(location));
-    	    	return result.createResponseEntity(model);
-        	}
+        this.checkUser(request, result);
+        if (result.isOk()) {
+            Map<String, Object> settings = new HashMap<String, Object>();
+            settings.put(key, model);
+            ProcessResult response = new ProcessResult();
+            this.dao.validate(settings, response);
+            if (response.getHasMessages()) {
+                // Invalid
+                result.addValidationMessages(response);
+                return result.createResponseEntity();
+            } else {
+                switch (type) {
+                    case BOOLEAN:
+                        dao.setBooleanValue(key, (Boolean) model);
+                        break;
+                    case INTEGER:
+                        dao.setIntValue(key, (Integer) model);
+                        break;
+                    case JSON:
+                        try {
+                            dao.setJsonObjectValue(key, model);
+                        } catch (Exception e) {
+                            result.addRestMessage(
+                                    this.getInternalServerErrorMessage(e.getMessage()));
+                            return result.createResponseEntity();
+                        }
+                        break;
+                    case STRING:
+                    default:
+                        // Potentially convert value from its code
+                        Integer code = this.dao.convertToValueFromCode(key, (String) model);
+                        if (code != null)
+                            dao.setIntValue(key, code);
+                        else
+                            dao.setValue(key, (String) model);
+                        break;
+                }
+                // Put a link to the updated data in the header
+                URI location =
+                        builder.path("/v1/system-settings/{key}").buildAndExpand(key).toUri();
+                result.addRestMessage(getResourceUpdatedMessage(location));
+                return result.createResponseEntity(model);
+            }
         }
-        
+
         return result.createResponseEntity();
 	}
 	
