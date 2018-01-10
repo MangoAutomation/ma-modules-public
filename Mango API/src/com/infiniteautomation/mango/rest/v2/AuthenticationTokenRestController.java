@@ -59,7 +59,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
     @ApiOperation(value = "Create token", notes = "Creates a token for the current user")
     @RequestMapping(path="/create", method = RequestMethod.POST)
     @PreAuthorize("isAuthenticated() and isPasswordAuthenticated()")
-    public ResponseEntity<String> createToken(
+    public ResponseEntity<TokenModel> createToken(
             @RequestParam(required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME)
             Date expiry,
@@ -71,7 +71,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
         }
 
         String token = tokenAuthService.generateToken(user, expiry);
-        return new ResponseEntity<>(token, HttpStatus.CREATED);
+        return new ResponseEntity<>(new TokenModel(token), HttpStatus.CREATED);
     }
     
     @ApiOperation(value = "Revoke all tokens", notes = "Revokes all tokens for the current user")
@@ -91,7 +91,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
     @ApiOperation(value = "Create token for user", notes = "Creates a token for a given user")
     @RequestMapping(path="/create/{username}", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
-    public ResponseEntity<String> createTokenForUser(
+    public ResponseEntity<TokenModel> createTokenForUser(
             @PathVariable String username,
             
             @RequestParam(required = false)
@@ -108,7 +108,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
         }
         
         String token = tokenAuthService.generateToken(user, expiry);
-        return new ResponseEntity<>(token, HttpStatus.CREATED);
+        return new ResponseEntity<>(new TokenModel(token), HttpStatus.CREATED);
     }
     
     @ApiOperation(value = "Revoke all tokens for user", notes = "Revokes all tokens for a given user")
@@ -152,4 +152,33 @@ public class AuthenticationTokenRestController extends MangoRestController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    public static class TokenModel {
+        private String token;
+        
+        public TokenModel() {
+        }
+        
+        public TokenModel(String token) {
+            this.token = token;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        @Override
+        public String toString() {
+            String[] parts = token.split("\\.");
+            if (parts.length == 3) {
+                parts[2] = "<redacted>";
+                return "TokenModel [token=" + String.join(".", parts) + "]";
+            } else {
+                return "TokenModel [token=<redacted>]";
+            }
+        }
+    }
 }
