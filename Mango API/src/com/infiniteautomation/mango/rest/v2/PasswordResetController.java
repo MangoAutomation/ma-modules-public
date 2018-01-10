@@ -5,11 +5,14 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -139,6 +142,11 @@ public class PasswordResetController extends MangoRestController {
             @ApiParam(value = "Email the user the reset link", required = false, defaultValue = "false", allowMultiple = false)
             @RequestParam(required = false, defaultValue = "false")
             boolean sendEmail,
+
+            @ApiParam(value = "Expiry date for the reset token", required = false, allowMultiple = false)
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME)
+            Date expiry,
             
             @AuthenticationPrincipal User currentUser) throws AddressException, TemplateException, IOException {
         
@@ -156,7 +164,8 @@ public class PasswordResetController extends MangoRestController {
         }
         
         CreateTokenResponse response = new CreateTokenResponse();
-        String token = passwordResetService.generateToken(user);
+        
+        String token = passwordResetService.generateToken(user, expiry);
         response.setToken(token);
         response.setFullUrl(passwordResetService.generateResetUrl(token));
         response.setRelativeUrl(passwordResetService.generateRelativeResetUrl(token));
