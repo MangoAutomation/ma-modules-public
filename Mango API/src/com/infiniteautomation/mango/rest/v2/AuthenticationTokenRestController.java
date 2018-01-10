@@ -144,16 +144,9 @@ public class AuthenticationTokenRestController extends MangoRestController {
     }
     
     public static class CreateTokenRequest {
-        private String password;
         private String username;
         private Date expiry;
-        
-        public String getPassword() {
-            return password;
-        }
-        public void setPassword(String password) {
-            this.password = password;
-        }
+
         public String getUsername() {
             return username;
         }
@@ -168,8 +161,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
         }
         @Override
         public String toString() {
-            return "CreateTokenRequest [password=<redacted>, username=" + username
-                    + ", expiry=" + expiry + "]";
+            return "CreateTokenRequest [username=" + username + ", expiry=" + expiry + "]";
         }
     }
 }

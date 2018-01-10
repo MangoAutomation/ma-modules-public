@@ -11,19 +11,17 @@ import java.util.Locale;
 import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.jwt.JwtSignerVerifier;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
@@ -67,7 +65,9 @@ public class PasswordResetController extends MangoRestController {
     @ApiOperation(value = "Sends the user an email containing a password reset link")
     @RequestMapping(method = RequestMethod.POST, value = "/send-email")
     public ResponseEntity<Void> sendEmail(
-            @RequestBody SendEmailRequestBody body) throws AddressException, TemplateException, IOException {
+            @RequestBody
+            SendEmailRequestBody body
+            ) throws AddressException, TemplateException, IOException {
         
         User user = UserDao.instance.getUser(body.getUsername());
         if (user == null) {
@@ -129,30 +129,22 @@ public class PasswordResetController extends MangoRestController {
     }
     
     @ApiOperation(value = "Creates a password reset token and link for the given user")
-    @RequestMapping(method = RequestMethod.POST, value = "/create/{username}")
+    @RequestMapping(method = RequestMethod.POST, value = "/create")
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public CreateTokenResponse createTokenForUser(
-            @ApiParam(value = "Username", required = true, allowMultiple = false)
-            @PathVariable String username,
-            
-            @ApiParam(value = "Lock the user's current password", required = false, defaultValue = "true", allowMultiple = false)
-            @RequestParam(required = false, defaultValue = "true")
-            boolean lockPassword,
-            
-            @ApiParam(value = "Email the user the reset link", required = false, defaultValue = "false", allowMultiple = false)
-            @RequestParam(required = false, defaultValue = "false")
-            boolean sendEmail,
-
-            @ApiParam(value = "Expiry date for the reset token", required = false, allowMultiple = false)
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME)
-            Date expiry,
+            @RequestBody
+            CreateTokenRequest requestBody,
             
             @AuthenticationPrincipal User currentUser) throws AddressException, TemplateException, IOException {
         
+        String username = requestBody.getUsername();
+        boolean lockPassword = requestBody.isLockPassword();
+        boolean sendEmail = requestBody.isSendEmail();
+        Date expiry = requestBody.getExpiry();
+        
         User user = UserDao.instance.getUser(username);
         if (user == null) {
-            throw new NotFoundRestException();
+            throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
         }
         
         if (user.getId() == currentUser.getId()) {
@@ -175,6 +167,46 @@ public class PasswordResetController extends MangoRestController {
         }
         
         return response;
+    }
+    
+
+    public static class CreateTokenRequest {
+        String username;
+        boolean lockPassword = true;
+        boolean sendEmail = false;
+        Date expiry;
+        
+        public String getUsername() {
+            return username;
+        }
+        public void setUsername(String username) {
+            this.username = username;
+        }
+        public boolean isLockPassword() {
+            return lockPassword;
+        }
+        public void setLockPassword(boolean lockPassword) {
+            this.lockPassword = lockPassword;
+        }
+        public boolean isSendEmail() {
+            return sendEmail;
+        }
+        public void setSendEmail(boolean sendEmail) {
+            this.sendEmail = sendEmail;
+        }
+        public Date getExpiry() {
+            return expiry;
+        }
+        public void setExpiry(Date expiry) {
+            this.expiry = expiry;
+        }
+        
+        @Override
+        public String toString() {
+            return "CreateTokenRequest [username=" + username + ", lockPassword=" + lockPassword
+                    + ", sendEmail=" + sendEmail + ", expiry=" + expiry + "]";
+        }
+        
     }
 
     public static class CreateTokenResponse {
@@ -203,16 +235,7 @@ public class PasswordResetController extends MangoRestController {
         
         @Override
         public String toString() {
-            String redactedToken;
-            String[] parts = token.split("\\.");
-            if (parts.length == 3) {
-                parts[2] = "<redacted>";
-                redactedToken = String.join(".", parts);
-            } else {
-                redactedToken = "<redacted>";
-            }
-            
-            return "CreateTokenResponse [token=" + redactedToken + ", fullUrl=" + fullUrl + ", relativeUrl="
+            return "CreateTokenResponse [token=" + JwtSignerVerifier.printToken(token) + ", fullUrl=" + fullUrl + ", relativeUrl="
                     + relativeUrl + "]";
         }
     }
