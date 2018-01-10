@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -34,10 +35,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 import freemarker.template.TemplateException;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.IncorrectClaimException;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureException;
@@ -112,10 +111,10 @@ public class PasswordResetController extends MangoRestController {
 
     @ApiOperation(value = "Verify the sigature and parse a password reset token", notes="Does NOT verify the claims")
     @RequestMapping(path="/verify", method = RequestMethod.GET)
-    public Jws<Claims> verifyToken(
+    public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
-        return this.passwordResetService.parse(token);
+        return new HeaderClaimsModel(this.passwordResetService.parse(token));
     }
     
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all password reset tokens")
@@ -191,6 +190,21 @@ public class PasswordResetController extends MangoRestController {
         }
         public void setRelativeUrl(URI relativeUrl) {
             this.relativeUrl = relativeUrl;
+        }
+        
+        @Override
+        public String toString() {
+            String redactedToken;
+            String[] parts = token.split("\\.");
+            if (parts.length == 3) {
+                parts[2] = "<redacted>";
+                redactedToken = String.join(".", parts);
+            } else {
+                redactedToken = "<redacted>";
+            }
+            
+            return "CreateTokenResponse [token=" + redactedToken + ", fullUrl=" + fullUrl + ", relativeUrl="
+                    + relativeUrl + "]";
         }
     }
     

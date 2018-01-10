@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
+import com.infiniteautomation.mango.rest.v2.model.jwt.TokenModel;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
@@ -138,10 +140,12 @@ public class AuthenticationTokenRestController extends MangoRestController {
 
     @ApiOperation(value = "Verify the sigature and parse an authentication token", notes="Does NOT verify the claims")
     @RequestMapping(path="/verify", method = RequestMethod.GET)
-    public Jws<Claims> verifyToken(
+    public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
-        return this.tokenAuthService.parse(token);
+        
+        Jws<Claims> jwsToken = this.tokenAuthService.parse(token);
+        return new HeaderClaimsModel(jwsToken);
     }
     
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all authentication tokens")
@@ -150,35 +154,5 @@ public class AuthenticationTokenRestController extends MangoRestController {
     public ResponseEntity<Void> resetKeys() {
         tokenAuthService.resetKeys();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    public static class TokenModel {
-        private String token;
-        
-        public TokenModel() {
-        }
-        
-        public TokenModel(String token) {
-            this.token = token;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
-
-        @Override
-        public String toString() {
-            String[] parts = token.split("\\.");
-            if (parts.length == 3) {
-                parts[2] = "<redacted>";
-                return "TokenModel [token=" + String.join(".", parts) + "]";
-            } else {
-                return "TokenModel [token=<redacted>]";
-            }
-        }
     }
 }
