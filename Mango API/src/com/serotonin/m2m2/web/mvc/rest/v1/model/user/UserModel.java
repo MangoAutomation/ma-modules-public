@@ -266,6 +266,18 @@ public class UserModel extends AbstractRestModel<User> {
         // no op
     }
     
+    @CSVColumnGetter(order=17, header="passwordLocked")
+    @JsonGetter("passwordLocked")
+    public boolean isPasswordLocked() {
+        return data.isPasswordLocked();
+    }
+
+    @CSVColumnSetter(order=17, header="passwordLocked")
+    @JsonSetter("passwordLocked")
+    public void setPasswordLocked(boolean passwordLocked) {
+        // no op
+    }
+    
 	public List<RestValidationMessage> getMessages() {
 		return messages;
 	}
