@@ -17,10 +17,10 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator> implements StatisticsGeneratorQuantizerCallback<StatisticsGenerator>, BookendQueryCallback<IdPointValueTime>{
+public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator> implements StatisticsGeneratorQuantizerCallback<T>, BookendQueryCallback<IdPointValueTime>{
 
     protected final ChildStatisticsGeneratorCallback callback;
-    protected AbstractPointValueTimeQuantizer<?> quantizer;
+    protected AbstractPointValueTimeQuantizer<T> quantizer;
     protected final DataPointVO vo;
     
     public DataPointStatisticsQuantizer(DataPointVO vo, ChildStatisticsGeneratorCallback callback) {
