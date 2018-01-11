@@ -24,6 +24,7 @@ import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.exception.ValidationException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.systemSettings.SystemSettingTypeEnum;
 import com.wordnik.swagger.annotations.Api;
@@ -138,42 +139,42 @@ public class SystemSettingsRestController extends MangoRestController{
             ProcessResult response = new ProcessResult();
             this.dao.validate(settings, response);
             if (response.getHasMessages()) {
-                // Invalid
-                result.addValidationMessages(response);
-                return result.createResponseEntity();
-            } else {
-                switch (type) {
-                    case BOOLEAN:
-                        dao.setBooleanValue(key, (Boolean) model);
-                        break;
-                    case INTEGER:
-                        dao.setIntValue(key, (Integer) model);
-                        break;
-                    case JSON:
-                        try {
-                            dao.setJsonObjectValue(key, model);
-                        } catch (Exception e) {
-                            result.addRestMessage(
-                                    this.getInternalServerErrorMessage(e.getMessage()));
-                            return result.createResponseEntity();
-                        }
-                        break;
-                    case STRING:
-                    default:
-                        // Potentially convert value from its code
-                        Integer code = this.dao.convertToValueFromCode(key, (String) model);
-                        if (code != null)
-                            dao.setIntValue(key, code);
-                        else
-                            dao.setValue(key, (String) model);
-                        break;
-                }
-                // Put a link to the updated data in the header
-                URI location =
-                        builder.path("/v1/system-settings/{key}").buildAndExpand(key).toUri();
-                result.addRestMessage(getResourceUpdatedMessage(location));
-                return result.createResponseEntity(model);
+                throw new ValidationException(response);
             }
+            switch (type) {
+                case BOOLEAN:
+                    dao.setBooleanValue(key, (Boolean) model);
+                    break;
+                case INTEGER:
+                    dao.setIntValue(key, (Integer) model);
+                    break;
+                case JSON:
+                    try {
+                        dao.setJsonObjectValue(key, model);
+                    } catch (Exception e) {
+                        result.addRestMessage(
+                                this.getInternalServerErrorMessage(e.getMessage()));
+                        return result.createResponseEntity();
+                    }
+                    break;
+                case STRING:
+                default:
+                    // Potentially convert value from its code
+                    Integer code = this.dao.convertToValueFromCode(key, (String) model);
+                    if (code != null)
+                        dao.setIntValue(key, code);
+                    else
+                        dao.setValue(key, (String) model);
+                    break;
+            }
+            
+            // J.W. WTF is this for?
+            // Put a link to the updated data in the header
+            URI location =
+                    builder.path("/v1/system-settings/{key}").buildAndExpand(key).toUri();
+            result.addRestMessage(getResourceUpdatedMessage(location));
+            
+            return result.createResponseEntity(model);
         }
 
         return result.createResponseEntity();
@@ -198,15 +199,14 @@ public class SystemSettingsRestController extends MangoRestController{
             settings = this.dao.convertCodesToValues(settings);
             this.dao.validate(settings, response);
             if (response.getHasMessages()) {
-                // Invalid
-                result.addValidationMessages(response);
-                return result.createResponseEntity();
-            } else {
-                this.dao.updateSettings(settings);
+                throw new ValidationException(response);
             }
+            
+            // J.W. WTF is this for?
             // Put a link to the updated data in the header
             URI location = builder.path("/v1/system-settings").buildAndExpand().toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
+            
             return result.createResponseEntity(settings);
         }
         
