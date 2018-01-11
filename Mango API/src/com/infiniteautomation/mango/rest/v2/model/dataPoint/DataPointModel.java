@@ -9,9 +9,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
+import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
@@ -71,6 +73,9 @@ public class DataPointModel {
     String dataSourceXid;
     String dataSourceName;
     String dataSourceTypeName;
+    
+    String path;
+    String rollup;
 
     public DataPointModel() {
     }
@@ -120,6 +125,9 @@ public class DataPointModel {
         
         this.templateXid = point.getTemplateXid();
         this.templateName = point.getTemplateName();
+        
+        this.path = PointHierarchy.getFlatPath(point.getId(), DataPointDao.instance.getPointHierarchy(true).getRoot());
+        this.rollup = Common.ROLLUP_CODES.getCode(point.getRollup());
     }
     
     public void copyPropertiesTo(DataPointVO point) {
@@ -202,6 +210,10 @@ public class DataPointModel {
             point.setTemplateId(null);
             point.setTemplateXid(null);
             point.setTemplateName(null);
+        }
+        
+        if (this.rollup != null) {
+            point.setRollup(Common.ROLLUP_CODES.getId(this.rollup));
         }
     }
 
@@ -432,5 +444,21 @@ public class DataPointModel {
 
     public boolean isTemplateXidWasSet() {
         return templateXidWasSet;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getRollup() {
+        return rollup;
+    }
+
+    public void setRollup(String rollup) {
+        this.rollup = rollup;
     }
 }
