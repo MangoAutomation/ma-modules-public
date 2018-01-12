@@ -21,23 +21,35 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Jared Wiltshire
  */
+@Api(value="Data point tags", description="Get and set data point tags")
 @RestController()
 @RequestMapping("/v2/data-point-tags")
 public class DataPointTagsRestController extends BaseMangoRestController {
     
+    @ApiOperation(value = "Get data point tags by data point XID", notes = "User must have read permission for the data point")
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
-    public Map<String, String> getTagsForDataPoint(@PathVariable String xid) {
+    public Map<String, String> getTagsForDataPoint(
+            @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            
+            @AuthenticationPrincipal User user) {
+        
         DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
+        Permissions.ensureDataPointReadPermission(user, dataPoint);
         
         Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
         dataPoint.setTags(tags);
@@ -46,16 +58,24 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         return dataPoint.getTags();
     }
 
+    @ApiOperation(value = "Set data point tags by data point XID", notes = "User must have edit permission for the data point's data source")
     @RequestMapping(method = RequestMethod.POST, value="/point/{xid}")
     public Map<String, String> setTagsForDataPoint(
+            @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @RequestBody(required=true) Map<String, String> tags) {
+            
+            @RequestBody
+            Map<String, String> tags,
+            
+            @AuthenticationPrincipal
+            User user) {
 
         return DataPointTagsDao.instance.doInTransaction(txStatus -> {
             DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
             if (dataPoint == null) {
                 throw new NotFoundRestException();
             }
+            Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
             
             dataPoint.setTags(tags);
             DataPointTagsDao.instance.saveDataPointTags(dataPoint);
@@ -63,17 +83,25 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             return dataPoint.getTags();
         });
     }
-    
+
+    @ApiOperation(value = "Add data point tags by data point XID", notes = "User must have edit permission for the data point's data source")
     @RequestMapping(method = RequestMethod.PUT, value="/point/{xid}")
     public Map<String, String> addTagsForDataPoint(
+            @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @RequestBody(required=true) Map<String, String> tags) {
+            
+            @RequestBody
+            Map<String, String> tags,
+            
+            @AuthenticationPrincipal
+            User user) {
 
         return DataPointTagsDao.instance.doInTransaction(txStatus -> {
             DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
             if (dataPoint == null) {
                 throw new NotFoundRestException();
             }
+            Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
             
             Map<String, String> existingTags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
             Map<String, String> newTags = new HashMap<>();
@@ -88,6 +116,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         });
     }
 
+    @ApiOperation(value = "Gets all available tags keys", notes = "Only returns tag keys which are present on data points the user has access to")
     @RequestMapping(method = RequestMethod.GET, value="/keys")
     public Set<String> getTagKeys(@AuthenticationPrincipal User user) {
         return DataPointTagsDao.instance.getTagKeys(user);
@@ -99,10 +128,14 @@ public class DataPointTagsRestController extends BaseMangoRestController {
      * @param restrictions
      * @return
      */
+    @ApiOperation(value = "Gets tag values for a given tag key", notes = "Only returns tag values which are present on data points the user has access to")
     @RequestMapping(method = RequestMethod.GET, value="/values/{tagKey}")
     public Set<String> getTagValuesForKey(
+            @ApiParam(value = "Tag key", required = true, allowMultiple = false)
             @PathVariable String tagKey,
+            
             @AuthenticationPrincipal User user,
+            
             HttpServletRequest request) {
 
         String queryString = request.getQueryString();
