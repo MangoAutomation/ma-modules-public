@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.3.0</version>
+        <version>3.3.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>watchlist</artifactId>
     <name>watchlists</name>
     <description>Page for dynamically adding points to lists to monitor their values via AJAX</description>
-    <version>3.3.0</version>
+    <version>3.3.1-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.infiniteautomation.mango</groupId>
             <artifactId>mango-api</artifactId>
-            <version>3.3.0</version>
+            <version>3.3.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
