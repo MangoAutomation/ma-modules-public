@@ -135,7 +135,7 @@ public class MaintenanceEventDao extends BaseDao {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    ejt2.update("delete from eventHandlers where eventTypeName=? and eventTypeRef1=?", new Object[] {
+                    ejt2.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
                             MaintenanceEventType.TYPE_NAME, maintenanceEventId });
                     ejt2.update("delete from maintenanceEvents where id=?", new Object[] { maintenanceEventId });
                 }
