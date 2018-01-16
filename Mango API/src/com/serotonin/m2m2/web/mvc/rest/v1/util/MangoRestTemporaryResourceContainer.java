@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.util;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.serotonin.m2m2.Common;
@@ -78,13 +77,6 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	}
 	
 	private boolean isResourceIdUnique(String resourceId){
-		Iterator<String> it = this.resources.keySet().iterator();
-		while(it.hasNext()){
-			if(it.next().equals(resourceId))
-				return false;
-		}
-		return true;
+	    return !this.resources.containsKey(resourceId);
 	}
-	
-	
 }

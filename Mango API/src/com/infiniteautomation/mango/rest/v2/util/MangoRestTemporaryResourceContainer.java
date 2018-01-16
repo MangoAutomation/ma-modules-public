@@ -5,7 +5,6 @@
 package com.infiniteautomation.mango.rest.v2.util;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
@@ -91,13 +90,6 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	}
 	
 	private boolean isResourceIdUnique(String resourceId){
-		Iterator<String> it = this.resources.keySet().iterator();
-		while(it.hasNext()){
-			if(it.next().equals(resourceId))
-				return false;
-		}
-		return true;
+	    return !this.resources.containsKey(resourceId);
 	}
-	
-	
 }
