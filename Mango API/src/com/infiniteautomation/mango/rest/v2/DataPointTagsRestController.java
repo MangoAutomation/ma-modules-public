@@ -222,8 +222,8 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
     }
 
-    @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
-    @RequestMapping(method = RequestMethod.POST, value="/bulk")
+//    @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
+//    @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<BulkOperationResponse> bulkDataPointTagOperation(
             @RequestBody
             BulkOperationRequest requestBody,
