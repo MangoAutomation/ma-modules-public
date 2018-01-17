@@ -29,8 +29,6 @@ public class PointValueRollupCalculator extends AbstractPointValueRollupCalculat
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param vo
 	 * @param useRendered
 	 * @param unitConversion
@@ -42,8 +40,8 @@ public class PointValueRollupCalculator extends AbstractPointValueRollupCalculat
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public PointValueRollupCalculator(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
-        super(host, port, useRendered, unitConversion, rollup, period, from, to, limit, dateTimeFormat, timezone);
+	public PointValueRollupCalculator(DataPointVO vo, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
+        super(useRendered, unitConversion, rollup, period, from, to, limit, dateTimeFormat, timezone);
         this.vo = vo;
     }
 

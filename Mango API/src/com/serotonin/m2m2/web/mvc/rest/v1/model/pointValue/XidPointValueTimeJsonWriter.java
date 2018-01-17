@@ -28,17 +28,15 @@ import com.serotonin.m2m2.web.taglib.Functions;
 public class XidPointValueTimeJsonWriter extends PointValueTimeJsonWriter implements XidTimeJsonWriter<IdPointValueTime>{
 
 	/**
-	 * @param host
-	 * @param port
 	 * @param jgen
 	 * @param useRendered
 	 * @param unitConversion
 	 * @param dateTimeFormat - string format for dates, if null then timestamp numbers used
 	 * @param timezone
 	 */
-	public XidPointValueTimeJsonWriter(String host, int port, JsonGenerator jgen, boolean useRendered,
+	public XidPointValueTimeJsonWriter(JsonGenerator jgen, boolean useRendered,
 			boolean unitConversion, String dateTimeFormat, String timezone) {
-		super(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone);
+		super(jgen, useRendered, unitConversion, dateTimeFormat, timezone);
 	}
 
 	/* (non-Javadoc)

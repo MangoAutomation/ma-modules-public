@@ -36,8 +36,6 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param writer
 	 * @param vo
 	 * @param useRendered
@@ -48,8 +46,8 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 	 * @param dateTimeFormat - format for string dates, if null then epoch millis number
 	 * @param timezone
 	 */
-	public PointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders, Integer limit, String dateTimeFormat, String timezone) {
-		super(host, port, writer, useRendered, unitConversion, writeXid, writeHeaders, dateTimeFormat, timezone);
+	public PointValueTimeCsvStreamCallback(CSVWriter writer, DataPointVO vo, boolean useRendered,  boolean unitConversion, boolean writeXid, boolean writeHeaders, Integer limit, String dateTimeFormat, String timezone) {
+		super(writer, useRendered, unitConversion, writeXid, writeHeaders, dateTimeFormat, timezone);
 		this.translations = Common.getTranslations();
 		this.vo = vo;
 		this.limiter = new LimitCounter(limit);

@@ -31,8 +31,6 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 	
 	private final Log LOG = LogFactory.getLog(XidPointValueTimeMapDatabaseStream.class);
 
-	private String host;
-	private int port;
 	private boolean useRendered;
 	private boolean unitConversion;
 	private long from;
@@ -46,8 +44,6 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param pointMap
 	 * @param useRendered
 	 * @param unitConversion
@@ -57,9 +53,7 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 	 * @param limit
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 */
-	public XidPointValueTimeMapDatabaseStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit, String dateTimeFormat, String timezone) {
-		this.host = host;
-		this.port = port;
+	public XidPointValueTimeMapDatabaseStream(Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit, String dateTimeFormat, String timezone) {
 		this.pointMap = pointMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -82,7 +76,7 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 			DataPointVO vo = this.pointMap.get(it.next());
 			try {
 				jgen.writeArrayFieldStart(vo.getXid());
-				PointValueTimeJsonStreamCallback callback = new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion, limit, dateTimeFormat, timezone);
+				PointValueTimeJsonStreamCallback callback = new PointValueTimeJsonStreamCallback(jgen, vo, useRendered, unitConversion, limit, dateTimeFormat, timezone);
 				this.dao.getPointValuesBetween(vo.getId(), from, to, callback);
 				jgen.writeEndArray();
 			} catch (IOException e) {
@@ -103,7 +97,7 @@ public class XidPointValueTimeMapDatabaseStream implements ObjectStream<Map<Stri
 		boolean writeHeaders = true;
 		while(it.hasNext()){
 			DataPointVO vo = this.pointMap.get(it.next());
-			PointValueTimeCsvStreamCallback callback = new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, true, writeHeaders, limit, dateTimeFormat, timezone);
+			PointValueTimeCsvStreamCallback callback = new PointValueTimeCsvStreamCallback(writer.getWriter(), vo, useRendered, unitConversion, true, writeHeaders, limit, dateTimeFormat, timezone);
 			this.dao.getPointValuesBetween(vo.getId(), from, to, callback);
 			writeHeaders = false;
 		}

@@ -18,8 +18,6 @@ public abstract class StatisticsJsonWriter extends PointValueTimeJsonWriter{
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param jgen
 	 * @param vo
 	 * @param useRendered
@@ -27,8 +25,8 @@ public abstract class StatisticsJsonWriter extends PointValueTimeJsonWriter{
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public StatisticsJsonWriter(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, String dateTimeFormat, String timezone) {
-		super(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone);
+	public StatisticsJsonWriter(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, String dateTimeFormat, String timezone) {
+		super(jgen, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.vo = vo;
 	}
 	

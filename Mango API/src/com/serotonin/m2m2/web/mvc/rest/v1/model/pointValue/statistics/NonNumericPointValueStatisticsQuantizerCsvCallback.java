@@ -19,8 +19,6 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	/**
 	 * Write CSV without XID column
 	 * 
-     * @param host
-     * @param port
      * @param writer
      * @param vo
      * @param useRendered
@@ -30,16 +28,14 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
      * @param dateTimeFormat
      * @param timezone
      */
-	public NonNumericPointValueStatisticsQuantizerCsvCallback(String host, int port,
+	public NonNumericPointValueStatisticsQuantizerCsvCallback(
 			CSVWriter writer, DataPointVO vo, boolean useRendered, 
 			boolean unitConversion, RollupEnum rollup, Integer limit, String dateTimeFormat, String timezone) {
-		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true, limit, dateTimeFormat, timezone);
+		this(writer, vo, useRendered, unitConversion, rollup, false, true, limit, dateTimeFormat, timezone);
 	}
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param writer
 	 * @param vo
 	 * @param useRendered
@@ -51,10 +47,10 @@ public class NonNumericPointValueStatisticsQuantizerCsvCallback extends Abstract
 	 * @param dateTimeFormat
 	 * @param timezone
 	 */
-	public NonNumericPointValueStatisticsQuantizerCsvCallback(String host, int port,
+	public NonNumericPointValueStatisticsQuantizerCsvCallback(
 			CSVWriter writer, DataPointVO vo, boolean useRendered,
 			boolean unitConversion, RollupEnum rollup, boolean writeXidColumn,
 			boolean writeHeaders, Integer limit, String dateTimeFormat, String timezone) {
-		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders, dateTimeFormat, timezone), rollup, limit);
+		super(vo, new PointValueTimeCsvWriter(writer, useRendered, unitConversion, writeXidColumn, writeHeaders, dateTimeFormat, timezone), rollup, limit);
 	}
 }

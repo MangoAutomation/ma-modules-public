@@ -49,8 +49,6 @@ public class LatestQueryInfo {
     
     /**
      * 
-     * @param host
-     * @param port
      * @param from
      * @param dateTimeFormat
      * @param timezone
@@ -62,7 +60,7 @@ public class LatestQueryInfo {
      * @param simplifyTolerance
      * @param simplifyTarget
      */
-    public LatestQueryInfo(String host, int port, ZonedDateTime from, String dateTimeFormat, String timezone, 
+    public LatestQueryInfo(ZonedDateTime from, String dateTimeFormat, String timezone, 
             Integer limit, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
             Double simplifyTolerance, Integer simplifyTarget) {
@@ -96,12 +94,6 @@ public class LatestQueryInfo {
 
         // If we are an image type we should build the URLS
         imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
-        if (Common.envProps.getBoolean("ssl.on", false))
-            imageServletBuilder.scheme("https");
-        else
-            imageServletBuilder.scheme("http");
-        imageServletBuilder.host(host);
-        imageServletBuilder.port(port);
 
         if (dateTimeFormat != null)
             this.dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);

@@ -37,8 +37,6 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * are applied in this order: use timezone of from if not null use timezone of to if not null
      * use server timezone 
      * 
-     * @param host
-     * @param port
      * @param from
      * @param to
      * @param dateTimeFormat
@@ -55,12 +53,12 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * @param simplifyTarget
      * @param boolean truncate - Truncate the start and end dates to be round numbers
      */
-    public ZonedDateTimeRangeQueryInfo(String host, int port, ZonedDateTime from, ZonedDateTime to,
+    public ZonedDateTimeRangeQueryInfo(ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
             Integer limit, boolean bookend, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
             Double simplifyTolerance, Integer simplifyTarget, boolean truncate) {
-        super(host, port, from, dateTimeFormat, timezone,
+        super(from, dateTimeFormat, timezone,
                 limit, useRendered, multiplePointsPerArray, 
                 singleArray, useCache, simplifyTolerance, simplifyTarget);
 

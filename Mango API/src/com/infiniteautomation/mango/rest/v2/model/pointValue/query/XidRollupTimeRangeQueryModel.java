@@ -91,17 +91,15 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
 
     /**
      * 
-     * @param host
-     * @param port
      * @param multiplePointsPerArray
      * @param singleArray
      * @param rollup
      * @return
      * @throws ValidationFailedRestException
      */
-    public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(String host, int port, boolean multiplePointsPerArray,
+    public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray, RollupEnum rollup) throws ValidationFailedRestException {
-        return new ZonedDateTimeRangeQueryInfo(host, port, from, to, dateTimeFormat, timezone,
+        return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
                 rollup, timePeriod, null, true, useRendered, multiplePointsPerArray, singleArray, PointValueTimeCacheControl.NONE, null, null, truncate);
     };
 }

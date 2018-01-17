@@ -27,8 +27,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
  */
 public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointValueTimeModel>{
 
-	private String host;
-	private int port;
 	private boolean useRendered;
 	private boolean unitConversion;
 	private long from;
@@ -43,8 +41,6 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param pointMap
 	 * @param useRendered
 	 * @param unitConversion
@@ -55,9 +51,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public IdPointValueTimeDatabaseStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit, String dateTimeFormat, String timezone) {
-		this.host = host;
-		this.port = port;
+	public IdPointValueTimeDatabaseStream(Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit, String dateTimeFormat, String timezone) {
 		this.pointMap = pointMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -74,7 +68,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) {
-		IdPointValueTimeJsonStreamCallback callback = new IdPointValueTimeJsonStreamCallback(host, port, jgen, pointMap, useRendered, unitConversion, limit, dateTimeFormat, timezone);
+		IdPointValueTimeJsonStreamCallback callback = new IdPointValueTimeJsonStreamCallback(jgen, pointMap, useRendered, unitConversion, limit, dateTimeFormat, timezone);
 		this.dao.getPointValuesBetween(new ArrayList<Integer>(pointMap.keySet()), from, to, callback);
 		callback.finish();
 	}
@@ -85,7 +79,7 @@ public class IdPointValueTimeDatabaseStream implements QueryArrayStream<PointVal
 	@Override
 	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
 			throws IOException {
-		IdPointValueTimeCsvStreamCallback callback = new IdPointValueTimeCsvStreamCallback(host, port, writer.getWriter(), pointMap, useRendered, unitConversion, limit, dateTimeFormat, timezone);
+		IdPointValueTimeCsvStreamCallback callback = new IdPointValueTimeCsvStreamCallback(writer.getWriter(), pointMap, useRendered, unitConversion, limit, dateTimeFormat, timezone);
 		this.dao.getPointValuesBetween(new ArrayList<Integer>(pointMap.keySet()), from, to, callback);
 		callback.finish();
 	}

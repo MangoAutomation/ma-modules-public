@@ -39,8 +39,6 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 	
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param voMap
 	 * @param useRendered
 	 * @param unitConversion
@@ -52,8 +50,8 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 	 * @param dateTimeFormat - string date format, if null then epoch millis number
 	 * @param timezone
 	 */
-	public IdPointValueRollupCalculator(String host, int port, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
-        super(host, port, useRendered, unitConversion, rollup, period, from, to, limit, dateTimeFormat, timezone);
+	public IdPointValueRollupCalculator(Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, RollupEnum rollup, TimePeriod period, DateTime from, DateTime to, Integer limit, String dateTimeFormat, String timezone){
+        super(useRendered, unitConversion, rollup, period, from, to, limit, dateTimeFormat, timezone);
 		this.voMap = voMap;
 	}
 
@@ -83,7 +81,7 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 	protected void generateStream(DateTime from, DateTime to, JsonGenerator jgen) {
 
         BucketCalculator bc = this.getBucketCalculator(from, to);
-        IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(this.host, this.port, jgen, 
+        IdPointValueStatisticsQuantizerJsonCallback callback = new IdPointValueStatisticsQuantizerJsonCallback(jgen, 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup, this.limit, this.dateTimeFormat, timezone);
 
@@ -110,7 +108,7 @@ public class IdPointValueRollupCalculator extends AbstractPointValueRollupCalcul
 	@Override
 	protected void generateStream(DateTime from, DateTime to, CSVPojoWriter<PointValueTimeModel> writer) {
         BucketCalculator bc = this.getBucketCalculator(from, to);
-        IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(this.host, this.port, writer.getWriter(), 
+        IdPointValueStatisticsQuantizerCsvCallback callback = new IdPointValueStatisticsQuantizerCsvCallback(writer.getWriter(), 
         		this.voMap, this.useRendered,
 				this.unitConversion, this.rollup, this.dateTimeFormat, timezone);
 

@@ -41,8 +41,6 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
 
     /**
      * 
-     * @param host
-     * @param port
      * @param jgen
      * @param voMap
      * @param useRendered
@@ -52,10 +50,10 @@ public class IdPointValueStatisticsQuantizerJsonCallback extends PointValueTimeJ
      * @param dateTimeFormat - format for String dates or null for timestamp numbers
      * @param timezone
      */
-    public IdPointValueStatisticsQuantizerJsonCallback(String host, int port, JsonGenerator jgen,
+    public IdPointValueStatisticsQuantizerJsonCallback(JsonGenerator jgen,
             Map<Integer, DataPointVO> voMap, boolean useRendered, boolean unitConversion,
             RollupEnum rollup, Integer limit, String dateTimeFormat, String timezone) {
-        super(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone);
+        super(jgen, useRendered, unitConversion, dateTimeFormat, timezone);
         this.voMap = voMap;
         this.rollup = rollup;
         this.limiter = new LimitCounter(limit);

@@ -35,8 +35,8 @@ public class PointValueTimeJsonStreamCallback extends PointValueTimeJsonWriter i
 	/**
 	 * @param jgen
 	 */
-	public PointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
-		super(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone);
+	public PointValueTimeJsonStreamCallback(JsonGenerator jgen, DataPointVO vo, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
+		super(jgen, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.vo = vo;
 		this.limiter = new LimitCounter(limit);
 		this.translations = Common.getTranslations();		

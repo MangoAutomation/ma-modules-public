@@ -69,14 +69,12 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
     
     /**
      * 
-     * @param host
-     * @param port
      * @param multiplePoints
      * @param singleArray
      * @return
      * @throws ValidationFailedRestException
      */
-    public  LatestQueryInfo createLatestQueryInfo(String host, int port, boolean multiplePointsPerArray, boolean singleArray) throws ValidationFailedRestException {
-        return new LatestQueryInfo(host, port, before, dateTimeFormat, timezone, limit, useRendered, multiplePointsPerArray, singleArray, useCache, simplifyTolerance, simplifyTarget);
+    public  LatestQueryInfo createLatestQueryInfo(boolean multiplePointsPerArray, boolean singleArray) throws ValidationFailedRestException {
+        return new LatestQueryInfo(before, dateTimeFormat, timezone, limit, useRendered, multiplePointsPerArray, singleArray, useCache, simplifyTolerance, simplifyTarget);
     }
 }

@@ -32,9 +32,9 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
 
     protected JsonGenerator jgen;
 
-    public PointValueTimeJsonWriter(String host, int port, JsonGenerator jgen, boolean useRendered,
+    public PointValueTimeJsonWriter(JsonGenerator jgen, boolean useRendered,
             boolean unitConversion, String dateTimeFormat, String timezone) {
-        super(host, port, useRendered, unitConversion, dateTimeFormat, timezone);
+        super(useRendered, unitConversion, dateTimeFormat, timezone);
         this.jgen = jgen;
     }
 

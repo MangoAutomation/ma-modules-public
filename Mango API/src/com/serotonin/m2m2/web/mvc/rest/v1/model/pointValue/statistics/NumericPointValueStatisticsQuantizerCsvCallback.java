@@ -20,8 +20,6 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 	/**
 	 * Write CSV with no XID Column
      * 
-     * @param host
-     * @param port
      * @param writer
      * @param vo
      * @param useRendered
@@ -31,15 +29,13 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
      * @param dateTimeFormat
      * @param timezone
      */
-	public NumericPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, DataPointVO vo, 
+	public NumericPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, DataPointVO vo, 
 			boolean useRendered,  boolean unitConversion, RollupEnum rollup, Integer limit, String dateTimeFormat, String timezone) {
-		this(host, port, writer, vo, useRendered, unitConversion, rollup, false, true, limit, dateTimeFormat, timezone);
+		this(writer, vo, useRendered, unitConversion, rollup, false, true, limit, dateTimeFormat, timezone);
 	}	
 	
 	/**
 	 * Write a CSV with a xid column, useful for writing a sheet with multiple points (not necessarily in time order)
-	 * @param host
-	 * @param port
 	 * @param writer
 	 * @param vo
 	 * @param useRendered
@@ -51,9 +47,9 @@ public class NumericPointValueStatisticsQuantizerCsvCallback extends AbstractNum
 	 * @param dateTimeFormat
 	 * @param timezone
 	 */
-	public NumericPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, DataPointVO vo, 
+	public NumericPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, DataPointVO vo, 
 			boolean useRendered,  boolean unitConversion, RollupEnum rollup, boolean writeXidColumn, boolean writeHeaders, Integer limit, String dateTimeFormat, String timezone) {
-		super(vo, new PointValueTimeCsvWriter(host, port, writer, useRendered, unitConversion, writeXidColumn, writeHeaders, dateTimeFormat, timezone), rollup, limit);
+		super(vo, new PointValueTimeCsvWriter(writer, useRendered, unitConversion, writeXidColumn, writeHeaders, dateTimeFormat, timezone), rollup, limit);
 	}
 	
 }

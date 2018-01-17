@@ -50,8 +50,6 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param writer
 	 * @param voMap
 	 * @param useRendered
@@ -60,8 +58,8 @@ public class IdPointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter i
 	 * @param dateTimeFormat - format for date strings, if null then use epoch millis number
 	 * @param timezone
 	 */
-	public IdPointValueTimeCsvStreamCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
-		super(host, port, writer, useRendered, unitConversion, dateTimeFormat, timezone);
+	public IdPointValueTimeCsvStreamCallback(CSVWriter writer, Map<Integer, DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
+		super(writer, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.limiter = new LimitCounter(limit);
 		this.voMap = voMap;
 		this.currentTime = Long.MIN_VALUE;

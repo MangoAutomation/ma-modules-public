@@ -31,8 +31,6 @@ public class XidPointValueTimeLatestPointFacadeStream implements ObjectStream<Ma
 	
 	private final Log LOG = LogFactory.getLog(XidPointValueTimeLatestPointFacadeStream.class);
 
-	private String host;
-	private int port;
 	private boolean useRendered;
 	private boolean unitConversion;
 	private int limit;
@@ -43,8 +41,6 @@ public class XidPointValueTimeLatestPointFacadeStream implements ObjectStream<Ma
 	
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param pointMap
 	 * @param useRendered
 	 * @param unitConversion
@@ -53,9 +49,7 @@ public class XidPointValueTimeLatestPointFacadeStream implements ObjectStream<Ma
 	 * @param dateTimeFormat - format for string dates, if null then epoch millis number
 	 * @param timezone
 	 */
-	public XidPointValueTimeLatestPointFacadeStream(String host, int port, Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, int limit, boolean useCache, String dateTimeFormat, String timezone) {
-		this.host = host;
-		this.port = port;
+	public XidPointValueTimeLatestPointFacadeStream(Map<Integer,DataPointVO> pointMap, boolean useRendered,  boolean unitConversion, int limit, boolean useCache, String dateTimeFormat, String timezone) {
 		this.pointMap = pointMap;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -77,7 +71,7 @@ public class XidPointValueTimeLatestPointFacadeStream implements ObjectStream<Ma
 			try {
 				DataPointVO vo = this.pointMap.get(it.next());
 				PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), useCache);
-				PointValueTimeJsonStreamCallback callback = new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion, null, dateTimeFormat, timezone);
+				PointValueTimeJsonStreamCallback callback = new PointValueTimeJsonStreamCallback(jgen, vo, useRendered, unitConversion, null, dateTimeFormat, timezone);
 
 				jgen.writeArrayFieldStart(vo.getXid());
 				List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
@@ -102,7 +96,7 @@ public class XidPointValueTimeLatestPointFacadeStream implements ObjectStream<Ma
 		while(it.hasNext()){
 			DataPointVO vo = this.pointMap.get(it.next());
 			PointValueFacade pointValueFacade = new PointValueFacade(vo.getId(), useCache);
-			PointValueTimeCsvStreamCallback callback = new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, true, writeHeaders, null, dateTimeFormat, timezone);
+			PointValueTimeCsvStreamCallback callback = new PointValueTimeCsvStreamCallback(writer.getWriter(), vo, useRendered, unitConversion, true, writeHeaders, null, dateTimeFormat, timezone);
 			List<PointValueTime> pvts = pointValueFacade.getLatestPointValues(limit);
 			for(int i=0; i<pvts.size(); i++)
 				callback.row(pvts.get(i), i);

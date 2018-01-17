@@ -119,8 +119,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
-                request.getServerPort(), before, dateTimeFormat, timezone, limit, 
+        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
                 useRendered, false, true, useCache, simplifyTolerance, simplifyTarget);
         
         return generateLatestStream(user, info, new String[] {xid});
@@ -176,8 +175,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
-                request.getServerPort(), before, dateTimeFormat, timezone, limit, 
+        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
                 useRendered, true, true, useCache, simplifyTolerance, simplifyTarget);
         
         return generateLatestStream(user, info, xids);
@@ -200,7 +198,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
 
-        return generateLatestStream(user, info.createLatestQueryInfo(request.getServerName(), request.getServerPort(), true, true), info.getXids());
+        return generateLatestStream(user, info.createLatestQueryInfo(true, true), info.getXids());
     }
     
     @ApiOperation(
@@ -253,8 +251,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(request.getServerName(), 
-                request.getServerPort(), before, dateTimeFormat, timezone, limit, 
+        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
                 useRendered, false, false, useCache, simplifyTolerance, simplifyTarget);
         
         return generateLatestStream(user, info, xids);
@@ -276,9 +273,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             
             @AuthenticationPrincipal User user
             ) {
-        return generateLatestStream(user, info.createLatestQueryInfo(request.getServerName(), request.getServerPort(), false, false), info.getXids());
-    } 
-
+        return generateLatestStream(user, info.createLatestQueryInfo(false, false), info.getXids());
+    }
     
     @ApiOperation(
             value = "Query Time Range For 1 Data Point, return in time ascending order", 
@@ -339,8 +335,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
 
-        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
-                request.getServerPort(), 
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
                 bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, false);
         
@@ -407,8 +402,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
  
-        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
-                request.getServerPort(), 
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
                 true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null, truncate);
         
@@ -473,7 +467,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
                 bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, false);
         return generateStream(user, info, xids);
@@ -493,8 +486,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
         
-        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(request.getServerName(), 
-                request.getServerPort(), true, true), model.getXids());
+        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(true, true), model.getXids());
     }
     
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
@@ -557,8 +549,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
         
-        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(request.getServerName(), 
-                request.getServerPort(), 
+        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
                 useRendered, true, true, PointValueTimeCacheControl.NONE, null, null, truncate);
         return generateStream(user, info, xids);
@@ -581,8 +572,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             
             @AuthenticationPrincipal User user
             ) {
-        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(request.getServerName(), 
-                        request.getServerPort(), true, true, rollup), model.getXids());
+        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(true, true, rollup), model.getXids());
     }
     
     @ApiOperation(value = "Query time range for multiple data points, return in time ascending order",
@@ -635,7 +625,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
                 bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, false);
         
@@ -656,8 +645,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
         return generateStream(user, 
-                model.createZonedDateTimeRangeQueryInfo(request.getServerName(), request.getServerPort(),
-                        false, false), 
+                model.createZonedDateTimeRangeQueryInfo(false, false), 
                 model.getXids());
     }
     
@@ -715,7 +703,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         }
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                request.getServerName(), request.getServerPort(), 
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
                 true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null, truncate);
         
@@ -740,8 +727,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user
             ) {
         return generateStream(user, 
-                model.createZonedDateTimeRangeQueryInfo(request.getServerName(), request.getServerPort(), 
-                        false, false, rollup), 
+                model.createZonedDateTimeRangeQueryInfo(false, false, rollup), 
                 model.getXids());
     }
     

@@ -55,8 +55,6 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param writer
 	 * @param voMap
 	 * @param useRendered
@@ -65,9 +63,9 @@ public class IdPointValueStatisticsQuantizerCsvCallback extends PointValueTimeCs
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public IdPointValueStatisticsQuantizerCsvCallback(String host, int port, CSVWriter writer, Map<Integer, DataPointVO> voMap,
+	public IdPointValueStatisticsQuantizerCsvCallback(CSVWriter writer, Map<Integer, DataPointVO> voMap,
 			boolean useRendered, boolean unitConversion, RollupEnum rollup, String dateTimeFormat, String timezone) {
-		super(host, port, writer, useRendered, unitConversion, dateTimeFormat, timezone);
+		super(writer, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.writer = writer;
 		this.voMap = voMap;
 		this.useRendered = useRendered;

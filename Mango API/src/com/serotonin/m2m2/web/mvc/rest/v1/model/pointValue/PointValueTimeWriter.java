@@ -39,19 +39,14 @@ public abstract class PointValueTimeWriter {
 	protected final DateTimeFormatter dateFormatter;  //Write a timestamp or string date
 	protected final ZoneId zoneId;
 	
-	public PointValueTimeWriter(String host, int port, boolean useRendered, boolean unitConversion, String dateTimeFormat, String timezone){
+	public PointValueTimeWriter(boolean useRendered, boolean unitConversion, String dateTimeFormat, String timezone){
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
 		this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod").translate(Common.getTranslations());
 		
 		//If we are an image type we should build the URLS
 		imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
-		if(Common.envProps.getBoolean("ssl.on", false))
-			imageServletBuilder.scheme("https");
-		else
-			imageServletBuilder.scheme("http");
-		imageServletBuilder.host(host);
-		imageServletBuilder.port(port);
+
 		if(dateTimeFormat != null) {
 		    this.dateFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
 		    if(timezone == null)

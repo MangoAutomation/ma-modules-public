@@ -40,9 +40,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.IdTimeJsonStreamCallback;
 public class IdPointValueTimeJsonStreamCallback extends IdTimeJsonStreamCallback<IdPointValueTime>{
 	
     /**
-     * 
-     * @param host
-     * @param port
+     *
      * @param jgen
      * @param voMap
      * @param useRendered
@@ -51,8 +49,8 @@ public class IdPointValueTimeJsonStreamCallback extends IdTimeJsonStreamCallback
      * @param dateTimeFormat  - format for String dates or null for timestamp numbers
      * @param timezone
      */
-	public IdPointValueTimeJsonStreamCallback(String host, int port, JsonGenerator jgen, Map<Integer,DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
-		super(new XidPointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone), jgen, voMap, limit, dateTimeFormat, timezone);
+	public IdPointValueTimeJsonStreamCallback(JsonGenerator jgen, Map<Integer,DataPointVO> voMap, boolean useRendered,  boolean unitConversion, Integer limit, String dateTimeFormat, String timezone) {
+		super(new XidPointValueTimeJsonWriter(jgen, useRendered, unitConversion, dateTimeFormat, timezone), jgen, voMap, limit, dateTimeFormat, timezone);
 	}
 	
 }

@@ -29,17 +29,15 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter {
     
     /**
      * 
-     * @param host
-     * @param port
      * @param writer
      * @param useRendered
      * @param unitConversion
      * @param dateTimeFormat - format for string dates or null for epoch millis
      * @param timezone
      */
-    public PointValueTimeCsvWriter(String host, int port, CSVWriter writer, boolean useRendered,
+    public PointValueTimeCsvWriter(CSVWriter writer, boolean useRendered,
             boolean unitConversion, String dateTimeFormat, String timezone) {
-        this(host, port, writer, useRendered, unitConversion, false, true, dateTimeFormat, timezone);
+        this(writer, useRendered, unitConversion, false, true, dateTimeFormat, timezone);
     }
 
     /**
@@ -51,9 +49,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeWriter {
      * @param writeXid
      * @param writeHeaders
      */
-    public PointValueTimeCsvWriter(String host, int port, CSVWriter writer, boolean useRendered,
+    public PointValueTimeCsvWriter(CSVWriter writer, boolean useRendered,
             boolean unitConversion, boolean writeXid, boolean writeHeaders, String dateTimeFormat, String timezone) {
-        super(host, port, useRendered, unitConversion, dateTimeFormat, timezone);
+        super(useRendered, unitConversion, dateTimeFormat, timezone);
         this.writeXid = writeXid;
         if (writeXid)
             headers = new String[] {"xid", "value", "timestamp", "annotation"};

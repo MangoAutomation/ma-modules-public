@@ -162,12 +162,6 @@ public class PointValueRestController extends MangoRestController {
                     // If we are an image type we should build the URLS
                     UriComponentsBuilder imageServletBuilder =
                             UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
-                    if (Common.envProps.getBoolean("ssl.on", false))
-                        imageServletBuilder.scheme("https");
-                    else
-                        imageServletBuilder.scheme("http");
-                    imageServletBuilder.host(request.getServerName());
-                    imageServletBuilder.port(request.getLocalPort());
 
                     List<RecentPointValueTimeModel> models;
                     if (useCache) {
@@ -387,8 +381,7 @@ public class PointValueRestController extends MangoRestController {
 
             try {
                 IdPointValueTimeLatestPointValueFacadeStream pvtDatabaseStream =
-                        new IdPointValueTimeLatestPointValueFacadeStream(request.getServerName(),
-                                request.getServerPort(), pointIdMap, useRendered, unitConversion,
+                        new IdPointValueTimeLatestPointValueFacadeStream(pointIdMap, useRendered, unitConversion,
                                 limit, useCache, dateTimeFormat, timezone);
                 return result.createResponseEntity(pvtDatabaseStream);
             } catch (PermissionException e) {
@@ -494,8 +487,7 @@ public class PointValueRestController extends MangoRestController {
 
             try {
                 XidPointValueTimeLatestPointFacadeStream pvtDatabaseStream =
-                        new XidPointValueTimeLatestPointFacadeStream(request.getServerName(),
-                                request.getServerPort(), pointIdMap, useRendered, unitConversion,
+                        new XidPointValueTimeLatestPointFacadeStream(pointIdMap, useRendered, unitConversion,
                                 limit, useCache, dateTimeFormat, timezone);
                 return result.createResponseEntity(pvtDatabaseStream);
             } catch (PermissionException e) {
@@ -626,8 +618,7 @@ public class PointValueRestController extends MangoRestController {
 
             try {
                 IdPointValueTimeLatestPointValueFacadeStream pvtDatabaseStream =
-                        new IdPointValueTimeLatestPointValueFacadeStream(request.getServerName(),
-                                request.getServerPort(), pointIdMap, useRendered, unitConversion,
+                        new IdPointValueTimeLatestPointValueFacadeStream(pointIdMap, useRendered, unitConversion,
                                 limit, useCache, dateTimeFormat, timezone);
                 return result.createResponseEntity(pvtDatabaseStream);
             } catch (PermissionException e) {
@@ -758,8 +749,7 @@ public class PointValueRestController extends MangoRestController {
 
             try {
                 XidPointValueTimeLatestPointFacadeStream pvtDatabaseStream =
-                        new XidPointValueTimeLatestPointFacadeStream(request.getServerName(),
-                                request.getServerPort(), pointIdMap, useRendered, unitConversion,
+                        new XidPointValueTimeLatestPointFacadeStream(pointIdMap, useRendered, unitConversion,
                                 limit, useCache, dateTimeFormat, timezone);
                 return result.createResponseEntity(pvtDatabaseStream);
             } catch (PermissionException e) {
@@ -895,12 +885,12 @@ public class PointValueRestController extends MangoRestController {
                         // If we are an image type we should build the URLS
                         UriComponentsBuilder imageServletBuilder =
                                 UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
-                        if (Common.envProps.getBoolean("ssl.on", false))
-                            imageServletBuilder.scheme("https");
-                        else
-                            imageServletBuilder.scheme("http");
-                        imageServletBuilder.host(request.getServerName());
-                        imageServletBuilder.port(request.getLocalPort());
+//                        if (Common.envProps.getBoolean("ssl.on", false))
+//                            imageServletBuilder.scheme("https");
+//                        else
+//                            imageServletBuilder.scheme("http");
+//                        imageServletBuilder.host(request.getServerName());
+//                        imageServletBuilder.port(request.getLocalPort());
 
                         for (PointValueTimeModel model : models) {
                             model.setValue(imageServletBuilder
@@ -1069,8 +1059,7 @@ public class PointValueRestController extends MangoRestController {
                         if ((timePeriodType != null) && (timePeriods != null)) {
                             timePeriod = new TimePeriod(timePeriods, timePeriodType);
                         }
-                        IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(
-                                request.getServerName(), request.getServerPort(), pointIdMap,
+                        IdPointValueRollupCalculator calc = new IdPointValueRollupCalculator(pointIdMap,
                                 useRendered, unitConversion, rollup, timePeriod, from, to, limit,
                                 dateTimeFormat, timezone);
                         return result.createResponseEntity(calc);
@@ -1078,8 +1067,7 @@ public class PointValueRestController extends MangoRestController {
                     return result.createResponseEntity();
                 } else {
                     IdPointValueTimeDatabaseStream pvtDatabaseStream =
-                            new IdPointValueTimeDatabaseStream(request.getServerName(),
-                                    request.getServerPort(), pointIdMap, useRendered,
+                            new IdPointValueTimeDatabaseStream(pointIdMap, useRendered,
                                     unitConversion, from.getMillis(), to.getMillis(), this.dao,
                                     limit, dateTimeFormat, timezone);
                     return result.createResponseEntity(pvtDatabaseStream);
@@ -1245,8 +1233,7 @@ public class PointValueRestController extends MangoRestController {
                             timePeriod = new TimePeriod(timePeriods, timePeriodType);
                         }
                         XidPointValueMapRollupCalculator calc =
-                                new XidPointValueMapRollupCalculator(request.getServerName(),
-                                        request.getServerPort(), pointIdMap, useRendered,
+                                new XidPointValueMapRollupCalculator(pointIdMap, useRendered,
                                         unitConversion, rollup, timePeriod, from, to, limit,
                                         dateTimeFormat, timezone);
                         return result.createResponseEntity(calc);
@@ -1254,8 +1241,7 @@ public class PointValueRestController extends MangoRestController {
                     return result.createResponseEntity();
                 } else {
                     XidPointValueTimeMapDatabaseStream pvtDatabaseStream =
-                            new XidPointValueTimeMapDatabaseStream(request.getServerName(),
-                                    request.getServerPort(), pointIdMap, useRendered,
+                            new XidPointValueTimeMapDatabaseStream(pointIdMap, useRendered,
                                     unitConversion, from.getMillis(), to.getMillis(), this.dao,
                                     limit, dateTimeFormat, timezone);
                     return result.createResponseEntity(pvtDatabaseStream);
@@ -1377,16 +1363,14 @@ public class PointValueRestController extends MangoRestController {
                             if ((timePeriodType != null) && (timePeriods != null)) {
                                 timePeriod = new TimePeriod(timePeriods, timePeriodType);
                             }
-                            PointValueRollupCalculator calc = new PointValueRollupCalculator(
-                                    request.getServerName(), request.getServerPort(), vo,
+                            PointValueRollupCalculator calc = new PointValueRollupCalculator(vo,
                                     useRendered, unitConversion, rollup, timePeriod, from, to,
                                     limit, dateTimeFormat, timezone);
                             return result.createResponseEntity(calc);
                         }
                     } else {
                         PointValueTimeDatabaseStream pvtDatabaseStream =
-                                new PointValueTimeDatabaseStream(request.getServerName(),
-                                        request.getServerPort(), vo, useRendered, unitConversion,
+                                new PointValueTimeDatabaseStream(vo, useRendered, unitConversion,
                                         from.getMillis(), to.getMillis(), this.dao, limit,
                                         dateTimeFormat, timezone);
                         return result.createResponseEntity(pvtDatabaseStream);
@@ -1585,8 +1569,7 @@ public class PointValueRestController extends MangoRestController {
                         to = to.withZone(zone);
                     }
                     
-                    StatisticsStream stream = new StatisticsStream(request.getServerName(),
-                            request.getServerPort(), vo, useRendered, unitConversion,
+                    StatisticsStream stream = new StatisticsStream(vo, useRendered, unitConversion,
                             from.getMillis(), to.getMillis(), dateTimeFormat, timezone);
                     return result.createResponseEntity(stream);
                 } else {

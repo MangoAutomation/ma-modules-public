@@ -17,8 +17,6 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends AbstractNu
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param jgen
 	 * @param vo
 	 * @param useRendered
@@ -28,9 +26,9 @@ public class NumericPointValueStatisticsQuantizerJsonCallback extends AbstractNu
 	 * @param dateTimeFormat
 	 * @param timezone
 	 */
-	public NumericPointValueStatisticsQuantizerJsonCallback(String host, int port, JsonGenerator jgen, DataPointVO vo, 
+	public NumericPointValueStatisticsQuantizerJsonCallback(JsonGenerator jgen, DataPointVO vo, 
 			boolean useRendered,  boolean unitConversion, RollupEnum rollup, Integer limit, String dateTimeFormat, String timezone) {
-		super(vo, new PointValueTimeJsonWriter(host, port, jgen, useRendered, unitConversion, dateTimeFormat, timezone), rollup, limit);
+		super(vo, new PointValueTimeJsonWriter(jgen, useRendered, unitConversion, dateTimeFormat, timezone), rollup, limit);
 	}	
 	
 }

@@ -27,8 +27,6 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 	
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param jgen
 	 * @param vo
 	 * @param useRendered
@@ -38,18 +36,18 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 	 * @param startValue
 	 * @param dateTimeFormat Data Point in question
 	 */
-	public StatisticsCalculator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, DataValue startValue, String dateTimeFormat, String timezone) {
+	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, DataValue startValue, String dateTimeFormat, String timezone) {
 		switch(vo.getPointLocator().getDataTypeId()){
 			case DataTypes.BINARY:
 			case DataTypes.MULTISTATE:
-				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(host, port, jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue), dateTimeFormat, timezone);
+				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue), dateTimeFormat, timezone);
 			break;
 			case DataTypes.ALPHANUMERIC:
 			case DataTypes.IMAGE:
-				this.statsGenerator = new ValueChangeCounterJsonGenerator(host, port, jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue), dateTimeFormat, timezone);
+				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue), dateTimeFormat, timezone);
 			break;
 			case DataTypes.NUMERIC:
-				this.statsGenerator = new AnalogStatisticsJsonGenerator(host, port, jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()), dateTimeFormat, timezone);
+				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()), dateTimeFormat, timezone);
 			break;
 			default:
 				throw new ShouldNeverHappenException("Invalid Data Type: "+ vo.getPointLocator().getDataTypeId());

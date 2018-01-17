@@ -78,9 +78,6 @@ public class RealTimeDataRestController extends MangoRestController{
 		    	values = model.accept(new RQLToObjectListQuery<RealTimeDataPointValue>(), values);
 		    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
 		    	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-				imageServletBuilder.scheme(request.getScheme());
-				imageServletBuilder.host(request.getServerName());
-				imageServletBuilder.port(request.getLocalPort());
 		    	
 		    	for(RealTimeDataPointValue value : values){
 		    		if(value.getDataTypeId() == DataTypes.IMAGE){
@@ -124,9 +121,6 @@ public class RealTimeDataRestController extends MangoRestController{
 	    	List<RealTimeModel> models = new ArrayList<RealTimeModel>();
 
 	    	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-			imageServletBuilder.scheme(request.getScheme());
-			imageServletBuilder.host(request.getServerName());
-			imageServletBuilder.port(request.getLocalPort());
 	    	
 	    	for(RealTimeDataPointValue value : values){
 	    		if(value.getDataTypeId() == DataTypes.IMAGE){
@@ -169,9 +163,6 @@ public class RealTimeDataRestController extends MangoRestController{
 	        	model = new RealTimeModel(value, value.getValue());
 	        else{
 	        	UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-    			imageServletBuilder.scheme(request.getScheme());
-    			imageServletBuilder.host(request.getServerName());
-    			imageServletBuilder.port(request.getLocalPort());
 	        	model = new RealTimeModel(value,imageServletBuilder.buildAndExpand(value.getTimestamp(), value.getDataPointId()).toUri());
 	        }
 

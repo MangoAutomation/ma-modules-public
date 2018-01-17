@@ -24,8 +24,6 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
 	
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param jgen
 	 * @param vo
 	 * @param useRendered
@@ -34,8 +32,8 @@ public abstract class StatisticsJsonGenerator extends StatisticsJsonWriter {
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public StatisticsJsonGenerator(String host, int port, JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator, String dateTimeFormat, String timezone) {
-		super(host, port, jgen, vo, useRendered, unitConversion, dateTimeFormat, timezone);
+	public StatisticsJsonGenerator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, StatisticsGenerator generator, String dateTimeFormat, String timezone) {
+		super(jgen, vo, useRendered, unitConversion, dateTimeFormat, timezone);
 		this.generator = generator;
 	}
 

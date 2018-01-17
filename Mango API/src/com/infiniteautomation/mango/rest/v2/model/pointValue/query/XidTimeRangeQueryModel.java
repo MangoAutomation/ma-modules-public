@@ -117,17 +117,15 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
 
     /**
      * Create a time range query info object for use in the query
-     * @param host
-     * @param port
      * @param multiplePointsPerArray
      * @param singleArray
      * @param rollup
      * @return
      * @throws ValidationFailedRestException
      */
-    public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(String host, int port, boolean multiplePointsPerArray,
+    public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray) throws ValidationFailedRestException {
-        return new ZonedDateTimeRangeQueryInfo(host, port, from, to, dateTimeFormat, timezone,
+        return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
                 RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, 
                 singleArray, useCache, simplifyTolerance, simplifyTarget, false);
     };

@@ -18,8 +18,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
  */
 public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValueTimeModel>{
 
-	private String host;
-	private int port;
 	private DataPointVO vo;
 	private boolean useRendered;
 	private boolean unitConversion;
@@ -33,8 +31,6 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param vo
 	 * @param useRendered
 	 * @param unitConversion
@@ -45,9 +41,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public PointValueTimeDatabaseStream(String host, int port, DataPointVO vo, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit, String dateTimeFormat, String timezone) {
-        this.host = host;
-        this.port = port;
+	public PointValueTimeDatabaseStream(DataPointVO vo, boolean useRendered,  boolean unitConversion, long from, long to, PointValueDao dao, Integer limit, String dateTimeFormat, String timezone) {
         this.vo = vo;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -64,7 +58,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	 */
 	@Override
 	public void streamData(JsonGenerator jgen) {
-		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeJsonStreamCallback(host, port, jgen, vo, useRendered, unitConversion, limit, dateTimeFormat, timezone));
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeJsonStreamCallback(jgen, vo, useRendered, unitConversion, limit, dateTimeFormat, timezone));
 	}
 
 	/* (non-Javadoc)
@@ -73,7 +67,7 @@ public class PointValueTimeDatabaseStream implements QueryArrayStream<PointValue
 	@Override
 	public void streamData(CSVPojoWriter<PointValueTimeModel> writer)
 			throws IOException {
-		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(host, port, writer.getWriter(), vo, useRendered, unitConversion, false, false, limit, dateTimeFormat, timezone));
+		this.dao.getPointValuesBetween(vo.getId(), from, to, new PointValueTimeCsvStreamCallback(writer.getWriter(), vo, useRendered, unitConversion, false, false, limit, dateTimeFormat, timezone));
 	}
 
 }

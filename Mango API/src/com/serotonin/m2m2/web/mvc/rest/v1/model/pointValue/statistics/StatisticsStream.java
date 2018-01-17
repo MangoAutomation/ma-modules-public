@@ -25,8 +25,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
  */
 public class StatisticsStream implements ObjectStream<PointValueTime>{
 	
-	private String host;
-	private int port;
 	private DataPointVO vo;
 	private final boolean useRendered;
 	private final boolean unitConversion;
@@ -37,8 +35,6 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 
 	/**
 	 * 
-	 * @param host
-	 * @param port
 	 * @param vo - Data Point in question
 	 * @param useRendered - Return statistics as Text rendered Strings
 	 * @param unitConversion
@@ -47,9 +43,7 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 	 * @param dateTimeFormat - format for String dates or null for timestamp numbers
 	 * @param timezone
 	 */
-	public StatisticsStream(String host, int port, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, String dateTimeFormat, String timezone) {
-		this.host = host;
-		this.port = port;
+	public StatisticsStream(DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, String dateTimeFormat, String timezone) {
 		this.vo = vo;
 		this.useRendered = useRendered;
 		this.unitConversion = unitConversion;
@@ -77,7 +71,7 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 		DataValue startValue = null;
 		if(startPvt != null)
 			startValue = startPvt.getValue();
-		StatisticsCalculator calculator = new StatisticsCalculator(host, port, jgen, vo, useRendered, unitConversion, this.from, this.to, startValue, dateTimeFormat, timezone);
+		StatisticsCalculator calculator = new StatisticsCalculator(jgen, vo, useRendered, unitConversion, this.from, this.to, startValue, dateTimeFormat, timezone);
 
 		//Do the main work
 		pvd.getPointValuesBetween(vo.getId(), from, to, calculator);
