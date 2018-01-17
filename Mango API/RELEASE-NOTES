@@ -1,12 +1,27 @@
 *Version 3.3.1*
 * Removed scheme, host and port from image urls to improve use over proxy
+* Remove path property from v2 data point model
+* Fix release notes
 
 *Version 3.3.0*
-* Removed JsonEmport rest v1 controller and replaced with rest/v2/json-emport
 * Upgraded to work with core version 3.3.x
+* Removed JsonEmport rest v1 controller (/rest/v1/json-emport) and replaced with /rest/v2/json-emport
 * Adding high performance user-events endpoint at rest/v2/user-events to access all un-acknowleged cached events for a user
 * Adding acknowledged userId, username and timestamp to Events when returned from api via REST and Websockets
 * Adding optional dateTimeFormat parameter to PointValue rest requests to format date output as string or number of millis
+* Add data point v2 end point /rest/v2/data-points which supports querying using tags in RQL and partial updates to data points
+* Add /rest/v2/data-point-tags end points for data point tags
+* Add a new /rest/v2/point-values endpoint with more options and formats. Ability to perform wide/bookend queries for easy charting.
+* Add /rest/v2/auth-tokens endpoint for creating/revoking user authentication tokens
+* Add /rest/v2/password-reset endpoint for creating password reset tokens and sending password reset emails
+* Add option to lock a user's password to the user rest controller
+* Return validation messages when saving system settings and validation error occurs
+* Use translatable messages in rest exceptions, user's locale now honored in REST error messages
+* Allow setting path for a file when uploading files to file store
+* Various bugfixes
+
+*Version 3.2.4*
+* Fix decoding of path in JSON data REST controller
 
 *Version 3.2.3*
 * Fix JSON store so partial get/update/delete works
