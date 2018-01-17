@@ -161,15 +161,23 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     }
     
     public static class BulkOperationIndividualResponse {
+        String xid;
         int httpStatus;
         Object body;
         
         public BulkOperationIndividualResponse() {
         }
         
-        public BulkOperationIndividualResponse(int httpStatus, Object body) {
+        public BulkOperationIndividualResponse(String xid, int httpStatus, Object body) {
+            this.xid = xid;
             this.httpStatus = httpStatus;
             this.body = body;
+        }
+        public String getXid() {
+            return xid;
+        }
+        public void setXid(String xid) {
+            this.xid = xid;
         }
         public int getHttpStatus() {
             return httpStatus;
@@ -277,7 +285,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                 result = new ServerErrorException(e);
             }
             
-            results.add(new BulkOperationIndividualResponse(httpStatus.value(), result));
+            results.add(new BulkOperationIndividualResponse(xid, httpStatus.value(), result));
         }
         
         return new ResponseEntity<BulkOperationResponse>(new BulkOperationResponse(hasError, results), HttpStatus.MULTI_STATUS);
