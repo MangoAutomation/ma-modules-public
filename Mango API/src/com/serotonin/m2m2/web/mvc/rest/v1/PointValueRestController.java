@@ -885,12 +885,6 @@ public class PointValueRestController extends MangoRestController {
                         // If we are an image type we should build the URLS
                         UriComponentsBuilder imageServletBuilder =
                                 UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
-//                        if (Common.envProps.getBoolean("ssl.on", false))
-//                            imageServletBuilder.scheme("https");
-//                        else
-//                            imageServletBuilder.scheme("http");
-//                        imageServletBuilder.host(request.getServerName());
-//                        imageServletBuilder.port(request.getLocalPort());
 
                         for (PointValueTimeModel model : models) {
                             model.setValue(imageServletBuilder
