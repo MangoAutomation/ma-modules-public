@@ -8,9 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,7 +20,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
@@ -27,6 +31,8 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -50,6 +56,35 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController()
 @RequestMapping("/v2/data-point-tags")
 public class DataPointTagsRestController extends BaseMangoRestController {
+    
+    public static final int TEMPORARY_RESOURCE_EXPIRATION_SECONDS = 300;
+
+    // TODO the exceptions and status codes are taken from MangoSpringExceptionHandler
+    // we should make it easier to reuse the logic from that class elsewhere
+    public static AbstractRestV2Exception exceptionToRestException(Exception e) {
+        if (e instanceof AbstractRestV2Exception) {
+            return (AbstractRestV2Exception) e;
+        } else if (e instanceof PermissionException) {
+            PermissionException exception = (PermissionException) e;
+            return new AccessDeniedException(exception.getTranslatableMessage(), exception);
+        } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
+            return new AccessDeniedException(e);
+        } else if (e instanceof ValidationException) {
+            ValidationException exception = (ValidationException) e;
+            return new ValidationFailedRestException(exception.getValidationResult());
+        } else if (e instanceof NotFoundException || e instanceof ResourceNotFoundException) {
+            throw new NotFoundRestException(e);
+        } else {
+            return new ServerErrorException(e);
+        }
+    }
+
+    private TemporaryResourceManager<BulkOperationResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager = new TemporaryResourceManager<BulkOperationResponse, AbstractRestV2Exception>() {
+        @Override
+        public AbstractRestV2Exception exceptionToError(Exception e) {
+            return exceptionToRestException(e);
+        }
+    };
     
     @ApiOperation(value = "Get data point tags by data point XID", notes = "User must have read permission for the data point")
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
@@ -162,16 +197,13 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     
     public static class BulkOperationIndividualResponse {
         String xid;
-        int httpStatus;
+        int httpStatus = HttpStatus.OK.value();
         Object body;
         
         public BulkOperationIndividualResponse() {
         }
-        
-        public BulkOperationIndividualResponse(String xid, int httpStatus, Object body) {
+        public BulkOperationIndividualResponse(String xid) {
             this.xid = xid;
-            this.httpStatus = httpStatus;
-            this.body = body;
         }
         public String getXid() {
             return xid;
@@ -221,10 +253,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             this.results = results;
         }
     }
-
-//    @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
-//    @RequestMapping(method = RequestMethod.POST, value="/bulk")
-    public ResponseEntity<BulkOperationResponse> bulkDataPointTagOperation(
+    
+    @ApiOperation(value = "Synchronously bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk-sync")
+    public BulkOperationResponse bulkDataPointTagOperationSync(
             @RequestBody
             BulkOperationRequest requestBody,
             
@@ -244,51 +276,173 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
 
         List<BulkOperationIndividualResponse> results = new ArrayList<>(xids.size());
-        boolean hasError = true;
-        
+        boolean hasError = false;
+
         for (String xid : xids) {
-            Object result = null;
-            HttpStatus httpStatus = HttpStatus.OK;
-            
-            // TODO the exceptions and status codes are taken from MangoSpringExceptionHandler
-            // we should make it easier to reuse the logic from that class elsewhere
+            BulkOperationIndividualResponse xidResult = new BulkOperationIndividualResponse(xid);
+
             try {
                 switch (action) {
                     case GET:
-                        result = this.getTagsForDataPoint(xid, user);
+                        xidResult.setBody(this.getTagsForDataPoint(xid, user));
                         break;
                     case SET:
-                        result = this.setTagsForDataPoint(xid, tags, user);
+                        xidResult.setBody(this.setTagsForDataPoint(xid, tags, user));
                         break;
                     case MERGE:
-                        result = this.addTagsForDataPoint(xid, tags, user);
+                        xidResult.setBody(this.addTagsForDataPoint(xid, tags, user));
                         break;
                 }
-                hasError = false;
-            } catch(AbstractRestV2Exception e) {
-                httpStatus = e.getStatus();
-                result = e;
-            } catch (PermissionException e) {
-                httpStatus = HttpStatus.FORBIDDEN;
-                result = new AccessDeniedException(e.getTranslatableMessage(), e);
-            } catch (org.springframework.security.access.AccessDeniedException e) {
-                httpStatus = HttpStatus.FORBIDDEN;
-                result = new AccessDeniedException(e);
-            } catch (ValidationException e) {
-                httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
-                result = new ValidationFailedRestException(e.getValidationResult());
-            } catch (NotFoundException | ResourceNotFoundException e) {
-                httpStatus = HttpStatus.NOT_FOUND;
-                result = new NotFoundRestException(e);
             } catch (Exception e) {
-                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-                result = new ServerErrorException(e);
+                AbstractRestV2Exception exception = exceptionToRestException(e);
+                hasError = true;
+                xidResult.setBody(exception);
+                xidResult.setHttpStatus(exception.getStatus().value());
             }
             
-            results.add(new BulkOperationIndividualResponse(xid, httpStatus.value(), result));
+            results.add(xidResult);
+        }
+
+        return new BulkOperationResponse(hasError, results);
+    }
+
+    @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk")
+    public ResponseEntity<TemporaryResource<BulkOperationResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
+            @ApiParam(value = "Expiration in seconds of temporary resource after it completes", defaultValue = "" + TEMPORARY_RESOURCE_EXPIRATION_SECONDS, required = false, allowMultiple = false)
+            @RequestParam(required=false) Integer expiration,
+            
+            @RequestBody
+            BulkOperationRequest requestBody,
+            
+            @AuthenticationPrincipal
+            User user,
+            
+            UriComponentsBuilder builder) {
+
+        BulkOperationAction action = requestBody.getAction();
+        List<String> xids = requestBody.getXids();
+        Map<String, String> tags = requestBody.getTags();
+
+        if (expiration == null) {
+            expiration = TEMPORARY_RESOURCE_EXPIRATION_SECONDS;
         }
         
-        return new ResponseEntity<BulkOperationResponse>(new BulkOperationResponse(hasError, results), HttpStatus.MULTI_STATUS);
+        if (action == null) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "action"));
+        } else if (xids == null) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xids"));
+        } else if (tags == null && (action == BulkOperationAction.SET || action == BulkOperationAction.MERGE)) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "tags"));
+        } else if (expiration < 0) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.expirationMustBeGreaterThanZero"));
+        }
+        
+        TemporaryResource<BulkOperationResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (r) -> {
+            // most likely cancelled or timed out
+            if (!bulkTagsTemporaryResourceManager.progress(r, null, 0, xids.size())) {
+                return;
+            }
+            
+            List<BulkOperationIndividualResponse> results = new ArrayList<>(xids.size());
+            boolean hasError = false;
+            
+            int i = 0;
+            for (String xid : xids) {
+                BulkOperationIndividualResponse xidResult = new BulkOperationIndividualResponse(xid);
+
+                try {
+                    switch (action) {
+                        case GET:
+                            xidResult.setBody(this.getTagsForDataPoint(xid, user));
+                            break;
+                        case SET:
+                            xidResult.setBody(this.setTagsForDataPoint(xid, tags, user));
+                            break;
+                        case MERGE:
+                            xidResult.setBody(this.addTagsForDataPoint(xid, tags, user));
+                            break;
+                    }
+                } catch (Exception e) {
+                    AbstractRestV2Exception exception = exceptionToRestException(e);
+                    hasError = true;
+                    xidResult.setBody(exception);
+                    xidResult.setHttpStatus(exception.getStatus().value());
+                }
+                
+                results.add(xidResult);
+
+                // most likely cancelled or timed out
+                if (!bulkTagsTemporaryResourceManager.progress(r, null, ++i, xids.size())) {
+                    return;
+                }
+            }
+
+            BulkOperationResponse result = new BulkOperationResponse(hasError, results);
+            bulkTagsTemporaryResourceManager.success(r, result);
+        });
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(builder.path("/v2/data-point-tags/bulk/{id}").buildAndExpand(resource.getId()).toUri());
+        return new ResponseEntity<TemporaryResource<BulkOperationResponse, AbstractRestV2Exception>>(resource, headers, HttpStatus.CREATED);
+    }
+
+    @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/bulk")
+    public List<TemporaryResource<BulkOperationResponse, AbstractRestV2Exception>> getBulkDataPointTagOperations(
+            @AuthenticationPrincipal
+            User user) {
+        
+        return this.bulkTagsTemporaryResourceManager.list().stream()
+                .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
+                .collect(Collectors.toList());
+    }
+    
+    @ApiOperation(value = "Get the status of a bulk tag operation using its id", notes = "User can only get their own bulk tag operations unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
+    public TemporaryResource<BulkOperationResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+            
+            @AuthenticationPrincipal
+            User user) {
+        
+        TemporaryResource<BulkOperationResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        
+        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+        
+        return resource;
+    }
+    
+    @ApiOperation(value = "Cancel a bulk tag operation using its id",
+            notes = "Only cancels if the operation is not already complete." +
+                    "May also be used to remove a completed temporary resource by passing remove=true, otherwise the resource is removed when it expires." +
+                    "User can only cancel their own bulk tag operations unless they are an admin.")
+    @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
+    public TemporaryResource<BulkOperationResponse, AbstractRestV2Exception> cancelBulkDataPointTagOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+            
+            @ApiParam(value = "Remove the temporary resource", required = false, defaultValue = "false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue = "false") boolean remove,
+            
+            @AuthenticationPrincipal
+            User user) {
+        
+        TemporaryResource<BulkOperationResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        
+        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+        
+        bulkTagsTemporaryResourceManager.cancel(resource);
+        if (remove) {
+            bulkTagsTemporaryResourceManager.remove(resource);
+        }
+        
+        return resource;
     }
 
     @ApiOperation(value = "Gets all available tags keys", notes = "Only returns tag keys which are present on data points the user has access to")
