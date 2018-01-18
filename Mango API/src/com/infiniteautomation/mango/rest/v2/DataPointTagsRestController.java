@@ -26,14 +26,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.v2.bulk.IndividualRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.IndividualResponse;
+import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -41,9 +38,6 @@ import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.exception.NotFoundException;
-import com.serotonin.m2m2.vo.exception.ValidationException;
-import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
 import com.wordnik.swagger.annotations.Api;
@@ -62,31 +56,11 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     
     public static final int TEMPORARY_RESOURCE_EXPIRATION_SECONDS = 300;
 
-    // TODO the exceptions and status codes are taken from MangoSpringExceptionHandler
-    // we should make it easier to reuse the logic from that class elsewhere
-    public static AbstractRestV2Exception exceptionToRestException(Exception e) {
-        if (e instanceof AbstractRestV2Exception) {
-            return (AbstractRestV2Exception) e;
-        } else if (e instanceof PermissionException) {
-            PermissionException exception = (PermissionException) e;
-            return new AccessDeniedException(exception.getTranslatableMessage(), exception);
-        } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
-            return new AccessDeniedException(e);
-        } else if (e instanceof ValidationException) {
-            ValidationException exception = (ValidationException) e;
-            return new ValidationFailedRestException(exception.getValidationResult());
-        } else if (e instanceof NotFoundException || e instanceof ResourceNotFoundException) {
-            throw new NotFoundRestException(e);
-        } else {
-            return new ServerErrorException(e);
-        }
-    }
-    
     public static enum BulkTagAction {
         GET, SET, MERGE
     }
     
-    public static class BulkTagIndividualRequest extends IndividualRequest<BulkTagAction, Map<String, String>> {
+    public static class TagIndividualRequest extends IndividualRequest<BulkTagAction, Map<String, String>> {
         String xid;
 
         public String getXid() {
@@ -98,7 +72,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
     }
     
-    public static class BulkTagIndividualResponse extends IndividualResponse<BulkTagAction, Map<String, String>, AbstractRestV2Exception> {
+    public static class TagIndividualResponse extends RestExceptionIndividualResponse<BulkTagAction, Map<String, String>> {
         String xid;
 
         public String getXid() {
@@ -110,19 +84,19 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
     }
 
-    public static class BulkTagRequest extends BulkRequest<BulkTagAction, Map<String, String>, BulkTagIndividualRequest> {
+    public static class TagBulkRequest extends BulkRequest<BulkTagAction, Map<String, String>, TagIndividualRequest> {
     }
     
-    public static class BulkTagResponse extends BulkResponse<BulkTagIndividualResponse> {
-        public BulkTagResponse(int size) {
+    public static class TagBulkResponse extends BulkResponse<TagIndividualResponse> {
+        public TagBulkResponse(int size) {
             super(size);
         }
     }
 
-    private TemporaryResourceManager<BulkTagResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager = new TemporaryResourceManager<BulkTagResponse, AbstractRestV2Exception>() {
+    private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager = new TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception>() {
         @Override
         public AbstractRestV2Exception exceptionToError(Exception e) {
-            return exceptionToRestException(e);
+            return RestExceptionIndividualResponse.exceptionToRestException(e);
         }
     };
     
@@ -206,8 +180,8 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         });
     }
     
-    private BulkTagIndividualResponse doIndividualRequest(BulkTagIndividualRequest request, BulkTagAction defaultAction, Map<String, String> defaultBody, User user) {
-        BulkTagIndividualResponse result = new BulkTagIndividualResponse();
+    private TagIndividualResponse doIndividualRequest(TagIndividualRequest request, BulkTagAction defaultAction, Map<String, String> defaultBody, User user) {
+        TagIndividualResponse result = new TagIndividualResponse();
         
         try {
             String xid = request.getXid();
@@ -242,9 +216,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                     break;
             }
         } catch (Exception e) {
-            AbstractRestV2Exception exception = exceptionToRestException(e);
-            result.setError(exception);
-            result.setHttpStatus(exception.getStatus().value());
+            result.exceptionCaught(e);
         }
         
         return result;
@@ -252,24 +224,24 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     
     @ApiOperation(value = "Synchronously bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk-sync")
-    public BulkTagResponse bulkDataPointTagOperationSync(
+    public TagBulkResponse bulkDataPointTagOperationSync(
             @RequestBody
-            BulkTagRequest requestBody,
+            TagBulkRequest requestBody,
             
             @AuthenticationPrincipal
             User user) {
 
         BulkTagAction defaultAction = requestBody.getAction();
         Map<String, String> defaultBody = requestBody.getBody();
-        List<BulkTagIndividualRequest> requests = requestBody.getRequests();
+        List<TagIndividualRequest> requests = requestBody.getRequests();
         
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
 
-        BulkTagResponse response = new BulkTagResponse(requests.size());
-        for (BulkTagIndividualRequest request : requests) {
-            BulkTagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
+        TagBulkResponse response = new TagBulkResponse(requests.size());
+        for (TagIndividualRequest request : requests) {
+            TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
             response.addResponse(individualResponse);
         }
 
@@ -278,12 +250,12 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
-    public ResponseEntity<TemporaryResource<BulkTagResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
+    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
             @ApiParam(value = "Expiration in seconds of temporary resource after it completes", defaultValue = "" + TEMPORARY_RESOURCE_EXPIRATION_SECONDS, required = false, allowMultiple = false)
             @RequestParam(required=false) Integer expiration,
             
             @RequestBody
-            BulkTagRequest requestBody,
+            TagBulkRequest requestBody,
             
             @AuthenticationPrincipal
             User user,
@@ -292,7 +264,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
         BulkTagAction defaultAction = requestBody.getAction();
         Map<String, String> defaultBody = requestBody.getBody();
-        List<BulkTagIndividualRequest> requests = requestBody.getRequests();
+        List<TagIndividualRequest> requests = requestBody.getRequests();
 
         if (expiration == null) {
             expiration = TEMPORARY_RESOURCE_EXPIRATION_SECONDS;
@@ -304,16 +276,16 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.expirationMustBeGreaterThanZero"));
         }
         
-        TemporaryResource<BulkTagResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (r) -> {
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (r) -> {
             if (!bulkTagsTemporaryResourceManager.progress(r, null, 0, requests.size())) {
                 // most likely cancelled or timed out
                 return;
             }
 
             int i = 0;
-            BulkTagResponse response = new BulkTagResponse(requests.size());
-            for (BulkTagIndividualRequest request : requests) {
-                BulkTagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
+            TagBulkResponse response = new TagBulkResponse(requests.size());
+            for (TagIndividualRequest request : requests) {
+                TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
                 response.addResponse(individualResponse);
 
                 if (!bulkTagsTemporaryResourceManager.progress(r, null, ++i, requests.size())) {
@@ -327,12 +299,12 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/v2/data-point-tags/bulk/{id}").buildAndExpand(resource.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<BulkTagResponse, AbstractRestV2Exception>>(resource, headers, HttpStatus.CREATED);
+        return new ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(resource, headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
-    public List<TemporaryResource<BulkTagResponse, AbstractRestV2Exception>> getBulkDataPointTagOperations(
+    public List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> getBulkDataPointTagOperations(
             @AuthenticationPrincipal
             User user) {
         
@@ -343,14 +315,14 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     
     @ApiOperation(value = "Get the status of a bulk tag operation using its id", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
-    public TemporaryResource<BulkTagResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
+    public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
             
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<BulkTagResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -364,7 +336,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                     "May also be used to remove a completed temporary resource by passing remove=true, otherwise the resource is removed when it expires." +
                     "User can only cancel their own bulk tag operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
-    public TemporaryResource<BulkTagResponse, AbstractRestV2Exception> cancelBulkDataPointTagOperation(
+    public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> cancelBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
             
@@ -374,7 +346,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<BulkTagResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

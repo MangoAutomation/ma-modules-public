@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.bulk;
 /**
  * @author Jared Wiltshire
  * @param <A> action type
- * @param <ID> id type
  * @param <B> body type
  */
 public class IndividualRequest<A, B> {

@@ -9,6 +9,7 @@ import java.util.List;
  * @author Jared Wiltshire
  * @param <A> action type
  * @param <B> body type
+ * @param <IR> individual request type
  */
 public class BulkRequest<A, B, IR extends IndividualRequest<A, B>> {
     private A action;
