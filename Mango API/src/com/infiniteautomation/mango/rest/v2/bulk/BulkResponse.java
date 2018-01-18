@@ -3,20 +3,23 @@
  */
 package com.infiniteautomation.mango.rest.v2.bulk;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Jared Wiltshire
  * @param <IR> individual response type
  */
 public class BulkResponse<IR extends IndividualResponse<?, ?, ?>> {
-    boolean hasError;
-    List<IR> responses;
+    private boolean hasError;
+    private ConcurrentLinkedQueue<IR> responses;
+    private Collection<IR> unmodifiableResponses;
     
-    public BulkResponse(int size) {
+    public BulkResponse() {
         this.hasError = false;
-        this.responses = new ArrayList<>(size);
+        this.responses = new ConcurrentLinkedQueue<>();
+        this.unmodifiableResponses = Collections.unmodifiableCollection(this.responses);
     }
 
     public void addResponse(IR response) {
@@ -30,7 +33,7 @@ public class BulkResponse<IR extends IndividualResponse<?, ?, ?>> {
         return hasError;
     }
 
-    public List<IR> getResponses() {
-        return responses;
+    public Collection<IR> getResponses() {
+        return unmodifiableResponses;
     }
 }

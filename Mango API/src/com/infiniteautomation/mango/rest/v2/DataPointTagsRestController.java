@@ -88,9 +88,6 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     }
     
     public static class TagBulkResponse extends BulkResponse<TagIndividualResponse> {
-        public TagBulkResponse(int size) {
-            super(size);
-        }
     }
 
     private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager = new TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception>() {
@@ -239,7 +236,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
 
-        TagBulkResponse response = new TagBulkResponse(requests.size());
+        TagBulkResponse response = new TagBulkResponse();
         for (TagIndividualRequest request : requests) {
             TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
             response.addResponse(individualResponse);
@@ -277,19 +274,20 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
         
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (r) -> {
-            if (!bulkTagsTemporaryResourceManager.progress(r, null, 0, requests.size())) {
-                // most likely cancelled or timed out
+            TagBulkResponse response = new TagBulkResponse();
+            int i = 0;
+            
+            if (!bulkTagsTemporaryResourceManager.progress(r, response, i++, requests.size())) {
+                // can't update progress, most likely cancelled or timed out
                 return;
             }
 
-            int i = 0;
-            TagBulkResponse response = new TagBulkResponse(requests.size());
             for (TagIndividualRequest request : requests) {
                 TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
                 response.addResponse(individualResponse);
 
-                if (!bulkTagsTemporaryResourceManager.progress(r, null, ++i, requests.size())) {
-                    // most likely cancelled or timed out
+                if (!bulkTagsTemporaryResourceManager.progress(r, response, i++, requests.size())) {
+                    // can't update progress, most likely cancelled or timed out
                     return;
                 }
             }
