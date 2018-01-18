@@ -12,25 +12,25 @@ import java.util.List;
  */
 public class BulkResponse<IR extends IndividualResponse<?, ?, ?>> {
     boolean hasError;
-    List<IR> results;
+    List<IR> responses;
     
     public BulkResponse(int size) {
         this.hasError = false;
-        this.results = new ArrayList<>(size);
+        this.responses = new ArrayList<>(size);
     }
 
-    public void addResult(IR result) {
-        if (result.getError() != null) {
+    public void addResponse(IR response) {
+        if (response.getError() != null) {
             this.hasError = true;
         }
-        this.results.add(result);
+        this.responses.add(response);
     }
     
     public boolean isHasError() {
         return hasError;
     }
 
-    public List<IR> getResults() {
-        return results;
+    public List<IR> getResponses() {
+        return responses;
     }
 }

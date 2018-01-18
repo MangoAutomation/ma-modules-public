@@ -270,7 +270,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         BulkTagResponse response = new BulkTagResponse(requests.size());
         for (BulkTagIndividualRequest request : requests) {
             BulkTagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
-            response.addResult(individualResponse);
+            response.addResponse(individualResponse);
         }
 
         return response;
@@ -314,7 +314,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             BulkTagResponse response = new BulkTagResponse(requests.size());
             for (BulkTagIndividualRequest request : requests) {
                 BulkTagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
-                response.addResult(individualResponse);
+                response.addResponse(individualResponse);
 
                 if (!bulkTagsTemporaryResourceManager.progress(r, null, ++i, requests.size())) {
                     // most likely cancelled or timed out
