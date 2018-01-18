@@ -8,13 +8,12 @@ import java.util.List;
 /**
  * @author Jared Wiltshire
  * @param <A> action type
- * @param <ID> id type
  * @param <B> body type
  */
-public class BulkRequest<A, ID, B> {
+public class BulkRequest<A, B, IR extends IndividualRequest<A, B>> {
     private A action;
     private B body;
-    private List<IndividualRequest<A, ID, B>> requests;
+    private List<IR> requests;
     
     public A getAction() {
         return action;
@@ -28,10 +27,10 @@ public class BulkRequest<A, ID, B> {
     public void setBody(B body) {
         this.body = body;
     }
-    public List<IndividualRequest<A, ID, B>> getRequests() {
+    public List<IR> getRequests() {
         return requests;
     }
-    public void setRequests(List<IndividualRequest<A, ID, B>> requests) {
+    public void setRequests(List<IR> requests) {
         this.requests = requests;
     }
 }

@@ -85,11 +85,32 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public static enum BulkTagAction {
         GET, SET, MERGE
     }
+    
+    public static class BulkTagIndividualRequest extends IndividualRequest<BulkTagAction, Map<String, String>> {
+        String xid;
 
-    public static class BulkTagRequest extends BulkRequest<BulkTagAction, String, Map<String, String>> {
+        public String getXid() {
+            return xid;
+        }
+
+        public void setXid(String xid) {
+            this.xid = xid;
+        }
     }
     
-    public static class BulkTagIndividualResponse extends IndividualResponse<String, Map<String, String>, AbstractRestV2Exception> {
+    public static class BulkTagIndividualResponse extends IndividualResponse<BulkTagAction, Map<String, String>, AbstractRestV2Exception> {
+        String xid;
+
+        public String getXid() {
+            return xid;
+        }
+
+        public void setXid(String xid) {
+            this.xid = xid;
+        }
+    }
+
+    public static class BulkTagRequest extends BulkRequest<BulkTagAction, Map<String, String>, BulkTagIndividualRequest> {
     }
     
     public static class BulkTagResponse extends BulkResponse<BulkTagIndividualResponse> {
@@ -185,21 +206,23 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         });
     }
     
-    private BulkTagIndividualResponse doIndividualRequest(IndividualRequest<BulkTagAction, String, Map<String, String>> request, BulkTagAction defaultAction, Map<String, String> defaultBody, User user) {
+    private BulkTagIndividualResponse doIndividualRequest(BulkTagIndividualRequest request, BulkTagAction defaultAction, Map<String, String> defaultBody, User user) {
         BulkTagIndividualResponse result = new BulkTagIndividualResponse();
         
         try {
-            String xid = request.getId();
+            String xid = request.getXid();
             if (xid == null) {
                 throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
             }
-            result.setId(xid);
+            result.setXid(xid);
 
             BulkTagAction action = request.getAction() == null ? defaultAction : request.getAction();
-            Map<String, String> tags = request.getBody() == null ? defaultBody : request.getBody();
             if (action == null) {
                 throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "action"));
             }
+            result.setAction(action);
+            
+            Map<String, String> tags = request.getBody() == null ? defaultBody : request.getBody();
 
             switch (action) {
                 case GET:
@@ -238,14 +261,14 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
         BulkTagAction defaultAction = requestBody.getAction();
         Map<String, String> defaultBody = requestBody.getBody();
-        List<IndividualRequest<BulkTagAction, String, Map<String, String>>> requests = requestBody.getRequests();
+        List<BulkTagIndividualRequest> requests = requestBody.getRequests();
         
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
 
         BulkTagResponse response = new BulkTagResponse(requests.size());
-        for (IndividualRequest<BulkTagAction, String, Map<String, String>> request : requests) {
+        for (BulkTagIndividualRequest request : requests) {
             BulkTagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
             response.addResult(individualResponse);
         }
@@ -269,7 +292,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
         BulkTagAction defaultAction = requestBody.getAction();
         Map<String, String> defaultBody = requestBody.getBody();
-        List<IndividualRequest<BulkTagAction, String, Map<String, String>>> requests = requestBody.getRequests();
+        List<BulkTagIndividualRequest> requests = requestBody.getRequests();
 
         if (expiration == null) {
             expiration = TEMPORARY_RESOURCE_EXPIRATION_SECONDS;
@@ -289,7 +312,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
             int i = 0;
             BulkTagResponse response = new BulkTagResponse(requests.size());
-            for (IndividualRequest<BulkTagAction, String, Map<String, String>> request : requests) {
+            for (BulkTagIndividualRequest request : requests) {
                 BulkTagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
                 response.addResult(individualResponse);
 

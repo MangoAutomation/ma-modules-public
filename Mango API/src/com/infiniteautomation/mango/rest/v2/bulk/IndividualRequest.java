@@ -9,9 +9,8 @@ package com.infiniteautomation.mango.rest.v2.bulk;
  * @param <ID> id type
  * @param <B> body type
  */
-public class IndividualRequest<A, ID, B> {
+public class IndividualRequest<A, B> {
     A action;
-    ID id;
     B body;
 
     public A getAction() {
@@ -19,12 +18,6 @@ public class IndividualRequest<A, ID, B> {
     }
     public void setAction(A action) {
         this.action = action;
-    }
-    public ID getId() {
-        return id;
-    }
-    public void setId(ID id) {
-        this.id = id;
     }
     public B getBody() {
         return body;

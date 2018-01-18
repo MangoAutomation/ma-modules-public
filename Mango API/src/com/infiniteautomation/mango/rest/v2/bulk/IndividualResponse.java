@@ -9,23 +9,23 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @author Jared Wiltshire
- * @param <ID> id type
+ * @param <A> action type
  * @param <B> body type
  * @param <E> error type
  */
-public class IndividualResponse<ID, B, E> {
+public class IndividualResponse<A, B, E> {
     int httpStatus = HttpStatus.OK.value();
-    ID id;
+    A action;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     B body;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     E error;
 
-    public void setId(ID id) {
-        this.id = id;
+    public A getAction() {
+        return action;
     }
-    public ID getId() {
-        return id;
+    public void setAction(A action) {
+        this.action = action;
     }
     public int getHttpStatus() {
         return httpStatus;
