@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.serotonin.m2m2.Common;
@@ -22,29 +21,43 @@ import com.serotonin.timer.RejectedTaskReason;
 
 /**
  * @author Jared Wiltshire
+ * @param <T> result type
+ * @param <E> error type
  */
 public abstract class TemporaryResourceManager<T, E> {
-    private final ConcurrentMap<String, TemporaryResource<T, E>> resources;
     
+    @FunctionalInterface
+    public static interface ResourceTask<T, E> {
+        void run(TemporaryResource<T, E> resource) throws Exception;
+    }
+    
+    private final ConcurrentMap<String, TemporaryResource<T, E>> resources;
+    private final TemporaryResourceWebSocketHandler websocketHandler;
+
     public TemporaryResourceManager() {
-        resources = new ConcurrentHashMap<>();
+        this(null);
+    }
+    
+    public TemporaryResourceManager(TemporaryResourceWebSocketHandler websocketHandler) {
+        this.websocketHandler = websocketHandler;
+        this.resources = new ConcurrentHashMap<>();
     }
     
     public abstract E exceptionToError(Exception e);
     
-    public TemporaryResource<T, E> executeAsHighPriorityTask(int userId, int expirationSeconds, Consumer<TemporaryResource<T, E>> r) {
+    public TemporaryResource<T, E> executeAsHighPriorityTask(int userId, int expirationSeconds, ResourceTask<T, E> resourceTask) {
         AtomicReference<Runnable> cancelTask = new AtomicReference<>();
         
         TemporaryResource<T, E> resource = this.create(userId, expirationSeconds, () -> {
             Runnable cancel = cancelTask.get();
-            if (r != null) cancel.run();
+            if (cancelTask != null) cancel.run();
         });
         
         HighPriorityTask task = new HighPriorityTask(resource.getId()) {
             @Override
             public void run(long runtime) {
                 try {
-                    r.accept(resource);
+                    resourceTask.run(resource);
                 } catch (Exception e) {
                     E error = TemporaryResourceManager.this.exceptionToError(e);
                     TemporaryResourceManager.this.error(resource, error);
@@ -83,6 +96,10 @@ public abstract class TemporaryResourceManager<T, E> {
             resource = new TemporaryResource<T, E>(id, userId, expirationSeconds, cancel);
             existing = this.resources.putIfAbsent(id, resource);
         } while (existing != null);
+
+        if (this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
+        }
         
         return resource;
     }
@@ -105,7 +122,9 @@ public abstract class TemporaryResourceManager<T, E> {
     
     public boolean cancel(TemporaryResource<T, E> resource) {
         if (resource.cancel()) {
-            // notify websocket
+            if (this.websocketHandler != null) {
+                this.websocketHandler.notify(resource);
+            }
             this.scheduleRemoval(resource);
             return true;
         }
@@ -114,7 +133,9 @@ public abstract class TemporaryResourceManager<T, E> {
     
     public boolean timeOut(TemporaryResource<T, E> resource) {
         if (resource.timeOut()) {
-            // notify websocket
+            if (this.websocketHandler != null) {
+                this.websocketHandler.notify(resource);
+            }
             this.scheduleRemoval(resource);
             return true;
         }
@@ -123,7 +144,9 @@ public abstract class TemporaryResourceManager<T, E> {
 
     public boolean success(TemporaryResource<T, E> resource, T result) {
         if (resource.success(result)) {
-            // notify websocket
+            if (this.websocketHandler != null) {
+                this.websocketHandler.notify(resource);
+            }
             this.scheduleRemoval(resource);
             return true;
         }
@@ -132,7 +155,9 @@ public abstract class TemporaryResourceManager<T, E> {
     
     public boolean error(TemporaryResource<T, E> resource, E error) {
         if (resource.error(error)) {
-            // notify websocket
+            if (this.websocketHandler != null) {
+                this.websocketHandler.notify(resource);
+            }
             this.scheduleRemoval(resource);
             return true;
         }
@@ -141,7 +166,9 @@ public abstract class TemporaryResourceManager<T, E> {
 
     public boolean progress(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
         if (resource.progress(result, position, maximum)) {
-            // notify websocket
+            if (this.websocketHandler != null) {
+                this.websocketHandler.notify(resource);
+            }
             return true;
         }
         return false;
@@ -156,7 +183,7 @@ public abstract class TemporaryResourceManager<T, E> {
             new TimeoutTask(expiration, new TimeoutClient() {
                 @Override
                 public void scheduleTimeout(long fireTime) {
-                    TemporaryResourceManager.this.resources.remove(resourceId);
+                    TemporaryResourceManager.this.remove(resource);
                 }
     
                 @Override
@@ -167,7 +194,7 @@ public abstract class TemporaryResourceManager<T, E> {
                 @Override
                 public void rejected(RejectedTaskReason reason) {
                     super.rejected(reason);
-                    TemporaryResourceManager.this.resources.remove(resourceId);
+                    TemporaryResourceManager.this.remove(resource);
                 }
             });
         }

@@ -33,13 +33,16 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -90,12 +93,18 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public static class TagBulkResponse extends BulkResponse<TagIndividualResponse> {
     }
 
-    private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager = new TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception>() {
-        @Override
-        public AbstractRestV2Exception exceptionToError(Exception e) {
-            return RestExceptionIndividualResponse.exceptionToRestException(e);
-        }
-    };
+    private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager;
+    private TemporaryResourceWebSocketHandler websocket;
+
+    public DataPointTagsRestController() {
+        this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
+        this.bulkTagsTemporaryResourceManager = new TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception>(this.websocket) {
+            @Override
+            public AbstractRestV2Exception exceptionToError(Exception e) {
+                return RestExceptionIndividualResponse.exceptionToRestException(e);
+            }
+        };
+    }
     
     @ApiOperation(value = "Get data point tags by data point XID", notes = "User must have read permission for the data point")
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
@@ -273,31 +282,31 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.expirationMustBeGreaterThanZero"));
         }
         
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (r) -> {
-            TagBulkResponse response = new TagBulkResponse();
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody = bulkTagsTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (resource) -> {
+            TagBulkResponse bulkResponse = new TagBulkResponse();
             int i = 0;
             
-            if (!bulkTagsTemporaryResourceManager.progress(r, response, i++, requests.size())) {
+            if (!bulkTagsTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
                 // can't update progress, most likely cancelled or timed out
                 return;
             }
 
             for (TagIndividualRequest request : requests) {
                 TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
-                response.addResponse(individualResponse);
+                bulkResponse.addResponse(individualResponse);
 
-                if (!bulkTagsTemporaryResourceManager.progress(r, response, i++, requests.size())) {
+                if (!bulkTagsTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
                     // can't update progress, most likely cancelled or timed out
                     return;
                 }
             }
 
-            bulkTagsTemporaryResourceManager.success(r, response);
+            bulkTagsTemporaryResourceManager.success(resource, bulkResponse);
         });
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(builder.path("/v2/data-point-tags/bulk/{id}").buildAndExpand(resource.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(resource, headers, HttpStatus.CREATED);
+        headers.setLocation(builder.path("/v2/data-point-tags/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
+        return new ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")

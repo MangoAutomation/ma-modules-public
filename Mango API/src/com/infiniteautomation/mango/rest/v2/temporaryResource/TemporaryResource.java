@@ -11,6 +11,8 @@ import com.serotonin.m2m2.Common;
 
 /**
  * @author Jared Wiltshire
+ * @param <T> result type
+ * @param <E> error type
  */
 public final class TemporaryResource<T, E> {
     public static enum TemporaryResourceStatus {
@@ -26,7 +28,6 @@ public final class TemporaryResource<T, E> {
     private T result;
     private E error;
     private Date expiration;
-
     private Integer position;
     private Integer maximum;
 

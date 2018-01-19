@@ -5,8 +5,6 @@ package com.infiniteautomation.mango.rest.v2.bulk;
 
 import org.springframework.http.HttpStatus;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 /**
  * @author Jared Wiltshire
  * @param <A> action type
@@ -16,9 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class IndividualResponse<A, B, E> {
     int httpStatus = HttpStatus.OK.value();
     A action;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     B body;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     E error;
 
     public A getAction() {
