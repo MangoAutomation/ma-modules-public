@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,16 +23,27 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
+import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
+import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse;
+import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
+import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualRequest;
+import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
+import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -39,6 +51,7 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -55,8 +68,31 @@ public class DataPointRestController extends BaseMangoRestController {
 
     private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 
+    public static class DataPointIndividualRequest extends VoIndividualRequest<DataPointModel> {
+    }
+    
+    public static class DataPointIndividualResponse extends VoIndividualResponse<DataPointModel> {
+    }
+
+    public static class DataPointBulkRequest extends BulkRequest<VoAction, DataPointModel, DataPointIndividualRequest> {
+    }
+    
+    public static class DataPointBulkResponse extends BulkResponse<DataPointIndividualResponse> {
+    }
+
+    private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> dataPointTemporaryResourceManager;
+    private TemporaryResourceWebSocketHandler websocket;
+
     public DataPointRestController() {
         LOG.info("Creating Data Point v2 Rest Controller.");
+        
+        this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
+        this.dataPointTemporaryResourceManager = new TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception>(this.websocket) {
+            @Override
+            public AbstractRestV2Exception exceptionToError(Exception e) {
+                return RestExceptionIndividualResponse.exceptionToRestException(e);
+            }
+        };
     }
 
     @ApiOperation(
@@ -268,6 +304,114 @@ public class DataPointRestController extends BaseMangoRestController {
         
         Common.runtimeManager.deleteDataPoint(dataPoint);
         return new DataPointModel(dataPoint);
+    }
+
+    @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk")
+    public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperation(
+            @ApiParam(value = "Expiration in seconds of temporary resource after it completes",
+                defaultValue = "" + TemporaryResourceManager.DEFAULT_EXPIRATION_SECONDS,
+                required = false,
+                allowMultiple = false)
+            @RequestParam(required=false) Integer expiration,
+            
+            @RequestBody
+            DataPointBulkRequest requestBody,
+            
+            @AuthenticationPrincipal
+            User user,
+            
+            UriComponentsBuilder builder) {
+
+        VoAction defaultAction = requestBody.getAction();
+        DataPointModel defaultBody = requestBody.getBody();
+        List<DataPointIndividualRequest> requests = requestBody.getRequests();
+
+        if (expiration == null) {
+            expiration = TemporaryResourceManager.DEFAULT_EXPIRATION_SECONDS;
+        }
+        
+        if (requests == null) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
+        } else if (expiration < 0) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.expirationMustBeGreaterThanZero"));
+        }
+        
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = dataPointTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (resource) -> {
+            DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
+            int i = 0;
+            
+            if (!dataPointTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
+                // can't update progress, most likely cancelled or timed out
+                return;
+            }
+
+            for (DataPointIndividualRequest request : requests) {
+                DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user, builder);
+                bulkResponse.addResponse(individualResponse);
+
+                if (!dataPointTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
+                    // can't update progress, most likely cancelled or timed out
+                    return;
+                }
+            }
+
+            dataPointTemporaryResourceManager.success(resource, bulkResponse);
+        });
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(builder.path("/v2/data-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
+        return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+    }
+    
+    private DataPointIndividualResponse doIndividualRequest(DataPointIndividualRequest request, VoAction defaultAction, DataPointModel defaultBody, User user, UriComponentsBuilder builder) {
+        DataPointIndividualResponse result = new DataPointIndividualResponse();
+        
+        try {
+            String xid = request.getXid();
+            
+            VoAction action = request.getAction() == null ? defaultAction : request.getAction();
+            if (action == null) {
+                throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "action"));
+            }
+            result.setAction(action);
+            
+            DataPointModel body = request.getBody() == null ? defaultBody : request.getBody();
+
+            switch (action) {
+                case GET:
+                    if (xid == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
+                    }
+                    result.setBody(this.getDataPoint(xid, user));
+                    break;
+                case CREATE:
+                    if (body == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
+                    }
+                    result.setBody(this.createDataPoint(body, user, builder).getBody());
+                    break;
+                case UPDATE:
+                    if (xid == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
+                    }
+                    if (body == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
+                    }
+                    result.setBody(this.updateDataPoint(xid, body, user, builder).getBody());
+                    break;
+                case DELETE:
+                    if (xid == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
+                    }
+                    result.setBody(this.deleteDataPoint(xid, user));
+                    break;
+            }
+        } catch (Exception e) {
+            result.exceptionCaught(e);
+        }
+        
+        return result;
     }
 
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
