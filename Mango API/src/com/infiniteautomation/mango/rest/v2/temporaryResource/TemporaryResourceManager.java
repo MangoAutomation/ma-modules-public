@@ -51,7 +51,7 @@ public abstract class TemporaryResourceManager<T, E> {
         
         TemporaryResource<T, E> resource = this.create(userId, expirationSeconds, () -> {
             Runnable cancel = cancelTask.get();
-            if (cancelTask != null) cancel.run();
+            if (cancel != null) cancel.run();
         });
         
         HighPriorityTask task = new HighPriorityTask(resource.getId()) {
