@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.temporaryResource;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.serotonin.m2m2.Common;
 
 /**
@@ -120,17 +119,14 @@ public final class TemporaryResource<T, E> {
         return expiration;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Integer getPosition() {
         return position;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Integer getMaximum() {
         return maximum;
     }
-    
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+
     public Integer getProgress() {
         if (position != null && maximum != null) {
             return Math.floorDiv(position * 100, maximum);
