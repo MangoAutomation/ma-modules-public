@@ -25,6 +25,7 @@ import com.serotonin.timer.RejectedTaskReason;
  * @param <E> error type
  */
 public abstract class TemporaryResourceManager<T, E> {
+    public static final int DEFAULT_EXPIRATION_SECONDS = 300;
     
     @FunctionalInterface
     public static interface ResourceTask<T, E> {

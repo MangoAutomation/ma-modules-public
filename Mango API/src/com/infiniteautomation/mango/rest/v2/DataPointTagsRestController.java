@@ -57,8 +57,6 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/data-point-tags")
 public class DataPointTagsRestController extends BaseMangoRestController {
     
-    public static final int TEMPORARY_RESOURCE_EXPIRATION_SECONDS = 300;
-
     public static enum BulkTagAction {
         GET, SET, MERGE
     }
@@ -257,7 +255,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
-            @ApiParam(value = "Expiration in seconds of temporary resource after it completes", defaultValue = "" + TEMPORARY_RESOURCE_EXPIRATION_SECONDS, required = false, allowMultiple = false)
+            @ApiParam(value = "Expiration in seconds of temporary resource after it completes",
+                defaultValue = "" + TemporaryResourceManager.DEFAULT_EXPIRATION_SECONDS,
+                required = false,
+                allowMultiple = false)
             @RequestParam(required=false) Integer expiration,
             
             @RequestBody
@@ -273,7 +274,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         List<TagIndividualRequest> requests = requestBody.getRequests();
 
         if (expiration == null) {
-            expiration = TEMPORARY_RESOURCE_EXPIRATION_SECONDS;
+            expiration = TemporaryResourceManager.DEFAULT_EXPIRATION_SECONDS;
         }
         
         if (requests == null) {
