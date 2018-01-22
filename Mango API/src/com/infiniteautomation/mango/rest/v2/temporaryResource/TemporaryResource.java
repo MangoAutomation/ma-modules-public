@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.temporaryResource;
 
 import java.util.Date;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.serotonin.m2m2.Common;
@@ -13,33 +14,56 @@ import com.serotonin.m2m2.Common;
  * @param <T> result type
  * @param <E> error type
  */
-public final class TemporaryResource<T, E> {
+public abstract class TemporaryResource<T, E> {
     public static enum TemporaryResourceStatus {
         SCHEDULED, RUNNING, TIMED_OUT, CANCELLED, SUCCESS, ERROR;
     }
     
     private final String id;
     private final int userId;
-    private final int expirationSeconds;
-    private final Runnable cancel;
+    private final long expirationMilliseconds;
+    private final Long timeoutMilliseconds;
 
     private TemporaryResourceStatus status;
     private T result;
     private E error;
     private Date expiration;
+    private Date timeout;
     private Integer position;
     private Integer maximum;
 
-    protected TemporaryResource(String id, int userId, int expirationSeconds, Runnable cancel) {
-        this.id = id;
+    protected TemporaryResource(int userId, Long expirationMilliseconds, Long timeoutMilliseconds) {
+        this.id = UUID.randomUUID().toString();
         this.userId = userId;
-        this.expirationSeconds = expirationSeconds;
-        this.cancel = cancel;
-        
+        this.expirationMilliseconds = expirationMilliseconds != null && expirationMilliseconds > 0 ? expirationMilliseconds : 0;
+        this.timeoutMilliseconds = timeoutMilliseconds;
+
         this.status = TemporaryResourceStatus.SCHEDULED;
     }
+    
+    abstract void startTask();
+    abstract void cancelMainAndTimeout();
+    abstract void scheduleTimeout(Date timeout);
+    abstract void scheduleRemoval(Date expiration);
+    abstract void removeNow();
+    abstract void cancelRemoval();
+    
+    synchronized final boolean start() {
+        if (this.status == TemporaryResourceStatus.SCHEDULED) {
+            this.status = TemporaryResourceStatus.RUNNING;
+            if (this.timeoutMilliseconds != null && this.timeoutMilliseconds > 0) {
+                this.timeout = new Date(Common.timer.currentTimeMillis() + this.timeoutMilliseconds);
+            }
+            this.startTask();
+            if (this.timeout != null) {
+                this.scheduleTimeout(this.timeout);
+            }
+            return true;
+        }
+        return false;
+    }
 
-    protected synchronized boolean progress(T result, Integer position, Integer maximum) {
+    synchronized final boolean progress(T result, Integer position, Integer maximum) {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.RUNNING;
             this.result = result;
@@ -50,91 +74,117 @@ public final class TemporaryResource<T, E> {
         return false;
     }
 
-    protected synchronized boolean timeOut() {
+    synchronized final boolean timeOut() {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.TIMED_OUT;
-            if (this.cancel != null) {
-                this.cancel.run();
+            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
+            if (this.expirationMilliseconds == 0) {
+                this.removeNow();
+            } else {
+                this.scheduleRemoval(this.expiration);
             }
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationSeconds * 1000);
+            this.cancelMainAndTimeout();
             return true;
         }
         return false;
     }
 
-    protected synchronized boolean cancel() {
+    synchronized final boolean cancel() {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.CANCELLED;
-            if (this.cancel != null) {
-                this.cancel.run();
+            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
+            if (this.expirationMilliseconds == 0) {
+                this.removeNow();
+            } else {
+                this.scheduleRemoval(this.expiration);
             }
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationSeconds * 1000);
+            this.cancelMainAndTimeout();
             return true;
         }
         return false;
     }
 
-    protected synchronized boolean success(T result) {
+    synchronized final boolean success(T result) {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.SUCCESS;
             this.result = result;
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationSeconds * 1000);
+            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
+            if (this.expirationMilliseconds == 0) {
+                this.removeNow();
+            } else {
+                this.scheduleRemoval(this.expiration);
+            }
+            this.cancelMainAndTimeout();
             return true;
         }
         return false;
     }
 
-    protected synchronized boolean error(E error) {
+    synchronized final boolean error(E error) {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.ERROR;
             this.error = error;
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationSeconds * 1000);
+            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
+            if (this.expirationMilliseconds == 0) {
+                this.removeNow();
+            } else {
+                this.scheduleRemoval(this.expiration);
+            }
+            this.cancelMainAndTimeout();
             return true;
         }
         return false;
     }
+    
+    synchronized final void removed() {
+        this.cancelRemoval();
+    }
 
     @JsonIgnore
-    protected synchronized boolean isComplete() {
+    synchronized final boolean isComplete() {
         return !(this.status == TemporaryResourceStatus.SCHEDULED || this.status == TemporaryResourceStatus.RUNNING);
     }
 
-    public String getId() {
+    public final String getId() {
         return id;
     }
 
-    public TemporaryResourceStatus getStatus() {
+    public final TemporaryResourceStatus getStatus() {
         return status;
     }
 
-    public T getResult() {
+    public final T getResult() {
         return result;
     }
 
-    public E getError() {
+    public final E getError() {
         return error;
     }
 
-    public Date getExpiration() {
+    public final Date getExpiration() {
         return expiration;
     }
 
-    public Integer getPosition() {
+    public final Integer getPosition() {
         return position;
     }
 
-    public Integer getMaximum() {
+    public final Integer getMaximum() {
         return maximum;
     }
 
-    public Integer getProgress() {
+    public final Integer getProgress() {
         if (position != null && maximum != null) {
             return Math.floorDiv(position * 100, maximum);
         }
         return null;
     }
 
-    public int getUserId() {
+    public final int getUserId() {
         return userId;
+    }
+
+    public final Date getTimeout() {
+        return timeout;
     }
 }

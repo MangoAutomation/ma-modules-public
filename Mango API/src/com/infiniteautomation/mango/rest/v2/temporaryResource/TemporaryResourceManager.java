@@ -4,20 +4,11 @@
 package com.infiniteautomation.mango.rest.v2.temporaryResource;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.util.timeout.HighPriorityTask;
-import com.serotonin.m2m2.util.timeout.TimeoutClient;
-import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.exception.NotFoundException;
-import com.serotonin.timer.RejectedTaskReason;
 
 /**
  * @author Jared Wiltshire
@@ -25,13 +16,21 @@ import com.serotonin.timer.RejectedTaskReason;
  * @param <E> error type
  */
 public abstract class TemporaryResourceManager<T, E> {
-    public static final int DEFAULT_EXPIRATION_SECONDS = 300;
+    /**
+     * Default time before the resource is removed after completion
+     */
+    public static final long DEFAULT_EXPIRATION_MILLISECONDS = 300000; // 5 minutes
+    
+    /**
+     * Default time that the task is allowed to run for before it is cancelled
+     */
+    public static final long DEFAULT_TIMEOUT_MILLISECONDS = 600000; // 10 minutes
     
     @FunctionalInterface
     public static interface ResourceTask<T, E> {
         void run(TemporaryResource<T, E> resource) throws Exception;
     }
-    
+
     private final ConcurrentMap<String, TemporaryResource<T, E>> resources;
     private final TemporaryResourceWebSocketHandler websocketHandler;
 
@@ -46,66 +45,31 @@ public abstract class TemporaryResourceManager<T, E> {
     
     public abstract E exceptionToError(Exception e);
     
-    public TemporaryResource<T, E> executeAsHighPriorityTask(int userId, int expirationSeconds, ResourceTask<T, E> resourceTask) {
-        AtomicReference<Runnable> cancelTask = new AtomicReference<>();
-        
-        TemporaryResource<T, E> resource = this.create(userId, expirationSeconds, () -> {
-            Runnable cancel = cancelTask.get();
-            if (cancel != null) cancel.run();
-        });
-        
-        HighPriorityTask task = new HighPriorityTask(resource.getId()) {
-            @Override
-            public void run(long runtime) {
-                try {
-                    resourceTask.run(resource);
-                } catch (Exception e) {
-                    E error = TemporaryResourceManager.this.exceptionToError(e);
-                    TemporaryResourceManager.this.error(resource, error);
-                }
-            }
-
-            @Override
-            public void rejected(RejectedTaskReason reason) {
-                super.rejected(reason);
-
-                // TODO translation for rejection reason
-                E error = TemporaryResourceManager.this.exceptionToError(new ServerErrorException());
-                TemporaryResourceManager.this.error(resource, error);
-            }
-        };
-        
-        cancelTask.set(task::cancel);
-        
-        if (!resource.isComplete()) {
-            Common.backgroundProcessing.execute(task);
+    public final TemporaryResource<T, E> newTemporaryResource(int userId, Long expirationMilliseconds, Long timeoutMilliseconds, ResourceTask<T, E> resourceTask) {
+        if (expirationMilliseconds == null) {
+            expirationMilliseconds = DEFAULT_EXPIRATION_MILLISECONDS;
+        }
+        if (timeoutMilliseconds == null) {
+            timeoutMilliseconds = DEFAULT_TIMEOUT_MILLISECONDS;
         }
         
+        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(userId, expirationMilliseconds, timeoutMilliseconds, this, resourceTask);
+        this.add(resource);
+
+        try {
+            resource.start();
+        } catch (Exception e) {
+            this.error(resource, e);
+        }
+
         return resource;
     }
-    
-    public List<TemporaryResource<T, E>> list() {
+
+    public final List<TemporaryResource<T, E>> list() {
         return new ArrayList<>(this.resources.values());
     }
-
-    public TemporaryResource<T, E> create(int userId, int expirationSeconds, Runnable cancel) {
-        TemporaryResource<T, E> resource;
-        TemporaryResource<T, E> existing;
-        
-        do {
-            String id = UUID.randomUUID().toString();
-            resource = new TemporaryResource<T, E>(id, userId, expirationSeconds, cancel);
-            existing = this.resources.putIfAbsent(id, resource);
-        } while (existing != null);
-
-        if (this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
-        }
-        
-        return resource;
-    }
     
-    public TemporaryResource<T, E> get(String id) {
+    public final TemporaryResource<T, E> get(String id) {
         TemporaryResource<T, E> resource = this.resources.get(id);
         if (resource == null) {
             throw new NotFoundException();
@@ -113,91 +77,113 @@ public abstract class TemporaryResourceManager<T, E> {
         return resource;
     }
     
-    public boolean remove(TemporaryResource<T, E> resource) {
-        if (resource.isComplete()) {
-            this.resources.remove(resource.getId());
-            return true;
-        }
-        return false;
+    public final void remove(TemporaryResource<T, E> resource) {
+        this.resources.remove(resource.getId());
+        resource.removed();
     }
     
-    public boolean cancel(TemporaryResource<T, E> resource) {
-        if (resource.cancel()) {
-            if (this.websocketHandler != null) {
-                this.websocketHandler.notify(resource);
-            }
-            this.scheduleRemoval(resource);
-            return true;
+    public final boolean cancel(TemporaryResource<T, E> resource) {
+        boolean cancelled = false;
+        
+        try {
+            cancelled = resource.cancel();
+        } catch (Exception e) {
+            this.error(resource, e);
         }
-        return false;
-    }
-    
-    public boolean timeOut(TemporaryResource<T, E> resource) {
-        if (resource.timeOut()) {
-            if (this.websocketHandler != null) {
-                this.websocketHandler.notify(resource);
-            }
-            this.scheduleRemoval(resource);
-            return true;
+
+        if (cancelled && this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
         }
-        return false;
+        
+        return cancelled;
     }
 
-    public boolean success(TemporaryResource<T, E> resource, T result) {
-        if (resource.success(result)) {
-            if (this.websocketHandler != null) {
-                this.websocketHandler.notify(resource);
-            }
-            this.scheduleRemoval(resource);
-            return true;
+    final void add(TemporaryResource<T, E> resource) {
+        TemporaryResource<T, E> existing = this.resources.putIfAbsent(resource.getId(), resource);
+        if (existing != null) {
+            throw new RuntimeException("UUID collision");
         }
-        return false;
+
+        if (this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
+        }
+    }
+
+    final boolean timeOut(TemporaryResource<T, E> resource) {
+        boolean timedOut = false;
+        
+        try {
+            timedOut = resource.timeOut();
+        } catch (Exception e) {
+            this.error(resource, e);
+        }
+        
+        if (timedOut && this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
+        }
+        
+        return timedOut;
+    }
+
+    public final boolean success(TemporaryResource<T, E> resource, T result) {
+        boolean succeeded = false;
+        
+        try {
+            succeeded = resource.success(result);
+        } catch (Exception e) {
+            this.error(resource, e);
+        }
+        
+        if (succeeded && this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
+        }
+        
+        return succeeded;
     }
     
-    public boolean error(TemporaryResource<T, E> resource, E error) {
+    public final void error(TemporaryResource<T, E> resource, Exception e) {
+        E error = this.exceptionToError(e);
+        this.error(resource, error);
+    }
+    
+    public final boolean error(TemporaryResource<T, E> resource, E error) {
         if (resource.error(error)) {
             if (this.websocketHandler != null) {
                 this.websocketHandler.notify(resource);
             }
-            this.scheduleRemoval(resource);
             return true;
         }
         return false;
     }
 
-    public boolean progress(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
-        if (resource.progress(result, position, maximum)) {
-            if (this.websocketHandler != null) {
-                this.websocketHandler.notify(resource);
-            }
-            return true;
+    public final boolean progress(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
+        boolean progressUpdated = resource.progress(result, position, maximum);
+        if (progressUpdated && this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
         }
-        return false;
+        return progressUpdated;
     }
+    
+    /**
+     * If position == maximum will set the resource to success, otherwise update progress
+     * @param resource
+     * @param result
+     * @param position
+     * @param maximum
+     * @return
+     */
+    public final boolean progressOrSuccess(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
+        boolean callSuccess = position != null && position.equals(maximum);
 
-    private void scheduleRemoval(TemporaryResource<T, E> resource) {
-        String resourceId = resource.getId();
-        Date expiration = resource.getExpiration();
+        boolean progressUpdated = resource.progress(result, position, maximum);
+        if (progressUpdated && callSuccess) {
+            progressUpdated = resource.success(result);
+        }
         
-        if (expiration != null) {
-            // TimeoutTask schedules itself using Common.backgroundProcessing.schedule(this)
-            new TimeoutTask(expiration, new TimeoutClient() {
-                @Override
-                public void scheduleTimeout(long fireTime) {
-                    TemporaryResourceManager.this.remove(resource);
-                }
-    
-                @Override
-                public String getThreadName() {
-                    return "Temporary resource expiration " + resourceId;
-                }
-    
-                @Override
-                public void rejected(RejectedTaskReason reason) {
-                    super.rejected(reason);
-                    TemporaryResourceManager.this.remove(resource);
-                }
-            });
+        if (progressUpdated && this.websocketHandler != null) {
+            this.websocketHandler.notify(resource);
         }
+
+        return progressUpdated;
     }
 }

@@ -309,11 +309,17 @@ public class DataPointRestController extends BaseMangoRestController {
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperation(
-            @ApiParam(value = "Expiration in seconds of temporary resource after it completes",
-                defaultValue = "" + TemporaryResourceManager.DEFAULT_EXPIRATION_SECONDS,
+            @ApiParam(value = "Timeout in milliseconds for temporary resource, must complete in this amount of time or it will be cancelled, set to 0 for no timeout",
+                defaultValue = "" + TemporaryResourceManager.DEFAULT_TIMEOUT_MILLISECONDS,
                 required = false,
                 allowMultiple = false)
-            @RequestParam(required=false) Integer expiration,
+            @RequestParam(required=false) Long timeout,
+            
+            @ApiParam(value = "Expiration in milliseconds of temporary resource after it completes",
+                defaultValue = "" + TemporaryResourceManager.DEFAULT_EXPIRATION_MILLISECONDS,
+                required = false,
+                allowMultiple = false)
+            @RequestParam(required=false) Long expiration,
             
             @RequestBody
             DataPointBulkRequest requestBody,
@@ -327,17 +333,13 @@ public class DataPointRestController extends BaseMangoRestController {
         DataPointModel defaultBody = requestBody.getBody();
         List<DataPointIndividualRequest> requests = requestBody.getRequests();
 
-        if (expiration == null) {
-            expiration = TemporaryResourceManager.DEFAULT_EXPIRATION_SECONDS;
-        }
-        
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
-        } else if (expiration < 0) {
+        } else if (expiration != null && expiration < 0) {
             throw new BadRequestException(new TranslatableMessage("rest.error.expirationMustBeGreaterThanZero"));
         }
         
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = dataPointTemporaryResourceManager.executeAsHighPriorityTask(user.getId(), expiration, (resource) -> {
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = dataPointTemporaryResourceManager.newTemporaryResource(user.getId(), expiration, timeout, (resource) -> {
             DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
             int i = 0;
             
@@ -350,12 +352,13 @@ public class DataPointRestController extends BaseMangoRestController {
                 DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user, builder);
                 bulkResponse.addResponse(individualResponse);
 
-                if (!dataPointTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
+                if (!dataPointTemporaryResourceManager.progressOrSuccess(resource, bulkResponse, i++, requests.size())) {
                     // can't update progress, most likely cancelled or timed out
                     return;
                 }
             }
 
+            // this shouldn't do anything, its a check only, progressOrSuccess() should have set the resource to SUCCESS already
             dataPointTemporaryResourceManager.success(resource, bulkResponse);
         });
 
