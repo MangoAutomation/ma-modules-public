@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
@@ -365,6 +367,64 @@ public class DataPointRestController extends BaseMangoRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/v2/data-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+    }
+    
+    @ApiOperation(value = "Get a list of current bulk data point operations", notes = "User can only get their own bulk data point operations unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/bulk")
+    public List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> getBulkDataPointOperations(
+            @AuthenticationPrincipal
+            User user) {
+        
+        return this.dataPointTemporaryResourceManager.list().stream()
+                .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
+                .collect(Collectors.toList());
+    }
+    
+    @ApiOperation(value = "Get the status of a bulk data point operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
+    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+            
+            @AuthenticationPrincipal
+            User user) {
+        
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = dataPointTemporaryResourceManager.get(id);
+        
+        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+        
+        return resource;
+    }
+    
+    @ApiOperation(value = "Cancel a bulk data point operation using its id",
+            notes = "Only cancels if the operation is not already complete." +
+                    "May also be used to remove a completed temporary resource by passing remove=true, otherwise the resource is removed when it expires." +
+                    "User can only cancel their own bulk data point operations unless they are an admin.")
+    @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
+    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> cancelBulkDataPointTagOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+            
+            @ApiParam(value = "Remove the temporary resource", required = false, defaultValue = "false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue = "false") boolean remove,
+            
+            @AuthenticationPrincipal
+            User user) {
+        
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = dataPointTemporaryResourceManager.get(id);
+        
+        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+        
+        dataPointTemporaryResourceManager.cancel(resource);
+        if (remove) {
+            dataPointTemporaryResourceManager.remove(resource);
+        }
+        
+        return resource;
     }
     
     private DataPointIndividualResponse doIndividualRequest(DataPointIndividualRequest request, VoAction defaultAction, DataPointModel defaultBody, User user, UriComponentsBuilder builder) {
