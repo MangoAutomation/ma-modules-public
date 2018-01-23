@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.exception.NotFoundException;
 
 /**
@@ -45,15 +47,18 @@ public abstract class TemporaryResourceManager<T, E> {
     
     public abstract E exceptionToError(Exception e);
     
-    public final TemporaryResource<T, E> newTemporaryResource(int userId, Long expirationMilliseconds, Long timeoutMilliseconds, ResourceTask<T, E> resourceTask) {
-        if (expirationMilliseconds == null) {
-            expirationMilliseconds = DEFAULT_EXPIRATION_MILLISECONDS;
-        }
-        if (timeoutMilliseconds == null) {
-            timeoutMilliseconds = DEFAULT_TIMEOUT_MILLISECONDS;
-        }
+    public final TemporaryResource<T, E> newTemporaryResource(BulkRequest<?, ?, ?> bulkRequest, User user, ResourceTask<T, E> resourceTask) {
+        long expiration = DEFAULT_EXPIRATION_MILLISECONDS;
+        long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         
-        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(userId, expirationMilliseconds, timeoutMilliseconds, this, resourceTask);
+        if (bulkRequest.getExpiration() != null && bulkRequest.getExpiration() >= 0) {
+            expiration = bulkRequest.getExpiration();
+        }
+        if (bulkRequest.getTimeout() != null && bulkRequest.getTimeout() >= 0) {
+            timeout = bulkRequest.getTimeout();
+        }
+
+        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(bulkRequest.getId(), user.getId(), expiration, timeout, this, resourceTask);
         this.add(resource);
 
         try {

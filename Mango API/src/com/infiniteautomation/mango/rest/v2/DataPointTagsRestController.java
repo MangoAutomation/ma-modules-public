@@ -255,18 +255,6 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
-            @ApiParam(value = "Timeout in milliseconds for temporary resource, must complete in this amount of time or it will be cancelled, set to 0 for no timeout",
-                defaultValue = "" + TemporaryResourceManager.DEFAULT_TIMEOUT_MILLISECONDS,
-                required = false,
-                allowMultiple = false)
-            @RequestParam(required=false) Long timeout,
-            
-            @ApiParam(value = "Expiration in milliseconds of temporary resource after it completes",
-                defaultValue = "" + TemporaryResourceManager.DEFAULT_EXPIRATION_MILLISECONDS,
-                required = false,
-                allowMultiple = false)
-            @RequestParam(required=false) Long expiration,
-            
             @RequestBody
             TagBulkRequest requestBody,
             
@@ -281,11 +269,9 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
-        } else if (expiration != null && expiration < 0) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.expirationMustBeGreaterThanZero"));
         }
         
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody = bulkTagsTemporaryResourceManager.newTemporaryResource(user.getId(), expiration, timeout, (resource) -> {
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody = bulkTagsTemporaryResourceManager.newTemporaryResource(requestBody, user, (resource) -> {
             TagBulkResponse bulkResponse = new TagBulkResponse();
             int i = 0;
             

@@ -25,6 +25,10 @@ public abstract class TemporaryResource<T, E> {
     private final Long timeoutMilliseconds;
 
     private TemporaryResourceStatus status;
+    /**
+     * Increments every time the status is changed or progress() is called
+     */
+    private int resourceVersion;
     private T result;
     private E error;
     private Date expiration;
@@ -32,13 +36,14 @@ public abstract class TemporaryResource<T, E> {
     private Integer position;
     private Integer maximum;
 
-    protected TemporaryResource(int userId, Long expirationMilliseconds, Long timeoutMilliseconds) {
-        this.id = UUID.randomUUID().toString();
+    protected TemporaryResource(String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds) {
+        this.id = id == null ? UUID.randomUUID().toString() : id;
         this.userId = userId;
         this.expirationMilliseconds = expirationMilliseconds != null && expirationMilliseconds > 0 ? expirationMilliseconds : 0;
         this.timeoutMilliseconds = timeoutMilliseconds;
 
         this.status = TemporaryResourceStatus.SCHEDULED;
+        this.resourceVersion = 0;
     }
     
     abstract void startTask();
@@ -51,6 +56,7 @@ public abstract class TemporaryResource<T, E> {
     synchronized final boolean start() {
         if (this.status == TemporaryResourceStatus.SCHEDULED) {
             this.status = TemporaryResourceStatus.RUNNING;
+            this.resourceVersion++;
             if (this.timeoutMilliseconds != null && this.timeoutMilliseconds > 0) {
                 this.timeout = new Date(Common.timer.currentTimeMillis() + this.timeoutMilliseconds);
             }
@@ -66,6 +72,7 @@ public abstract class TemporaryResource<T, E> {
     synchronized final boolean progress(T result, Integer position, Integer maximum) {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.RUNNING;
+            this.resourceVersion++;
             this.result = result;
             this.position = position;
             this.maximum = maximum;
@@ -77,6 +84,7 @@ public abstract class TemporaryResource<T, E> {
     synchronized final boolean timeOut() {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.TIMED_OUT;
+            this.resourceVersion++;
             this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
             if (this.expirationMilliseconds == 0) {
                 this.removeNow();
@@ -92,6 +100,7 @@ public abstract class TemporaryResource<T, E> {
     synchronized final boolean cancel() {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.CANCELLED;
+            this.resourceVersion++;
             this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
             if (this.expirationMilliseconds == 0) {
                 this.removeNow();
@@ -107,6 +116,7 @@ public abstract class TemporaryResource<T, E> {
     synchronized final boolean success(T result) {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.SUCCESS;
+            this.resourceVersion++;
             this.result = result;
             this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
             if (this.expirationMilliseconds == 0) {
@@ -123,6 +133,7 @@ public abstract class TemporaryResource<T, E> {
     synchronized final boolean error(E error) {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.ERROR;
+            this.resourceVersion++;
             this.error = error;
             this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
             if (this.expirationMilliseconds == 0) {
@@ -186,5 +197,9 @@ public abstract class TemporaryResource<T, E> {
 
     public final Date getTimeout() {
         return timeout;
+    }
+
+    public int getResourceVersion() {
+        return resourceVersion;
     }
 }
