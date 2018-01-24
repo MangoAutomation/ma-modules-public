@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
@@ -20,7 +21,6 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  * @author Jared Wiltshire
  */
 public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
-
     protected final Log log = LogFactory.getLog(this.getClass());
 
     protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws JsonProcessingException, IOException {
@@ -37,6 +37,7 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
     
     public static class WebSocketResponse<T> implements WebSocketMessage {
         int sequenceNumber;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         T payload;
         
         public WebSocketResponse() {
@@ -67,19 +68,23 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
             this.payload = payload;
         }
     }
-    
+
     public static class WebSocketNotification<T> implements WebSocketMessage {
+        /**
+         * Use CrudNotificationType where possible
+         */
         String notificationType;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         T payload;
         
         public WebSocketNotification() {
         }
         
-        public WebSocketNotification(String notificationType, T payload) {
-            this.notificationType = notificationType;
+        public WebSocketNotification(CrudNotificationType notificationType, T payload) {
+            this.notificationType = notificationType.getNotificationType();
             this.payload = payload;
         }
-        
+
         @Override
         public WebSocketMessageType getMessageType() {
             return WebSocketMessageType.NOTIFICATION;

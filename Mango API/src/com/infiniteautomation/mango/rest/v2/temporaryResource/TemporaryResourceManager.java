@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.exception.NotFoundException;
 
@@ -85,6 +86,10 @@ public abstract class TemporaryResourceManager<T, E> {
     public final void remove(TemporaryResource<T, E> resource) {
         this.resources.remove(resource.getId());
         resource.removed();
+        
+        if (this.websocketHandler != null) {
+            this.websocketHandler.notify(CrudNotificationType.DELETE, resource);
+        }
     }
     
     public final boolean cancel(TemporaryResource<T, E> resource) {
@@ -97,7 +102,7 @@ public abstract class TemporaryResourceManager<T, E> {
         }
 
         if (cancelled && this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
+            this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
         
         return cancelled;
@@ -110,7 +115,7 @@ public abstract class TemporaryResourceManager<T, E> {
         }
 
         if (this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
+            this.websocketHandler.notify(CrudNotificationType.CREATE, resource);
         }
     }
 
@@ -124,7 +129,7 @@ public abstract class TemporaryResourceManager<T, E> {
         }
         
         if (timedOut && this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
+            this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
         
         return timedOut;
@@ -140,7 +145,7 @@ public abstract class TemporaryResourceManager<T, E> {
         }
         
         if (succeeded && this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
+            this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
         
         return succeeded;
@@ -154,7 +159,7 @@ public abstract class TemporaryResourceManager<T, E> {
     public final boolean error(TemporaryResource<T, E> resource, E error) {
         if (resource.error(error)) {
             if (this.websocketHandler != null) {
-                this.websocketHandler.notify(resource);
+                this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
             }
             return true;
         }
@@ -164,7 +169,7 @@ public abstract class TemporaryResourceManager<T, E> {
     public final boolean progress(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
         boolean progressUpdated = resource.progress(result, position, maximum);
         if (progressUpdated && this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
+            this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
         return progressUpdated;
     }
@@ -186,7 +191,7 @@ public abstract class TemporaryResourceManager<T, E> {
         }
         
         if (progressUpdated && this.websocketHandler != null) {
-            this.websocketHandler.notify(resource);
+            this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
 
         return progressUpdated;

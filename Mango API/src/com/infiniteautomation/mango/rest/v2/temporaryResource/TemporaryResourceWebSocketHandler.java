@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.MangoV2WebSocketHandler;
 import com.serotonin.m2m2.vo.User;
 
@@ -79,12 +80,12 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         }
     }
     
-    public void notify(TemporaryResource<?, ?> resource) {
+    public void notify(CrudNotificationType type, TemporaryResource<?, ?> resource) {
         lock.readLock().lock();
         try {
             for (WebSocketSession session : sessions) {
                 try {
-                    notifySession(session, resource);
+                    notifySession(session, type, resource);
                 } catch (IOException e) {
                     if (log.isWarnEnabled()) {
                         log.warn("Couldn't notify session " + session.getId() + " of change to temporary resource " + resource, e);
@@ -96,14 +97,14 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         }
     }
     
-    private void notifySession(WebSocketSession session, TemporaryResource<?, ?> resource) throws JsonProcessingException, IOException {
+    private void notifySession(WebSocketSession session, CrudNotificationType type, TemporaryResource<?, ?> resource) throws JsonProcessingException, IOException {
         User user = this.getUser(session);
         if (user == null) return;
         
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
         Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
         
-        WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(resource.getStatus().name(), resource);
+        WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(type, resource);
 
         if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
             if (statuses.contains(resource.getStatus())) {
