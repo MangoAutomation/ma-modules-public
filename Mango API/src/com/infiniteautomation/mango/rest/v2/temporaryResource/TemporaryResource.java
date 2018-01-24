@@ -202,4 +202,13 @@ public abstract class TemporaryResource<T, E> {
     public int getResourceVersion() {
         return resourceVersion;
     }
+
+    @Override
+    public String toString() {
+        return "TemporaryResource [id=" + id + ", userId=" + userId + ", expirationMilliseconds="
+                + expirationMilliseconds + ", timeoutMilliseconds=" + timeoutMilliseconds
+                + ", status=" + status + ", resourceVersion=" + resourceVersion + ", result="
+                + result + ", error=" + error + ", expiration=" + expiration + ", timeout="
+                + timeout + ", position=" + position + ", maximum=" + maximum + "]";
+    }
 }

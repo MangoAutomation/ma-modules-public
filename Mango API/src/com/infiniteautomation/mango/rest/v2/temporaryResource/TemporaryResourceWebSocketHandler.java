@@ -3,29 +3,123 @@
  */
 package com.infiniteautomation.mango.rest.v2.temporaryResource;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.infiniteautomation.mango.rest.v2.util.MangoV2WebSocketHandler;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
  * @author Jared Wiltshire
  */
-public class TemporaryResourceWebSocketHandler extends MangoWebSocketHandler {
+public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
+    private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
+    public static final String MESSAGE_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
+
+    private final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    public TemporaryResourceWebSocketHandler() {
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        super.afterConnectionEstablished(session);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("Connection established for WebSocketSession " + session.getId());
+        }
+
+        session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, new TemporaryResourceSubscription());
+        
+        lock.writeLock().lock();
+        try {
+            sessions.add(session);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Connection closed for WebSocketSession " + session.getId() + ", status " + status);
+        }
+        
+        lock.writeLock().lock();
+        try {
+            sessions.remove(session);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        TemporaryResourceRequest request = this.jacksonMapper.readValue(message.getPayload(), TemporaryResourceRequest.class);
+        if (request instanceof TemporaryResourceSubscription) {
+            TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) request;
+            if (log.isDebugEnabled()) {
+                log.debug("Subscription statuses for " + session.getId() + " have been set to " + subscription.getStatuses());
+            }
+            session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, subscription);
+            this.sendMessage(session, new WebSocketResponse<Void>(subscription.getSequenceNumber()));
+        }
+    }
     
-    public static class TemporaryResourceSubscription {
+    public void notify(TemporaryResource<?, ?> resource) {
+        lock.readLock().lock();
+        try {
+            for (WebSocketSession session : sessions) {
+                try {
+                    notifySession(session, resource);
+                } catch (IOException e) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Couldn't notify session " + session.getId() + " of change to temporary resource " + resource, e);
+                    }
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    private void notifySession(WebSocketSession session, TemporaryResource<?, ?> resource) throws JsonProcessingException, IOException {
+        User user = this.getUser(session);
+        if (user == null) return;
+        
+        TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
+        Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
+        
+        WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(resource.getStatus().name(), resource);
+
+        if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
+            if (statuses.contains(resource.getStatus())) {
+                this.sendMessage(session, notificationMessage);
+            }
+        }
+    }
+
+    @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="messageType")
+    @JsonSubTypes({
+        @JsonSubTypes.Type(name = MESSAGE_TYPE_SUBSCRIPTION, value = TemporaryResourceSubscription.class)
+    })
+    public static class TemporaryResourceRequest extends WebSocketRequest {
+    }
+    
+    public static class TemporaryResourceSubscription extends TemporaryResourceRequest {
         private boolean ownResourcesOnly = true;
         private Set<TemporaryResourceStatus> statuses = new HashSet<>();
         
@@ -43,79 +137,6 @@ public class TemporaryResourceWebSocketHandler extends MangoWebSocketHandler {
 
         public void setStatuses(Set<TemporaryResourceStatus> statuses) {
             this.statuses = statuses;
-        }
-    }
-    
-    private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
-
-    private final Log log = LogFactory.getLog(this.getClass());
-    private final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    
-    public TemporaryResourceWebSocketHandler() {
-    }
-
-    @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        super.afterConnectionEstablished(session);
-
-        session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, new TemporaryResourceSubscription());
-        
-        lock.writeLock().lock();
-        try {
-            sessions.add(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        lock.writeLock().lock();
-        try {
-            sessions.remove(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        TemporaryResourceSubscription subscription = this.jacksonMapper.readValue(message.getPayload(), TemporaryResourceSubscription.class);
-        session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, subscription);
-    }
-    
-    public void notify(TemporaryResource<?, ?> resource) {
-        lock.readLock().lock();
-        try {
-            for (WebSocketSession session : sessions)
-                notifySession(session, resource);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-    
-    public void notifySession(WebSocketSession session, TemporaryResource<?, ?> resource) {
-        User user = this.getUser(session);
-        if (user == null) return;
-        
-        TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
-        Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
-        
-        if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
-            if (statuses.contains(resource.getStatus())) {
-                try {
-                    this.sendMessage(session, resource);
-                } catch (Exception e) {
-                    try {
-                        this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR, new TranslatableMessage("rest.error.serverError", e.getMessage()));
-                    } catch (Exception e1) {
-                        if (log.isErrorEnabled()) {
-                            log.error("Error sending temporary resource websocket notification", e1);
-                        }
-                    }
-                }
-            }
         }
     }
 }
