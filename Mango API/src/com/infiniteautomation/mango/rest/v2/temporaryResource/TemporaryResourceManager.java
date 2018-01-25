@@ -73,7 +73,7 @@ public abstract class TemporaryResourceManager<T, E> {
             expiration = DEFAULT_EXPIRATION_MILLISECONDS;
         }
         if (timeout == null || timeout < 0) {
-            expiration = DEFAULT_TIMEOUT_MILLISECONDS;
+            timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         }
         
         TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(id, user.getId(), expiration, timeout, this, resourceTask);
