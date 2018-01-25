@@ -108,7 +108,9 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
         if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
             if (statuses.contains(resource.getStatus())) {
-                this.sendMessage(session, notificationMessage);
+                boolean showResult = subscription.isShowIncompleteResult() || resource.isComplete();
+                Class<?> view = showResult ? TemporaryResource.ShowResultView.class : Object.class;
+                this.sendMessageUsingView(session, notificationMessage, view);
             }
         }
     }
@@ -122,6 +124,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
     
     public static class TemporaryResourceSubscription extends TemporaryResourceRequest {
         private boolean ownResourcesOnly = true;
+        private boolean showIncompleteResult = false;
         private Set<TemporaryResourceStatus> statuses = new HashSet<>();
         
         public boolean isOwnResourcesOnly() {
@@ -138,6 +141,14 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
         public void setStatuses(Set<TemporaryResourceStatus> statuses) {
             this.statuses = statuses;
+        }
+
+        public boolean isShowIncompleteResult() {
+            return showIncompleteResult;
+        }
+
+        public void setShowIncompleteResult(boolean showIncompleteResult) {
+            this.showIncompleteResult = showIncompleteResult;
         }
     }
 }

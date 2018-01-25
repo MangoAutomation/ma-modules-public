@@ -12,6 +12,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
@@ -25,6 +26,11 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
 
     protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws JsonProcessingException, IOException {
         session.sendMessage(new TextMessage(this.jacksonMapper.writeValueAsBytes(message)));
+    }
+    
+    protected void sendMessageUsingView(WebSocketSession session, WebSocketMessage message, Class<?> view) throws JsonProcessingException, IOException {
+        ObjectWriter objectWriter = this.jacksonMapper.writerWithView(view);
+        session.sendMessage(new TextMessage(objectWriter.writeValueAsBytes(message)));
     }
 
     public static enum WebSocketMessageType {

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.serotonin.m2m2.Common;
 
 /**
@@ -15,6 +16,8 @@ import com.serotonin.m2m2.Common;
  * @param <E> error type
  */
 public abstract class TemporaryResource<T, E> {
+    public static interface ShowResultView {}
+    
     public static enum TemporaryResourceStatus {
         SCHEDULED, RUNNING, TIMED_OUT, CANCELLED, SUCCESS, ERROR;
     }
@@ -29,6 +32,7 @@ public abstract class TemporaryResource<T, E> {
      * Increments every time the status is changed or progress() is called
      */
     private int resourceVersion;
+    @JsonView(ShowResultView.class)
     private T result;
     private E error;
     private Date expiration;
