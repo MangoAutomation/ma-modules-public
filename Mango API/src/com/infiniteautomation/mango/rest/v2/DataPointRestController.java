@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
+import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse;
@@ -52,6 +53,7 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
 import com.wordnik.swagger.annotations.Api;
@@ -357,13 +359,24 @@ public class DataPointRestController extends BaseMangoRestController {
     
     @ApiOperation(value = "Get a list of current bulk data point operations", notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
-    public List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> getBulkDataPointOperations(
+    public PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> getBulkDataPointOperations(
             @AuthenticationPrincipal
-            User user) {
+            User user,
+            
+            HttpServletRequest request) {
         
-        return this.dataPointTemporaryResourceManager.list().stream()
-                .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
-                .collect(Collectors.toList());
+        List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> preFiltered =
+                this.dataPointTemporaryResourceManager.list().stream()
+                        .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
+                        .collect(Collectors.toList());
+        
+        List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> results = preFiltered;
+        ASTNode query = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
+        if (query != null) {
+            results = query.accept(new RQLToObjectListQuery<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(), preFiltered);
+        }
+        
+        return new PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(results, preFiltered.size());
     }
     
     @ApiOperation(value = "Get the status of a bulk data point operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")

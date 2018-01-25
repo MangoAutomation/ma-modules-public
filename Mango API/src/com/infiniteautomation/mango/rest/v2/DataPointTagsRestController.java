@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.v2.bulk.IndividualRequest;
@@ -42,6 +43,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -301,13 +303,23 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
     @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
-    public List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> getBulkDataPointTagOperations(
+    public PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> getBulkDataPointTagOperations(
             @AuthenticationPrincipal
-            User user) {
+            User user,
+            
+            HttpServletRequest request) {
         
-        return this.bulkTagsTemporaryResourceManager.list().stream()
+        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkTagsTemporaryResourceManager.list().stream()
                 .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
+        
+        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> results = preFiltered;
+        ASTNode query = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
+        if (query != null) {
+            results = query.accept(new RQLToObjectListQuery<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(), preFiltered);
+        }
+        
+        return new PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(results, preFiltered.size());
     }
     
     @ApiOperation(value = "Get the status of a bulk tag operation using its id", notes = "User can only get their own bulk tag operations unless they are an admin")
