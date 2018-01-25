@@ -56,19 +56,22 @@ public abstract class TemporaryResourceManager<T, E> {
      * @param resourceTask
      * @return
      */
-    public final TemporaryResource<T, E> newTemporaryResource(BulkRequest<?, ?, ?> bulkRequest, User user, ResourceTask<T, E> resourceTask) {
-        return this.newTemporaryResource(bulkRequest.getId(), bulkRequest.getExpiration(), bulkRequest.getTimeout(), user, resourceTask);
+    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, BulkRequest<?, ?, ?> bulkRequest, User user, ResourceTask<T, E> resourceTask) {
+        return this.newTemporaryResource(resourceType, bulkRequest.getId(), bulkRequest.getExpiration(), bulkRequest.getTimeout(), user, resourceTask);
     }
     
     /**
      * Creates a new temporary resource which is run in a Mango high priority task.
      * 
-     * @param bulkRequest
+     * @param resourceType
+     * @param id
+     * @param expiration
+     * @param timeout
      * @param user
      * @param resourceTask
      * @return
      */
-    public final TemporaryResource<T, E> newTemporaryResource(String id, Long expiration, Long timeout, User user, ResourceTask<T, E> resourceTask) {
+    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, Long expiration, Long timeout, User user, ResourceTask<T, E> resourceTask) {
         if (expiration == null || expiration < 0) {
             expiration = DEFAULT_EXPIRATION_MILLISECONDS;
         }
@@ -76,7 +79,7 @@ public abstract class TemporaryResourceManager<T, E> {
             timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         }
         
-        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(id, user.getId(), expiration, timeout, this, resourceTask);
+        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(resourceType, id, user.getId(), expiration, timeout, this, resourceTask);
         this.add(resource);
 
         try {

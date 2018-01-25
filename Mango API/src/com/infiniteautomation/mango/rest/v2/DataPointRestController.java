@@ -73,7 +73,8 @@ import net.jazdw.rql.parser.ASTNode;
 public class DataPointRestController extends BaseMangoRestController {
 
     private static Log LOG = LogFactory.getLog(DataPointRestController.class);
-
+    private static final String RESOURCE_TYPE_BULK_DATA_POINT = "BULK_DATA_POINT";
+    
     public static class DataPointIndividualRequest extends VoIndividualRequest<DataPointModel> {
     }
     
@@ -331,7 +332,8 @@ public class DataPointRestController extends BaseMangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
         
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = dataPointTemporaryResourceManager.newTemporaryResource(requestBody, user, (resource) -> {
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody =
+                dataPointTemporaryResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT, requestBody, user, (resource) -> {
             DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
             int i = 0;
             

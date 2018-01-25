@@ -29,8 +29,8 @@ public class MangoTaskTemporaryResource<T, E> extends TemporaryResource<T, E> {
      * @param expirationSeconds
      * @param timeoutSeconds
      */
-    protected MangoTaskTemporaryResource(String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds, TemporaryResourceManager<T, E> manager, ResourceTask<T, E> resourceTask) {
-        super(id, userId, expirationMilliseconds, timeoutMilliseconds);
+    protected MangoTaskTemporaryResource(String resourceType, String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds, TemporaryResourceManager<T, E> manager, ResourceTask<T, E> resourceTask) {
+        super(resourceType, id, userId, expirationMilliseconds, timeoutMilliseconds);
         this.manager = manager;
         this.resourceTask = resourceTask;
     }

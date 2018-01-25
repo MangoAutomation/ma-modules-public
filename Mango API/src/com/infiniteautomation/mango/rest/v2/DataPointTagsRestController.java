@@ -59,6 +59,8 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController()
 @RequestMapping("/v2/data-point-tags")
 public class DataPointTagsRestController extends BaseMangoRestController {
+
+    private static final String RESOURCE_TYPE_BULK_DATA_POINT_TAGS = "BULK_DATA_POINT_TAGS";
     
     public static enum BulkTagAction {
         GET, SET, MERGE
@@ -274,7 +276,8 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
         
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody = bulkTagsTemporaryResourceManager.newTemporaryResource(requestBody, user, (resource) -> {
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody =
+                bulkTagsTemporaryResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, requestBody, user, (resource) -> {
             TagBulkResponse bulkResponse = new TagBulkResponse();
             int i = 0;
             

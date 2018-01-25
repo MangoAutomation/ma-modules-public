@@ -22,6 +22,7 @@ public abstract class TemporaryResource<T, E> {
         SCHEDULED, RUNNING, TIMED_OUT, CANCELLED, SUCCESS, ERROR;
     }
     
+    private final String resourceType;
     private final String id;
     private final int userId;
     private final long expirationMilliseconds;
@@ -40,7 +41,8 @@ public abstract class TemporaryResource<T, E> {
     private Integer position;
     private Integer maximum;
 
-    protected TemporaryResource(String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds) {
+    protected TemporaryResource(String resourceType, String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds) {
+        this.resourceType = resourceType;
         this.id = id == null ? UUID.randomUUID().toString() : id;
         this.userId = userId;
         this.expirationMilliseconds = expirationMilliseconds != null && expirationMilliseconds > 0 ? expirationMilliseconds : 0;
@@ -207,12 +209,17 @@ public abstract class TemporaryResource<T, E> {
         return resourceVersion;
     }
 
+    public String getResourceType() {
+        return resourceType;
+    }
+
     @Override
     public String toString() {
-        return "TemporaryResource [id=" + id + ", userId=" + userId + ", expirationMilliseconds="
-                + expirationMilliseconds + ", timeoutMilliseconds=" + timeoutMilliseconds
-                + ", status=" + status + ", resourceVersion=" + resourceVersion + ", result="
-                + result + ", error=" + error + ", expiration=" + expiration + ", timeout="
-                + timeout + ", position=" + position + ", maximum=" + maximum + "]";
+        return "TemporaryResource [resourceType=" + resourceType + ", id=" + id + ", userId="
+                + userId + ", expirationMilliseconds=" + expirationMilliseconds
+                + ", timeoutMilliseconds=" + timeoutMilliseconds + ", status=" + status
+                + ", resourceVersion=" + resourceVersion + ", result=" + result + ", error=" + error
+                + ", expiration=" + expiration + ", timeout=" + timeout + ", position=" + position
+                + ", maximum=" + maximum + "]";
     }
 }

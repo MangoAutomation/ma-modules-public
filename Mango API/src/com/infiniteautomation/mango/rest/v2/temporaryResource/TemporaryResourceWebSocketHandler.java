@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.temporaryResource;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -73,7 +74,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         if (request instanceof TemporaryResourceSubscription) {
             TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) request;
             if (log.isDebugEnabled()) {
-                log.debug("Subscription statuses for " + session.getId() + " have been set to " + subscription.getStatuses());
+                log.debug("Subscription for " + session.getId() + " has been set to " + subscription);
             }
             session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, subscription);
             this.sendMessage(session, new WebSocketResponse<Void>(subscription.getSequenceNumber()));
@@ -102,12 +103,13 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         if (user == null) return;
         
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
-        Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
-        
-        WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(type, resource);
 
         if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
-            if (statuses.contains(resource.getStatus())) {
+            Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
+            Set<String> resourceTypes = subscription.getResourceTypes();
+            
+            if ((subscription.isAnyStatus() || statuses.contains(resource.getStatus())) && (subscription.isAnyResourceType() || resourceTypes.contains(resource.getResourceType()))) {
+                WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(type, resource);
                 boolean showResult = subscription.isShowIncompleteResult() || resource.isComplete();
                 Class<?> view = showResult ? TemporaryResource.ShowResultView.class : Object.class;
                 this.sendMessageUsingView(session, notificationMessage, view);
@@ -125,7 +127,10 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
     public static class TemporaryResourceSubscription extends TemporaryResourceRequest {
         private boolean ownResourcesOnly = true;
         private boolean showIncompleteResult = false;
-        private Set<TemporaryResourceStatus> statuses = new HashSet<>();
+        private boolean anyStatus = false;
+        private boolean anyResourceType = false;
+        private Set<TemporaryResourceStatus> statuses;
+        private Set<String> resourceTypes;
         
         public boolean isOwnResourcesOnly() {
             return ownResourcesOnly;
@@ -136,7 +141,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         }
 
         public Set<TemporaryResourceStatus> getStatuses() {
-            return statuses;
+            return statuses == null ? Collections.emptySet() : statuses;
         }
 
         public void setStatuses(Set<TemporaryResourceStatus> statuses) {
@@ -149,6 +154,38 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
         public void setShowIncompleteResult(boolean showIncompleteResult) {
             this.showIncompleteResult = showIncompleteResult;
+        }
+
+        public Set<String> getResourceTypes() {
+            return resourceTypes == null ? Collections.emptySet() : resourceTypes;
+        }
+
+        public void setResourceTypes(Set<String> resourceTypes) {
+            this.resourceTypes = resourceTypes;
+        }
+
+        public boolean isAnyStatus() {
+            return anyStatus;
+        }
+
+        public void setAnyStatus(boolean anyStatus) {
+            this.anyStatus = anyStatus;
+        }
+
+        public boolean isAnyResourceType() {
+            return anyResourceType;
+        }
+
+        public void setAnyResourceType(boolean anyResourceType) {
+            this.anyResourceType = anyResourceType;
+        }
+
+        @Override
+        public String toString() {
+            return "TemporaryResourceSubscription [ownResourcesOnly=" + ownResourcesOnly
+                    + ", showIncompleteResult=" + showIncompleteResult + ", anyStatus=" + anyStatus
+                    + ", anyResourceType=" + anyResourceType + ", statuses=" + statuses
+                    + ", resourceTypes=" + resourceTypes + "]";
         }
     }
 }
