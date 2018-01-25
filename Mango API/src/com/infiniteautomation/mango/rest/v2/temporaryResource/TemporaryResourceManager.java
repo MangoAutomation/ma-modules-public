@@ -279,4 +279,15 @@ public abstract class TemporaryResourceManager<T, E> {
 
         return progressUpdated;
     }
+    
+    /**
+     * Check if the resource is complete, i.e. the status is TIMED_OUT, CANCELLED, SUCCESS, or ERROR.
+     * If a resource is complete its status can no longer be updated and all work should cease.
+     * 
+     * @param resource
+     * @return true if the resource is complete
+     */
+    public final boolean isComplete(TemporaryResource<T, E> resource) {
+        return resource.isComplete();
+    }
 }
