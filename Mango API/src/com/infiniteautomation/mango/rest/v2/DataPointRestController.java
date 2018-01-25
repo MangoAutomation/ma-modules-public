@@ -39,7 +39,9 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -379,6 +381,36 @@ public class DataPointRestController extends BaseMangoRestController {
         return new PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(results, preFiltered.size());
     }
     
+    @ApiOperation(value = "Update a bulk data point operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
+            "User can only update their own bulk operations unless they are an admin.")
+    @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
+    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> updateBulkDataPointOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+            
+            @RequestBody
+            TemporaryResourceStatusUpdate body,
+            
+            @AuthenticationPrincipal
+            User user) {
+        
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = dataPointTemporaryResourceManager.get(id);
+        
+        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+        
+        if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
+            if (!dataPointTemporaryResourceManager.cancel(resource)) {
+                throw new BadRequestException(new TranslatableMessage("rest.error.cancelFailed"));
+            };
+        } else {
+            throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
+        }
+        
+        return resource;
+    }
+    
     @ApiOperation(value = "Get the status of a bulk data point operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
     public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
@@ -396,19 +428,15 @@ public class DataPointRestController extends BaseMangoRestController {
         
         return resource;
     }
-    
-    @ApiOperation(value = "Cancel a bulk data point operation using its id",
-            notes = "Only cancels if the operation is not already complete." +
-                    "May also be used to remove a completed temporary resource by passing remove=true, otherwise the resource is removed when it expires." +
-                    "User can only cancel their own bulk data point operations unless they are an admin.")
+
+    @ApiOperation(value = "Remove a bulk data point operation using its id",
+            notes = "Will only remove a bulk operation if it is complete. " +
+                    "User can only remove their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
-    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> cancelBulkDataPointTagOperation(
+    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> removeBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
-            
-            @ApiParam(value = "Remove the temporary resource", required = false, defaultValue = "false", allowMultiple = false)
-            @RequestParam(required=false, defaultValue = "false") boolean remove,
-            
+
             @AuthenticationPrincipal
             User user) {
         
@@ -418,9 +446,8 @@ public class DataPointRestController extends BaseMangoRestController {
             throw new AccessDeniedException();
         }
         
-        dataPointTemporaryResourceManager.cancel(resource);
-        if (remove) {
-            dataPointTemporaryResourceManager.remove(resource);
+        if (!dataPointTemporaryResourceManager.remove(resource)) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.cantDeleteIncompleteResource"));
         }
         
         return resource;

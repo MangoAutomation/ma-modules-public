@@ -110,15 +110,26 @@ public abstract class TemporaryResourceManager<T, E> {
     
     /**
      * Removes the resource from the map of resources.
+     * Will not succeed if the resource has not completed.
+     * 
      * @param resource
+     * @return true if resource was successfully removed
      */
-    public final void remove(TemporaryResource<T, E> resource) {
-        this.resources.remove(resource.getId());
-        resource.removed();
-        
-        if (this.websocketHandler != null) {
-            this.websocketHandler.notify(CrudNotificationType.DELETE, resource);
+    public final boolean remove(TemporaryResource<T, E> resource) {
+        if (resource.isComplete()) {
+            TemporaryResource<T, E> existing = this.resources.remove(resource.getId());
+            if (existing == null) {
+                return false;
+            }
+            
+            resource.removed();
+            
+            if (this.websocketHandler != null) {
+                this.websocketHandler.notify(CrudNotificationType.DELETE, resource);
+            }
+            return true;
         }
+        return false;
     }
     
     /**
