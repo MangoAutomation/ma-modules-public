@@ -48,18 +48,35 @@ public abstract class TemporaryResourceManager<T, E> {
     
     public abstract E exceptionToError(Exception e);
     
+    /**
+     * Creates a new temporary resource for a bulk request which is run in a Mango high priority task.
+     * 
+     * @param bulkRequest
+     * @param user
+     * @param resourceTask
+     * @return
+     */
     public final TemporaryResource<T, E> newTemporaryResource(BulkRequest<?, ?, ?> bulkRequest, User user, ResourceTask<T, E> resourceTask) {
-        long expiration = DEFAULT_EXPIRATION_MILLISECONDS;
-        long timeout = DEFAULT_TIMEOUT_MILLISECONDS;
+        return this.newTemporaryResource(bulkRequest.getId(), bulkRequest.getExpiration(), bulkRequest.getTimeout(), user, resourceTask);
+    }
+    
+    /**
+     * Creates a new temporary resource which is run in a Mango high priority task.
+     * 
+     * @param bulkRequest
+     * @param user
+     * @param resourceTask
+     * @return
+     */
+    public final TemporaryResource<T, E> newTemporaryResource(String id, Long expiration, Long timeout, User user, ResourceTask<T, E> resourceTask) {
+        if (expiration == null || expiration < 0) {
+            expiration = DEFAULT_EXPIRATION_MILLISECONDS;
+        }
+        if (timeout == null || timeout < 0) {
+            expiration = DEFAULT_TIMEOUT_MILLISECONDS;
+        }
         
-        if (bulkRequest.getExpiration() != null && bulkRequest.getExpiration() >= 0) {
-            expiration = bulkRequest.getExpiration();
-        }
-        if (bulkRequest.getTimeout() != null && bulkRequest.getTimeout() >= 0) {
-            timeout = bulkRequest.getTimeout();
-        }
-
-        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(bulkRequest.getId(), user.getId(), expiration, timeout, this, resourceTask);
+        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(id, user.getId(), expiration, timeout, this, resourceTask);
         this.add(resource);
 
         try {
@@ -71,10 +88,18 @@ public abstract class TemporaryResourceManager<T, E> {
         return resource;
     }
 
+    /**
+     * @return list of all resources in the resources map
+     */
     public final List<TemporaryResource<T, E>> list() {
         return new ArrayList<>(this.resources.values());
     }
     
+    /**
+     * Get a resource from the map of resources using its id
+     * @param id
+     * @return
+     */
     public final TemporaryResource<T, E> get(String id) {
         TemporaryResource<T, E> resource = this.resources.get(id);
         if (resource == null) {
@@ -83,6 +108,10 @@ public abstract class TemporaryResourceManager<T, E> {
         return resource;
     }
     
+    /**
+     * Removes the resource from the map of resources.
+     * @param resource
+     */
     public final void remove(TemporaryResource<T, E> resource) {
         this.resources.remove(resource.getId());
         resource.removed();
@@ -92,6 +121,13 @@ public abstract class TemporaryResourceManager<T, E> {
         }
     }
     
+    /**
+     * Sets the status to CANCELLED.
+     * Will not succeed if the resource has already completed.
+     * 
+     * @param resource
+     * @return true if status was successfully updated
+     */
     public final boolean cancel(TemporaryResource<T, E> resource) {
         boolean cancelled = false;
         
@@ -108,6 +144,10 @@ public abstract class TemporaryResourceManager<T, E> {
         return cancelled;
     }
 
+    /**
+     * Adds the resource to the map of resources.
+     * @param resource
+     */
     final void add(TemporaryResource<T, E> resource) {
         TemporaryResource<T, E> existing = this.resources.putIfAbsent(resource.getId(), resource);
         if (existing != null) {
@@ -119,6 +159,13 @@ public abstract class TemporaryResourceManager<T, E> {
         }
     }
 
+    /**
+     * Sets the status to TIMED_OUT.
+     * Will not succeed if the resource has already completed.
+     * 
+     * @param resource
+     * @return true if status was successfully updated
+     */
     final boolean timeOut(TemporaryResource<T, E> resource) {
         boolean timedOut = false;
         
@@ -135,6 +182,14 @@ public abstract class TemporaryResourceManager<T, E> {
         return timedOut;
     }
 
+    /**
+     * Sets the status to SUCCESS.
+     * Will not succeed if the resource has already completed.
+     * 
+     * @param resource
+     * @param result
+     * @return true if status was successfully updated
+     */
     public final boolean success(TemporaryResource<T, E> resource, T result) {
         boolean succeeded = false;
         
@@ -151,11 +206,27 @@ public abstract class TemporaryResourceManager<T, E> {
         return succeeded;
     }
     
-    public final void error(TemporaryResource<T, E> resource, Exception e) {
-        E error = this.exceptionToError(e);
-        this.error(resource, error);
+    /**
+     * Sets the status to ERROR.
+     * Will not succeed if the resource has already completed.
+     * 
+     * @param resource
+     * @param exception
+     * @return true if status was successfully updated
+     */
+    public final boolean error(TemporaryResource<T, E> resource, Exception exception) {
+        E error = this.exceptionToError(exception);
+        return this.error(resource, error);
     }
     
+    /**
+     * Sets the status to ERROR.
+     * Will not succeed if the resource has already completed.
+     * 
+     * @param resource
+     * @param error
+     * @return true if status was successfully updated
+     */
     public final boolean error(TemporaryResource<T, E> resource, E error) {
         if (resource.error(error)) {
             if (this.websocketHandler != null) {
@@ -166,6 +237,16 @@ public abstract class TemporaryResourceManager<T, E> {
         return false;
     }
 
+    /**
+     * Sets the status to RUNNING and updates the progress.
+     * Will not succeed if the resource has already completed.
+     * 
+     * @param resource
+     * @param result
+     * @param position
+     * @param maximum
+     * @return true if progress was successfully updated
+     */
     public final boolean progress(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
         boolean progressUpdated = resource.progress(result, position, maximum);
         if (progressUpdated && this.websocketHandler != null) {
@@ -175,12 +256,14 @@ public abstract class TemporaryResourceManager<T, E> {
     }
     
     /**
-     * If position == maximum will set the resource to success, otherwise update progress
+     * If position == maximum will set the status to SUCCESS, otherwise set the status to RUNNING and update progress.
+     * Will not succeed if the resource has already completed.
+     * 
      * @param resource
      * @param result
      * @param position
      * @param maximum
-     * @return
+     * @return true if progress/status was successfully updated
      */
     public final boolean progressOrSuccess(TemporaryResource<T, E> resource, T result, Integer position, Integer maximum) {
         boolean callSuccess = position != null && position.equals(maximum);
