@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
@@ -96,17 +97,12 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public static class TagBulkResponse extends BulkResponse<TagIndividualResponse> {
     }
 
-    private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkTagsTemporaryResourceManager;
+    private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkResourceManager;
     private TemporaryResourceWebSocketHandler websocket;
 
     public DataPointTagsRestController() {
         this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
-        this.bulkTagsTemporaryResourceManager = new TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception>(this.websocket) {
-            @Override
-            public AbstractRestV2Exception exceptionToError(Exception e) {
-                return RestExceptionIndividualResponse.exceptionToRestException(e);
-            }
-        };
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(this.websocket);
     }
     
     @ApiOperation(value = "Get data point tags by data point XID", notes = "User must have read permission for the data point")
@@ -281,27 +277,18 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         Long timeout = requestBody.getTimeout();
         
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody =
-                bulkTagsTemporaryResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user, expiration, timeout, (resource) -> {
+                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource) -> {
             TagBulkResponse bulkResponse = new TagBulkResponse();
-            int i = 0;
             
-            if (!bulkTagsTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
-                // can't update progress, most likely cancelled or timed out
-                return;
-            }
+            int i = 0;
+            resource.progress(bulkResponse, i++, requests.size());
 
             for (TagIndividualRequest request : requests) {
                 TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
                 bulkResponse.addResponse(individualResponse);
 
-                if (!bulkTagsTemporaryResourceManager.progressOrSuccess(resource, bulkResponse, i++, requests.size())) {
-                    // can't update progress, most likely cancelled or timed out
-                    return;
-                }
+                resource.progressOrSuccess(bulkResponse, i++, requests.size());
             }
-
-            // this shouldn't do anything, its a check only, progressOrSuccess() should have set the resource to SUCCESS already
-            bulkTagsTemporaryResourceManager.success(resource, bulkResponse);
         });
 
         HttpHeaders headers = new HttpHeaders();
@@ -317,7 +304,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             
             HttpServletRequest request) {
         
-        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkTagsTemporaryResourceManager.list().stream()
+        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
                 .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
         
@@ -343,16 +330,14 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
         
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
-            if (!bulkTagsTemporaryResourceManager.cancel(resource)) {
-                throw new BadRequestException(new TranslatableMessage("rest.error.cancelFailed"));
-            };
+            resource.cancel();
         } else {
             throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
         }
@@ -369,7 +354,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -389,16 +374,13 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkTagsTemporaryResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
         
-        if (!bulkTagsTemporaryResourceManager.remove(resource)) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.cantDeleteIncompleteResource"));
-        }
-        
+        resource.remove();
         return resource;
     }
 

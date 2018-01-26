@@ -112,6 +112,11 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
                 WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(type, resource);
                 boolean showResult = subscription.isShowIncompleteResult() || resource.isComplete();
                 Class<?> view = showResult ? TemporaryResource.ShowResultView.class : Object.class;
+
+                if (log.isDebugEnabled()) {
+                    log.debug("Notifying session " + session.getId() + " of change to resource " + resource);
+                }
+                
                 this.sendMessageUsingView(session, notificationMessage, view);
             }
         }

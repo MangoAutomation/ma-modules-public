@@ -27,7 +27,6 @@ import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
-import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
@@ -38,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
@@ -87,19 +87,14 @@ public class DataPointRestController extends BaseMangoRestController {
     public static class DataPointBulkResponse extends BulkResponse<DataPointIndividualResponse> {
     }
 
-    private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> dataPointTemporaryResourceManager;
+    private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
     private TemporaryResourceWebSocketHandler websocket;
 
     public DataPointRestController() {
         LOG.info("Creating Data Point v2 Rest Controller.");
         
         this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
-        this.dataPointTemporaryResourceManager = new TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception>(this.websocket) {
-            @Override
-            public AbstractRestV2Exception exceptionToError(Exception e) {
-                return RestExceptionIndividualResponse.exceptionToRestException(e);
-            }
-        };
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(this.websocket);
     }
 
     @ApiOperation(
@@ -337,27 +332,18 @@ public class DataPointRestController extends BaseMangoRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody =
-                dataPointTemporaryResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user, expiration, timeout, (resource) -> {
+                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource) -> {
             DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
             int i = 0;
             
-            if (!dataPointTemporaryResourceManager.progress(resource, bulkResponse, i++, requests.size())) {
-                // can't update progress, most likely cancelled or timed out
-                return;
-            }
+            resource.progress(bulkResponse, i++, requests.size());
 
             for (DataPointIndividualRequest request : requests) {
                 DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user, builder);
                 bulkResponse.addResponse(individualResponse);
 
-                if (!dataPointTemporaryResourceManager.progressOrSuccess(resource, bulkResponse, i++, requests.size())) {
-                    // can't update progress, most likely cancelled or timed out
-                    return;
-                }
+                resource.progressOrSuccess(bulkResponse, i++, requests.size());
             }
-
-            // this shouldn't do anything, its a check only, progressOrSuccess() should have set the resource to SUCCESS already
-            dataPointTemporaryResourceManager.success(resource, bulkResponse);
         });
 
         HttpHeaders headers = new HttpHeaders();
@@ -374,7 +360,7 @@ public class DataPointRestController extends BaseMangoRestController {
             HttpServletRequest request) {
         
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> preFiltered =
-                this.dataPointTemporaryResourceManager.list().stream()
+                this.bulkResourceManager.list().stream()
                         .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
                         .collect(Collectors.toList());
         
@@ -400,16 +386,14 @@ public class DataPointRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = dataPointTemporaryResourceManager.get(id);
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
         
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
-            if (!dataPointTemporaryResourceManager.cancel(resource)) {
-                throw new BadRequestException(new TranslatableMessage("rest.error.cancelFailed"));
-            };
+            resource.cancel();
         } else {
             throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
         }
@@ -426,7 +410,7 @@ public class DataPointRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = dataPointTemporaryResourceManager.get(id);
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -446,15 +430,13 @@ public class DataPointRestController extends BaseMangoRestController {
             @AuthenticationPrincipal
             User user) {
         
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = dataPointTemporaryResourceManager.get(id);
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
         
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
         
-        if (!dataPointTemporaryResourceManager.remove(resource)) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.cantDeleteIncompleteResource"));
-        }
+        resource.remove();
         
         return resource;
     }
