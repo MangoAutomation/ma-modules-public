@@ -25,12 +25,16 @@ public class MangoTaskTemporaryResource<T, E> extends TemporaryResource<T, E> {
     private ResourceTask<T, E> resourceTask;
 
     /**
-     * @param userId
-     * @param expirationSeconds
-     * @param timeoutSeconds
+     * @param resourceType unique type string assigned to each resource type e.g. BULK_DATA_POINT
+     * @param id if null will be assigned a UUID
+     * @param userId user id of the user that started the temporary resource
+     * @param expiration time after the resource completes that it will be removed (milliseconds)
+     * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds)
+     * @param resourceTask the task to run
+     * @param manager
      */
-    protected MangoTaskTemporaryResource(String resourceType, String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds, TemporaryResourceManager<T, E> manager, ResourceTask<T, E> resourceTask) {
-        super(resourceType, id, userId, expirationMilliseconds, timeoutMilliseconds);
+    protected MangoTaskTemporaryResource(String resourceType, String id, int userId, Long expiration, Long timeout, ResourceTask<T, E> resourceTask, TemporaryResourceManager<T, E> manager) {
+        super(resourceType, id, userId, expiration, timeout);
         this.manager = manager;
         this.resourceTask = resourceTask;
     }

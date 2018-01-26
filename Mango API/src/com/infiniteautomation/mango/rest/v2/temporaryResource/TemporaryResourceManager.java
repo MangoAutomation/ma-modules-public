@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.exception.NotFoundException;
@@ -47,31 +46,19 @@ public abstract class TemporaryResourceManager<T, E> {
     }
     
     public abstract E exceptionToError(Exception e);
-    
-    /**
-     * Creates a new temporary resource for a bulk request which is run in a Mango high priority task.
-     * 
-     * @param bulkRequest
-     * @param user
-     * @param resourceTask
-     * @return
-     */
-    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, BulkRequest<?, ?, ?> bulkRequest, User user, ResourceTask<T, E> resourceTask) {
-        return this.newTemporaryResource(resourceType, bulkRequest.getId(), bulkRequest.getExpiration(), bulkRequest.getTimeout(), user, resourceTask);
-    }
-    
+
     /**
      * Creates a new temporary resource which is run in a Mango high priority task.
      * 
-     * @param resourceType
-     * @param id
-     * @param expiration
-     * @param timeout
-     * @param user
-     * @param resourceTask
+     * @param resourceType unique type string assigned to each resource type e.g. BULK_DATA_POINT
+     * @param id if null will be assigned a UUID
+     * @param user the user that started the temporary resource
+     * @param expiration time after the resource completes that it will be removed (milliseconds). If null or less than zero, it will be set to the default DEFAULT_EXPIRATION_MILLISECONDS 
+     * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds). If null or less than zero, it will be set to the default DEFAULT_TIMEOUT_MILLISECONDS
+     * @param resourceTask the task to be run
      * @return
      */
-    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, Long expiration, Long timeout, User user, ResourceTask<T, E> resourceTask) {
+    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, User user, Long expiration, Long timeout, ResourceTask<T, E> resourceTask) {
         if (expiration == null || expiration < 0) {
             expiration = DEFAULT_EXPIRATION_MILLISECONDS;
         }
@@ -79,7 +66,7 @@ public abstract class TemporaryResourceManager<T, E> {
             timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         }
         
-        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(resourceType, id, user.getId(), expiration, timeout, this, resourceTask);
+        TemporaryResource<T, E> resource = new MangoTaskTemporaryResource<T, E>(resourceType, id, user.getId(), expiration, timeout, resourceTask, this);
         this.add(resource);
 
         try {

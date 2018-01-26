@@ -25,8 +25,8 @@ public abstract class TemporaryResource<T, E> {
     private final String resourceType;
     private final String id;
     private final int userId;
-    private final long expirationMilliseconds;
-    private final Long timeoutMilliseconds;
+    private final long expiration;
+    private final long timeout;
 
     private TemporaryResourceStatus status;
     /**
@@ -36,17 +36,24 @@ public abstract class TemporaryResource<T, E> {
     @JsonView(ShowResultView.class)
     private T result;
     private E error;
-    private Date expiration;
-    private Date timeout;
+    private Date startTime;
+    private Date completionTime;
     private Integer position;
     private Integer maximum;
 
-    protected TemporaryResource(String resourceType, String id, int userId, Long expirationMilliseconds, Long timeoutMilliseconds) {
+    /**
+     * @param resourceType unique type string assigned to each resource type e.g. BULK_DATA_POINT
+     * @param id if null will be assigned a UUID
+     * @param userId user id of the user that started the temporary resource
+     * @param expiration time after the resource completes that it will be removed (milliseconds)
+     * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds)
+     */
+    protected TemporaryResource(String resourceType, String id, int userId, long expiration, long timeout) {
         this.resourceType = resourceType;
         this.id = id == null ? UUID.randomUUID().toString() : id;
         this.userId = userId;
-        this.expirationMilliseconds = expirationMilliseconds != null && expirationMilliseconds > 0 ? expirationMilliseconds : 0;
-        this.timeoutMilliseconds = timeoutMilliseconds;
+        this.expiration = expiration;
+        this.timeout = timeout;
 
         this.status = TemporaryResourceStatus.SCHEDULED;
         this.resourceVersion = 0;
@@ -63,12 +70,10 @@ public abstract class TemporaryResource<T, E> {
         if (this.status == TemporaryResourceStatus.SCHEDULED) {
             this.status = TemporaryResourceStatus.RUNNING;
             this.resourceVersion++;
-            if (this.timeoutMilliseconds != null && this.timeoutMilliseconds > 0) {
-                this.timeout = new Date(Common.timer.currentTimeMillis() + this.timeoutMilliseconds);
-            }
+            this.startTime = new Date(Common.timer.currentTimeMillis());
             this.startTask();
-            if (this.timeout != null) {
-                this.scheduleTimeout(this.timeout);
+            if (this.timeout > 0) {
+                this.scheduleTimeout(new Date(this.startTime.getTime() + this.timeout));
             }
             return true;
         }
@@ -91,11 +96,11 @@ public abstract class TemporaryResource<T, E> {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.TIMED_OUT;
             this.resourceVersion++;
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
-            if (this.expirationMilliseconds == 0) {
+            this.completionTime = new Date(Common.timer.currentTimeMillis());
+            if (this.expiration == 0) {
                 this.removeNow();
             } else {
-                this.scheduleRemoval(this.expiration);
+                this.scheduleRemoval(new Date(this.completionTime.getTime() + this.expiration));
             }
             this.cancelMainAndTimeout();
             return true;
@@ -107,11 +112,11 @@ public abstract class TemporaryResource<T, E> {
         if (!this.isComplete()) {
             this.status = TemporaryResourceStatus.CANCELLED;
             this.resourceVersion++;
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
-            if (this.expirationMilliseconds == 0) {
+            this.completionTime = new Date(Common.timer.currentTimeMillis());
+            if (this.expiration == 0) {
                 this.removeNow();
             } else {
-                this.scheduleRemoval(this.expiration);
+                this.scheduleRemoval(new Date(this.completionTime.getTime() + this.expiration));
             }
             this.cancelMainAndTimeout();
             return true;
@@ -124,11 +129,11 @@ public abstract class TemporaryResource<T, E> {
             this.status = TemporaryResourceStatus.SUCCESS;
             this.resourceVersion++;
             this.result = result;
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
-            if (this.expirationMilliseconds == 0) {
+            this.completionTime = new Date(Common.timer.currentTimeMillis());
+            if (this.expiration == 0) {
                 this.removeNow();
             } else {
-                this.scheduleRemoval(this.expiration);
+                this.scheduleRemoval(new Date(this.completionTime.getTime() + this.expiration));
             }
             this.cancelMainAndTimeout();
             return true;
@@ -141,11 +146,11 @@ public abstract class TemporaryResource<T, E> {
             this.status = TemporaryResourceStatus.ERROR;
             this.resourceVersion++;
             this.error = error;
-            this.expiration = new Date(Common.timer.currentTimeMillis() + this.expirationMilliseconds);
-            if (this.expirationMilliseconds == 0) {
+            this.completionTime = new Date(Common.timer.currentTimeMillis());
+            if (this.expiration == 0) {
                 this.removeNow();
             } else {
-                this.scheduleRemoval(this.expiration);
+                this.scheduleRemoval(new Date(this.completionTime.getTime() + this.expiration));
             }
             this.cancelMainAndTimeout();
             return true;
@@ -178,10 +183,6 @@ public abstract class TemporaryResource<T, E> {
         return error;
     }
 
-    public final Date getExpiration() {
-        return expiration;
-    }
-
     public final Integer getPosition() {
         return position;
     }
@@ -201,10 +202,6 @@ public abstract class TemporaryResource<T, E> {
         return userId;
     }
 
-    public final Date getTimeout() {
-        return timeout;
-    }
-
     public int getResourceVersion() {
         return resourceVersion;
     }
@@ -213,13 +210,19 @@ public abstract class TemporaryResource<T, E> {
         return resourceType;
     }
 
-    @Override
-    public String toString() {
-        return "TemporaryResource [resourceType=" + resourceType + ", id=" + id + ", userId="
-                + userId + ", expirationMilliseconds=" + expirationMilliseconds
-                + ", timeoutMilliseconds=" + timeoutMilliseconds + ", status=" + status
-                + ", resourceVersion=" + resourceVersion + ", result=" + result + ", error=" + error
-                + ", expiration=" + expiration + ", timeout=" + timeout + ", position=" + position
-                + ", maximum=" + maximum + "]";
+    public long getExpiration() {
+        return expiration;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public Date getCompletionTime() {
+        return completionTime;
     }
 }

@@ -332,8 +332,12 @@ public class DataPointRestController extends BaseMangoRestController {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
         
+        String resourceId = requestBody.getId();
+        Long expiration = requestBody.getExpiration();
+        Long timeout = requestBody.getTimeout();
+
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody =
-                dataPointTemporaryResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT, requestBody, user, (resource) -> {
+                dataPointTemporaryResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user, expiration, timeout, (resource) -> {
             DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
             int i = 0;
             
