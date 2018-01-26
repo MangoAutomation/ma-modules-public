@@ -339,7 +339,8 @@ public class DataPointRestController extends BaseMangoRestController {
             resource.progress(bulkResponse, i++, requests.size());
 
             for (DataPointIndividualRequest request : requests) {
-                DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user, builder);
+                UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
+                DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user, reqBuilder);
                 bulkResponse.addResponse(individualResponse);
 
                 resource.progressOrSuccess(bulkResponse, i++, requests.size());
