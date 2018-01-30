@@ -607,7 +607,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 	
 	
 	@ApiOperation(
-			value = "Get All User Groups",
+			value = "Get All User Groups that a user can 'see'",
 			notes = "",
 			response=String.class,
 			responseContainer="Array"
@@ -618,25 +618,27 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 		})
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions-groups")
     public ResponseEntity<Set<String>> getAllUserGroups(HttpServletRequest request) {
-		
-		RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
-    	
-		this.checkUser(request, result);
-    	if(result.isOk()){
 
+        RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
+
+        User user = this.checkUser(request, result);
+        if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
-
-            for (User user : UserDao.instance.getActiveUsers())
+            if(user.isAdmin()) {
+                for (User u : UserDao.instance.getActiveUsers())
+                    groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
+            }else {
                 groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
+            }
             
-    		return result.createResponseEntity(groups);
-    	}
-    	
-    	return result.createResponseEntity();
+            return result.createResponseEntity(groups);
+        }
+
+        return result.createResponseEntity();
 	}
 	
 	@ApiOperation(
-			value = "Get All User Groups, Optionally excluding groups",
+			value = "Get All User Groups that a user can 'see', Optionally excluding groups",
 			notes = "",
 			response=String.class,
 			responseContainer="Array"
@@ -650,25 +652,26 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     		@ApiParam(value = "Exclude Groups comma separated", required = false, allowMultiple = false, defaultValue="")
     		@PathVariable String exclude,
     		HttpServletRequest request) {
-		
-		RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
-    	
-		this.checkUser(request, result);
-    	if(result.isOk()){
 
+        RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
+
+        User user = this.checkUser(request, result);
+        if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
-
-            for (User user : UserDao.instance.getActiveUsers())
+            if(user.isAdmin()) {
+                for (User u : UserDao.instance.getActiveUsers())
+                    groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
+            }else {
                 groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
-
+            }
             if (!StringUtils.isEmpty(exclude)) {
                 for (String part : exclude.split(","))
                     groups.remove(part);
             }
-    		return result.createResponseEntity(groups);
-    	}
-    	
-    	return result.createResponseEntity();
+            return result.createResponseEntity(groups);
+        }
+
+        return result.createResponseEntity();
 	}
 	
 	
