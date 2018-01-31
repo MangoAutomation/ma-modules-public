@@ -128,6 +128,10 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
                 boolean showResult = !resource.isComplete() && subscription.isShowResultWhenIncomplete() ||
                         resource.isComplete() && subscription.isShowResultWhenComplete();
                 
+                if (type == CrudNotificationType.DELETE) {
+                    showResult = false;
+                }
+                
                 Class<?> view = showResult ? TemporaryResourceViews.ShowResult.class : Object.class;
 
                 if (log.isTraceEnabled()) {
