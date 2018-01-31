@@ -108,10 +108,14 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
             Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
             Set<String> resourceTypes = subscription.getResourceTypes();
             
-            if ((subscription.isAnyStatus() || statuses.contains(resource.getStatus())) && (subscription.isAnyResourceType() || resourceTypes.contains(resource.getResourceType()))) {
+            if ((subscription.isAnyStatus() || statuses.contains(resource.getStatus())) &&
+                    (subscription.isAnyResourceType() || resourceTypes.contains(resource.getResourceType()))) {
+                
                 WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(type, resource);
-                boolean showResult = subscription.isShowIncompleteResult() || resource.isComplete();
-                Class<?> view = showResult ? TemporaryResource.ShowResultView.class : Object.class;
+                boolean showResult = !resource.isComplete() && subscription.isShowResultWhenIncomplete() ||
+                        resource.isComplete() && subscription.isShowResultWhenComplete();
+                
+                Class<?> view = showResult ? TemporaryResourceViews.ShowResult.class : Object.class;
 
                 if (log.isDebugEnabled()) {
                     log.debug("Notifying session " + session.getId() + " of change to resource " + resource);
@@ -131,7 +135,8 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
     
     public static class TemporaryResourceSubscription extends TemporaryResourceRequest {
         private boolean ownResourcesOnly = true;
-        private boolean showIncompleteResult = false;
+        private boolean showResultWhenIncomplete = false;
+        private boolean showResultWhenComplete = false;
         private boolean anyStatus = false;
         private boolean anyResourceType = false;
         private Set<TemporaryResourceStatus> statuses;
@@ -151,14 +156,6 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
         public void setStatuses(Set<TemporaryResourceStatus> statuses) {
             this.statuses = statuses;
-        }
-
-        public boolean isShowIncompleteResult() {
-            return showIncompleteResult;
-        }
-
-        public void setShowIncompleteResult(boolean showIncompleteResult) {
-            this.showIncompleteResult = showIncompleteResult;
         }
 
         public Set<String> getResourceTypes() {
@@ -185,12 +182,20 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
             this.anyResourceType = anyResourceType;
         }
 
-        @Override
-        public String toString() {
-            return "TemporaryResourceSubscription [ownResourcesOnly=" + ownResourcesOnly
-                    + ", showIncompleteResult=" + showIncompleteResult + ", anyStatus=" + anyStatus
-                    + ", anyResourceType=" + anyResourceType + ", statuses=" + statuses
-                    + ", resourceTypes=" + resourceTypes + "]";
+        protected boolean isShowResultWhenIncomplete() {
+            return showResultWhenIncomplete;
+        }
+
+        protected void setShowResultWhenIncomplete(boolean showResultWhenIncomplete) {
+            this.showResultWhenIncomplete = showResultWhenIncomplete;
+        }
+
+        protected boolean isShowResultWhenComplete() {
+            return showResultWhenComplete;
+        }
+
+        protected void setShowResultWhenComplete(boolean showResultWhenComplete) {
+            this.showResultWhenComplete = showResultWhenComplete;
         }
     }
 }

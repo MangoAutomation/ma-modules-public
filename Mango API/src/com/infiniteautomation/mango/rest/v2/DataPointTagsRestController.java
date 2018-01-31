@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -298,7 +299,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
     @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
-    public PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> getBulkDataPointTagOperations(
+    public MappingJacksonValue getBulkDataPointTagOperations(
             @AuthenticationPrincipal
             User user,
             
@@ -314,7 +315,12 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(), preFiltered);
         }
         
-        return new PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(results, preFiltered.size());
+        PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> result = new PageQueryResultModel<>(results, preFiltered.size());
+        
+        // hide result property by setting a view
+        MappingJacksonValue resultWithView = new MappingJacksonValue(result);
+        resultWithView.setSerializationView(Object.class);
+        return resultWithView;
     }
     
     @ApiOperation(value = "Update a bulk tag operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +

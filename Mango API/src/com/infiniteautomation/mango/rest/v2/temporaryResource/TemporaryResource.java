@@ -17,8 +17,6 @@ import com.serotonin.m2m2.Common;
  * @param <E> error type
  */
 public final class TemporaryResource<T, E> {
-    public static interface ShowResultView {}
-    
     public static enum TemporaryResourceStatus {
         VIRGIN, SCHEDULED, RUNNING, TIMED_OUT, CANCELLED, SUCCESS, ERROR;
     }
@@ -40,7 +38,7 @@ public final class TemporaryResource<T, E> {
      * Increments every time the status is changed or progress() is called
      */
     private int resourceVersion;
-    @JsonView(ShowResultView.class)
+    @JsonView(TemporaryResourceViews.ShowResult.class)
     private T result;
     private E error;
     private Date startTime;

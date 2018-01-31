@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -352,9 +353,11 @@ public class DataPointRestController extends BaseMangoRestController {
         return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
     
-    @ApiOperation(value = "Get a list of current bulk data point operations", notes = "User can only get their own bulk data point operations unless they are an admin")
+    @ApiOperation(
+            value = "Get a list of current bulk data point operations",
+            notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
-    public PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> getBulkDataPointOperations(
+    public MappingJacksonValue getBulkDataPointOperations(
             @AuthenticationPrincipal
             User user,
             
@@ -371,7 +374,13 @@ public class DataPointRestController extends BaseMangoRestController {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(), preFiltered);
         }
         
-        return new PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(results, preFiltered.size());
+        PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> result =
+                new PageQueryResultModel<>(results, preFiltered.size());
+        
+        // hide result property by setting a view
+        MappingJacksonValue resultWithView = new MappingJacksonValue(result);
+        resultWithView.setSerializationView(Object.class);
+        return resultWithView;
     }
     
     @ApiOperation(value = "Update a bulk data point operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
