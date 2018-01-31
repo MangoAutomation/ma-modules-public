@@ -7,8 +7,8 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,12 +25,17 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
     protected final Log log = LogFactory.getLog(this.getClass());
 
     protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws JsonProcessingException, IOException {
-        session.sendMessage(new TextMessage(this.jacksonMapper.writeValueAsBytes(message)));
+        this.sendStringMessage(session, this.jacksonMapper.writeValueAsString(message));
     }
     
     protected void sendMessageUsingView(WebSocketSession session, WebSocketMessage message, Class<?> view) throws JsonProcessingException, IOException {
         ObjectWriter objectWriter = this.jacksonMapper.writerWithView(view);
-        session.sendMessage(new TextMessage(objectWriter.writeValueAsBytes(message)));
+        this.sendStringMessage(session, objectWriter.writeValueAsString(message));
+    }
+    
+    protected void sendStringMessage(WebSocketSession session, String message) {
+        JettyWebSocketSession jettySession = (JettyWebSocketSession) session;
+        jettySession.getNativeSession().getRemote().sendStringByFuture(message);
     }
 
     public static enum WebSocketMessageType {
