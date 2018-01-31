@@ -1,5 +1,8 @@
 *Version 3.3.2*
 * Modified /users/permissions-groups endpoints to only return groups that a user has access to
+* Add bulk data point and data point tag editing endpoints
+* Add new temporary resource framework and websocket
+* Add new bulk request/response models
 
 *Version 3.3.1*
 * Removed scheme, host and port from image urls to improve use over proxy
