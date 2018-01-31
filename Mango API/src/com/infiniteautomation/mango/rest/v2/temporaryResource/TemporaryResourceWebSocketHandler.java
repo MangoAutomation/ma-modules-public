@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.temporaryResource;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -84,7 +85,19 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
     public void notify(CrudNotificationType type, TemporaryResource<?, ?> resource) {
         lock.readLock().lock();
         try {
-            for (WebSocketSession session : sessions) {
+            Iterator<WebSocketSession> it = sessions.iterator();
+            while (it.hasNext()) {
+                WebSocketSession session = it.next();
+                
+                if (!session.isOpen()) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Closed session " + session.getId() + " found in list of sessions to notify, removing it");
+                    }
+                    
+                    it.remove();
+                    continue;
+                }
+                
                 try {
                     notifySession(session, type, resource);
                 } catch (IOException e) {
@@ -117,11 +130,17 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
                 
                 Class<?> view = showResult ? TemporaryResourceViews.ShowResult.class : Object.class;
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Notifying session " + session.getId() + " of change to resource " + resource);
+                if (log.isTraceEnabled()) {
+                    log.trace("Notifying session " + session.getId() + " of change to resource " + resource);
                 }
                 
-                this.sendMessageUsingView(session, notificationMessage, view);
+                try {
+                    this.sendMessageUsingView(session, notificationMessage, view);
+                } catch (Exception e) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Error notifying session " + session.getId() + " of change to resource " + resource, e);
+                    }
+                }
             }
         }
     }
@@ -196,6 +215,15 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
         protected void setShowResultWhenComplete(boolean showResultWhenComplete) {
             this.showResultWhenComplete = showResultWhenComplete;
+        }
+
+        @Override
+        public String toString() {
+            return "TemporaryResourceSubscription [ownResourcesOnly=" + ownResourcesOnly
+                    + ", showResultWhenIncomplete=" + showResultWhenIncomplete
+                    + ", showResultWhenComplete=" + showResultWhenComplete + ", anyStatus="
+                    + anyStatus + ", anyResourceType=" + anyResourceType + ", statuses=" + statuses
+                    + ", resourceTypes=" + resourceTypes + "]";
         }
     }
 }

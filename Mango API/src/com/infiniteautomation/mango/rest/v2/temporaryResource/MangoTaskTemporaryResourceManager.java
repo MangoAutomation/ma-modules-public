@@ -11,6 +11,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
@@ -105,8 +106,21 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             public void rejected(RejectedTaskReason reason) {
                 super.rejected(reason);
 
-                // TODO translation for rejection reason
-                AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(new ServerErrorException());
+                TranslatableMessage msg = null;
+                switch (reason.getCode()) {
+                    case RejectedTaskReason.POOL_FULL:
+                        msg = new TranslatableMessage("rest.error.rejectedTaskPoolFull");
+                        break;
+                    case RejectedTaskReason.TASK_QUEUE_FULL:
+                        msg = new TranslatableMessage("rest.error.rejectedTaskQueueFull");
+                        break;
+                    case RejectedTaskReason.CURRENTLY_RUNNING:
+                        msg = new TranslatableMessage("rest.error.rejectedTaskAlreadyRunning");
+                        break;
+                }
+                
+                ServerErrorException ex = msg == null ? new ServerErrorException() : new ServerErrorException(msg);
+                AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(ex);
                 resource.safeError(error);
             }
         };
