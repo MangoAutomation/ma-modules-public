@@ -373,7 +373,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             notes = "Will only remove a bulk operation if it is complete. " +
                     "User can only remove their own bulk tag operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
-    public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> removeBulkDataPointTagOperation(
+    public void removeBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -387,7 +387,6 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
         
         resource.remove();
-        return resource;
     }
 
     @ApiOperation(value = "Gets all available tags keys", notes = "Only returns tag keys which are present on data points the user has access to")
