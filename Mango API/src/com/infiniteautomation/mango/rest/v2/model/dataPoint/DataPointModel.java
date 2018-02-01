@@ -3,7 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.dataPoint;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -50,12 +52,12 @@ public class DataPointModel {
     PointLocatorModel<?> pointLocator;
     String chartColour;
     String plotType;
-    Map<String, String> tags;
     LoggingPropertiesModel loggingProperties;
     @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseTextRendererModel<?> textRenderer;
     @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseChartRendererModel<?> chartRenderer;
+    String rollup;
 
     /**
      * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
@@ -72,7 +74,8 @@ public class DataPointModel {
     String dataSourceName;
     String dataSourceTypeName;
 
-    String rollup;
+    boolean mergeTags = false;
+    Map<String, String> tags;
 
     public DataPointModel() {
     }
@@ -125,7 +128,7 @@ public class DataPointModel {
 
         this.rollup = Common.ROLLUP_CODES.getCode(point.getRollup());
     }
-    
+
     public void copyPropertiesTo(DataPointVO point) {
         if (xid != null) {
             point.setXid(xid);
@@ -186,7 +189,24 @@ public class DataPointModel {
             point.setPlotType(DataPointVO.PLOT_TYPE_CODES.getId(plotType));
         }
         if (this.tags != null) {
-            point.setTags(tags);
+            Map<String, String> existingTags = point.getTags();
+            if (!this.mergeTags || existingTags == null) {
+                // existingTags is only null if someone tried to use mergeTags when creating a data point
+                point.setTags(this.tags);
+            } else {
+                Map<String, String> mergedTags = new HashMap<>(existingTags);
+                for (Entry<String, String> entry : this.tags.entrySet()) {
+                    String tagKey = entry.getKey();
+                    String tagValue = entry.getValue();
+                    
+                    if (tagValue == null) {
+                        mergedTags.remove(tagKey);
+                    } else {
+                        mergedTags.put(tagKey, tagValue);
+                    }
+                }
+                point.setTags(mergedTags);
+            }
         }
         if (this.loggingProperties != null) {
             loggingProperties.copyPropertiesTo(point);
@@ -448,5 +468,9 @@ public class DataPointModel {
 
     public void setRollup(String rollup) {
         this.rollup = rollup;
+    }
+
+    protected void setMergeTags(boolean mergeTags) {
+        this.mergeTags = mergeTags;
     }
 }
