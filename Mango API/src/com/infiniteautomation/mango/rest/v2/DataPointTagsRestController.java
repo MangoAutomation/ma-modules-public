@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -174,10 +175,19 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
             
             Map<String, String> existingTags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
-            Map<String, String> newTags = new HashMap<>();
-            newTags.putAll(existingTags);
-            newTags.putAll(tags);
-
+            
+            Map<String, String> newTags = new HashMap<>(existingTags);
+            for (Entry<String, String> entry : tags.entrySet()) {
+                String tagKey = entry.getKey();
+                String tagVal = entry.getValue();
+                
+                if (tagVal == null) {
+                    newTags.remove(tagKey);
+                } else {
+                    newTags.put(tagKey, tagVal);
+                }
+            }
+            
             dataPoint.setTags(newTags);
             DataPointTagsDao.instance.saveDataPointTags(dataPoint);
 
