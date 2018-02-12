@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.server.session.AbstractSession;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 
@@ -33,7 +34,17 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
         this.sendStringMessage(session, objectWriter.writeValueAsString(message));
     }
     
-    protected void sendStringMessage(WebSocketSession session, String message) {
+    protected void sendStringMessage(WebSocketSession session, String message) throws IOException {
+        if (closeOnLogout){
+            //Check our HttpSession to see if we logged out
+            AbstractSession httpSession = getHttpSession(session);
+            if(httpSession == null || !httpSession.isValid()){
+                session.close();
+                return;
+            }
+        }
+        
+        // WebSocketSession.sendMessage() is blocking and will throw exceptions, use aysnc RemoteEndpoint.sendXXXByFuture() methods instead
         JettyWebSocketSession jettySession = (JettyWebSocketSession) session;
         jettySession.getNativeSession().getRemote().sendStringByFuture(message);
     }
