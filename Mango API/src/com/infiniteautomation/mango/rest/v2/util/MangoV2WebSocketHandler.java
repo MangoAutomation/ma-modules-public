@@ -3,47 +3,45 @@
  */
 package com.infiniteautomation.mango.rest.v2.util;
 
-import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jetty.server.session.AbstractSession;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
- * TODO review the code in MangoWebSocketPublisher for the next Mango core release v3.4.x
- * Make WebSocketDefinition return a more generic web socket handler
+ * TODO review the code in MangoWebSocketPublisher for the next Mango 3.4 core release
+ * Make WebSocketDefinition return a more generic spring web socket handler
  * 
  * @author Jared Wiltshire
  */
 public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
+    // TODO Mango 3.4 remove this and use one from super class
     protected final Log log = LogFactory.getLog(this.getClass());
 
-    protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws JsonProcessingException, IOException {
+    protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws Exception {
         this.sendStringMessage(session, this.jacksonMapper.writeValueAsString(message));
     }
     
-    protected void sendMessageUsingView(WebSocketSession session, WebSocketMessage message, Class<?> view) throws JsonProcessingException, IOException {
+    protected void sendMessageUsingView(WebSocketSession session, WebSocketMessage message, Class<?> view) throws Exception {
         ObjectWriter objectWriter = this.jacksonMapper.writerWithView(view);
         this.sendStringMessage(session, objectWriter.writeValueAsString(message));
     }
     
-    protected void sendStringMessage(WebSocketSession session, String message) throws IOException {
-        if (closeOnLogout){
-            //Check our HttpSession to see if we logged out
-            AbstractSession httpSession = getHttpSession(session);
-            if(httpSession == null || !httpSession.isValid()){
-                session.close();
-                return;
-            }
+    /**
+     * TODO Mango 3.4 remove this and use sendStringMessageAsync() instead.
+     * @param session
+     * @param message
+     * @throws Exception 
+     */
+    protected void sendStringMessage(WebSocketSession session, String message) throws Exception {
+        if (!session.isOpen()) {
+            throw new Exception("Websocket session is closed, can't send message");
         }
-        
+
         // WebSocketSession.sendMessage() is blocking and will throw exceptions, use aysnc RemoteEndpoint.sendXXXByFuture() methods instead
         JettyWebSocketSession jettySession = (JettyWebSocketSession) session;
         jettySession.getNativeSession().getRemote().sendStringByFuture(message);

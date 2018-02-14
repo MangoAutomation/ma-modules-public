@@ -20,16 +20,17 @@ import com.serotonin.m2m2.rt.event.UserEventListener;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventTypeEnum;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
  * @author Terry Packer
  *
  */
-public class EventWebSocketPublisher extends MangoWebSocketPublisher implements UserEventListener{
+public class EventWebSocketPublisher extends MangoWebSocketHandler implements UserEventListener {
 
+    // TODO Mango 3.4 use log from super class
 	private static final Log LOG = LogFactory.getLog(EventWebSocketPublisher.class);
-	
+
 	private final User user;
 	private WebSocketSession session;
 	private final List<Integer> levels;
@@ -135,7 +136,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 	@Override
 	public void raised(EventInstance evt) {
 		
-		if(!session.isOpen())
+		if(!session.isOpen() || this.getUser(session) == null)
 			this.terminate();
 		
 		if(!sendRaised)
@@ -157,7 +158,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 	 */
 	@Override
 	public void returnToNormal(EventInstance evt) {
-		if(!session.isOpen())
+		if(!session.isOpen() || this.getUser(session) == null)
 			this.terminate();
 		
 		if(!sendReturnToNormal)
@@ -178,7 +179,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 	 */
 	@Override
 	public void deactivated(EventInstance evt) {
-		if(!session.isOpen())
+		if(!session.isOpen() || this.getUser(session) == null)
 			this.terminate();
 		
 		if(!sendDeactivated)
@@ -200,7 +201,7 @@ public class EventWebSocketPublisher extends MangoWebSocketPublisher implements 
 	 */
 	@Override
 	public void acknowledged(EventInstance evt) {
-		if(!session.isOpen())
+		if(!session.isOpen() || this.getUser(session) == null)
 			this.terminate();
 		
 		if(!sendAcknowledged)

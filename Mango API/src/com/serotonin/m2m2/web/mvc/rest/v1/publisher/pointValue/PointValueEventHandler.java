@@ -13,6 +13,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -36,8 +38,12 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	
 	private static final Log LOG = LogFactory.getLog(PointValueEventHandler.class);
 
+	// TODO Mango 3.4 use concurrent hash map and remove synchronization
 	private final Map<Integer, PointValueWebSocketPublisher> map = new HashMap<Integer, PointValueWebSocketPublisher>();
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
+	
+    @Autowired
+    private ConfigurableListableBeanFactory beanFactory;
 
 	public PointValueEventHandler(){
 		super(MangoRestSpringConfiguration.getObjectMapper());
@@ -53,12 +59,9 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 		
 		try {
 			User user = this.getUser(session);
-			if(user == null){
-				//Not Logged In so no go
-				this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN, new TranslatableMessage("rest.error.notLoggedIn"));
-				
-				return;
-			}	
+            if (user == null) {
+                return;
+            }
 			PointValueRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), PointValueRegistrationModel.class);
 			
 			synchronized (map) {
@@ -85,6 +88,13 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 					    }
 					} else {
 						pub = new PointValueWebSocketPublisher(session.getUri(), vo, model.getEventTypes(), session, this.jacksonMapper);
+						
+						// beanFactory will only exist in Mango v3.3.1 and greater
+						if (beanFactory != null) {
+    		                beanFactory.autowireBean(pub);
+    		                pub = (PointValueWebSocketPublisher) beanFactory.initializeBean(pub, PointValueWebSocketPublisher.class.getName());
+						}
+						
 						pub.initialize();
 						map.put(vo.getId(), pub);
 						//Immediately send the most recent Point Value and the status of the data point
@@ -97,6 +107,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 			}
 		
 		} catch (Exception e) {
+            // TODO Mango 3.4 add new exception type for closed session and don't try and send error if it was a closed session exception
 			try {
 				this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR, new TranslatableMessage("rest.error.serverError", e.getMessage()));
 			} catch (Exception e1) {
@@ -120,6 +131,11 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 				Integer id = it.next();
 				PointValueWebSocketPublisher pub = map.get(id);
 				pub.terminate();
+
+                // beanFactory will only exist in Mango v3.3.1 and greater
+                if (beanFactory != null) {
+                    beanFactory.destroyBean(pub);
+                }
 			}
 			map.clear();
 		}finally{

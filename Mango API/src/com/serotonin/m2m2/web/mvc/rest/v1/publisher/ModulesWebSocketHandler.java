@@ -39,11 +39,16 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        if (!hasPermission(getUser(session))) {
-            this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                    new TranslatableMessage("common.default", "Permission Denied"));
-            session.close();
-    	}
+        User user = getUser(session);
+        // TODO Mango 3.4 replace close status with constant from MangoWebSocketPublisher
+        if (user == null) {
+            return;
+        } else if (!hasPermission(user)) {
+            if (session.isOpen()) {
+                session.close(new CloseStatus(4003, "Not authorized"));
+            }
+            return;
+        }
 
     	super.afterConnectionEstablished(session);
         lock.writeLock().lock();
@@ -131,7 +136,8 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
         lock.readLock().lock();
         try {
             for (WebSocketSession session : sessions) {
-                if (hasPermission(getUser(session))) {
+                User user = getUser(session);
+                if (user != null && hasPermission(user)) {
                     notify(session, model);
                 }
             }
@@ -144,6 +150,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
         try {
             sendMessage(session, model);
         } catch (Exception e) {
+            // TODO Mango 3.4 add new exception type for closed session and don't try and send error if it was a closed session exception
             try {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
                         new TranslatableMessage("rest.error.serverError", e.getMessage()));

@@ -22,7 +22,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
@@ -34,7 +34,7 @@ import com.serotonin.m2m2.web.taglib.Functions;
  * @author Terry Packer
  *
  */
-public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implements DataPointListener{
+public class PointValueWebSocketPublisher extends MangoWebSocketHandler implements DataPointListener {
 	
 	private static final Log LOG = LogFactory.getLog(PointValueWebSocketPublisher.class);
 
@@ -70,30 +70,30 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	 */
 	public void sendPointStatus(){
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
-				
-				rt = Common.runtimeManager.getDataPoint(vo.getId());
-				boolean enabled = false;
-				Map<String,Object> attributes = null;
-				PointValueTime pvt = null;
-				Double convertedValue = null;
-				String renderedValue = null;
-				if(rt != null){
-					enabled = true; //We are enabled
-					pvt = rt.getPointValue(); //Get the value
-					attributes = new HashMap<>(rt.getAttributes());
-					renderedValue = Functions.getRenderedText(vo, pvt);
-					if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(pvt != null))
-						convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
-				}
-				PointValueTimeModel pvtModel = null;
-				if(pvt != null){
-					pvtModel = new PointValueTimeModel(pvt);
-					if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
-						pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
-				}
-				this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, pvtModel, renderedValue, convertedValue));
+			
+			rt = Common.runtimeManager.getDataPoint(vo.getId());
+			boolean enabled = false;
+			Map<String,Object> attributes = null;
+			PointValueTime pvt = null;
+			Double convertedValue = null;
+			String renderedValue = null;
+			if(rt != null){
+				enabled = true; //We are enabled
+				pvt = rt.getPointValue(); //Get the value
+				attributes = new HashMap<>(rt.getAttributes());
+				renderedValue = Functions.getRenderedText(vo, pvt);
+				if((vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC)&&(pvt != null))
+					convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
+			}
+			PointValueTimeModel pvtModel = null;
+			if(pvt != null){
+				pvtModel = new PointValueTimeModel(pvt);
+				if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+					pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
+			}
+			this.sendMessage(session, new PointValueEventModel(vo.getXid(), enabled, attributes, PointValueEventType.REGISTERED, pvtModel, renderedValue, convertedValue));
 
 		} catch (Exception e) {
 			LOG.error(e.getMessage(),e);
@@ -107,7 +107,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	public void pointInitialized() {
 		
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
 			
 			rt = Common.runtimeManager.getDataPoint(vo.getId()); //Set us up
@@ -147,7 +147,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointUpdated(PointValueTime newValue) {
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
 			
 			if(sendPointUpdated){
@@ -182,7 +182,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointChanged(PointValueTime oldValue, PointValueTime newValue) {
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
 			
 			if(sendPointChanged){
@@ -216,7 +216,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointSet(PointValueTime oldValue, PointValueTime newValue) {
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
 			
 			if(sendPointSet){
@@ -250,7 +250,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointBackdated(PointValueTime value) {
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
 			
 			if(sendPointBackdated){
@@ -284,7 +284,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void attributeChanged(Map<String, Object> attributes) {
         try {
-            if(!session.isOpen())
+            if(!session.isOpen() || this.getUser(session) == null)
                 this.terminate();
             
             if(sendAttributeChanged){
@@ -300,7 +300,7 @@ public class PointValueWebSocketPublisher extends MangoWebSocketPublisher implem
 	@Override
 	public void pointTerminated() {
 		try {
-			if(!session.isOpen())
+			if(!session.isOpen() || this.getUser(session) == null)
 				this.terminate();
 			
 			this.rt = null;

@@ -71,6 +71,11 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        // TODO Mango 3.4 don't check the authentication on every receive, instead rely on SessionDestroyedEvent/token revoked callback to close sessions
+        if (this.getUser(session) == null) {
+            return;
+        }
+        
         TemporaryResourceRequest request = this.jacksonMapper.readValue(message.getPayload(), TemporaryResourceRequest.class);
         if (request instanceof TemporaryResourceSubscription) {
             TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) request;

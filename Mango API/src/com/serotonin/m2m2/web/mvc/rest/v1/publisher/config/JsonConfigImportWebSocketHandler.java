@@ -32,17 +32,16 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // Check for permissions
         User user = this.getUser(session);
+        // TODO Mango 3.4 replace close status with constant from MangoWebSocketPublisher
         if (user == null) {
-            this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN,
-                    new TranslatableMessage("permission.exception.notAuthenticated"));
-            session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         } else if (!user.isAdmin()) {
-            this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                    new TranslatableMessage("permission.exception.mustBeAdmin"));
-            session.close(CloseStatus.NOT_ACCEPTABLE);
+            if (session.isOpen()) {
+                session.close(new CloseStatus(4003, "Not authorized"));
+            }
             return;
         }
+
         super.afterConnectionEstablished(session);
         lock.writeLock().lock();
         try {
@@ -68,15 +67,13 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
         try {
             User user = this.getUser(session);
             // TODO Can anyone cancel the import?
+            // TODO Mango 3.4 replace close status with constant from MangoWebSocketPublisher
             if (user == null) {
-                this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN,
-                        new TranslatableMessage("permission.exception.notAuthenticated"));
-                session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
             } else if (!user.isAdmin()) {
-                this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                        new TranslatableMessage("permission.exception.mustBeAdmin"));
-                session.close(CloseStatus.NOT_ACCEPTABLE);
+                if (session.isOpen()) {
+                    session.close(new CloseStatus(4003, "Not authorized"));
+                }
                 return;
             }
 
@@ -108,8 +105,14 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
 
     protected void notify(WebSocketSession session, ImportStatusProvider model) {
         try {
+            User user = this.getUser(session);
+            if (user == null) {
+                return;
+            }
+            
             sendMessage(session, model);
         } catch (Exception e) {
+            // TODO Mango 3.4 add new exception type for closed session and don't try and send error if it was a closed session exception
             try {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
                         new TranslatableMessage("rest.error.serverError", e.getMessage()));

@@ -13,6 +13,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -29,9 +31,14 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  *
  */
 public class EventEventHandler extends MangoWebSocketHandler {
-	
+
+    // TODO Mango 3.4 use log from super class
 	private static final Log LOG = LogFactory.getLog(EventEventHandler.class);
-	
+
+    @Autowired
+    private ConfigurableListableBeanFactory beanFactory;
+
+    // TODO Mango 3.4 use concurrent hash map and remove synchronization
 	//Map of UserID to User Event Listener
 	private final Map<Integer, EventWebSocketPublisher> map = new HashMap<Integer, EventWebSocketPublisher>();
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -42,14 +49,11 @@ public class EventEventHandler extends MangoWebSocketHandler {
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
-		
 		try {
 			User user = this.getUser(session);
-			if(user == null){
-				//Not Logged In so no go
-				this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_LOGGED_IN, new TranslatableMessage("rest.error.notLoggedIn"));
+			if (user == null) {
 				return;
-			}	
+			}
 			EventRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), EventRegistrationModel.class);
 			
 			EventWebSocketPublisher pub = null;
@@ -78,6 +82,13 @@ public class EventEventHandler extends MangoWebSocketHandler {
 			    }
 			} else {
 				pub = new EventWebSocketPublisher(user, model.getLevels(), model.getEventTypes(), session, this.jacksonMapper);
+
+				// beanFactory will only exist in Mango v3.3.1 and greater
+				if (beanFactory != null) {
+                    beanFactory.autowireBean(pub);
+                    pub = (EventWebSocketPublisher) beanFactory.initializeBean(pub, EventWebSocketPublisher.class.getName());
+				}
+				
 				pub.initialize();
 				lock.writeLock().lock();
 				try{
@@ -110,6 +121,11 @@ public class EventEventHandler extends MangoWebSocketHandler {
 				Integer id = it.next();
 				EventWebSocketPublisher pub = map.get(id);
 				pub.terminate();
+				
+				// beanFactory will only exist in Mango v3.3.1 and greater
+                if (beanFactory != null) {
+                    beanFactory.destroyBean(pub);
+                }
 			}
 			map.clear();
 		}finally{
