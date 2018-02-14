@@ -52,8 +52,9 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status)
-            throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
+        
         lock.writeLock().lock();
         try {
             sessions.remove(session);

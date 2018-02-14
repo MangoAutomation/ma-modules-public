@@ -111,8 +111,8 @@ public class EventEventHandler extends MangoWebSocketHandler {
 
 
 	@Override
-	public void afterConnectionClosed(WebSocketSession session,
-			CloseStatus status) {
+	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
 
 		lock.writeLock().lock();
 		try{

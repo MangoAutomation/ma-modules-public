@@ -48,11 +48,6 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	public PointValueEventHandler(){
 		super(MangoRestSpringConfiguration.getObjectMapper());
 	}
-	
-	@Override
-	public void afterConnectionEstablished(WebSocketSession session) throws Exception{
-		super.afterConnectionEstablished(session);
-	}
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
@@ -118,11 +113,9 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 			LOG.debug(message.getPayload());
 	}
 
-
-
 	@Override
-	public void afterConnectionClosed(WebSocketSession session,
-			CloseStatus status) {
+	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+	    super.afterConnectionClosed(session, status);
 
 		lock.writeLock().lock();
 		try{
@@ -151,8 +144,7 @@ public class PointValueEventHandler extends MangoWebSocketHandler {
 	 * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#handleTransportError(org.springframework.web.socket.WebSocketSession, java.lang.Throwable)
 	 */
 	@Override
-	public void handleTransportError(WebSocketSession session,
-			Throwable e) throws Exception{
+	public void handleTransportError(WebSocketSession session, Throwable e) throws Exception {
 		// Handle error during transport here
 		LOG.error("Websocket Transport Error:", e);
 		session.close(CloseStatus.SERVER_ERROR);

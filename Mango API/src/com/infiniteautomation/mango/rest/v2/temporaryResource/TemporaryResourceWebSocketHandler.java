@@ -56,6 +56,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
 
         if (log.isDebugEnabled()) {
             log.debug("Connection closed for WebSocketSession " + session.getId() + ", status " + status);

@@ -61,6 +61,8 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
+        
         lock.writeLock().lock();
         try {
             sessions.remove(session);
