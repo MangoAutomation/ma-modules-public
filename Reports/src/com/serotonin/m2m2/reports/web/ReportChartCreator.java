@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
@@ -27,6 +28,7 @@ import com.serotonin.InvalidArgumentException;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.email.MessageFormatDirective;
 import com.serotonin.m2m2.email.SubjectDirective;
 import com.serotonin.m2m2.email.UsedImagesDirective;
@@ -53,6 +55,7 @@ import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.view.text.TextRenderer;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.export.EventCsvStreamer;
 import com.serotonin.m2m2.vo.export.ExportCsvStreamer;
@@ -334,6 +337,8 @@ public class ReportChartCreator {
         private NumericTimeSeries numericTimeSeries;
         private DiscreteTimeSeries discreteTimeSeries;
         private byte[] imageData;
+        private DataPointVO vo;
+        private String tags;
 
         public PointStatistics(int reportPointId) {
             this.reportPointId = reportPointId;
@@ -495,6 +500,22 @@ public class ReportChartCreator {
         	}else
         		return "reportPointChart" + reportPointId + ".png";
         }
+
+        public DataPointVO getVo() {
+            return vo;
+        }
+
+        public void setVo(DataPointVO vo) {
+            this.vo = vo;
+        }
+
+        public String getTags() {
+            return tags;
+        }
+
+        public void setTags(String tags) {
+            this.tags = tags;
+        }
     }
 
     public static class StartsAndRuntimeWrapper {
@@ -593,6 +614,22 @@ public class ReportChartCreator {
             if (pointInfo.getStartValue() != null)
                 point.setStartValue(pointInfo.getTextRenderer().getText(pointInfo.getStartValue(),
                         TextRenderer.HINT_SPECIFIC));
+            
+            // Make the DataPointVO available to the freemarker template, may be null if the point was deleted
+            DataPointVO vo = DataPointDao.instance.getDataPoint(pointInfo.getXid());
+            point.setVo(vo);
+            
+            // Generate a tag string for easy use in the template
+            List<String> tagList = new ArrayList<>();
+            if (vo != null) {
+                Map<String, String> tags = vo.getTags();
+                for (Entry<String, String> entry : tags.entrySet()) {
+                    tagList.add(entry.getKey() + ": " + entry.getValue());
+                }
+            }
+            
+            point.setTags(String.join(", ", tagList));
+            
             pointStatistics.add(point);
             devices.get(point.getDeviceName()).put(point.getName(), point);
             statisticsMap.put(xidMapping.get(pointInfo.getXid()), point);

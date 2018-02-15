@@ -32,6 +32,10 @@
       font-size: 13px;
       font-weight: bold;
     }
+    .pointTags {
+      color: #555;
+      font-size: 11px;
+    }
     .label {
       font-weight: bold;
       text-align: right;
@@ -112,7 +116,11 @@
 	      
 	      <td class="stats">
 	        <table>
-	          <tr><td colspan="2" class="pointName">${point.deviceName} &mdash; ${point.name}</td></tr>
+	          <tr>
+		          <td colspan="2" class="pointName">${point.deviceName} &mdash; ${point.name}<#if point.tags?has_content>
+		            <span class="pointTags">(${point.tags})</span>
+		          </#if></td>
+	          </tr>
 	          <tr>
 	            <td class="label"><@fmt key="reports.dataType"/></td>
 	            <td>${point.dataTypeDescription}</td>
