@@ -4,7 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.events;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Terry Packer
@@ -12,22 +12,22 @@ import java.util.List;
  */
 public class EventRegistrationModel {
 
-	private List<EventEventTypeEnum> eventTypes;
-	private List<String> levels;
+	private Set<EventEventTypeEnum> eventTypes;
+	private Set<String> levels;
 
-	public List<String> getLevels() {
+	public Set<String> getLevels() {
 		return levels;
 	}
 
-	public void setLevels(List<String> levels) {
+	public void setLevels(Set<String> levels) {
 		this.levels = levels;
 	}
 
-	public List<EventEventTypeEnum> getEventTypes() {
+	public Set<EventEventTypeEnum> getEventTypes() {
 		return eventTypes;
 	}
 
-	public void setEventTypes(List<EventEventTypeEnum> eventTypes) {
+	public void setEventTypes(Set<EventEventTypeEnum> eventTypes) {
 		this.eventTypes = eventTypes;
 	}
 	
