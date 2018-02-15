@@ -1,6 +1,7 @@
 *Version 3.3.3*
 * Option to merge tags when doing data point update using V2 REST controller
 * Always check for user before sending websocket messages
+* Stopgap for new core ON_CHANGE_INTERVAL logging type model support, clean in 3.4
 
 *Version 3.3.2*
 * Modified /users/permissions-groups endpoints to only return groups that a user has access to

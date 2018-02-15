@@ -37,6 +37,8 @@ public class LoggingPropertiesModel {
         if (point.getLoggingType() == DataPointVO.LoggingTypes.INTERVAL) {
             this.intervalLoggingType = DataPointVO.INTERVAL_LOGGING_TYPE_CODES.getCode(point.getIntervalLoggingType());
             this.intervalLoggingPeriod = new TimePeriodModel(point.getIntervalLoggingPeriod(), point.getIntervalLoggingPeriodType());
+        } else if (point.getLoggingType() == 6) { //TODO replace with DataPointVO.LoggingTypes.ON_CHANGE_INTERVAL for 3.4
+            this.intervalLoggingPeriod = new TimePeriodModel(point.getIntervalLoggingPeriod(), point.getIntervalLoggingPeriodType());
         }
         
         this.tolerance = point.getTolerance();
