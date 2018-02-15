@@ -117,9 +117,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
 
     @Override
     public void validate(ProcessResult response) {
-    	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
-    	if(monitor == null)
-            response.addContextualMessage("monitorId", "validate.invalidValue");
+        //Not validating the Monitor ID as the dynamic origin may be disabled currently.
     }
 
     //
@@ -160,9 +158,6 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
         		throw new TranslatableJsonException("emport.error.missing", "monitorId", getCurrentMonitorIdList());
         	else
         		monitorId = text;
-        	if(Common.MONITORED_VALUES.getValueMonitor(monitorId) == null)
-        		throw new TranslatableJsonException("emport.error.invalid", "monitorId", text,
-        				getCurrentMonitorIdList());
         	
         }else{
         	if(!LEGACY_ID_MAP.containsKey(text))

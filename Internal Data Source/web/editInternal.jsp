@@ -12,7 +12,8 @@
 
   function saveDataSourceImpl(basic) {
       InternalEditDwr.saveInternalDataSource(basic, $get("updatePeriods"),
-              $get("updatePeriodType"), saveDataSourceCB);
+              $get("updatePeriodType"), $get("createPointsPattern"), saveDataSourceCB);
+      
   }
   
   function appendPointListColumnFunctions(pointListColumnHeaders, pointListColumnFunctions) {
@@ -43,6 +44,29 @@
     <td class="formField">
       <input type="text" id="updatePeriods" value="${dataSource.updatePeriods}" class="formShort"/>
       <tag:timePeriods id="updatePeriodType" value="${dataSource.updatePeriodType}" ms="true" s="true" min="true" h="true"/>
+    </td>
+  </tr>
+  <tr>
+    <td class="formLabel"><fmt:message key="dsEdit.internal.createPointsPattern"/></td>
+    <td class="formField">
+      <input type="text" id="createPointsPattern" value="${dataSource.createPointsPattern}" class="formLong"/>
+    </td>
+  </tr>
+  <tr>
+    <td class="formLabel"/>
+    <td class="formField">
+      <select id="preformedPatterns" class="formLong">
+        <option value=""><fmt:message key="common.none"/></option>
+        <option value=".+"><fmt:message key="common.all"/></option>
+        <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource"></fmt:message>
+        <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_SUCCESS"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.sequential"></fmt:message>
+        <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_DURATION"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.duration"></fmt:message>
+        <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_QUOTIENT"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.quotient"></fmt:message>
+        <option value="com[.]serotonin[.]m2m2[.]persistent.+"><fmt:message key="dsEdit.internal.autoCreate.persistent"/></option>
+        <option value="com[.]serotonin[.]m2m2[.]persistent[.]RECIEVING_RATE_MONITOR_.+"><fmt:message key="dsEdit.internal.autoCreate.persistent.writeSpeed"/></option>
+        <option value="com[.]serotonin[.]m2m2[.]persistent[.]TOTAL_CONNECTION_TIME_MONITOR_.+"><fmt:message key="dsEdit.internal.autoCreate.persistent.connectionTime"/></option>
+      </select>
+	  <tag:img png="arrow-turn-090-left" onclick="$set('createPointsPattern', $get('preformedPatterns'))" title="common.set"></tag:img>
     </td>
   </tr>
 </tag:dataSourceAttrs>

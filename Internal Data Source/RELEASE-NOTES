@@ -1,3 +1,7 @@
+*Version 3.3.1*
+* Added ability for a regex to optionally create value monitor points
+* Removed validation that monitor ID is currently valid, since dynamic IDs exist
+
 *Version 3.3.0*
 * Upgraded to work with core version 3.3.x
 

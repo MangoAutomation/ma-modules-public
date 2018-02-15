@@ -30,12 +30,13 @@ public class InternalEditDwr extends DataSourceEditDwr {
 	}
 	
     @DwrPermission(user = true)
-    public ProcessResult saveInternalDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType) {
+    public ProcessResult saveInternalDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, String createPointsPattern) {
         InternalDataSourceVO ds = (InternalDataSourceVO) Common.getUser().getEditDataSource();
 
         setBasicProps(ds, basic);
         ds.setUpdatePeriods(updatePeriods);
         ds.setUpdatePeriodType(updatePeriodType);
+        ds.setCreatePointsPattern(createPointsPattern);
 
         return tryDataSourceSave(ds);
     }

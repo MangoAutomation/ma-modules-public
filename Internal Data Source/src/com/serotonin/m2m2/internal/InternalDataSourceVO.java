@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -21,6 +25,7 @@ import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
+import com.serotonin.util.SerializationHelper;
 
 /**
  * @author Matthew Lohbihler
@@ -66,6 +71,8 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
     private int updatePeriodType = Common.TimePeriods.MINUTES;
     @JsonProperty
     private int updatePeriods = 5;
+    @JsonProperty
+    private String createPointsPattern;
 
     public int getUpdatePeriods() {
         return updatePeriods;
@@ -82,6 +89,14 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
     public void setUpdatePeriodType(int updatePeriodType) {
         this.updatePeriodType = updatePeriodType;
     }
+    
+    public String getCreatePointsPattern() {
+        return createPointsPattern;
+    }
+    
+    public void setCreatePointsPattern(String createPointsPattern) {
+        this.createPointsPattern = createPointsPattern;
+    }
 
     @Override
     public void validate(ProcessResult response) {
@@ -90,6 +105,13 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
             response.addContextualMessage("updatePeriodType", "validate.invalidValue");
         if (updatePeriods <= 0)
             response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
+        if (!StringUtils.isEmpty(createPointsPattern)) {
+            try {
+                Pattern.compile(createPointsPattern);
+            } catch(PatternSyntaxException e) {
+                response.addContextualMessage("createPointsPattern", "validate.invalidRegex");
+            }
+        }
     }
 
     //
@@ -97,12 +119,13 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         out.writeInt(updatePeriodType);
         out.writeInt(updatePeriods);
+        SerializationHelper.writeSafeUTF(out, createPointsPattern);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
@@ -112,6 +135,12 @@ public class InternalDataSourceVO extends DataSourceVO<InternalDataSourceVO> {
         if (ver == 1) {
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
+            createPointsPattern = null;
+        } 
+        else if (ver == 2) {
+            updatePeriodType = in.readInt();
+            updatePeriods = in.readInt();
+            createPointsPattern = SerializationHelper.readSafeUTF(in);
         }
     }
 
