@@ -48,7 +48,14 @@ public class InternalDataSourceModel extends AbstractDataSourceModel<InternalDat
 	    this.data.setUpdatePeriods(pollPeriod.getPeriods());
 	    this.data.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
 	}
-
-
-
+	
+	@JsonGetter(value="createPointsPattern")
+	public String getCreatePointsPattern() {
+	    return this.data.getCreatePointsPattern();
+	}
+	
+	@JsonSetter(value="createPointsPattern")
+	public void setCreatePointsPattern(String createPointsPattern) {
+	    this.data.setCreatePointsPattern(createPointsPattern);
+	}
 }
