@@ -1,3 +1,6 @@
+*Version 3.3.2*
+* Added web/user-ftl folder to allow persisting ftl templates across module upgrades, place your user defined report templates there
+
 *Version 3.3.1*
 * Display device name and tags for each point in default email template
 * Make full data point including tags available in freemarker template
