@@ -4,8 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,11 +19,10 @@ public class PointValueRegistrationModel {
 	private String dataPointXid; //Data point to register against
 	
 	@JsonProperty("eventTypes")
-	private List<PointValueEventType> eventTypes; //Events to listen for
+	private Set<PointValueEventType> eventTypes; //Events to listen for
 
 	
 	public PointValueRegistrationModel(){
-		this.eventTypes = new ArrayList<PointValueEventType>();
 	}
 
 	public String getDataPointXid() {
@@ -34,13 +33,12 @@ public class PointValueRegistrationModel {
 		this.dataPointXid = dataPointXid;
 	}
 
-	public List<PointValueEventType> getEventTypes() {
-		return eventTypes;
+	public Set<PointValueEventType> getEventTypes() {
+		return eventTypes == null ? EnumSet.noneOf(PointValueEventType.class) : eventTypes;
 	}
 
-	public void setEventTypes(List<PointValueEventType> eventTypes) {
+	public void setEventTypes(Set<PointValueEventType> eventTypes) {
 		this.eventTypes = eventTypes;
 	}
-	
-	
+
 }

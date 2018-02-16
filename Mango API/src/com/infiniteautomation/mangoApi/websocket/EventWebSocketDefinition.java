@@ -5,7 +5,7 @@
 package com.infiniteautomation.mangoApi.websocket;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.events.EventEventHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.publisher.events.EventsWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
 /**
@@ -19,7 +19,7 @@ public class EventWebSocketDefinition extends WebSocketDefinition{
 	 */
 	@Override
 	protected MangoWebSocketHandler getHandler() {
-		return new EventEventHandler();
+		return new EventsWebSocketHandler();
 	}
 
 	/* (non-Javadoc)
