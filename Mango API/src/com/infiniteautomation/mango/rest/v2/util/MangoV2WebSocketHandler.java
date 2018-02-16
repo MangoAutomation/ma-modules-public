@@ -9,6 +9,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 
@@ -22,11 +23,11 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
     // TODO Mango 3.4 remove this and use one from super class
     protected final Log log = LogFactory.getLog(this.getClass());
 
-    protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws Exception {
+    protected void sendMessage(WebSocketSession session, WebSocketMessage message) throws JsonProcessingException {
         this.sendStringMessage(session, this.jacksonMapper.writeValueAsString(message));
     }
     
-    protected void sendMessageUsingView(WebSocketSession session, WebSocketMessage message, Class<?> view) throws Exception {
+    protected void sendMessageUsingView(WebSocketSession session, WebSocketMessage message, Class<?> view) throws JsonProcessingException {
         ObjectWriter objectWriter = this.jacksonMapper.writerWithView(view);
         this.sendStringMessage(session, objectWriter.writeValueAsString(message));
     }
@@ -37,11 +38,7 @@ public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
      * @param message
      * @throws Exception 
      */
-    protected void sendStringMessage(WebSocketSession session, String message) throws Exception {
-        if (!session.isOpen()) {
-            throw new Exception("Websocket session is closed, can't send message");
-        }
-
+    protected void sendStringMessage(WebSocketSession session, String message) {
         // WebSocketSession.sendMessage() is blocking and will throw exceptions, use aysnc RemoteEndpoint.sendXXXByFuture() methods instead
         JettyWebSocketSession jettySession = (JettyWebSocketSession) session;
         jettySession.getNativeSession().getRemote().sendStringByFuture(message);

@@ -15,6 +15,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -116,6 +117,14 @@ public class EventEventHandler extends MangoWebSocketHandler {
 		    log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
 		}
 	}
+	
+	protected void sendMessage(Object payload) throws JsonProcessingException, Exception {
+	    // not uncommon that the connection is closed and publisher terminated but event notification still received
+	    // especially on logout
+	    if (session.isOpen()) {
+	        super.sendMessage(session, payload);
+	    }
+	}
 
 	public class EventWebSocketPublisher implements UserEventListener {
 	    private final User user;
@@ -165,9 +174,11 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	            return;
 	        
 	        try{
-	            sendMessage(session, new EventEventModel(EventEventTypeEnum.RAISED, evt));
+	            sendMessage(new EventEventModel(EventEventTypeEnum.RAISED, evt));
 	        } catch (Exception e) {
-	            log.error(e.getMessage(),e);
+                if (log.isDebugEnabled()) {
+                    log.debug("Error notifying of event raised", e);
+                }
 	        }
 	    }
 
@@ -183,9 +194,11 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	            return;
 	        
 	        try{
-	            sendMessage(session, new EventEventModel(EventEventTypeEnum.RETURN_TO_NORMAL, evt));
+	            sendMessage(new EventEventModel(EventEventTypeEnum.RETURN_TO_NORMAL, evt));
 	        } catch (Exception e) {
-	            log.error(e.getMessage(),e);
+	            if (log.isDebugEnabled()) {
+	                log.debug("Error notifying of event return to normal", e);
+	            }
 	        }
 	    }
 
@@ -201,9 +214,11 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	            return;
 	        
 	        try{
-	            sendMessage(session, new EventEventModel(EventEventTypeEnum.DEACTIVATED, evt));
+	            sendMessage(new EventEventModel(EventEventTypeEnum.DEACTIVATED, evt));
 	        } catch (Exception e) {
-	            log.error(e.getMessage(),e);
+                if (log.isDebugEnabled()) {
+                    log.debug("Error notifying of event deactivated", e);
+                }
 	        }
 	    }
 
@@ -219,9 +234,11 @@ public class EventEventHandler extends MangoWebSocketHandler {
 	            return;
 	        
 	        try{
-	            sendMessage(session, new EventEventModel(EventEventTypeEnum.ACKNOWLEDGED, evt));
+	            sendMessage(new EventEventModel(EventEventTypeEnum.ACKNOWLEDGED, evt));
 	        } catch (Exception e) {
-	            log.error(e.getMessage(),e);
+                if (log.isDebugEnabled()) {
+                    log.debug("Error notifying of event acknowledged", e);
+                }
 	        }
 	    }
 	}
