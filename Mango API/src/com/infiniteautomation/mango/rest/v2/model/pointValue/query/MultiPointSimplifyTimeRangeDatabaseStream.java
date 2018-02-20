@@ -76,7 +76,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                 super.writeValue(pair.startBookend);
             for(DataPointVOPointValueTimeBookend value : values)
                 super.writeValue(value);
-            if(pair != null)
+            if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
                 super.writeValue(pair.endBookend);
         }
         super.finish(writer);
