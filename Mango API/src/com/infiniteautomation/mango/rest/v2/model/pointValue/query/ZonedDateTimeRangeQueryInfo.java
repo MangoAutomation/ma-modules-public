@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.rest.v2.util.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
@@ -102,7 +103,10 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
                     TimePeriodType.convertFrom(this.timePeriod.getType()),
                     this.timePeriod.getPeriods());
             from = from.with(adj);
-            to = to.with(adj);
+            ExpandTimePeriodAdjuster expander = new ExpandTimePeriodAdjuster(
+                    TimePeriodType.convertFrom(this.timePeriod.getType()),
+                    this.timePeriod.getPeriods());
+            to = to.with(expander);
         }
     }
 
