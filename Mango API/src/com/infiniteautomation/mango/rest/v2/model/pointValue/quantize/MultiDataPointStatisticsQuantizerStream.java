@@ -35,12 +35,14 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
 
     protected final Map<Integer, DataPointStatisticsQuantizer<?>> quantizerMap;
     protected LinkedHashMap<Long,List<DataPointStatisticsGenerator>> periodStats;
+    protected int count;
 
     
     public MultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
         this.quantizerMap = new HashMap<>(voMap.size());
         this.periodStats = new LinkedHashMap<>();
+        this.count = 0;
     }
 
     /**
@@ -85,8 +87,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.lastValue(value, index, bookend);
-        if(!info.isSingleArray())
+        if(!info.isSingleArray()) {
             writer.writeEndArray();
+            count = 0; //Reset for next array
+        }
     }
 
     /* (non-Javadoc)
@@ -95,7 +99,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     }
     
     protected void createQuantizerMap() {
@@ -124,6 +128,11 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
 
     
     protected void writePeriodStats(List<DataPointStatisticsGenerator> generators) throws IOException {
+        //Code limit
+        //TODO Cancel query via Exception
+        if(info.getLimit() != null && count >= info.getLimit())
+            return;
+        
         if(info.isSingleArray() && voMap.size() > 1) {
             if(generators.size() > 0)
                 this.writer.writeMultiplePointStatsAtSameTime(generators, generators.get(0).getGenerator().getPeriodStartTime());
@@ -131,10 +140,16 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             for(DataPointStatisticsGenerator gen: generators)
                 this.writer.writeStatsAsObject(gen);
         }
+        count++;
     }
     
     protected void writePeriodStats(DataPointStatisticsGenerator generator) throws IOException{
+        //Code limit
+        //TODO Cancel query via Exception
+        if(info.getLimit() != null && count >= info.getLimit())
+            return;
         this.writer.writeStatsAsObject(generator);
+        count++;
     }
 
     /* (non-Javadoc)

@@ -12,6 +12,7 @@ import javax.measure.unit.Unit;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
+import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
@@ -19,6 +20,7 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
+import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
@@ -102,6 +104,14 @@ public abstract class PointValueTimeWriter {
                     writeStringField(name, info.writeImageLink(timestamp, vo.getId()));
                     break;
             }
+        if(info.isUseRendered()) {
+            String strValue;
+            if(value == null)
+                strValue = "-";
+            else
+                strValue = vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
+            writeStringField(RENDERED, strValue);
+        } 
     }
     
     public void writeTimestamp(long timestamp) throws IOException {
@@ -182,10 +192,10 @@ public abstract class PointValueTimeWriter {
                     writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime());
                 break;
                 case FIRST:
-                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime());
+                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime() == null ? 0 : stats.getFirstTime());
                 break;
                 case LAST:
-                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime());
+                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime() == null ? 0 : stats.getLastTime());
                 break;
                 case COUNT:
                     writeIntegerField(name, stats.getCount());
@@ -193,7 +203,25 @@ public abstract class PointValueTimeWriter {
                 default:
                     throw new ShouldNeverHappenException("Unknown Rollup type" + info.getRollup());
             }
-        }else if (statisticsGenerator instanceof AnalogStatistics) {
+        } else if(statisticsGenerator instanceof StartsAndRuntimeList) {
+            StartsAndRuntimeList stats = (StartsAndRuntimeList) statisticsGenerator;
+            switch(info.getRollup()){
+                case START:
+                    writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime());
+                break;
+                case FIRST:
+                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime() == null ? 0 : stats.getFirstTime());
+                break;
+                case LAST:
+                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime() == null ? 0 : stats.getLastTime());
+                break;
+                case COUNT:
+                    writeIntegerField(name, stats.getCount());
+                break;
+                default:
+                    throw new ShouldNeverHappenException("Unknown Rollup type" + info.getRollup());
+            }
+        } else if (statisticsGenerator instanceof AnalogStatistics) {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
             switch(info.getRollup()){
                 case AVERAGE:

@@ -29,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
@@ -43,8 +44,10 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidRollupTime
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -382,6 +385,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "timezone", required = false) 
             String timezone,
             
+            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @RequestParam(value = "limit", required = false) Integer limit,
+            
             @ApiParam(value = "Time Period Type", required = false, allowMultiple = false) 
             @RequestParam(value = "timePeriodType",required = false) 
             TimePeriodType timePeriodType,
@@ -403,7 +409,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         }
  
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
                 true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null, truncate);
         
         return generateStream(user, info, new String[] {xid});
@@ -532,6 +538,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "timezone", required = false) 
             String timezone,
 
+            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @RequestParam(value = "limit", required = false) Integer limit,
+            
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) 
@@ -550,7 +559,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         }
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, null, true,
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, true,
                 useRendered, true, true, PointValueTimeCacheControl.NONE, null, null, truncate);
         return generateStream(user, info, xids);
     }
@@ -686,6 +695,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
                     value = "timezone", required = false) String timezone,
 
+            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @RequestParam(value = "limit", required = false) Integer limit,
+            
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
@@ -703,7 +715,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         }
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, null, 
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
                 true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null, truncate);
         
         return generateStream(user, info, xids);
@@ -832,7 +844,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
      */
     protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(User user, INFO info, String[] xids){
         //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = buildMap(user, xids);
+        Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
         if(info.isUseSimplify())
             return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
         else
@@ -849,7 +861,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     protected <T, INFO extends ZonedDateTimeRangeQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateStream(User user, INFO info, String[] xids){
         
         //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = buildMap(user, xids);
+        Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
         
         // Are we using rollup
         if (info.getRollup() != RollupEnum.NONE) {
@@ -868,9 +880,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
      * @param xids
      * @return
      */
-    protected Map<Integer, DataPointVO> buildMap(User user, String[] xids){
+    protected Map<Integer, DataPointVO> buildMap(User user, String[] xids, RollupEnum rollup){
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = new HashMap<Integer, DataPointVO>();
+        ProcessResult result = new ProcessResult();
         for(String xid : xids) {
             DataPointVO vo = DataPointDao.instance.getByXid(xid);
             if (vo == null) {
@@ -879,8 +892,24 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 if(!Permissions.hasDataPointReadPermission(user, vo))
                     throw new AccessDeniedException();
             }
+            
+            //Validate the rollup
+            switch(vo.getPointLocator().getDataTypeId()) {
+                case DataTypes.ALPHANUMERIC:
+                case DataTypes.BINARY:
+                case DataTypes.IMAGE:
+                case DataTypes.MULTISTATE:
+                    if(rollup.nonNumericSupport() == false)
+                        result.addContextualMessage(xid, "validate.rollup.incompatible", rollup.toString());
+                    break;
+                case DataTypes.NUMERIC:
+                    break;
+            }
             voMap.put(vo.getId(), vo);
         }
+        
+        if(result.getHasMessages())
+            throw new ValidationFailedRestException(result);
         
         //Do we have any points
         if(voMap.isEmpty())

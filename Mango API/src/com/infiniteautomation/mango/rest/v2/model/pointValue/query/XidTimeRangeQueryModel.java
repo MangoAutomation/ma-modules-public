@@ -17,7 +17,6 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
 
     protected ZonedDateTime from;
     protected ZonedDateTime to;
-    protected Integer limit;
     protected boolean bookend; //Do we want virtual values at the to/from time if they don't already exist?
     protected PointValueTimeCacheControl useCache;
 
@@ -37,7 +36,7 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public XidTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
             String timezone, ZonedDateTime from, ZonedDateTime to, Integer limit,
             boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance, Integer simplifyTarget) {
-        super(xids, useRendered, dateTimeFormat, timezone, simplifyTolerance, simplifyTarget);
+        super(xids, useRendered, dateTimeFormat, timezone, limit, simplifyTolerance, simplifyTarget);
         this.from = from;
         this.to = to;
         this.limit = limit;
@@ -71,20 +70,6 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
      */
     public void setTo(ZonedDateTime to) {
         this.to = to;
-    }
-
-    /**
-     * @return the limit
-     */
-    public Integer getLimit() {
-        return limit;
-    }
-
-    /**
-     * @param limit the limit to set
-     */
-    public void setLimit(Integer limit) {
-        this.limit = limit;
     }
 
     /**

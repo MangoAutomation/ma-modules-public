@@ -14,6 +14,7 @@ public abstract class XidQueryInfoModel {
     protected boolean useRendered;
     protected String dateTimeFormat;
     protected String timezone;
+    protected Integer limit;
     protected Double simplifyTolerance;
     protected Integer simplifyTarget;
     /**
@@ -29,12 +30,13 @@ public abstract class XidQueryInfoModel {
      * @param timezone
      */
     public XidQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat,
-            String timezone, Double simplifyTolerance, Integer simplifyTarget) {
+            String timezone, Integer limit, Double simplifyTolerance, Integer simplifyTarget) {
         super();
         this.xids = xids;
         this.useRendered = useRendered;
         this.dateTimeFormat = dateTimeFormat;
         this.timezone = timezone;
+        this.limit = limit;
         this.simplifyTolerance = simplifyTolerance;
         this.simplifyTarget = simplifyTarget;
     }
@@ -85,6 +87,19 @@ public abstract class XidQueryInfoModel {
      */
     public void setTimezone(String timezone) {
         this.timezone = timezone;
+    }
+    /**
+     * @return the limit
+     */
+    public Integer getLimit() {
+        return limit;
+    }
+
+    /**
+     * @param limit the limit to set
+     */
+    public void setLimit(Integer limit) {
+        this.limit = limit;
     }
     /**
      * @return the simplifyTolerance

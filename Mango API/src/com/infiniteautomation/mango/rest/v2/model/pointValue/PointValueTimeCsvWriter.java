@@ -7,12 +7,17 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue;
 import java.io.IOException;
 import java.util.List;
 
+import javax.measure.unit.Unit;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -21,6 +26,12 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
 
+    protected final String DOT = ".";
+    protected final String DOT_RENDERED = DOT + "rendered";
+    protected final String DOT_BOOKEND = DOT + "bookend";
+    protected final String DOT_CACHED = DOT + "cached";
+    protected final String XID = "xid";
+    
     /**
      * @param info
      * @param jgen
@@ -35,7 +46,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         DataPointVO vo = value.getVo();
         PointValueTime pvt = value.getPvt();
         if(info.isMultiplePointsPerArray()) {
-            writeStringField("xid", vo.getXid());
+            writeStringField(XID, vo.getXid());
             if(pvt == null) {
                 writeStringField(ANNOTATION, info.getNoDataMessage());
             }else {
@@ -68,7 +79,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 }
             }else {
                 //Use XIDs
-                writeStringField("xid", vo.getXid());
+                writeStringField(XID, vo.getXid());
                 if(pvt == null) {
                     writeStringField(ANNOTATION, info.getNoDataMessage());
                 }else {
@@ -97,11 +108,11 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         writeTimestamp(periodStats.getGenerator().getPeriodStartTime());
         DataPointVO vo = periodStats.getVo();
         if(info.isMultiplePointsPerArray()) {
-            writeStringField("xid", vo.getXid());
-            writeStatistic(vo.getXid() + "." + info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+            writeStringField(XID, vo.getXid());
+            writeStatistic(vo.getXid() + DOT + info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
         }else {
             if(!info.isSingleArray())
-                writeStringField("xid", vo.getXid());
+                writeStringField(XID, vo.getXid());
             writeStatistic(info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
                 
         }
@@ -118,11 +129,11 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 //XID columns
                 writeDataValue(xid, value.getVo(), value.getPvt().getValue(), value.getPvt().getTime());
                 if(value.isBookend())
-                    writeBooleanField(xid + ".bookend", value.isBookend());
+                    writeBooleanField(xid + DOT_BOOKEND, value.isBookend());
                 if(value.isCached())
-                    writeBooleanField(xid + ".cached", value.isCached());
+                    writeBooleanField(xid + DOT_CACHED, value.isCached());
                 if(info.isUseRendered())
-                    writeStringField(xid + ".rendered", info.getRenderedString(value.getVo(), value.getPvt()));
+                    writeStringField(xid + DOT_RENDERED, info.getRenderedString(value.getVo(), value.getPvt()));
             }else {
                 
             }
@@ -138,12 +149,55 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         for(DataPointStatisticsGenerator gen : periodStats) {
             DataPointVO vo = gen.getVo();
             if(info.isMultiplePointsPerArray()) {
-                writeStatistic(vo.getXid() + "." + info.getRollup(), gen.getGenerator(), gen.getVo());
+                writeStatistic(vo.getXid() + DOT + info.getRollup(), gen.getGenerator(), gen.getVo());
             }else {
                 throw new ShouldNeverHappenException("Implement me?");
             }
         }
         this.jgen.writeEndObject();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter#writeDataValue(java.lang.String, com.serotonin.m2m2.vo.DataPointVO, com.serotonin.m2m2.rt.dataImage.types.DataValue, long)
+     */
+    @Override
+    protected void writeDataValue(String name, DataPointVO vo, DataValue value, long timestamp) throws IOException{
+        if(value == null) {
+            writeNullField(name);
+        }else {
+            switch(value.getDataType()) {
+                case DataTypes.ALPHANUMERIC:
+                    writeStringField(name, value.getStringValue());
+                    break;
+                case DataTypes.BINARY:
+                    writeBooleanField(name, value.getBooleanValue());
+                    break;
+                case DataTypes.MULTISTATE:
+                    writeIntegerField(name, value.getIntegerValue());
+                    break;
+                case DataTypes.NUMERIC:
+                    if(vo.getRenderedUnit() != Unit.ONE)
+                        writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()));
+                    else
+                        writeDoubleField(name, value.getDoubleValue());
+                    break;
+                case DataTypes.IMAGE:
+                    writeStringField(name, info.writeImageLink(timestamp, vo.getId()));
+                    break;
+            }
+        }
+        if(info.isUseRendered()) {
+            String strValue;
+            if(value == null)
+                strValue = "-";
+            else
+                strValue = vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
+            if(info.isSingleArray())
+                writeStringField(vo.getXid() + DOT_RENDERED, strValue);
+            else
+                writeStringField(RENDERED, strValue);
+        }        
     }
     
     /* (non-Javadoc)
@@ -155,8 +209,12 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             writeNullField(name);
         } else {
             writeDoubleField(name, integral);
-            if(info.isUseRendered())
-                writeStringField(vo.getXid() + ".rendered", info.getIntegralString(vo, integral));
+            if(info.isUseRendered()) {
+                if(info.isSingleArray())
+                    writeStringField(vo.getXid() + DOT_RENDERED, info.getIntegralString(vo, integral));
+                else
+                    writeStringField(RENDERED, info.getIntegralString(vo, integral));
+            }
         }
     }
     
@@ -169,8 +227,12 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             writeNullField(name);
         } else {
             writeDoubleField(name, value);
-            if(info.isUseRendered())
-                writeStringField(vo.getXid() + ".rendered", info.getRenderedString(vo, value));
+            if(info.isUseRendered()) {
+                if(info.isSingleArray())
+                    writeStringField(vo.getXid() + DOT_RENDERED, info.getRenderedString(vo, value));
+                else
+                    writeStringField(RENDERED, info.getRenderedString(vo, value));
+            }
         }
     }
     

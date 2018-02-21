@@ -15,7 +15,6 @@ import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestExcept
 public class XidLatestQueryInfoModel extends XidQueryInfoModel{
 
     protected ZonedDateTime before;
-    protected Integer limit;
     protected PointValueTimeCacheControl useCache;
     
     public XidLatestQueryInfoModel() {
@@ -25,9 +24,8 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
     public XidLatestQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat, String timezone,
             ZonedDateTime before, Integer limit,
             PointValueTimeCacheControl useCache, Double simplifyTolerance, Integer simplifyTarget) {
-        super(xids, useRendered, dateTimeFormat, timezone, simplifyTolerance, simplifyTarget);
+        super(xids, useRendered, dateTimeFormat, timezone, limit, simplifyTolerance, simplifyTarget);
         this.before = before;
-        this.limit = limit;
         this.useCache = useCache;
     }
     /**
@@ -42,18 +40,7 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
     public void setBefore(ZonedDateTime before) {
         this.before = before;
     }
-    /**
-     * @return the limit
-     */
-    public Integer getLimit() {
-        return limit;
-    }
-    /**
-     * @param limit the limit to set
-     */
-    public void setLimit(Integer limit) {
-        this.limit = limit;
-    }
+
     /**
      * @return the useCache
      */

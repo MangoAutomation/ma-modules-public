@@ -2,6 +2,10 @@
 * Option to merge tags when doing data point update using V2 REST controller
 * Always check for user before sending websocket messages
 * Stopgap for new core ON_CHANGE_INTERVAL logging type model support, clean in 3.4
+* Bugfix for non-numeric rollups point value v2 endpoints
+* Bugfix for rendering values in csv format point value v2
+* Adding support for limits in point value v2 Rollup endpoints
+
 
 *Version 3.3.2*
 * Modified /users/permissions-groups endpoints to only return groups that a user has access to
