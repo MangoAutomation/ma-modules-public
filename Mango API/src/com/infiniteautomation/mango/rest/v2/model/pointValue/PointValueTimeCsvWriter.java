@@ -26,11 +26,19 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
 
-    protected final String DOT = ".";
-    protected final String DOT_RENDERED = DOT + "rendered";
-    protected final String DOT_BOOKEND = DOT + "bookend";
-    protected final String DOT_CACHED = DOT + "cached";
-    protected final String XID = "xid";
+    protected static final String DOT = ".";
+    protected static final String DOT_RENDERED = DOT + "rendered";
+    protected static final String DOT_BOOKEND = DOT + "bookend";
+    protected static final String DOT_CACHED = DOT + "cached";
+    protected static final String NAME = "name";
+    protected static final String DEVICE_NAME = "deviceName";
+    protected static final String DATA_SOURCE_NAME = "dataSourceName";
+    
+    protected static final String DOT_NAME = DOT + NAME;
+    protected static final String DOT_DEVICE_NAME = DOT + DEVICE_NAME;
+    protected static final String DOT_DATA_SOURCE_NAME = DOT + DATA_SOURCE_NAME;
+    
+    protected static final String XID = "xid";
     
     /**
      * @param info
@@ -96,6 +104,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 }
             }
         }
+        writeDataPointInfoColumns(value.getVo(), false);
         this.jgen.writeEndObject();
     }
     
@@ -110,10 +119,12 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         if(info.isMultiplePointsPerArray()) {
             writeStringField(XID, vo.getXid());
             writeStatistic(vo.getXid() + DOT + info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+            writeDataPointInfoColumns(periodStats.getVo(), true);
         }else {
             if(!info.isSingleArray())
                 writeStringField(XID, vo.getXid());
             writeStatistic(info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+            writeDataPointInfoColumns(periodStats.getVo(), false);
                 
         }
         this.writeEndObject();
@@ -128,6 +139,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             if(info.isMultiplePointsPerArray()) {
                 //XID columns
                 writeDataValue(xid, value.getVo(), value.getPvt().getValue(), value.getPvt().getTime());
+                writeDataPointInfoColumns(value.getVo(), true);
                 if(value.isBookend())
                     writeBooleanField(xid + DOT_BOOKEND, value.isBookend());
                 if(value.isCached())
@@ -135,7 +147,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 if(info.isUseRendered())
                     writeStringField(xid + DOT_RENDERED, info.getRenderedString(value.getVo(), value.getPvt()));
             }else {
-                
+                throw new ShouldNeverHappenException("Should not write multiple points here.");
             }
         
         }
@@ -150,6 +162,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             DataPointVO vo = gen.getVo();
             if(info.isMultiplePointsPerArray()) {
                 writeStatistic(vo.getXid() + DOT + info.getRollup(), gen.getGenerator(), gen.getVo());
+                writeDataPointInfoColumns(vo, true);
             }else {
                 throw new ShouldNeverHappenException("Implement me?");
             }
@@ -197,7 +210,8 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 writeStringField(vo.getXid() + DOT_RENDERED, strValue);
             else
                 writeStringField(RENDERED, strValue);
-        }        
+        }
+        writeDataPointInfoColumns(vo, info.isSingleArray());
     }
     
     /* (non-Javadoc)
@@ -216,6 +230,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                     writeStringField(RENDERED, info.getIntegralString(vo, integral));
             }
         }
+        writeDataPointInfoColumns(vo, info.isSingleArray());
     }
     
     /* (non-Javadoc)
@@ -233,6 +248,25 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 else
                     writeStringField(RENDERED, info.getRenderedString(vo, value));
             }
+        }
+        writeDataPointInfoColumns(vo, info.isSingleArray());
+    }
+    
+    /**
+     * Write name, deviceName, dataSourceName columns
+     * @param vo
+     * @param useXid
+     * @throws IOException 
+     */
+    protected void writeDataPointInfoColumns(DataPointVO vo, boolean useXid) throws IOException {
+        if(useXid) {
+            writeStringField(vo.getXid() + DOT_NAME, vo.getName());
+            writeStringField(vo.getXid() + DOT_DEVICE_NAME, vo.getDeviceName());
+            writeStringField(vo.getXid() + DOT_DATA_SOURCE_NAME, vo.getDataSourceName());
+        }else {
+            writeStringField(NAME, vo.getName());
+            writeStringField(DEVICE_NAME, vo.getDeviceName());
+            writeStringField(DATA_SOURCE_NAME, vo.getDataSourceName());
         }
     }
     

@@ -5,7 +5,7 @@
 * Bugfix for non-numeric rollups point value v2 endpoints
 * Bugfix for rendering values in csv format point value v2
 * Adding support for limits in point value v2 Rollup endpoints
-
+* Adding name, deviceName and dataSourceName columns to point value v2 csv format
 
 *Version 3.3.2*
 * Modified /users/permissions-groups endpoints to only return groups that a user has access to

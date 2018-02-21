@@ -46,6 +46,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
 
+    //protected final String TIMESTAMP = "timestamp";
     CsvMapper csvMapper;
     
     public PointValueTimeStreamCsvMessageConverter() {
@@ -164,6 +165,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             if(rendered)
                                 builder.addColumn(xid + ".rendered", ColumnType.STRING);
                             builder.addColumn(xid + ".annotation", ColumnType.STRING);
+                            builder.addColumn(xid + ".name", ColumnType.STRING);
+                            builder.addColumn(xid + ".deviceName", ColumnType.STRING);
+                            builder.addColumn(xid + ".dataSourceName", ColumnType.STRING);
                         }
                     }else {
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
@@ -174,6 +178,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         if(rendered)
                             builder.addColumn("rendered", ColumnType.STRING);
                         builder.addColumn("annotation", ColumnType.STRING);
+                        builder.addColumn("name", ColumnType.STRING);
+                        builder.addColumn("deviceName", ColumnType.STRING);
+                        builder.addColumn("dataSourceName", ColumnType.STRING);
                     }
                 }else {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
@@ -186,6 +193,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         if(rendered)
                             builder.addColumn("rendered", ColumnType.STRING);
                         builder.addColumn("annotation", ColumnType.STRING);
+
                     }else {
                         builder.addColumn("xid", ColumnType.STRING);
                         builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
@@ -197,6 +205,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             builder.addColumn("rendered", ColumnType.STRING);
                         builder.addColumn("annotation", ColumnType.STRING);
                     }
+                    builder.addColumn("name", ColumnType.STRING);
+                    builder.addColumn("deviceName", ColumnType.STRING);
+                    builder.addColumn("dataSourceName", ColumnType.STRING);
                 }
             }else if(stream instanceof MultiPointLatestDatabaseStream) {
                 builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
@@ -213,6 +224,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                                 builder.addColumn(xid +".cached", ColumnType.BOOLEAN);
                             if(rendered)
                                 builder.addColumn(xid + ".rendered", ColumnType.STRING);
+                            builder.addColumn(xid + ".name", ColumnType.STRING);
+                            builder.addColumn(xid + ".deviceName", ColumnType.STRING);
+                            builder.addColumn(xid + ".dataSourceName", ColumnType.STRING);
                         }
                     }else {
                         //Single array
@@ -224,6 +238,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         if(rendered)
                             builder.addColumn("rendered", ColumnType.STRING);
                         builder.addColumn("annotation", ColumnType.STRING);
+                        builder.addColumn("name", ColumnType.STRING);
+                        builder.addColumn("deviceName", ColumnType.STRING);
+                        builder.addColumn("dataSourceName", ColumnType.STRING);
                     }
 
                 }else {
@@ -248,6 +265,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             builder.addColumn("rendered", ColumnType.STRING);
                         builder.addColumn("annotation", ColumnType.STRING);
                     }
+                    builder.addColumn("name", ColumnType.STRING);
+                    builder.addColumn("deviceName", ColumnType.STRING);
+                    builder.addColumn("dataSourceName", ColumnType.STRING);
                 }
             }else if(stream instanceof MultiDataPointStatisticsQuantizerStream) {
                 builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
@@ -261,6 +281,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             builder.addColumn(xid + "." + info.getRollup(), ColumnType.NUMBER_OR_STRING);
                             if(rendered)
                                 builder.addColumn(xid + ".rendered", ColumnType.STRING);
+                            builder.addColumn(xid + ".name", ColumnType.STRING);
+                            builder.addColumn(xid + ".deviceName", ColumnType.STRING);
+                            builder.addColumn(xid + ".dataSourceName", ColumnType.STRING);
                         }
                     }else {
                         //Single array
@@ -281,6 +304,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         builder.addColumn(info.getRollup().toString(), ColumnType.NUMBER_OR_STRING);
                     if(rendered)
                         builder.addColumn("rendered", ColumnType.STRING);
+                    builder.addColumn("name", ColumnType.STRING);
+                    builder.addColumn("deviceName", ColumnType.STRING);
+                    builder.addColumn("dataSourceName", ColumnType.STRING);
                 }
             }
             
