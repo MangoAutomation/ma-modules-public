@@ -103,7 +103,7 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
                     TimePeriodType.convertFrom(this.timePeriod.getType()),
                     this.timePeriod.getPeriods());
             from = from.with(adj);
-            ExpandTimePeriodAdjuster expander = new ExpandTimePeriodAdjuster(
+            ExpandTimePeriodAdjuster expander = new ExpandTimePeriodAdjuster(from,
                     TimePeriodType.convertFrom(this.timePeriod.getType()),
                     this.timePeriod.getPeriods());
             to = to.with(expander);

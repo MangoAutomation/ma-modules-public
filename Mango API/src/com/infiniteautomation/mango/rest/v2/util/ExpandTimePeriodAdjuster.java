@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.util;
 
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
@@ -18,10 +19,12 @@ import com.serotonin.m2m2.Common.TimePeriods;
  */
 public class ExpandTimePeriodAdjuster implements TemporalAdjuster {
 
+    protected final ZonedDateTime startTime;
     protected final int periodType;
     protected final int periods;
     
-    public ExpandTimePeriodAdjuster(int periodType, int periods) {
+    public ExpandTimePeriodAdjuster(ZonedDateTime startTime, int periodType, int periods) {
+        this.startTime = startTime;
         this.periodType = periodType;
         this.periods = periods;
     }
@@ -31,74 +34,42 @@ public class ExpandTimePeriodAdjuster implements TemporalAdjuster {
      */
     @Override
     public Temporal adjustInto(Temporal temporal) {
-        //Days, weeks, and months have a -1 because their value ranges start at 1 not 0
-        switch (periodType) {
-            case TimePeriods.MILLISECONDS:
-                if(periods > 1)
-                    temporal = temporal.plus(temporal.get(ChronoField.MILLI_OF_SECOND) % periods, ChronoUnit.MILLIS);
-                break;
-            case TimePeriods.SECONDS:
-                if(periods > 1)
-                    temporal = temporal.plus(temporal.get(ChronoField.SECOND_OF_MINUTE) % periods, ChronoUnit.SECONDS);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            case TimePeriods.MINUTES:
-                if(periods > 1)
-                    temporal = temporal.plus(temporal.get(ChronoField.MINUTE_OF_HOUR) % periods, ChronoUnit.MINUTES);
-                temporal = temporal.with(ChronoField.SECOND_OF_MINUTE, 0);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            case TimePeriods.HOURS:
-                if(periods > 1)
-                    temporal = temporal.with(ChronoField.HOUR_OF_DAY, temporal.get(ChronoField.HOUR_OF_DAY) - temporal.get(ChronoField.HOUR_OF_DAY) % periods);
-                temporal = temporal.with(ChronoField.MINUTE_OF_HOUR, 0);
-                temporal = temporal.with(ChronoField.SECOND_OF_MINUTE, 0);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            case TimePeriods.DAYS:
-                //TODO See Aligned Day of Week In Year Chrono Field for other options of this 
-                if(periods > 1)
-                    temporal = temporal.plus((temporal.get(ChronoField.DAY_OF_YEAR)-1) % periods, ChronoUnit.DAYS);
-                temporal = temporal.with(ChronoField.HOUR_OF_DAY, 0);
-                temporal = temporal.with(ChronoField.MINUTE_OF_HOUR, 0);
-                temporal = temporal.with(ChronoField.SECOND_OF_MINUTE, 0);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            case TimePeriods.WEEKS:
-                if(periods > 1)
-                    temporal = temporal.plus((temporal.get(ChronoField.ALIGNED_WEEK_OF_YEAR)-1) % periods, ChronoUnit.WEEKS);
-                temporal = temporal.with(ChronoField.ALIGNED_DAY_OF_WEEK_IN_YEAR, 1);
-                temporal = temporal.with(ChronoField.HOUR_OF_DAY, 0);
-                temporal = temporal.with(ChronoField.MINUTE_OF_HOUR, 0);
-                temporal = temporal.with(ChronoField.SECOND_OF_MINUTE, 0);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            case TimePeriods.MONTHS:
-                if(periods > 1)
-                    temporal = temporal.plus((temporal.get(ChronoField.MONTH_OF_YEAR)-1) % periods, ChronoUnit.MONTHS);
-                temporal = temporal.with(ChronoField.DAY_OF_MONTH, 1);
-                temporal = temporal.with(ChronoField.HOUR_OF_DAY, 0);
-                temporal = temporal.with(ChronoField.MINUTE_OF_HOUR, 0);
-                temporal = temporal.with(ChronoField.SECOND_OF_MINUTE, 0);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            case TimePeriods.YEARS:
-                if(periods > 1) {
-                    //Compute year of century for compatiblity with DateUtils
-                    int yearOfCentury = temporal.get(ChronoField.YEAR) % 100;
-                    temporal = temporal.plus(yearOfCentury % periods, ChronoUnit.YEARS);
-                }
-                temporal = temporal.with(ChronoField.DAY_OF_YEAR, 1);
-                temporal = temporal.with(ChronoField.HOUR_OF_DAY, 0);
-                temporal = temporal.with(ChronoField.MINUTE_OF_HOUR, 0);
-                temporal = temporal.with(ChronoField.SECOND_OF_MINUTE, 0);
-                temporal = temporal.with(ChronoField.MILLI_OF_SECOND, 0);
-                break;
-            default:
-                throw new ShouldNeverHappenException("Unsupported time period: " + periodType);
+        ZonedDateTime zdt = startTime;
+        ZonedDateTime adjustTime = (ZonedDateTime) temporal;
+        while(zdt.isBefore(adjustTime)) {
+            //We don't need to zero any fields, since we are based on the start date and it would have been
+            // adjusted in that manner if appropriate, and none of the time advances should alter a lesser field harmfully.
+            switch(periodType) {
+                case TimePeriods.MILLISECONDS:
+                    zdt = zdt.plus(periods, ChronoUnit.MILLIS);
+                    break;
+                case TimePeriods.SECONDS:
+                    zdt = zdt.plus(periods, ChronoUnit.SECONDS);
+                    break;
+                case TimePeriods.MINUTES:
+                    zdt = zdt.plus(periods, ChronoUnit.MINUTES);
+                    break;
+                case TimePeriods.HOURS:
+                    zdt = zdt.plus(periods, ChronoUnit.HOURS);
+                    break;
+                case TimePeriods.DAYS:
+                    zdt = zdt.plus(periods, ChronoUnit.DAYS);
+                    break;
+                case TimePeriods.WEEKS:
+                  //Don't set the DoW since this may be governed by last year, and shouldn't change by adding weeks
+                    zdt = zdt.plus(periods, ChronoUnit.WEEKS);
+                    break;
+                case TimePeriods.MONTHS:
+                    zdt = zdt.plus(periods, ChronoUnit.MONTHS);
+                    break;
+                case TimePeriods.YEARS:
+                    zdt = zdt.plus(periods, ChronoUnit.YEARS);
+                    break;
+                default:
+                    throw new ShouldNeverHappenException("Unsupported time period: " + periodType);
             }
-        
-        return temporal;
+        }
+        return zdt;
     }
 
 }
