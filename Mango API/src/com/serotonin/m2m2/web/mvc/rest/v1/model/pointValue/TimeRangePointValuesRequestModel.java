@@ -45,7 +45,7 @@ public class TimeRangePointValuesRequestModel extends PointValuesRequestModel {
        if(from == null)
            return null;
        else
-           return new DateTime(from.toInstant().toEpochMilli(), DateTimeZone.forID(from.getOffset().getId()));
+           return new DateTime(from.toInstant().toEpochMilli(), DateTimeZone.forTimeZone(java.util.TimeZone.getTimeZone(from.getZone())));
     }
     public ZonedDateTime getTo() {
         return to;
@@ -60,7 +60,7 @@ public class TimeRangePointValuesRequestModel extends PointValuesRequestModel {
         if(to == null)
             return null;
         else
-            return new DateTime(to.toInstant().toEpochMilli(), DateTimeZone.forID(to.getOffset().getId()));
+            return new DateTime(to.toInstant().toEpochMilli(), DateTimeZone.forTimeZone(java.util.TimeZone.getTimeZone(to.getZone())));
     }
     
     public RollupEnum getRollup() {
