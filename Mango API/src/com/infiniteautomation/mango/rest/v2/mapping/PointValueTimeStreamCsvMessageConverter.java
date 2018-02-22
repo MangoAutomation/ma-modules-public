@@ -25,10 +25,11 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
@@ -40,14 +41,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  * 
- * TODO Pre-build the various schemas as final members of the class
- * 
  * @author Jared Wiltshire, Terry Packer
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
-
-    //protected final String TIMESTAMP = "timestamp";
-    CsvMapper csvMapper;
     
     public PointValueTimeStreamCsvMessageConverter() {
         this(new CsvMapper());
@@ -55,7 +51,6 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, new MediaType("text", "csv"));
-        this.csvMapper = csvMapper;
     }
 
     /* (non-Javadoc)
@@ -132,14 +127,15 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 
         MediaType contentType = outputMessage.getHeaders().getContentType();
         JsonEncoding encoding = getJsonEncoding(contentType);
-        JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
         try {
             PointValueTimeStream<?,?> stream = (PointValueTimeStream<?,?>)object;
             stream.setContentType(StreamContentType.CSV);
+            JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
+
             //Set the schema
             CsvSchema.Builder builder = CsvSchema.builder();
             builder.setUseHeader(true);
-            
+
             //Setup our rendering parameters
             LatestQueryInfo info = stream.getQueryInfo();
             boolean bookend = false;
@@ -148,129 +144,53 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             if(info instanceof ZonedDateTimeRangeQueryInfo)
                 bookend = ((ZonedDateTimeRangeQueryInfo)info).isBookend();
             
-            
-            if(stream instanceof MultiPointTimeRangeDatabaseStream) {
-                builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+            if(stream instanceof MultiPointTimeRangeDatabaseStream || stream instanceof MultiPointLatestDatabaseStream) {
+                builder.addColumn(PointValueTimeCsvWriter.TIMESTAMP, ColumnType.NUMBER_OR_STRING);
                 if(info.isSingleArray()) {
                     if(info.isMultiplePointsPerArray()) {
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
                         Iterator<Integer> it = voMap.keySet().iterator();
                         while(it.hasNext()) {
                             String xid = voMap.get(it.next()).getXid();
-                            builder.addColumn(xid, ColumnType.NUMBER_OR_STRING);
+                            builder.addColumn(xid + PointValueTimeCsvWriter.DOT_VALUE, ColumnType.NUMBER_OR_STRING);
                             if(bookend)
-                                builder.addColumn(xid + ".bookend", ColumnType.BOOLEAN);
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT_BOOKEND, ColumnType.BOOLEAN);
                             if(useCache)
-                                builder.addColumn(xid +".cached", ColumnType.BOOLEAN);
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT_CACHED, ColumnType.BOOLEAN);
                             if(rendered)
-                                builder.addColumn(xid + ".rendered", ColumnType.STRING);
-                            builder.addColumn(xid + ".annotation", ColumnType.STRING);
-                            builder.addColumn(xid + ".name", ColumnType.STRING);
-                            builder.addColumn(xid + ".deviceName", ColumnType.STRING);
-                            builder.addColumn(xid + ".dataSourceName", ColumnType.STRING);
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT_RENDERED, ColumnType.STRING);
+                            builder.addColumn(xid + PointValueTimeCsvWriter.DOT_ANNOTATION, ColumnType.STRING);
+                            for(DataPointField field : info.getExtraFields())
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT + field.getFieldName(), ColumnType.STRING);
                         }
                     }else {
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
+                        builder.addColumn(PointValueTimeCsvWriter.VALUE, ColumnType.NUMBER_OR_STRING);
                         if(bookend)
-                            builder.addColumn("bookend", ColumnType.BOOLEAN);
+                            builder.addColumn(PointValueTimeCsvWriter.BOOKEND, ColumnType.BOOLEAN);
                         if(useCache)
-                            builder.addColumn("cached", ColumnType.BOOLEAN);
+                            builder.addColumn(PointValueTimeCsvWriter.CACHED, ColumnType.BOOLEAN);
                         if(rendered)
-                            builder.addColumn("rendered", ColumnType.STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
-                        builder.addColumn("name", ColumnType.STRING);
-                        builder.addColumn("deviceName", ColumnType.STRING);
-                        builder.addColumn("dataSourceName", ColumnType.STRING);
+                            builder.addColumn(PointValueTimeCsvWriter.RENDERED, ColumnType.STRING);
+                        builder.addColumn(PointValueTimeCsvWriter.ANNOTATION, ColumnType.STRING);
+                        for(DataPointField field : info.getExtraFields())
+                            builder.addColumn(field.getFieldName(), ColumnType.STRING);
                     }
                 }else {
-                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        builder.addColumn("xid", ColumnType.STRING);
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        if(bookend)
-                            builder.addColumn("bookend", ColumnType.BOOLEAN);
-                        if(useCache)
-                            builder.addColumn("cached", ColumnType.BOOLEAN);
-                        if(rendered)
-                            builder.addColumn("rendered", ColumnType.STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
 
-                    }else {
-                        builder.addColumn("xid", ColumnType.STRING);
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        if(bookend)
-                            builder.addColumn("bookend", ColumnType.BOOLEAN);
-                        if(useCache)
-                            builder.addColumn("cached", ColumnType.BOOLEAN);
-                        if(rendered)
-                            builder.addColumn("rendered", ColumnType.STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
-                    }
-                    builder.addColumn("name", ColumnType.STRING);
-                    builder.addColumn("deviceName", ColumnType.STRING);
-                    builder.addColumn("dataSourceName", ColumnType.STRING);
-                }
-            }else if(stream instanceof MultiPointLatestDatabaseStream) {
-                builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
-                if(stream.getQueryInfo().isSingleArray()) {
-                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        Map<Integer, DataPointVO> voMap = stream.getVoMap();
-                        Iterator<Integer> it = voMap.keySet().iterator();
-                        while(it.hasNext()) {
-                            String xid = voMap.get(it.next()).getXid();
-                            builder.addColumn(xid, ColumnType.NUMBER_OR_STRING);
-                            if(bookend)
-                                builder.addColumn(xid + ".bookend", ColumnType.BOOLEAN);
-                            if(useCache)
-                                builder.addColumn(xid +".cached", ColumnType.BOOLEAN);
-                            if(rendered)
-                                builder.addColumn(xid + ".rendered", ColumnType.STRING);
-                            builder.addColumn(xid + ".name", ColumnType.STRING);
-                            builder.addColumn(xid + ".deviceName", ColumnType.STRING);
-                            builder.addColumn(xid + ".dataSourceName", ColumnType.STRING);
-                        }
-                    }else {
-                        //Single array
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        if(bookend)
-                            builder.addColumn("bookend", ColumnType.BOOLEAN);
-                        if(useCache)
-                            builder.addColumn("cached", ColumnType.BOOLEAN);
-                        if(rendered)
-                            builder.addColumn("rendered", ColumnType.STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
-                        builder.addColumn("name", ColumnType.STRING);
-                        builder.addColumn("deviceName", ColumnType.STRING);
-                        builder.addColumn("dataSourceName", ColumnType.STRING);
-                    }
-
-                }else {
-                    if(stream.getQueryInfo().isMultiplePointsPerArray()) {
-                        builder.addColumn("xid", ColumnType.STRING);
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        if(bookend)
-                            builder.addColumn("bookend", ColumnType.BOOLEAN);
-                        if(useCache)
-                            builder.addColumn("cached", ColumnType.BOOLEAN);
-                        if(rendered)
-                            builder.addColumn("rendered", ColumnType.STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
-                    }else {
-                        builder.addColumn("xid", ColumnType.STRING);
-                        builder.addColumn("value", ColumnType.NUMBER_OR_STRING);
-                        if(bookend)
-                            builder.addColumn("bookend", ColumnType.BOOLEAN);
-                        if(useCache)
-                            builder.addColumn("cached", ColumnType.BOOLEAN);
-                        if(rendered)
-                            builder.addColumn("rendered", ColumnType.STRING);
-                        builder.addColumn("annotation", ColumnType.STRING);
-                    }
-                    builder.addColumn("name", ColumnType.STRING);
-                    builder.addColumn("deviceName", ColumnType.STRING);
-                    builder.addColumn("dataSourceName", ColumnType.STRING);
+                    builder.addColumn(PointValueTimeCsvWriter.XID, ColumnType.STRING);
+                    builder.addColumn(PointValueTimeCsvWriter.VALUE, ColumnType.NUMBER_OR_STRING);
+                    if(bookend)
+                        builder.addColumn(PointValueTimeCsvWriter.BOOKEND, ColumnType.BOOLEAN);
+                    if(useCache)
+                        builder.addColumn(PointValueTimeCsvWriter.CACHED, ColumnType.BOOLEAN);
+                    if(rendered)
+                        builder.addColumn(PointValueTimeCsvWriter.RENDERED, ColumnType.STRING);
+                    builder.addColumn(PointValueTimeCsvWriter.ANNOTATION, ColumnType.STRING);
+                    for(DataPointField field : info.getExtraFields())
+                        builder.addColumn(field.getFieldName(), ColumnType.STRING);
                 }
             }else if(stream instanceof MultiDataPointStatisticsQuantizerStream) {
-                builder.addColumn("timestamp", ColumnType.NUMBER_OR_STRING);
+                builder.addColumn(PointValueTimeCsvWriter.TIMESTAMP, ColumnType.NUMBER_OR_STRING);
                 if(stream.getQueryInfo().isSingleArray()) {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();
@@ -278,12 +198,16 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         
                         while(it.hasNext()) {
                             String xid = voMap.get(it.next()).getXid();
-                            builder.addColumn(xid + "." + info.getRollup(), ColumnType.NUMBER_OR_STRING);
+                            if(info.getRollup() == RollupEnum.ALL) {
+                                for(RollupEnum rollup : getAllRollups())
+                                    builder.addColumn(xid + PointValueTimeCsvWriter.DOT + rollup.name(), ColumnType.NUMBER_OR_STRING);
+                            }else {
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT_VALUE, ColumnType.NUMBER_OR_STRING);
+                            }
                             if(rendered)
-                                builder.addColumn(xid + ".rendered", ColumnType.STRING);
-                            builder.addColumn(xid + ".name", ColumnType.STRING);
-                            builder.addColumn(xid + ".deviceName", ColumnType.STRING);
-                            builder.addColumn(xid + ".dataSourceName", ColumnType.STRING);
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT_RENDERED, ColumnType.STRING);
+                            for(DataPointField field : info.getExtraFields())
+                                builder.addColumn(xid + PointValueTimeCsvWriter.DOT + field.getFieldName(), ColumnType.STRING);
                         }
                     }else {
                         //Single array
@@ -292,26 +216,28 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                                 builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
                             }
                         }else
-                            builder.addColumn(info.getRollup().name(), ColumnType.NUMBER_OR_STRING);
+                            builder.addColumn(PointValueTimeCsvWriter.VALUE, ColumnType.NUMBER_OR_STRING);
+                        if(rendered)
+                            builder.addColumn(PointValueTimeCsvWriter.RENDERED, ColumnType.STRING);
+                        for(DataPointField field : info.getExtraFields())
+                            builder.addColumn(field.getFieldName(), ColumnType.STRING);
                     }
                 }else {
-                    builder.addColumn("xid", ColumnType.STRING);
+                    builder.addColumn(PointValueTimeCsvWriter.XID, ColumnType.STRING);
                     if(info.getRollup() == RollupEnum.ALL) {
                         for(RollupEnum rollup : getAllRollups()) {
                             builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
                         }
                     }else
-                        builder.addColumn(info.getRollup().toString(), ColumnType.NUMBER_OR_STRING);
+                        builder.addColumn(PointValueTimeCsvWriter.VALUE, ColumnType.NUMBER_OR_STRING);
                     if(rendered)
-                        builder.addColumn("rendered", ColumnType.STRING);
-                    builder.addColumn("name", ColumnType.STRING);
-                    builder.addColumn("deviceName", ColumnType.STRING);
-                    builder.addColumn("dataSourceName", ColumnType.STRING);
+                        builder.addColumn(PointValueTimeCsvWriter.RENDERED, ColumnType.STRING);
+                    for(DataPointField field : info.getExtraFields())
+                        builder.addColumn(field.getFieldName(), ColumnType.STRING);
                 }
             }
-            
             generator.setSchema(builder.build());
-            PointValueTimeWriter writer = new PointValueTimeCsvWriter(stream.getQueryInfo(), generator);
+            PointValueTimeWriter writer = new PointValueTimeCsvWriter(stream.getQueryInfo(), stream.getVoMap().size(), generator);
             stream.start(writer);
             stream.streamData(writer);
             stream.finish(writer);

@@ -20,7 +20,6 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
-import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
@@ -104,14 +103,6 @@ public abstract class PointValueTimeWriter {
                     writeStringField(name, info.writeImageLink(timestamp, vo.getId()));
                     break;
             }
-        if(info.isUseRendered()) {
-            String strValue;
-            if(value == null)
-                strValue = "-";
-            else
-                strValue = vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
-            writeStringField(RENDERED, strValue);
-        } 
     }
     
     public void writeTimestamp(long timestamp) throws IOException {
@@ -157,6 +148,12 @@ public abstract class PointValueTimeWriter {
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
+            writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime());
+            writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime());
+            writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime());
+            writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+        } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
+            StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
             writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime());
             writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime());
             writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime());
@@ -267,11 +264,4 @@ public abstract class PointValueTimeWriter {
     public abstract void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException;
     public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
 
-    /**
-     * @param e
-     */
-    public void sendServerErrorResponse(IOException e) {
-        // TODO Auto-generated method stub
-        
-    }
 }

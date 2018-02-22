@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
 import com.infiniteautomation.mango.rest.v2.util.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
@@ -53,15 +54,16 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * @param simplifyTolerance
      * @param simplifyTarget
      * @param boolean truncate - Truncate the start and end dates to be round numbers
+     * @param extraFields - Extra information about each data point
      */
     public ZonedDateTimeRangeQueryInfo(ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
             Integer limit, boolean bookend, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
-            Double simplifyTolerance, Integer simplifyTarget, boolean truncate) {
+            Double simplifyTolerance, Integer simplifyTarget, boolean truncate, DataPointField[] extraFields) {
         super(from, dateTimeFormat, timezone,
                 limit, useRendered, multiplePointsPerArray, 
-                singleArray, useCache, simplifyTolerance, simplifyTarget);
+                singleArray, useCache, simplifyTolerance, simplifyTarget, extraFields);
 
 
         // Determine the timezone to use based on the incoming dates

@@ -11,6 +11,7 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -27,8 +28,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         super(info);
         this.jgen = jgen;
     }
-
-
     
     @Override
     public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
@@ -51,6 +50,9 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                 if(info.isUseRendered())
                     writeStringField(RENDERED, info.getRenderedString(vo, pvt));
             }
+            for(DataPointField field : info.getExtraFields()) {
+                writeStringField(field.getFieldName(), field.getFieldValue(vo));
+            }
             this.jgen.writeEndObject();
         }else {
             if(pvt == null) {
@@ -66,6 +68,9 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                 writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
                 if(info.isUseRendered())
                     writeStringField(RENDERED, info.getRenderedString(vo, pvt));
+            }
+            for(DataPointField field : info.getExtraFields()) {
+                writeStringField(field.getFieldName(), field.getFieldValue(vo));
             }
         }
         this.jgen.writeEndObject();
@@ -99,6 +104,9 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                     if(info.isUseRendered())
                         writeStringField(RENDERED, info.getRenderedString(vo, pvt));
                 }
+                for(DataPointField field : info.getExtraFields()) {
+                    writeStringField(field.getFieldName(), field.getFieldValue(vo));
+                }
                 this.jgen.writeEndObject();
             }else {
                 if(pvt == null) {
@@ -112,6 +120,9 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                     if(info.isUseRendered())
                         writeStringField(RENDERED, info.getRenderedString(vo, pvt));
                 }
+            }
+            for(DataPointField field : info.getExtraFields()) {
+                writeStringField(field.getFieldName(), field.getFieldValue(vo));
             }
         }
         this.jgen.writeEndObject();
@@ -130,9 +141,11 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             if(info.isMultiplePointsPerArray()) {
                 this.jgen.writeObjectFieldStart(vo.getXid());
                 writeStatistic(VALUE, gen.getGenerator(), gen.getVo());
+                for(DataPointField field : info.getExtraFields())
+                    writeStringField(field.getFieldName(), field.getFieldValue(vo));
                 this.jgen.writeEndObject();
             }else {
-                
+                throw new ShouldNeverHappenException("Implement me?");
             }
         }
         this.jgen.writeEndObject();
@@ -150,19 +163,16 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         if(info.isMultiplePointsPerArray()) {
             this.jgen.writeObjectFieldStart(vo.getXid());
             writeStatistic(VALUE, periodStats.getGenerator(), periodStats.getVo());
+            for(DataPointField field : info.getExtraFields())
+                writeStringField(field.getFieldName(), field.getFieldValue(vo));
             this.jgen.writeEndObject();
         }else {
             writeStatistic(VALUE, periodStats.getGenerator(), periodStats.getVo());
+            for(DataPointField field : info.getExtraFields())
+                writeStringField(field.getFieldName(), field.getFieldValue(vo));
         }
         this.jgen.writeEndObject();
     }
-    
-    
-    
-    
-    
-    
-    
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeWriter#writeStringField(java.lang.String, java.lang.String)
@@ -227,8 +237,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     public void writeEndArray() throws IOException {
         jgen.writeEndArray();
     }
-
-
 
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeStartArray()

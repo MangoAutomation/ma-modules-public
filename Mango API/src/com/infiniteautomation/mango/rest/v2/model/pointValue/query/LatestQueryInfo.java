@@ -14,9 +14,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
@@ -47,6 +49,8 @@ public class LatestQueryInfo {
     protected final Integer simplifyTarget;
     protected final boolean simplifyHighQuality = true; //Currently not in api
     
+    protected final DataPointField[] extraFields;
+    
     /**
      * 
      * @param from
@@ -63,7 +67,7 @@ public class LatestQueryInfo {
     public LatestQueryInfo(ZonedDateTime from, String dateTimeFormat, String timezone, 
             Integer limit, boolean useRendered, 
             boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
-            Double simplifyTolerance, Integer simplifyTarget) {
+            Double simplifyTolerance, Integer simplifyTarget, DataPointField[] extraFields) {
         
         // Quick validation
         validateTimezone(timezone);
@@ -107,6 +111,11 @@ public class LatestQueryInfo {
         
         this.simplifyTolerance = simplifyTolerance;
         this.simplifyTarget = simplifyTarget;
+        
+        if(extraFields != null)
+            this.extraFields = extraFields;
+        else
+            this.extraFields = new DataPointField[0];
     }
     
     
@@ -148,6 +157,10 @@ public class LatestQueryInfo {
     
     public RollupEnum getRollup() {
         return RollupEnum.NONE;
+    }
+    
+    public DataPointField[] getExtraFields() {
+        return this.extraFields;
     }
     
     public String getNoDataMessage() {
@@ -198,6 +211,18 @@ public class LatestQueryInfo {
         return vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
     }
 
+    /**
+     * @param vo
+     * @param value
+     * @return
+     */
+    public String getRenderedString(DataPointVO vo, DataValue value) {
+        if(value == null)
+            return "-";
+        else
+            return vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
+    }
+    
     /**
      * Return an rendered string representation of the integral
      * 

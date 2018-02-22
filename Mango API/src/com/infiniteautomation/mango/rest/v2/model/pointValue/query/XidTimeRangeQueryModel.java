@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
@@ -35,8 +36,10 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
      */
     public XidTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
             String timezone, ZonedDateTime from, ZonedDateTime to, Integer limit,
-            boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance, Integer simplifyTarget) {
-        super(xids, useRendered, dateTimeFormat, timezone, limit, simplifyTolerance, simplifyTarget);
+            boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance, 
+            Integer simplifyTarget, DataPointField[] extraFields) {
+        super(xids, useRendered, dateTimeFormat, timezone, limit, 
+                simplifyTolerance, simplifyTarget, extraFields);
         this.from = from;
         this.to = to;
         this.limit = limit;
@@ -112,7 +115,7 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
             boolean singleArray) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
                 RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, 
-                singleArray, useCache, simplifyTolerance, simplifyTarget, false);
+                singleArray, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
     };
     
 }

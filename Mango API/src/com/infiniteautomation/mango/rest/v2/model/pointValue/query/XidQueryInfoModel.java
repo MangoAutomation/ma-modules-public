@@ -4,6 +4,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+
 /**
  *
  * @author Terry Packer
@@ -17,6 +19,8 @@ public abstract class XidQueryInfoModel {
     protected Integer limit;
     protected Double simplifyTolerance;
     protected Integer simplifyTarget;
+    protected DataPointField[] extraFields;
+    
     /**
      * 
      */
@@ -30,7 +34,8 @@ public abstract class XidQueryInfoModel {
      * @param timezone
      */
     public XidQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat,
-            String timezone, Integer limit, Double simplifyTolerance, Integer simplifyTarget) {
+            String timezone, Integer limit, Double simplifyTolerance, Integer simplifyTarget, 
+            DataPointField[] extraFields) {
         super();
         this.xids = xids;
         this.useRendered = useRendered;
@@ -39,6 +44,7 @@ public abstract class XidQueryInfoModel {
         this.limit = limit;
         this.simplifyTolerance = simplifyTolerance;
         this.simplifyTarget = simplifyTarget;
+        this.extraFields = extraFields;
     }
     /**
      * @return the xids
@@ -124,6 +130,18 @@ public abstract class XidQueryInfoModel {
      */
     public void setSimplifyTarget(Integer simplifyTarget) {
         this.simplifyTarget = simplifyTarget;
+    }
+    /**
+     * @return the extraFields
+     */
+    public DataPointField[] getExtraFields() {
+        return extraFields;
+    }
+    /**
+     * @param extraFields the extraFields to set
+     */
+    public void setExtraFields(DataPointField[] extraFields) {
+        this.extraFields = extraFields;
     }
     
 }

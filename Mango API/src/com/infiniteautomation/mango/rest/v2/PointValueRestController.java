@@ -30,6 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
@@ -119,11 +120,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
-                useRendered, false, true, useCache, simplifyTolerance, simplifyTarget);
+                useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, extraFields);
         
         return generateLatestStream(user, info, new String[] {xid});
     }    
@@ -175,11 +180,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
-                useRendered, true, true, useCache, simplifyTolerance, simplifyTarget);
+                useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, extraFields);
         
         return generateLatestStream(user, info, xids);
     }
@@ -251,11 +260,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
-                useRendered, false, false, useCache, simplifyTolerance, simplifyTarget);
+                useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, extraFields);
         
         return generateLatestStream(user, info, xids);
     } 
@@ -334,13 +347,17 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
             Integer simplifyTarget,
+
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
             
             @AuthenticationPrincipal User user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, false);
+                bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -400,6 +417,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
 
@@ -410,7 +431,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
  
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null, truncate);
+                true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -469,12 +490,16 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, false);
+                bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
         return generateStream(user, info, xids);
     }
     
@@ -550,6 +575,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
         
@@ -560,7 +589,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, true,
-                useRendered, true, true, PointValueTimeCacheControl.NONE, null, null, truncate);
+                useRendered, true, true, PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
         return generateStream(user, info, xids);
     }
     
@@ -630,12 +659,16 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
 
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, false);
+                bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
         
         return generateStream(user, info, xids);
     }
@@ -706,6 +739,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
+            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            DataPointField[] extraFields,
+            
             @AuthenticationPrincipal User user
             ) {
         
@@ -716,7 +753,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null, truncate);
+                true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
         
         return generateStream(user, info, xids);
     }

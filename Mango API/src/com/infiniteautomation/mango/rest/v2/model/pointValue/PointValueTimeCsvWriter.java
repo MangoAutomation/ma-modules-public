@@ -12,13 +12,17 @@ import javax.measure.unit.Unit;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
+import com.infiniteautomation.mango.statistics.AnalogStatistics;
+import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
+import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.view.text.TextRenderer;
+import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  *
@@ -26,26 +30,30 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
 
-    protected static final String DOT = ".";
-    protected static final String DOT_RENDERED = DOT + "rendered";
-    protected static final String DOT_BOOKEND = DOT + "bookend";
-    protected static final String DOT_CACHED = DOT + "cached";
-    protected static final String NAME = "name";
-    protected static final String DEVICE_NAME = "deviceName";
-    protected static final String DATA_SOURCE_NAME = "dataSourceName";
+    public static final String DOT = ".";
+    public static final String DOT_RENDERED = DOT + "rendered";
+    public static final String DOT_BOOKEND = DOT + "bookend";
+    public static final String DOT_CACHED = DOT + "cached";
+    public static final String NAME = "name";
+    public static final String DEVICE_NAME = "deviceName";
+    public static final String DATA_SOURCE_NAME = "dataSourceName";
     
-    protected static final String DOT_NAME = DOT + NAME;
-    protected static final String DOT_DEVICE_NAME = DOT + DEVICE_NAME;
-    protected static final String DOT_DATA_SOURCE_NAME = DOT + DATA_SOURCE_NAME;
+    public static final String DOT_ANNOTATION = DOT + ANNOTATION;
+    public static final String DOT_NAME = DOT + NAME;
+    public static final String DOT_DEVICE_NAME = DOT + DEVICE_NAME;
+    public static final String DOT_DATA_SOURCE_NAME = DOT + DATA_SOURCE_NAME;
+    public static final String DOT_VALUE = DOT + VALUE;
     
-    protected static final String XID = "xid";
+    public static final String XID = "xid";
     
+    protected final int pointCount;
     /**
      * @param info
      * @param jgen
      */
-    public PointValueTimeCsvWriter(LatestQueryInfo info, JsonGenerator jgen) {
+    public PointValueTimeCsvWriter(LatestQueryInfo info, int pointCount, JsonGenerator jgen) {
         super(info, jgen);
+        this.pointCount = pointCount;
     }
 
     @Override
@@ -118,14 +126,13 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         DataPointVO vo = periodStats.getVo();
         if(info.isMultiplePointsPerArray()) {
             writeStringField(XID, vo.getXid());
-            writeStatistic(vo.getXid() + DOT + info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+            writeStatistic(vo.getXid() + DOT_VALUE, periodStats.getGenerator(), periodStats.getVo());
             writeDataPointInfoColumns(periodStats.getVo(), true);
         }else {
             if(!info.isSingleArray())
                 writeStringField(XID, vo.getXid());
-            writeStatistic(info.getRollup().name(), periodStats.getGenerator(), periodStats.getVo());
+            writeStatistic(VALUE, periodStats.getGenerator(), periodStats.getVo());
             writeDataPointInfoColumns(periodStats.getVo(), false);
-                
         }
         this.writeEndObject();
     }
@@ -138,7 +145,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             String xid = value.getVo().getXid();
             if(info.isMultiplePointsPerArray()) {
                 //XID columns
-                writeDataValue(xid, value.getVo(), value.getPvt().getValue(), value.getPvt().getTime());
+                writeDataValue(xid + DOT_VALUE, value.getVo(), value.getPvt().getValue(), value.getPvt().getTime());
                 writeDataPointInfoColumns(value.getVo(), true);
                 if(value.isBookend())
                     writeBooleanField(xid + DOT_BOOKEND, value.isBookend());
@@ -161,7 +168,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         for(DataPointStatisticsGenerator gen : periodStats) {
             DataPointVO vo = gen.getVo();
             if(info.isMultiplePointsPerArray()) {
-                writeStatistic(vo.getXid() + DOT + info.getRollup(), gen.getGenerator(), gen.getVo());
+                writeStatistic(vo.getXid() + DOT_VALUE, gen.getGenerator(), gen.getVo());
                 writeDataPointInfoColumns(vo, true);
             }else {
                 throw new ShouldNeverHappenException("Implement me?");
@@ -201,17 +208,12 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
             }
         }
         if(info.isUseRendered()) {
-            String strValue;
-            if(value == null)
-                strValue = "-";
+            if(info.isSingleArray() && pointCount > 1)
+                writeStringField(vo.getXid() + DOT_RENDERED, info.getRenderedString(vo, value));
             else
-                strValue = vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
-            if(info.isSingleArray())
-                writeStringField(vo.getXid() + DOT_RENDERED, strValue);
-            else
-                writeStringField(RENDERED, strValue);
+                writeStringField(RENDERED, info.getRenderedString(vo, value));
         }
-        writeDataPointInfoColumns(vo, info.isSingleArray());
+        writeDataPointInfoColumns(vo, info.isSingleArray() && pointCount > 1);
     }
     
     /* (non-Javadoc)
@@ -224,13 +226,12 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         } else {
             writeDoubleField(name, integral);
             if(info.isUseRendered()) {
-                if(info.isSingleArray())
+                if(info.isSingleArray() && pointCount > 1)
                     writeStringField(vo.getXid() + DOT_RENDERED, info.getIntegralString(vo, integral));
                 else
                     writeStringField(RENDERED, info.getIntegralString(vo, integral));
             }
         }
-        writeDataPointInfoColumns(vo, info.isSingleArray());
     }
     
     /* (non-Javadoc)
@@ -243,13 +244,12 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         } else {
             writeDoubleField(name, value);
             if(info.isUseRendered()) {
-                if(info.isSingleArray())
+                if(info.isSingleArray() && pointCount > 1)
                     writeStringField(vo.getXid() + DOT_RENDERED, info.getRenderedString(vo, value));
                 else
                     writeStringField(RENDERED, info.getRenderedString(vo, value));
             }
         }
-        writeDataPointInfoColumns(vo, info.isSingleArray());
     }
     
     /**
@@ -260,13 +260,76 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
      */
     protected void writeDataPointInfoColumns(DataPointVO vo, boolean useXid) throws IOException {
         if(useXid) {
-            writeStringField(vo.getXid() + DOT_NAME, vo.getName());
-            writeStringField(vo.getXid() + DOT_DEVICE_NAME, vo.getDeviceName());
-            writeStringField(vo.getXid() + DOT_DATA_SOURCE_NAME, vo.getDataSourceName());
+            for(DataPointField field : info.getExtraFields()) {
+                writeStringField(vo.getXid() + DOT + field.getFieldName(), field.getFieldValue(vo));
+            }
         }else {
-            writeStringField(NAME, vo.getName());
-            writeStringField(DEVICE_NAME, vo.getDeviceName());
-            writeStringField(DATA_SOURCE_NAME, vo.getDataSourceName());
+            for(DataPointField field : info.getExtraFields()) {
+                writeStringField(field.getFieldName(), field.getFieldValue(vo));
+            }
+        }
+    }
+    
+    @Override
+    public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo)
+            throws IOException {
+
+        if(info.isSingleArray() && pointCount > 1) {
+            if (statisticsGenerator instanceof ValueChangeCounter) {
+                //We only need the timestamp here for image links
+                ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
+                writeDataValue(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime());
+                writeDataValue(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime());
+                writeDataValue(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime());
+                writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
+            } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
+                StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
+                writeDataValue(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime());
+                writeDataValue(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime());
+                writeDataValue(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime());
+                writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
+            } else if (statisticsGenerator instanceof AnalogStatistics) {
+                AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
+                writeAccumulator(vo.getXid() + DOT + RollupEnum.ACCUMULATOR.name(), vo, stats);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.AVERAGE.name(), vo, stats.getAverage());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.DELTA.name(), vo, stats.getDelta());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.SUM.name(), vo, stats.getSum());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue());
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue());
+                writeIntegral(vo.getXid() + DOT + RollupEnum.INTEGRAL.name(), vo, stats.getIntegral());
+                writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
+            }
+        }else {
+            if (statisticsGenerator instanceof ValueChangeCounter) {
+                //We only need the timestamp here for image links
+                ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
+                writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime());
+                writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime());
+                writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime());
+                writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
+                StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
+                writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime());
+                writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime());
+                writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime());
+                writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            } else if (statisticsGenerator instanceof AnalogStatistics) {
+                AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
+                writeAccumulator(RollupEnum.ACCUMULATOR.name(), vo, stats);
+                writeAnalogStatistic(RollupEnum.AVERAGE.name(), vo, stats.getAverage());
+                writeAnalogStatistic(RollupEnum.DELTA.name(), vo, stats.getDelta());
+                writeAnalogStatistic(RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue());
+                writeAnalogStatistic(RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue());
+                writeAnalogStatistic(RollupEnum.SUM.name(), vo, stats.getSum());
+                writeAnalogStatistic(RollupEnum.START.name(), vo, stats.getStartValue());
+                writeAnalogStatistic(RollupEnum.FIRST.name(), vo, stats.getFirstValue());
+                writeAnalogStatistic(RollupEnum.LAST.name(), vo, stats.getLastValue());
+                writeIntegral(RollupEnum.INTEGRAL.name(), vo, stats.getIntegral());
+                writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            }
         }
     }
     
