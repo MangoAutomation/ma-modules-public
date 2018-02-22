@@ -413,7 +413,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "timePeriods", required = false) 
             Integer timePeriods,
             
-            @ApiParam(value = "Truncate the from and to times based on the time period settings", required = false,allowMultiple = false) 
+            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false) 
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
@@ -571,7 +571,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "dateTimeFormat", required = false) 
             String dateTimeFormat,
             
-            @ApiParam(value = "Truncate the from and to times based on the time period settings", required = false,allowMultiple = false) 
+            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false) 
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
@@ -735,7 +735,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                     required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
             
-            @ApiParam(value = "Truncate the from and to times based on the time period settings", required = false,allowMultiple = false) 
+            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false) 
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
