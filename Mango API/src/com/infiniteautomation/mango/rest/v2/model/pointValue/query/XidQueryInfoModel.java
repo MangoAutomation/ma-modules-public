@@ -4,7 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 
 /**
  *
@@ -13,38 +13,32 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
 public abstract class XidQueryInfoModel {
 
     protected String[] xids;
-    protected boolean useRendered;
     protected String dateTimeFormat;
     protected String timezone;
     protected Integer limit;
     protected Double simplifyTolerance;
     protected Integer simplifyTarget;
-    protected DataPointField[] extraFields;
+    protected PointValueField[] fields;
     
-    /**
-     * 
-     */
-    public XidQueryInfoModel() {
-        // TODO Auto-generated constructor stub
-    }
+    public XidQueryInfoModel() { }
+
     /**
      * @param xids
      * @param useRendered
      * @param dateTimeFormat
      * @param timezone
      */
-    public XidQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat,
+    public XidQueryInfoModel(String[] xids, String dateTimeFormat,
             String timezone, Integer limit, Double simplifyTolerance, Integer simplifyTarget, 
-            DataPointField[] extraFields) {
+            PointValueField[] fields) {
         super();
         this.xids = xids;
-        this.useRendered = useRendered;
         this.dateTimeFormat = dateTimeFormat;
         this.timezone = timezone;
         this.limit = limit;
         this.simplifyTolerance = simplifyTolerance;
         this.simplifyTarget = simplifyTarget;
-        this.extraFields = extraFields;
+        this.fields = fields;
     }
     /**
      * @return the xids
@@ -58,18 +52,7 @@ public abstract class XidQueryInfoModel {
     public void setXids(String[] xids) {
         this.xids = xids;
     }
-    /**
-     * @return the useRendered
-     */
-    public boolean isUseRendered() {
-        return useRendered;
-    }
-    /**
-     * @param useRendered the useRendered to set
-     */
-    public void setUseRendered(boolean useRendered) {
-        this.useRendered = useRendered;
-    }
+
     /**
      * @return the dateTimeFormat
      */
@@ -134,14 +117,14 @@ public abstract class XidQueryInfoModel {
     /**
      * @return the extraFields
      */
-    public DataPointField[] getExtraFields() {
-        return extraFields;
+    public PointValueField[] getFields() {
+        return fields;
     }
     /**
      * @param extraFields the extraFields to set
      */
-    public void setExtraFields(DataPointField[] extraFields) {
-        this.extraFields = extraFields;
+    public void setFields(PointValueField[] fields) {
+        this.fields = fields;
     }
     
 }

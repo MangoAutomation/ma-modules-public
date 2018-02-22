@@ -7,7 +7,7 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 
 /**
  *
@@ -22,11 +22,11 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
         
     }
     
-    public XidLatestQueryInfoModel(String[] xids, boolean useRendered, String dateTimeFormat, String timezone,
+    public XidLatestQueryInfoModel(String[] xids, String dateTimeFormat, String timezone,
             ZonedDateTime before, Integer limit,
             PointValueTimeCacheControl useCache, Double simplifyTolerance, Integer simplifyTarget,
-            DataPointField[] extraFields) {
-        super(xids, useRendered, dateTimeFormat, timezone, limit, simplifyTolerance, simplifyTarget, extraFields);
+            PointValueField[] extraFields) {
+        super(xids, dateTimeFormat, timezone, limit, simplifyTolerance, simplifyTarget, extraFields);
         this.before = before;
         this.useCache = useCache;
     }
@@ -64,6 +64,7 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
      * @throws ValidationFailedRestException
      */
     public  LatestQueryInfo createLatestQueryInfo(boolean multiplePointsPerArray, boolean singleArray) throws ValidationFailedRestException {
-        return new LatestQueryInfo(before, dateTimeFormat, timezone, limit, useRendered, multiplePointsPerArray, singleArray, useCache, simplifyTolerance, simplifyTarget, extraFields);
+        return new LatestQueryInfo(before, dateTimeFormat, timezone, limit, multiplePointsPerArray, singleArray, 
+                useCache, simplifyTolerance, simplifyTarget, fields);
     }
 }

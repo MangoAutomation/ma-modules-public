@@ -7,7 +7,7 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 
@@ -26,10 +26,10 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
 
     }
     
-    public XidRollupTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
+    public XidRollupTimeRangeQueryModel(String[] xids, String dateTimeFormat,
             String timezone, Integer limit, ZonedDateTime from, ZonedDateTime to, 
-            TimePeriod timePeriod, boolean truncate, DataPointField[] extraFields) {
-        super(xids, useRendered, dateTimeFormat, timezone, limit, null, null, extraFields);
+            TimePeriod timePeriod, boolean truncate, PointValueField[] fields) {
+        super(xids, dateTimeFormat, timezone, limit, null, null, fields);
         this.from = from;
         this.to = to;
         this.timePeriod = timePeriod;
@@ -102,7 +102,7 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray, RollupEnum rollup) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
-                rollup, timePeriod, limit, true, useRendered, multiplePointsPerArray, singleArray, 
-                PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
+                rollup, timePeriod, limit, true, multiplePointsPerArray, singleArray, 
+                PointValueTimeCacheControl.NONE, null, null, truncate, fields);
     };
 }

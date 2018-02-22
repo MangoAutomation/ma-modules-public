@@ -7,7 +7,7 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
@@ -25,21 +25,12 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
 
     }
     
-    /**
-     * @param xids
-     * @param useRendered
-     * @param dateTimeFormat
-     * @param from
-     * @param timezone
-     * @param limit
-     * @param useCache
-     */
-    public XidTimeRangeQueryModel(String[] xids, boolean useRendered, String dateTimeFormat,
+    public XidTimeRangeQueryModel(String[] xids, String dateTimeFormat,
             String timezone, ZonedDateTime from, ZonedDateTime to, Integer limit,
             boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance, 
-            Integer simplifyTarget, DataPointField[] extraFields) {
-        super(xids, useRendered, dateTimeFormat, timezone, limit, 
-                simplifyTolerance, simplifyTarget, extraFields);
+            Integer simplifyTarget, PointValueField[] fields) {
+        super(xids, dateTimeFormat, timezone, limit, 
+                simplifyTolerance, simplifyTarget, fields);
         this.from = from;
         this.to = to;
         this.limit = limit;
@@ -114,8 +105,8 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
-                RollupEnum.NONE, null, limit, bookend, useRendered, multiplePointsPerArray, 
-                singleArray, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
+                RollupEnum.NONE, null, limit, bookend, multiplePointsPerArray, 
+                singleArray, useCache, simplifyTolerance, simplifyTarget, false, fields);
     };
     
 }

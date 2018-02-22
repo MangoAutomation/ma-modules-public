@@ -12,8 +12,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -32,46 +30,12 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     @Override
     public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
         this.jgen.writeStartObject();
-        DataPointVO vo = value.getVo();
-        PointValueTime pvt = value.getPvt();
         if(info.isMultiplePointsPerArray()) {
-            this.jgen.writeObjectFieldStart(vo.getXid());
-            if(pvt == null) {
-                writeStringField(ANNOTATION, info.getNoDataMessage());
-            }else {
-                writeTimestamp(pvt.getTime());
-                if(pvt.isAnnotated())
-                    writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
-                if(value.isBookend())
-                    writeBooleanField(BOOKEND, true);
-                if(value.isCached())
-                    writeBooleanField(CACHED, true);
-                writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
-                if(info.isUseRendered())
-                    writeStringField(RENDERED, info.getRenderedString(vo, pvt));
-            }
-            for(DataPointField field : info.getExtraFields()) {
-                writeStringField(field.getFieldName(), field.getFieldValue(vo));
-            }
+            this.jgen.writeObjectFieldStart(value.getVo().getXid());
+            writeEntry(value, false, true);
             this.jgen.writeEndObject();
         }else {
-            if(pvt == null) {
-                writeStringField(ANNOTATION, info.getNoDataMessage());
-            }else {
-                writeTimestamp(pvt.getTime());
-                if(pvt.isAnnotated())
-                    writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
-                if(value.isBookend())
-                    writeBooleanField(BOOKEND, true);
-                if(value.isCached())
-                    writeBooleanField(CACHED, true);
-                writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
-                if(info.isUseRendered())
-                    writeStringField(RENDERED, info.getRenderedString(vo, pvt));
-            }
-            for(DataPointField field : info.getExtraFields()) {
-                writeStringField(field.getFieldName(), field.getFieldValue(vo));
-            }
+            writeEntry(value, false, true);
         }
         this.jgen.writeEndObject();
     }
@@ -83,46 +47,16 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     public void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp)  throws IOException{
 
         this.jgen.writeStartObject();
-        writeTimestamp(timestamp);
+        //If we have a timestamp write it here
+        if(info.fieldsContains(PointValueField.TIMESTAMP))
+            writeTimestamp(timestamp);
         for(DataPointVOPointValueTimeBookend value : currentValues) {
-            PointValueTime pvt = value.getPvt();
-            DataPointVO vo = value.getVo();
-            boolean bookend = value.isBookend(); 
-            boolean cached = value.isCached();
             if(info.isMultiplePointsPerArray()) {
-                this.jgen.writeObjectFieldStart(vo.getXid());
-                if(pvt == null) {
-                    writeStringField(ANNOTATION, info.getNoDataMessage());
-                }else {
-                    if(pvt.isAnnotated())
-                        writeStringField(ANNOTATION, ((AnnotatedIdPointValueTime) pvt).getAnnotation(translations));
-                    if(bookend)
-                        writeBooleanField(BOOKEND, true);
-                    if(cached)
-                        writeBooleanField(CACHED, true);
-                    writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
-                    if(info.isUseRendered())
-                        writeStringField(RENDERED, info.getRenderedString(vo, pvt));
-                }
-                for(DataPointField field : info.getExtraFields()) {
-                    writeStringField(field.getFieldName(), field.getFieldValue(vo));
-                }
+                this.jgen.writeObjectFieldStart(value.getVo().getXid());
+                writeEntry(value, false, false);
                 this.jgen.writeEndObject();
             }else {
-                if(pvt == null) {
-                    writeStringField(ANNOTATION, info.getNoDataMessage());
-                }else {
-                    if(bookend)
-                        writeBooleanField(BOOKEND, true);
-                    if(cached)
-                        writeBooleanField(CACHED, true);
-                    writeDataValue(VALUE, vo, pvt.getValue(), pvt.getTime());
-                    if(info.isUseRendered())
-                        writeStringField(RENDERED, info.getRenderedString(vo, pvt));
-                }
-            }
-            for(DataPointField field : info.getExtraFields()) {
-                writeStringField(field.getFieldName(), field.getFieldValue(vo));
+                writeEntry(value, false, false);
             }
         }
         this.jgen.writeEndObject();
@@ -135,14 +69,15 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     @Override
     public void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException{
         this.jgen.writeStartObject();
-        writeTimestamp(timestamp);
+
+        if(info.fieldsContains(PointValueField.TIMESTAMP))
+            writeTimestamp(timestamp);
+        
         for(DataPointStatisticsGenerator gen : periodStats) {
-            DataPointVO vo = gen.getVo();
             if(info.isMultiplePointsPerArray()) {
+                DataPointVO vo = gen.getVo();
                 this.jgen.writeObjectFieldStart(vo.getXid());
-                writeStatistic(VALUE, gen.getGenerator(), gen.getVo());
-                for(DataPointField field : info.getExtraFields())
-                    writeStringField(field.getFieldName(), field.getFieldValue(vo));
+                writeEntry(gen, false, false);
                 this.jgen.writeEndObject();
             }else {
                 throw new ShouldNeverHappenException("Implement me?");
@@ -158,18 +93,12 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     @Override
     public void writeStatsAsObject(DataPointStatisticsGenerator periodStats) throws IOException{
         this.jgen.writeStartObject();
-        writeTimestamp(periodStats.getGenerator().getPeriodStartTime());
-        DataPointVO vo = periodStats.getVo();
         if(info.isMultiplePointsPerArray()) {
-            this.jgen.writeObjectFieldStart(vo.getXid());
-            writeStatistic(VALUE, periodStats.getGenerator(), periodStats.getVo());
-            for(DataPointField field : info.getExtraFields())
-                writeStringField(field.getFieldName(), field.getFieldValue(vo));
+            this.jgen.writeObjectFieldStart(periodStats.getVo().getXid());
+            writeEntry(periodStats, false, true);
             this.jgen.writeEndObject();
         }else {
-            writeStatistic(VALUE, periodStats.getGenerator(), periodStats.getVo());
-            for(DataPointField field : info.getExtraFields())
-                writeStringField(field.getFieldName(), field.getFieldValue(vo));
+            writeEntry(periodStats, false, true);
         }
         this.jgen.writeEndObject();
     }

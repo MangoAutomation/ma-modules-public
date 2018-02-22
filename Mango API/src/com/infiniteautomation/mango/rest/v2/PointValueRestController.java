@@ -30,7 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
@@ -84,11 +84,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
             @ApiParam(value = "Point xid", required = true, allowMultiple = false) 
             @PathVariable String xid,
-
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
@@ -120,15 +115,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
-                useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, extraFields);
+                false, true, useCache, simplifyTolerance, simplifyTarget, fields);
         
         return generateLatestStream(user, info, new String[] {xid});
     }    
@@ -144,11 +139,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
             @ApiParam(value = "Point xids", required = true, allowMultiple = false) 
             @PathVariable String[] xids,
-
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
@@ -180,15 +170,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
-                useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, extraFields);
+                true, true, useCache, simplifyTolerance, simplifyTarget, fields);
         
         return generateLatestStream(user, info, xids);
     }
@@ -224,11 +214,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
             @ApiParam(value = "Point xids", required = true, allowMultiple = false) 
             @PathVariable String[] xids,
-
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
@@ -260,15 +245,15 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
-                useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, extraFields);
+                false, false, useCache, simplifyTolerance, simplifyTarget, fields);
         
         return generateLatestStream(user, info, xids);
     } 
@@ -303,11 +288,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
             @ApiParam(value = "Point xid", required = true, allowMultiple = false) 
             @PathVariable String xid,
-
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
@@ -348,16 +328,16 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
 
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, true, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
+                bookend, false, true, useCache, simplifyTolerance, simplifyTarget, false, fields);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -377,11 +357,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
             @PathVariable(value = "rollup") 
             RollupEnum rollup,
-            
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
             required = false, allowMultiple = false) 
@@ -417,9 +392,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
@@ -431,7 +406,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
  
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                true, useRendered, false, true, PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
+                true, false, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
         
         return generateStream(user, info, new String[] {xid});
     }
@@ -446,11 +421,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Point xids", required = true,
                     allowMultiple = true) 
             @PathVariable String[] xids,
-
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) 
@@ -490,16 +460,16 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, true, true, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
+                bookend, true, true, useCache, simplifyTolerance, simplifyTarget, false, fields);
         return generateStream(user, info, xids);
     }
     
@@ -534,11 +504,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
             @PathVariable(value = "rollup") 
             RollupEnum rollup,
-            
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
-            boolean useRendered,
             
             @ApiParam(value = "From time", required = false, allowMultiple = false) 
             @RequestParam(value = "from", required = false)
@@ -575,9 +540,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
@@ -589,7 +554,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, true,
-                useRendered, true, true, PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
+                true, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
         return generateStream(user, info, xids);
     }
     
@@ -623,9 +588,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Point xids", required = true, allowMultiple = true) 
             @PathVariable String[] xids,
 
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false, defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") boolean useRendered,
-            
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false) 
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
     
@@ -659,16 +621,16 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(required = false) 
             Integer simplifyTarget,
 
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
-                bookend, useRendered, false, false, useCache, simplifyTolerance, simplifyTarget, false, extraFields);
+                bookend, false, false, useCache, simplifyTolerance, simplifyTarget, false, fields);
         
         return generateStream(user, info, xids);
     }
@@ -704,10 +666,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
             @PathVariable(value = "rollup") 
             RollupEnum rollup,
-            
-            @ApiParam(value = "Return rendered value as 'rendered' field", required = false,
-                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-                            defaultValue = "false") boolean useRendered,
 
             @ApiParam(value = "From time", required = false,
                     allowMultiple = false) @RequestParam(value = "from", required = false)
@@ -739,9 +697,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "truncate", required = false, defaultValue="false") 
             boolean truncate,
             
-            @ApiParam(value = "Extra fields from data point to be included in the data", required = false, allowMultiple = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
             @RequestParam(required = false) 
-            DataPointField[] extraFields,
+            PointValueField[] fields,
             
             @AuthenticationPrincipal User user
             ) {
@@ -753,7 +711,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
-                true, useRendered, false, false, PointValueTimeCacheControl.NONE, null, null, truncate, extraFields);
+                true, false, false, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
         
         return generateStream(user, info, xids);
     }

@@ -14,7 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -35,7 +35,6 @@ public class LatestQueryInfo {
 
     protected final Integer limit;
 
-    protected final boolean useRendered;
     protected final boolean multiplePointsPerArray;
 
     protected final boolean singleArray;
@@ -49,25 +48,11 @@ public class LatestQueryInfo {
     protected final Integer simplifyTarget;
     protected final boolean simplifyHighQuality = true; //Currently not in api
     
-    protected final DataPointField[] extraFields;
+    protected final PointValueField[] fields;
     
-    /**
-     * 
-     * @param from
-     * @param dateTimeFormat
-     * @param timezone
-     * @param limit
-     * @param useRendered
-     * @param multiplePointsPerArray
-     * @param singleArray
-     * @param useCache
-     * @param simplifyTolerance
-     * @param simplifyTarget
-     */
     public LatestQueryInfo(ZonedDateTime from, String dateTimeFormat, String timezone, 
-            Integer limit, boolean useRendered, 
-            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
-            Double simplifyTolerance, Integer simplifyTarget, DataPointField[] extraFields) {
+            Integer limit, boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
+            Double simplifyTolerance, Integer simplifyTarget, PointValueField[] fields) {
         
         // Quick validation
         validateTimezone(timezone);
@@ -104,7 +89,6 @@ public class LatestQueryInfo {
         else
             this.dateTimeFormatter = null;
 
-        this.useRendered = useRendered;
         this.multiplePointsPerArray = multiplePointsPerArray;
         this.singleArray = singleArray;
         this.useCache = useCache;
@@ -112,10 +96,11 @@ public class LatestQueryInfo {
         this.simplifyTolerance = simplifyTolerance;
         this.simplifyTarget = simplifyTarget;
         
-        if(extraFields != null)
-            this.extraFields = extraFields;
-        else
-            this.extraFields = new DataPointField[0];
+        if(fields != null)
+            this.fields = fields;
+        else {
+            this.fields = new PointValueField[]{ PointValueField.TIMESTAMP, PointValueField.VALUE};
+        }
     }
     
     
@@ -129,10 +114,6 @@ public class LatestQueryInfo {
 
     public Integer getLimit() {
         return limit;
-    }
-
-    public boolean isUseRendered() {
-        return useRendered;
     }
 
     public boolean isMultiplePointsPerArray() {
@@ -159,8 +140,8 @@ public class LatestQueryInfo {
         return RollupEnum.NONE;
     }
     
-    public DataPointField[] getExtraFields() {
-        return this.extraFields;
+    public PointValueField[] getFields() {
+        return this.fields;
     }
     
     public String getNoDataMessage() {
@@ -268,5 +249,13 @@ public class LatestQueryInfo {
                 throw new ValidationFailedRestException(vr);
             }
         }
+    }
+
+
+    public boolean fieldsContains(PointValueField toFind) {
+        for(PointValueField field : fields)
+            if(field == toFind)
+                return true;
+        return false;
     }
 }

@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.util.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
@@ -22,7 +22,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  *
  * @author Terry Packer
  */
-public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
+public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
 
     protected ZonedDateTime to;
     protected final RollupEnum rollup;
@@ -47,7 +47,6 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      * @param timePeriod
      * @param limit
      * @param bookend
-     * @param useRendered
      * @param multiplePointsPerArray
      * @param singleArray
      * @param useCache
@@ -58,12 +57,12 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo{
      */
     public ZonedDateTimeRangeQueryInfo(ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
-            Integer limit, boolean bookend, boolean useRendered, 
-            boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
-            Double simplifyTolerance, Integer simplifyTarget, boolean truncate, DataPointField[] extraFields) {
+            Integer limit, boolean bookend, boolean multiplePointsPerArray, 
+            boolean singleArray, PointValueTimeCacheControl useCache, 
+            Double simplifyTolerance, Integer simplifyTarget, boolean truncate, PointValueField[] fields) {
         super(from, dateTimeFormat, timezone,
-                limit, useRendered, multiplePointsPerArray, 
-                singleArray, useCache, simplifyTolerance, simplifyTarget, extraFields);
+                limit, multiplePointsPerArray, 
+                singleArray, useCache, simplifyTolerance, simplifyTarget, fields);
 
 
         // Determine the timezone to use based on the incoming dates
