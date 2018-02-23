@@ -890,7 +890,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             
             //TODO Add support for NONE Default Rollup
             if(rollup == RollupEnum.POINT_DEFAULT && vo.getRollup() == RollupEnum.NONE.getId())
-                result.addContextualMessage(xid, "validate.rollup.incompatible", RollupEnum.NONE);
+                result.addContextualMessage(xid, "common.default", "Default point rollup of NONE is not yet supported.");
             
             //Validate the rollup
             switch(vo.getPointLocator().getDataTypeId()) {

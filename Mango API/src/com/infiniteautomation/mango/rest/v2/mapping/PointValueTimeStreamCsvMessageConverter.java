@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
@@ -49,6 +50,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, new MediaType("text", "csv"));
+        ((CsvMapper)this.objectMapper).configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
     }
 
     /* (non-Javadoc)
@@ -129,7 +131,6 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             PointValueTimeStream<?,?> stream = (PointValueTimeStream<?,?>)object;
             stream.setContentType(StreamContentType.CSV);
             JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
-
             //Set the schema
             CsvSchema.Builder builder = CsvSchema.builder();
             builder.setUseHeader(true);
