@@ -130,67 +130,67 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         //Logging types are usually going to be ON_CHANGE, INTERVAL (MAXIMUM), INTERVAL (INSTANT) AND INTERVAL (MINIMUM)
         if(monitor.getId().startsWith("com.serotonin.m2m2.rt.dataSource.PollingDataSource")) {
             //Defaults for polling data source metrics
-            String namePart;
+            String name;
             if(monitor.getId().contains("SUCCESS")) {
                 dpvo.setLoggingType(DataPointVO.LoggingTypes.ON_CHANGE);
-                namePart = " - Consecutive Run Polls";
+                name = "Consecutive Run Polls";
             } else {
                 dpvo.setLoggingType(DataPointVO.LoggingTypes.INTERVAL);
                 dpvo.setIntervalLoggingPeriod(5);
                 dpvo.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
                 if(monitor.getId().contains("QUOTIENT"))
-                    namePart = " - Poll Abort Quotient";
+                    name = "Poll Abort Quotient";
                 else //must be duration
-                    namePart = " - Poll Duration";
+                    name = "Poll Duration";
             }
             
             //Set the device name base on the XID in the monitor ID....
             String dsXid = monitor.getId().substring(monitor.getId().indexOf('_')+1, monitor.getId().lastIndexOf('_'));
             defaultNewPointToDataSource(dpvo, dsXid);
-            dpvo.setName(dpvo.getName() + namePart);
+            dpvo.setName(name);
         } else if(monitor.getId().startsWith("com.serotonin.m2m2.persistent")) {
             //Defaults for persistent metrics
             int dsXidIndex = 30; //com.serotonin.m2m2.persistent.
-            String namePart;
+            String name;
             dpvo.setLoggingType(DataPointVO.LoggingTypes.INTERVAL);
             dpvo.setIntervalLoggingPeriod(5);
             dpvo.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
             if(monitor.getId().contains("TOTAL_CONNECTION_TIME_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MINIMUM);
-                namePart = " - Connection Time";
+                name = "Connection Time";
                 dsXidIndex+=30;
             } else if(monitor.getId().contains("CONNECTED_POINTS_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MINIMUM);
-                namePart = " - Connected Points";
+                name = "Connected Points";
                 dsXidIndex+=25;
             } else if(monitor.getId().contains("TOTAL_CONNECTIONS_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
-                namePart = " - Total Connections";
+                name = "Total Connections";
                 dsXidIndex+=26;
             } else if(monitor.getId().contains("TOTAL_TIMEOUTS_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
-                namePart = " - Timeouts";
+                name = "Timeouts";
                 dsXidIndex+=23;
             } else if(monitor.getId().contains("RECIEVING_RATE_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.AVERAGE);
-                namePart = " - Recieving Rate";
+                name = "Recieving Rate";
                 dsXidIndex+=23;
             } else {//Nothing should get here currently...
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
-                namePart = monitor.getId();
+                name = monitor.getId();
             }
             
             //Set the device name base on the XID in the monitor ID....
             if(dsXidIndex > 30) {
                 String dsXid = monitor.getId().substring(dsXidIndex);
                 defaultNewPointToDataSource(dpvo, dsXid);
-                dpvo.setName(dpvo.getName() + namePart);
             } else {
-                dpvo.setName(namePart);
+                //Will happen if new properties are added because the XID scheme isn't great.
+                dpvo.setDeviceName(monitor.getId());
             }
             
-            
+            dpvo.setName(name);
         } else {
             //Default others, including InternalPointLocatorRT.MONITOR_NAMES to ON_CHANGE
             dpvo.setLoggingType(DataPointVO.LoggingTypes.ON_CHANGE);
@@ -207,7 +207,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(dsXid);
         if(dsvo == null)
             throw new ShouldNeverHappenException("Error creating point, unknown data source: "+dsXid);
-        dpvo.setName(dsvo.getName());
+        dpvo.setDeviceName(dsvo.getName());
     }
 
     @Override
