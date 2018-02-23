@@ -109,7 +109,7 @@ public abstract class PointValueTimeWriter {
      * @param timestamp - Only used for generating Image File Links
      * @throws IOException
      */
-    protected void writeDataValue(String name, DataPointVO vo, DataValue value, long timestamp, boolean rendered) throws IOException{
+    protected void writeDataValue(String name, DataPointVO vo, DataValue value, Long timestamp, boolean rendered) throws IOException{
         if(rendered) {
             writeStringField(name, info.getRenderedString(vo, value));
         }else {

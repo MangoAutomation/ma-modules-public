@@ -163,8 +163,11 @@ public class LatestQueryInfo {
      * @param id
      * @return
      */
-    public String writeImageLink(long timestamp, int id) {
-        return imageServletBuilder.buildAndExpand(timestamp, id).toUri().toString();
+    public String writeImageLink(Long timestamp, int id) {
+        if(timestamp == null)
+            return "";
+        else
+            return imageServletBuilder.buildAndExpand(timestamp, id).toUri().toString();
     }
 
     /**

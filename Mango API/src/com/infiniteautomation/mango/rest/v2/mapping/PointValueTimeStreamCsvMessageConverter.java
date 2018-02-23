@@ -194,6 +194,11 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             for(RollupEnum rollup : getAllRollups()) {
                                 builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
                             }
+                            for(PointValueField field : info.getFields()) {
+                                if(field == PointValueField.VALUE)
+                                    continue;
+                                field.createColumn(builder, null);
+                            }
                         }else {
                             for(PointValueField field : info.getFields())
                                 field.createColumn(builder, null);
@@ -203,6 +208,11 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     if(info.getRollup() == RollupEnum.ALL) {
                         for(RollupEnum rollup : getAllRollups()) {
                             builder.addColumn(rollup.name(), ColumnType.NUMBER_OR_STRING);
+                        }
+                        for(PointValueField field : info.getFields()) {
+                            if(field == PointValueField.VALUE)
+                                continue;
+                            field.createColumn(builder, null);
                         }
                     }else {
                         for(PointValueField field : info.getFields())
@@ -225,6 +235,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     
     /**
      * Helper to get all valid enums for writing
+     * TODO Could trim the list based on the data types in the voMap if we wanted
      * @return
      */
     protected RollupEnum[] getAllRollups() {
