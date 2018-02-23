@@ -6,6 +6,8 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -57,10 +59,27 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
     public void finish(PointValueTimeWriter writer) throws IOException {
         //Write out the values after simplifying
         Iterator<Integer> it = valuesMap.keySet().iterator();
-        while(it.hasNext()) {
-            List<DataPointVOPointValueTimeBookend> values = simplify(valuesMap.get(it.next()));
-            for(DataPointVOPointValueTimeBookend value : values)
+        if(info.isSingleArray() && voMap.size() > 1) {
+            List<DataPointVOPointValueTimeBookend> sorted = new ArrayList<>();
+            while(it.hasNext())
+                sorted.addAll(simplify(valuesMap.get(it.next())));
+            //Sort the Sorted List
+            Collections.sort(sorted, new Comparator<DataPointVOPointValueTimeBookend>() {
+                @Override
+                public int compare(DataPointVOPointValueTimeBookend o1,
+                        DataPointVOPointValueTimeBookend o2) {
+                    return o1.getPvt().compareTo(o2.getPvt());
+                }
+                
+            });
+            for(DataPointVOPointValueTimeBookend value : sorted)
                 super.writeValue(value);
+        }else {
+            while(it.hasNext()) {
+                List<DataPointVOPointValueTimeBookend> values = simplify(valuesMap.get(it.next()));
+                for(DataPointVOPointValueTimeBookend value : values)
+                    super.writeValue(value);
+            }
         }
         super.finish(writer);
     }

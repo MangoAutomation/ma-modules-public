@@ -15,16 +15,19 @@ public class DataPointVOPointValueTimeBookend {
 
     final DataPointVO vo;
     final IdPointValueTime pvt;
-    final boolean bookend;
+    final boolean firstBookend;
+    final boolean lastBookend;
     final boolean cached;
+    
     public DataPointVOPointValueTimeBookend(DataPointVO vo, IdPointValueTime pvt) {
-        this(vo, pvt, false, false);
+        this(vo, pvt, false, false, false);
     }
     
-    public DataPointVOPointValueTimeBookend(DataPointVO vo, IdPointValueTime pvt, boolean bookend, boolean cached) {
+    public DataPointVOPointValueTimeBookend(DataPointVO vo, IdPointValueTime pvt, boolean firstBookend, boolean lastBookend, boolean cached) {
         this.vo = vo;
         this.pvt = pvt;
-        this.bookend = bookend;
+        this.firstBookend = firstBookend;
+        this.lastBookend = lastBookend;
         this.cached = cached;
     }
 
@@ -49,11 +52,18 @@ public class DataPointVOPointValueTimeBookend {
         return vo.getId();
     }
     
+    public boolean isFirstBookend() {
+        return firstBookend;
+    }
+    public boolean isLastBookend() {
+        return lastBookend;
+    }
+    
     /**
      * @return the bookend
      */
     public boolean isBookend() {
-        return bookend;
+        return firstBookend || lastBookend;
     }
     
     public boolean isCached() {

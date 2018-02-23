@@ -6,6 +6,8 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -68,16 +70,40 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
     public void finish(PointValueTimeWriter writer) throws IOException {
         //Write out the values after simplifying
         Iterator<Integer> it = valuesMap.keySet().iterator();
-        while(it.hasNext()) {
-            Integer id = it.next();
-            List<DataPointVOPointValueTimeBookend> values = simplify(valuesMap.get(id));
-            BookendPair pair = bookendMap.get(id);
-            if(pair != null && pair.startBookend != null)
-                super.writeValue(pair.startBookend);
-            for(DataPointVOPointValueTimeBookend value : values)
+        if(info.isSingleArray() && voMap.size() > 1) {
+            List<DataPointVOPointValueTimeBookend> sorted = new ArrayList<>();
+            while(it.hasNext()) {
+                Integer id = it.next();
+                BookendPair pair = bookendMap.get(id);
+                if(pair != null && pair.startBookend != null)
+                    sorted.add(pair.startBookend);
+                sorted.addAll(simplify(valuesMap.get(id)));
+                if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
+                    sorted.add(pair.endBookend);
+            }
+            //Sort the Sorted List
+            Collections.sort(sorted, new Comparator<DataPointVOPointValueTimeBookend>() {
+                @Override
+                public int compare(DataPointVOPointValueTimeBookend o1,
+                        DataPointVOPointValueTimeBookend o2) {
+                    return o1.getPvt().compareTo(o2.getPvt());
+                }
+                
+            });
+            for(DataPointVOPointValueTimeBookend value : sorted)
                 super.writeValue(value);
-            if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
-                super.writeValue(pair.endBookend);
+        }else {
+            while(it.hasNext()) {
+                Integer id = it.next();
+                List<DataPointVOPointValueTimeBookend> values = simplify(valuesMap.get(id));
+                BookendPair pair = bookendMap.get(id);
+                if(pair != null && pair.startBookend != null)
+                    super.writeValue(pair.startBookend);
+                for(DataPointVOPointValueTimeBookend value : values)
+                    super.writeValue(value);
+                if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
+                    super.writeValue(pair.endBookend);
+            }
         }
         super.finish(writer);
     }

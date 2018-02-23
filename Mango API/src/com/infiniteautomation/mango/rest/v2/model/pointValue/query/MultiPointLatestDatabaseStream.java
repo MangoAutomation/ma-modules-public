@@ -44,6 +44,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     //List of cached values per data point id, sorted in descending time order
     protected final Map<Integer, List<IdPointValueTime>> cache;
     protected final Map<Integer,LimitCounter> limiters;  //For use with cache so we don't return too many values, assuming that caches sizes are small this should have minimal effects
+    protected final List<DataPointVOPointValueTimeBookend> bookends;
     
     public MultiPointLatestDatabaseStream(INFO info,
             Map<Integer, DataPointVO> voMap, PointValueDao dao) {
@@ -58,6 +59,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         this.limiters = new HashMap<>();
         for(Integer id : voMap.keySet())
             this.limiters.put(id, new LimitCounter(info.getLimit()));
+        this.bookends = new ArrayList<>(voMap.size());
     }
     
     /* (non-Javadoc)
@@ -79,7 +81,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException{
-        processRow(value, index, false, false);
+        processRow(value, index, false, false, false);
     }
     
     /* (non-Javadoc)
@@ -91,6 +93,8 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         if(info.isSingleArray() && voMap.size() > 1) {
             if(currentValues.size() > 0)
                 writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
+            if(bookends.size() > 0)
+                writer.writeMultiplePointValuesAtSameTime(bookends, bookends.get(0).getPvt().getTime());
         }else {
             if(!info.isSingleArray()) {
                 if(contentType == StreamContentType.JSON)
@@ -107,19 +111,19 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * @param bookend
      * @throws IOException
      */
-    protected void processRow(IdPointValueTime value, int index, boolean bookend, boolean cached) throws IOException {
+    protected void processRow(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend, boolean cached) throws IOException {
         
         if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
-            if(!processValueThroughCache(value, index, bookend))
+            if(!processValueThroughCache(value, index, firstBookend, lastBookend))
                 return;
 
         //Don't limit bookends and don't virtually limit non-cached requests
-        if(info.useCache != PointValueTimeCacheControl.NONE && !bookend)
+        if(info.useCache != PointValueTimeCacheControl.NONE && (!firstBookend && !lastBookend))
             if(limiters.get(value.getId()).limited())
                 return;
         
         //Write it out/process it
-        writeValue(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getId()), value, bookend, cached));
+        writeValue(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getId()), value, firstBookend, lastBookend, cached));
     }
     
     /**
@@ -130,15 +134,19 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     protected void writeValue(DataPointVOPointValueTimeBookend value) throws IOException {
 
         if(info.isSingleArray() && voMap.size() > 1) {
-            if(currentTime == value.getTime())
-                currentValues.add(value);
+            if(value.isLastBookend())
+                bookends.add(value);
             else {
-                if(currentValues.size() > 0) {
-                    writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
-                    currentValues.clear();
+                if(currentTime == value.getTime())
+                    currentValues.add(value);
+                else {
+                    if(currentValues.size() > 0) {
+                        writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
+                        currentValues.clear();
+                    }
+                    currentTime = value.getTime();
+                    currentValues.add(value);
                 }
-                currentTime = value.getTime();
-                currentValues.add(value);
             }
         }else {
             if(!info.isSingleArray()) {
@@ -163,7 +171,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * @return true to continue to process the incoming value, false if it was a bookend that was replaced via the cache
      * @throws IOException 
      */
-    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean bookend) throws IOException {
+    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws IOException {
         List<IdPointValueTime> pointCache = this.cache.get(value.getId());
         if(pointCache != null) {
             ListIterator<IdPointValueTime> it = pointCache.listIterator();
@@ -171,11 +179,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 IdPointValueTime pvt = it.next();
                 if(pvt.getTime() > value.getTime()) {
                     //Can't be a bookend
-                    processRow(pvt, index, false, true);
+                    processRow(pvt, index, false, false, true);
                     it.remove();
                 }else if(pvt.getTime() == value.getTime()) {
                     //Could be a bookend
-                    processRow(pvt, index, bookend, true);
+                    processRow(pvt, index, firstBookend, lastBookend, true);
                     it.remove();
                     if(pointCache.size() == 0)
                         this.cache.remove(value.getId());
@@ -267,7 +275,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             List<IdPointValueTime> values = cache.get(it.next());
             int limitCount = 0;
             for(IdPointValueTime value : values) {
-                processRow(value, index, false, true);
+                processRow(value, index, false, false, true);
                 index++;
                 limitCount++;
                 if(info.getLimit() != null && limitCount >= info.getLimit())
@@ -288,7 +296,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             List<DataPointVOPointValueTimeBookend> list) {
         LogStopWatch logStopWatch = new LogStopWatch();
         if(info.simplifyTolerance != null) {
-            //TODO improve to return a list
+            //TODO improve Simplify code to return a list
             Simplify<DataPointVOPointValueTimeBookend> simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
             DataPointVOPointValueTimeBookend[] simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), info.simplifyTolerance, info.simplifyHighQuality);
             logStopWatch.stop("Finished Simplify, tolerance: " + info.simplifyTolerance);

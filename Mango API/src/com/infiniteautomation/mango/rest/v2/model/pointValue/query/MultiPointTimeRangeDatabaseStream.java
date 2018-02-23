@@ -55,7 +55,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
      */
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
-        processRow(value, index, bookend, false);
+        processRow(value, index, bookend, false, false);
     }
     
     /* (non-Javadoc)
@@ -63,7 +63,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
      */
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
-        processRow(value, index, bookend, false);
+        processRow(value, index, false, bookend, false);
     }
     
     /**
@@ -77,7 +77,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     }
     
     @Override
-    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean bookend) throws IOException {
+    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws IOException {
         List<IdPointValueTime> pointCache = this.cache.get(value.getId());
         if(pointCache != null) {
             ListIterator<IdPointValueTime> it = pointCache.listIterator();
@@ -85,11 +85,11 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                 IdPointValueTime pvt = it.next();
                 if(pvt.getTime() < value.getTime()) {
                     //Can't be a bookend
-                    processRow(pvt, index, false, true);
+                    processRow(pvt, index, false, false, true);
                     it.remove();
                 }else if(pvt.getTime() == value.getTime()) {
                     //Could be a bookend
-                    processRow(pvt, index, bookend, true);
+                    processRow(pvt, index, firstBookend, lastBookend, true);
                     it.remove();
                     if(pointCache.size() == 0) {
                         this.cache.remove(value.getId());
@@ -125,13 +125,13 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                             bookend = new AnnotatedIdPointValueTime(value.getId(), value.getValue(), info.getFromMillis(),((AnnotatedIdPointValueTime)value).getSourceMessage());
                         else
                             bookend = new IdPointValueTime(value.getId(), value.getValue(), info.getFromMillis());
-                        processRow(bookend, index, true, true);
-                        processRow(value, index, false, true);
+                        processRow(bookend, index, true, false, true);
+                        processRow(value, index, false, false, true);
                     }else
-                        processRow(value, index, true, true);
+                        processRow(value, index, true, false, true);
                     first = false;
                 }else
-                    processRow(value, index, false, true);
+                    processRow(value, index, false, false, true);
                 index++;
                 limitCount++;
                 if(info.getLimit() != null && limitCount >= info.getLimit())
@@ -146,7 +146,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                         bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getToMillis(),((AnnotatedIdPointValueTime)last).getSourceMessage());
                     else
                         bookend = new IdPointValueTime(last.getId(), last.getValue(), info.getToMillis());
-                    processRow(bookend, index, true, true);
+                    processRow(bookend, index, false, true, true);
                 }
             }
         }
