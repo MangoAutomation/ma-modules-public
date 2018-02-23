@@ -26,7 +26,8 @@ public enum RollupEnum {
 	INTEGRAL(false, 10),
 	FFT(false, 11),
 	ALL(true, 12),
-    START(true, 13);
+    START(true, 13),
+    POINT_DEFAULT(true, 14);
 
 	private boolean nonNumericSupport; //Does this rollup support Non-Numeric point values
 	private int id;

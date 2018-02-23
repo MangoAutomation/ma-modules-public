@@ -215,12 +215,29 @@ public abstract class PointValueTimeWriter {
         if(info.getRollup() == RollupEnum.ALL) {
             writeAllStatistics(statisticsGenerator, vo, rendered);
             return;
+        }else if(info.getRollup() == RollupEnum.POINT_DEFAULT){
+            writeStatistic(name, statisticsGenerator, vo, rendered, RollupEnum.convertTo(vo.getRollup()));
+        }else {
+            writeStatistic(name, statisticsGenerator, vo, rendered, info.getRollup());
         }
+    }
 
+
+    /**
+     * Write a rollup
+     * @param name
+     * @param statisticsGenerator
+     * @param vo
+     * @param rendered
+     * @param rollup
+     * @throws IOException
+     */
+    protected void writeStatistic(String name, StatisticsGenerator statisticsGenerator,
+            DataPointVO vo, boolean rendered, RollupEnum rollup) throws IOException {
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
-            switch(info.getRollup()){
+            switch(rollup){
                 case START:
                     writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
                 break;
@@ -234,11 +251,11 @@ public abstract class PointValueTimeWriter {
                     writeIntegerField(name, stats.getCount());
                 break;
                 default:
-                    throw new ShouldNeverHappenException("Unknown Rollup type" + info.getRollup());
+                    throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
         } else if(statisticsGenerator instanceof StartsAndRuntimeList) {
             StartsAndRuntimeList stats = (StartsAndRuntimeList) statisticsGenerator;
-            switch(info.getRollup()){
+            switch(rollup){
                 case START:
                     writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
                 break;
@@ -252,11 +269,11 @@ public abstract class PointValueTimeWriter {
                     writeIntegerField(name, stats.getCount());
                 break;
                 default:
-                    throw new ShouldNeverHappenException("Unknown Rollup type" + info.getRollup());
+                    throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
         } else if (statisticsGenerator instanceof AnalogStatistics) {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
-            switch(info.getRollup()){
+            switch(rollup){
                 case AVERAGE:
                     writeAnalogStatistic(name, vo, stats.getAverage(), rendered);
                 break;
@@ -291,7 +308,7 @@ public abstract class PointValueTimeWriter {
                     writeIntegral(name, vo, stats.getIntegral(), rendered);
                 break;
                 default:
-                    throw new ShouldNeverHappenException("Unknown Rollup type" + info.getRollup());
+                    throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
         }
     }
