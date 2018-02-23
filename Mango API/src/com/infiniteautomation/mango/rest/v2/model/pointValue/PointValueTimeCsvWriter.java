@@ -151,5 +151,14 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             }
         }
-    }    
+    }   
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#startWriteArray()
+     */
+    @Override
+    public void writeStartArray(String name) throws IOException {
+        //Don't write an array field as this is not supported in CSV
+        jgen.writeStartArray();
+    }
 }

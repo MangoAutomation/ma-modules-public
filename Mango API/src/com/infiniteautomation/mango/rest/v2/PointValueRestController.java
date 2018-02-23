@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
@@ -48,7 +48,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -878,7 +878,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     protected Map<Integer, DataPointVO> buildMap(User user, String[] xids, RollupEnum rollup){
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = new HashMap<Integer, DataPointVO>();
-        ProcessResult result = new ProcessResult();
         for(String xid : xids) {
             DataPointVO vo = DataPointDao.instance.getByXid(xid);
             if (vo == null) {
@@ -890,7 +889,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             
             //TODO Add support for NONE Default Rollup
             if(rollup == RollupEnum.POINT_DEFAULT && vo.getRollup() == RollupEnum.NONE.getId())
-                result.addContextualMessage(xid, "common.default", "Default point rollup of NONE is not yet supported.");
+                throw new BadRequestException(new TranslatableMessage("common.default", "Default point rollup of NONE is not yet supported for point with xid: " + xid));;
             
             //Validate the rollup
             switch(vo.getPointLocator().getDataTypeId()) {
@@ -899,16 +898,13 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 case DataTypes.IMAGE:
                 case DataTypes.MULTISTATE:
                     if(rollup.nonNumericSupport() == false)
-                        result.addContextualMessage(xid, "validate.rollup.incompatible", rollup.toString());
+                        throw new BadRequestException(new TranslatableMessage("rest.validate.rollup.incompatible", rollup.toString(), xid));
                     break;
                 case DataTypes.NUMERIC:
                     break;
             }
             voMap.put(vo.getId(), vo);
         }
-        
-        if(result.getHasMessages())
-            throw new ValidationFailedRestException(result);
         
         //Do we have any points
         if(voMap.isEmpty())

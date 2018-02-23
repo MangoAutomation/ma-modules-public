@@ -12,8 +12,8 @@ import java.util.TimeZone;
 
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -55,8 +55,8 @@ public class LatestQueryInfo {
             Double simplifyTolerance, Integer simplifyTarget, PointValueField[] fields) {
         
         // Quick validation
-        validateTimezone(timezone);
-        validateDateTimeFormat(dateTimeFormat);
+        ensureTimezone(timezone);
+        ensureDateTimeFormat(dateTimeFormat);
         
         // Determine the timezone to use
         if (timezone == null) {
@@ -229,27 +229,23 @@ public class LatestQueryInfo {
                 .format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId));
     }
     
-    public static void validateTimezone(String timezone) throws ValidationFailedRestException {
+    public static void ensureTimezone(String timezone) throws ValidationFailedRestException {
         if (timezone != null) {
             try {
                 ZoneId.of(timezone);
             } catch (Exception e) {
-                RestValidationResult vr = new RestValidationResult();
-                vr.addError("validate.invalidValue", "timezone");
-                throw new ValidationFailedRestException(vr);
+                throw new BadRequestException(new TranslatableMessage("validate.invalidValue", "timezone"));
             }
         }
     }
 
-    public static void validateDateTimeFormat(String dateTimeFormat)
+    public static void ensureDateTimeFormat(String dateTimeFormat)
             throws ValidationFailedRestException {
         if (dateTimeFormat != null) {
             try {
                 DateTimeFormatter.ofPattern(dateTimeFormat);
             } catch (IllegalArgumentException e) {
-                RestValidationResult vr = new RestValidationResult();
-                vr.addError("validate.invalid", "dateTimeFormat");
-                throw new ValidationFailedRestException(vr);
+                throw new BadRequestException(new TranslatableMessage("validate.invalid", "dateTimeFormat"));
             }
         }
     }

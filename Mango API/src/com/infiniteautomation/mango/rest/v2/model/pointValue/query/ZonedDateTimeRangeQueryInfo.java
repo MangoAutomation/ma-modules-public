@@ -8,12 +8,12 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.util.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
@@ -79,12 +79,8 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
             this.to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
 
         // Validate time
-        if (!this.to.isAfter(this.from)) {
-            RestValidationResult vr = new RestValidationResult();
-            vr.addError("validate.invalidValue", "from");
-            vr.addError("validate.invalidValue", "to");
-            throw new ValidationFailedRestException(vr);
-        }
+        if (!this.to.isAfter(this.from))
+            throw new BadRequestException(new TranslatableMessage("rest.validate.timeRange.invalid"));
         
         this.rollup = rollup;
         this.timePeriod = timePeriod;
