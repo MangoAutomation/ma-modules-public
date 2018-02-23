@@ -194,6 +194,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         } else {
             //Default others, including InternalPointLocatorRT.MONITOR_NAMES to ON_CHANGE
             dpvo.setLoggingType(DataPointVO.LoggingTypes.ON_CHANGE);
+            dpvo.setDeviceName(vo.getName());
             dpvo.setName(plvo.getConfigurationDescription().translate(Common.getTranslations()));
         }
         
