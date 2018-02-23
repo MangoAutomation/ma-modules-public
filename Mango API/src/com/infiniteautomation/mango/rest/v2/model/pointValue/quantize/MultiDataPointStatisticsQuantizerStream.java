@@ -234,9 +234,11 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             }
         }else {
             //The last data point may not have been done() as well as any with 0 data
-            DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
-            if(!quant.isDone())
-                quant.done();
+            if(currentDataPointId != -1) {
+                DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
+                if(!quant.isDone())
+                    quant.done();
+            }
             
             for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values())
                 if(!q.isDone()) {
