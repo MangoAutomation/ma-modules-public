@@ -888,6 +888,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                     throw new AccessDeniedException();
             }
             
+            //TODO Add support for NONE Default Rollup
+            if(rollup == RollupEnum.POINT_DEFAULT && vo.getRollup() == RollupEnum.NONE.getId())
+                result.addContextualMessage(xid, "validate.rollup.incompatible", RollupEnum.NONE);
+            
             //Validate the rollup
             switch(vo.getPointLocator().getDataTypeId()) {
                 case DataTypes.ALPHANUMERIC:

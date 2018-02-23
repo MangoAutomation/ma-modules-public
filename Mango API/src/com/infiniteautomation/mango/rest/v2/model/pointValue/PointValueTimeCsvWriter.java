@@ -34,13 +34,6 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         this.pointCount = pointCount;
     }
 
-//    @Override
-//    public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
-//        this.jgen.writeStartObject();
-//        writeEntry(value, false);
-//        this.jgen.writeEndObject();
-//    }
-
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
      */
