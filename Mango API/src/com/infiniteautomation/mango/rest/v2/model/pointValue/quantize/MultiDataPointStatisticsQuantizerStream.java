@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,12 +38,27 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     protected LinkedHashMap<Long,List<DataPointStatisticsGenerator>> periodStats;
     protected int count;
 
+    //For our quantization
+    protected final BucketCalculator bucketCalculator;
+    protected Instant periodFrom;
+    protected Instant periodTo;
+    protected long periodToMillis; //For performance
+    protected long currentTime;
+    protected int currentDataPointId; //Track point change in order by ID queries
     
     public MultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
         this.quantizerMap = new HashMap<>(voMap.size());
         this.periodStats = new LinkedHashMap<>();
         this.count = 0;
+        
+        //Setup for parent quantization, to fill gaps ect.
+        this.bucketCalculator = getBucketCalculator();
+        this.periodFrom = bucketCalculator.getStartTime().toInstant();
+        this.periodTo = bucketCalculator.getNextPeriodTo().toInstant();
+        this.periodToMillis = periodTo.toEpochMilli();
+        this.currentTime = periodFrom.toEpochMilli();
+        this.currentDataPointId = -1;
     }
 
     /**
@@ -66,6 +82,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());        
         if(!info.isSingleArray())
             writer.writeStartArray(quantizer.vo.getXid());
+        updateQuantizers(value);
         quantizer.firstValue(value, index, bookend);
     }
 
@@ -75,8 +92,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
      */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException {
+        updateQuantizers(value);
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.row(value, index);
+
     }
 
     /*
@@ -100,6 +119,31 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     public void streamData(PointValueTimeWriter writer) throws IOException {
         createQuantizerMap();
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
+    }
+    
+    /**
+     * @param value
+     * @throws IOException 
+     */
+    protected void updateQuantizers(IdPointValueTime value) throws IOException {
+        long time = value.getTime();
+        if(!info.isSingleArray()) {
+            //In this query the values are returned in data point ID and time order
+            //Advance the previous quantizer 
+            if(currentDataPointId != -1 && currentDataPointId != value.getId()) {
+                DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
+                if(!quant.isDone())
+                    quant.done();
+            }
+        }
+        currentTime = time;
+        currentDataPointId = value.getId();
+    }
+    
+    protected void nextPeriod(long time) throws IOException {
+        periodFrom = periodTo;
+        periodTo = bucketCalculator.getNextPeriodTo().toInstant();
+        periodToMillis = periodTo.toEpochMilli();
     }
     
     protected void createQuantizerMap() {
@@ -166,18 +210,43 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                 this.periodStats.put(generator.getGenerator().getPeriodStartTime(), entries);
             }
             entries.add(generator);
-            Iterator<Long> it = this.periodStats.keySet().iterator();
-            while(it.hasNext()) {
-                entries = this.periodStats.get(it.next());
-                if(entries.size() == voMap.size()) {
-                    writePeriodStats(entries);
-                    it.remove();
-                }
-            }
         }else {
             //Just write it out
             writePeriodStats(generator);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeQueryStream#finish(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
+     */
+    @Override
+    public void finish(PointValueTimeWriter writer) throws IOException {
         
+        if(info.isSingleArray()) {
+            //Fast forward to end to fill any gaps at the end
+            for(DataPointStatisticsQuantizer<?> quant : this.quantizerMap.values())
+                if(!quant.isDone())
+                    quant.done();
+            Iterator<Long> it = this.periodStats.keySet().iterator();
+            while(it.hasNext()) {
+                List<DataPointStatisticsGenerator> entries = this.periodStats.get(it.next());
+                writePeriodStats(entries);
+            }
+        }else {
+            //The last data point may not have been done() as well as any with 0 data
+            DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
+            if(!quant.isDone())
+                quant.done();
+            
+            for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values())
+                if(!q.isDone()) {
+                    if(contentType == StreamContentType.JSON)
+                        this.writer.writeStartArray(q.vo.getXid());
+                    q.done();
+                    if(contentType == StreamContentType.JSON)
+                        this.writer.writeEndArray();
+                }
+        }
+        super.finish(writer);
     }
 }

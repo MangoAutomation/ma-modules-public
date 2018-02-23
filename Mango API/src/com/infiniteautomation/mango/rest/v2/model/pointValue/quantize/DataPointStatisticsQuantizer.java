@@ -22,13 +22,21 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     protected final ChildStatisticsGeneratorCallback callback;
     protected AbstractPointValueTimeQuantizer<T> quantizer;
     protected final DataPointVO vo;
+    protected boolean open;
+    protected boolean done;
     
     public DataPointStatisticsQuantizer(DataPointVO vo, ChildStatisticsGeneratorCallback callback) {
         this.vo = vo;
         this.callback = callback;
+        this.open = false;
+        this.done = false;
     }
     
     public void fastForward(long time) throws IOException {
+        if(!open) {
+            this.quantizer.firstValue(null, 0, true);
+            this.open = true;
+        }
         this.quantizer.fastForward(time);
     }
     /*
@@ -38,6 +46,7 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.firstValue(value, index, bookend);
+        open = true;
     }
 
     /*
@@ -57,6 +66,7 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.lastValue(value, index, bookend);
         quantizer.done();
+        this.done = true;
     }
     
     /* (non-Javadoc)
@@ -65,5 +75,21 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     @Override
     public void quantizedStatistics(StatisticsGenerator statisticsGenerator) throws IOException {
         this.callback.quantizedStatistics(new DataPointStatisticsGenerator(vo, statisticsGenerator));
+    }
+    
+    public boolean isOpen() {
+        return open;
+    }
+    public boolean isDone() {
+        return done;
+    }
+
+    /**
+     * @throws IOException 
+     * 
+     */
+    public void done() throws IOException {
+        quantizer.done();
+        done = true;
     }
 }
