@@ -34,6 +34,19 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         this.pointCount = pointCount;
     }
 
+    
+    @Override
+    public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
+        this.jgen.writeStartObject();
+        if(info.isMultiplePointsPerArray()) {
+            //We don't want to embed this as an object like the Json Writer does
+            writeEntry(value, true, true);
+        }else {
+            writeEntry(value, false, true);
+        }
+        this.jgen.writeEndObject();
+    }
+    
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
      */
@@ -138,52 +151,5 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             }
         }
-    }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#startWriteArray()
-     */
-    @Override
-    public void writeStartArray(String name) throws IOException {
-        jgen.writeStartArray();
-    }
-
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#endWriteArray()
-     */
-    @Override
-    public void writeEndArray() throws IOException {
-        jgen.writeEndArray();
-    }
-
-
-
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeStartArray()
-     */
-    @Override
-    public void writeStartArray() throws IOException {
-        this.jgen.writeStartArray();
-    }
-
-
-
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeStartObject()
-     */
-    @Override
-    public void writeStartObject() throws IOException {
-        this.jgen.writeStartObject();
-    }
-
-
-
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeEndObject()
-     */
-    @Override
-    public void writeEndObject() throws IOException {
-        this.jgen.writeEndObject();       
-    }
-    
+    }    
 }

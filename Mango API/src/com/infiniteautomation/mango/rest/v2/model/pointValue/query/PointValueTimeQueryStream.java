@@ -73,7 +73,6 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
             if(contentType == StreamContentType.JSON)
                 writer.writeEndObject();
         }
-        
     }
     
     @Override
