@@ -840,9 +840,13 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(User user, INFO info, String[] xids){
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
-        if(info.isUseSimplify())
+        if(info.isUseSimplify()) {
+            //Ensure no Simplify support
+            for(DataPointVO vo : voMap.values())
+                if(vo.getPointLocator().getDataTypeId() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                    throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
             return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
-        else
+        }else
             return ResponseEntity.ok(new MultiPointLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
     }
     
@@ -862,8 +866,13 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         if (info.getRollup() != RollupEnum.NONE) {
             return ResponseEntity.ok(new MultiDataPointStatisticsQuantizerStream<T, INFO>(info, voMap, this.dao));
         } else {
-            if(info.isUseSimplify())
+            if(info.isUseSimplify()) {
+                //Ensure no Simplify support
+                for(DataPointVO vo : voMap.values())
+                    if(vo.getPointLocator().getDataTypeId() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                        throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
                 return ResponseEntity.ok(new MultiPointSimplifyTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
+            }
             else
                 return ResponseEntity.ok(new MultiPointTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
         }
