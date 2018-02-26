@@ -15,7 +15,7 @@
     	if(typeof value === 'object')
     		return value;
     	
-    	if(/\d+\.\d*/.exec(value) === null)
+    	if(/\d*\.\d+/.exec(value) === null)
     		return value;
     	
     	return Number(value).toFixed(2);
