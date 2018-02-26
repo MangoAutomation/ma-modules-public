@@ -11,6 +11,16 @@
         });
     });
     
+    function clipValue(value) {
+    	if(typeof value === 'object')
+    		return value;
+    	
+    	if(/\d+\.\d*/.exec(value) === null)
+    		return value;
+    	
+    	return Number(value).toFixed(2);
+    }
+    
     function getStatusVars() {
         ThreadsDwr.getStatusVars(function(result) {
             dwr.util.removeAllRows("varList");
@@ -26,7 +36,7 @@
             
             dwr.util.addRows("varList", list, [
                     function(t) { return t.name; },
-                    function(t) { return t.value; },
+                    function(t) { return clipValue(t.value); },
                 ],
                 {
                     rowCreator: function(options) {
