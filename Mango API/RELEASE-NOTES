@@ -8,6 +8,7 @@
 * Adding name, deviceName and dataSourceName columns to point value v2 csv format
 * Bugfix for converting time with timezones in point value v1 endpoints
 * Making all fields orderable and optional for point value v2 endpoints
+* Improve efficiency of Log Query Endpoints
 
 *Version 3.3.2*
 * Modified /users/permissions-groups endpoints to only return groups that a user has access to
