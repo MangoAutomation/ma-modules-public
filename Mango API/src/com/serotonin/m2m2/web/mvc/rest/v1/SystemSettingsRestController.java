@@ -201,6 +201,7 @@ public class SystemSettingsRestController extends MangoRestController{
             if (response.getHasMessages()) {
                 throw new ValidationException(response);
             }
+            this.dao.updateSettings(settings);
             
             // J.W. WTF is this for?
             // Put a link to the updated data in the header
