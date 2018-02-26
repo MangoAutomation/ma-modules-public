@@ -22,6 +22,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
@@ -130,55 +131,55 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         //Logging types are usually going to be ON_CHANGE, INTERVAL (MAXIMUM), INTERVAL (INSTANT) AND INTERVAL (MINIMUM)
         if(monitor.getId().startsWith("com.serotonin.m2m2.rt.dataSource.PollingDataSource")) {
             //Defaults for polling data source metrics
-            String name;
+            TranslatableMessage name;
             if(monitor.getId().contains("SUCCESS")) {
                 dpvo.setLoggingType(DataPointVO.LoggingTypes.ON_CHANGE);
-                name = "Consecutive Run Polls";
+                name = new TranslatableMessage("dsEdit.internal.autoCreate.names.pollingSuccess");
             } else {
                 dpvo.setLoggingType(DataPointVO.LoggingTypes.INTERVAL);
                 dpvo.setIntervalLoggingPeriod(5);
                 dpvo.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
                 if(monitor.getId().contains("PERCENTAGE"))
-                    name = "Poll Success Percentage";
+                    name = new TranslatableMessage("dsEdit.internal.autoCreate.names.pollingPercentage");
                 else //must be duration
-                    name = "Poll Duration";
+                    name = new TranslatableMessage("dsEdit.internal.autoCreate.names.pollingDuration");
             }
             
             //Set the device name base on the XID in the monitor ID....
             String dsXid = monitor.getId().substring(monitor.getId().indexOf('_')+1, monitor.getId().lastIndexOf('_'));
             defaultNewPointToDataSource(dpvo, dsXid);
-            dpvo.setName(name);
+            dpvo.setName(name.translate(Common.getTranslations()));
         } else if(monitor.getId().startsWith("com.serotonin.m2m2.persistent")) {
             //Defaults for persistent metrics
             int dsXidIndex = 30; //com.serotonin.m2m2.persistent.
-            String name;
+            TranslatableMessage name;
             dpvo.setLoggingType(DataPointVO.LoggingTypes.INTERVAL);
             dpvo.setIntervalLoggingPeriod(5);
             dpvo.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
             if(monitor.getId().contains("TOTAL_CONNECTION_TIME_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MINIMUM);
-                name = "Connection Time";
+                name = new TranslatableMessage("dsEdit.internal.autoCreate.names.persistentConnectionTime");
                 dsXidIndex+=30;
             } else if(monitor.getId().contains("CONNECTED_POINTS_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MINIMUM);
-                name = "Connected Points";
+                name = new TranslatableMessage("dsEdit.internal.autoCreate.names.persistentConnectedPoints");
                 dsXidIndex+=25;
             } else if(monitor.getId().contains("TOTAL_CONNECTIONS_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
-                name = "Total Connections";
+                name = new TranslatableMessage("dsEdit.internal.autoCreate.names.persistentTotalConnections");
                 dsXidIndex+=26;
             } else if(monitor.getId().contains("TOTAL_TIMEOUTS_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
-                name = "Timeouts";
+                name = new TranslatableMessage("dsEdit.internal.autoCreate.names.persistentTimeouts");
                 dsXidIndex+=23;
             } else if(monitor.getId().contains("RECIEVING_RATE_MONITOR")) {
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.AVERAGE);
-                name = "Recieving Rate";
+                name = new TranslatableMessage("dsEdit.internal.autoCreate.names.persistentReceiveRate");
                 dsXidIndex+=23;
             } else {//Nothing should get here currently...
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
-                name = monitor.getId();
+                name = new TranslatableMessage("common.literal", monitor.getId());
             }
             
             //Set the device name base on the XID in the monitor ID....
@@ -190,7 +191,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
                 dpvo.setDeviceName(monitor.getId());
             }
             
-            dpvo.setName(name);
+            dpvo.setName(name.translate(Common.getTranslations()));
         } else {
             //Default others, including InternalPointLocatorRT.MONITOR_NAMES to ON_CHANGE
             dpvo.setLoggingType(DataPointVO.LoggingTypes.ON_CHANGE);
