@@ -61,7 +61,7 @@
         <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource"></fmt:message>
         <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_SUCCESS"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.sequential"></fmt:message>
         <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_DURATION"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.duration"></fmt:message>
-        <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_QUOTIENT"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.quotient"></fmt:message>
+        <option value="com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_PERCENTAGE"><fmt:message key="dsEdit.internal.autoCreate.pollingDataSource.percentage"></fmt:message>
         <option value="com[.]serotonin[.]m2m2[.]persistent.+"><fmt:message key="dsEdit.internal.autoCreate.persistent"/></option>
         <option value="com[.]serotonin[.]m2m2[.]persistent[.]RECIEVING_RATE_MONITOR_.+"><fmt:message key="dsEdit.internal.autoCreate.persistent.writeSpeed"/></option>
         <option value="com[.]serotonin[.]m2m2[.]persistent[.]TOTAL_CONNECTION_TIME_MONITOR_.+"><fmt:message key="dsEdit.internal.autoCreate.persistent.connectionTime"/></option>

@@ -139,8 +139,8 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
                 dpvo.setIntervalLoggingPeriod(5);
                 dpvo.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
-                if(monitor.getId().contains("QUOTIENT"))
-                    name = "Poll Abort Quotient";
+                if(monitor.getId().contains("PERCENTAGE"))
+                    name = "Poll Success Percentage";
                 else //must be duration
                     name = "Poll Duration";
             }
