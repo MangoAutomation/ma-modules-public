@@ -308,7 +308,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "timezone", required = false) 
             String timezone,
             
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit (not including bookend values)", required = false, allowMultiple = false) 
             @RequestParam(value = "limit", required = false) 
             Integer limit,
             
@@ -440,7 +440,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestParam(value = "timezone", required = false) 
             String timezone,
 
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit (not including bookend values)", required = false, allowMultiple = false) 
             @RequestParam(value = "limit", required = false) 
             Integer limit,
             
@@ -602,7 +602,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
             @RequestParam(value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit (per series not including bookend values)", required = false, allowMultiple = false) 
             @RequestParam(value = "limit", required = false) Integer limit,
 
             @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
@@ -686,7 +686,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
                     value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit (per series)", required = false, allowMultiple = false) 
             @RequestParam(value = "limit", required = false) Integer limit,
             
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
