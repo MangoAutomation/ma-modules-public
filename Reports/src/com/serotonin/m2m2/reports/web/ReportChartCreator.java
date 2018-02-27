@@ -62,6 +62,7 @@ import com.serotonin.m2m2.vo.export.ExportCsvStreamer;
 import com.serotonin.m2m2.vo.export.ExportDataStreamHandler;
 import com.serotonin.m2m2.vo.export.ExportDataValue;
 import com.serotonin.m2m2.vo.export.ExportPointInfo;
+import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 import freemarker.template.Template;
@@ -374,6 +375,10 @@ public class ReportChartCreator {
 
         public void setDataTypeDescription(String dataTypeDescription) {
             this.dataTypeDescription = dataTypeDescription;
+        }
+        
+        public String getPointHierarchyPath() {
+            return PointHierarchy.getFlatPath(reportPointId, DataPointDao.instance.getPointHierarchy(true).getRoot());
         }
 
         public String getStartValue() {

@@ -1,3 +1,6 @@
+*Version 3.3.2*
+* Add ability to get hierarchy path in report
+
 *Version 3.3.1*
 * Display device name and tags for each point in default email template
 * Make full data point including tags available in freemarker template
