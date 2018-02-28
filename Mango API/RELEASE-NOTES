@@ -1,6 +1,4 @@
-*Version 3.3.3*
-* Option to merge tags when doing data point update using V2 REST controller
-* Always check for user before sending websocket messages
+*Version 3.3.4*
 * Stopgap for new core ON_CHANGE_INTERVAL logging type model support, clean in 3.4
 * Bugfix for non-numeric rollups point value v2 endpoints
 * Bugfix for rendering values in csv format point value v2
@@ -9,6 +7,11 @@
 * Bugfix for converting time with timezones in point value v1 endpoints
 * Making all fields orderable and optional for point value v2 endpoints
 * Improve efficiency of Log Query Endpoints
+* Fix for system settings not being saved
+
+*Version 3.3.3*
+* Option to merge tags when doing data point update using V2 REST controller
+* Always check for user before sending websocket messages
 
 *Version 3.3.2*
 * Modified /users/permissions-groups endpoints to only return groups that a user has access to
