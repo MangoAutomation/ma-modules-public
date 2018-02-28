@@ -25,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -395,6 +396,8 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 				@Override
 				public void row(DataPointVO dp, int index) {
 					if(Permissions.hasDataPointReadPermission(user, dp)){
+                        DataPointDao.instance.loadPartialRelationalData(dp);
+                        
 						try {
 							jgen.writeObject(new DataPointModel(dp));
 							pointCount++;
