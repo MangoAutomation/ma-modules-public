@@ -200,7 +200,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         }
         
         dpvo.defaultTextRenderer();
-        dpvo.setXid(Common.generateXid("DP_Internal_"));
+        dpvo.setXid(Common.generateXid("DP_In_"));
         monitorMap.put(monitor.getId(), true);
         Common.runtimeManager.saveDataPoint(dpvo); //Won't appear until next poll, but that's fine.
     }
