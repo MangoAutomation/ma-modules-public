@@ -11,16 +11,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,6 +68,8 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController
 @RequestMapping("/v2/server")
 public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
+    
+    private final Log log = LogFactory.getLog(ServerRestV2Controller.class);
 
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
@@ -202,5 +208,110 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         
         return ResponseEntity.ok(mangoInfo);
     }
+
+    @ApiOperation(value = "Send a client error / stack trace to the backend for logging")
+    @RequestMapping(method = {RequestMethod.POST}, value = "/client-error")
+    public void postClientError(@AuthenticationPrincipal User user, @RequestBody ClientError body) {
+        log.warn("Client error\n" + body.formatString(user));
+    }
     
+    static class ClientError {
+        String message;
+        String cause;
+        List<StackFrame> stackTrace;
+        String location;
+        String userAgent;
+        String language;
+        
+        public String getMessage() {
+            return message;
+        }
+        public void setMessage(String message) {
+            this.message = message;
+        }
+        public String getCause() {
+            return cause;
+        }
+        public void setCause(String cause) {
+            this.cause = cause;
+        }
+        public List<StackFrame> getStackTrace() {
+            return stackTrace;
+        }
+        public void setStackTrace(List<StackFrame> stackTrace) {
+            this.stackTrace = stackTrace;
+        }
+        public String getUserAgent() {
+            return userAgent;
+        }
+        public void setUserAgent(String userAgent) {
+            this.userAgent = userAgent;
+        }
+        public String getLanguage() {
+            return language;
+        }
+        public void setLanguage(String language) {
+            this.language = language;
+        }
+        public String getLocation() {
+            return location;
+        }
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public String formatString(User user) {
+            String stackTrace = this.stackTrace.stream()
+                .map(sf -> sf.toString())
+                .collect(Collectors.joining("\n"));
+            
+            return "[user=" + user.getUsername() + ", cause=" + cause + ", location=" + location + ", userAgent=" + userAgent
+                    + ", language=" + language + "]" + "\n" +
+                message + "\n" + stackTrace;
+        }
+    }
+    
+    static class StackFrame {
+        String functionName;
+        String fileName;
+        int lineNumber;
+        int columnNumber;
+        String source;
+        
+        public String getFunctionName() {
+            return functionName;
+        }
+        public void setFunctionName(String functionName) {
+            this.functionName = functionName;
+        }
+        public String getFileName() {
+            return fileName;
+        }
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+        public int getLineNumber() {
+            return lineNumber;
+        }
+        public void setLineNumber(int lineNumber) {
+            this.lineNumber = lineNumber;
+        }
+        public int getColumnNumber() {
+            return columnNumber;
+        }
+        public void setColumnNumber(int columnNumber) {
+            this.columnNumber = columnNumber;
+        }
+        public String getSource() {
+            return source;
+        }
+        public void setSource(String source) {
+            this.source = source;
+        }
+        
+        @Override
+        public String toString() {
+            return "\tat " + functionName + " (" + fileName + ":" + lineNumber + ":" + columnNumber + ")";
+        }
+    }
 }
