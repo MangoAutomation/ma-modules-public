@@ -222,6 +222,8 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         String location;
         String userAgent;
         String language;
+        String timezone;
+        String date;
         
         public String getMessage() {
             return message;
@@ -259,6 +261,18 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         public void setLocation(String location) {
             this.location = location;
         }
+        public String getTimezone() {
+            return timezone;
+        }
+        public void setTimezone(String timezone) {
+            this.timezone = timezone;
+        }
+        public String getDate() {
+            return date;
+        }
+        public void setDate(String date) {
+            this.date = date;
+        }
 
         public String formatString(User user) {
             String stackTrace = this.stackTrace.stream()
@@ -266,7 +280,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
                 .collect(Collectors.joining("\n"));
             
             return "[user=" + user.getUsername() + ", cause=" + cause + ", location=" + location + ", userAgent=" + userAgent
-                    + ", language=" + language + "]" + "\n" +
+                    + ", language=" + language + ", date=" + date + ", timezone=" + timezone + "]" + "\n" +
                 message + "\n" + stackTrace;
         }
     }
