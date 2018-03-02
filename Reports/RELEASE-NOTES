@@ -1,3 +1,6 @@
+*Version 3.3.3*
+* Added template loading from overrides/web/modules/reports/web/ftl/ which persists upgrades.
+
 *Version 3.3.2*
 * Add ability to get hierarchy path in report
 

@@ -8,6 +8,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -240,23 +242,32 @@ public class ReportChartCreator {
             model.put("includeUserComments", false);
 
         // Create the template.
-        Template template;
+        Template ftl;
+        StringWriter writer = new StringWriter();
+        FileReader reader = null;
         try {
-            template = Common.freemarkerConfiguration.getTemplate(reportInstance.getTemplateFile());
+            File templateFile = ReportCommon.instance.getTemplateFile(reportInstance.getTemplateFile());
+            reader = new FileReader(templateFile);
+            ftl = new Template(reportInstance.getName(), reader, Common.freemarkerConfiguration);
+            ftl.process(model, writer);
+        }
+        catch (FileNotFoundException e) {
+            LOG.error("Unable to find report template file: " + reportInstance.getName());
         }
         catch (IOException e) {
             // Couldn't load the template?
             throw new ShouldNeverHappenException(e);
         }
-
-        // Create the content from the template.
-        StringWriter writer = new StringWriter();
-        try {
-            template.process(model, writer);
-        }
         catch (Exception e) {
-            // Couldn't process the template?
+            //Error processing the FTL?
             throw new ShouldNeverHappenException(e);
+        } finally {
+            if(reader != null)
+                try {
+                    reader.close();
+                } catch(IOException e) {
+                    LOG.error("Error closing template file reader: " + e.getMessage(), e);
+                }
         }
 
         // Save the content

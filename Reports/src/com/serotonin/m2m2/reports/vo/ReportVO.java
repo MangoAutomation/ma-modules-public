@@ -36,6 +36,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
+import com.serotonin.m2m2.reports.web.ReportCommon;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.AbstractVO;
@@ -589,7 +590,8 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
             response.addContextualMessage("userId", "reports.validate.userDNE");
         }
         
-        File t = new File(Common.MA_HOME + ModuleRegistry.getModule("reports").getDirectoryPath() + "/web/ftl/" + template);
+        
+        File t = ReportCommon.instance.getTemplateFile(template);
         if(!t.isFile())
         	response.addContextualMessage("template", "reports.validate.template");
         

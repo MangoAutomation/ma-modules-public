@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.reports.web;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +26,6 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.ReportPermissionDefinition;
 import com.serotonin.m2m2.reports.ReportPurgeDefinition;
@@ -111,9 +109,15 @@ public class ReportsDwr extends ModuleDwr {
         return report;
     }
     
-	private String[] getTemplateList() {
-    	File templateDir = new File(Common.MA_HOME + ModuleRegistry.getModule("reports").getDirectoryPath() + "/web/ftl/");
-		String[] list = templateDir.list();
+	private List<String> getTemplateList() {
+	    List<String> list = new ArrayList<String>();
+	    if(ReportCommon.instance.OVERRIDE_TEMPLATE_DIR.isDirectory())
+	        for(String name : ReportCommon.instance.OVERRIDE_TEMPLATE_DIR.list())
+	            if(name.endsWith(".ftl")) list.add(name);
+		if(ReportCommon.instance.TEMPLATE_DIR.isDirectory())
+		    for(String name : ReportCommon.instance.TEMPLATE_DIR.list())
+		        if(!list.contains(name) && name.endsWith(".ftl"))
+		            list.add(name);
 		return list;
 	}
 
