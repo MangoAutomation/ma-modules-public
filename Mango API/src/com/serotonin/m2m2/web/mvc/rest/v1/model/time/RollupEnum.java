@@ -48,7 +48,7 @@ public enum RollupEnum {
 			if(r.id == id)
 				return r;
 		
-		throw new ShouldNeverHappenException("Uknown Rollup, id: " + id);
+		throw new ShouldNeverHappenException("Unknown Rollup, id: " + id);
 	}
 	
 	/**
