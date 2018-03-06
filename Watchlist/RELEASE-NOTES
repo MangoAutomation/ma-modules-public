@@ -1,3 +1,6 @@
+*Version 3.3.2*
+* Override AbstractBasicDao's get() to get the points list too.
+
 *Version 3.3.1*
 * Fetch data point tags when getting points for a watch list
 
