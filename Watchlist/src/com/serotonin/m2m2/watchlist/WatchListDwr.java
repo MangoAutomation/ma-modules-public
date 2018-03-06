@@ -120,7 +120,7 @@ public class WatchListDwr extends ModuleDwr {
             watchList.setName(translate("common.newName"));
         }
         else {
-            watchList = WatchListDao.instance.getWatchList(getWatchList().getId());
+            watchList = WatchListDao.instance.get(getWatchList().getId());
             watchList.setId(Common.NEW_ID);
             watchList.setName(translate(new TranslatableMessage("common.copyPrefix", watchList.getName())));
         }
@@ -141,7 +141,7 @@ public class WatchListDwr extends ModuleDwr {
 
         WatchListVO watchList = getWatchList(user);
         if (watchList == null || watchListId != watchList.getId())
-            watchList = WatchListDao.instance.getWatchList(watchListId);
+            watchList = WatchListDao.instance.get(watchListId);
 
         if (watchList == null || WatchListDao.instance.getWatchLists(user).size() == 1)
             // Only one watch list left. Leave it.
@@ -159,7 +159,7 @@ public class WatchListDwr extends ModuleDwr {
     public Map<String, Object> setSelectedWatchList(int watchListId) {
         User user = Common.getUser();
 
-        WatchListVO watchList = WatchListDao.instance.getWatchList(watchListId);
+        WatchListVO watchList = WatchListDao.instance.get(watchListId);
         WatchListCommon.ensureWatchListPermission(user, watchList);
         prepareWatchList(watchList, user);
 

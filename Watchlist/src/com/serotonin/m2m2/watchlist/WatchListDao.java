@@ -88,12 +88,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         return getAll();
     }
 
-    public WatchListVO getWatchList(int watchListId) {
-        WatchListVO watchList = get(watchListId);
-        populateWatchlistData(watchList);
-        return watchList;
-    }
-
     public void populateWatchlistData(List<WatchListVO> watchLists) {
         for (WatchListVO watchList : watchLists)
             populateWatchlistData(watchList);
@@ -103,21 +97,22 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         if (watchList == null)
             return;
 
-        // Get the points for each of the watch lists.
-        List<Integer> pointIds = queryForList(
-                "SELECT dataPointId FROM watchListPoints WHERE watchListId=? ORDER BY sortOrder",
-                new Object[] { watchList.getId() }, Integer.class);
-        List<DataPointVO> points = watchList.getPointList();
-        DataPointDao dataPointDao = DataPointDao.instance;
-        for (Integer pointId : pointIds)
-            points.add(dataPointDao.getDataPoint(pointId));
+        if(watchList != null)
+            getPoints(watchList.getId(), new MappedRowCallback<DataPointVO>() {
+                @Override
+                public void row(DataPointVO item, int index) {
+                    watchList.getPointList().add(item);
+                }
+            });
     }
 
     /**
      * Note: this method only returns basic watchlist information. No data points or share users.
      */
     public WatchListVO getWatchList(String xid) {
-        return getByXid(xid);
+        WatchListVO watchlist = getByXid(xid);
+        populateWatchlistData(watchlist);
+        return watchlist;
     }
 
     public WatchListVO getSelectedWatchList(int userId) {
@@ -156,6 +151,19 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
      */
     public void getAll(MappedRowCallback<WatchListVO> callback){
     	query(SELECT_ALL, new Object[]{}, rowMapper, callback);
+    }
+    
+    /**
+     * Get By ID
+     * 
+     * @param id
+     * @return
+     */
+    @Override
+    public WatchListVO get(int id) {
+        WatchListVO wvo = super.get(id);
+        populateWatchlistData(wvo);
+        return wvo;
     }
     
     private final String SELECT_POINT_SUMMARIES = "SELECT dp.xid,dp.name,dp.deviceName,dp.pointFolderId,dp.readPermission,dp.setPermission from dataPoints as dp JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";

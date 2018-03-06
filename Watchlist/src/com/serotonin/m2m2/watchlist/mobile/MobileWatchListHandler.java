@@ -39,7 +39,7 @@ public class MobileWatchListHandler extends WatchListHandler {
         try {
             int watchListId = Integer.parseInt(request.getParameter("watchListId"));
 
-            WatchListVO watchList = watchListDao.getWatchList(watchListId);
+            WatchListVO watchList = watchListDao.get(watchListId);
             WatchListCommon.ensureWatchListPermission(user, watchList);
             watchListDao.saveSelectedWatchList(user.getId(), watchList.getId());
         }
@@ -54,7 +54,7 @@ public class MobileWatchListHandler extends WatchListHandler {
 
         // Get the point data.
         List<MobileWatchListState> states = new ArrayList<MobileWatchListState>();
-        for (DataPointVO pointVO : watchListDao.getWatchList(watchListId).getPointList()) {
+        for (DataPointVO pointVO : watchListDao.get(watchListId).getPointList()) {
             MobileWatchListState state = createState(request, pointVO);
             states.add(state);
         }
