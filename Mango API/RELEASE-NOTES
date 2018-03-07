@@ -1,3 +1,6 @@
+*Version 3.3.6*
+* Fix potential deadlock issue due to websocket code upgrading a read lock to a write lock
+
 *Version 3.3.5*
 * Endpoint to log web client errors
 
