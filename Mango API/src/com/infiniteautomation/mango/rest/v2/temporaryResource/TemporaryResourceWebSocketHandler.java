@@ -5,11 +5,9 @@ package com.infiniteautomation.mango.rest.v2.temporaryResource;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -30,8 +28,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
     private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
     public static final String MESSAGE_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
 
-    private final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
 
     public TemporaryResourceWebSocketHandler() {
     }
@@ -46,12 +43,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
 
         session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, new TemporaryResourceSubscription());
         
-        lock.writeLock().lock();
-        try {
-            sessions.add(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
+        sessions.add(session);
     }
 
     @Override
@@ -62,12 +54,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
             log.debug("Connection closed for WebSocketSession " + session.getId() + ", status " + status);
         }
         
-        lock.writeLock().lock();
-        try {
-            sessions.remove(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
+        sessions.remove(session);
     }
 
     @Override
@@ -89,31 +76,26 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
     }
     
     public void notify(CrudNotificationType type, TemporaryResource<?, ?> resource) {
-        lock.readLock().lock();
-        try {
-            Iterator<WebSocketSession> it = sessions.iterator();
-            while (it.hasNext()) {
-                WebSocketSession session = it.next();
-                
-                if (!session.isOpen()) {
-                    if (log.isWarnEnabled()) {
-                        log.warn("Closed session " + session.getId() + " found in list of sessions to notify, removing it");
-                    }
-                    
-                    it.remove();
-                    continue;
+        Iterator<WebSocketSession> it = sessions.iterator();
+        while (it.hasNext()) {
+            WebSocketSession session = it.next();
+            
+            if (!session.isOpen()) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Closed session " + session.getId() + " found in list of sessions to notify, removing it");
                 }
                 
-                try {
-                    notifySession(session, type, resource);
-                } catch (IOException e) {
-                    if (log.isWarnEnabled()) {
-                        log.warn("Couldn't notify session " + session.getId() + " of change to temporary resource " + resource, e);
-                    }
+                it.remove();
+                continue;
+            }
+            
+            try {
+                notifySession(session, type, resource);
+            } catch (IOException e) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Couldn't notify session " + session.getId() + " of change to temporary resource " + resource, e);
                 }
             }
-        } finally {
-            lock.readLock().unlock();
         }
     }
     

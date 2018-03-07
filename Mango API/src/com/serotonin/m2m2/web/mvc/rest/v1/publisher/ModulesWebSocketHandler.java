@@ -4,10 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,8 +28,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 public class ModulesWebSocketHandler extends MangoWebSocketHandler implements ModuleNotificationListener{
 	private static final Log LOG = LogFactory.getLog(ModulesWebSocketHandler.class);
 			
-    final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
-    final ReadWriteLock lock = new ReentrantReadWriteLock();
+    final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
         
     public ModulesWebSocketHandler(){
         ModulesDwr.addModuleNotificationListener(this);
@@ -51,24 +48,15 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
         }
 
     	super.afterConnectionEstablished(session);
-        lock.writeLock().lock();
-        try {
-            sessions.add(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
+
+        sessions.add(session);
     }
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
-        
-        lock.writeLock().lock();
-        try {
-            sessions.remove(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
+
+        sessions.remove(session);
     }
 
 	/* (non-Javadoc)
@@ -135,16 +123,11 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
 	}
 	
     public void notify(ModuleNotificationModel model) {
-        lock.readLock().lock();
-        try {
-            for (WebSocketSession session : sessions) {
-                User user = getUser(session);
-                if (user != null && hasPermission(user)) {
-                    notify(session, model);
-                }
+        for (WebSocketSession session : sessions) {
+            User user = getUser(session);
+            if (user != null && hasPermission(user)) {
+                notify(session, model);
             }
-        } finally {
-            lock.readLock().unlock();
         }
     }
 	

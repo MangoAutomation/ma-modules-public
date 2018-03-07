@@ -1,9 +1,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.config;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,8 +20,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
 
     private static final Log LOG = LogFactory.getLog(JsonConfigImportWebSocketHandler.class);
-    final Set<WebSocketSession> sessions = new HashSet<WebSocketSession>();
-    final ReadWriteLock lock = new ReentrantReadWriteLock();
+    final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
 
     // For our reference to cancel the tasks
     private JsonEmportV2Controller controller;
@@ -43,24 +40,14 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
         }
 
         super.afterConnectionEstablished(session);
-        lock.writeLock().lock();
-        try {
-            sessions.add(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
+        sessions.add(session);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
-        
-        lock.writeLock().lock();
-        try {
-            sessions.remove(session);
-        } finally {
-            lock.writeLock().unlock();
-        }
+
+        sessions.remove(session);
     }
 
     @Override
@@ -95,13 +82,8 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
     }
 
     public void notify(ImportStatusProvider model) {
-        lock.readLock().lock();
-        try {
-            for (WebSocketSession session : sessions)
-                notify(session, model);
-        } finally {
-            lock.readLock().unlock();
-        }
+        for (WebSocketSession session : sessions)
+            notify(session, model);
     }
 
     protected void notify(WebSocketSession session, ImportStatusProvider model) {
