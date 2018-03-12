@@ -1,3 +1,6 @@
+*Version 3.3.7*
+* Set background context user for bulk data point edit tasks
+
 *Version 3.3.6*
 * Fix potential deadlock issue due to websocket code upgrading a read lock to a write lock
 
