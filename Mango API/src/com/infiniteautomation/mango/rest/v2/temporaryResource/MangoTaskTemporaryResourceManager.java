@@ -6,15 +6,19 @@ package com.infiniteautomation.mango.rest.v2.temporaryResource;
 import java.util.Date;
 
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.util.BackgroundContext;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.timer.TimerTask;
 
@@ -91,14 +95,26 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     private void scheduleTask(TemporaryResource<T, AbstractRestV2Exception> resource) {
         TaskData tasks = (TaskData) resource.getData();
         
+        // TODO Mango 3.4 keep user inside the resource isntead of user id?
+        // maybe change the user inside DataPointRestController bulk operation lambda function to get user from background context
+        User user = UserDao.instance.get(resource.getUserId());
+        if (user == null) {
+            AccessDeniedException error = new AccessDeniedException();
+            resource.safeError(error);
+            return;
+        }
+        
         tasks.mainTask = new HighPriorityTask("Temporary resource " + resource.getResourceType() + " " + resource.getId()) {
             @Override
             public void run(long runtime) {
                 try {
+                    BackgroundContext.set(user);
                     resource.getTask().run(resource);
                 } catch (Exception e) {
                     AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
                     resource.safeError(error);
+                } finally {
+                    BackgroundContext.remove();
                 }
             }
 
