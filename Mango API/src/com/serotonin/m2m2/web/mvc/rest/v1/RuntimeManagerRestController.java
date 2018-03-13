@@ -10,15 +10,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -92,6 +96,37 @@ public class RuntimeManagerRestController extends MangoRestController{
 		return result.createResponseEntity();
 	}
 
+    @ApiOperation(
+            value = "Relinquish the value of a data point",
+            notes = "Only BACnet data points allow this",
+            response=Void.class
+            )
+    @RequestMapping(method = RequestMethod.POST, value = "/relinquish/{xid}")
+    public void relinquish(
+            @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
+            @PathVariable String xid, 
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request){
+        
+        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        if (dataPoint == null)
+            throw new NotFoundRestException();
+        
+        Permissions.ensureDataPointReadPermission(user, dataPoint);
+
+        DataPointRT rt = Common.runtimeManager.getDataPoint(dataPoint.getId());
+        if(rt == null)
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.error.pointNotEnabled", xid));
+
+        //Get the Data Source and Relinquish the point
+        DataSourceRT<?> dsRt = Common.runtimeManager.getRunningDataSource(rt.getDataSourceId());
+        if(dsRt == null)
+            throw new GenericRestException(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.error.dataSourceNotEnabled", xid));
+       
+        dsRt.relinquish(rt);
+
+    }
+	
 	/**
 	 * @return
 	 */

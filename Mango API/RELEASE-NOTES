@@ -1,3 +1,6 @@
+*Version 3.3.8*
+* Added 'reliquish' endpoint to reliquish the value of BACnet data points /v1/runtime-manager/relinquish/{xid}
+
 *Version 3.3.7*
 * Set background context user for bulk data point edit tasks
 

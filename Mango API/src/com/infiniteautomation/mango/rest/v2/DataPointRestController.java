@@ -34,7 +34,6 @@ import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
@@ -45,15 +44,12 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
-import com.serotonin.m2m2.rt.dataImage.DataPointRT;
-import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -451,43 +447,6 @@ public class DataPointRestController extends BaseMangoRestController {
         }
         
         resource.remove();
-    }
-    
-    @ApiOperation(
-            value = "Relinquish the value of a data point",
-            notes = "Only BACnet data points allow this",
-            response=Void.class
-            )
-    @RequestMapping(method = RequestMethod.POST, value = "/relinquish/{xid}")
-    public void relinquish(
-            @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
-            @PathVariable String xid, 
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request){
-        
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
-        if (dataPoint == null)
-            throw new NotFoundRestException();
-        
-        Permissions.ensureDataPointReadPermission(user, dataPoint);
-
-        DataPointRT rt = Common.runtimeManager.getDataPoint(dataPoint.getId());
-        //TODO Could assert BACnet type here
-        if(rt == null)
-            throw new NotFoundRestException(); //TODO Review what to do here, could use new TranslatableMessage("rest.error.pointNotEnabled", dpXid)
-
-        //Get the Data Source and Relinquish the point
-        DataSourceRT<?> dsRt = Common.runtimeManager.getRunningDataSource(rt.getDataSourceId());
-        if(dsRt == null)
-            throw new NotFoundRestException(); //TODO Review any status we want to return, perhaps new message about data source not enabled?
-        
-        try {
-            dsRt.relinquish(rt);
-        }catch(ShouldNeverHappenException e) {
-            //When the data source does not implement this feature
-            //TODO fix message
-            throw new GenericRestException(HttpStatus.BAD_REQUEST, new TranslatableMessage("event.relinquishFailed", e.getMessage()));
-        }
     }
     
     private DataPointIndividualResponse doIndividualRequest(DataPointIndividualRequest request, VoAction defaultAction, DataPointModel defaultBody, User user, UriComponentsBuilder builder) {
