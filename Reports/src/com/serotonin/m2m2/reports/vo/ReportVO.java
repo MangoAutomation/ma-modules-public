@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -34,7 +35,6 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.web.ReportCommon;
 import com.serotonin.m2m2.util.DateUtils;
@@ -100,7 +100,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     
     private int userId;
     
-    @JsonProperty
+//    @JsonProperty
     private List<ReportPointVO> points = new ArrayList<ReportPointVO>();
     
     @JsonProperty
@@ -795,6 +795,16 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 				
 		}
 		
+		JsonArray pointsArray = jsonObject.getJsonArray("points");
+		if(pointsArray != null) {
+		    points = new ArrayList<ReportPointVO>();
+		    for(JsonValue jv : pointsArray) {
+		        ReportPointVO reportPoint = new ReportPointVO();
+		        reader.readInto(reportPoint, jv);
+		        //TODO prevent adding the same point twice?
+		        points.add(reportPoint);
+		    }
+		}
 	}
 
 	/* (non-Javadoc)
@@ -852,6 +862,9 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			if(includeData)
 				writer.writeEntry("zipData", zipData);
 		}
+		
+		writer.writeEntry("points", this.points.stream() //TODO Mango 3.4 use DataPointDao.instance.getXidById in the filter
+		        .filter(p -> DataPointDao.instance.getDataPoint(p.getPointId(), false) != null).collect(Collectors.toList()));
 	}
 
 	/* (non-Javadoc)
