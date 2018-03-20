@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -863,8 +862,12 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 				writer.writeEntry("zipData", zipData);
 		}
 		
-		writer.writeEntry("points", this.points.stream() //TODO Mango 3.4 use DataPointDao.instance.getXidById in the filter
-		        .filter(p -> DataPointDao.instance.getDataPoint(p.getPointId(), false) != null).collect(Collectors.toList()));
+		List<ReportPointVO> jsonPoints = new ArrayList<ReportPointVO>();
+		for(ReportPointVO point : this.points) //TODO Mango 3.4 use DataPointDao.instance.getXidById
+		    if(DataPointDao.instance.getDataPoint(point.getPointId(), false) != null)
+		        jsonPoints.add(point);
+		    
+		writer.writeEntry("points", jsonPoints);    
 	}
 
 	/* (non-Javadoc)
