@@ -4,7 +4,7 @@
 --
 create table graphicalViews (
   id int not null auto_increment,
-  xid varchar(50) not null,
+  xid varchar(100) not null,
   name varchar(100) not null,
   background varchar(255),
   userId int not null,

@@ -8,7 +8,7 @@
 --
 create table reports (
   id int not null identity,
-  xid nvarchar(50) not null,
+  xid nvarchar(100) not null,
   userId int not null,
   name nvarchar(100) not null,
   data image not null,
@@ -40,7 +40,7 @@ create table reportInstancePoints (
   reportInstanceId int not null,
   deviceName nvarchar(40) not null,
   pointName nvarchar(100) not null,
-  xid nvarchar(50) not null,
+  xid nvarchar(100) not null,
   dataType int not null,
   startValue nvarchar(4000),
   textRenderer image,

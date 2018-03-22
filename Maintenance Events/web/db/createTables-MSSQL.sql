@@ -4,7 +4,7 @@
 --
 create table maintenanceEvents (
   id int not null identity,
-  xid nvarchar(50) not null,
+  xid nvarchar(100) not null,
   dataSourceId int not null,
   alias nvarchar(255),
   alarmLevel int not null,

@@ -4,7 +4,7 @@
 --
 create table pointLinks (
   id int not null auto_increment,
-  xid varchar(50) not null,
+  xid varchar(100) not null,
   sourcePointId int not null,
   targetPointId int not null,
   script longtext,

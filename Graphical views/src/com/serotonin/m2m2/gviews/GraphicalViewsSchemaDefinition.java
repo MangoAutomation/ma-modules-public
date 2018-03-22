@@ -50,6 +50,6 @@ public class GraphicalViewsSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 2;
+        return 3;
     }
 }

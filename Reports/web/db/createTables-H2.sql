@@ -4,7 +4,7 @@
 --
 create table reports (
   id int not null auto_increment,
-  xid varchar(50) NOT NULL,
+  xid varchar(100) NOT NULL,
   userId int not null,
   name varchar(100) not null,
   data longblob not null,
@@ -36,7 +36,7 @@ create table reportInstancePoints (
   reportInstanceId int not null,
   deviceName varchar(40) not null,
   pointName varchar(100) not null,
-  xid varchar(50) not null,
+  xid varchar(100) not null,
   dataType int not null,
   startValue varchar(4096),
   textRenderer longblob,

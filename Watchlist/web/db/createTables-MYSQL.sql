@@ -4,7 +4,7 @@
 --
 CREATE TABLE watchLists (
   id int NOT NULL auto_increment,
-  xid varchar(50) NOT NULL,
+  xid varchar(100) NOT NULL,
   userId int NOT NULL,
   name varchar(50),
   readPermission varchar(255),
