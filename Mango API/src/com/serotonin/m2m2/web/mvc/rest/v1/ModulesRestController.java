@@ -5,6 +5,9 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -12,9 +15,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -39,6 +44,7 @@ import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.IMangoLifecycle;
+import com.serotonin.m2m2.UpgradeVersionState;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -386,9 +392,11 @@ public class ModulesRestController extends MangoRestController {
 	@ApiOperation(value = "Get the update license payload, to make requests to store", notes = "Admin Only")
 	@RequestMapping(
 				method = RequestMethod.GET,
-				produces = { "application/json" }, 
 				value = "/update-license-payload")
-	public ResponseEntity<UpdateLicensePayloadModel> getUpdateLicensePayload(HttpServletRequest request) {
+	public ResponseEntity<UpdateLicensePayloadModel> getUpdateLicensePayload(
+         @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
+         @RequestParam(required=false, defaultValue="false") boolean download,
+         HttpServletRequest request) {
         
 		Map<String, String> jsonModules = new HashMap<>();
         List<Module> modules = ModuleRegistry.getModules();
@@ -397,18 +405,49 @@ public class ModulesRestController extends MangoRestController {
         Module core = ModuleRegistry.getCoreModule();
         modules.add(0, core);
 		for (Module module : modules) {
-            jsonModules.put(module.getName(), module.getVersion().toString());
+		    if(!module.isMarkedForDeletion())
+		        jsonModules.put(module.getName(), module.getVersion().toString());
         }
 		
+        // Add in the unloaded modules so we don't re-download them if we don't have to
+        for (Module module : ModuleRegistry.getUnloadedModules())
+            if (!module.isMarkedForDeletion())
+                jsonModules.put(module.getName(), module.getVersion().toString());
+		
 		String storeUrl = Common.envProps.getString("store.url");
-
-		return new ResponseEntity<>(new UpdateLicensePayloadModel(
+		int upgradeVersionState = SystemSettingsDao.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE);
+		int currentVersionState = UpgradeVersionState.DEVELOPMENT;
+		Properties props = new Properties();
+        File propFile = new File(Common.MA_HOME + File.separator + "release.properties");
+        try {
+            if (propFile.exists()) {
+                InputStream in; 
+                in = new FileInputStream(propFile);
+                try {
+                    props.load(in);
+                } finally {
+                    in.close();
+                }
+                String versionState = props.getProperty("versionState");
+                try {
+                    if (versionState != null)
+                        currentVersionState = Integer.valueOf(versionState);
+                } catch (NumberFormatException e) { }
+            }
+        } catch (IOException e1) {
+            //Ignore
+        }
+		
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
+        
+        return new ResponseEntity<>(new UpdateLicensePayloadModel(
 				Providers.get(ICoreLicense.class).getGuid(),
 				SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION),
 				Common.envProps.getString("distributor"),
-				jsonModules, storeUrl), HttpStatus.OK);
+				jsonModules, storeUrl, upgradeVersionState, currentVersionState), 
+                responseHeaders, HttpStatus.OK);
 	}
-
 	
 	/**
 	 * Create a Core Module Model
