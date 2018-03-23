@@ -496,7 +496,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             @RequestBody(required=true) ModuleQueryModel model, 
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException {
-        model.ensureValid(user);
+        model.ensureValid(user, this.dao.tableName);
         ASTNode query = model.createQuery(user);
         return ResponseEntity.ok(getPageStream(query));
     }
