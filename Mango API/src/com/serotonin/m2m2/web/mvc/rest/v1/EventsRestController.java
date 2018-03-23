@@ -15,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +40,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ModuleQueryModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryObjectStream;
@@ -62,7 +64,7 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController()
 @RequestMapping("/v1/events")
 public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
-	
+    
 	private static Log LOG = LogFactory.getLog(EventsRestController.class);
 	
 	public EventsRestController(){ 
@@ -348,11 +350,11 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         return result.createResponseEntity();
     }
 	
-	   @ApiOperation(
-	            value = "Get the active events summary",
-	            notes = "List of counts for all active events by type and the most recent active alarm for each."
-	            )
-	    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/active-summary")
+	@ApiOperation(
+            value = "Get the active events summary",
+            notes = "List of counts for all active events by type and the most recent active alarm for each."
+            )
+    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/active-summary")
     public ResponseEntity<List<EventLevelSummaryModel>> getActiveSummary(
             HttpServletRequest request) {
 
@@ -481,6 +483,38 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         return result.createResponseEntity();
     }
 
+	//TODO 2 new endpoints 1 for module defined query, 1 for explain all
+    @ApiOperation(
+            value = "Query Events By Custom Module Defined Query",
+            notes = "See explain-module-defined-queries for all options",
+            response=EventInstanceModel.class,
+            responseContainer="Array"
+            )
+    @RequestMapping(method = RequestMethod.POST, value = "/module-defined-query")
+    public ResponseEntity<QueryDataPageStream<EventInstanceVO>> moduleDefinedQuery(
+            @ApiParam(value="Query Payload", required=true)
+            @RequestBody(required=true) ModuleQueryModel model, 
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) throws IOException {
+        model.ensureValid(user);
+        ASTNode query = model.createQuery(user);
+        return ResponseEntity.ok(getPageStream(query));
+    }
+    
+    //TODO FLESH OUT
+//    @ApiOperation(
+//            value = "Explain all module defined queries",
+//            notes = ""
+//            )
+//    @RequestMapping(method = RequestMethod.GET, value = "/{explain-module-defined-queries}")
+//    public ResponseEntity<List<ModuleDefinedQueryExplainModel>> explainModuleDefinedQueries(
+//            @AuthenticationPrincipal User user,
+//            HttpServletRequest request) {
+//
+//        
+//    }
+
+	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
 	 */
@@ -488,7 +522,6 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 	public EventInstanceModel createModel(EventInstanceVO vo) {
 		return new EventInstanceModel(vo);
 	}
-
 	
 	class EventAcknowledgeQueryStream extends QueryObjectStream<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
 
