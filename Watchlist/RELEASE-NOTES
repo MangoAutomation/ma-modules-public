@@ -1,5 +1,6 @@
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x
+* Adding custom REST query to get all data point events by watchlist XID at /v1/events/module-defined-query/DATA_POINT_EVENTS_BY_WATCHLIST
 
 *Version 3.3.2*
 * Override AbstractBasicDao's get() to get the points list too.
