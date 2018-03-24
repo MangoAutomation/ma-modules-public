@@ -1,6 +1,8 @@
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x
 * Adding download option to /v1/modules/update-license-payload
+* Adding /v1/events/module-defined-query/{query type} to expose custom queries defined by modules
+* Adding /v1/events/explain-module-defined-queries to explain all defined queries
 
 *Version 3.3.8*
 * Added 'reliquish' endpoint to reliquish the value of BACnet data points /v1/runtime-manager/relinquish/{xid}

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,12 +35,15 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleQueryDefinition;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.ModuleQueryExplainModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ModuleQueryModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
@@ -501,18 +505,23 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         return ResponseEntity.ok(getPageStream(query));
     }
     
-    //TODO FLESH OUT
-//    @ApiOperation(
-//            value = "Explain all module defined queries",
-//            notes = ""
-//            )
-//    @RequestMapping(method = RequestMethod.GET, value = "/{explain-module-defined-queries}")
-//    public ResponseEntity<List<ModuleDefinedQueryExplainModel>> explainModuleDefinedQueries(
-//            @AuthenticationPrincipal User user,
-//            HttpServletRequest request) {
-//
-//        
-//    }
+    @ApiOperation(
+            value = "Explain all module defined queries for this controller",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/explain-module-defined-queries")
+    public ResponseEntity<List<ModuleQueryExplainModel>> explainModuleDefinedQueries(
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
+        
+        List<ModuleQueryExplainModel> models = new ArrayList<>();
+        Map<String, ModuleQueryDefinition> defs = ModuleRegistry.getModuleQueryDefinitions();
+        defs.forEach((k,v) -> {
+            if(v.getTableName().equals(this.dao.tableName))
+                models.add(new ModuleQueryExplainModel(v.getQueryTypeName(), v.getExplainInfo()));
+        });
+        return ResponseEntity.ok(models);
+    }
 
 	
 	/* (non-Javadoc)
