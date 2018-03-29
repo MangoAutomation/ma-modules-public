@@ -6,6 +6,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
@@ -16,22 +19,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.google.common.io.Files;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
@@ -42,6 +53,7 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.UpgradeVersionState;
@@ -51,6 +63,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AngularJSModuleDefinition;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
@@ -78,6 +91,10 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class ModulesRestController extends MangoRestController {
 
 	private final String WEB = "/web";
+	private final String MODULES_WEB_DIR = Constants.DIR_WEB + "/" + Constants.DIR_MODULES;
+	private final String WEB_MODULE_PREFIX = MODULES_WEB_DIR + "/" + ModuleUtils.Constants.MODULE_PREFIX;
+    private final File coreDir = new File(Common.MA_HOME);
+    private final File moduleDir = new File(coreDir, MODULES_WEB_DIR);
 
 	@ApiOperation(value = "AngularJS Modules", notes = "Publicly Available Angular JS Modules")
 	@RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/public", produces = { "application/json" })
@@ -449,7 +466,175 @@ public class ModulesRestController extends MangoRestController {
                 responseHeaders, HttpStatus.OK);
 	}
 	
-	/**
+	private static final Object UPLOAD_UPGRADE_LOCK = new Object();
+	private static Object UPLOAD_UPGRADE_IN_PROGRESS;
+	
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Upload upgrade zip bundle, to be installed on restart",
+            notes = "The bundle can be downloaded from the Mango Store")
+    @RequestMapping(method = RequestMethod.POST, value = "/upload-upgrades")
+    public void uploadUpgrades(
+            @ApiParam(value = "Restart after upload completes", required = false,
+                    defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
+                            defaultValue = "false") boolean restart,
+            MultipartHttpServletRequest multipartRequest) throws IOException {
+
+        synchronized (UPLOAD_UPGRADE_LOCK){
+            if(UPLOAD_UPGRADE_IN_PROGRESS == null) {
+                UPLOAD_UPGRADE_IN_PROGRESS = new Object();
+            }else {
+                throw new BadRequestException(new TranslatableMessage("rest.error.upgradeUploadInProgress"));
+            }
+        }
+        
+        try {
+            List<MultipartFile> files = new ArrayList<>();
+            MultiValueMap<String, MultipartFile> filemap = multipartRequest.getMultiFileMap();
+            for (String nameField : filemap.keySet()) {
+                files.addAll(filemap.get(nameField));
+            }
+    
+            // Validate the zip
+            if (files.size() == 0)
+                throw new BadRequestException(new TranslatableMessage("rest.error.noFileProvided"));
+    
+            // Create the temp directory into which to download, if necessary.
+            File tempDir = new File(Common.MA_HOME, ModuleUtils.DOWNLOAD_DIR);
+            if (!tempDir.exists())
+                tempDir.mkdirs();
+    
+            // Delete anything that is currently the temp directory.
+            FileUtils.cleanDirectory(tempDir);
+    
+            try {
+                //Save the upload(s) to the temp dir
+                for (MultipartFile file : files) {
+                    File newFile = new File(tempDir, file.getOriginalFilename());
+                    try(FileOutputStream fos = new FileOutputStream(newFile)){
+                        org.springframework.util.StreamUtils.copy(file.getInputStream(), fos);
+                    }
+                }
+                
+                String[] potentialUpgrades = tempDir.list(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        if(name.endsWith(".zip"))
+                            return true;
+                        else
+                            return false;
+                    }
+                });
+                
+                boolean didUpgrade = false;
+                for(String potentialUpgrade : potentialUpgrades) {
+                    File file = new File(tempDir, potentialUpgrade);
+                    boolean core = false;
+                    boolean hasWebModules = false;
+                    try(FileInputStream fis = new FileInputStream(file)){
+                        // Test to see if it is a core or a bundle of only zips or many zip files
+                        try (ZipInputStream is = new ZipInputStream(fis)) {
+                            ZipEntry entry = is.getNextEntry();
+                            if (entry == null) {
+                                // Not a zip file or empty, either way we don't care
+                                throw new BadRequestException(new TranslatableMessage("rest.error.badUpgradeFile"));
+                            } else {
+                                do {
+                                    if("release.signed".equals(entry.getName())) {
+                                        core = true;
+                                        break;
+                                    }else if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
+                                        hasWebModules = true;
+                                    }
+                                } while ((entry = is.getNextEntry()) != null);
+                            }
+                        }
+                    }
+        
+                    if(core) {
+                        //move file to core directory
+                        Files.move(file, new File(coreDir, "m2m2-core-upgrade.zip"));
+                        didUpgrade = true;
+                    }else if(hasWebModules){
+                        //This is a zip with modules in web/modules move them all out into the MA_HOME/web/modules dir
+                        try(FileInputStream fis = new FileInputStream(file)){
+                            try (ZipInputStream is = new ZipInputStream(fis)) {
+                                ZipEntry entry;
+                                while((entry  = is.getNextEntry()) != null) {
+                                    if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
+                                        File newModule = new File(coreDir, entry.getName());
+                                        try(FileOutputStream fos = new FileOutputStream(newModule)){
+                                            org.springframework.util.StreamUtils.copy(is, fos);
+                                        }
+                                        didUpgrade = true;
+                                    }
+                                }
+                            }
+                        }
+                    }else {
+                        //if its a module move it to the modules folder
+                        if(potentialUpgrade.startsWith(ModuleUtils.Constants.MODULE_PREFIX)) {
+                            //Its extra work but we better check that it is a module from the store:
+                            didUpgrade = maybeCopyModule(file);
+                        }else {                
+                            //Is this a zip of modules?
+                            try(FileInputStream fis = new FileInputStream(file)){
+                                try (ZipInputStream is = new ZipInputStream(fis)) {
+                                    ZipEntry entry;
+                                    while((entry  = is.getNextEntry()) != null) {
+                                        if(entry.getName().startsWith(ModuleUtils.Constants.MODULE_PREFIX)) {
+                                            //Extract it and confirm it is a module
+                                            File newModule = new File(tempDir, entry.getName());
+                                            try(FileOutputStream fos = new FileOutputStream(newModule)){
+                                                org.springframework.util.StreamUtils.copy(is, fos);
+                                            }
+                                            didUpgrade = maybeCopyModule(newModule);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Ensure we have some upgrades
+                if (!didUpgrade)
+                    throw new BadRequestException(new TranslatableMessage("rest.error.invalidUpgradeFile"));
+            }finally {
+                FileUtils.deleteDirectory(tempDir);
+            }
+        }finally {
+            //TODO We could retain the lock indefinitely if there is a restart request?
+            //Release the lock
+            synchronized(UPLOAD_UPGRADE_LOCK) {
+                UPLOAD_UPGRADE_IN_PROGRESS = null;
+            }
+        }
+
+        if (restart)
+            ModulesDwr.scheduleRestart();
+    }
+  
+	private boolean maybeCopyModule(File file) throws FileNotFoundException, IOException {
+	    boolean isModule = false;
+        try(FileInputStream fis = new FileInputStream(file)){
+            try (ZipInputStream is = new ZipInputStream(fis)) {
+                ZipEntry entry;
+                while((entry  = is.getNextEntry()) != null) {
+                    if(entry.getName().equals(ModuleUtils.Constants.MODULE_SIGNED)) {
+                        isModule = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if(isModule) {
+            //Module so move it to web/modules
+            Files.move(file, new File(moduleDir, file.getName()));
+            return true;
+        }else
+            return false;
+	}
+
+    /**
 	 * Create a Core Module Model
 	 * 
 	 * @return
