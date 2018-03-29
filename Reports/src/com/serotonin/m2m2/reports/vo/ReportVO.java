@@ -863,8 +863,8 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 		}
 		
 		List<ReportPointVO> jsonPoints = new ArrayList<ReportPointVO>();
-		for(ReportPointVO point : this.points) //TODO Mango 3.4 use DataPointDao.instance.getXidById
-		    if(DataPointDao.instance.getDataPoint(point.getPointId(), false) != null)
+		for(ReportPointVO point : this.points)
+		    if(DataPointDao.instance.getXidById(point.getPointId()) != null)
 		        jsonPoints.add(point);
 		    
 		writer.writeEntry("points", jsonPoints);    

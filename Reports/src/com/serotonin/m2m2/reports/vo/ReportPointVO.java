@@ -147,16 +147,13 @@ public class ReportPointVO implements Serializable, JsonSerializable {
 		String text = jsonObject.getString("pointXid");
 		if(text == null){
 			throw new TranslatableJsonException("reports.emport.point.missingAttr", "pointXid");
-		}else{
-		    //TODO Mango 3.4 change to,
-//		    Integer id = DataPointDao.instance.getIdByXid(text);
-			DataPointVO vo = DataPointDao.instance.getByXid(text);
-			if(vo == null){
+		}else {
+		    Integer id = DataPointDao.instance.getIdByXid(text);
+			if(id == null)
 				throw new TranslatableJsonException("reports.emport.pointDNE", text);
-			}
-			this.pointId = vo.getId();
+			else
+			    this.pointId = id;
 		}
-		
 	}
 
 	/* (non-Javadoc)
@@ -164,11 +161,8 @@ public class ReportPointVO implements Serializable, JsonSerializable {
 	 */
 	@Override
 	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-		//TODO Mango 3.4 change to, remove rest
-//	    writer.writeEntry("pointXid", DataPointDao.instance.getXidById(pointId));
-		DataPointVO vo = DataPointDao.instance.get(pointId);
-		if(vo != null)
-			writer.writeEntry("pointXid", vo.getXid());
-		
+		String xid = DataPointDao.instance.getXidById(pointId);
+		if(xid != null)
+	        writer.writeEntry("pointXid", xid);		
 	}
 }
