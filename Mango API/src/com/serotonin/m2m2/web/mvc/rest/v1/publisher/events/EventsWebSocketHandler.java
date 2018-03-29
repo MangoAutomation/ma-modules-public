@@ -8,8 +8,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -32,9 +30,6 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  * @author Jared Wiltshire
  */
 public class EventsWebSocketHandler extends MangoWebSocketHandler {
-
-    // TODO Mango 3.4 use log from super class
-    private final Log log = LogFactory.getLog(this.getClass());
 
     private final Object lock = new Object();
     private EventsWebSocketListener listener;
