@@ -19,6 +19,7 @@ import com.infiniteautomation.mango.monitor.LongMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Common.Rollups;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -27,6 +28,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
+import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
@@ -135,15 +137,22 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
             if(monitor.getId().contains("SUCCESS")) {
                 dpvo.setLoggingType(DataPointVO.LoggingTypes.ON_CHANGE);
                 name = new TranslatableMessage("dsEdit.internal.autoCreate.names.pollingSuccess");
+                dpvo.setRollup(Rollups.MAXIMUM);
+                dpvo.setTextRenderer(getIntegerAnalogSuffixRenderer(""));
             } else {
                 dpvo.setLoggingType(DataPointVO.LoggingTypes.INTERVAL);
                 dpvo.setIntervalLoggingPeriod(5);
                 dpvo.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.MAXIMUM);
-                if(monitor.getId().contains("PERCENTAGE"))
+                if(monitor.getId().contains("PERCENTAGE")) {
                     name = new TranslatableMessage("dsEdit.internal.autoCreate.names.pollingPercentage");
-                else //must be duration
+                    dpvo.setRollup(Rollups.AVERAGE);
+                    dpvo.setTextRenderer(getIntegerAnalogSuffixRenderer("%"));
+                } else { //must be duration
                     name = new TranslatableMessage("dsEdit.internal.autoCreate.names.pollingDuration");
+                    dpvo.setRollup(Rollups.MAXIMUM);
+                    dpvo.setTextRenderer(getIntegerAnalogSuffixRenderer(" ms"));
+                }
             }
             
             //Set the device name base on the XID in the monitor ID....
@@ -210,6 +219,14 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         if(dsvo == null)
             throw new ShouldNeverHappenException("Error creating point, unknown data source: "+dsXid);
         dpvo.setDeviceName(dsvo.getName());
+    }
+    
+    private AnalogRenderer getIntegerAnalogSuffixRenderer(String suffix) {
+        AnalogRenderer result = new AnalogRenderer();
+        result.setUseUnitAsSuffix(false);
+        result.setSuffix(suffix);
+        result.setFormat("0");
+        return result;
     }
 
     @Override
