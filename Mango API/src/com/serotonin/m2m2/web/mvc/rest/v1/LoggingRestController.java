@@ -85,8 +85,8 @@ public class LoggingRestController extends MangoRestController{
 			notes = "Returns a list of recent logs, ie. /by-filename/ma.log?limit(10)\n" + 
 					"<br>Query Examples: \n" + 
 					"by-filename/ma.log/?level=gt=DEBUG\n" + 
-					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
-					"by-filename/ma.log/?methodName=setPointValue\n" + 
+					"by-filename/ma.log/?thread=qtp-1\n" + 
+					"by-filename/ma.log/?message=setPointValue\n" + 
 					"NOTE: Querying non ma.log files is not supported.")
 	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-filename/{filename}")
     public ResponseEntity<QueryArrayStream<?>> query(

@@ -17,24 +17,18 @@ public class LoggingEvent {
 	private String message;
 	private String[] stackTrace;
 	private String eventFileName;
-	private String className;
-	private String methodName;
-	private String lineNumber;
+	private String threadName;
 
 
 
 	public LoggingEvent(Level level, long timestamp, String message, String[] stackTrace, 
-			String eventFileName, String className,
-			String methodName, String lineNumber) {
-		super();
+			String eventFileName, String threadName) {
 		this.level = level;
 		this.timestamp = timestamp;
 		this.message = message;
 		this.stackTrace = stackTrace;
 		this.eventFileName = eventFileName;
-		this.className = className;
-		this.methodName = methodName;
-		this.lineNumber = lineNumber;
+		this.threadName = threadName;
 	}
 
 	public void setLevel(Level level){
@@ -75,35 +69,13 @@ public class LoggingEvent {
 		this.eventFileName = eventFileName;
 	}
 
-	public String getClassName() {
-		return className;
-	}
-
-	public void setClassName(String className) {
-		this.className = className;
-	}
-
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
-	}
-
-	public String getLineNumber() {
-		return lineNumber;
-	}
-
-	public void setLineNumber(String lineNumber) {
-		this.lineNumber = lineNumber;
-	}
-
-	public long getTimestamp() {
+	public String getThreadName() {
+        return threadName;
+    }
+    public void setThreadName(String threadName) {
+        this.threadName = threadName;
+    }
+    public long getTimestamp() {
 		return timestamp;
-	}
-
-	public boolean hasLocationInformation(){
-		return ((methodName != null) && (className != null)&&(lineNumber!=null));
 	}
 }

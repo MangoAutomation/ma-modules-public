@@ -37,7 +37,6 @@ public class ModulesWebSocketHandler extends MangoWebSocketPublisher implements 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         User user = getUser(session);
-        // TODO Mango 3.4 replace close status with constant from MangoWebSocketPublisher
         if (user == null) {
             return;
         } else if (!hasPermission(user)) {

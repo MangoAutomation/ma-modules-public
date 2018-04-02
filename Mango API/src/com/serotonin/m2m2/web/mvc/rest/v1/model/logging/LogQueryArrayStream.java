@@ -63,7 +63,7 @@ public class LogQueryArrayStream implements QueryArrayStream<LogMessageModel>{
 			if(!logFile.exists())
 				return;
 			
-		    receiver.setLogFormat("LEVEL TIMESTAMP (CLASS.METHOD:LINE) - MESSAGE"); //"%-5p %d{ISO8601} (%C.%M:%L) - %m %n"
+		    receiver.setLogFormat("LEVEL TIMESTAMP [THREAD] - MESSAGE"); //"%-5p %d{ISO8601} (%C.%M:%L) - %m %n"
 		    receiver.setFileURL(logFile.toURI().toURL().toExternalForm());
 		    receiver.setUseCurrentThread(true);
 
