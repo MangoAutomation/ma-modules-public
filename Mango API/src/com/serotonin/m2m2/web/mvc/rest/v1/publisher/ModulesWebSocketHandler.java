@@ -19,13 +19,13 @@ import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationTypeEnum;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * 
  * @author Terry Packer
  */
-public class ModulesWebSocketHandler extends MangoWebSocketHandler implements ModuleNotificationListener{
+public class ModulesWebSocketHandler extends MangoWebSocketPublisher implements ModuleNotificationListener{
 	private static final Log LOG = LogFactory.getLog(ModulesWebSocketHandler.class);
 			
     final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
@@ -42,7 +42,7 @@ public class ModulesWebSocketHandler extends MangoWebSocketHandler implements Mo
             return;
         } else if (!hasPermission(user)) {
             if (session.isOpen()) {
-                session.close(new CloseStatus(4003, "Not authorized"));
+                session.close(MangoWebSocketPublisher.NOT_AUTHORIZED);
             }
             return;
         }

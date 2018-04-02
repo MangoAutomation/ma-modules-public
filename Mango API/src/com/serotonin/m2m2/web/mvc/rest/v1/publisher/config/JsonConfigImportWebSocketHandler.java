@@ -15,9 +15,9 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
-public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
+public class JsonConfigImportWebSocketHandler extends MangoWebSocketPublisher {
 
     private static final Log LOG = LogFactory.getLog(JsonConfigImportWebSocketHandler.class);
     final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
@@ -29,12 +29,11 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // Check for permissions
         User user = this.getUser(session);
-        // TODO Mango 3.4 replace close status with constant from MangoWebSocketPublisher
         if (user == null) {
             return;
         } else if (!user.isAdmin()) {
             if (session.isOpen()) {
-                session.close(new CloseStatus(4003, "Not authorized"));
+                session.close(MangoWebSocketPublisher.NOT_AUTHORIZED);
             }
             return;
         }
@@ -55,12 +54,11 @@ public class JsonConfigImportWebSocketHandler extends MangoWebSocketHandler {
         try {
             User user = this.getUser(session);
             // TODO Can anyone cancel the import?
-            // TODO Mango 3.4 replace close status with constant from MangoWebSocketPublisher
             if (user == null) {
                 return;
             } else if (!user.isAdmin()) {
                 if (session.isOpen()) {
-                    session.close(new CloseStatus(4003, "Not authorized"));
+                    session.close(MangoWebSocketPublisher.NOT_AUTHORIZED);
                 }
                 return;
             }

@@ -29,7 +29,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
@@ -38,7 +38,7 @@ import com.serotonin.m2m2.web.taglib.Functions;
  * @author Terry Packer
  * @author Jared Wiltshire
  */
-public class PointValueWebSocketHandler extends MangoWebSocketHandler {
+public class PointValueWebSocketHandler extends MangoWebSocketPublisher {
 
     private final Log log = LogFactory.getLog(this.getClass());
     private final Map<Integer, PointValueWebSocketListener> pointIdToListenerMap = new HashMap<>();

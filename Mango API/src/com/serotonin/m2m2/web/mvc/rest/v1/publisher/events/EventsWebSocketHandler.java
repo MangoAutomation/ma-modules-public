@@ -23,13 +23,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventTypeEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventRegistrationModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * @author Terry Packer
  * @author Jared Wiltshire
  */
-public class EventsWebSocketHandler extends MangoWebSocketHandler {
+public class EventsWebSocketHandler extends MangoWebSocketPublisher {
 
     private final Object lock = new Object();
     private EventsWebSocketListener listener;

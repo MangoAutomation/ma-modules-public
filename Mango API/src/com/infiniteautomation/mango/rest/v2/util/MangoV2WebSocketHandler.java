@@ -11,7 +11,7 @@ import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * TODO review the code in MangoWebSocketPublisher for the next Mango 3.4 core release
@@ -19,7 +19,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
  * 
  * @author Jared Wiltshire
  */
-public class MangoV2WebSocketHandler extends MangoWebSocketHandler {
+public class MangoV2WebSocketHandler extends MangoWebSocketPublisher {
     // TODO Mango 3.4 remove this and use one from super class
     protected final Log log = LogFactory.getLog(this.getClass());
 

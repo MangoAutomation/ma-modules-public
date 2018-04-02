@@ -6,7 +6,7 @@ package com.serotonin.m2m2.watchlist;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * @author Terry Packer
@@ -20,7 +20,7 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
 	 */
 	@Override
-	protected MangoWebSocketHandler getHandler() {
+	protected MangoWebSocketPublisher getHandler() {
 		return new WatchListWebSocketHandler();
 	}
 

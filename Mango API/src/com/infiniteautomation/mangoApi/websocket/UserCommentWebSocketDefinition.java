@@ -6,7 +6,7 @@ package com.infiniteautomation.mangoApi.websocket;
 
 import com.serotonin.m2m2.module.WebSocketDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.UserCommentWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * @author Terry Packer
@@ -18,7 +18,7 @@ public class UserCommentWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	protected MangoWebSocketHandler getHandler() {
+	protected MangoWebSocketPublisher getHandler() {
 		return new UserCommentWebSocketHandler();
 	}
 
