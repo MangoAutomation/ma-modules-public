@@ -324,7 +324,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                 			if(LOG.isDebugEnabled())
                     			LOG.debug("Matching will use String: " + message);
                 			final AtomicBoolean matcherFailed = new AtomicBoolean(false);
-                			synchronized (pointListChangeLock) {
+                			pointListChangeLock.readLock().lock();
+                			try {
 	                			for(final DataPointRT dp: this.dataPoints){
 	                        		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
 	                        		MatchCallback callback = new MatchCallback(){
@@ -366,6 +367,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 	                        			callback.matchGeneralFailure(e);
 	                        		}
 	                			}
+                			} finally {
+                			    pointListChangeLock.readLock().unlock();
                 			}
                 			
                 			//Did we have a failure?

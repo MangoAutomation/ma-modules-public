@@ -207,7 +207,8 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
         TranslatableMessage error = null;
         long time = System.currentTimeMillis();
 
-        synchronized (pointListChangeLock) {
+        pointListChangeLock.readLock().lock();
+        try {
             for (DataPointRT dp : dataPoints) {
                 VMStatPointLocatorVO locator = ((VMStatPointLocatorRT) dp.getPointLocator()).getVo();
 
@@ -235,6 +236,8 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
                     }
                 }
             }
+        } finally {
+            pointListChangeLock.readLock().unlock();
         }
 
         if (error == null)
