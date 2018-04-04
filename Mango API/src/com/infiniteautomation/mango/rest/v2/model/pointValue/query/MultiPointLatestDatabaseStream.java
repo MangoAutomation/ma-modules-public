@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,11 +14,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import com.goebl.simplify.Simplify;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyPointValueExtractor;
-import com.serotonin.log.LogStopWatch;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
@@ -282,82 +278,5 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                     break;
             }
         }
-    }
-    
-    /**
-     * Simplify according to our requirements
-     * 
-     * TODO This currently only works for Numeric Points
-     * 
-     * @param list
-     * @return
-     */
-    protected List<DataPointVOPointValueTimeBookend> simplify(
-            List<DataPointVOPointValueTimeBookend> list) {
-        LogStopWatch logStopWatch = new LogStopWatch();
-        if(info.simplifyTolerance != null) {
-            //TODO improve Simplify code to return a list
-            Simplify<DataPointVOPointValueTimeBookend> simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
-            DataPointVOPointValueTimeBookend[] simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), info.simplifyTolerance, info.simplifyHighQuality);
-            logStopWatch.stop("Finished Simplify, tolerance: " + info.simplifyTolerance);
-            return Arrays.asList(simplified);
-        }else {
-            if(list.size() < info.simplifyTarget)
-                return list;
-            
-            //Compute target bounds as 10% of target
-            int lowerTarget = info.simplifyTarget - (int)(info.simplifyTarget * 0.1);
-            int upperTarget = info.simplifyTarget + (int)(info.simplifyTarget * 0.1);
-            
-            //Compute tolerance bounds and initial tolerance
-            Double max = Double.MIN_VALUE;
-            Double min = Double.MAX_VALUE;
-            for(DataPointVOPointValueTimeBookend value : list) {
-                if(value.getPvt().getDoubleValue() > max)
-                    max = value.getPvt().getDoubleValue();
-                if(value.getPvt().getDoubleValue() < min)
-                    min = value.getPvt().getDoubleValue();
-            }
-            double difference = max - min;
-            double tolerance = difference / 20d;
-            double topBound = difference;
-            double bottomBound = 0;
-            
-            //Determine max iterations we can allow
-            int maxIterations = 100;
-            int iteration = 1;
-            
-            Simplify<DataPointVOPointValueTimeBookend> simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
-            DataPointVOPointValueTimeBookend[] simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), tolerance, info.simplifyHighQuality);
-            DataPointVOPointValueTimeBookend[] best = simplified;
-            while(simplified.length < lowerTarget || simplified.length > upperTarget) {
-                
-                if (simplified.length > info.simplifyTarget) {
-                    bottomBound = tolerance;
-                } else {
-                    topBound = tolerance;
-                }
-                
-                //Adjust tolerance
-                tolerance = bottomBound + (topBound - bottomBound) / 2.0d;
-                simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
-                simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), tolerance, info.simplifyHighQuality);
-                
-                //Keep our best effort
-                if(Math.abs(info.simplifyTarget - simplified.length) < Math.abs(info.simplifyTarget - best.length))
-                    best = simplified;
-
-                if(iteration > maxIterations) {
-                    simplified = best;
-                    break;
-                }
-
-                iteration++;
-            }
-            
-            logStopWatch.stop("Finished Simplify, target: " + info.simplifyTarget + " actual " + simplified.length);
-            return Arrays.asList(simplified);
-        }
-        
     }
 }

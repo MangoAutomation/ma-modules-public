@@ -16,11 +16,11 @@ public class SimplifyPointValueExtractor implements PointExtractor<DataPointVOPo
     
     @Override
     public double getX(DataPointVOPointValueTimeBookend point) {
-        return point.getPvt().getDoubleValue();
+        return point.getTime();
     }
 
     @Override
     public double getY(DataPointVOPointValueTimeBookend point) {
-        return point.getTime(); 
+        return point.getPvt().getDoubleValue();
     }
 }

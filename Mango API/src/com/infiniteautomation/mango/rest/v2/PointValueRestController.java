@@ -33,6 +33,7 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
@@ -864,7 +865,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         
         // Are we using rollup
         if (info.getRollup() != RollupEnum.NONE) {
-            return ResponseEntity.ok(new MultiDataPointStatisticsQuantizerStream<T, INFO>(info, voMap, this.dao));
+            if(info.getRollup() == RollupEnum.POINT_DEFAULT)
+                return ResponseEntity.ok(new MultiDataPointDefaultRollupStatisticsQuantizerStream<T, INFO>(info, voMap, this.dao));
+            else
+                return ResponseEntity.ok(new MultiDataPointStatisticsQuantizerStream<T, INFO>(info, voMap, this.dao));
         } else {
             if(info.isUseSimplify()) {
                 //Ensure no Simplify support
@@ -895,10 +899,6 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 if(!Permissions.hasDataPointReadPermission(user, vo))
                     throw new AccessDeniedException();
             }
-            
-            //TODO Add support for NONE Default Rollup
-            if(rollup == RollupEnum.POINT_DEFAULT && vo.getRollup() == RollupEnum.NONE.getId())
-                throw new BadRequestException(new TranslatableMessage("common.default", "Default point rollup of NONE is not yet supported for point with xid: " + xid));;
             
             //Validate the rollup
             switch(vo.getPointLocator().getDataTypeId()) {

@@ -15,6 +15,7 @@ import java.util.Map;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyUtility;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -62,7 +63,7 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
         if(info.isSingleArray() && voMap.size() > 1) {
             List<DataPointVOPointValueTimeBookend> sorted = new ArrayList<>();
             while(it.hasNext())
-                sorted.addAll(simplify(valuesMap.get(it.next())));
+                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(it.next())));
             //Sort the Sorted List
             Collections.sort(sorted, new Comparator<DataPointVOPointValueTimeBookend>() {
                 @Override
@@ -76,7 +77,7 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
                 super.writeValue(value);
         }else {
             while(it.hasNext()) {
-                List<DataPointVOPointValueTimeBookend> values = simplify(valuesMap.get(it.next()));
+                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(it.next()));
                 for(DataPointVOPointValueTimeBookend value : values)
                     super.writeValue(value);
             }

@@ -55,11 +55,12 @@ abstract class AbstractSimplify<T> {
 
         for (int i = 1; i < points.length; ++i) {
             point = points[i];
-
-            if (getSquareDistance(point, prevPoint) > sqTolerance) {
-                newPoints.add(point);
-                prevPoint = point;
-            }
+            try {
+                if (getSquareDistance(point, prevPoint) > sqTolerance) {
+                    newPoints.add(point);
+                    prevPoint = point;
+                }
+            }catch(NullValueException e) { }
         }
 
         if (prevPoint != point) {
@@ -96,11 +97,15 @@ abstract class AbstractSimplify<T> {
 
             // find index of point with maximum square distance from first and last point
             for (int i = range.first + 1; i < range.last; ++i) {
-                double sqDist = getSquareSegmentDistance(points[i], points[range.first], points[range.last]);
-
-                if (sqDist > maxSqDist) {
-                    index = i;
-                    maxSqDist = sqDist;
+                try {
+                    double sqDist = getSquareSegmentDistance(points[i], points[range.first], points[range.last]);
+    
+                    if (sqDist > maxSqDist) {
+                        index = i;
+                        maxSqDist = sqDist;
+                    }
+                }catch(NullValueException e) {
+                    //TODO Mango 3.4 Special Handling??
                 }
             }
 
@@ -121,7 +126,7 @@ abstract class AbstractSimplify<T> {
     }
 
 
-    public abstract double getSquareDistance(T p1, T p2);
+    public abstract double getSquareDistance(T p1, T p2) throws NullValueException;
 
-    public abstract double getSquareSegmentDistance(T p0, T p1, T p2);
+    public abstract double getSquareSegmentDistance(T p0, T p1, T p2) throws NullValueException;
 }

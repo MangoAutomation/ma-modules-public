@@ -15,6 +15,7 @@ import java.util.Map;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyUtility;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -77,7 +78,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                 BookendPair pair = bookendMap.get(id);
                 if(pair != null && pair.startBookend != null)
                     sorted.add(pair.startBookend);
-                sorted.addAll(simplify(valuesMap.get(id)));
+                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(id)));
                 if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
                     sorted.add(pair.endBookend);
             }
@@ -95,7 +96,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
         }else {
             while(it.hasNext()) {
                 Integer id = it.next();
-                List<DataPointVOPointValueTimeBookend> values = simplify(valuesMap.get(id));
+                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(id));
                 BookendPair pair = bookendMap.get(id);
                 if(pair != null && pair.startBookend != null)
                     super.writeValue(pair.startBookend);

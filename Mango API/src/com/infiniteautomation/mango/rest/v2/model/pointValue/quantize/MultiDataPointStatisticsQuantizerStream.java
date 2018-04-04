@@ -5,74 +5,32 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.infiniteautomation.mango.db.query.BookendQueryCallback;
-import com.infiniteautomation.mango.quantize.BucketCalculator;
-import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
-import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 /**
  *  Container to help map multi point queries produce statistics for each point
  *
  * @author Terry Packer
  */
-public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTimeRangeQueryInfo> extends PointValueTimeDatabaseStream<T, INFO> implements ChildStatisticsGeneratorCallback, BookendQueryCallback<IdPointValueTime>{
+public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTimeRangeQueryInfo> extends AbstractMultiDataPointStatisticsQuantizerStream<T, INFO> {
 
-    protected final Map<Integer, DataPointStatisticsQuantizer<?>> quantizerMap;
-    protected LinkedHashMap<Long,List<DataPointStatisticsGenerator>> periodStats;
-    protected int count;
+    protected final LinkedHashMap<Long,List<DataPointStatisticsGenerator>> periodStats;
 
-    //For our quantization
-    protected final BucketCalculator bucketCalculator;
-    protected Instant periodFrom;
-    protected Instant periodTo;
-    protected long periodToMillis; //For performance
-    protected long currentTime;
-    protected int currentDataPointId; //Track point change in order by ID queries
-    
     public MultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
-        super(info, voMap, dao);
-        this.quantizerMap = new HashMap<>(voMap.size());
+        super(info, voMap, dao);        
         this.periodStats = new LinkedHashMap<>();
-        this.count = 0;
-        
-        //Setup for parent quantization, to fill gaps ect.
-        this.bucketCalculator = getBucketCalculator();
-        this.periodFrom = bucketCalculator.getStartTime().toInstant();
-        this.periodTo = bucketCalculator.getNextPeriodTo().toInstant();
-        this.periodToMillis = periodTo.toEpochMilli();
-        this.currentTime = periodFrom.toEpochMilli();
-        this.currentDataPointId = -1;
     }
 
-    /**
-     * Create a Bucket Calculator
-     * @return
-     */
-    protected BucketCalculator getBucketCalculator(){
-        if(this.info.getTimePeriod() == null){
-            return  new BucketsBucketCalculator(info.getFrom(), info.getTo(), 1);
-        }else{
-           return new TimePeriodBucketCalculator(info.getFrom(), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
-        }
-    }
-    
     /*
      * (non-Javadoc)
      * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
@@ -121,56 +79,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     }
     
-    /**
-     * @param value
-     * @throws IOException 
-     */
-    protected void updateQuantizers(IdPointValueTime value) throws IOException {
-        long time = value.getTime();
-        if(!info.isSingleArray()) {
-            //In this query the values are returned in data point ID and time order
-            //Advance the previous quantizer 
-            if(currentDataPointId != -1 && currentDataPointId != value.getId()) {
-                DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
-                if(!quant.isDone())
-                    quant.done();
-            }
-        }
-        currentTime = time;
-        currentDataPointId = value.getId();
-    }
-    
-    protected void nextPeriod(long time) throws IOException {
-        periodFrom = periodTo;
-        periodTo = bucketCalculator.getNextPeriodTo().toInstant();
-        periodToMillis = periodTo.toEpochMilli();
-    }
-    
-    protected void createQuantizerMap() {
-        for(Entry<Integer, DataPointVO> entry : voMap.entrySet()) {
-            DataPointVO vo = entry.getValue();
-            DataPointStatisticsQuantizer<?> quantizer;
-            switch(vo.getPointLocator().getDataTypeId()) {
-                case DataTypes.ALPHANUMERIC:
-                case DataTypes.IMAGE:
-                    quantizer = new ValueChangeCounterDataPointQuantizer(vo, getBucketCalculator(), this);
-                break;
-                case DataTypes.BINARY:
-                case DataTypes.MULTISTATE:
-                    quantizer = new StartsAndRuntimeListDataPointQuantizer(vo, getBucketCalculator(), this);
-                break;
-                case DataTypes.NUMERIC:
-                    quantizer = new AnalogStatisticsDataPointQuantizer(vo, getBucketCalculator(), this);
-                break;
-                default:
-                    throw new RuntimeException("Unknown Data Type: " + vo.getPointLocator().getDataTypeId());
-            }
-            
-            this.quantizerMap.put(entry.getKey(), quantizer);
-        }
-    }
-
-    
     protected void writePeriodStats(List<DataPointStatisticsGenerator> generators) throws IOException {
         //Code limit
         //TODO Cancel query via Exception
@@ -184,15 +92,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             for(DataPointStatisticsGenerator gen: generators)
                 this.writer.writeStatsAsObject(gen);
         }
-        count++;
-    }
-    
-    protected void writePeriodStats(DataPointStatisticsGenerator generator) throws IOException{
-        //Code limit
-        //TODO Cancel query via Exception
-        if(info.getLimit() != null && count >= info.getLimit())
-            return;
-        this.writer.writeStatsAsObject(generator);
         count++;
     }
 

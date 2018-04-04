@@ -28,7 +28,7 @@ public class Simplify<T> extends AbstractSimplify<T> {
             }
 
             @Override
-            public double getY(T point) {
+            public double getY(T point) throws NullValueException {
                 return ((Point) point).getY();
             }
         };
@@ -49,7 +49,7 @@ public class Simplify<T> extends AbstractSimplify<T> {
     }
 
     @Override
-    public double getSquareDistance(T p1, T p2) {
+    public double getSquareDistance(T p1, T p2) throws NullValueException {
 
         double dx = pointExtractor.getX(p1) - pointExtractor.getX(p2);
         double dy = pointExtractor.getY(p1) - pointExtractor.getY(p2);
@@ -58,7 +58,7 @@ public class Simplify<T> extends AbstractSimplify<T> {
     }
 
     @Override
-    public double getSquareSegmentDistance(T p0, T p1, T p2) {
+    public double getSquareSegmentDistance(T p0, T p1, T p2) throws NullValueException {
         double x0, y0, x1, y1, x2, y2, dx, dy, t;
 
         x1 = pointExtractor.getX(p1);

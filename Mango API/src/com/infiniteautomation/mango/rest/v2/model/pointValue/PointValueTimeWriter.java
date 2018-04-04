@@ -13,6 +13,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointS
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
+import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
@@ -325,6 +326,8 @@ public abstract class PointValueTimeWriter {
                 default:
                     throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
+        }else if(statisticsGenerator instanceof NoStatisticsGenerator) {
+            throw new ShouldNeverHappenException("Fix this.");
         }
     }
 
