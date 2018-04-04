@@ -47,7 +47,7 @@ public class NoneRollupValueTime extends AbstractRollupValueTime {
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DefaultRollupValueTime#writePointValueTime(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
      */
     @Override
-    public void writePointValueTime(PointValueTimeWriter writer) throws IOException {
+    public void writeValue(PointValueTimeWriter writer) throws IOException {
         writer.writePointValueTime(new DataPointVOPointValueTimeBookend(vo, value));
     }
 

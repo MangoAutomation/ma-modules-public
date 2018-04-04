@@ -297,13 +297,13 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	}
 	
 	@JsonGetter("simplifyType")
-	public int getSimplifyType() {
-	    return this.data.getSimplifyType();
+	public String getSimplifyType() {
+	    return DataPointVO.SIMPLIFY_TYPE_CODES.getCode(this.data.getSimplifyType());
 	}
 	
-	@JsonSetter("simplifyTarget")
-    public void setSimplifyTarget(int simplifyType) {
-        this.data.setSimplifyType(simplifyType);
+	@JsonSetter("simplifyType")
+    public void setSimplifyType(String simplifyType) {
+        this.data.setSimplifyType(DataPointVO.SIMPLIFY_TYPE_CODES.getId(simplifyType));
     }
 	
 	@JsonGetter("simplifyArgument")

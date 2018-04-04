@@ -14,12 +14,23 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWrite
  * 
  * @author Terry Packer
  */
-public abstract class AbstractRollupValueTime implements Point{
+public abstract class AbstractRollupValueTime implements Point, Comparable<AbstractRollupValueTime>{
 
     /**
      * @param writer
      */
-    public abstract void writePointValueTime(PointValueTimeWriter writer) throws IOException;
+    public abstract void writeValue(PointValueTimeWriter writer) throws IOException;
     
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(AbstractRollupValueTime that) {
+        if (getX() < that.getX())
+            return -1;
+        if (getX() > that.getX())
+            return 1;
+        return 0;
+    }
     
 }

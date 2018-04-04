@@ -73,23 +73,22 @@ public class RollupValueTime extends AbstractRollupValueTime {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
             switch(rollup){
                 case AVERAGE:
-                    if(stats.getAverage().isNaN())
+                    if(stats.getAverage() == null)
                         throw new NullValueException();
                     else
                         return stats.getAverage();
                 case DELTA:
                     return stats.getDelta();
                 case MINIMUM:
-                    if(stats.getMinimumValue() == Double.NaN)
+                    if(stats.getMinimumValue() == null)
                         throw new NullValueException();
                     else
                         return stats.getMinimumValue();
                 case MAXIMUM:
-                    if(stats.getMaximumValue() == Double.NaN)
+                    if(stats.getMaximumValue() == null)
                         throw new NullValueException();
                     else
                         return stats.getMaximumValue();
-
                 case ACCUMULATOR:
                     if(stats.getLastValue() == null)
                         if(stats.getMaximumValue() == null)
@@ -118,7 +117,7 @@ public class RollupValueTime extends AbstractRollupValueTime {
                 case COUNT:
                     return stats.getCount();
                 case INTEGRAL:
-                    if(stats.getIntegral() == Double.NaN)
+                    if(stats.getIntegral() == null)
                         throw new NullValueException();
                     else
                         return stats.getIntegral();
@@ -136,7 +135,7 @@ public class RollupValueTime extends AbstractRollupValueTime {
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.AbstractRollupValueTime#writePointValueTime(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
      */
     @Override
-    public void writePointValueTime(PointValueTimeWriter writer) throws IOException {
+    public void writeValue(PointValueTimeWriter writer) throws IOException {
         writer.writeStatsAsObject(generator);
     }
 

@@ -1,13 +1,13 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue;
+package com.goebl.simplify;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.goebl.simplify.NullValueException;
-import com.goebl.simplify.Simplify;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyPointValueExtractor;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.AbstractRollupValueTime;
 import com.serotonin.log.LogStopWatch;
 

@@ -58,6 +58,8 @@ public class DataPointModel {
     @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseChartRendererModel<?> chartRenderer;
     String rollup;
+    String simplifyType;
+    Double simplifyArgument;
 
     /**
      * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
@@ -127,6 +129,8 @@ public class DataPointModel {
         this.templateName = point.getTemplateName();
 
         this.rollup = Common.ROLLUP_CODES.getCode(point.getRollup());
+        this.simplifyType = DataPointVO.SIMPLIFY_TYPE_CODES.getCode(point.getSimplifyType());
+        this.simplifyArgument = point.getSimplifyArgument();
     }
 
     public void copyPropertiesTo(DataPointVO point) {
@@ -230,6 +234,12 @@ public class DataPointModel {
         
         if (this.rollup != null) {
             point.setRollup(Common.ROLLUP_CODES.getId(this.rollup));
+        }
+        if(this.simplifyType != null) {
+            point.setSimplifyType(DataPointVO.SIMPLIFY_TYPE_CODES.getId(this.simplifyType));
+        }
+        if(this.simplifyArgument != null) {
+            point.setSimplifyArgument(simplifyArgument);
         }
     }
 
@@ -473,4 +483,21 @@ public class DataPointModel {
     protected void setMergeTags(boolean mergeTags) {
         this.mergeTags = mergeTags;
     }
+
+    public String getSimplifyType() {
+        return simplifyType;
+    }
+
+    public void setSimplifyType(String simplifyType) {
+        this.simplifyType = simplifyType;
+    }
+
+    public Double getSimplifyArgument() {
+        return simplifyArgument;
+    }
+
+    public void setSimplifyArgument(Double simplifyArgument) {
+        this.simplifyArgument = simplifyArgument;
+    }
+    
 }

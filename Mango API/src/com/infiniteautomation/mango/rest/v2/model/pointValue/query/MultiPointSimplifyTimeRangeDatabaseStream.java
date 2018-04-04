@@ -13,9 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.goebl.simplify.SimplifyUtility;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyUtility;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 

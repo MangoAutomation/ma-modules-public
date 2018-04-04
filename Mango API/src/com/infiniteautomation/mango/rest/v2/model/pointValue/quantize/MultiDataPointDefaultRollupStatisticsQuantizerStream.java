@@ -5,13 +5,14 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.goebl.simplify.SimplifyUtility;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyUtility;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -47,8 +48,33 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 quant.done();
         }
         //Re-assemble as per output format
-        if(info.isSingleArray()) {
+        if(info.isSingleArray() && voMap.size() > 1) {
             //TODO Combine and sort the simplify and limit
+            List<AbstractRollupValueTime> processed = new ArrayList<>();
+            for(DataPointVO vo : voMap.values()) {
+                List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
+                if(generators.get(0).getGenerator() instanceof NoStatisticsGenerator) {
+                    //Iterate and combine into an array
+                    for(DataPointStatisticsGenerator gen : generators) {
+                        NoStatisticsGenerator noGen = (NoStatisticsGenerator)gen.getGenerator();
+                        for(IValueTime value : noGen.getValues()) {
+                           processed.add(new NoneRollupValueTime(vo, (IdPointValueTime)value));
+                        }
+                    }
+                }else {
+                    for(DataPointStatisticsGenerator generator : generators) {
+                        processed.add(new RollupValueTime(generator, RollupEnum.convertTo(vo.getRollup())));
+                    }
+                }
+                
+                //TODO Simplify if necessary
+                //TODO Then add to processed 
+            }
+            
+            //Sort by time
+            Collections.sort(processed);
+            //TODO Limit
+            //TODO Write out collecting all values at the same time
         }else {
             Map<DataPointVO, List<AbstractRollupValueTime>> processed = new HashMap<>();
             for(DataPointVO vo : voMap.values()) {
@@ -81,7 +107,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             for(Entry<DataPointVO, List<AbstractRollupValueTime>> entry : processed.entrySet()) {
                 this.writer.writeStartArray(entry.getKey().getXid());
                 for(AbstractRollupValueTime value : entry.getValue())
-                    value.writePointValueTime(this.writer);
+                    value.writeValue(this.writer);
                 this.writer.writeEndArray();
             }
         }
