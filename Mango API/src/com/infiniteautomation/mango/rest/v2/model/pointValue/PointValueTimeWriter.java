@@ -12,6 +12,7 @@ import javax.measure.unit.Unit;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
+import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
@@ -194,6 +195,20 @@ public abstract class PointValueTimeWriter {
             writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
             writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
             writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            if(stats.getData().size() > 0) {
+                writeStartArray("data");
+                for(StartsAndRuntime item : stats.getData()) {
+                    writeStartObject();
+                    writeDataValue("value", vo, item.getDataValue(), stats.getPeriodStartTime(), rendered);
+                    writeIntegerField("starts", item.getStarts());
+                    writeLongField("runtime", item.getRuntime());
+                    writeDoubleField("proportion", item.getProportion());
+                    writeEndObject();
+                }
+                writeEndArray();
+            }else {
+                writeNullField("data");
+            }
         } else if (statisticsGenerator instanceof AnalogStatistics) {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
             writeAccumulator(RollupEnum.ACCUMULATOR.name(), vo, stats, rendered);
