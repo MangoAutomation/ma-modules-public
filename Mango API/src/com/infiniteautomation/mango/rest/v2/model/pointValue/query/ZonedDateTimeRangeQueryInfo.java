@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.v2.util.ExpandTimePeriodAdjuster;
+import com.infiniteautomation.mango.util.datetime.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
