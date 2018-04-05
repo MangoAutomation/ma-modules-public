@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.goebl.simplify.SimplifiableValue;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
@@ -22,7 +23,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
  *
  * @author Terry Packer
  */
-public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
+public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
     
     protected final int pointCount;
     /**
@@ -46,6 +47,19 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         }
         this.jgen.writeEndObject();
     }
+    
+    @Override
+    public void writeSimplifiableValue(SimplifiableValue value) throws IOException {
+        this.jgen.writeStartObject();
+        if(info.isMultiplePointsPerArray()) {
+            //We don't want to embed this as an object like the Json Writer does
+            value.writeEntry(this, true, true);
+        }else {
+            value.writeEntry(this, false, true);
+        }
+        this.jgen.writeEndObject();
+    }
+    
     
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
@@ -75,6 +89,25 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter{
         }
         this.jgen.writeEndObject();
     }
+    
+    /**
+     * @param currentValues
+     */
+    @Override
+    public void writeMultipleSimplifiablValuesAtSameTime(List<SimplifiableValue> currentValues, long timestamp)  throws IOException{
+        this.jgen.writeStartObject();
+        boolean first = true;
+        for(SimplifiableValue value : currentValues) {
+            if(info.isMultiplePointsPerArray()) {
+                value.writeEntry(this, true, first);
+            }else {
+                throw new ShouldNeverHappenException("Should not write multiple points here.");
+            }
+            first = false;
+        }
+        this.jgen.writeEndObject();
+    }
+    
     
     @Override
     public void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException{

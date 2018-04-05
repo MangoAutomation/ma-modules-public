@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWr
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
@@ -115,7 +116,8 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         
         if(MultiPointLatestDatabaseStream.class.isAssignableFrom(clazz) 
                 || MultiPointTimeRangeDatabaseStream.class.isAssignableFrom(clazz)
-                || MultiDataPointStatisticsQuantizerStream.class.isAssignableFrom(clazz))
+                || MultiDataPointStatisticsQuantizerStream.class.isAssignableFrom(clazz)
+                || MultiDataPointDefaultRollupStatisticsQuantizerStream.class.isAssignableFrom(clazz))
             return true;
         else
             return false;
@@ -163,7 +165,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     for(PointValueField field : info.getFields())
                         field.createColumn(builder, null);
                 }
-            }else if(stream instanceof MultiDataPointStatisticsQuantizerStream) {
+            }else if(stream instanceof MultiDataPointStatisticsQuantizerStream || stream instanceof MultiDataPointDefaultRollupStatisticsQuantizerStream) {
                 if(stream.getQueryInfo().isSingleArray()) {
                     if(stream.getQueryInfo().isMultiplePointsPerArray()) {
                         Map<Integer, DataPointVO> voMap = stream.getVoMap();

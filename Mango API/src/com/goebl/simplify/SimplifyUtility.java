@@ -3,12 +3,11 @@
  */
 package com.goebl.simplify;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.SimplifyPointValueExtractor;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.AbstractRollupValueTime;
 import com.serotonin.log.LogStopWatch;
 
 /**
@@ -16,166 +15,122 @@ import com.serotonin.log.LogStopWatch;
  * @author Terry Packer
  */
 public class SimplifyUtility {
-
     
     /**
-     * Simplify according to our requirements
+     * Simplify according to the requirements.  Either reduce the list to with 10% of 
+     *  desired target via Newton's Method or use a tolerance in one go. Optionally pre/post 
+     *  process the data to remove !Point.isProcessable() values and add them back in.
      * 
-     * TODO This currently only works for Numeric Points
-     * 
+     * @param simplifyTolerance
+     * @param simplifyTarget
+     * @param simplifyHighQuality
+     * @param prePostProcess
      * @param list
      * @return
      */
-    public static List<DataPointVOPointValueTimeBookend> simplify(
+    public static <T extends Point> List<T> simplify(
             Double simplifyTolerance,
             Integer simplifyTarget,
             boolean simplifyHighQuality,
-            List<DataPointVOPointValueTimeBookend> list) {
+            boolean prePostProcess,
+            List<T> list) {
         LogStopWatch logStopWatch = new LogStopWatch();
-        if(simplifyTolerance != null) {
-            //TODO improve Simplify code to return a list
-            Simplify<DataPointVOPointValueTimeBookend> simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
-            DataPointVOPointValueTimeBookend[] simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), simplifyTolerance, simplifyHighQuality);
-            logStopWatch.stop("Finished Simplify, tolerance: " + simplifyTolerance);
-            return Arrays.asList(simplified);
-        }else {
-            if(list.size() < simplifyTarget)
-                return list;
-            
-            //Compute target bounds as 10% of target
-            int lowerTarget = simplifyTarget - (int)(simplifyTarget * 0.1);
-            int upperTarget = simplifyTarget + (int)(simplifyTarget * 0.1);
-            
-            //Compute tolerance bounds and initial tolerance
-            Double max = Double.MIN_VALUE;
-            Double min = Double.MAX_VALUE;
-            for(DataPointVOPointValueTimeBookend value : list) {
-                if(value.getPvt().getDoubleValue() > max)
-                    max = value.getPvt().getDoubleValue();
-                if(value.getPvt().getDoubleValue() < min)
-                    min = value.getPvt().getDoubleValue();
-            }
-            double difference = max - min;
-            double tolerance = difference / 20d;
-            double topBound = difference;
-            double bottomBound = 0;
-            
-            //Determine max iterations we can allow
-            int maxIterations = 100;
-            int iteration = 1;
-            
-            Simplify<DataPointVOPointValueTimeBookend> simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
-            DataPointVOPointValueTimeBookend[] simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), tolerance, simplifyHighQuality);
-            DataPointVOPointValueTimeBookend[] best = simplified;
-            while(simplified.length < lowerTarget || simplified.length > upperTarget) {
-                
-                if (simplified.length > simplifyTarget) {
-                    bottomBound = tolerance;
-                } else {
-                    topBound = tolerance;
+        
+        //PreProcess by removing all invalid values (to add back in at the end)
+        List<T> unprocessable = new ArrayList<>();
+        if(prePostProcess) {
+            ListIterator<T> it = list.listIterator();
+            while(it.hasNext()) {
+                T value = it.next();
+                if(!value.isProcessable()) {
+                    unprocessable.add(value);
+                    it.remove();
                 }
-                
-                //Adjust tolerance
-                tolerance = bottomBound + (topBound - bottomBound) / 2.0d;
-                simplify = new Simplify<DataPointVOPointValueTimeBookend>(new DataPointVOPointValueTimeBookend[0], SimplifyPointValueExtractor.extractor);
-                simplified = simplify.simplify(list.toArray(new DataPointVOPointValueTimeBookend[list.size()]), tolerance, simplifyHighQuality);
-                
-                //Keep our best effort
-                if(Math.abs(simplifyTarget - simplified.length) < Math.abs(simplifyTarget - best.length))
-                    best = simplified;
-
-                if(iteration > maxIterations) {
-                    simplified = best;
-                    break;
-                }
-
-                iteration++;
             }
-            
-            logStopWatch.stop("Finished Simplify, target: " + simplifyTarget + " actual " + simplified.length);
-            return Arrays.asList(simplified);
         }
-    }
-    
-    /**
-     * Simplify according to our requirements
-     * 
-     * @param list
-     * @return
-     */
-    public static List<AbstractRollupValueTime> simplifyRollup(
-            Double simplifyTolerance,
-            Integer simplifyTarget,
-            boolean simplifyHighQuality,
-            List<AbstractRollupValueTime> list) {
-        LogStopWatch logStopWatch = new LogStopWatch();
+        List<T> simplified;
         if(simplifyTolerance != null) {
-            //TODO improve Simplify code to return a list
-            Simplify<AbstractRollupValueTime> simplify = new Simplify<AbstractRollupValueTime>(new AbstractRollupValueTime[0]);
-            AbstractRollupValueTime[] simplified = simplify.simplify(list.toArray(new AbstractRollupValueTime[list.size()]), simplifyTolerance, simplifyHighQuality);
-            logStopWatch.stop("Finished Simplify, tolerance: " + simplifyTolerance);
-            return Arrays.asList(simplified);
+            Simplify<T> simplify = new Simplify<T>();
+            simplified = simplify.simplify(list, simplifyTolerance, simplifyHighQuality);
         }else {
-            if(list.size() < simplifyTarget)
-                return list;
-            
-            //Compute target bounds as 10% of target
-            int lowerTarget = simplifyTarget - (int)(simplifyTarget * 0.1);
-            int upperTarget = simplifyTarget + (int)(simplifyTarget * 0.1);
-            
-            //Compute tolerance bounds and initial tolerance
-            Double max = Double.MIN_VALUE;
-            Double min = Double.MAX_VALUE;
-            for(AbstractRollupValueTime value : list) {
-                try {
+            if(list.size() > simplifyTarget) {
+                //Compute target bounds as 10% of target
+                int lowerTarget = simplifyTarget - (int)(simplifyTarget * 0.1);
+                int upperTarget = simplifyTarget + (int)(simplifyTarget * 0.1);
+                
+                //Compute tolerance bounds and initial tolerance
+                Double max = Double.MIN_VALUE;
+                Double min = Double.MAX_VALUE;
+                for(T value : list) {
                     if(value.getY() > max)
                         max = value.getY();
-                }catch(NullValueException e) { }
-                try {
                     if(value.getY() < min)
                         min = value.getY();
-                }catch(NullValueException e) { }
-            }
-            double difference = max - min;
-            double tolerance = difference / 20d;
-            double topBound = difference;
-            double bottomBound = 0;
-            
-            //Determine max iterations we can allow
-            int maxIterations = 100;
-            int iteration = 1;
-            
-            Simplify<AbstractRollupValueTime> simplify = new Simplify<AbstractRollupValueTime>(new AbstractRollupValueTime[0]);
-            AbstractRollupValueTime[] simplified = simplify.simplify(list.toArray(new AbstractRollupValueTime[list.size()]), tolerance, simplifyHighQuality);
-            AbstractRollupValueTime[] best = simplified;
-            while(simplified.length < lowerTarget || simplified.length > upperTarget) {
-                
-                if (simplified.length > simplifyTarget) {
-                    bottomBound = tolerance;
-                } else {
-                    topBound = tolerance;
                 }
+                double difference = max - min;
+                double tolerance = difference / 20d;
+                double topBound = difference;
+                double bottomBound = 0;
                 
-                //Adjust tolerance
-                tolerance = bottomBound + (topBound - bottomBound) / 2.0d;
-                simplify = new Simplify<AbstractRollupValueTime>(new AbstractRollupValueTime[0]);
-                simplified = simplify.simplify(list.toArray(new AbstractRollupValueTime[list.size()]), tolerance, simplifyHighQuality);
+                //Determine max iterations we can allow
+                int maxIterations = 100;
+                int iteration = 1;
                 
-                //Keep our best effort
-                if(Math.abs(simplifyTarget - simplified.length) < Math.abs(simplifyTarget - best.length))
-                    best = simplified;
-
-                if(iteration > maxIterations) {
-                    simplified = best;
-                    break;
+                Simplify<T> simplify = new Simplify<T>();
+                simplified = simplify.simplify(list, tolerance, simplifyHighQuality);
+                List<T> best = simplified;
+                while(simplified.size() < lowerTarget || simplified.size() > upperTarget) {
+                    
+                    if (simplified.size() > simplifyTarget) {
+                        bottomBound = tolerance;
+                    } else {
+                        topBound = tolerance;
+                    }
+                    
+                    //Adjust tolerance
+                    tolerance = bottomBound + (topBound - bottomBound) / 2.0d;
+                    simplify = new Simplify<T>();
+                    simplified = simplify.simplify(list, tolerance, simplifyHighQuality);
+                    
+                    //Keep our best effort
+                    if(Math.abs(simplifyTarget - simplified.size()) < Math.abs(simplifyTarget - best.size()))
+                        best = simplified;
+    
+                    if(iteration > maxIterations) {
+                        simplified = best;
+                        break;
+                    }
+    
+                    iteration++;
                 }
-
-                iteration++;
+            }else {
+                simplified = list;
             }
-            
-            logStopWatch.stop("Finished Simplify, target: " + simplifyTarget + " actual " + simplified.length);
-            return Arrays.asList(simplified);
+            if(prePostProcess) {
+                //Trim out the unprocessable data if it makes our target list size too big
+                int toTrim = (unprocessable.size() + simplified.size()) - simplifyTarget;
+                if(toTrim > 0) {
+                    int toTrimIndex;
+                    if(toTrim > unprocessable.size())
+                        toTrimIndex = unprocessable.size();
+                    else
+                        toTrimIndex = unprocessable.size() - toTrim;
+                    unprocessable = unprocessable.subList(0, toTrimIndex);
+                }
+            }
         }
+        
+        //Post Process, add back in values
+        if(prePostProcess) {
+            simplified.addAll(unprocessable);
+            Collections.sort(simplified);
+        }
+        
+        if(simplifyTolerance != null)
+            logStopWatch.stop("Finished Simplify, tolerance: " + simplifyTolerance);
+        else
+            logStopWatch.stop("Finished Simplify, target: " + simplifyTarget + " actual " + simplified.size());
+        return simplified;
     }
     
 }

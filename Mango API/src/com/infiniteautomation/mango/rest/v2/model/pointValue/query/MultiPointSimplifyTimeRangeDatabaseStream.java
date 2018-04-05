@@ -78,7 +78,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                 BookendPair pair = bookendMap.get(id);
                 if(pair != null && pair.startBookend != null)
                     sorted.add(pair.startBookend);
-                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(id)));
+                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(id)));
                 if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
                     sorted.add(pair.endBookend);
             }
@@ -96,7 +96,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
         }else {
             while(it.hasNext()) {
                 Integer id = it.next();
-                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(id));
+                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(id));
                 BookendPair pair = bookendMap.get(id);
                 if(pair != null && pair.startBookend != null)
                     super.writeValue(pair.startBookend);

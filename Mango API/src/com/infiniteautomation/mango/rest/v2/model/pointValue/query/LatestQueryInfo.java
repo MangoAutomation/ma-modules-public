@@ -47,6 +47,7 @@ public class LatestQueryInfo {
     protected final Double simplifyTolerance;
     protected final Integer simplifyTarget;
     protected final boolean simplifyHighQuality = true; //Currently not in api
+    protected final boolean simplifyPrePostProcess = true; //Not in api
     
     protected final PointValueField[] fields;
     

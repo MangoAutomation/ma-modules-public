@@ -4,6 +4,10 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
+import java.io.IOException;
+
+import com.goebl.simplify.Point;
+import com.goebl.simplify.SimplifiableValue;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -11,7 +15,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public class DataPointVOPointValueTimeBookend {
+public class DataPointVOPointValueTimeBookend implements SimplifiableValue {
 
     final DataPointVO vo;
     final IdPointValueTime pvt;
@@ -68,5 +72,56 @@ public class DataPointVOPointValueTimeBookend {
     
     public boolean isCached() {
         return cached;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.goebl.simplify.Point#getX()
+     */
+    @Override
+    public double getX() {
+        return pvt.getTime();
+    }
+
+    /* (non-Javadoc)
+     * @see com.goebl.simplify.Point#getY()
+     */
+    @Override
+    public double getY() {
+        return pvt.getDoubleValue();
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see com.goebl.simplify.Point#isProcessable()
+     */
+    @Override
+    public boolean isProcessable() {
+        //TODO Could check to see if we are image etc.
+        return pvt.getValue() != null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.goebl.simplify.SimplifiableValue#writeValue(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter, boolean, boolean)
+     */
+    @Override
+    public void writeEntry(PointValueTimeWriter writer, boolean useXid, boolean allowTimestamp)
+            throws IOException {
+        for(PointValueField field : writer.getInfo().getFields()) {
+            if(!allowTimestamp && field == PointValueField.TIMESTAMP)
+                continue;
+            field.writeValue(this, writer.getInfo(), writer.getTranslations(), useXid, writer);
+        } 
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(Point that) {
+        if (getX() < that.getX())
+            return -1;
+        if (getX() > that.getX())
+            return 1;
+        return 0;
     }
 }

@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.goebl.simplify.SimplifiableValue;
 import com.goebl.simplify.SimplifyUtility;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
@@ -48,69 +50,83 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 quant.done();
         }
         //Re-assemble as per output format
+        Map<DataPointVO, List<SimplifiableValue>> processed = process();
         if(info.isSingleArray() && voMap.size() > 1) {
-            //TODO Combine and sort the simplify and limit
-            List<AbstractRollupValueTime> processed = new ArrayList<>();
-            for(DataPointVO vo : voMap.values()) {
-                List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
-                if(generators.get(0).getGenerator() instanceof NoStatisticsGenerator) {
-                    //Iterate and combine into an array
-                    for(DataPointStatisticsGenerator gen : generators) {
-                        NoStatisticsGenerator noGen = (NoStatisticsGenerator)gen.getGenerator();
-                        for(IValueTime value : noGen.getValues()) {
-                           processed.add(new NoneRollupValueTime(vo, (IdPointValueTime)value));
-                        }
-                    }
-                }else {
-                    for(DataPointStatisticsGenerator generator : generators) {
-                        processed.add(new RollupValueTime(generator, RollupEnum.convertTo(vo.getRollup())));
-                    }
-                }
-                
-                //TODO Simplify if necessary
-                //TODO Then add to processed 
+            //Combine into single array
+            List<SimplifiableValue> values = new ArrayList<>();
+            for(Entry<DataPointVO, List<SimplifiableValue>> entry : processed.entrySet()) {
+                values.addAll(entry.getValue());
             }
-            
             //Sort by time
-            Collections.sort(processed);
-            //TODO Limit
-            //TODO Write out collecting all values at the same time
-        }else {
-            Map<DataPointVO, List<AbstractRollupValueTime>> processed = new HashMap<>();
-            for(DataPointVO vo : voMap.values()) {
-                List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
-                List<AbstractRollupValueTime> values = new ArrayList<>();
-                if(generators.get(0).getGenerator() instanceof NoStatisticsGenerator) {
-                    //Iterate and combine into an array
-                    for(DataPointStatisticsGenerator gen : generators) {
-                        NoStatisticsGenerator noGen = (NoStatisticsGenerator)gen.getGenerator();
-                        for(IValueTime value : noGen.getValues()) {
-                           values.add(new NoneRollupValueTime(vo, (IdPointValueTime)value));
+            Collections.sort(values);
+            //Limit entire list
+            if(info.getLimit() != null)
+                values = values.subList(0, info.getLimit());
+            
+            //Reset current time and write out
+            if(values.size() > 0) {
+                long currentTime = values.get(0).getTime();
+                List<SimplifiableValue> currentValues = new ArrayList<>();
+                for(SimplifiableValue value : values) {
+                    if(currentTime == value.getTime())
+                        currentValues.add(value);
+                    else {
+                        if(currentValues.size() > 0) {
+                            writer.writeMultipleSimplifiablValuesAtSameTime(currentValues, currentValues.get(0).getTime());
+                            currentValues.clear();
                         }
+                        currentTime = value.getTime();
+                        currentValues.add(value);
                     }
-                }else {
-                    for(DataPointStatisticsGenerator generator : generators) {
-                        values.add(new RollupValueTime(generator, RollupEnum.convertTo(vo.getRollup())));
-                    }
-                }
-                if(values.size() > 0) {
-                    if(vo.isSimplifyDataSets()) {
-                        if(vo.getSimplifyType() == DataPointVO.SimplifyTypes.TARGET)
-                            values = SimplifyUtility.simplifyRollup(null, new Integer((int)vo.getSimplifyArgument()), true, values);
-                        else
-                            values = SimplifyUtility.simplifyRollup(vo.getSimplifyArgument(), null, true, values);
-                    }
-                    //TODO apply limit as sublist if necessary
-                    processed.put(vo, values);
                 }
             }
-            for(Entry<DataPointVO, List<AbstractRollupValueTime>> entry : processed.entrySet()) {
+        }else {
+            for(Entry<DataPointVO, List<SimplifiableValue>> entry : processed.entrySet()) {
+                int count = 0;
                 this.writer.writeStartArray(entry.getKey().getXid());
-                for(AbstractRollupValueTime value : entry.getValue())
-                    value.writeValue(this.writer);
+                for(SimplifiableValue value : entry.getValue()) {
+                    if(info.getLimit() != null && count >= info.getLimit())
+                        break;
+                    writer.writeSimplifiableValue(value);
+                    count++;
+                }
                 this.writer.writeEndArray();
             }
         }
+    }
+    
+    /**
+     * @return
+     */
+    private Map<DataPointVO, List<SimplifiableValue>> process() {
+        Map<DataPointVO, List<SimplifiableValue>> processed = new HashMap<>();
+        for(DataPointVO vo : voMap.values()) {
+            List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
+            List<SimplifiableValue> values = new ArrayList<>();
+            if(generators.get(0).getGenerator() instanceof NoStatisticsGenerator) {
+                //Iterate and combine into an array
+                for(DataPointStatisticsGenerator gen : generators) {
+                    NoStatisticsGenerator noGen = (NoStatisticsGenerator)gen.getGenerator();
+                    for(IValueTime value : noGen.getValues()) {
+                       values.add(new DataPointVOPointValueTimeBookend(vo, (IdPointValueTime)value));
+                    }
+                }
+            }else {
+                for(DataPointStatisticsGenerator generator : generators) {
+                    values.add(new RollupValueTime(generator, RollupEnum.convertTo(vo.getRollup())));
+                }
+            }
+            if(values.size() > 0) {
+                if(vo.isSimplifyDataSets()) {
+                    if(vo.getSimplifyType() == DataPointVO.SimplifyTypes.TARGET)
+                        values = SimplifyUtility.simplify(null, new Integer((int)vo.getSimplifyArgument()), true, true, values);
+                    else
+                        values = SimplifyUtility.simplify(vo.getSimplifyArgument(), null, true, true, values);
+                }
+                processed.put(vo, values);
+            }
+        }
+        return processed;
     }
     
     /*

@@ -12,10 +12,8 @@ import java.util.List;
  */
 abstract class AbstractSimplify<T> {
 
-    private T[] sampleArray;
+    protected AbstractSimplify() {
 
-    protected AbstractSimplify(T[] sampleArray) {
-        this.sampleArray = sampleArray;
     }
 
     /**
@@ -27,11 +25,11 @@ abstract class AbstractSimplify<T> {
      *                       applying Douglas-Peucker (should be a bit faster)
      * @return simplified list of points
      */
-    public T[] simplify(T[] points,
+    public List<T> simplify(List<T> points,
                         double tolerance,
                         boolean highestQuality) {
 
-        if (points == null || points.length <= 2) {
+        if (points == null || points.size() <= 2) {
             return points;
         }
 
@@ -46,28 +44,26 @@ abstract class AbstractSimplify<T> {
         return points;
     }
 
-    T[] simplifyRadialDistance(T[] points, double sqTolerance) {
+    List<T> simplifyRadialDistance(List<T> points, double sqTolerance) {
         T point = null;
-        T prevPoint = points[0];
+        T prevPoint = points.get(0);
 
         List<T> newPoints = new ArrayList<T>();
         newPoints.add(prevPoint);
 
-        for (int i = 1; i < points.length; ++i) {
-            point = points[i];
-            try {
-                if (getSquareDistance(point, prevPoint) > sqTolerance) {
-                    newPoints.add(point);
-                    prevPoint = point;
-                }
-            }catch(NullValueException e) { }
+        for (int i = 1; i < points.size(); ++i) {
+            point = points.get(i);
+            if (getSquareDistance(point, prevPoint) > sqTolerance) {
+                newPoints.add(point);
+                prevPoint = point;
+            }
         }
 
         if (prevPoint != point) {
             newPoints.add(point);
         }
 
-        return newPoints.toArray(sampleArray);
+        return newPoints;
     }
 
     private static class Range {
@@ -80,14 +76,14 @@ abstract class AbstractSimplify<T> {
         int last;
     }
 
-    T[] simplifyDouglasPeucker(T[] points, double sqTolerance) {
+    List<T> simplifyDouglasPeucker(List<T> points, double sqTolerance) {
 
-        BitSet bitSet = new BitSet(points.length);
+        BitSet bitSet = new BitSet(points.size());
         bitSet.set(0);
-        bitSet.set(points.length - 1);
+        bitSet.set(points.size() - 1);
 
         List<Range> stack = new ArrayList<Range>();
-        stack.add(new Range(0, points.length - 1));
+        stack.add(new Range(0, points.size() - 1));
 
         while (!stack.isEmpty()) {
             Range range = stack.remove(stack.size() - 1);
@@ -97,15 +93,12 @@ abstract class AbstractSimplify<T> {
 
             // find index of point with maximum square distance from first and last point
             for (int i = range.first + 1; i < range.last; ++i) {
-                try {
-                    double sqDist = getSquareSegmentDistance(points[i], points[range.first], points[range.last]);
-    
-                    if (sqDist > maxSqDist) {
-                        index = i;
-                        maxSqDist = sqDist;
-                    }
-                }catch(NullValueException e) {
-                    //TODO Mango 3.4 Special Handling??
+
+                double sqDist = getSquareSegmentDistance(points.get(i), points.get(range.first), points.get(range.last));
+
+                if (sqDist > maxSqDist) {
+                    index = i;
+                    maxSqDist = sqDist;
                 }
             }
 
@@ -119,14 +112,14 @@ abstract class AbstractSimplify<T> {
 
         List<T> newPoints = new ArrayList<T>(bitSet.cardinality());
         for (int index = bitSet.nextSetBit(0); index >= 0; index = bitSet.nextSetBit(index + 1)) {
-            newPoints.add(points[index]);
+            newPoints.add(points.get(index));
         }
 
-        return newPoints.toArray(sampleArray);
+        return newPoints;
     }
 
 
-    public abstract double getSquareDistance(T p1, T p2) throws NullValueException;
+    public abstract double getSquareDistance(T p1, T p2);
 
-    public abstract double getSquareSegmentDistance(T p0, T p1, T p2) throws NullValueException;
+    public abstract double getSquareSegmentDistance(T p0, T p1, T p2);
 }

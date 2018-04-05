@@ -15,12 +15,12 @@ public class Simplify<T> extends AbstractSimplify<T> {
      * <br>
      * With this simple constructor your array elements must implement {@link Point}.<br>
      * If you have coordinate classes which cannot be changed to implement <tt>Point</tt>, use
-     * {@link #Simplify(Object[], PointExtractor)} constructor!
+     * {@link #Simplify(List<T>, PointExtractor)} constructor!
      *
      * @param sampleArray pass just an empty array (<tt>new MyPoint[0]</tt>) - necessary for type consistency.
      */
-    public Simplify(T[] sampleArray) {
-        super(sampleArray);
+    public Simplify() {
+        super();
         this.pointExtractor = new PointExtractor<T>() {
             @Override
             public double getX(T point) {
@@ -28,7 +28,7 @@ public class Simplify<T> extends AbstractSimplify<T> {
             }
 
             @Override
-            public double getY(T point) throws NullValueException {
+            public double getY(T point) {
                 return ((Point) point).getY();
             }
         };
@@ -43,13 +43,13 @@ public class Simplify<T> extends AbstractSimplify<T> {
      * @param sampleArray pass just an empty array (<tt>new MyPoint[0]</tt>) - necessary for type consistency.
      * @param pointExtractor your implementation to extract X and Y coordinates from you array elements.
      */
-    public Simplify(T[] sampleArray, PointExtractor<T> pointExtractor) {
-        super(sampleArray);
+    public Simplify(PointExtractor<T> pointExtractor) {
+        super();
         this.pointExtractor = pointExtractor;
     }
 
     @Override
-    public double getSquareDistance(T p1, T p2) throws NullValueException {
+    public double getSquareDistance(T p1, T p2) {
 
         double dx = pointExtractor.getX(p1) - pointExtractor.getX(p2);
         double dy = pointExtractor.getY(p1) - pointExtractor.getY(p2);
@@ -58,7 +58,7 @@ public class Simplify<T> extends AbstractSimplify<T> {
     }
 
     @Override
-    public double getSquareSegmentDistance(T p0, T p1, T p2) throws NullValueException {
+    public double getSquareSegmentDistance(T p0, T p1, T p2) {
         double x0, y0, x1, y1, x2, y2, dx, dy, t;
 
         x1 = pointExtractor.getX(p1);

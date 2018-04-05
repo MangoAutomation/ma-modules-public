@@ -63,7 +63,7 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
         if(info.isSingleArray() && voMap.size() > 1) {
             List<DataPointVOPointValueTimeBookend> sorted = new ArrayList<>();
             while(it.hasNext())
-                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(it.next())));
+                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(it.next())));
             //Sort the Sorted List
             Collections.sort(sorted, new Comparator<DataPointVOPointValueTimeBookend>() {
                 @Override
@@ -77,7 +77,7 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
                 super.writeValue(value);
         }else {
             while(it.hasNext()) {
-                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, valuesMap.get(it.next()));
+                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(it.next()));
                 for(DataPointVOPointValueTimeBookend value : values)
                     super.writeValue(value);
             }

@@ -9,11 +9,12 @@ import java.util.List;
 
 import javax.measure.unit.Unit;
 
+import com.goebl.simplify.SimplifiableValue;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
-import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
+import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
@@ -80,6 +81,15 @@ public abstract class PointValueTimeWriter {
     public abstract void writeEndArray() throws IOException;
     public abstract void writeStartObject() throws IOException;
     public abstract void writeEndObject() throws IOException;
+    
+    /* Full Value Write Methods */
+    public abstract void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp) throws IOException;
+    public abstract void writeMultipleSimplifiablValuesAtSameTime(List<SimplifiableValue> currentValues, long timestamp) throws IOException;
+    public abstract void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException;
+    public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
+    public abstract void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException;
+    public abstract void writeSimplifiableValue(SimplifiableValue value) throws IOException;
+
 
     /**
      * @param vo
@@ -330,14 +340,12 @@ public abstract class PointValueTimeWriter {
             throw new ShouldNeverHappenException("Fix this.");
         }
     }
-
-    public abstract void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp) throws IOException;
-    public abstract void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException;
-    public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
-    /**
-     * General write of one point value time
-     * @throws IOException
-     */
-    public abstract void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException;
-
+    
+    public LatestQueryInfo getInfo() {
+        return info;
+    }
+    
+    public Translations getTranslations() {
+        return translations;
+    }
 }

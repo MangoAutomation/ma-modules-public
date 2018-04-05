@@ -121,7 +121,7 @@ public enum PointValueField {
                 throw new ShouldNeverHappenException("Unknown data point field."); 
         }
     }
-
+    
     /**
      * @param periodStats
      * @param info

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.goebl.simplify.SimplifiableValue;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
@@ -40,6 +41,19 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         this.jgen.writeEndObject();
     }
     
+    @Override
+    public void writeSimplifiableValue(SimplifiableValue value) throws IOException {
+        this.jgen.writeStartObject();
+        if(info.isMultiplePointsPerArray()) {
+            this.jgen.writeObjectFieldStart(value.getVo().getXid());
+            value.writeEntry(this, false, true);
+            this.jgen.writeEndObject();
+        }else {
+            value.writeEntry(this, false, true);
+        }
+        this.jgen.writeEndObject();
+    }
+    
     /**
      * @param currentValues
      */
@@ -57,6 +71,28 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
                 this.jgen.writeEndObject();
             }else {
                 writeEntry(value, false, false);
+            }
+        }
+        this.jgen.writeEndObject();
+    }
+    
+    /**
+     * @param currentValues
+     */
+    @Override
+    public void writeMultipleSimplifiablValuesAtSameTime(List<SimplifiableValue> currentValues, long timestamp)  throws IOException{
+
+        this.jgen.writeStartObject();
+        //If we have a timestamp write it here
+        if(info.fieldsContains(PointValueField.TIMESTAMP))
+            writeTimestamp(timestamp);
+        for(SimplifiableValue value : currentValues) {
+            if(info.isMultiplePointsPerArray()) {
+                this.jgen.writeObjectFieldStart(value.getVo().getXid());
+                value.writeEntry(this, false, false);
+                this.jgen.writeEndObject();
+            }else {
+                value.writeEntry(this, false, false);
             }
         }
         this.jgen.writeEndObject();

@@ -8,5 +8,5 @@ package com.goebl.simplify;
  */
 public interface PointExtractor<T> {
     double getX(T point);
-    double getY(T point) throws NullValueException;
+    double getY(T point);
 }
