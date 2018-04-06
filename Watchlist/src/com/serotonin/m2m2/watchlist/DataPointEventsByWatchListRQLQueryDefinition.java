@@ -1,6 +1,5 @@
 /**
- * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
- * @author Terry Packer
+ * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
 package com.serotonin.m2m2.watchlist;
 
@@ -11,28 +10,30 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleQueryDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.exception.NotFoundException;
-import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.WatchListRestController;
 
 import net.jazdw.rql.parser.ASTNode;
+import net.jazdw.rql.parser.RQLParser;
+import net.jazdw.rql.parser.RQLParserException;
 
 /**
  *
  * @author Terry Packer
  */
-public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefinition {
+public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDefinition {
 
-    public static final String QUERY_TYPE_NAME = "DATA_POINT_EVENTS_BY_WATCHLIST";
+    public static final String QUERY_TYPE_NAME = "DATA_POINT_EVENTS_BY_WATCHLIST_RQL";
     
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.module.ModuleQueryDefinition#getQueryTypeName()
@@ -62,19 +63,20 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
      */
     @Override
     protected void validateImpl(final User user, final JsonNode parameters, final RestValidationResult result) {
-        if(!parameters.has("watchListXid"))
-            result.addRequiredError("watchlistXid");
-        else
-            if(!parameters.get("watchListXid").isTextual())
-                result.addInvalidValueError("watchListXid"); 
-        if(parameters.has("limit")) {
-            if(!parameters.get("limit").isNumber())
-                result.addInvalidValueError("limit");
-        }
-
-        if(parameters.has("offset")) {
-            if(!parameters.get("offset").isNumber())
-                result.addInvalidValueError("offset");
+        if(parameters.get("rql") == null)
+            result.addRequiredError("rql");
+        else {
+            try {
+                JsonNode rqlNode = parameters.get("rql");
+                ObjectReader reader = Common.objectMapper.getObjectReader(String.class);
+                String rql = reader.readValue(rqlNode);
+                if (rql != null && !rql.isEmpty()) {
+                    RQLParser parser = new RQLParser();
+                    parser.parse(rql);
+                }
+            }catch(IOException | RQLParserException | IllegalArgumentException e) {
+               result.addInvalidValueError("rql"); 
+            }
         }
     }
 
@@ -83,39 +85,49 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
      */
     @Override
     public ASTNode createQuery(User user, JsonNode parameters) throws IOException {
-        //Lookup data points by watchlist
-        WatchListVO vo = WatchListDao.instance.getByXid(parameters.get("watchListXid").asText());
-        if(vo == null)
-            throw new NotFoundException();
+        JsonNode rqlNode = parameters.get("rql");
+        ObjectReader reader = Common.objectMapper.getObjectReader(String.class);
+        String rql = reader.readValue(rqlNode);
         
-        if(!WatchListRestController.hasReadPermission(user, vo))
-            throw new PermissionException(new TranslatableMessage("common.default", "Unauthorized access"), user);
+        ASTNode rqlAstNode;
+        if (rql == null || rql.isEmpty()) {
+            rqlAstNode = new ASTNode("limit", AbstractBasicDao.DEFAULT_LIMIT);
+        }
+        
+        RQLParser parser = new RQLParser();
+        try {
+            rqlAstNode = parser.parse(rql);
+        } catch (RQLParserException | IllegalArgumentException e) {
+            throw new IOException(e.getMessage());
+        }
         
         List<Object> args = new ArrayList<>();
         args.add("typeRef1");
-        WatchListDao.instance.getPoints(vo.getId(), new MappedRowCallback<DataPointVO>(){
+        
+        //Find all watchlists that match the RQL
+        WatchListDao.instance.rqlQuery(rqlAstNode, new MappedRowCallback<WatchListVO>() {
             @Override
-            public void row(DataPointVO dp, int index) {
-                if(Permissions.hasDataPointReadPermission(user, dp)){
-                    args.add(Integer.toString(dp.getId()));
+            public void row(WatchListVO vo, int index) {
+                
+                if(WatchListRestController.hasReadPermission(user, vo)) {
+                    WatchListDao.instance.getPoints(vo.getId(), new MappedRowCallback<DataPointVO>(){
+                        @Override
+                        public void row(DataPointVO dp, int index) {
+                            if(Permissions.hasDataPointReadPermission(user, dp)){
+                                args.add(Integer.toString(dp.getId()));
+                            }
+                        }
+                    });
                 }
             }
         });
-        
-        //Create Event Query for these Points
-        if(args.size() > 0) {
+
+        if(args.size() != 0) {
+            //Create Event Query for these Points
             ASTNode query = new ASTNode("in", args);
             query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
             query = addAndRestriction(query, new ASTNode("eq", "typeName", "DATA_POINT"));
     
-            //TODO Should we force a limit if none is supplied?
-            if(parameters.has("limit")) {
-                int offset = 0;
-                int limit = parameters.get("limit").asInt();
-                if(parameters.has("offset"))
-                    offset = parameters.get("offset").asInt();
-                query = addAndRestriction(query, new ASTNode("limit", limit, offset));
-            }
             return query;
         }else {
             return new ASTNode("limit", 0, 0);
@@ -128,9 +140,7 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
     @Override
     public JsonNode getExplainInfo() {
         Map<String, Object> info = new HashMap<>();
-        info.put("watchListXid", new ParameterInfo("String", false));
-        info.put("limit", new ParameterInfo("Number", false));
-        info.put("offset", new ParameterInfo("Number", false));
+        info.put("rql", new ParameterInfo("String", true));
         return JsonNodeFactory.instance.pojoNode(info);
     }
 }
