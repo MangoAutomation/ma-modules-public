@@ -59,7 +59,8 @@ public class DataPointModel {
     BaseChartRendererModel<?> chartRenderer;
     String rollup;
     String simplifyType;
-    Double simplifyArgument;
+    Double simplifyTolerance;
+    Integer simplifyTarget;
 
     /**
      * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
@@ -130,7 +131,8 @@ public class DataPointModel {
 
         this.rollup = Common.ROLLUP_CODES.getCode(point.getRollup());
         this.simplifyType = DataPointVO.SIMPLIFY_TYPE_CODES.getCode(point.getSimplifyType());
-        this.simplifyArgument = point.getSimplifyArgument();
+        this.simplifyTolerance = point.getSimplifyTolerance();
+        this.simplifyTarget = point.getSimplifyTarget();
     }
 
     public void copyPropertiesTo(DataPointVO point) {
@@ -238,8 +240,11 @@ public class DataPointModel {
         if(this.simplifyType != null) {
             point.setSimplifyType(DataPointVO.SIMPLIFY_TYPE_CODES.getId(this.simplifyType));
         }
-        if(this.simplifyArgument != null) {
-            point.setSimplifyArgument(simplifyArgument);
+        if(this.simplifyTolerance != null) {
+            point.setSimplifyTolerance(simplifyTolerance);
+        }
+        if(this.simplifyTarget != null) {
+            point.setSimplifyTarget(simplifyTarget);
         }
     }
 
@@ -492,12 +497,19 @@ public class DataPointModel {
         this.simplifyType = simplifyType;
     }
 
-    public Double getSimplifyArgument() {
-        return simplifyArgument;
+    public Double getSimplifyTolerance() {
+        return simplifyTolerance;
     }
 
-    public void setSimplifyArgument(Double simplifyArgument) {
-        this.simplifyArgument = simplifyArgument;
+    public void setSimplifyTolerance(Double simplifyTolerance) {
+        this.simplifyTolerance = simplifyTolerance;
     }
     
+    public Integer getSimplifyTarget() {
+        return simplifyTarget;
+    }
+    
+    public void setSimplifyTarget(Integer simplifyTarget) {
+        this.simplifyTarget = simplifyTarget;
+    }
 }

@@ -306,14 +306,24 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
         this.data.setSimplifyType(DataPointVO.SIMPLIFY_TYPE_CODES.getId(simplifyType));
     }
 	
-	@JsonGetter("simplifyArgument")
-    public double getSimplifyArgument() {
-        return this.data.getSimplifyArgument();
+	@JsonGetter("simplifyTolerance")
+    public double getSimplifyTolerance() {
+        return this.data.getSimplifyTolerance();
     }
     
-    @JsonSetter("simplifyArgument")
-    public void setSimplifyArgument(double simplifyArgument) {
-        this.data.setSimplifyArgument(simplifyArgument);
+    @JsonSetter("simplifyTolerance")
+    public void setSimplifyTolerance(double simplifyTolerance) {
+        this.data.setSimplifyTolerance(simplifyTolerance);
+    }
+    
+    @JsonGetter("simplifyTarget")
+    public int getSimplifyTarget() {
+        return this.data.getSimplifyTarget();
+    }
+    
+    @JsonSetter("simplifyTarget")
+    public void setSimplifyTarget(int simplifyTarget) {
+        this.data.setSimplifyTarget(simplifyTarget);
     }
 	
 	@JsonGetter("id")
