@@ -134,9 +134,9 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 
                 if(vo.isSimplifyDataSets()) {
                     if(vo.getSimplifyType() == DataPointVO.SimplifyTypes.TARGET)
-                        values = SimplifyUtility.simplify(null, new Integer((int)vo.getSimplifyArgument()), true, true, values);
+                        values = SimplifyUtility.simplify(null, vo.getSimplifyTarget(), true, true, values);
                     else
-                        values = SimplifyUtility.simplify(vo.getSimplifyArgument(), null, true, true, values);
+                        values = SimplifyUtility.simplify(vo.getSimplifyTolerance(), null, true, true, values);
                 }
                 processed.put(vo, values);
             }
