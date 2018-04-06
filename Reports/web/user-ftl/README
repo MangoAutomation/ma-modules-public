@@ -1,0 +1,1 @@
+Place any user defined templates here so they are not clobbered upon module update (ftl folder is replaced on upgrade of module)

@@ -1,5 +1,6 @@
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x
+* Added web/user-ftl folder to allow persisting ftl templates across module upgrades, place your user defined report templates there
 
 *Version 3.3.4*
 * Reports don't export points list entries for points that are missing
