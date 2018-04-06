@@ -15,6 +15,7 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -35,12 +36,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.LimitCounter;
 public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> extends PointValueTimeDatabaseStream<T, INFO>{
     
     protected long currentTime; //For writing multiple points single array NoSQL
-    protected final List<DataPointVOPointValueTimeBookend> currentValues;
+    protected final List<DataPointValueTime> currentValues;
     protected int currentDataPointId;
     //List of cached values per data point id, sorted in descending time order
     protected final Map<Integer, List<IdPointValueTime>> cache;
     protected final Map<Integer,LimitCounter> limiters;  //For use with cache so we don't return too many values, assuming that caches sizes are small this should have minimal effects
-    protected final List<DataPointVOPointValueTimeBookend> bookends;
+    protected final List<DataPointValueTime> bookends;
     
     public MultiPointLatestDatabaseStream(INFO info,
             Map<Integer, DataPointVO> voMap, PointValueDao dao) {
@@ -88,9 +89,9 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         //Write out all our current values and the final bookend
         if(info.isSingleArray() && voMap.size() > 1) {
             if(currentValues.size() > 0)
-                writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
+                writer.writeDataPointValues(currentValues, currentValues.get(0).getTime());
             if(bookends.size() > 0)
-                writer.writeMultiplePointValuesAtSameTime(bookends, bookends.get(0).getPvt().getTime());
+                writer.writeDataPointValues(bookends, bookends.get(0).getTime());
         }else {
             if(!info.isSingleArray()) {
                 if(contentType == StreamContentType.JSON)
@@ -137,7 +138,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                     currentValues.add(value);
                 else {
                     if(currentValues.size() > 0) {
-                        writer.writeMultiplePointValuesAtSameTime(currentValues, currentValues.get(0).getPvt().getTime());
+                        writer.writeDataPointValues(currentValues, currentValues.get(0).getTime());
                         currentValues.clear();
                     }
                     currentTime = value.getTime();
@@ -154,7 +155,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                     currentDataPointId = value.getId();
                 }
             }
-            writer.writePointValueTime(value);
+            writer.writeDataPointValue(value);
         }
     }
     

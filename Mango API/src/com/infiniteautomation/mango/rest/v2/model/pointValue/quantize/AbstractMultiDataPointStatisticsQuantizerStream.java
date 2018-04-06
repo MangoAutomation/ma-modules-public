@@ -58,12 +58,12 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
      * @param generator
      * @throws IOException
      */
-    protected void writePeriodStats(DataPointStatisticsGenerator generator) throws IOException{
+    protected void writePeriodStats(DataPointRollupPeriodValue generator) throws IOException{
         //Code limit
         //TODO Cancel query via Exception
         if(info.getLimit() != null && count >= info.getLimit())
             return;
-        this.writer.writeStatsAsObject(generator);
+        this.writer.writeDataPointValue(generator);
         count++;
     }
     

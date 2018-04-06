@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.goebl.simplify;
+package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import java.io.IOException;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.goebl.simplify.Point;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -16,7 +16,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public interface SimplifiableValue extends Point {
+public interface DataPointValueTime extends Point {
 
     /**
      * return the data point for this value

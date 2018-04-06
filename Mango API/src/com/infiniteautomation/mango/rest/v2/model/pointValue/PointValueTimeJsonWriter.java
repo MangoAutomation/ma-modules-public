@@ -9,11 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.goebl.simplify.SimplifiableValue;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
-import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Terry Packer
@@ -29,20 +25,7 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     }
     
     @Override
-    public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
-        this.jgen.writeStartObject();
-        if(info.isMultiplePointsPerArray()) {
-            this.jgen.writeObjectFieldStart(value.getVo().getXid());
-            writeEntry(value, false, true);
-            this.jgen.writeEndObject();
-        }else {
-            writeEntry(value, false, true);
-        }
-        this.jgen.writeEndObject();
-    }
-    
-    @Override
-    public void writeSimplifiableValue(SimplifiableValue value) throws IOException {
+    public void writeDataPointValue(DataPointValueTime value) throws IOException {
         this.jgen.writeStartObject();
         if(info.isMultiplePointsPerArray()) {
             this.jgen.writeObjectFieldStart(value.getVo().getXid());
@@ -53,40 +36,18 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         }
         this.jgen.writeEndObject();
     }
-    
+
     /**
      * @param currentValues
      */
     @Override
-    public void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp)  throws IOException{
+    public void writeDataPointValues(List<DataPointValueTime> currentValues, long timestamp)  throws IOException{
 
         this.jgen.writeStartObject();
         //If we have a timestamp write it here
         if(info.fieldsContains(PointValueField.TIMESTAMP))
             writeTimestamp(timestamp);
-        for(DataPointVOPointValueTimeBookend value : currentValues) {
-            if(info.isMultiplePointsPerArray()) {
-                this.jgen.writeObjectFieldStart(value.getVo().getXid());
-                writeEntry(value, false, false);
-                this.jgen.writeEndObject();
-            }else {
-                writeEntry(value, false, false);
-            }
-        }
-        this.jgen.writeEndObject();
-    }
-    
-    /**
-     * @param currentValues
-     */
-    @Override
-    public void writeMultipleSimplifiablValuesAtSameTime(List<SimplifiableValue> currentValues, long timestamp)  throws IOException{
-
-        this.jgen.writeStartObject();
-        //If we have a timestamp write it here
-        if(info.fieldsContains(PointValueField.TIMESTAMP))
-            writeTimestamp(timestamp);
-        for(SimplifiableValue value : currentValues) {
+        for(DataPointValueTime value : currentValues) {
             if(info.isMultiplePointsPerArray()) {
                 this.jgen.writeObjectFieldStart(value.getVo().getXid());
                 value.writeEntry(this, false, false);
@@ -94,47 +55,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
             }else {
                 value.writeEntry(this, false, false);
             }
-        }
-        this.jgen.writeEndObject();
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
-     */
-    @Override
-    public void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException{
-        this.jgen.writeStartObject();
-
-        if(info.fieldsContains(PointValueField.TIMESTAMP))
-            writeTimestamp(timestamp);
-        
-        for(DataPointStatisticsGenerator gen : periodStats) {
-            if(info.isMultiplePointsPerArray()) {
-                DataPointVO vo = gen.getVo();
-                this.jgen.writeObjectFieldStart(vo.getXid());
-                writeEntry(gen, false, false);
-                this.jgen.writeEndObject();
-            }else {
-                throw new ShouldNeverHappenException("Implement me?");
-            }
-        }
-        this.jgen.writeEndObject();
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
-     */
-    @Override
-    public void writeStatsAsObject(DataPointStatisticsGenerator periodStats) throws IOException{
-        this.jgen.writeStartObject();
-        if(info.isMultiplePointsPerArray()) {
-            this.jgen.writeObjectFieldStart(periodStats.getVo().getXid());
-            writeEntry(periodStats, false, true);
-            this.jgen.writeEndObject();
-        }else {
-            writeEntry(periodStats, false, true);
         }
         this.jgen.writeEndObject();
     }
@@ -211,8 +131,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
         this.jgen.writeStartArray();
     }
 
-
-
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeStartObject()
      */
@@ -220,8 +138,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     public void writeStartObject() throws IOException {
         this.jgen.writeStartObject();
     }
-
-
 
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeEndObject()

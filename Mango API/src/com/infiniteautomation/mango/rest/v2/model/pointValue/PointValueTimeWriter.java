@@ -9,8 +9,6 @@ import java.util.List;
 
 import javax.measure.unit.Unit;
 
-import com.goebl.simplify.SimplifiableValue;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
@@ -83,35 +81,20 @@ public abstract class PointValueTimeWriter {
     public abstract void writeEndObject() throws IOException;
     
     /* Full Value Write Methods */
-    public abstract void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp) throws IOException;
-    public abstract void writeMultipleSimplifiablValuesAtSameTime(List<SimplifiableValue> currentValues, long timestamp) throws IOException;
-    public abstract void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException;
-    public abstract void writeStatsAsObject(DataPointStatisticsGenerator generator) throws IOException;
-    public abstract void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException;
-    public abstract void writeSimplifiableValue(SimplifiableValue value) throws IOException;
-
-
     /**
-     * @param vo
-     * @param value
-     * @param b
-     * @throws IOException 
+     * Write many values at the same time
+     * @param currentValues
+     * @param timestamp
+     * @throws IOException
      */
-    protected void writeEntry(DataPointVOPointValueTimeBookend value, boolean useXid, boolean allowTimestamp) throws IOException {
-        for(PointValueField field : info.getFields()) {
-            if(!allowTimestamp && field == PointValueField.TIMESTAMP)
-                continue;
-            field.writeValue(value, info, translations, useXid, this);
-        }
-    }
+    public abstract void writeDataPointValues(List<DataPointValueTime> currentValues, long timestamp) throws IOException;
     
-    protected void writeEntry(DataPointStatisticsGenerator periodStats, boolean useXid, boolean allowTimestamp) throws IOException {
-        for(PointValueField field : info.getFields()) {
-            if(!allowTimestamp && field == PointValueField.TIMESTAMP)
-                continue;
-            field.writeValue(periodStats, info, translations, useXid, this);
-        }
-    }
+    /**
+     * Write a single value
+     * @param value
+     * @throws IOException
+     */
+    public abstract void writeDataPointValue(DataPointValueTime value) throws IOException;
     
     /**
      * 

@@ -7,7 +7,6 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue;
 import java.io.IOException;
 
 import com.goebl.simplify.Point;
-import com.goebl.simplify.SimplifiableValue;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -15,7 +14,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public class DataPointVOPointValueTimeBookend implements SimplifiableValue {
+public class DataPointVOPointValueTimeBookend implements DataPointValueTime {
 
     final DataPointVO vo;
     final IdPointValueTime pvt;

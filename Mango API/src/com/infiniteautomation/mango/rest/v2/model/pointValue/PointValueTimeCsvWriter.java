@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.goebl.simplify.SimplifiableValue;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
@@ -34,22 +32,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
         super(info, jgen);
         this.pointCount = pointCount;
     }
-
     
     @Override
-    public void writePointValueTime(DataPointVOPointValueTimeBookend value) throws IOException {
-        this.jgen.writeStartObject();
-        if(info.isMultiplePointsPerArray()) {
-            //We don't want to embed this as an object like the Json Writer does
-            writeEntry(value, true, true);
-        }else {
-            writeEntry(value, false, true);
-        }
-        this.jgen.writeEndObject();
-    }
-    
-    @Override
-    public void writeSimplifiableValue(SimplifiableValue value) throws IOException {
+    public void writeDataPointValue(DataPointValueTime value) throws IOException {
         this.jgen.writeStartObject();
         if(info.isMultiplePointsPerArray()) {
             //We don't want to embed this as an object like the Json Writer does
@@ -60,64 +45,18 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
         this.jgen.writeEndObject();
     }
     
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#writeMultipleStatsAsObject(java.util.List)
-     */
-    @Override
-    public void writeStatsAsObject(DataPointStatisticsGenerator periodStats) throws IOException{
-        this.writeStartObject();
-        if(info.isMultiplePointsPerArray()) {
-            writeEntry(periodStats, true, true);
-        }else {
-            writeEntry(periodStats, false, true);
-        }
-        this.writeEndObject();
-    }
-    
-    @Override
-    public void writeMultiplePointValuesAtSameTime(List<DataPointVOPointValueTimeBookend> currentValues, long timestamp)  throws IOException{
-        this.jgen.writeStartObject();
-        boolean first = true;
-        for(DataPointVOPointValueTimeBookend value : currentValues) {
-            if(info.isMultiplePointsPerArray()) {
-                writeEntry(value, true, first);
-            }else {
-                throw new ShouldNeverHappenException("Should not write multiple points here.");
-            }
-            first = false;
-        }
-        this.jgen.writeEndObject();
-    }
-    
     /**
      * @param currentValues
      */
     @Override
-    public void writeMultipleSimplifiablValuesAtSameTime(List<SimplifiableValue> currentValues, long timestamp)  throws IOException{
+    public void writeDataPointValues(List<DataPointValueTime> currentValues, long timestamp)  throws IOException{
         this.jgen.writeStartObject();
         boolean first = true;
-        for(SimplifiableValue value : currentValues) {
+        for(DataPointValueTime value : currentValues) {
             if(info.isMultiplePointsPerArray()) {
                 value.writeEntry(this, true, first);
             }else {
                 throw new ShouldNeverHappenException("Should not write multiple points here.");
-            }
-            first = false;
-        }
-        this.jgen.writeEndObject();
-    }
-    
-    
-    @Override
-    public void writeMultiplePointStatsAtSameTime(List<DataPointStatisticsGenerator> periodStats, long timestamp) throws IOException{
-        this.jgen.writeStartObject();
-        boolean first = true;
-        for(DataPointStatisticsGenerator gen : periodStats) {
-            if(info.isMultiplePointsPerArray()) {
-                writeEntry(gen, true, first);
-            }else {
-                throw new ShouldNeverHappenException("Implement me?");
             }
             first = false;
         }

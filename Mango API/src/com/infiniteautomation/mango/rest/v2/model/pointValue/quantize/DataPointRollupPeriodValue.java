@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 import java.io.IOException;
 
 import com.goebl.simplify.Point;
-import com.goebl.simplify.SimplifiableValue;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
@@ -23,12 +23,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
  *
  * @author Terry Packer
  */
-public class RollupValueTime implements SimplifiableValue {
+public class DataPointRollupPeriodValue implements DataPointValueTime {
 
     private final DataPointStatisticsGenerator generator;
     private final RollupEnum rollup;
 
-    public RollupValueTime(DataPointStatisticsGenerator generator, RollupEnum rollup) {
+    public DataPointRollupPeriodValue(DataPointStatisticsGenerator generator, RollupEnum rollup) {
         this.generator = generator;
         this.rollup = rollup;
     }

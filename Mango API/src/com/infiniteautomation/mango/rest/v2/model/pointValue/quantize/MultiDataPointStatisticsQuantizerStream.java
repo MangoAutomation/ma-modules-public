@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -24,7 +25,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTimeRangeQueryInfo> extends AbstractMultiDataPointStatisticsQuantizerStream<T, INFO> {
 
-    protected final LinkedHashMap<Long,List<DataPointStatisticsGenerator>> periodStats;
+    protected final LinkedHashMap<Long,List<DataPointValueTime>> periodStats;
 
     public MultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);        
@@ -79,7 +80,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     }
     
-    protected void writePeriodStats(List<DataPointStatisticsGenerator> generators) throws IOException {
+    protected void writePeriodStats(List<DataPointValueTime> generators) throws IOException {
         //Code limit
         //TODO Cancel query via Exception
         if(info.getLimit() != null && count >= info.getLimit())
@@ -87,10 +88,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         
         if(info.isSingleArray() && voMap.size() > 1) {
             if(generators.size() > 0)
-                this.writer.writeMultiplePointStatsAtSameTime(generators, generators.get(0).getGenerator().getPeriodStartTime());
+                this.writer.writeDataPointValues(generators, generators.get(0).getTime());
         }else {
-            for(DataPointStatisticsGenerator gen: generators)
-                this.writer.writeStatsAsObject(gen);
+            for(DataPointValueTime gen: generators)
+                this.writer.writeDataPointValue(gen);
         }
         count++;
     }
@@ -103,15 +104,15 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         //Collect the stats for this period
         if(info.isSingleArray()) {
             //Do we have any entries for this period
-            List<DataPointStatisticsGenerator> entries = this.periodStats.get(generator.getGenerator().getPeriodStartTime());
+            List<DataPointValueTime> entries = this.periodStats.get(generator.getGenerator().getPeriodStartTime());
             if(entries == null) {
                 entries = new ArrayList<>();
                 this.periodStats.put(generator.getGenerator().getPeriodStartTime(), entries);
             }
-            entries.add(generator);
+            entries.add(new DataPointRollupPeriodValue(generator, info.getRollup()));
         }else {
             //Just write it out
-            writePeriodStats(generator);
+            writePeriodStats(new DataPointRollupPeriodValue(generator, info.getRollup()));
         }
     }
     
@@ -128,7 +129,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                     quant.done();
             Iterator<Long> it = this.periodStats.keySet().iterator();
             while(it.hasNext()) {
-                List<DataPointStatisticsGenerator> entries = this.periodStats.get(it.next());
+                List<DataPointValueTime> entries = this.periodStats.get(it.next());
                 writePeriodStats(entries);
             }
         }else {

@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.goebl.simplify.SimplifiableValue;
 import com.goebl.simplify.SimplifyUtility;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
@@ -50,11 +50,11 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 quant.done();
         }
         //Re-assemble as per output format
-        Map<DataPointVO, List<SimplifiableValue>> processed = process();
+        Map<DataPointVO, List<DataPointValueTime>> processed = process();
         if(info.isSingleArray() && voMap.size() > 1) {
             //Combine into single array
-            List<SimplifiableValue> values = new ArrayList<>();
-            for(Entry<DataPointVO, List<SimplifiableValue>> entry : processed.entrySet()) {
+            List<DataPointValueTime> values = new ArrayList<>();
+            for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
                 values.addAll(entry.getValue());
             }
             //Sort by time
@@ -66,13 +66,13 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             //Reset current time and write out
             if(values.size() > 0) {
                 long currentTime = values.get(0).getTime();
-                List<SimplifiableValue> currentValues = new ArrayList<>();
-                for(SimplifiableValue value : values) {
+                List<DataPointValueTime> currentValues = new ArrayList<>();
+                for(DataPointValueTime value : values) {
                     if(currentTime == value.getTime())
                         currentValues.add(value);
                     else {
                         if(currentValues.size() > 0) {
-                            writer.writeMultipleSimplifiablValuesAtSameTime(currentValues, currentValues.get(0).getTime());
+                            writer.writeDataPointValues(currentValues, currentValues.get(0).getTime());
                             currentValues.clear();
                         }
                         currentTime = value.getTime();
@@ -81,16 +81,19 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 }
             }
         }else {
-            for(Entry<DataPointVO, List<SimplifiableValue>> entry : processed.entrySet()) {
+            for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
                 int count = 0;
-                this.writer.writeStartArray(entry.getKey().getXid());
-                for(SimplifiableValue value : entry.getValue()) {
+                //TODO if(contentType == StreamContentType.JSON) to start end array? 
+                if(voMap.size() > 1)
+                    this.writer.writeStartArray(entry.getKey().getXid());
+                for(DataPointValueTime value : entry.getValue()) {
                     if(info.getLimit() != null && count >= info.getLimit())
                         break;
-                    writer.writeSimplifiableValue(value);
+                    writer.writeDataPointValue(value);
                     count++;
                 }
-                this.writer.writeEndArray();
+                if(voMap.size() > 1)
+                    this.writer.writeEndArray();
             }
         }
     }
@@ -98,11 +101,11 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     /**
      * @return
      */
-    private Map<DataPointVO, List<SimplifiableValue>> process() {
-        Map<DataPointVO, List<SimplifiableValue>> processed = new HashMap<>();
+    private Map<DataPointVO, List<DataPointValueTime>> process() {
+        Map<DataPointVO, List<DataPointValueTime>> processed = new HashMap<>();
         for(DataPointVO vo : voMap.values()) {
             List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
-            List<SimplifiableValue> values = new ArrayList<>();
+            List<DataPointValueTime> values = new ArrayList<>();
             if(generators.get(0).getGenerator() instanceof NoStatisticsGenerator) {
                 //Iterate and combine into an array
                 for(DataPointStatisticsGenerator gen : generators) {
@@ -113,7 +116,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 }
             }else {
                 for(DataPointStatisticsGenerator generator : generators) {
-                    values.add(new RollupValueTime(generator, RollupEnum.convertTo(vo.getRollup())));
+                    values.add(new DataPointRollupPeriodValue(generator, RollupEnum.convertTo(vo.getRollup())));
                 }
             }
             if(values.size() > 0) {
