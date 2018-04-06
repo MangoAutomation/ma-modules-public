@@ -49,9 +49,13 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             if(!quant.isDone())
                 quant.done();
         }
-        //Re-assemble as per output format
-        Map<DataPointVO, List<DataPointValueTime>> processed = process();
-        if(info.isSingleArray() && voMap.size() > 1) {
+        
+        boolean singleArray = info.isSingleArray() && voMap.size() > 1;
+        
+        //Process the data into lists per data point, limit and simplify if necessary.
+        Map<DataPointVO, List<DataPointValueTime>> processed = process(singleArray ? null : info.getLimit());
+        
+        if(singleArray) {
             //Combine into single array
             List<DataPointValueTime> values = new ArrayList<>();
             for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
@@ -79,16 +83,17 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                         currentValues.add(value);
                     }
                 }
+                
+                //Finish the current values
+                if(currentValues.size() > 0)
+                    writer.writeDataPointValues(currentValues, currentValues.get(0).getTime());
             }
         }else {
             for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
-                int count = 0;
                 //TODO if(contentType == StreamContentType.JSON) to start end array? 
                 if(voMap.size() > 1)
                     this.writer.writeStartArray(entry.getKey().getXid());
                 for(DataPointValueTime value : entry.getValue()) {
-                    if(info.getLimit() != null && count >= info.getLimit())
-                        break;
                     writer.writeDataPointValue(value);
                     count++;
                 }
@@ -99,9 +104,11 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
     
     /**
+     * Process the data into lists per data point, simplify if necessary
+     * @param limit
      * @return
      */
-    private Map<DataPointVO, List<DataPointValueTime>> process() {
+    private Map<DataPointVO, List<DataPointValueTime>> process(Integer limit) {
         Map<DataPointVO, List<DataPointValueTime>> processed = new HashMap<>();
         for(DataPointVO vo : voMap.values()) {
             List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
@@ -120,6 +127,11 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 }
             }
             if(values.size() > 0) {
+                
+                //As the other endpoints, limit before simplification
+                if(limit != null)
+                    values = values.subList(0, limit);
+                
                 if(vo.isSimplifyDataSets()) {
                     if(vo.getSimplifyType() == DataPointVO.SimplifyTypes.TARGET)
                         values = SimplifyUtility.simplify(null, new Integer((int)vo.getSimplifyArgument()), true, true, values);
