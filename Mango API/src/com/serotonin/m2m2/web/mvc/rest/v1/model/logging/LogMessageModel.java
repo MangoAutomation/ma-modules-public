@@ -11,7 +11,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.logging;
 public class LogMessageModel {
 	
 	private String level;
-	private String thread;
+	private String classname;
+	private String method;
+	private Integer lineNumber;
 	private String message;
 	private String[] stackTrace;
 	private long time;
@@ -23,10 +25,12 @@ public class LogMessageModel {
 	 * @param message
 	 * @param time
 	 */
-	public LogMessageModel(String level, String thread, String message, String[] stackTrace, long time) {
+	public LogMessageModel(String level, String classname, String method, Integer lineNumber, String message, String[] stackTrace, long time) {
 		super();
 		this.level = level;
-		this.thread = thread;
+		this.classname = classname;
+		this.method = method;
+		this.lineNumber = lineNumber;
 		this.message = message;
 		this.stackTrace = stackTrace;
 		this.time = time;
@@ -38,14 +42,7 @@ public class LogMessageModel {
 	public void setLevel(String level) {
 		this.level = level;
 	}
-	public String getThread() {
-        return thread;
-    }
-    public void setThread(String thread) {
-        this.thread = thread;
-    }
-
-    public String getMessage() {
+	public String getMessage() {
 		return message;
 	}
 	public void setMessage(String message) {
@@ -64,5 +61,31 @@ public class LogMessageModel {
 	public void setTime(long time) {
 		this.time = time;
 	}
+
+	public String getClassname() {
+		return classname;
+	}
+
+	public void setClassname(String classname) {
+		this.classname = classname;
+	}
+
+	public String getMethod() {
+		return method;
+	}
+
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	public Integer getLineNumber() {
+		return lineNumber;
+	}
+
+	public void setLineNumber(Integer lineNumber) {
+		this.lineNumber = lineNumber;
+	}
 	
+	
+
 }

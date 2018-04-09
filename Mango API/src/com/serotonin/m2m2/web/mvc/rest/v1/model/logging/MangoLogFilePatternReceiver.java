@@ -59,7 +59,8 @@ public class MangoLogFilePatternReceiver {
 
     private JsonGenerator jgen;
     // Filtering
-    private QueryComparison threadComparison;
+    private QueryComparison classComparison;
+    private QueryComparison methodComparison;
     private QueryComparison levelComparison;
     private QueryComparison timeComparison;
     private QueryComparison messageComparison;
@@ -82,7 +83,8 @@ public class MangoLogFilePatternReceiver {
                 this.thresholdLevel = Level.toLevel((String) levelComparison.getArgument(0));
             }
 
-            this.threadComparison = query.accept(new RQLToQueryComparisonVisitor(), "thread");
+            this.classComparison = query.accept(new RQLToQueryComparisonVisitor(), "classname");
+            this.methodComparison = query.accept(new RQLToQueryComparisonVisitor(), "method");
             this.timeComparison = query.accept(new RQLToQueryComparisonVisitor(), "time");
             if (this.timeComparison != null) {
                 this.timeValue = ((DateTime) this.timeComparison.getArgument(0)).getMillis();
@@ -175,54 +177,83 @@ public class MangoLogFilePatternReceiver {
                     break;
             }
         }
-        
-        String thread = event.getThreadName();
-        if (threadComparison != null) {
-            if(thread == null)
-                return;
-            switch (threadComparison.getComparison()) {
-                case EQUAL_TO:
-                    if (!thread.equals(threadComparison.getArgument(0)))
-                        return;
-                    break;
-                case NOT_EQUAL_TO:
-                    if (thread.equals(threadComparison.getArgument(0)))
-                        return;
-                    break;
-                case LIKE:
-                    if (!thread.matches((String) threadComparison.getArgument(0)))
-                        return;
-                    break;
-                default:
-                    return;
-            }
-        }
 
+        String classname = null;
+        String method = null;
+        Integer lineNumber = null;
         String message = event.getMessage().toString();
-        if (messageComparison != null) {
-            switch (messageComparison.getComparison()) {
-                case EQUAL_TO:
-                    if (!message.equals(messageComparison.getArgument(0)))
-                        return;
-                    break;
-                case NOT_EQUAL_TO:
-                    if (message.equals(messageComparison.getArgument(0)))
-                        return;
-                    break;
-                case LIKE:
-                    if (!message.matches((String) messageComparison.getArgument(0)))
-                        return;
-                    break;
-                default:
-                    return;
-            }
-        }
 
+        if (event.hasLocationInformation()) {
+            method = event.getMethodName();
+            classname = event.getClassName();
+            lineNumber = Integer.parseInt(event.getLineNumber());
+
+
+            if (classComparison != null) {
+                switch (classComparison.getComparison()) {
+                    case EQUAL_TO:
+                        if (!classname.equals((String) classComparison.getArgument(0)))
+                            return;
+                        break;
+                    case NOT_EQUAL_TO:
+                        if (classname.equals((String) classComparison.getArgument(0)))
+                            return;
+                        break;
+                    case LIKE:
+                        if (!classname.matches((String) classComparison.getArgument(0)))
+                            return;
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+
+            if (methodComparison != null) {
+                switch (methodComparison.getComparison()) {
+                    case EQUAL_TO:
+                        if (!method.equals(methodComparison.getArgument(0)))
+                            return;
+                        break;
+                    case NOT_EQUAL_TO:
+                        if (method.equals(methodComparison.getArgument(0)))
+                            return;
+                        break;
+                    case LIKE:
+                        if (!method.matches((String) methodComparison.getArgument(0)))
+                            return;
+                        break;
+                    default:
+                        return;
+                }
+            }
+
+            if (messageComparison != null) {
+                switch (messageComparison.getComparison()) {
+                    case EQUAL_TO:
+                        if (!message.equals(messageComparison.getArgument(0)))
+                            return;
+                        break;
+                    case NOT_EQUAL_TO:
+                        if (message.equals(messageComparison.getArgument(0)))
+                            return;
+                        break;
+                    case LIKE:
+                        if (!message.matches((String) messageComparison.getArgument(0)))
+                            return;
+                        break;
+                    default:
+                        return;
+                }
+            }
+
+        }
 
         String[] stackTrace = event.getStackTrace();
 
         try {
-            jgen.writeObject(new LogMessageModel(event.getLevel().toString(), event.getThreadName(), message, stackTrace, event.getTimestamp()));
+            jgen.writeObject(new LogMessageModel(event.getLevel().toString(), classname, method,
+                    lineNumber, message, stackTrace, event.getTimestamp()));
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -937,13 +968,13 @@ public class MangoLogFilePatternReceiver {
 
         long timeStamp = 0L;
         String level = null;
-        String threadName = null;
+        // String threadName = null;
         String message = null;
         // String ndc = null;
-        //String className = null;
-        //String methodName = null;
+        String className = null;
+        String methodName = null;
         String eventFileName = null;
-        //String lineNumber = null;
+        String lineNumber = null;
 
         if ((dateFormat != null) && fieldMap.containsKey(TIMESTAMP)) {
             try {
@@ -985,20 +1016,20 @@ public class MangoLogFilePatternReceiver {
             }
         }
 
-        threadName = (String) fieldMap.remove(THREAD);
+        // threadName = (String) fieldMap.remove(THREAD);
 
         // ndc = (String) fieldMap.remove(NDC);
 
-        //className = (String) fieldMap.remove(CLASS);
+        className = (String) fieldMap.remove(CLASS);
 
-        //methodName = (String) fieldMap.remove(METHOD);
+        methodName = (String) fieldMap.remove(METHOD);
 
         eventFileName = (String) fieldMap.remove(FILE);
 
-        //lineNumber = (String) fieldMap.remove(LINE);
+        lineNumber = (String) fieldMap.remove(LINE);
 
         LoggingEvent event = new LoggingEvent(levelImpl, timeStamp, message, exception,
-                eventFileName, threadName);
+                eventFileName, className, methodName, lineNumber);
 
         return event;
     }
