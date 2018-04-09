@@ -19,7 +19,7 @@ public class DataSourceWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	protected MangoWebSocketPublisher getHandler() {
+	protected MangoWebSocketPublisher createHandler() {
 		return new DataSourceWebSocketHandler();
 	}
 
@@ -29,13 +29,6 @@ public class DataSourceWebSocketDefinition extends WebSocketDefinition{
 	@Override
 	public String getUrl() {
 		return "/v1/websocket/data-sources";
-	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return false;
 	}
 
 	/* (non-Javadoc)

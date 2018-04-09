@@ -20,7 +20,7 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
 	 */
 	@Override
-	protected MangoWebSocketPublisher getHandler() {
+	protected MangoWebSocketPublisher createHandler() {
 		return new WatchListWebSocketHandler();
 	}
 
@@ -31,13 +31,6 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 	public String getUrl() {
 		return "/v1/websocket/watch-lists";
 	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return false;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()
@@ -47,6 +40,4 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
 		return TYPE_NAME;
 	}
 
-	
-	
 }

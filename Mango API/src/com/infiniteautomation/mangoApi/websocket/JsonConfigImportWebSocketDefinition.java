@@ -12,7 +12,7 @@ public class JsonConfigImportWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	protected MangoWebSocketPublisher getHandler() {
+	protected MangoWebSocketPublisher createHandler() {
 		return new JsonConfigImportWebSocketHandler();
 	}
 
@@ -23,14 +23,7 @@ public class JsonConfigImportWebSocketDefinition extends WebSocketDefinition{
 	public String getUrl() {
 		return "/v1/websocket/json-import";
 	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return false;
-	}
-	
+
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()
 	 */

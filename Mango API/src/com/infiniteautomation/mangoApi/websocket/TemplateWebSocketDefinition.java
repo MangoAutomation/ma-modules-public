@@ -18,7 +18,7 @@ public class TemplateWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	protected MangoWebSocketPublisher getHandler() {
+	protected MangoWebSocketPublisher createHandler() {
 		return new TemplateWebSocketHandler();
 	}
 
@@ -29,13 +29,7 @@ public class TemplateWebSocketDefinition extends WebSocketDefinition{
 	public String getUrl() {
 		return "/v1/websocket/templates";
 	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return false;
-	}
+
 	
 	/* (non-Javadoc)
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()

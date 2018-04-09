@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -18,20 +17,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
-import com.infiniteautomation.mango.rest.v2.util.MangoV2WebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketNotification;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 
 /**
  * @author Jared Wiltshire
  */
-public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
+public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHandler {
     private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
     public static final String MESSAGE_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
-
-    private final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
-
-    public TemporaryResourceWebSocketHandler() {
-    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -42,8 +39,6 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         }
 
         session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, new TemporaryResourceSubscription());
-        
-        sessions.add(session);
     }
 
     @Override
@@ -53,17 +48,10 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
         if (log.isDebugEnabled()) {
             log.debug("Connection closed for WebSocketSession " + session.getId() + ", status " + status);
         }
-        
-        sessions.remove(session);
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // TODO Mango 3.4 don't check the authentication on every receive, instead rely on SessionDestroyedEvent/token revoked callback to close sessions
-        if (this.getUser(session) == null) {
-            return;
-        }
-        
         TemporaryResourceRequest request = this.jacksonMapper.readValue(message.getPayload(), TemporaryResourceRequest.class);
         if (request instanceof TemporaryResourceSubscription) {
             TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) request;
@@ -71,7 +59,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
                 log.debug("Subscription for " + session.getId() + " has been set to " + subscription);
             }
             session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, subscription);
-            this.sendMessage(session, new WebSocketResponse<Void>(subscription.getSequenceNumber()));
+            this.sendRawMessage(session, new WebSocketResponse<Void>(subscription.getSequenceNumber()));
         }
     }
     
@@ -127,7 +115,7 @@ public class TemporaryResourceWebSocketHandler extends MangoV2WebSocketHandler {
                 }
                 
                 try {
-                    this.sendMessageUsingView(session, notificationMessage, view);
+                    this.sendRawMessageUsingView(session, notificationMessage, view);
                 } catch (Exception e) {
                     if (log.isWarnEnabled()) {
                         log.warn("Error notifying session " + session.getId() + " of change to resource " + resource, e);

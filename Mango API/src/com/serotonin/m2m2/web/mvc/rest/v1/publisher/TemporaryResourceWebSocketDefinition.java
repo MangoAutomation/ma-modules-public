@@ -12,18 +12,13 @@ public class TemporaryResourceWebSocketDefinition extends WebSocketDefinition {
     public static final String TYPE_NAME = "TEMPORARY_RESOURCE_WEBSOCKET";
 
     @Override
-    protected MangoWebSocketPublisher getHandler() {
+    protected MangoWebSocketPublisher createHandler() {
         return new TemporaryResourceWebSocketHandler();
     }
 
     @Override
     public String getUrl() {
         return "/v2/websocket/temporary-resources";
-    }
-
-    @Override
-    public boolean perConnection() {
-        return false;
     }
 
     @Override

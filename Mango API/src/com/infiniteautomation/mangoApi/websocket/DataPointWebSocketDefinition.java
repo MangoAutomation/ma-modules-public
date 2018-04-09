@@ -20,7 +20,7 @@ public class DataPointWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	public MangoWebSocketPublisher getHandler() {
+	public MangoWebSocketPublisher createHandler() {
 		return new DataPointWebSocketHandler();
 	}
 
@@ -30,13 +30,6 @@ public class DataPointWebSocketDefinition extends WebSocketDefinition{
 	@Override
 	public String getUrl() {
 		return "/v1/websocket/data-points";
-	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return false;
 	}
 
 	/* (non-Javadoc)

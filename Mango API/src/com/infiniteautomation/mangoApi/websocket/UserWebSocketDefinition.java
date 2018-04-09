@@ -18,7 +18,7 @@ public class UserWebSocketDefinition extends WebSocketDefinition{
 	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
 	 */
 	@Override
-	public MangoWebSocketPublisher getHandler() {
+	public MangoWebSocketPublisher createHandler() {
 		return new UserWebSocketHandler();
 	}
 
@@ -28,13 +28,6 @@ public class UserWebSocketDefinition extends WebSocketDefinition{
 	@Override
 	public String getUrl() {
 		return "/v1/websocket/users";
-	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return false;
 	}
 	
 	/* (non-Javadoc)

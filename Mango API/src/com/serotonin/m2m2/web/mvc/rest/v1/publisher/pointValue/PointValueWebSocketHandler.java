@@ -9,8 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.security.core.session.SessionDestroyedEvent;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -33,14 +32,13 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
- * Event Handler for 1 Web socket session to publish events for multiple data points
+ * Event handler for single web socket session to publish events for multiple data points
  * 
  * @author Terry Packer
  * @author Jared Wiltshire
  */
 public class PointValueWebSocketHandler extends MangoWebSocketPublisher {
 
-    private final Log log = LogFactory.getLog(this.getClass());
     private final Map<Integer, PointValueWebSocketListener> pointIdToListenerMap = new HashMap<>();
     private boolean connectionClosed = false;
     private WebSocketSession session;
@@ -55,6 +53,37 @@ public class PointValueWebSocketHandler extends MangoWebSocketPublisher {
         this.session = session;
     }
 
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
+
+        synchronized(pointIdToListenerMap) {
+            if (!this.connectionClosed) {
+                this.connectionClosed = true;
+                for (Entry<Integer, PointValueWebSocketListener> entry : pointIdToListenerMap.entrySet()) {
+                    PointValueWebSocketListener pub = entry.getValue();
+                    pub.terminate();
+                }
+            }
+        }
+
+        // Handle closing connection here
+        if (log.isDebugEnabled()) {
+            log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
+        }
+    }
+
+    @Override
+    public void httpSessionDestroyed(SessionDestroyedEvent event) {
+        String httpSession = httpSessionIdForSession(this.session);
+        if (event.getId().equals(httpSession)) {
+            try {
+                closeSession(this.session, NOT_AUTHENTICATED);
+            } catch (Exception e) {
+            }
+        }
+    }
+    
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
 
@@ -116,26 +145,6 @@ public class PointValueWebSocketHandler extends MangoWebSocketPublisher {
         } 
         if(log.isDebugEnabled())
             log.debug(message.getPayload());
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        super.afterConnectionClosed(session, status);
-
-        synchronized(pointIdToListenerMap) {
-            if (!this.connectionClosed) {
-                this.connectionClosed = true;
-                for (Entry<Integer, PointValueWebSocketListener> entry : pointIdToListenerMap.entrySet()) {
-                    PointValueWebSocketListener pub = entry.getValue();
-                    pub.terminate();
-                }
-            }
-        }
-
-        // Handle closing connection here
-        if (log.isDebugEnabled()) {
-            log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
-        }
     }
 
     protected void sendMessage(Object payload) throws JsonProcessingException, Exception {

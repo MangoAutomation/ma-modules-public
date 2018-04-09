@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.security.core.session.SessionDestroyedEvent;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -44,6 +45,37 @@ public class EventsWebSocketHandler extends MangoWebSocketPublisher {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
         this.session = session;
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
+
+        synchronized(this.lock) {
+            if (!this.connectionClosed) {
+                if (this.listener != null) {
+                    this.listener.terminate();
+                    this.listener = null;
+                }
+                this.connectionClosed = true;
+            }
+        }
+
+        // Handle closing connection here
+        if (log.isDebugEnabled()) {
+            log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
+        }
+    }
+
+    @Override
+    public void httpSessionDestroyed(SessionDestroyedEvent event) {
+        String httpSession = httpSessionIdForSession(this.session);
+        if (event.getId().equals(httpSession)) {
+            try {
+                closeSession(this.session, NOT_AUTHENTICATED);
+            } catch (Exception e) {
+            }
+        }
     }
 
     @Override
@@ -90,26 +122,6 @@ public class EventsWebSocketHandler extends MangoWebSocketPublisher {
         }
         if(log.isDebugEnabled())
             log.debug(message.getPayload());
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        super.afterConnectionClosed(session, status);
-
-        synchronized(this.lock) {
-            if (!this.connectionClosed) {
-                if (this.listener != null) {
-                    this.listener.terminate();
-                    this.listener = null;
-                }
-                this.connectionClosed = true;
-            }
-        }
-
-        // Handle closing connection here
-        if (log.isDebugEnabled()) {
-            log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
-        }
     }
 
     protected void sendMessage(Object payload) throws JsonProcessingException, Exception {

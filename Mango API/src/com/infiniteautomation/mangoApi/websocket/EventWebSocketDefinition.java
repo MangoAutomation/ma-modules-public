@@ -1,47 +1,31 @@
 /**
- * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
- * @author Terry Packer
+ * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
 package com.infiniteautomation.mangoApi.websocket;
 
-import com.serotonin.m2m2.module.WebSocketDefinition;
+import org.springframework.web.socket.WebSocketHandler;
+
+import com.serotonin.m2m2.module.PerConnectionWebSocketDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.events.EventsWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * @author Terry Packer
- *
  */
-public class EventWebSocketDefinition extends WebSocketDefinition{
+public class EventWebSocketDefinition extends PerConnectionWebSocketDefinition {
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
-	 */
-	@Override
-	protected MangoWebSocketPublisher getHandler() {
-		return new EventsWebSocketHandler();
-	}
+    @Override
+    public Class<? extends WebSocketHandler> getHandlerClass() {
+        return EventsWebSocketHandler.class;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getUrl()
-	 */
-	@Override
-	public String getUrl() {
-		return "/v1/websocket/events";
-	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return true;
-	}
+    @Override
+    public String getUrl() {
+        return "/v1/websocket/events";
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()
-	 */
-	@Override
-	public String getTypeName() {
-		return "EVENT";
-	}
+    @Override
+    public String getTypeName() {
+        return "EVENT";
+    }
+    
 }

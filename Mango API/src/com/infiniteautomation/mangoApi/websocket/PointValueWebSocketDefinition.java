@@ -1,45 +1,28 @@
 /**
- * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
- * @author Terry Packer
+ * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
 package com.infiniteautomation.mangoApi.websocket;
 
-import com.serotonin.m2m2.module.WebSocketDefinition;
+import org.springframework.web.socket.WebSocketHandler;
+
+import com.serotonin.m2m2.module.PerConnectionWebSocketDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.pointValue.PointValueWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 /**
  * @author Terry Packer
- *
  */
-public class PointValueWebSocketDefinition extends WebSocketDefinition{
+public class PointValueWebSocketDefinition extends PerConnectionWebSocketDefinition {
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
-	 */
-	@Override
-	protected MangoWebSocketPublisher getHandler() {
-		return new PointValueWebSocketHandler();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getUrl()
-	 */
+    @Override
+    public Class<? extends WebSocketHandler> getHandlerClass() {
+        return PointValueWebSocketHandler.class;
+    }
+    
 	@Override
 	public String getUrl() {
 		return "/v1/websocket/point-value";
 	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#perConnection()
-	 */
-	@Override
-	public boolean perConnection() {
-		return true;
-	}
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.WebSocketDefinition#getTypeName()
-	 */
 	@Override
 	public String getTypeName() {
 		return "POINT_VALUE";
