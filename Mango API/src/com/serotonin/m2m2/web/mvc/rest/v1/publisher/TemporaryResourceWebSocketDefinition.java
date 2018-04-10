@@ -3,16 +3,17 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
+import org.springframework.web.socket.WebSocketHandler;
+
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
 
 public class TemporaryResourceWebSocketDefinition extends WebSocketDefinition {
-    
+
     public static final String TYPE_NAME = "TEMPORARY_RESOURCE_WEBSOCKET";
 
     @Override
-    protected MangoWebSocketPublisher createHandler() {
+    protected WebSocketHandler createHandler() {
         return new TemporaryResourceWebSocketHandler();
     }
 

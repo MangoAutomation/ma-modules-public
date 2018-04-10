@@ -9,7 +9,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.WebSocketClosedException;
 
@@ -26,7 +26,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
             return;
         } else if (!user.isAdmin()) {
             if (session.isOpen()) {
-                session.close(MangoWebSocketPublisher.NOT_AUTHORIZED);
+                session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
             return;
         }
@@ -42,7 +42,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
                 return;
             } else if (!user.isAdmin()) {
                 if (session.isOpen()) {
-                    session.close(MangoWebSocketPublisher.NOT_AUTHORIZED);
+                    session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
                 }
                 return;
             }

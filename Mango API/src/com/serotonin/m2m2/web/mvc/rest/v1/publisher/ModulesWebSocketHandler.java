@@ -14,7 +14,7 @@ import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationTypeEnum;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketPublisher;
+import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.WebSocketClosedException;
 
@@ -36,7 +36,7 @@ public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implem
             return;
         } else if (!hasPermission(user)) {
             if (session.isOpen()) {
-                session.close(MangoWebSocketPublisher.NOT_AUTHORIZED);
+                session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
             return;
         }
