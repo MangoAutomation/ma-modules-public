@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,7 +51,7 @@ import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
-import com.serotonin.m2m2.web.mvc.spring.security.MangoSecurityConfiguration;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -61,15 +62,18 @@ import net.jazdw.rql.parser.ASTNode;
 
 /**
  * Class to provide server information
- * 
+ *
  * @author Terry Packer
  */
 @Api(value = "Server Information v2", description = "Server Information")
 @RestController
 @RequestMapping("/v2/server")
 public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
-    
+
     private final Log log = LogFactory.getLog(ServerRestV2Controller.class);
+
+    @Autowired
+    MangoSessionRegistry sessionRegistry;
 
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
@@ -120,7 +124,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Restart Mango",
-            notes = "Returns location url in header for status updates while web interface is still active")
+    notes = "Returns location url in header for status updates while web interface is still active")
     @RequestMapping(method = RequestMethod.PUT, value = "/restart")
     public ResponseEntity<Void> restart(UriComponentsBuilder builder, HttpServletRequest request) {
         ProcessResult r = ModulesDwr.scheduleRestart();
@@ -141,11 +145,11 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         List<SessionInformation> sessions = new ArrayList<SessionInformation>();
         final List<Object> allPrincipals =
-                MangoSecurityConfiguration.sessionRegistry().getAllPrincipals();
+                sessionRegistry.getAllPrincipals();
 
         for (final Object principal : allPrincipals) {
             List<SessionInformation> sessionInfo =
-                    MangoSecurityConfiguration.sessionRegistry().getAllSessions(principal, true);
+                    sessionRegistry.getAllSessions(principal, true);
             // Expire sessions, the user was deleted
             for (SessionInformation info : sessionInfo) {
                 sessions.add(info);
@@ -157,7 +161,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get all available system information", notes = "")
     @ApiResponses({
-            @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),})
+        @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),})
     @RequestMapping(method = {RequestMethod.GET}, value = "system-info")
     public ResponseEntity<Map<String, Object>> getSystemInfo(@AuthenticationPrincipal User user) {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -169,12 +173,12 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get one piece of system info by key", notes = "")
     @ApiResponses({
-            @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),
-            @ApiResponse(code = 404, message = "Not Found", response = ResponseEntity.class),})
+        @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),
+        @ApiResponse(code = 404, message = "Not Found", response = ResponseEntity.class),})
     @RequestMapping(method = {RequestMethod.GET}, value = "/system-info/{key}")
     public ResponseEntity<Object> getOne(@AuthenticationPrincipal User user,
             @ApiParam(value = "Valid System Info Key", required = true,
-                    allowMultiple = false) @PathVariable String key) {
+            allowMultiple = false) @PathVariable String key) {
 
         SystemInfoDefinition<?> setting = ModuleRegistry.getSystemInfoDefinition(key);
         if (setting != null)
@@ -183,19 +187,19 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     }
 
     @PreAuthorize("isAdmin()")
-    @ApiOperation(value = "Get the count of values for all data points in a point by point list", 
-                  notes = "This endpoint can be very cpu intensive if you have a lot of point data.")
+    @ApiOperation(value = "Get the count of values for all data points in a point by point list",
+    notes = "This endpoint can be very cpu intensive if you have a lot of point data.")
     @ApiResponses({
-            @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
+        @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
     @RequestMapping(method = {RequestMethod.GET}, value = "/point-history-counts")
     public ResponseEntity<List<PointHistoryCount>> getPointHistoryCounts() {
         return ResponseEntity.ok(DataPointDao.instance.getTopPointHistoryCounts());
     }
 
-    @ApiOperation(value = "Get general Mango installation info", 
+    @ApiOperation(value = "Get general Mango installation info",
             notes = "Instance description, GUID, Core version, Normalized Core Version, Server timezone, Server locale")
     @ApiResponses({
-      @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
+        @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
     @RequestMapping(method = {RequestMethod.GET}, value = "/mango-info")
     public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal User user){
         Map<String, String> mangoInfo = new HashMap<>();
@@ -205,7 +209,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         mangoInfo.put("coreVersionNormalized", Common.getVersion().getNormalVersion());
         mangoInfo.put("locale", Common.getLocale().toLanguageTag());
         mangoInfo.put("timezone", TimeZone.getDefault().toZoneId().getId());
-        
+
         return ResponseEntity.ok(mangoInfo);
     }
 
@@ -214,7 +218,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public void postClientError(@AuthenticationPrincipal User user, @RequestBody ClientError body) {
         log.warn("Client error\n" + body.formatString(user));
     }
-    
+
     static class ClientError {
         String message;
         String cause;
@@ -224,7 +228,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         String language;
         String timezone;
         String date;
-        
+
         public String getMessage() {
             return message;
         }
@@ -276,22 +280,22 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         public String formatString(User user) {
             String stackTrace = this.stackTrace.stream()
-                .map(sf -> sf.toString())
-                .collect(Collectors.joining("\n"));
-            
+                    .map(sf -> sf.toString())
+                    .collect(Collectors.joining("\n"));
+
             return "[user=" + user.getUsername() + ", cause=" + cause + ", location=" + location + ", userAgent=" + userAgent
                     + ", language=" + language + ", date=" + date + ", timezone=" + timezone + "]" + "\n" +
-                message + "\n" + stackTrace;
+                    message + "\n" + stackTrace;
         }
     }
-    
+
     static class StackFrame {
         String functionName;
         String fileName;
         int lineNumber;
         int columnNumber;
         String source;
-        
+
         public String getFunctionName() {
             return functionName;
         }
@@ -322,7 +326,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         public void setSource(String source) {
             this.source = source;
         }
-        
+
         @Override
         public String toString() {
             return "\tat " + functionName + " (" + fileName + ":" + lineNumber + ":" + columnNumber + ")";

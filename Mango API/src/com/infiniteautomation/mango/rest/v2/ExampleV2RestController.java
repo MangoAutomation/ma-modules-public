@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,7 +32,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.web.mvc.spring.security.MangoSecurityConfiguration;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -39,130 +40,133 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
- * 
+ *
  * @author Terry Packer
  */
 @Api(value="Example Controller", description="Test for new controller type")
 @RestController
 @RequestMapping("/v2/example")
 public class ExampleV2RestController extends AbstractMangoRestV2Controller{
-	
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(value = "Example User Credentials test", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/admin-get/{resourceId}"}, produces = {"application/json"} )
-	public ResponseEntity<Object> exampleGet(@AuthenticationPrincipal User user,
-			@ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId) {
-		return new ResponseEntity<Object>(HttpStatus.OK);
-	}
-	
 
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example User Credentials test", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/user-get/{resourceId}"}, produces = {"application/json"} )
-	public ResponseEntity<Object> userGet(@AuthenticationPrincipal User user, 
-			@ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId) {
-		return new ResponseEntity<Object>(HttpStatus.OK);
-	}
-	
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example Permission Exception Response", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"}, produces = {"application/json"} )
-	public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal User user) {
-		throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
-	}
-	
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example Access Denied Exception Response", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/access-denied-exception"}, produces = {"application/json"} )
-	public ResponseEntity<Object> accessDenied(@AuthenticationPrincipal User user) {
-		throw new AccessDeniedException("I don't have access.");
-	}
-	
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example Generic Rest Exception Response", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/generic-exception"}, produces = {"application/json"} )
-	public ResponseEntity<Object> genericFailure(@AuthenticationPrincipal User user) {
-		throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-	
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example Runtime Exception Response", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/runtime-exception"}, produces = {"application/json"} )
-	public ResponseEntity<Object> runtimeFailure(@AuthenticationPrincipal User user) {
-		throw new RuntimeException("I'm a runtime Exception");
-	}
-	
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example IOException Response", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/io-exception"}, produces = {"application/json"} )
-	public ResponseEntity<Object> ioFailure(@AuthenticationPrincipal User user) throws IOException{
-		throw new IOException("I'm an Exception");
-	}
+    @Autowired
+    MangoSessionRegistry sessionRegistry;
 
-	@PreAuthorize("hasAllPermissions('user')")
-	@ApiOperation(value = "Example LicenseViolationException Response", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/license-violation"}, produces = {"application/json"} )
-	public ResponseEntity<Object> licenseViolation(@AuthenticationPrincipal User user) throws IOException{
-		throw new LicenseViolatedException(new TranslatableMessage("common.default", "Test Violiation"));
-	}
-	
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(value = "Expire the session of the current user", notes = "must be admin")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/expire-session"}, produces = {"application/json"} )
-	public ResponseEntity<Object> expireSessions(@AuthenticationPrincipal User user){
-		List<SessionInformation> infos = MangoSecurityConfiguration.sessionRegistry().getAllSessions(user, false);
-		for(SessionInformation info : infos)
-			info.expireNow();
-		return new ResponseEntity<Object>(HttpStatus.OK);
-	}
-	
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(value = "Example Path matching", notes = "")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/{resourceId}/**"}, produces = {"application/json"} )
-	public ResponseEntity<String> matchPath(@AuthenticationPrincipal User user,
-			@ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId, 
-			HttpServletRequest request) {
-		
-	    String path = (String) request.getAttribute(
-	            HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-	    String bestMatchPattern = (String ) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Example User Credentials test", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/admin-get/{resourceId}"}, produces = {"application/json"} )
+    public ResponseEntity<Object> exampleGet(@AuthenticationPrincipal User user,
+            @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId) {
+        return new ResponseEntity<Object>(HttpStatus.OK);
+    }
 
-	    AntPathMatcher apm = new AntPathMatcher();
-	    String finalPath = apm.extractPathWithinPattern(bestMatchPattern, path);
-		
-		return new ResponseEntity<String>(finalPath, HttpStatus.OK);
-	}
-	
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example User Credentials test", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/user-get/{resourceId}"}, produces = {"application/json"} )
+    public ResponseEntity<Object> userGet(@AuthenticationPrincipal User user,
+            @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId) {
+        return new ResponseEntity<Object>(HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example Permission Exception Response", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"}, produces = {"application/json"} )
+    public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal User user) {
+        throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
+    }
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example Access Denied Exception Response", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/access-denied-exception"}, produces = {"application/json"} )
+    public ResponseEntity<Object> accessDenied(@AuthenticationPrincipal User user) {
+        throw new AccessDeniedException("I don't have access.");
+    }
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example Generic Rest Exception Response", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/generic-exception"}, produces = {"application/json"} )
+    public ResponseEntity<Object> genericFailure(@AuthenticationPrincipal User user) {
+        throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example Runtime Exception Response", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/runtime-exception"}, produces = {"application/json"} )
+    public ResponseEntity<Object> runtimeFailure(@AuthenticationPrincipal User user) {
+        throw new RuntimeException("I'm a runtime Exception");
+    }
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example IOException Response", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/io-exception"}, produces = {"application/json"} )
+    public ResponseEntity<Object> ioFailure(@AuthenticationPrincipal User user) throws IOException{
+        throw new IOException("I'm an Exception");
+    }
+
+    @PreAuthorize("hasAllPermissions('user')")
+    @ApiOperation(value = "Example LicenseViolationException Response", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/license-violation"}, produces = {"application/json"} )
+    public ResponseEntity<Object> licenseViolation(@AuthenticationPrincipal User user) throws IOException{
+        throw new LicenseViolatedException(new TranslatableMessage("common.default", "Test Violiation"));
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Expire the session of the current user", notes = "must be admin")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/expire-session"}, produces = {"application/json"} )
+    public ResponseEntity<Object> expireSessions(@AuthenticationPrincipal User user){
+        List<SessionInformation> infos = sessionRegistry.getAllSessions(user, false);
+        for(SessionInformation info : infos)
+            info.expireNow();
+        return new ResponseEntity<Object>(HttpStatus.OK);
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Example Path matching", notes = "")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/{resourceId}/**"}, produces = {"application/json"} )
+    public ResponseEntity<String> matchPath(@AuthenticationPrincipal User user,
+            @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
+            HttpServletRequest request) {
+
+        String path = (String) request.getAttribute(
+                HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String bestMatchPattern = (String ) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+
+        AntPathMatcher apm = new AntPathMatcher();
+        String finalPath = apm.extractPathWithinPattern(bestMatchPattern, path);
+
+        return new ResponseEntity<String>(finalPath, HttpStatus.OK);
+    }
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Raise an event", notes = "must be admin")
     @ApiResponses({
@@ -172,7 +176,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     public ResponseEntity<Object> raiseExampleEvent(@AuthenticationPrincipal User user,
             @RequestBody(required=true) RaiseEventModel model){
         if(model == null)
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR); 
+            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
         Common.eventManager.raiseEvent(model.getEvent().getEventTypeInstance(), Common.timer.currentTimeMillis(), true, AlarmLevels.CODES.getId(model.getLevel()), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
