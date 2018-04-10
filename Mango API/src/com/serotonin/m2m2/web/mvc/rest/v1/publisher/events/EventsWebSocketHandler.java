@@ -8,7 +8,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.security.core.session.SessionDestroyedEvent;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -64,17 +63,6 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler {
         // Handle closing connection here
         if (log.isDebugEnabled()) {
             log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
-        }
-    }
-
-    @Override
-    public void httpSessionDestroyed(SessionDestroyedEvent event) {
-        String httpSession = httpSessionIdForSession(this.session);
-        if (event.getId().equals(httpSession)) {
-            try {
-                closeSession(this.session, NOT_AUTHENTICATED);
-            } catch (Exception e) {
-            }
         }
     }
 

@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
-import com.infiniteautomation.mango.rest.v1.reports.ReportWebSocketConfiguration;
+import com.infiniteautomation.mango.rest.v1.reports.ReportsWebSocketDefinition;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
@@ -32,6 +32,7 @@ import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLQueryCallback;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportUserComment;
@@ -60,33 +61,34 @@ import com.serotonin.util.StringUtils;
 import com.serotonin.web.taglib.Functions;
 
 /**
- * 
+ *
  * TODO Further flesh out Auditing as its not implemented
- * 
+ *
  * @author Matthew Lohbihler
  */
 public class ReportDao extends AbstractDao<ReportVO> {
-	
-	public static final String TABLE_NAME = "reports";
-	public static final ReportDao instance = new ReportDao();
-	
-	private ReportDao(){
-		super(ReportWebSocketConfiguration.reportHandler, ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
-		this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner);
-		this.instanceCountMonitor.setValue(this.countInstances());
-    	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.instanceCountMonitor);
-	}
-	
+
+    public static final String TABLE_NAME = "reports";
+    public static final ReportDao instance = new ReportDao();
+
+    private ReportDao(){
+        super(ModuleRegistry.getWebSocketHandlerDefinition(ReportsWebSocketDefinition.TYPE_NAME), ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
+        this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner);
+        this.instanceCountMonitor.setValue(this.countInstances());
+        Common.MONITORED_VALUES.addIfMissingStatMonitor(this.instanceCountMonitor);
+    }
+
     //
     //
     // Report Templates
     //
     private static final String REPORT_SELECT = "select data, id, xid, userId, name from reports ";
 
+    @Override
     public String generateUniqueXid() {
         return generateUniqueXid(ReportVO.XID_PREFIX, "reports");
     }
-    
+
     public List<ReportVO> getReports() {
         return query(REPORT_SELECT, new ReportRowMapper());
     }
@@ -95,14 +97,14 @@ public class ReportDao extends AbstractDao<ReportVO> {
         return query(REPORT_SELECT + "where userId=? order by name", new Object[] { userId }, new ReportRowMapper());
     }
 
-	/**
-	 * @param xid
-	 * @return
-	 */
-	public ReportVO getReport(String xid) {
+    /**
+     * @param xid
+     * @return
+     */
+    public ReportVO getReport(String xid) {
         return queryForObject(REPORT_SELECT + "where xid=?", new Object[] { xid }, new ReportRowMapper(), null);
-	}
-    
+    }
+
     public ReportVO getReport(int id) {
         return queryForObject(REPORT_SELECT + "where id=?", new Object[] { id }, new ReportRowMapper(), null);
     }
@@ -156,25 +158,25 @@ public class ReportDao extends AbstractDao<ReportVO> {
     //
     private final ValueMonitorOwner instanceCountMonitorOwner = new ValueMonitorOwner(){
 
-		@Override
-		public void reset(String monitorId) {
-			instanceCountMonitor.setValue(countInstances());
-		}
-    	
+        @Override
+        public void reset(String monitorId) {
+            instanceCountMonitor.setValue(countInstances());
+        }
+
     };
     private final AtomicIntegerMonitor instanceCountMonitor;
-    
+
     private static final String REPORT_INSTANCE_COUNT = "SELECT COUNT(DISTINCT id) FROM reportInstances";
-    
+
     public int countInstances(){
-    	return ejt.queryForInt(REPORT_INSTANCE_COUNT, new Object[0], 0);
+        return ejt.queryForInt(REPORT_INSTANCE_COUNT, new Object[0], 0);
     }
-    
+
     private static final String REPORT_INSTANCE_SELECT = "select id, userId, reportId, name, template, includeEvents, includeUserComments, reportStartTime, reportEndTime, runStartTime, "
             + "  runEndTime, recordCount, preventPurge, mapping " + "from reportInstances ";
-    
+
     public List<ReportInstance> getReportInstances() {
-    	return query(REPORT_INSTANCE_SELECT + "order by runStartTime desc", new ReportInstanceRowMapper());
+        return query(REPORT_INSTANCE_SELECT + "order by runStartTime desc", new ReportInstanceRowMapper());
     }
 
     public List<ReportInstance> getReportInstances(int userId) {
@@ -188,7 +190,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
     }
 
 
-    
+
     class ReportInstanceRowMapper implements RowMapper<ReportInstance> {
         @Override
         public ReportInstance mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -218,48 +220,48 @@ public class ReportDao extends AbstractDao<ReportVO> {
      * @param userId
      */
     public void deleteReportInstance(int id, int userId) {
-		
+
         if(Common.databaseProxy.getNoSQLProxy() != null){
             //Delete the NoSQL Data
             final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
 
-        	List<ExportPointInfo> points = this.getReportInstancePoints(id);
-			//Drop the series for these
-			for(ExportPointInfo point : points){
-				dao.deleteStore(id + "_" + point.getReportPointId());
-			}
+            List<ExportPointInfo> points = this.getReportInstancePoints(id);
+            //Drop the series for these
+            for(ExportPointInfo point : points){
+                dao.deleteStore(id + "_" + point.getReportPointId());
+            }
         }
-        
+
         int deleted = ejt.update("delete from reportInstances where id=? and userId=?", new Object[] { id, userId });
         instanceCountMonitor.addValue(-deleted);
 
     }
 
     public int purgeReportsBefore(final long time) {
-    	//Check to see if we are using NoSQL
-    	if(Common.databaseProxy.getNoSQLProxy() == null){
-    		return ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
-                boolToChar(false) });
-    	}else{
-    		//We need to get the report instances to delete first
-    		List<ReportInstance> instances =  query(REPORT_INSTANCE_SELECT + "where runStartTime<? and preventPurge=?", new Object[] { time,
-                    boolToChar(false) },new ReportInstanceRowMapper());
-	        final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
-    		
-    		for(ReportInstance instance :instances){
-    			List<ExportPointInfo> points = this.getReportInstancePoints(instance.getId());
-    			//Drop the series for these
-    			for(ExportPointInfo point : points){
-    				dao.deleteStore(instance.getId() + "_" + point.getReportPointId());
-    			}
-    		}
-    		
-    		int deleted =  ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
+        //Check to see if we are using NoSQL
+        if(Common.databaseProxy.getNoSQLProxy() == null){
+            return ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
                     boolToChar(false) });
-    		
-    		instanceCountMonitor.addValue(-deleted);
-    		return deleted;
-    	}
+        }else{
+            //We need to get the report instances to delete first
+            List<ReportInstance> instances =  query(REPORT_INSTANCE_SELECT + "where runStartTime<? and preventPurge=?", new Object[] { time,
+                    boolToChar(false) },new ReportInstanceRowMapper());
+            final NoSQLDao dao = Common.databaseProxy.getNoSQLProxy().createNoSQLDao(ReportPointValueTimeSerializer.get(), "reports");
+
+            for(ReportInstance instance :instances){
+                List<ExportPointInfo> points = this.getReportInstancePoints(instance.getId());
+                //Drop the series for these
+                for(ExportPointInfo point : points){
+                    dao.deleteStore(instance.getId() + "_" + point.getReportPointId());
+                }
+            }
+
+            int deleted =  ejt.update("delete from reportInstances where runStartTime<? and preventPurge=?", new Object[] { time,
+                    boolToChar(false) });
+
+            instanceCountMonitor.addValue(-deleted);
+            return deleted;
+        }
     }
 
     /**
@@ -270,13 +272,13 @@ public class ReportDao extends AbstractDao<ReportVO> {
      * @param user
      */
     public void setReportInstancePreventPurge(int id, boolean preventPurge, User user) {
-    	
-    	if(Permissions.hasAdmin(user))
-    		ejt.update("update reportInstances set preventPurge=? where id=?", new Object[] {
+
+        if(Permissions.hasAdmin(user))
+            ejt.update("update reportInstances set preventPurge=? where id=?", new Object[] {
                     boolToChar(preventPurge), id });
-    	else
-    		ejt.update("update reportInstances set preventPurge=? where id=? and userId=?", new Object[] {
-                boolToChar(preventPurge), id, user.getId() });
+        else
+            ejt.update("update reportInstances set preventPurge=? where id=? and userId=?", new Object[] {
+                    boolToChar(preventPurge), id, user.getId() });
     }
 
     /**
@@ -285,9 +287,9 @@ public class ReportDao extends AbstractDao<ReportVO> {
      * @param preventPurge
      */
     public void setReportInstancePreventPurge(int id, boolean preventPurge) {
-        
+
     }
-    
+
     /**
      * This method should only be called by the ReportWorkItem.
      */
@@ -427,13 +429,13 @@ public class ReportDao extends AbstractDao<ReportVO> {
             // Insert the reportInstanceDataAnnotations records
             ejt.update(
                     "insert into reportInstanceDataAnnotations " //
-                            + "  (pointValueId, reportInstancePointId, textPointValueShort, textPointValueLong, sourceMessage) " //
-                            + "  select rd.pointValueId, rd.reportInstancePointId, pva.textPointValueShort, " //
-                            + "    pva.textPointValueLong, pva.sourceMessage " //
-                            + "  from reportInstanceData rd " //
-                            + "    join reportInstancePoints rp on rd.reportInstancePointId = rp.id " //
-                            + "    join pointValueAnnotations pva on rd.pointValueId = pva.pointValueId " //
-                            + "  where rp.id = ?", new Object[] { reportPointId });
+                    + "  (pointValueId, reportInstancePointId, textPointValueShort, textPointValueLong, sourceMessage) " //
+                    + "  select rd.pointValueId, rd.reportInstancePointId, pva.textPointValueShort, " //
+                    + "    pva.textPointValueLong, pva.sourceMessage " //
+                    + "  from reportInstanceData rd " //
+                    + "    join reportInstancePoints rp on rd.reportInstancePointId = rp.id " //
+                    + "    join pointValueAnnotations pva on rd.pointValueId = pva.pointValueId " //
+                    + "  where rp.id = ?", new Object[] { reportPointId });
 
             // Insert the reportInstanceEvents records for the point.
             if (instance.getIncludeEvents() != ReportVO.EVENTS_NONE) {
@@ -495,9 +497,9 @@ public class ReportDao extends AbstractDao<ReportVO> {
         if (instance.isFromInception() || instance.isToNow()) {
             ejt.query(
                     "select min(rd.ts), max(rd.ts) " //
-                            + "from reportInstancePoints rp "
-                            + "  join reportInstanceData rd on rp.id=rd.reportInstancePointId "
-                            + "where rp.reportInstanceId=?", new Object[] { instance.getId() },
+                    + "from reportInstancePoints rp "
+                    + "  join reportInstanceData rd on rp.id=rd.reportInstancePointId "
+                    + "where rp.reportInstanceId=?", new Object[] { instance.getId() },
                     new RowCallbackHandler() {
                         @Override
                         public void processRow(ResultSet rs) throws SQLException {
@@ -528,41 +530,41 @@ public class ReportDao extends AbstractDao<ReportVO> {
      * This method guarantees that the data is provided to the setData handler method grouped by point (points are not
      * ordered), and sorted by time ascending.
      */
-    private static final String REPORT_INSTANCE_POINT_SELECT = "select id, deviceName, pointName, xid, dataType, " // 
+    private static final String REPORT_INSTANCE_POINT_SELECT = "select id, deviceName, pointName, xid, dataType, " //
             + "startValue, textRenderer, colour, weight, consolidatedChart, plotType " //
             + "from reportInstancePoints ";
-    
+
     /**
      * Get the Points for a report
      * @param instanceId
      * @return
      */
     public List<ExportPointInfo> getReportInstancePoints(int instanceId){
-    	return query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
+        return query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
                 new Object[] { instanceId }, new RowMapper<ExportPointInfo>() {
-                    @Override
-                    public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        int i = 0;
-                        ExportPointInfo rp = new ExportPointInfo();
-                        rp.setReportPointId(rs.getInt(++i));
-                        rp.setDeviceName(rs.getString(++i));
-                        rp.setPointName(rs.getString(++i));
-                        rp.setXid(rs.getString(++i));
-                        rp.setDataType(rs.getInt(++i));
-                        String startValue = rs.getString(++i);
-                        if (startValue != null)
-                            rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
-                        rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
-                                .getBinaryStream()));
-                        rp.setColour(rs.getString(++i));
-                        rp.setWeight(rs.getFloat(++i));
-                        rp.setConsolidatedChart(charToBool(rs.getString(++i)));
-                        rp.setPlotType(rs.getInt(++i));
-                        return rp;
-                    }
-                });
+            @Override
+            public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                int i = 0;
+                ExportPointInfo rp = new ExportPointInfo();
+                rp.setReportPointId(rs.getInt(++i));
+                rp.setDeviceName(rs.getString(++i));
+                rp.setPointName(rs.getString(++i));
+                rp.setXid(rs.getString(++i));
+                rp.setDataType(rs.getInt(++i));
+                String startValue = rs.getString(++i);
+                if (startValue != null)
+                    rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
+                rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
+                        .getBinaryStream()));
+                rp.setColour(rs.getString(++i));
+                rp.setWeight(rs.getFloat(++i));
+                rp.setConsolidatedChart(charToBool(rs.getString(++i)));
+                rp.setPlotType(rs.getInt(++i));
+                return rp;
+            }
+        });
     }
-    
+
     private static final String REPORT_INSTANCE_DATA_SELECT = "select rd.pointValue, rda.textPointValueShort, " //
             + "  rda.textPointValueLong, rd.ts, rda.sourceMessage "
             + "from reportInstanceData rd "
@@ -573,112 +575,112 @@ public class ReportDao extends AbstractDao<ReportVO> {
         // Retrieve point information.
         List<ExportPointInfo> pointInfos = query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
                 new Object[] { instanceId }, new RowMapper<ExportPointInfo>() {
-                    @Override
-                    public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        int i = 0;
-                        ExportPointInfo rp = new ExportPointInfo();
-                        rp.setReportPointId(rs.getInt(++i));
-                        rp.setDeviceName(rs.getString(++i));
-                        rp.setPointName(rs.getString(++i));
-                        rp.setXid(rs.getString(++i));
-                        rp.setDataType(rs.getInt(++i));
-                        String startValue = rs.getString(++i);
-                        if (startValue != null)
-                            rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
-                        rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
-                                .getBinaryStream()));
-                        rp.setColour(rs.getString(++i));
-                        rp.setWeight(rs.getFloat(++i));
-                        rp.setConsolidatedChart(charToBool(rs.getString(++i)));
-                        rp.setPlotType(rs.getInt(++i));
-                        return rp;
-                    }
-                });
+            @Override
+            public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                int i = 0;
+                ExportPointInfo rp = new ExportPointInfo();
+                rp.setReportPointId(rs.getInt(++i));
+                rp.setDeviceName(rs.getString(++i));
+                rp.setPointName(rs.getString(++i));
+                rp.setXid(rs.getString(++i));
+                rp.setDataType(rs.getInt(++i));
+                String startValue = rs.getString(++i);
+                if (startValue != null)
+                    rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
+                rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
+                        .getBinaryStream()));
+                rp.setColour(rs.getString(++i));
+                rp.setWeight(rs.getFloat(++i));
+                rp.setConsolidatedChart(charToBool(rs.getString(++i)));
+                rp.setPlotType(rs.getInt(++i));
+                return rp;
+            }
+        });
 
         final ExportDataValue edv = new ExportDataValue();
         for (final ExportPointInfo point : pointInfos) {
-        	if(point.getDataType() == DataTypes.IMAGE){
-        		DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
-        		if(vo != null)
-        			point.setDataPointId(vo.getId());
-        		else
-        			point.setDataPointId(-1);
-        	}
+            if(point.getDataType() == DataTypes.IMAGE){
+                DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
+                if(vo != null)
+                    point.setDataPointId(vo.getId());
+                else
+                    point.setDataPointId(-1);
+            }
             handler.startPoint(point);
 
             edv.setReportPointId(point.getReportPointId());
             final int dataType = point.getDataType();
             ejt.query(REPORT_INSTANCE_DATA_SELECT + "where rd.reportInstancePointId=? order by rd.ts",
                     new Object[] { point.getReportPointId() }, new RowCallbackHandler() {
-                        @Override
-                        public void processRow(ResultSet rs) throws SQLException {
-                            switch (dataType) {
-                            case (DataTypes.NUMERIC):
-                                edv.setValue(new NumericValue(rs.getDouble(1)));
-                                break;
-                            case (DataTypes.BINARY):
-                                edv.setValue(new BinaryValue(rs.getDouble(1) == 1));
-                                break;
-                            case (DataTypes.MULTISTATE):
-                                edv.setValue(new MultistateValue(rs.getInt(1)));
-                                break;
-                            case (DataTypes.ALPHANUMERIC):
-                                edv.setValue(new AlphanumericValue(rs.getString(2)));
-                                if (rs.wasNull())
-                                    edv.setValue(new AlphanumericValue(rs.getString(3)));
-                                break;
-                            case (DataTypes.IMAGE):
-                                edv.setValue(new ImageValue(Integer.parseInt(rs.getString(2)), rs.getInt(1)));
-                                break;
-                            default:
-                                edv.setValue(null);
-                            }
+                @Override
+                public void processRow(ResultSet rs) throws SQLException {
+                    switch (dataType) {
+                        case (DataTypes.NUMERIC):
+                            edv.setValue(new NumericValue(rs.getDouble(1)));
+                        break;
+                        case (DataTypes.BINARY):
+                            edv.setValue(new BinaryValue(rs.getDouble(1) == 1));
+                        break;
+                        case (DataTypes.MULTISTATE):
+                            edv.setValue(new MultistateValue(rs.getInt(1)));
+                        break;
+                        case (DataTypes.ALPHANUMERIC):
+                            edv.setValue(new AlphanumericValue(rs.getString(2)));
+                        if (rs.wasNull())
+                            edv.setValue(new AlphanumericValue(rs.getString(3)));
+                        break;
+                        case (DataTypes.IMAGE):
+                            edv.setValue(new ImageValue(Integer.parseInt(rs.getString(2)), rs.getInt(1)));
+                        break;
+                        default:
+                            edv.setValue(null);
+                    }
 
-                            edv.setTime(rs.getLong(4));
-                            edv.setAnnotation(BaseDao.readTranslatableMessage(rs, 5));
-                            handler.pointData(edv);
-                        }
-                    });
+                    edv.setTime(rs.getLong(4));
+                    edv.setAnnotation(BaseDao.readTranslatableMessage(rs, 5));
+                    handler.pointData(edv);
+                }
+            });
         }
         handler.done();
     }
 
-    
+
     public void reportInstanceDataNoSQL(int instanceId, final ExportDataStreamHandler handler) {
         // Retrieve point information.
         List<ExportPointInfo> pointInfos = query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
                 new Object[] { instanceId }, new RowMapper<ExportPointInfo>() {
-                    @Override
-                    public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        int i = 0;
-                        ExportPointInfo rp = new ExportPointInfo();
-                        rp.setReportPointId(rs.getInt(++i));
-                        rp.setDeviceName(rs.getString(++i));
-                        rp.setPointName(rs.getString(++i));
-                        rp.setXid(rs.getString(++i));
-                        rp.setDataType(rs.getInt(++i));
-                        String startValue = rs.getString(++i);
-                        if (startValue != null)
-                            rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
-                        rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
-                                .getBinaryStream()));
-                        rp.setColour(rs.getString(++i));
-                        rp.setWeight(rs.getFloat(++i));
-                        rp.setConsolidatedChart(charToBool(rs.getString(++i)));
-                        rp.setPlotType(rs.getInt(++i));
-                        return rp;
-                    }
-                });
+            @Override
+            public ExportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                int i = 0;
+                ExportPointInfo rp = new ExportPointInfo();
+                rp.setReportPointId(rs.getInt(++i));
+                rp.setDeviceName(rs.getString(++i));
+                rp.setPointName(rs.getString(++i));
+                rp.setXid(rs.getString(++i));
+                rp.setDataType(rs.getInt(++i));
+                String startValue = rs.getString(++i);
+                if (startValue != null)
+                    rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
+                rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
+                        .getBinaryStream()));
+                rp.setColour(rs.getString(++i));
+                rp.setWeight(rs.getFloat(++i));
+                rp.setConsolidatedChart(charToBool(rs.getString(++i)));
+                rp.setPlotType(rs.getInt(++i));
+                return rp;
+            }
+        });
 
         final ExportDataValue edv = new ExportDataValue();
         for (final ExportPointInfo point : pointInfos) {
-        	if(point.getDataType() == DataTypes.IMAGE){
-        		DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
-        		if(vo != null)
-        			point.setDataPointId(vo.getId());
-        		else
-        			point.setDataPointId(-1);
-        	}
+            if(point.getDataType() == DataTypes.IMAGE){
+                DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
+                if(vo != null)
+                    point.setDataPointId(vo.getId());
+                else
+                    point.setDataPointId(-1);
+            }
             handler.startPoint(point);
 
             edv.setReportPointId(point.getReportPointId());
@@ -686,25 +688,25 @@ public class ReportDao extends AbstractDao<ReportVO> {
             final String pointStore = instanceId + "_" + point.getReportPointId();
             dao.getData(pointStore, 0, Long.MAX_VALUE, -1, false, new NoSQLQueryCallback(){
 
-				@Override
-				public void entry(String storeName, long timestamp, ITime entry) {
-					PointValueTime pvt = (PointValueTime) entry;
-					edv.setValue(pvt.getValue());
-					edv.setTime(pvt.getTime());
-					
-					if(pvt instanceof AnnotatedPointValueTime)
-						edv.setAnnotation(((AnnotatedPointValueTime)pvt).getSourceMessage());
-					
-					handler.pointData(edv);
-				}
-            	
+                @Override
+                public void entry(String storeName, long timestamp, ITime entry) {
+                    PointValueTime pvt = (PointValueTime) entry;
+                    edv.setValue(pvt.getValue());
+                    edv.setTime(pvt.getTime());
+
+                    if(pvt instanceof AnnotatedPointValueTime)
+                        edv.setAnnotation(((AnnotatedPointValueTime)pvt).getSourceMessage());
+
+                    handler.pointData(edv);
+                }
+
             });
         }
         handler.done();
     }
-    
+
     private static final String EVENT_SELECT = //
-    "select eventId, typeName, subtypeName, typeRef1, typeRef2, activeTs, rtnApplicable, rtnTs, rtnCause, " //
+            "select eventId, typeName, subtypeName, typeRef1, typeRef2, activeTs, rtnApplicable, rtnTs, rtnCause, " //
             + "  alarmLevel, message, ackTs, 0, ackUsername, alternateAckSource, 0 " //
             + "from reportInstanceEvents " //
             + "where reportInstanceId=? " //
@@ -769,16 +771,16 @@ public class ReportDao extends AbstractDao<ReportVO> {
     }
 
     public List<Long> getFiledataIds() {
-    	//TODO add support for NoSQL and SQL when we actually copy the image files.  Currently we only 
-    	// reference the existing point value files so there are no files to delete that are our own.
-    	
+        //TODO add support for NoSQL and SQL when we actually copy the image files.  Currently we only
+        // reference the existing point value files so there are no files to delete that are our own.
+
         /* return queryForList("select distinct d.pointValueId from reportInstanceData d " //
                 + "  join reportInstancePoints p on d.reportInstancePointId=p.id " //
                 + "where p.dataType=?", new Object[] { DataTypes.IMAGE }, Long.class); */
-    	return new ArrayList<Long>();
+        return new ArrayList<Long>();
     }
-    
-    
+
+
     /**
      * Generate a report using the NoSQL DB for point value storage
      * @param instance
@@ -830,8 +832,8 @@ public class ReportDao extends AbstractDao<ReportVO> {
             DataPointVO point = pointInfo.getPoint();
             pointIds.add(point.getId());
             int dataType = point.getPointLocator().getDataTypeId();
-            
-            
+
+
             DataValue startValue = null;
             if (!instance.isFromInception()) {
                 // Get the value just before the start of the report
@@ -846,7 +848,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
             // Insert the reportInstancePoints record
             String name = Functions.truncate(point.getName(), 100);
-            
+
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
                     new Object[] { instance.getId(), point.getDeviceName(), name, pointInfo.getPoint().getXid(), dataType,
@@ -862,13 +864,13 @@ public class ReportDao extends AbstractDao<ReportVO> {
             // Insert the reportInstanceDataAnnotations records
             ejt.update(
                     "insert into reportInstanceDataAnnotations " //
-                            + "  (pointValueId, reportInstancePointId, textPointValueShort, textPointValueLong, sourceMessage) " //
-                            + "  select rd.pointValueId, rd.reportInstancePointId, pva.textPointValueShort, " //
-                            + "    pva.textPointValueLong, pva.sourceMessage " //
-                            + "  from reportInstanceData rd " //
-                            + "    join reportInstancePoints rp on rd.reportInstancePointId = rp.id " //
-                            + "    join pointValueAnnotations pva on rd.pointValueId = pva.pointValueId " //
-                            + "  where rp.id = ?", new Object[] { reportPointId });
+                    + "  (pointValueId, reportInstancePointId, textPointValueShort, textPointValueLong, sourceMessage) " //
+                    + "  select rd.pointValueId, rd.reportInstancePointId, pva.textPointValueShort, " //
+                    + "    pva.textPointValueLong, pva.sourceMessage " //
+                    + "  from reportInstanceData rd " //
+                    + "    join reportInstancePoints rp on rd.reportInstancePointId = rp.id " //
+                    + "    join pointValueAnnotations pva on rd.pointValueId = pva.pointValueId " //
+                    + "  where rp.id = ?", new Object[] { reportPointId });
 
             // Insert the reportInstanceEvents records for the point.
             if (instance.getIncludeEvents() != ReportVO.EVENTS_NONE) {
@@ -916,19 +918,19 @@ public class ReportDao extends AbstractDao<ReportVO> {
         //The series name is reportInstanceId_reportPointId
         final AtomicLong firstPointTime = new AtomicLong(Long.MAX_VALUE);
         final AtomicLong lastPointTime = new AtomicLong(-1l);
-       final String reportId = Integer.toString(instance.getId()) + "_";
-       pointValueDao.getPointValuesBetween(pointIds, startTime, endTime, new MappedRowCallback<IdPointValueTime>(){
-			@Override
-			public void row(final IdPointValueTime ipvt, int rowId) {
-				dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getId())),ipvt);
-				count.increment();
-				if(ipvt.getTime() < firstPointTime.get())
-					firstPointTime.set(ipvt.getTime());
-				if(ipvt.getTime() > lastPointTime.get())
-					lastPointTime.set(ipvt.getTime());
-			}
-       });
-        
+        final String reportId = Integer.toString(instance.getId()) + "_";
+        pointValueDao.getPointValuesBetween(pointIds, startTime, endTime, new MappedRowCallback<IdPointValueTime>(){
+            @Override
+            public void row(final IdPointValueTime ipvt, int rowId) {
+                dao.storeData( reportId + Integer.toString(pointIdMap.get(ipvt.getId())),ipvt);
+                count.increment();
+                if(ipvt.getTime() < firstPointTime.get())
+                    firstPointTime.set(ipvt.getTime());
+                if(ipvt.getTime() > lastPointTime.get())
+                    lastPointTime.set(ipvt.getTime());
+            }
+        });
+
         // Insert the reportInstanceUserComments records for the selected events
         if (instance.isIncludeUserComments()) {
             String commentSQL = "insert into reportInstanceUserComments " //
@@ -945,93 +947,93 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
         // If the report had undefined start or end times, update them with values from the data.
         if (instance.isFromInception() || instance.isToNow()) {
-        	if(instance.isFromInception()){
-        		if(firstPointTime.get() != Long.MAX_VALUE)
-        			instance.setReportStartTime(firstPointTime.get());
-        	}		
-        	if(instance.isToNow()){
-				instance.setReportEndTime(lastPointTime.get());
-        	}
+            if(instance.isFromInception()){
+                if(firstPointTime.get() != Long.MAX_VALUE)
+                    instance.setReportStartTime(firstPointTime.get());
+            }
+            if(instance.isToNow()){
+                instance.setReportEndTime(lastPointTime.get());
+            }
         }
 
         return count.getCount();
     }
-    
+
     class MappedCallbackCounter {
-    	int count = 0;
-    	public int getCount(){
-    		return count;
-    	}
-    	public void increment(){
-    		this.count++;
-    	}
+        int count = 0;
+        public int getCount(){
+            return count;
+        }
+        public void increment(){
+            this.count++;
+        }
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
-	 */
-	@Override
-	protected String getXidPrefix() {
-		return ReportVO.XID_PREFIX;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
+     */
+    @Override
+    protected String getXidPrefix() {
+        return ReportVO.XID_PREFIX;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
-	 */
-	@Override
-	public ReportVO getNewVo() {
-		return new ReportVO();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
+     */
+    @Override
+    public ReportVO getNewVo() {
+        return new ReportVO();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
-	 */
-	@Override
-	protected String getTableName() {
-		return TABLE_NAME;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
+     */
+    @Override
+    protected String getTableName() {
+        return TABLE_NAME;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(com.serotonin.m2m2.vo.AbstractBasicVO)
-	 */
-	@Override
-	protected Object[] voToObjectArray(ReportVO vo) {
-        return new Object[] { 
-        		vo.getXid(),
-        		vo.getUserId(),
-        		vo.getName(),
-        		SerializationHelper.writeObject(vo) };
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(com.serotonin.m2m2.vo.AbstractBasicVO)
+     */
+    @Override
+    protected Object[] voToObjectArray(ReportVO vo) {
+        return new Object[] {
+                vo.getXid(),
+                vo.getUserId(),
+                vo.getName(),
+                SerializationHelper.writeObject(vo) };
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
-	 */
-	@Override
-	protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
-		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
-		map.put("data", Types.BINARY);
-		map.put("id", Types.INTEGER);
-		map.put("xid", Types.VARCHAR);
-		map.put("userId", Types.INTEGER);
-		map.put("name", Types.VARCHAR);
-		return map;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
+     */
+    @Override
+    protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+        map.put("data", Types.BINARY);
+        map.put("id", Types.INTEGER);
+        map.put("xid", Types.VARCHAR);
+        map.put("userId", Types.INTEGER);
+        map.put("name", Types.VARCHAR);
+        return map;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
-	 */
-	@Override
-	protected Map<String, IntStringPair> getPropertiesMap() {
-		return new HashMap<String, IntStringPair>();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
+     */
+    @Override
+    protected Map<String, IntStringPair> getPropertiesMap() {
+        return new HashMap<String, IntStringPair>();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
-	 */
-	@Override
-	public RowMapper<ReportVO> getRowMapper() {
-		return new ReportRowMapper();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
+     */
+    @Override
+    public RowMapper<ReportVO> getRowMapper() {
+        return new ReportRowMapper();
+    }
 
-    
+
 }

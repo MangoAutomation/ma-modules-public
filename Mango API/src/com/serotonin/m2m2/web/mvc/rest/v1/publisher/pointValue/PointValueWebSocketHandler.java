@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.springframework.security.core.session.SessionDestroyedEvent;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -33,7 +32,7 @@ import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * Event handler for single web socket session to publish events for multiple data points
- * 
+ *
  * @author Terry Packer
  * @author Jared Wiltshire
  */
@@ -74,17 +73,6 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
     }
 
     @Override
-    public void httpSessionDestroyed(SessionDestroyedEvent event) {
-        String httpSession = httpSessionIdForSession(this.session);
-        if (event.getId().equals(httpSession)) {
-            try {
-                closeSession(this.session, NOT_AUTHENTICATED);
-            } catch (Exception e) {
-            }
-        }
-    }
-    
-    @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
 
         try {
@@ -97,26 +85,26 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             // Handle message.getPayload() here
             DataPointVO vo = DataPointDao.instance.getByXid(model.getDataPointXid());
             if (vo == null) {
-                this.sendErrorMessage(session,MangoWebSocketErrorType.SERVER_ERROR, 
+                this.sendErrorMessage(session,MangoWebSocketErrorType.SERVER_ERROR,
                         new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
                 return;
             }
 
             //Check permissions
             if(!Permissions.hasDataPointReadPermission(user, vo)){
-                this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED, 
+                this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
                         new TranslatableMessage("permission.exception.readDataPoint", user.getUsername()));
                 return;
             }
 
             Set<PointValueEventType> eventsTypes = model.getEventTypes();
             int dataPointId = vo.getId();
-            
+
             synchronized(pointIdToListenerMap) {
                 if (this.connectionClosed) {
                     return;
                 }
-                
+
                 PointValueWebSocketListener publisher = pointIdToListenerMap.get(dataPointId);
 
                 if (publisher != null) {
@@ -134,7 +122,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                     pointIdToListenerMap.put(dataPointId, publisher);
                 }
             }
-            
+
         } catch (Exception e) {
             // TODO Mango 3.4 add new exception type for closed session and don't try and send error if it was a closed session exception
             try {
@@ -142,7 +130,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (Exception e1) {
                 log.error(e.getMessage(), e);
             }
-        } 
+        }
         if(log.isDebugEnabled())
             log.debug(message.getPayload());
     }
@@ -191,7 +179,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                     convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
                 }
             }
-            
+
             PointValueTimeModel pvtModel = null;
             if (pvt != null) {
                 pvtModel = new PointValueTimeModel(pvt);
