@@ -323,7 +323,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		}
 		return new ResponseEntity<>(models, HttpStatus.OK);
 	}
-
 	
 	/* (non-Javadoc)
 	 * @see com.infiniteautomation.mango.rest.v2.AbstractMangoVoRestV2Controller#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)

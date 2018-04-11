@@ -151,7 +151,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        	return result.createResponseEntity(model); 
 	        }else{
 	        	String initiatorId = request.getHeader("initiatorId");
-	        	EventHandlerDao.instance.save(vo, initiatorId);
+	        	EventHandlerDao.instance.saveFull(vo, initiatorId);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -195,7 +195,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }else{
 				AbstractEventHandlerVO<?> vo = model.getData();
 	        	String initiatorId = request.getHeader("initiatorId");
-	        	EventHandlerDao.instance.save(vo, initiatorId);
+	        	EventHandlerDao.instance.saveFull(vo, initiatorId);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -228,7 +228,8 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 					return result.createResponseEntity();
 		        }
 		        //All Good Delete It
-		        EventHandlerDao.instance.delete(existing.getId());
+		        String initiatorId = request.getHeader("initiatorId");
+		        EventHandlerDao.instance.delete(existing.getId(), initiatorId);
 				return result.createResponseEntity(existing.asModel());
 			}
 		}
