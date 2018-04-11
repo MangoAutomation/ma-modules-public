@@ -12,6 +12,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 /**
@@ -122,5 +123,13 @@ public class ScheduledEventType extends EventType {
 	@Override
 	public EventTypeModel asModel() {
 		return new ScheduledEventTypeModel(this);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.event.type.EventType#hasPermission(com.serotonin.m2m2.vo.User)
+	 */
+	@Override
+	public boolean hasPermission(User user) {
+	    return user.isAdmin();
 	}
 }
