@@ -11,6 +11,8 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 public class MaintenanceEventType extends EventType {
@@ -107,5 +109,16 @@ public class MaintenanceEventType extends EventType {
 	@Override
 	public EventTypeModel asModel() {
 		return new MaintenanceEventTypeModel(this);
+	}
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.rt.event.type.EventType#hasPermission(com.serotonin.m2m2.vo.User)
+	 */
+	@Override
+	public boolean hasPermission(User user) {
+	    MaintenanceEventVO vo = new MaintenanceEventDao().getMaintenanceEvent(maintenanceId);
+	    if(vo == null)
+	        return false;
+	    else
+	        return Permissions.hasDataSourcePermission(user, vo.getDataSourceId());
 	}
 }
