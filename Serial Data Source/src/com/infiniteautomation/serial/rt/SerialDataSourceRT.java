@@ -284,8 +284,11 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 	            	
 	            	//Setup the timeout task
 	            	//Serial Event so setup a Timeout Task to fire after the message timeout
-	            	if(this.buffer.size() > 0)
+	            	if(this.buffer.size() > 0) {
+	            	    if(this.timeoutTask != null)
+	            	        this.timeoutTask.cancel();
 	            		this.timeoutTask = new TimeoutTask(this.vo.getReadTimeout(), new SerialTimeoutClient(this));
+	            	}
 				}
 	            
 	            
