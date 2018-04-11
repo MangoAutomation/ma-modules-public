@@ -1,5 +1,6 @@
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x
+* Fixed bug with commas inside string values
 
 *Version 3.3.0*
 * Upgraded to work with core version 3.3.x
