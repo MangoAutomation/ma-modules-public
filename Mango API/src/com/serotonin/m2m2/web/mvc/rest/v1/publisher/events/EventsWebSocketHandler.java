@@ -59,11 +59,6 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler {
                 this.connectionClosed = true;
             }
         }
-
-        // Handle closing connection here
-        if (log.isDebugEnabled()) {
-            log.debug("Websocket connection closed, status code: " + status.getCode() + ", reason: " + status.getReason());
-        }
     }
 
     @Override

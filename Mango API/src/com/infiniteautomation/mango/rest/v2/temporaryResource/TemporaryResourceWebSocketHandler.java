@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -33,21 +32,8 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
-        
-        if (log.isDebugEnabled()) {
-            log.debug("Connection established for WebSocketSession " + session.getId());
-        }
 
         session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, new TemporaryResourceSubscription());
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        super.afterConnectionClosed(session, status);
-
-        if (log.isDebugEnabled()) {
-            log.debug("Connection closed for WebSocketSession " + session.getId() + ", status " + status);
-        }
     }
 
     @Override
@@ -62,21 +48,21 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
             this.sendRawMessage(session, new WebSocketResponse<Void>(subscription.getSequenceNumber()));
         }
     }
-    
+
     public void notify(CrudNotificationType type, TemporaryResource<?, ?> resource) {
         Iterator<WebSocketSession> it = sessions.iterator();
         while (it.hasNext()) {
             WebSocketSession session = it.next();
-            
+
             if (!session.isOpen()) {
                 if (log.isWarnEnabled()) {
                     log.warn("Closed session " + session.getId() + " found in list of sessions to notify, removing it");
                 }
-                
+
                 it.remove();
                 continue;
             }
-            
+
             try {
                 notifySession(session, type, resource);
             } catch (IOException e) {
@@ -86,34 +72,34 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
             }
         }
     }
-    
+
     private void notifySession(WebSocketSession session, CrudNotificationType type, TemporaryResource<?, ?> resource) throws JsonProcessingException, IOException {
         User user = this.getUser(session);
         if (user == null) return;
-        
+
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
 
         if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
             Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
             Set<String> resourceTypes = subscription.getResourceTypes();
-            
+
             if ((subscription.isAnyStatus() || statuses.contains(resource.getStatus())) &&
                     (subscription.isAnyResourceType() || resourceTypes.contains(resource.getResourceType()))) {
-                
+
                 WebSocketNotification<TemporaryResource<?, ?>> notificationMessage = new WebSocketNotification<>(type, resource);
                 boolean showResult = !resource.isComplete() && subscription.isShowResultWhenIncomplete() ||
                         resource.isComplete() && subscription.isShowResultWhenComplete();
-                
+
                 if (type == CrudNotificationType.DELETE) {
                     showResult = false;
                 }
-                
+
                 Class<?> view = showResult ? TemporaryResourceViews.ShowResult.class : Object.class;
 
                 if (log.isTraceEnabled()) {
                     log.trace("Notifying session " + session.getId() + " of change to resource " + resource);
                 }
-                
+
                 try {
                     this.sendRawMessageUsingView(session, notificationMessage, view);
                 } catch (Exception e) {
@@ -131,7 +117,7 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
     })
     public static class TemporaryResourceRequest extends WebSocketRequest {
     }
-    
+
     public static class TemporaryResourceSubscription extends TemporaryResourceRequest {
         private boolean ownResourcesOnly = true;
         private boolean showResultWhenIncomplete = false;
@@ -140,7 +126,7 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
         private boolean anyResourceType = false;
         private Set<TemporaryResourceStatus> statuses;
         private Set<String> resourceTypes;
-        
+
         public boolean isOwnResourcesOnly() {
             return ownResourcesOnly;
         }
