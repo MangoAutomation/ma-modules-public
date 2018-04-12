@@ -17,6 +17,7 @@ import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleQueryDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -140,7 +141,7 @@ public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDef
     @Override
     public JsonNode getExplainInfo() {
         Map<String, Object> info = new HashMap<>();
-        info.put("rql", new ParameterInfo("String", true));
+        info.put("rql", new ParameterInfo("String", true, null, new TranslatableMessage("common.default", "RQL query for WatchLists to return events for")));
         return JsonNodeFactory.instance.pojoNode(info);
     }
 }

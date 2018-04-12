@@ -128,9 +128,9 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
     @Override
     public JsonNode getExplainInfo() {
         Map<String, Object> info = new HashMap<>();
-        info.put("watchListXid", new ParameterInfo("String", false));
-        info.put("limit", new ParameterInfo("Number", false));
-        info.put("offset", new ParameterInfo("Number", false));
+        info.put("watchListXid", new ParameterInfo("String", true, null, new TranslatableMessage("common.default", "XID of watchlist")));
+        info.put("limit", new ParameterInfo("Number", false, null, new TranslatableMessage("common.default", "Limit of data points to return events for")));
+        info.put("offset", new ParameterInfo("Number", false, null, new TranslatableMessage("common.default", "Offset of limit")));
         return JsonNodeFactory.instance.pojoNode(info);
     }
 }
