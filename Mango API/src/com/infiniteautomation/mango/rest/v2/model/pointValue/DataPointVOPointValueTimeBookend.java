@@ -123,4 +123,12 @@ public class DataPointVOPointValueTimeBookend implements DataPointValueTime {
             return 1;
         return 0;
     }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return vo.getXid() + " - " + pvt.toString();
+    }
 }
