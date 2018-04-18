@@ -63,6 +63,8 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AngularJSModuleDefinition;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.rt.maint.work.BackupWorkItem;
+import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -482,9 +484,14 @@ public class ModulesRestController extends MangoRestController {
     notes = "The bundle can be downloaded from the Mango Store")
     @RequestMapping(method = RequestMethod.POST, value = "/upload-upgrades")
     public void uploadUpgrades(
-            @ApiParam(value = "Restart after upload completes", required = false,
-            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
-            defaultValue = "false") boolean restart,
+            @ApiParam(value = "Perform Backup first", required = false, defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean backup,
+
+            @ApiParam(value = "Restart after upload completes", required = false, defaultValue = "false", allowMultiple = false) 
+            @RequestParam(required = false, defaultValue = "false") 
+            boolean restart,
+            
             MultipartHttpServletRequest multipartRequest) throws IOException {
 
         synchronized (UPLOAD_UPGRADE_LOCK){
@@ -496,6 +503,17 @@ public class ModulesRestController extends MangoRestController {
         }
 
         try {
+            
+            if (backup) {
+                // Do the backups. They run async, so this returns immediately. The shutdown will
+                // wait for the
+                // background processes to finish though.
+                BackupWorkItem.queueBackup(
+                        SystemSettingsDao.getValue(SystemSettingsDao.BACKUP_FILE_LOCATION));
+                DatabaseBackupWorkItem.queueBackup(SystemSettingsDao
+                        .getValue(SystemSettingsDao.DATABASE_BACKUP_FILE_LOCATION));
+            }
+            
             List<MultipartFile> files = new ArrayList<>();
             MultiValueMap<String, MultipartFile> filemap = multipartRequest.getMultiFileMap();
             for (String nameField : filemap.keySet()) {
@@ -580,9 +598,10 @@ public class ModulesRestController extends MangoRestController {
                         }
                     }else {
                         //if its a module move it to the modules folder
-                        if(potentialUpgrade.startsWith(ModuleUtils.Constants.MODULE_PREFIX)) {
+                        if(isModule(file)) {
                             //Its extra work but we better check that it is a module from the store:
-                            didUpgrade = maybeCopyModule(file);
+                            Files.move(file, new File(moduleDir, file.getName()));
+                            didUpgrade = true;
                         }else {
                             //Is this a zip of modules?
                             try(FileInputStream fis = new FileInputStream(file)){
@@ -595,7 +614,10 @@ public class ModulesRestController extends MangoRestController {
                                             try(FileOutputStream fos = new FileOutputStream(newModule)){
                                                 org.springframework.util.StreamUtils.copy(is, fos);
                                             }
-                                            didUpgrade = maybeCopyModule(newModule);
+                                            if(isModule(newModule)) {
+                                                Files.move(newModule, new File(moduleDir, newModule.getName()));
+                                                didUpgrade = true;
+                                            }
                                         }
                                     }
                                 }
@@ -622,25 +644,18 @@ public class ModulesRestController extends MangoRestController {
             ModulesDwr.scheduleRestart();
     }
 
-    private boolean maybeCopyModule(File file) throws FileNotFoundException, IOException {
-        boolean isModule = false;
+    private boolean isModule(File file) throws FileNotFoundException, IOException {
         try(FileInputStream fis = new FileInputStream(file)){
             try (ZipInputStream is = new ZipInputStream(fis)) {
                 ZipEntry entry;
                 while((entry  = is.getNextEntry()) != null) {
                     if(entry.getName().equals(ModuleUtils.Constants.MODULE_SIGNED)) {
-                        isModule = true;
-                        break;
+                        return true;
                     }
                 }
             }
         }
-        if(isModule) {
-            //Module so move it to web/modules
-            Files.move(file, new File(moduleDir, file.getName()));
-            return true;
-        }else
-            return false;
+        return false;
     }
 
     /**
