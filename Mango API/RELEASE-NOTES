@@ -6,6 +6,7 @@
 * Adding /v1/events/explain-module-defined-queries to explain all defined queries
 * Fixing /v1/logging/by-filename/{filename} Query to match new log file format
 * Adding StartsAndRuntime data to All Rollup for Multistate points
+* Adding ability to use DEFAULT rollups on /v2/point-values rollup endpoints even when the default rollup is NONE
 
 *Version 3.3.8*
 * Added 'reliquish' endpoint to reliquish the value of BACnet data points /v1/runtime-manager/relinquish/{xid}
