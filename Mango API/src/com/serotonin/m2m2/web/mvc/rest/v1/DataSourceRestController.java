@@ -339,6 +339,8 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             @RequestParam(required=false, defaultValue="null") String copyXid,
             @ApiParam(value = "Copy's name", required = false, defaultValue="null", allowMultiple = false)
             @RequestParam(required=false, defaultValue="null") String copyName,
+            @ApiParam(value = "Device name for copied points name", required = false, allowMultiple = false)
+            @RequestParam(required=false) String copyDeviceName,
             @ApiParam(value = "Enable/disabled state", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean enabled,
     		UriComponentsBuilder builder, 
@@ -396,7 +398,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        
 	        if(model.validate()){
 	        	Common.runtimeManager.saveDataSource(copy);
-	        	this.dao.copyDataSourcePoints(existing.getId(), copy.getId());
+	        	this.dao.copyDataSourcePoints(existing.getId(), copy.getId(), copyDeviceName);
 	        }else{
 	            result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
