@@ -39,13 +39,15 @@ public class GraphicalViewsSchemaDefinition extends DatabaseSchemaDefinition {
     }
 
     @Override
-    public void uninstall() {
-        // Remove the database tables.
-        String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
-        Common.databaseProxy.runScriptFile(path, null);
-
-        // Remove the background image upload directory.
-        DirectoryUtils.deleteDirectory(new File(ImageUploadServletDefinition.UPLOAD_DIR));
+    public void postRuntimeManagerTerminate(boolean uninstall) {
+        if(uninstall) {
+            // Remove the database tables.
+            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
+            Common.databaseProxy.runScriptFile(path, null);
+    
+            // Remove the background image upload directory.
+            DirectoryUtils.deleteDirectory(new File(ImageUploadServletDefinition.UPLOAD_DIR));
+        }
     }
 
     @Override

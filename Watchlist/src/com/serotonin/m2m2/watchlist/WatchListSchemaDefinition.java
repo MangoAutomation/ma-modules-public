@@ -37,8 +37,10 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
     }
 
     @Override
-    public void uninstall() {
-        String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
-        Common.databaseProxy.runScriptFile(path, null);
+    public void postRuntimeManagerTerminate(boolean uninstall) {
+        if(uninstall) {
+            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
+            Common.databaseProxy.runScriptFile(path, null);
+        }
     }
 }

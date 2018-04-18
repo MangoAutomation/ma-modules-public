@@ -14,9 +14,8 @@ import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.Common.TimePeriods;
-import com.serotonin.m2m2.IMangoLifecycle;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
@@ -40,7 +39,6 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
-import com.serotonin.provider.Providers;
 
 public class InternalMenuItem extends MenuItemDefinition {
 	
@@ -71,46 +69,14 @@ public class InternalMenuItem extends MenuItemDefinition {
         return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
     }
     
-    /*
-     * (non-Javadoc)
-     * @see com.serotonin.m2m2.module.ModuleElementDefinition#postDatabase(boolean, boolean)
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.ModuleElementDefinition#postInitialize(boolean, boolean)
      */
     @Override
-    public void postDatabase(boolean install, boolean upgrade) {
-        if(install)
-            install();
-        else if(upgrade)
-            upgrade();
-    }
-
-    public void install() {
+    public void postInitialize(boolean install, boolean upgrade) {
         File safeFile = new File(Common.MA_HOME, "SAFE");
         final boolean safe = (safeFile.exists() && safeFile.isFile());
-        Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    maybeInstallSystemMonitor(safe);
-                } catch (Exception e) {
-                    LOG.error(e.getMessage(), e);
-                }
-            }
-        });
-    }
-
-    public void upgrade() {
-        File safeFile = new File(Common.MA_HOME, "SAFE");
-        final boolean safe = (safeFile.exists() && safeFile.isFile());
-        Providers.get(IMangoLifecycle.class).addStartupTask(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    maybeInstallSystemMonitor(safe);
-                } catch (Exception e) {
-                    LOG.error(e.getMessage(), e);
-                }
-            }
-        });
+        maybeInstallSystemMonitor(safe);
     }
 
     //Module Monitor IDs
