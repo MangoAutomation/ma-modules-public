@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.time;
 
+import com.serotonin.m2m2.Common;
 import com.serotonin.ShouldNeverHappenException;
 
 /**
@@ -13,20 +14,20 @@ import com.serotonin.ShouldNeverHappenException;
 public enum RollupEnum {
 
 	
-	NONE(true, 0),
-	AVERAGE(false, 1),
-	DELTA(false, 2),
-	MINIMUM(false, 3), 
-	MAXIMUM(false, 4),
-    ACCUMULATOR(false, 5),
-	SUM(false, 6), 
-	FIRST(true, 7), 
-	LAST(true, 8), 
-	COUNT(true, 9),
-	INTEGRAL(false, 10),
+	NONE(true, Common.Rollups.NONE),
+	AVERAGE(false, Common.Rollups.AVERAGE),
+	DELTA(false, Common.Rollups.DELTA),
+	MINIMUM(false, Common.Rollups.MINIMUM), 
+	MAXIMUM(false, Common.Rollups.MAXIMUM),
+    ACCUMULATOR(false, Common.Rollups.ACCUMULATOR),
+	SUM(false, Common.Rollups.SUM), 
+	FIRST(true, Common.Rollups.FIRST), 
+	LAST(true, Common.Rollups.LAST), 
+	COUNT(true, Common.Rollups.COUNT),
+	INTEGRAL(false, Common.Rollups.INTEGRAL),
 	FFT(false, -1),
-	ALL(true, 11),
-    START(true, 12),
+	ALL(true, Common.Rollups.ALL),
+    START(true, Common.Rollups.START),
     POINT_DEFAULT(true, -2);
 
 	private boolean nonNumericSupport; //Does this rollup support Non-Numeric point values
