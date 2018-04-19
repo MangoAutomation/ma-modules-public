@@ -61,7 +61,6 @@ public class WatchListDwr extends ModuleDwr {
         ph.parseEmptyFolders();
 
         WatchListVO watchList = WatchListDao.instance.getSelectedWatchList(user.getId());
-        prepareWatchList(watchList, user);
         setWatchList(user, watchList);
 
         data.put("pointFolder", ph.getRoot());
@@ -161,8 +160,6 @@ public class WatchListDwr extends ModuleDwr {
 
         WatchListVO watchList = WatchListDao.instance.get(watchListId);
         WatchListCommon.ensureWatchListPermission(user, watchList);
-        prepareWatchList(watchList, user);
-
         WatchListDao.instance.saveSelectedWatchList(user.getId(), watchList.getId());
 
         Map<String, Object> data = getWatchListData(user, watchList);
@@ -189,7 +186,6 @@ public class WatchListDwr extends ModuleDwr {
         // Add it to the watch list.
         watchList.getPointList().add(point);
         WatchListDao.instance.saveWatchList(watchList);
-        updateSetPermission(point, user);
 
         // Return the watch list state for it.
         return createWatchListState(request, point, Common.runtimeManager, new HashMap<String, Object>(), user);
@@ -271,7 +267,7 @@ public class WatchListDwr extends ModuleDwr {
         else
             setPrettyText(state, pointVO, model, pointValue);
 
-        if (pointVO.isSettable())
+        if (isSettable(pointVO, user))
             setChange(pointVO, state, point, request, model, user);
 
         if (state.getValue() != null)
@@ -372,30 +368,13 @@ public class WatchListDwr extends ModuleDwr {
         return data;
     }
 
-    private void prepareWatchList(WatchListVO watchList, User user) {
-        for (DataPointVO point : watchList.getPointList())
-            updateSetPermission(point, user);
-    }
-
-    private void updateSetPermission(DataPointVO point, User user) {
-        // Point isn't settable
+    private boolean isSettable(DataPointVO point, User user) {
         if (!point.getPointLocator().isSettable())
-            return;
-
-        //        // Read-only access
-        //        if (access != ShareUser.ACCESS_OWNER && access != ShareUser.ACCESS_SET)
-        //            return;
-        //
-        //        // Watch list owner doesn't have set permission
-        //        if (!Permissions.hasDataPointSetPermission(owner, point))
-        //            return;
-
+            return false;
         // User doesn't have set permission
         if (!Permissions.hasDataPointSetPermission(user, point))
-            return;
-
-        // All good.
-        point.setSettable(true);
+            return false;
+        return true;
     }
 
     private static void setPrettyText(WatchListState state, DataPointVO pointVO, Map<String, Object> model,

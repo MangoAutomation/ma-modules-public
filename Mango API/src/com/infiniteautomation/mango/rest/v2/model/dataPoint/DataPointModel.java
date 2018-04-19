@@ -225,7 +225,6 @@ public class DataPointModel {
         }
         if (pointLocator != null) {
             point.setPointLocator((PointLocatorVO<?>) pointLocator.getData());
-            point.setSettable(pointLocator.isSettable());
         }
         
         // template XID is allowed to be null, if it is then clear the template properties on the point
