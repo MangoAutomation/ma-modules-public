@@ -28,6 +28,7 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
@@ -123,24 +124,23 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 }
             }
 
+        } catch (WebSocketSendException e) {
+            log.warn("Error sending websocket message", e);
         } catch (Exception e) {
-            // TODO Mango 3.4 add new exception type for closed session and don't try and send error if it was a closed session exception
             try {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR, new TranslatableMessage("rest.error.serverError", e.getMessage()));
             } catch (Exception e1) {
-                log.error(e.getMessage(), e);
+                log.error(e);
             }
         }
-        if(log.isDebugEnabled())
+
+        if(log.isDebugEnabled()) {
             log.debug(message.getPayload());
+        }
     }
 
     protected void sendMessage(Object payload) throws JsonProcessingException, Exception {
-        // not uncommon that the connection is closed and listener terminated but notification still received
-        // especially on logout
-        if (session.isOpen()) {
-            super.sendMessage(session, payload);
-        }
+        super.sendMessage(session, payload);
     }
 
     /**
@@ -201,6 +201,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
 
                 rt = Common.runtimeManager.getDataPoint(vo.getId()); //Set us up
                 sendNotification(PointValueEventType.REGISTERED, null);
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -218,6 +220,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.INITIALIZE)) {
                     sendNotification(PointValueEventType.INITIALIZE, null);
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -233,6 +237,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.UPDATE)) {
                     sendNotification(PointValueEventType.UPDATE, newValue);
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -248,6 +254,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.CHANGE)) {
                     sendNotification(PointValueEventType.CHANGE, newValue);
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -263,6 +271,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.SET)) {
                     sendNotification(PointValueEventType.SET, newValue);
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -278,6 +288,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.BACKDATE)) {
                     sendNotification(PointValueEventType.SET, value);
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -293,8 +305,10 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.ATTRIBUTE_CHANGE)) {
                     sendMessage(new PointValueEventModel(vo.getXid(), true, attributes, PointValueEventType.ATTRIBUTE_CHANGE, null, null, null));
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e.getMessage(),e);
+                log.error(e);
             }
         }
 
@@ -310,6 +324,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (this.eventTypes.contains(PointValueEventType.TERMINATE)){
                     sendMessage(new PointValueEventModel(vo.getXid(), false, null, PointValueEventType.TERMINATE, null, null, null));
                 }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
             } catch (Exception e) {
                 log.error(e);
             }

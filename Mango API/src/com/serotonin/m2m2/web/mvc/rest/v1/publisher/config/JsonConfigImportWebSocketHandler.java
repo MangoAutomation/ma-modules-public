@@ -11,7 +11,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
 import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.WebSocketClosedException;
+import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
 
 public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandler {
 
@@ -75,8 +75,8 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
     protected void notify(WebSocketSession session, ImportStatusProvider model) {
         try {
             sendMessage(session, model);
-        } catch(WebSocketClosedException e) {
-            log.warn("Tried to notify closed websocket session", e);
+        } catch(WebSocketSendException e) {
+            log.warn("Error notifying websocket session", e);
         } catch (Exception e) {
             try {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
