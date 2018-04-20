@@ -64,11 +64,11 @@ import net.jazdw.rql.parser.ASTNode;
 public class DataPointTagsRestController extends BaseMangoRestController {
 
     private static final String RESOURCE_TYPE_BULK_DATA_POINT_TAGS = "BULK_DATA_POINT_TAGS";
-    
+
     public static enum BulkTagAction {
         GET, SET, MERGE
     }
-    
+
     public static class TagIndividualRequest extends IndividualRequest<BulkTagAction, Map<String, String>> {
         String xid;
 
@@ -80,7 +80,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             this.xid = xid;
         }
     }
-    
+
     public static class TagIndividualResponse extends RestExceptionIndividualResponse<BulkTagAction, Map<String, String>> {
         String xid;
 
@@ -95,7 +95,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
     public static class TagBulkRequest extends BulkRequest<BulkTagAction, Map<String, String>, TagIndividualRequest> {
     }
-    
+
     public static class TagBulkResponse extends BulkResponse<TagIndividualResponse> {
     }
 
@@ -106,24 +106,24 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(this.websocket);
     }
-    
+
     @ApiOperation(value = "Get data point tags by data point XID", notes = "User must have read permission for the data point")
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
     public Map<String, String> getTagsForDataPoint(
             @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            
+
             @AuthenticationPrincipal User user) {
-        
+
         DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
         Permissions.ensureDataPointReadPermission(user, dataPoint);
-        
+
         Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
         dataPoint.setTags(tags);
-        
+
         // we set the tags on the data point then retrieve them so that the device and name tags are removed
         return dataPoint.getTags();
     }
@@ -133,10 +133,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public Map<String, String> setTagsForDataPoint(
             @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            
+
             @RequestBody
             Map<String, String> tags,
-            
+
             @AuthenticationPrincipal
             User user) {
 
@@ -146,10 +146,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                 throw new NotFoundRestException();
             }
             Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
-            
+
             dataPoint.setTags(tags);
             DataPointTagsDao.instance.saveDataPointTags(dataPoint);
-            
+
             return dataPoint.getTags();
         });
     }
@@ -160,10 +160,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public Map<String, String> addTagsForDataPoint(
             @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            
+
             @RequestBody
             Map<String, String> tags,
-            
+
             @AuthenticationPrincipal
             User user) {
 
@@ -173,21 +173,21 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                 throw new NotFoundRestException();
             }
             Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
-            
+
             Map<String, String> existingTags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
-            
+
             Map<String, String> newTags = new HashMap<>(existingTags);
             for (Entry<String, String> entry : tags.entrySet()) {
                 String tagKey = entry.getKey();
                 String tagVal = entry.getValue();
-                
+
                 if (tagVal == null) {
                     newTags.remove(tagKey);
                 } else {
                     newTags.put(tagKey, tagVal);
                 }
             }
-            
+
             dataPoint.setTags(newTags);
             DataPointTagsDao.instance.saveDataPointTags(dataPoint);
 
@@ -195,10 +195,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             return dataPoint.getTags();
         });
     }
-    
+
     private TagIndividualResponse doIndividualRequest(TagIndividualRequest request, BulkTagAction defaultAction, Map<String, String> defaultBody, User user) {
         TagIndividualResponse result = new TagIndividualResponse();
-        
+
         try {
             String xid = request.getXid();
             if (xid == null) {
@@ -211,7 +211,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                 throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "action"));
             }
             result.setAction(action);
-            
+
             Map<String, String> tags = request.getBody() == null ? defaultBody : request.getBody();
 
             switch (action) {
@@ -234,23 +234,23 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         } catch (Exception e) {
             result.exceptionCaught(e);
         }
-        
+
         return result;
     }
-    
+
     @ApiOperation(value = "Synchronously bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk-sync")
     public TagBulkResponse bulkDataPointTagOperationSync(
             @RequestBody
             TagBulkRequest requestBody,
-            
+
             @AuthenticationPrincipal
             User user) {
 
         BulkTagAction defaultAction = requestBody.getAction();
         Map<String, String> defaultBody = requestBody.getBody();
         List<TagIndividualRequest> requests = requestBody.getRequests();
-        
+
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
@@ -269,10 +269,10 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
             @RequestBody
             TagBulkRequest requestBody,
-            
+
             @AuthenticationPrincipal
             User user,
-            
+
             UriComponentsBuilder builder) {
 
         BulkTagAction defaultAction = requestBody.getAction();
@@ -282,25 +282,25 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
-        
+
         String resourceId = requestBody.getId();
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
-        
+
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody =
-                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource) -> {
-            TagBulkResponse bulkResponse = new TagBulkResponse();
-            
-            int i = 0;
-            resource.progress(bulkResponse, i++, requests.size());
+                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource, taskUser) -> {
+                    TagBulkResponse bulkResponse = new TagBulkResponse();
 
-            for (TagIndividualRequest request : requests) {
-                TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
-                bulkResponse.addResponse(individualResponse);
+                    int i = 0;
+                    resource.progress(bulkResponse, i++, requests.size());
 
-                resource.progressOrSuccess(bulkResponse, i++, requests.size());
-            }
-        });
+                    for (TagIndividualRequest request : requests) {
+                        TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, taskUser);
+                        bulkResponse.addResponse(individualResponse);
+
+                        resource.progressOrSuccess(bulkResponse, i++, requests.size());
+                    }
+                });
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/v2/data-point-tags/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
@@ -312,76 +312,76 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public MappingJacksonValue getBulkDataPointTagOperations(
             @AuthenticationPrincipal
             User user,
-            
+
             HttpServletRequest request) {
-        
+
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
                 .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
-        
+
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> results = preFiltered;
         ASTNode query = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(), preFiltered);
         }
-        
+
         PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> result = new PageQueryResultModel<>(results, preFiltered.size());
-        
+
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(result);
         resultWithView.setSerializationView(Object.class);
         return resultWithView;
     }
-    
+
     @ApiOperation(value = "Update a bulk tag operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
     public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> updateBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
-            
+
             @RequestBody
             TemporaryResourceStatusUpdate body,
-            
+
             @AuthenticationPrincipal
             User user) {
-        
+
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
-        
+
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
             resource.cancel();
         } else {
             throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
         }
-        
+
         return resource;
     }
-    
+
     @ApiOperation(value = "Get the status of a bulk tag operation using its id", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
     public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
-            
+
             @AuthenticationPrincipal
             User user) {
-        
+
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
-        
+
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         return resource;
     }
-    
+
     @ApiOperation(value = "Remove a bulk tag operation using its id",
             notes = "Will only remove a bulk operation if it is complete. " +
-                    "User can only remove their own bulk tag operations unless they are an admin.")
+            "User can only remove their own bulk tag operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
     public void removeBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
@@ -389,13 +389,13 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
             @AuthenticationPrincipal
             User user) {
-        
+
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
-        
+
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         resource.remove();
     }
 
@@ -416,17 +416,17 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public Set<String> getTagValuesForKey(
             @ApiParam(value = "Tag key", required = true, allowMultiple = false)
             @PathVariable String tagKey,
-            
+
             @AuthenticationPrincipal User user,
-            
+
             HttpServletRequest request) {
 
         String queryString = request.getQueryString();
-        
+
         if (queryString == null || queryString.isEmpty()) {
             return DataPointTagsDao.instance.getTagValuesForKey(tagKey, user);
         }
-        
+
         ASTNode rql = parseRQLtoAST(queryString);
         return DataPointTagsDao.instance.getTagValuesForKey(tagKey, rql, user);
     }

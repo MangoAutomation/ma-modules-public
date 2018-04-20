@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.infiniteautomation.mango.rest.v2.util.ExceptionMapper;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.exception.NotFoundException;
 
 /**
@@ -21,15 +22,15 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
      * Default time before the resource is removed after completion
      */
     public static final long DEFAULT_EXPIRATION_MILLISECONDS = 300000; // 5 minutes
-    
+
     /**
      * Default time that the task is allowed to run for before it is cancelled
      */
     public static final long DEFAULT_TIMEOUT_MILLISECONDS = 600000; // 10 minutes
-    
+
     @FunctionalInterface
     public static interface ResourceTask<T, E> {
-        void run(TemporaryResource<T, E> resource) throws Exception;
+        void run(TemporaryResource<T, E> resource, User user) throws Exception;
     }
 
     private final ConcurrentMap<String, TemporaryResource<T, E>> resources;
@@ -45,11 +46,11 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
 
     /**
      * Creates a new temporary resource, how the task is executed depends on the manager implementation.
-     * 
+     *
      * @param resourceType unique type string assigned to each resource type e.g. BULK_DATA_POINT
      * @param id if null will be assigned a UUID
      * @param userId the user that started the temporary resource
-     * @param expiration time after the resource completes that it will be removed (milliseconds). If null or less than zero, it will be set to the default DEFAULT_EXPIRATION_MILLISECONDS 
+     * @param expiration time after the resource completes that it will be removed (milliseconds). If null or less than zero, it will be set to the default DEFAULT_EXPIRATION_MILLISECONDS
      * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds). If null or less than zero, it will be set to the default DEFAULT_TIMEOUT_MILLISECONDS
      * @param task the task to be run
      * @return
@@ -61,7 +62,7 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
         if (timeout == null || timeout < 0) {
             timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         }
-        
+
         TemporaryResource<T, E> resource = new TemporaryResource<T, E>(resourceType, id, userId, expiration, timeout, task, this);
         synchronized (resource) {
             this.add(resource);
@@ -76,7 +77,7 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
     public final List<TemporaryResource<T, E>> list() {
         return new ArrayList<>(this.resources.values());
     }
-    
+
     /**
      * Get a resource from the map of resources using its id
      * @param id
@@ -99,10 +100,10 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
         if (existing != null) {
             throw new RuntimeException("Resource id collision");
         }
-        
+
         this.resourceAdded(resource);
     }
-    
+
     /**
      * Removes the resource from the map of resources.
      * @param resource

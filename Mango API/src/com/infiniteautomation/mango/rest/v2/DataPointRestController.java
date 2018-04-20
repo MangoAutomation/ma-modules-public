@@ -75,16 +75,16 @@ public class DataPointRestController extends BaseMangoRestController {
 
     private static Log LOG = LogFactory.getLog(DataPointRestController.class);
     private static final String RESOURCE_TYPE_BULK_DATA_POINT = "BULK_DATA_POINT";
-    
+
     public static class DataPointIndividualRequest extends VoIndividualRequest<DataPointModel> {
     }
-    
+
     public static class DataPointIndividualResponse extends VoIndividualResponse<DataPointModel> {
     }
 
     public static class DataPointBulkRequest extends BulkRequest<VoAction, DataPointModel, DataPointIndividualRequest> {
     }
-    
+
     public static class DataPointBulkResponse extends BulkResponse<DataPointIndividualResponse> {
     }
 
@@ -93,7 +93,7 @@ public class DataPointRestController extends BaseMangoRestController {
 
     public DataPointRestController() {
         LOG.info("Creating Data Point v2 Rest Controller.");
-        
+
         this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(this.websocket);
     }
@@ -190,7 +190,7 @@ public class DataPointRestController extends BaseMangoRestController {
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
-            HttpServletRequest request, 
+            HttpServletRequest request,
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = parseRQLtoAST(request.getQueryString());
@@ -240,9 +240,9 @@ public class DataPointRestController extends BaseMangoRestController {
         if (template != null) {
             dataPoint.withTemplate(template);
         }
-        
+
         dataPoint.ensureValid();
-        
+
         // have to load any existing event detectors for the data point as we are about to replace the VO in the runtime manager
         DataPointDao.instance.setEventDetectors(dataPoint);
         Common.runtimeManager.saveDataPoint(dataPoint);
@@ -253,7 +253,7 @@ public class DataPointRestController extends BaseMangoRestController {
 
         return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(value = "Create a new data point")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<DataPointModel> createDataPoint(
@@ -280,7 +280,7 @@ public class DataPointRestController extends BaseMangoRestController {
             }
             dataPoint.withTemplate(template);
         }
-        
+
         dataPoint.ensureValid();
         Common.runtimeManager.saveDataPoint(dataPoint);
 
@@ -290,7 +290,7 @@ public class DataPointRestController extends BaseMangoRestController {
 
         return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.CREATED);
     }
-    
+
     @ApiOperation(value = "Delete a data point")
     @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public DataPointModel deleteDataPoint(
@@ -302,9 +302,9 @@ public class DataPointRestController extends BaseMangoRestController {
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
-        
+
         Permissions.ensureDataPointReadPermission(user, dataPoint);
-        
+
         Common.runtimeManager.deleteDataPoint(dataPoint);
         return new DataPointModel(dataPoint);
     }
@@ -314,10 +314,10 @@ public class DataPointRestController extends BaseMangoRestController {
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperation(
             @RequestBody
             DataPointBulkRequest requestBody,
-            
+
             @AuthenticationPrincipal
             User user,
-            
+
             UriComponentsBuilder builder) {
 
         VoAction defaultAction = requestBody.getAction();
@@ -327,32 +327,33 @@ public class DataPointRestController extends BaseMangoRestController {
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
         }
-        
+
         String resourceId = requestBody.getId();
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
 
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody =
-                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource) -> {
-            DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
-            int i = 0;
-            
-            resource.progress(bulkResponse, i++, requests.size());
+        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
+                RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource, taskUser) -> {
 
-            for (DataPointIndividualRequest request : requests) {
-                UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
-                DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user, reqBuilder);
-                bulkResponse.addResponse(individualResponse);
+                    DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
+                    int i = 0;
 
-                resource.progressOrSuccess(bulkResponse, i++, requests.size());
-            }
-        });
+                    resource.progress(bulkResponse, i++, requests.size());
+
+                    for (DataPointIndividualRequest request : requests) {
+                        UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
+                        DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, taskUser, reqBuilder);
+                        bulkResponse.addResponse(individualResponse);
+
+                        resource.progressOrSuccess(bulkResponse, i++, requests.size());
+                    }
+                });
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/v2/data-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
-    
+
     @ApiOperation(
             value = "Get a list of current bulk data point operations",
             notes = "User can only get their own bulk data point operations unless they are an admin")
@@ -360,78 +361,78 @@ public class DataPointRestController extends BaseMangoRestController {
     public MappingJacksonValue getBulkDataPointOperations(
             @AuthenticationPrincipal
             User user,
-            
+
             HttpServletRequest request) {
-        
+
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> preFiltered =
                 this.bulkResourceManager.list().stream()
-                        .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
-                        .collect(Collectors.toList());
-        
+                .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
+                .collect(Collectors.toList());
+
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> results = preFiltered;
         ASTNode query = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(), preFiltered);
         }
-        
+
         PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> result =
                 new PageQueryResultModel<>(results, preFiltered.size());
-        
+
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(result);
         resultWithView.setSerializationView(Object.class);
         return resultWithView;
     }
-    
+
     @ApiOperation(value = "Update a bulk data point operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
     public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> updateBulkDataPointOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
-            
+
             @RequestBody
             TemporaryResourceStatusUpdate body,
-            
+
             @AuthenticationPrincipal
             User user) {
-        
+
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
-        
+
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
             resource.cancel();
         } else {
             throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
         }
-        
+
         return resource;
     }
-    
+
     @ApiOperation(value = "Get the status of a bulk data point operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
     public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
-            
+
             @AuthenticationPrincipal
             User user) {
-        
+
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
-        
+
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         return resource;
     }
 
     @ApiOperation(value = "Remove a bulk data point operation using its id",
             notes = "Will only remove a bulk operation if it is complete. " +
-                    "User can only remove their own bulk operations unless they are an admin.")
+            "User can only remove their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
     public void removeBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
@@ -439,28 +440,28 @@ public class DataPointRestController extends BaseMangoRestController {
 
             @AuthenticationPrincipal
             User user) {
-        
+
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
-        
+
         if (!user.isAdmin() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         resource.remove();
     }
-    
+
     private DataPointIndividualResponse doIndividualRequest(DataPointIndividualRequest request, VoAction defaultAction, DataPointModel defaultBody, User user, UriComponentsBuilder builder) {
         DataPointIndividualResponse result = new DataPointIndividualResponse();
-        
+
         try {
             String xid = request.getXid();
-            
+
             VoAction action = request.getAction() == null ? defaultAction : request.getAction();
             if (action == null) {
                 throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "action"));
             }
             result.setAction(action);
-            
+
             DataPointModel body = request.getBody() == null ? defaultBody : request.getBody();
 
             switch (action) {
@@ -495,7 +496,7 @@ public class DataPointRestController extends BaseMangoRestController {
         } catch (Exception e) {
             result.exceptionCaught(e);
         }
-        
+
         return result;
     }
 
