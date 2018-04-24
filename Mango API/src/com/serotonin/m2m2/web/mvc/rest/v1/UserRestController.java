@@ -212,10 +212,16 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 }else{
                     User newUser = model.getData();
                     newUser.setId(u.getId());
-                    if (!StringUtils.isBlank(model.getData().getPassword()))
-                        newUser.setPassword(Common.encrypt(model.getData().getPassword()));
-                    else
+
+                    String newPassword = newUser.getPassword();
+                    if (!StringUtils.isBlank(newPassword)) {
+                        // check if an algorithm was specified, if not assume it was plain text and hash it
+                        newUser.checkPasswordAlgorithm("PLAINTEXT");
+                    } else {
+                        // just use the old password
                         newUser.setPassword(u.getPassword());
+                    }
+
                     UserDao.instance.saveUser(newUser);
                     sessionRegistry.userUpdated(request, newUser);
                 }
