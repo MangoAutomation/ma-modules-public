@@ -306,16 +306,16 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         	 codes.add("mbusTcpIp");
         	 throw new TranslatableJsonException("emport.error.missing", "connectionType", codes);
          }else{
-    		 int bitPerSecond = jsonObject.getInt("bitPerSecond");
-    		 int responseTimeoutOffset = jsonObject.getInt("responseTimeoutOffset");
+    		 int bitPerSecond = getInt(jsonObject, "bitPerSecond", "emport.error.missingValue");
+    		 int responseTimeoutOffset = getInt(jsonObject, "responseTimeoutOffset", "emport.error.missingValue");
         	 switch(s){
         	 case "mbusSerial":
-        		 String portName = jsonObject.getString("portName");
+        		 String portName = getString(jsonObject, "portName", "emport.error.missingValue");
         		 connection = new SerialPortConnection(portName, bitPerSecond, responseTimeoutOffset);
         		 break;
         	 case "mbusTcpIp":
-        		 String host = jsonObject.getString("host");
-        		 int port = jsonObject.getInt("port");
+        		 String host = getString(jsonObject, "host", "emport.error.missingValue");
+        		 int port = getInt(jsonObject, "port", "emport.error.missingValue");
         		 connection = new TcpIpConnection(host, port, bitPerSecond, responseTimeoutOffset);
         		 break;
         	 }

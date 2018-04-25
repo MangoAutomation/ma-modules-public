@@ -18,6 +18,7 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonArray;
+import com.serotonin.json.type.JsonNumber;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.DataTypes;
@@ -187,15 +188,15 @@ public class MultistateGraphicComponent extends ImageSetComponent {
 
             for (JsonValue jv : jsonStateList) {
                 JsonObject jsonMapping = jv.toJsonObject();
-                Integer state = jsonMapping.getInt("state");
+                JsonNumber state = jsonMapping.getJsonNumber("state");
                 if (state == null)
                     throw new TranslatableJsonException("emport.error.missingValue", "state");
 
-                Integer index = jsonMapping.getInt("imageIndex");
+                JsonNumber index = jsonMapping.getJsonNumber("imageIndex");
                 if (index == null)
                     throw new TranslatableJsonException("emport.error.missingValue", "index");
 
-                stateImageMap.put(state, index);
+                stateImageMap.put(state.intValue(), index.intValue());
             }
         }
     }
