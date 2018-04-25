@@ -54,6 +54,7 @@ import com.serotonin.util.SerializationHelper;
 public class ReportVO extends AbstractVO<ReportVO> implements Serializable, JsonSerializable {
 	
 	public static final String XID_PREFIX = "REPORT_";
+	private static final String MISSING_PROP_TRANSLATION_KEY = "reports.emport.point.missingAttr"; 
 	
     public static final int DATE_RANGE_TYPE_RELATIVE = 1;
     public static final int DATE_RANGE_TYPE_SPECIFIC = 2;
@@ -643,7 +644,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 		super.jsonRead(reader, jsonObject);
 
 		if(jsonObject.containsKey("userId")){
-			userId = jsonObject.getInt("userId");
+			userId = getInt(jsonObject, "userId", MISSING_PROP_TRANSLATION_KEY);
 		}else if(jsonObject.containsKey("user")){
 			String username = jsonObject.getString("user");
 	        if (org.apache.commons.lang3.StringUtils.isBlank(username))
@@ -690,7 +691,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 						throw new TranslatableJsonException("emport.error.invalid",
 								"previousPeriodType", text,
 								Common.TIME_PERIOD_CODES.getCodeList());
-					previousPeriodCount = jsonObject.getInt("previousPeriods");
+					previousPeriodCount = getInt(jsonObject, "previousPeriods", MISSING_PROP_TRANSLATION_KEY);
 				}else{
 					//FOR legacy bug where previousPeriodType was misspelled
 					text = jsonObject.getString("perviousPeriodType");
@@ -700,7 +701,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 							throw new TranslatableJsonException("emport.error.invalid",
 									"previousPeriodType", text,
 									Common.TIME_PERIOD_CODES.getCodeList());
-						previousPeriodCount = jsonObject.getInt("previousPeriods");
+						previousPeriodCount = getInt(jsonObject, "previousPeriods", MISSING_PROP_TRANSLATION_KEY);
 					}
 				}
 			}else if(relativeDateType == RELATIVE_DATE_TYPE_PREVIOUS){
@@ -711,30 +712,30 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 						throw new TranslatableJsonException("emport.error.invalid",
 								"pastPeriodType", text,
 								Common.TIME_PERIOD_CODES.getCodeList());
-					pastPeriodCount = jsonObject.getInt("pastPeriods");
+					pastPeriodCount = getInt(jsonObject, "pastPeriods", MISSING_PROP_TRANSLATION_KEY);
 				}
 			}
 		}else if(dateRangeType == DATE_RANGE_TYPE_SPECIFIC){
-			fromNone = jsonObject.getBoolean("fromInception");
+			fromNone = getBoolean(jsonObject, "fromInception", MISSING_PROP_TRANSLATION_KEY);
 			if(!fromNone){
-				fromYear = jsonObject.getInt("fromYear");
-				fromMonth = jsonObject.getInt("fromMonth");
-				fromDay = jsonObject.getInt("fromDay");
-				fromHour = jsonObject.getInt("fromHour");
-				fromMinute = jsonObject.getInt("fromMinute");
+				fromYear = getInt(jsonObject, "fromYear", MISSING_PROP_TRANSLATION_KEY);
+				fromMonth = getInt(jsonObject, "fromMonth", MISSING_PROP_TRANSLATION_KEY);
+				fromDay = getInt(jsonObject, "fromDay", MISSING_PROP_TRANSLATION_KEY);
+				fromHour = getInt(jsonObject, "fromHour", MISSING_PROP_TRANSLATION_KEY);
+				fromMinute = getInt(jsonObject, "fromMinute", MISSING_PROP_TRANSLATION_KEY);
 				
 			}
-			toNone = jsonObject.getBoolean("toLatest");
+			toNone = getBoolean(jsonObject, "toLatest", MISSING_PROP_TRANSLATION_KEY);
 			if(!toNone){
-				toYear = jsonObject.getInt("toYear");
-				toMonth = jsonObject.getInt("toMonth");
-				toDay = jsonObject.getInt("toDay");
-				toHour = jsonObject.getInt("toHour");
-				toMinute = jsonObject.getInt("toMinute");
+				toYear = getInt(jsonObject, "toYear", MISSING_PROP_TRANSLATION_KEY);
+				toMonth = getInt(jsonObject, "toMonth", MISSING_PROP_TRANSLATION_KEY);
+				toDay = getInt(jsonObject, "toDay", MISSING_PROP_TRANSLATION_KEY);
+				toHour = getInt(jsonObject, "toHour", MISSING_PROP_TRANSLATION_KEY);
+				toMinute = getInt(jsonObject, "toMinute", MISSING_PROP_TRANSLATION_KEY);
 			}
 		}
 		
-		schedule = jsonObject.getBoolean("schedule");
+		schedule = getBoolean(jsonObject, "schedule", MISSING_PROP_TRANSLATION_KEY);
 		if(schedule){
 			text = jsonObject.getString("schedulePeriod");
 			if(text != null){
@@ -760,7 +761,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			}
 		}
 		
-		email = jsonObject.getBoolean("email");
+		email = getBoolean(jsonObject, "email", MISSING_PROP_TRANSLATION_KEY);
 		if(email){
 			
 			JsonArray recipientsArray = jsonObject.getJsonArray("recipients");
@@ -788,9 +789,9 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 						"valid users, email addresses or mailing lists");
 			}
 			
-			includeData = jsonObject.getBoolean("includeData");
+			includeData = getBoolean(jsonObject, "includeData", MISSING_PROP_TRANSLATION_KEY);
 			if(includeData)
-				zipData = jsonObject.getBoolean("zipData");
+				zipData = getBoolean(jsonObject, "zipData", MISSING_PROP_TRANSLATION_KEY);
 				
 		}
 		
