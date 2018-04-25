@@ -31,19 +31,24 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Terry Packer
- * 
+ *
  */
 @ApiModel(value = "User", description = "User Data Model", parent = AbstractRestModel.class)
 @CSVEntity
 @JsonPropertyOrder({ "username", "email" })
 public class UserModel extends AbstractRestModel<User> {
-	
-	//TODO Make the JSON Views work, it currently does nothing
-	@ApiModelProperty(value = "Messages for validation of data", required = false)
-	@JsonProperty("validationMessages")
-	@JsonView(JsonViews.Validation.class) //Only show in validation views (NOT WORKING YET)
-	private List<RestValidationMessage> messages;
-	
+
+    //TODO Make the JSON Views work, it currently does nothing
+    @ApiModelProperty(value = "Messages for validation of data", required = false)
+    @JsonProperty("validationMessages")
+    @JsonView(JsonViews.Validation.class) //Only show in validation views (NOT WORKING YET)
+    private List<RestValidationMessage> messages;
+
+    // By default, any passwords set via the REST API are just plain text
+    // You can however set the hashAlgorithm property to BCRYPT, SHA-1 etc to send a pre-hashed password via the API
+    private String hashAlgorithm = User.PLAIN_TEXT_ALGORITHM;
+    private String password = null;
+
     public UserModel() {
         super(new User());
     }
@@ -69,27 +74,38 @@ public class UserModel extends AbstractRestModel<User> {
     @CSVColumnGetter(order=1, header="password")
     @JsonIgnore
     public String getPasswordForCsv(){
-    	return "";
+        return "";
     }
-    
+
     public String getPassword() {
         //return data.getPassword();
         // dont return password hashes over the REST API, security issue
         return "";
     }
-    
+
     public boolean isOldHashAlgorithm() {
-    	//New Users have null passwords
-    	if(data.getPassword() == null)
-    		return false;
+        //New Users have null passwords
+        if(data.getPassword() == null)
+            return false;
+
         String algorithm = Common.extractHashAlgorithm(data.getPassword());
-        return !Common.getHashAlgorithm().equals(algorithm);
+
+        if (User.LOCKED_ALGORITHM.equals(algorithm)) {
+            // not old algorithm, just locked
+            return false;
+        }
+
+        String defaultAlgorithm = Common.getHashAlgorithm();
+        return !defaultAlgorithm.equals(algorithm);
     }
-    
+
     @CSVColumnSetter(order=1, header="password")
     @JsonSetter("password")
     public void setPassword(String password) {
-        data.setPassword(password);
+        if (password != null && !password.isEmpty()) {
+            this.password = password;
+            data.setPassword("{" + this.hashAlgorithm + "}" + this.password);
+        }
     }
 
     @CSVColumnGetter(order=2, header="email")
@@ -97,7 +113,7 @@ public class UserModel extends AbstractRestModel<User> {
     public String getEmail() {
         return data.getEmail();
     }
-    
+
     @CSVColumnSetter(order=2, header="email")
     @JsonSetter("email")
     public void setEmail(String email) {
@@ -109,13 +125,13 @@ public class UserModel extends AbstractRestModel<User> {
     public String getPhone() {
         return data.getPhone();
     }
-    
+
     @CSVColumnSetter(order=3, header="phone")
     @JsonSetter("phone")
     public void setPhone(String phone) {
         data.setPhone(phone);
     }
-    
+
     @CSVColumnGetter(order=4, header="disabled")
     @JsonGetter("disabled")
     public Boolean getDisabled() {
@@ -155,7 +171,7 @@ public class UserModel extends AbstractRestModel<User> {
     @CSVColumnGetter(order=7, header="receiveAlarmEmails")
     @JsonGetter("receiveAlarmEmails")
     public String getReceiveAlarmEmails() {
-    	return AlarmLevels.CODES.getCode(this.data.getReceiveAlarmEmails());
+        return AlarmLevels.CODES.getCode(this.data.getReceiveAlarmEmails());
     }
 
     @CSVColumnSetter(order=7, header="receiveAlarmEmails")
@@ -205,7 +221,7 @@ public class UserModel extends AbstractRestModel<User> {
     public Boolean isAdmin() {
         return data.isAdmin();
     }
-    
+
     @CSVColumnGetter(order=12, header="receiveOwnAuditEvents")
     @JsonGetter("receiveOwnAuditEvents")
     public Boolean getReceiveOwnAuditEvents() {
@@ -217,7 +233,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setReceiveOwnAuditEvents(Boolean receiveOwnAuditEvents) {
         data.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
     }
-    
+
     @CSVColumnGetter(order=13, header="name")
     @JsonGetter("name")
     public String getName() {
@@ -229,7 +245,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setName(String name) {
         data.setName(name);
     }
-    
+
     @CSVColumnGetter(order=14, header="locale")
     @JsonGetter("locale")
     public String getLocale() {
@@ -241,7 +257,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setLocale(String locale) {
         data.setLocale(locale);
     }
-    
+
     @CSVColumnGetter(order=15, header="systemLocale")
     @JsonGetter("systemLocale")
     public String getSystemLocale() {
@@ -253,7 +269,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setSystemLocale(String locale) {
         // no op
     }
-    
+
     @CSVColumnGetter(order=16, header="id")
     @JsonGetter("id")
     public int getId() {
@@ -265,7 +281,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setId(int id) {
         // no op
     }
-    
+
     @CSVColumnGetter(order=17, header="passwordLocked")
     @JsonGetter("passwordLocked")
     public boolean isPasswordLocked() {
@@ -277,48 +293,66 @@ public class UserModel extends AbstractRestModel<User> {
     public void setPasswordLocked(boolean passwordLocked) {
         // no op
     }
-    
-	public List<RestValidationMessage> getMessages() {
-		return messages;
-	}
 
-	public void setMessages(List<RestValidationMessage> messages) {
-		this.messages = messages;
-	}
+    @CSVColumnGetter(order=18, header="hashAlgorithm")
+    @JsonIgnore
+    public String getHashAlgorithmForCSV() {
+        // just going to return empty for the CSV, field wont be visible in JSON
+        return "";
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel#validate(com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult)
-	 */
-	@Override
-	public boolean validate(){
-		ProcessResult validation = new ProcessResult();
-		this.data.validate(validation);
-		
-		if(validation.getHasMessages()){
-			if(this.messages == null)
-				this.messages = new ArrayList<RestValidationMessage>();
-			//Add our messages to the list
-			for(ProcessMessage message : validation.getMessages()){
-				this.messages.add(new RestValidationMessage(
-						message.getContextualMessage(),
-						RestMessageLevel.ERROR,
-						message.getContextKey()
-						));
-			}
-			return false;
-		}else{
-			return true; //Validated ok
-		}
-	}
+    @CSVColumnSetter(order=18, header="hashAlgorithm")
+    @JsonSetter("hashAlgorithm")
+    public void setHashAlgorithm(String hashAlgorithm) {
+        // only set the hash algorithm if it its not empty, otherwise just keep default of PLAINTEXT
+        if (hashAlgorithm != null && !hashAlgorithm.isEmpty()) {
+            this.hashAlgorithm = hashAlgorithm;
+            String password = this.password != null ? this.password : "";
+            data.setPassword("{" + this.hashAlgorithm + "}" + password);
+        }
+    }
 
-	public void addValidationMessage(ProcessMessage message){
-		if(this.messages == null)
-			this.messages = new ArrayList<RestValidationMessage>();
-		this.messages.add((new RestValidationMessage(
-				message.getContextualMessage(),
-				RestMessageLevel.ERROR,
-				message.getContextKey()
-				)));
-	}
+    public List<RestValidationMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<RestValidationMessage> messages) {
+        this.messages = messages;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel#validate(com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult)
+     */
+    @Override
+    public boolean validate(){
+        ProcessResult validation = new ProcessResult();
+        this.data.validate(validation);
+
+        if(validation.getHasMessages()){
+            if(this.messages == null)
+                this.messages = new ArrayList<RestValidationMessage>();
+            //Add our messages to the list
+            for(ProcessMessage message : validation.getMessages()){
+                this.messages.add(new RestValidationMessage(
+                        message.getContextualMessage(),
+                        RestMessageLevel.ERROR,
+                        message.getContextKey()
+                        ));
+            }
+            return false;
+        }else{
+            return true; //Validated ok
+        }
+    }
+
+    public void addValidationMessage(ProcessMessage message){
+        if(this.messages == null)
+            this.messages = new ArrayList<RestValidationMessage>();
+        this.messages.add((new RestValidationMessage(
+                message.getContextualMessage(),
+                RestMessageLevel.ERROR,
+                message.getContextKey()
+                )));
+    }
 }

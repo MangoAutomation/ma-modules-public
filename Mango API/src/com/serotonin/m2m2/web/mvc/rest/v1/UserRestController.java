@@ -206,22 +206,20 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 }
 
                 //Set the ID for the user for validation
-                model.getData().setId(u.getId());
+                User newUser = model.getData();
+                newUser.setId(u.getId());
+
+                String newPassword = newUser.getPassword();
+                if (StringUtils.isBlank(newPassword)) {
+                    // just use the old password
+                    newUser.setPassword(u.getPassword());
+                }
+
                 if(!model.validate()){
                     result.addRestMessage(this.getValidationFailedError());
                 }else{
-                    User newUser = model.getData();
-                    newUser.setId(u.getId());
-
-                    String newPassword = newUser.getPassword();
-                    if (!StringUtils.isBlank(newPassword)) {
-                        // check if an algorithm was specified, if not assume it was plain text and hash it
-                        newUser.checkPasswordAlgorithm("PLAINTEXT");
-                    } else {
-                        // just use the old password
-                        newUser.setPassword(u.getPassword());
-                    }
-
+                    // only hash plain text passwords after validation has taken place so we can check complexity etc
+                    newUser.hashPlainText();
                     UserDao.instance.saveUser(newUser);
                     sessionRegistry.userUpdated(request, newUser);
                 }
@@ -241,10 +239,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     newUser.setId(u.getId());
 
                     String newPassword = newUser.getPassword();
-                    if (!StringUtils.isBlank(newPassword)) {
-                        // check if an algorithm was specified, if not assume it was plain text and hash it
-                        newUser.checkPasswordAlgorithm("PLAINTEXT");
-                    } else {
+                    if (StringUtils.isBlank(newPassword)) {
                         // just use the old password
                         newUser.setPassword(u.getPassword());
                     }
@@ -289,6 +284,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                                 return result.createResponseEntity(model);
                             }
                         }
+
+                        // only hash plain text passwords after validation has taken place so we can check complexity etc
+                        newUser.hashPlainText();
                         UserDao.instance.saveUser(newUser);
                         sessionRegistry.userUpdated(request, newUser);
                         URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
@@ -337,9 +335,11 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     if(model.validate()){
                         try{
                             User newUser = model.getData();
-                            // check if an algorithm was specified, if not assume it was plain text and hash it
-                            newUser.checkPasswordAlgorithm("PLAINTEXT");
+
+                            // only hash plain text passwords after validation has taken place so we can check complexity etc
+                            newUser.hashPlainText();
                             UserDao.instance.saveUser(newUser);
+
                             URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
                             result.addRestMessage(getResourceCreatedMessage(location));
                             return result.createResponseEntity(model);
