@@ -23,8 +23,8 @@ public class ReportPurgeDefinition extends PurgeDefinition {
     public void execute(long runtime) {
         DateTime cutoff = DateUtils.truncateDateTime(new DateTime(runtime), Common.TimePeriods.DAYS);
         cutoff = DateUtils.minus(cutoff,
-                SystemSettingsDao.getIntValue(REPORT_PURGE_PERIOD_TYPE),
-                SystemSettingsDao.getIntValue(REPORT_PURGE_PERIODS));
+                SystemSettingsDao.instance.getIntValue(REPORT_PURGE_PERIOD_TYPE),
+                SystemSettingsDao.instance.getIntValue(REPORT_PURGE_PERIODS));
 
         int deleteCount = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
         if (deleteCount > 0)

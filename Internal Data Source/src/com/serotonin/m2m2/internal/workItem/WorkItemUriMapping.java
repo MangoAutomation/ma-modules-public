@@ -14,7 +14,7 @@ public class WorkItemUriMapping extends UriMappingDefinition {
     
     @Override
     public boolean hasCustomPermission(User user){
-    	return Permissions.hasPermission(user, SystemSettingsDao.getValue("internal.status"));
+    	return Permissions.hasPermission(user, SystemSettingsDao.instance.getValue("internal.status"));
     }
 
     @Override

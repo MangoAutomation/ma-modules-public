@@ -63,15 +63,15 @@ public class SystemSettingsRestController extends MangoRestController{
 	        Object value = null;
         	switch(type){
 			case BOOLEAN:
-				value = SystemSettingsDao.getBooleanValue(key);
+				value = SystemSettingsDao.instance.getBooleanValue(key);
 				break;
 			case INTEGER:
-				value = SystemSettingsDao.getIntValue(key);
+				value = SystemSettingsDao.instance.getIntValue(key);
 				break;
 			case JSON:
 				try{
 					Class<?> jsonClass = Class.forName(jsonClassType);
-					value = SystemSettingsDao.getJsonObject(key, jsonClass);
+					value = SystemSettingsDao.instance.getJsonObject(key, jsonClass);
 				}catch(ClassNotFoundException e){
 					result.addRestMessage(this.getInternalServerErrorMessage(e.getMessage()));
 				}
@@ -79,7 +79,7 @@ public class SystemSettingsRestController extends MangoRestController{
 			case STRING:
 			default:
 				//First get the value as a String
-				value = SystemSettingsDao.getValue(key);
+				value = SystemSettingsDao.instance.getValue(key);
 				try{
 					//Can it potentially be converted to an export code?
 					Integer i = Integer.parseInt((String) value);

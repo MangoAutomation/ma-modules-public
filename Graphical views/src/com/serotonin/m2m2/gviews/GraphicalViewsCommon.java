@@ -61,7 +61,7 @@ public class GraphicalViewsCommon {
     }
     
     public static void ensureCanCreate(User user) {
-    	if(user == null || !Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewAddViewPermissionDefinition.PERMISSION)))
+    	if(user == null || !Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(GraphicalViewAddViewPermissionDefinition.PERMISSION)))
     		throw new PermissionException(new TranslatableMessage("common.default", "User does not have permission to create new views"), user);
     }
 

@@ -57,6 +57,6 @@ public class ReportMappingDefinition extends MenuItemDefinition {
 	
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(ReportPermissionDefinition.PERMISSION));
+        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.instance.getValue(ReportPermissionDefinition.PERMISSION));
     }
 }

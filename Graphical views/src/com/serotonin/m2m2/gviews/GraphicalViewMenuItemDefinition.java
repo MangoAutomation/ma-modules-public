@@ -26,7 +26,7 @@ public class GraphicalViewMenuItemDefinition extends MenuItemDefinition{
 
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-    	return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(GraphicalViewPermissionDefinition.PERMISSION));
+    	return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.instance.getValue(GraphicalViewPermissionDefinition.PERMISSION));
     }
 	
 	/* (non-Javadoc)

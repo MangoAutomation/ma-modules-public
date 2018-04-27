@@ -28,7 +28,7 @@ public class WatchListMenuItemDefinition extends MenuItemDefinition{
 
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-    	return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(WatchListPermissionDefinition.PERMISSION));
+    	return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.instance.getValue(WatchListPermissionDefinition.PERMISSION));
     }
 	
     /* (non-Javadoc)

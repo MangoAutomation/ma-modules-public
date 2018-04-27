@@ -66,7 +66,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-        return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
+        return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.instance.getValue(StatusPermissionDef.PERMISSION));
     }
     
     /* (non-Javadoc)

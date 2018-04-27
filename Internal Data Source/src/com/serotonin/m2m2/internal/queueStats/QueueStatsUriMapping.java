@@ -24,7 +24,7 @@ public class QueueStatsUriMapping extends UriMappingDefinition {
     
     @Override
     public boolean hasCustomPermission(User user){
-    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(StatusPermissionDef.PERMISSION));
+    	return Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(StatusPermissionDef.PERMISSION));
     }
 
     @Override

@@ -53,7 +53,7 @@ public class SystemMetricsRestController extends MangoRestController{
     	if(result.isOk()){
     		
     		//Check Permissions
-    		String permissions = SystemSettingsDao.getValue(internalMetricsPermission);
+    		String permissions = SystemSettingsDao.instance.getValue(internalMetricsPermission);
     		if(Permissions.hasPermission(user, permissions)){
     			return result.createResponseEntity(Common.MONITORED_VALUES.getMonitors());
     		}else{
@@ -79,7 +79,7 @@ public class SystemMetricsRestController extends MangoRestController{
     	if(result.isOk()){
     		
     		//Check Permissions
-    		String permissions = SystemSettingsDao.getValue(internalMetricsPermission);
+    		String permissions = SystemSettingsDao.instance.getValue(internalMetricsPermission);
     		if(Permissions.hasPermission(user, permissions)){
     			List<ValueMonitor<?>> values = Common.MONITORED_VALUES.getMonitors();
     			ValueMonitor<?> value = null;

@@ -72,7 +72,7 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 			return false;
 		}
 		
-		String restrictedPaths = SystemSettingsDao.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+		String restrictedPaths = SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
 		if(!StringUtils.isEmpty(restrictedPaths))
 			for(String p : restrictedPaths.split(";"))
 				if(path.startsWith(p))

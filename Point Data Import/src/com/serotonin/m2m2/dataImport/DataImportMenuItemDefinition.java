@@ -60,6 +60,6 @@ public class DataImportMenuItemDefinition extends MenuItemDefinition {
 	
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-        return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.getValue(DataImportPermissionDefinition.PERMISSION));
+        return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.instance.getValue(DataImportPermissionDefinition.PERMISSION));
     }
 }

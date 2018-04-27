@@ -176,7 +176,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     	if(result.isOk()){
     		if(Permissions.hasAdmin(user)){
     			//Validate the settings
-    			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE);
+    			int currentCorePoolSize = SystemSettingsDao.instance.getIntValue(SystemSettingsDao.MED_PRI_CORE_POOL_SIZE);
     			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.MED_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low
     				model.getMessages().add(new RestValidationMessage(
@@ -259,7 +259,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
     	if(result.isOk()){
     		if(Permissions.hasAdmin(user)){
     			//Validate the settings
-    			int currentCorePoolSize = SystemSettingsDao.getIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE);
+    			int currentCorePoolSize = SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LOW_PRI_CORE_POOL_SIZE);
     			
     			if((model.getCorePoolSize() != null)&&(model.getCorePoolSize() < BackgroundProcessing.LOW_PRI_MAX_POOL_SIZE_MIN)){
     				//Test to ensure we aren't setting too low

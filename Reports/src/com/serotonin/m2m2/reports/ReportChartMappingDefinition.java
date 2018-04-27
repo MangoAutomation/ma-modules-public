@@ -20,7 +20,7 @@ public class ReportChartMappingDefinition extends UriMappingDefinition {
     
     @Override
     public boolean hasCustomPermission(User user){
-    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(ReportPermissionDefinition.PERMISSION));
+    	return Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(ReportPermissionDefinition.PERMISSION));
     }
 
     @Override

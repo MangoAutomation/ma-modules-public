@@ -442,7 +442,7 @@ public class ModulesRestController extends MangoRestController {
                 jsonModules.put(module.getName(), module.getVersion().toString());
 
         String storeUrl = Common.envProps.getString("store.url");
-        int upgradeVersionState = SystemSettingsDao.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE);
+        int upgradeVersionState = SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE);
         int currentVersionState = UpgradeVersionState.DEVELOPMENT;
         Properties props = new Properties();
         File propFile = new File(Common.MA_HOME + File.separator + "release.properties");
@@ -470,7 +470,7 @@ public class ModulesRestController extends MangoRestController {
 
         return new ResponseEntity<>(new UpdateLicensePayloadModel(
                 Providers.get(ICoreLicense.class).getGuid(),
-                SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION),
                 Common.envProps.getString("distributor"),
                 jsonModules, storeUrl, upgradeVersionState, currentVersionState),
                 responseHeaders, HttpStatus.OK);
@@ -509,9 +509,9 @@ public class ModulesRestController extends MangoRestController {
                 // wait for the
                 // background processes to finish though.
                 BackupWorkItem.queueBackup(
-                        SystemSettingsDao.getValue(SystemSettingsDao.BACKUP_FILE_LOCATION));
+                        SystemSettingsDao.instance.getValue(SystemSettingsDao.BACKUP_FILE_LOCATION));
                 DatabaseBackupWorkItem.queueBackup(SystemSettingsDao
-                        .getValue(SystemSettingsDao.DATABASE_BACKUP_FILE_LOCATION));
+                        .instance.getValue(SystemSettingsDao.DATABASE_BACKUP_FILE_LOCATION));
             }
             
             List<MultipartFile> files = new ArrayList<>();
@@ -666,9 +666,9 @@ public class ModulesRestController extends MangoRestController {
     private ModuleModel getCoreModule() {
         CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getCoreModule());
         coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
-        coreModel.setInstanceDescription(SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         coreModel.setDistributor(Common.envProps.getString("distributor"));
-        coreModel.setUpgradeVersionState(SystemSettingsDao.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+        coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
         return coreModel;
     }
 

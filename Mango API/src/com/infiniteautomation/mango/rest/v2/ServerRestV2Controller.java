@@ -204,7 +204,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal User user){
         Map<String, String> mangoInfo = new HashMap<>();
 
-        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         mangoInfo.put("coreVersion", Common.getVersion().toString());
         mangoInfo.put("coreVersionNormalized", Common.getVersion().getNormalVersion());
         mangoInfo.put("locale", Common.getLocale().toLanguageTag());

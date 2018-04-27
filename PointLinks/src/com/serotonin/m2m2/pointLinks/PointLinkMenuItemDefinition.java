@@ -28,7 +28,7 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
 	
     @Override
     public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.getValue(PointLinkPermissionDefinition.PERMISSION));
+        return Permissions.hasPermission(Common.getUser(request), SystemSettingsDao.instance.getValue(PointLinkPermissionDefinition.PERMISSION));
     }
     
     /* (non-Javadoc)

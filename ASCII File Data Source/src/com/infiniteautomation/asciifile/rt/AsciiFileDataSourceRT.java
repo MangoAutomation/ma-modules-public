@@ -54,7 +54,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 
 	public AsciiFileDataSourceRT(AsciiFileDataSourceVO vo) {
 		super(vo);
-		this.restrictedPath = isPathRestricted(SystemSettingsDao.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH));
+		this.restrictedPath = isPathRestricted(SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH));
 		setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
 		SystemSettingsEventDispatcher.addListener(this);
 	}

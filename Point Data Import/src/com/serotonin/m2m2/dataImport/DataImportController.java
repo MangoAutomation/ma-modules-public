@@ -45,7 +45,7 @@ public class DataImportController extends FileUploadController {
 	@Override
 	protected void ensurePermission(User user)
 			throws PermissionException {
-        if(!Permissions.hasPermission(user, SystemSettingsDao.getValue(DataImportPermissionDefinition.PERMISSION)))
+        if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(DataImportPermissionDefinition.PERMISSION)))
         		throw new PermissionException(new TranslatableMessage("common.default", "No " + DataImportPermissionDefinition.PERMISSION  + " permission"), user);
 	}
 	/* (non-Javadoc)

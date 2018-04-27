@@ -41,7 +41,7 @@ public class ImageUploadServlet extends HttpServlet {
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
             //Fail if we don't have permissions for this
-            if(!Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewUploadPermissionDefinition.PERMISSION))){
+            if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(GraphicalViewUploadPermissionDefinition.PERMISSION))){
             	//The GraphicalViewDwr.clearBackground() method will notify the user of a failure so we can ignore them here
             	return;
             }

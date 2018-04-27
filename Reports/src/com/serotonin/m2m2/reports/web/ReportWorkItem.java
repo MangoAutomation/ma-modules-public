@@ -75,7 +75,7 @@ public class ReportWorkItem implements WorkItem {
     @Override
     public int getPriority() {
     	//Allow User To Choose
-    	return SystemSettingsDao.getIntValue(REPORT_WORK_ITEM_PRIORITY);
+    	return SystemSettingsDao.instance.getIntValue(REPORT_WORK_ITEM_PRIORITY);
     }
 
     public static void queueReport(String host, int port, ReportVO report) {

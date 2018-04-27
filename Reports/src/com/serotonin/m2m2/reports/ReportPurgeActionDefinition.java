@@ -80,8 +80,8 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 		public void runImpl(long runtime) {
 	        DateTime cutoff = DateUtils.truncateDateTime(new DateTime(runtime), Common.TimePeriods.DAYS);
 	        cutoff = DateUtils.minus(cutoff,
-	                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE),
-	                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS));
+	                SystemSettingsDao.instance.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE),
+	                SystemSettingsDao.instance.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS));
 
 	        int cnt = ReportDao.instance.purgeReportsBefore(purgeAll ? Common.timer.currentTimeMillis() : cutoff.getMillis());
 	        if (cnt > 0)

@@ -674,7 +674,7 @@ public class GraphicalViewDwr extends ModuleDwr {
     public ProcessResult clearBackground() {
     	User user = Common.getUser();
     	ProcessResult result = new ProcessResult();
-    	if(Permissions.hasPermission(user, SystemSettingsDao.getValue(GraphicalViewUploadPermissionDefinition.PERMISSION))){
+    	if(Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(GraphicalViewUploadPermissionDefinition.PERMISSION))){
 	    	GraphicalView view = GraphicalViewsCommon.getUserEditView(user);
 	        GraphicalViewsCommon.deleteImage(view.getBackgroundFilename());
 	        view.setBackgroundFilename(null);

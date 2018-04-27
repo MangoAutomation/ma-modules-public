@@ -25,7 +25,7 @@ public class DataImportControllerUriMappingDefinition extends UriMappingDefiniti
 
     @Override
     public boolean hasCustomPermission(User user) {
-    	return Permissions.hasPermission(user, SystemSettingsDao.getValue(DataImportPermissionDefinition.PERMISSION));
+    	return Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(DataImportPermissionDefinition.PERMISSION));
     }
 	
 	/* (non-Javadoc)

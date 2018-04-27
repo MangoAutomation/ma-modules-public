@@ -126,7 +126,7 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
         		response.addContextualMessage("filePath", "dsEdit.file.ioexceptionCanonical", filePath);
         		return;
         	}
-	        String restrictedPaths = SystemSettingsDao.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+	        String restrictedPaths = SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
 	        if(!StringUtils.isEmpty(restrictedPaths))
 		        for(String rPath : restrictedPaths.split(";")) {
 		        	if(this.filePath.startsWith(rPath))
