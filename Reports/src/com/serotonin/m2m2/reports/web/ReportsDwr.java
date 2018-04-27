@@ -247,8 +247,8 @@ public class ReportsDwr extends ModuleDwr {
     	ProcessResult response = new ProcessResult();
         DateTime cutoff = DateUtils.truncateDateTime(new DateTime(), Common.TimePeriods.DAYS);
         cutoff = DateUtils.minus(cutoff,
-                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE, Common.TimePeriods.MONTHS),
-                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS, 1));
+                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE),
+                SystemSettingsDao.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS));
 
         int deleteCount = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
         LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
