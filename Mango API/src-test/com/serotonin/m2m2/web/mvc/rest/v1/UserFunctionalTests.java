@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.BaseRestTest;
 import com.serotonin.m2m2.web.mvc.rest.test.data.UserTestData;
@@ -31,10 +32,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 /**
  * @See http://spring.io/guides/tutorials/rest/2/
  * @See http://spring.io/guides/tutorials/rest/4/
- * 
+ *
  *      on example tests
- * 
- * 
+ *
+ *
  * @author Terry Packer
  *
  */
@@ -52,7 +53,7 @@ public class UserFunctionalTests extends BaseRestTest {
 
     /**
      * Test Posting an empty user
-     * 
+     *
      * @throws Exception
      */
     public void testValidationFailure() {
@@ -63,22 +64,22 @@ public class UserFunctionalTests extends BaseRestTest {
         List<User> users = new ArrayList<>();
         users.add(standardUser);
 
-        //This will ensure that the getUsers() method returns 
+        //This will ensure that the getUsers() method returns
         // the mock list of users
         when(userDao.getUser(standardUser.getUsername())).thenReturn(null);
 
         standardUser.setEmail("");
-        standardUser.setPassword("testing-password");
+        standardUser.setPassword(Common.encrypt("testing-password"));
 
         ObjectWriter writer = this.objectMapper.writerWithView(JsonViews.Test.class);
 
         try {
             String userJson = writer.writeValueAsString(new UserModel(standardUser));
             this.mockMvc
-                    .perform(
-                            post("/v1/users/").content(userJson).contentType(MediaType.APPLICATION_JSON)
-                                    .sessionAttr("sessionUser", adminUser).accept(MediaType.APPLICATION_JSON))
-                    .andDo(print()).andExpect(status().isBadRequest());
+            .perform(
+                    post("/v1/users/").content(userJson).contentType(MediaType.APPLICATION_JSON)
+                    .sessionAttr("sessionUser", adminUser).accept(MediaType.APPLICATION_JSON))
+            .andDo(print()).andExpect(status().isBadRequest());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +98,7 @@ public class UserFunctionalTests extends BaseRestTest {
         List<User> users = new ArrayList<>();
         users.add(standardUser);
 
-        //This will ensure that the getUsers() method returns 
+        //This will ensure that the getUsers() method returns
         // the mock list of users
         when(userDao.getUser(standardUser.getUsername())).thenReturn(null);
 
@@ -107,10 +108,10 @@ public class UserFunctionalTests extends BaseRestTest {
         try {
             String userJson = writer.writeValueAsString(new UserModel(standardUser));
             this.mockMvc
-                    .perform(
-                            post("/v1/users/").content(userJson).contentType(MediaType.APPLICATION_JSON)
-                                    .sessionAttr("sessionUser", adminUser).accept(MediaType.APPLICATION_JSON))
-                    .andDo(print()).andExpect(status().isCreated());
+            .perform(
+                    post("/v1/users/").content(userJson).contentType(MediaType.APPLICATION_JSON)
+                    .sessionAttr("sessionUser", adminUser).accept(MediaType.APPLICATION_JSON))
+            .andDo(print()).andExpect(status().isCreated());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -120,9 +121,9 @@ public class UserFunctionalTests extends BaseRestTest {
 
     /**
      * Test a non-admin user creating a User
-     * 
+     *
      * Should show 401 - Unauthorized
-     * 
+     *
      * @throws Exception
      */
     public void testNonAdminCreateUserError() throws Exception {
@@ -131,7 +132,7 @@ public class UserFunctionalTests extends BaseRestTest {
         List<User> users = new ArrayList<>();
         users.add(standardUser);
 
-        //This will ensure that the getUsers() method returns 
+        //This will ensure that the getUsers() method returns
         // the mock list of users
         when(userDao.getUser(standardUser.getUsername())).thenReturn(standardUser);
 
@@ -141,10 +142,10 @@ public class UserFunctionalTests extends BaseRestTest {
 
         try {
             this.mockMvc
-                    .perform(
-                            post("/v1/users/").content(userJson).contentType(MediaType.APPLICATION_JSON)
-                                    .sessionAttr("sessionUser", standardUser).accept(MediaType.APPLICATION_JSON))
-                    .andDo(print()).andExpect(status().isUnauthorized());
+            .perform(
+                    post("/v1/users/").content(userJson).contentType(MediaType.APPLICATION_JSON)
+                    .sessionAttr("sessionUser", standardUser).accept(MediaType.APPLICATION_JSON))
+            .andDo(print()).andExpect(status().isUnauthorized());
         }
         catch (Exception e) {
             fail(e.getMessage());
@@ -154,7 +155,7 @@ public class UserFunctionalTests extends BaseRestTest {
     /**
      * Test reading all users that should fail
      * as user is non-admin
-     * 
+     *
      * @throws Exception
      */
     @SuppressWarnings({ "unchecked" })
@@ -163,7 +164,7 @@ public class UserFunctionalTests extends BaseRestTest {
         User standardUser = UserTestData.standardUser();
         users.add(standardUser);
 
-        //This will ensure that the getUsers() method returns 
+        //This will ensure that the getUsers() method returns
         // the mock list of users
         when(userDao.getUsers()).thenReturn(users);
 
@@ -173,7 +174,7 @@ public class UserFunctionalTests extends BaseRestTest {
         //				DataSourceVO ds = DataSourceTestData.mockDataSource();
         //				when(this.dataSourceDao.get(dsId)).thenReturn(ds);
         //				when(this.dataSourceDao.getByXid(ds.getXid())).thenReturn(ds);
-        //				
+        //
         //			}
         ////			for(DataPointAccess access : user.getDataPointPermissions()){
         ////				when(DataSourceDao.instance.getByXid())
@@ -182,10 +183,10 @@ public class UserFunctionalTests extends BaseRestTest {
 
         try {
             this.mockMvc
-                    .perform(
-                            get("/v1/users").sessionAttr("sessionUser", standardUser)
-                                    .accept(MediaType.APPLICATION_JSON)).andDo(print())
-                    .andExpect(status().isUnauthorized()).andReturn();
+            .perform(
+                    get("/v1/users").sessionAttr("sessionUser", standardUser)
+                    .accept(MediaType.APPLICATION_JSON)).andDo(print())
+            .andExpect(status().isUnauthorized()).andReturn();
         }
         catch (Exception e) {
             fail(e.getMessage());
@@ -203,7 +204,7 @@ public class UserFunctionalTests extends BaseRestTest {
         users.add(UserTestData.newAdminUser());
         users.add(UserTestData.standardUser());
 
-        //This will ensure that the getUsers() method returns 
+        //This will ensure that the getUsers() method returns
         // the mock list of users
         when(userDao.getUsers()).thenReturn(users);
 
@@ -236,7 +237,7 @@ public class UserFunctionalTests extends BaseRestTest {
 
     /**
      * Test reading all users
-     * 
+     *
      * @throws Exception
      */
     public void testGetSelf() throws Exception {
@@ -245,14 +246,14 @@ public class UserFunctionalTests extends BaseRestTest {
         List<User> users = new ArrayList<>();
         users.add(standardUser);
 
-        //This will ensure that the getUsers() method returns 
+        //This will ensure that the getUsers() method returns
         // the mock list of users
         when(userDao.getUser(standardUser.getUsername())).thenReturn(standardUser);
 
         this.mockMvc
-                .perform(
-                        get("/v1/users/" + standardUser.getUsername()).sessionAttr("sessionUser", standardUser).accept(
-                                MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
+        .perform(
+                get("/v1/users/" + standardUser.getUsername()).sessionAttr("sessionUser", standardUser).accept(
+                        MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
     }
 
 }

@@ -104,7 +104,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setPassword(String password) {
         if (password != null && !password.isEmpty()) {
             this.password = password;
-            data.setPassword("{" + this.hashAlgorithm + "}" + this.password);
+            data.setPasswordHash(this.hashAlgorithm, this.password);
         }
     }
 
@@ -308,7 +308,7 @@ public class UserModel extends AbstractRestModel<User> {
         if (hashAlgorithm != null && !hashAlgorithm.isEmpty()) {
             this.hashAlgorithm = hashAlgorithm;
             String password = this.password != null ? this.password : "";
-            data.setPassword("{" + this.hashAlgorithm + "}" + password);
+            data.setPasswordHash(this.hashAlgorithm, password);
         }
     }
 

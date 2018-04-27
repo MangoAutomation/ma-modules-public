@@ -218,8 +218,6 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 if(!model.validate()){
                     result.addRestMessage(this.getValidationFailedError());
                 }else{
-                    // only hash plain text passwords after validation has taken place so we can check complexity etc
-                    newUser.hashPlainText();
                     UserDao.instance.saveUser(newUser);
                     sessionRegistry.userUpdated(request, newUser);
                 }
@@ -285,8 +283,6 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                             }
                         }
 
-                        // only hash plain text passwords after validation has taken place so we can check complexity etc
-                        newUser.hashPlainText();
                         UserDao.instance.saveUser(newUser);
                         sessionRegistry.userUpdated(request, newUser);
                         URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
@@ -335,9 +331,6 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     if(model.validate()){
                         try{
                             User newUser = model.getData();
-
-                            // only hash plain text passwords after validation has taken place so we can check complexity etc
-                            newUser.hashPlainText();
                             UserDao.instance.saveUser(newUser);
 
                             URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
