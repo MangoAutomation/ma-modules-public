@@ -1694,7 +1694,7 @@ public class PointValueRestController extends MangoRestController {
 
                 // Validate the timestamp for future dated
                 if (model.getTimestamp() > Common.timer.currentTimeMillis()
-                        + SystemSettingsDao.getFutureDateLimit()) {
+                        + SystemSettingsDao.instance.getFutureDateLimit()) {
                     result.addRestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
                             "common.default", "Future dated points not acceptable."));
                     return result;

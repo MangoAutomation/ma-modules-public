@@ -83,7 +83,7 @@ public class SystemSettingsRestController extends MangoRestController{
 				try{
 					//Can it potentially be converted to an export code?
 					Integer i = Integer.parseInt((String) value);
-					value = SystemSettingsDao.convertToCodeFromValue(key, i);
+					value = SystemSettingsDao.instance.convertToCodeFromValue(key, i);
 					//Was it able to be converted?
 					if(value == null)
 						value = i.toString();
