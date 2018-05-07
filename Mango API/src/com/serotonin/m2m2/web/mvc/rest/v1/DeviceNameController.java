@@ -55,7 +55,7 @@ public class DeviceNameController extends MangoRestController {
         RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
         final User user = this.checkUser(request, result);
         if (result.isOk()) {
-            DeviceAndPermissionCallback callback = new DeviceAndPermissionCallback(user);
+            DeviceAndPermissionsCallback callback = new DeviceAndPermissionsCallback(user);
             if (contains != null) {
                 DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE pt.deviceName LIKE ?",
                         new Object[] {"%" + contains + "%"}, DEVICE_AND_PERMISSION_MAPPER, callback);
@@ -80,7 +80,7 @@ public class DeviceNameController extends MangoRestController {
         RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
         final User user = this.checkUser(request, result);
         if (result.isOk()) {
-            DeviceAndPermissionCallback callback = new DeviceAndPermissionCallback(user);
+            DeviceAndPermissionsCallback callback = new DeviceAndPermissionsCallback(user);
             if (contains != null) {
                 DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE pt.dataSourceId=? AND pt.deviceName LIKE ?",
                         new Object[] {id, "%" + contains + "%"}, DEVICE_AND_PERMISSION_MAPPER, callback);
@@ -105,12 +105,12 @@ public class DeviceNameController extends MangoRestController {
         RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
         final User user = this.checkUser(request, result);
         if (result.isOk()) {
-            DeviceAndPermissionCallback callback = new DeviceAndPermissionCallback(user);
+            DeviceAndPermissionsCallback callback = new DeviceAndPermissionsCallback(user);
             if (contains != null) {
-                DataPointDao.instance.query(SELECT_DEVICENAME_JOIN_DATASOURCE + " WHERE ds.xid=? AND pt.deviceName LIKE ?",
+                DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE ds.xid=? AND pt.deviceName LIKE ?",
                         new Object[] {xid, "%" + contains + "%"}, DEVICE_AND_PERMISSION_MAPPER, callback);
             } else {
-                DataPointDao.instance.query(SELECT_DEVICENAME_JOIN_DATASOURCE + " WHERE ds.xid=?",
+                DataPointDao.instance.query(SELECT_DEVICENAME + " WHERE ds.xid=?",
                         new Object[] {xid}, DEVICE_AND_PERMISSION_MAPPER, callback);
             }
             return result.createResponseEntity(callback.results);
@@ -122,37 +122,39 @@ public class DeviceNameController extends MangoRestController {
      * TODO Remove the below classes and methods and use the functions in DataPointDao for 2.8.x
      */
     
-    private static final String SELECT_DEVICENAME = "SELECT DISTINCT pt.deviceName, pt.readPermission FROM dataPoints AS pt";
-    private static final String SELECT_DEVICENAME_JOIN_DATASOURCE = SELECT_DEVICENAME + " LEFT JOIN dataSources AS ds ON pt.dataSourceId = ds.id";
+    private static final String SELECT_DEVICENAME = "SELECT DISTINCT pt.deviceName, pt.readPermission, pt.setPermission, ds.editPermission FROM dataPoints AS pt LEFT JOIN dataSources AS ds ON pt.dataSourceId = ds.id";
     
-    private static class DeviceAndPermission {
+    private static class DeviceAndPermissions {
         String deviceName;
-        String permission;
+        String readPermission;
+        String setPermission;
+        String dataSourcePermissions;
     }
     
-    private static class DeviceAndPermissionCallback implements MappedRowCallback<DeviceAndPermission> {
+    private static class DeviceAndPermissionsCallback implements MappedRowCallback<DeviceAndPermissions> {
         User user;
         Set<String> results;
 
-        DeviceAndPermissionCallback(User user) {
+        DeviceAndPermissionsCallback(User user) {
             this.user = user;
             this.results = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         }
         
         @Override
-        public void row(DeviceAndPermission item, int index) {
-            if (Permissions.hasPermission(user, item.permission)) {
+        public void row(DeviceAndPermissions item, int index) {
+            if (Permissions.hasPermission(user, item.readPermission) || Permissions.hasPermission(user, item.setPermission) || Permissions.hasPermission(user, item.dataSourcePermissions)) 
                 results.add(item.deviceName);
-            }
         }
     }
     
-    private final static RowMapper<DeviceAndPermission> DEVICE_AND_PERMISSION_MAPPER = new RowMapper<DeviceAndPermission>() {
+    private final static RowMapper<DeviceAndPermissions> DEVICE_AND_PERMISSION_MAPPER = new RowMapper<DeviceAndPermissions>() {
         @Override
-        public DeviceAndPermission mapRow(ResultSet rs, int rowNum) throws SQLException {
-            DeviceAndPermission dp = new DeviceAndPermission();
+        public DeviceAndPermissions mapRow(ResultSet rs, int rowNum) throws SQLException {
+            DeviceAndPermissions dp = new DeviceAndPermissions();
             dp.deviceName = rs.getString(1);
-            dp.permission = rs.getString(2);
+            dp.readPermission = rs.getString(2);
+            dp.setPermission = rs.getString(3);
+            dp.dataSourcePermissions = rs.getString(4);
             return dp;
         }
     };
