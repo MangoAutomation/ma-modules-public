@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -195,6 +196,32 @@ public class DataPointRestController extends BaseMangoRestController {
 
         ASTNode rql = parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/return-list")
+    public List<DataPointModel> returnList(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        List<DataPointModel> result = new ArrayList<>();
+
+        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        DataPointDao.instance.rqlQuery(rql, (point, index) -> {
+            result.add(new DataPointModel(point));
+        });
+
+        return result;
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/post-list")
+    public void postList(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user,
+
+            @RequestBody(required=true) List<DataPointModel> points
+            ) {
+
+        System.out.println(points);
     }
 
     @ApiOperation(value = "Update an existing data point")
