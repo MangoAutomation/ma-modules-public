@@ -156,12 +156,6 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         while (it.hasNext()) {
             JsonNode node = it.next();
 
-            if (!node.isContainerNode()) {
-                ArrayNode array = this.nodeFactory.arrayNode(1);
-                array.add(node);
-                node = array;
-            }
-
             String[] row = createCSVRow(columnPositions, node);
             if (row != null) {
                 rows.add(row);
@@ -307,9 +301,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                     return null;
                 }
             }
-            if (javaType.isPrimitive() && rootNode.isArray() && rootNode.size() > 0) {
-                rootNode = rootNode.get(0);
-            }
+
             return reader.readValue(this.objectMapper.treeAsTokens(rootNode));
         }
         catch (JsonProcessingException ex) {
@@ -371,17 +363,19 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         for (String value : row) {
             String path = columnPositions.get(position++);
             if (path != null) {
-                String[] pathArray = path.split("/");
-                if (pathArray.length > 0) {
-                    JsonNode valueNode;
-                    if (value == null || NULL_STRING.equals(value)) {
-                        valueNode = this.nodeFactory.nullNode();
-                    } else {
-                        valueNode = this.nodeFactory.textNode(value);
-                    }
-
-                    this.setValue(object, pathArray, valueNode);
+                JsonNode valueNode;
+                if (value == null || NULL_STRING.equals(value)) {
+                    valueNode = this.nodeFactory.nullNode();
+                } else {
+                    valueNode = this.nodeFactory.textNode(value);
                 }
+
+                if (path.isEmpty()) {
+                    return valueNode;
+                }
+
+                String[] pathArray = path.split("/");
+                this.setValue(object, pathArray, valueNode);
             }
         }
 
@@ -398,7 +392,6 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      */
     private void setValue(ObjectNode object, String[] path, JsonNode value) {
         String propertyName = path[0];
-        if (propertyName == null || propertyName.isEmpty()) return;
 
         if (path.length == 1) {
             object.set(propertyName, value);
@@ -455,8 +448,9 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         }
 
         if (hasChild && allIntegers) {
-            ArrayNode arrayNode = this.nodeFactory.arrayNode(highestIndex + 1);
-            for (int i = 0; i < highestIndex; i++) {
+            int size = highestIndex + 1;
+            ArrayNode arrayNode = this.nodeFactory.arrayNode(size);
+            for (int i = 0; i < size; i++) {
                 JsonNode value = object.get(Integer.toString(i));
                 if (value == null) {
                     value = this.nodeFactory.nullNode();
