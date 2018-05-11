@@ -425,6 +425,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private JsonNode convertObjectsToArrays(ObjectNode object) {
         boolean hasChild = false;
         boolean allIntegers = true;
+        int highestIndex = -1;
 
         Iterator<Entry<String, JsonNode>> it = object.fields();
         while(it.hasNext()) {
@@ -434,8 +435,15 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             String propertyName = entry.getKey();
             JsonNode value = entry.getValue();
 
-            if (allIntegers && !INTEGER_PATTERN.matcher(propertyName).matches()) {
-                allIntegers = false;
+            if (allIntegers) {
+                if (INTEGER_PATTERN.matcher(propertyName).matches()) {
+                    int index = Integer.parseInt(propertyName);
+                    if (index > highestIndex) {
+                        highestIndex = index;
+                    }
+                } else {
+                    allIntegers = false;
+                }
             }
 
             if (value.isObject()) {
@@ -447,11 +455,15 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         }
 
         if (hasChild && allIntegers) {
-            ArrayNode arrayNode = this.nodeFactory.arrayNode();
-            Iterator<JsonNode> elementIt = object.elements();
-            while (elementIt.hasNext()) {
-                arrayNode.add(elementIt.next());
+            ArrayNode arrayNode = this.nodeFactory.arrayNode(highestIndex + 1);
+            for (int i = 0; i < highestIndex; i++) {
+                JsonNode value = object.get(Integer.toString(i));
+                if (value == null) {
+                    value = this.nodeFactory.nullNode();
+                }
+                arrayNode.add(value);
             }
+
             return arrayNode;
         }
 
