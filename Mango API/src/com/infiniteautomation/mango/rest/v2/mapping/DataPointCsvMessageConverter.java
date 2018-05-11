@@ -24,32 +24,25 @@ import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
  * @author Terry Packer
  */
 public class DataPointCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
-    
+
     private CsvMapper objectMapper;
-    
+
     public DataPointCsvMessageConverter() {
         this(new CsvMapper());
     }
-    
+
     public DataPointCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, new MediaType("text", "csv"));
         this.objectMapper = csvMapper;
         this.objectMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.Class, org.springframework.http.MediaType)
-     */
     @Override
-    public boolean canRead(Class<?> clazz, MediaType mediaType) {
+    public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
         if (!canRead(mediaType))
             return false;
-        
-        if(DataPointModel.class.isAssignableFrom(clazz))
-            return true;
-        else
-            return false;
-                    
+
+        return type instanceof Class && DataPointModel.class.isAssignableFrom((Class<?>) type);
     }
 
     @Override
@@ -87,7 +80,7 @@ public class DataPointCsvMessageConverter extends AbstractJackson2HttpMessageCon
             throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
      */
@@ -95,13 +88,13 @@ public class DataPointCsvMessageConverter extends AbstractJackson2HttpMessageCon
     public boolean canWrite(Class<?> clazz, MediaType mediaType) {
         if (!canWrite(mediaType))
             return false;
-        
+
         if(DataPointModel.class.isAssignableFrom(clazz))
             return true;
         else
             return false;
     }
-    
+
     @Override
     protected void writeInternal(Object object, Type type, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {

@@ -40,35 +40,28 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
- * 
+ *
  * @author Jared Wiltshire, Terry Packer
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
-    
+
     public PointValueTimeStreamCsvMessageConverter() {
         this(new CsvMapper());
     }
-    
+
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, new MediaType("text", "csv"));
         ((CsvMapper)this.objectMapper).configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.Class, org.springframework.http.MediaType)
-     */
     @Override
-    public boolean canRead(Class<?> clazz, MediaType mediaType) {
+    public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
         if (!canRead(mediaType))
             return false;
-        
-        if(PointValueTimeStream.class.isAssignableFrom(clazz))
-            return true;
-        else
-            return false;
-                    
+
+        return type instanceof Class && PointValueTimeStream.class.isAssignableFrom((Class<?>) type);
     }
-    
+
     @Override
     protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
             throws IOException, HttpMessageNotReadableException {
@@ -84,7 +77,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         JavaType javaType = getJavaType(type, contextClass);
         return readJavaType(javaType, inputMessage);
     }
-    
+
     private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) {
         try {
             if (inputMessage instanceof MappingJacksonInputMessage) {
@@ -105,7 +98,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
      */
@@ -113,8 +106,8 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     public boolean canWrite(Class<?> clazz, MediaType mediaType) {
         if (!canWrite(mediaType))
             return false;
-        
-        if(MultiPointLatestDatabaseStream.class.isAssignableFrom(clazz) 
+
+        if(MultiPointLatestDatabaseStream.class.isAssignableFrom(clazz)
                 || MultiPointTimeRangeDatabaseStream.class.isAssignableFrom(clazz)
                 || MultiDataPointStatisticsQuantizerStream.class.isAssignableFrom(clazz)
                 || MultiDataPointDefaultRollupStatisticsQuantizerStream.class.isAssignableFrom(clazz))
@@ -122,7 +115,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         else
             return false;
     }
-    
+
     @Override
     protected void writeInternal(Object object, Type type, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
@@ -139,7 +132,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 
             //Setup our rendering parameters
             LatestQueryInfo info = stream.getQueryInfo();
-            
+
             if(stream instanceof MultiPointTimeRangeDatabaseStream || stream instanceof MultiPointLatestDatabaseStream) {
                 if(info.isSingleArray()) {
                     if(info.isMultiplePointsPerArray()) {
@@ -219,7 +212,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                         }
                     }else {
                         for(PointValueField field : info.getFields())
-                            field.createColumn(builder, null);   
+                            field.createColumn(builder, null);
                     }
                 }
             }
@@ -229,13 +222,13 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             stream.streamData(writer);
             stream.finish(writer);
             generator.flush();
-            
+
         }
         catch (JsonProcessingException ex) {
             throw new HttpMessageNotWritableException("Could not write content: " + ex.getMessage(), ex);
         }
     }
-    
+
     /**
      * Helper to get all valid enums for writing
      * TODO Could trim the list based on the data types in the voMap if we wanted
@@ -248,7 +241,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                 case NONE:
                 case FFT:
                 case ALL:
-                break;
+                    break;
                 default:
                     enums.add(rollup);
             }
