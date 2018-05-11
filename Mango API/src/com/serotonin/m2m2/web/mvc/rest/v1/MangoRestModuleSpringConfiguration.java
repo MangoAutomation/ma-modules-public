@@ -12,7 +12,9 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.rest.v2.mapping.DataPointCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.GenericCSVMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 
 /**
  * Class to configure spring for any module specific REST components.
@@ -34,9 +36,9 @@ public class MangoRestModuleSpringConfiguration extends WebMvcConfigurerAdapter{
     @Override
     public void configureMessageConverters(
             List<HttpMessageConverter<?>> converters) {
-        //converters.add(new PointValueTimeStreamCsvMessageConverter());
-        //converters.add(new DataPointCsvMessageConverter());
-        //converters.add(new CsvObjectStreamMessageConverter());
+        converters.add(new PointValueTimeStreamCsvMessageConverter());
+        converters.add(new DataPointCsvMessageConverter());
+        converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(mapper));
     }
 }
