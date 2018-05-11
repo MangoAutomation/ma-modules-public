@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -43,6 +44,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -52,8 +55,14 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 
+    public static final String NULL_STRING = "NULL";
+    public static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+
+    private JsonNodeFactory nodeFactory;
+
     public GenericCSVMessageConverter(ObjectMapper objectMapper) {
         super(objectMapper, new MediaType("text", "csv"));
+        this.nodeFactory = objectMapper.getNodeFactory();
     }
 
     @Override
@@ -88,8 +97,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 objectWriter = objectWriter.forType(javaType);
             }
 
+            // special handling for our streamed arrays with total, unwrap the array and discard the total
             if (value instanceof StreamedArrayWithTotal) {
                 value = ((StreamedArrayWithTotal) value).getItems();
+            }
+            if (value instanceof QueryDataPageStream) {
+                // force using the serializer for QueryArrayStream so the total isn't written out
+                objectWriter = objectWriter.forType(QueryArrayStream.class);
             }
 
             JsonNode root;
@@ -112,14 +126,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
             try (Writer out = new OutputStreamWriter(outputMessage.getBody(), charset)) {
                 if (!root.isArray()) {
-                    JsonNodeFactory nf = this.objectMapper.getNodeFactory();
-                    ArrayNode array = nf.arrayNode(1);
+                    ArrayNode array = this.nodeFactory.arrayNode(1);
                     array.add(root);
                     root = array;
                 }
 
                 CSVWriter csvWriter = new CSVWriter(out);
-                writeJsonArray(csvWriter, (ArrayNode) root);
+                writeCSV(csvWriter, (ArrayNode) root);
                 out.flush();
             }
         }
@@ -128,13 +141,28 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         }
     }
 
-    private void writeJsonArray(CSVWriter csvWriter, ArrayNode root) throws IOException {
+    /**
+     * Write the CSV representation of the JSON tree out
+     *
+     * @param csvWriter
+     * @param root
+     * @throws IOException
+     */
+    private void writeCSV(CSVWriter csvWriter, ArrayNode root) throws IOException {
         Map<String, Integer> columnPositions = new HashMap<>();
         List<String[]> rows = new ArrayList<>();
 
         Iterator<JsonNode> it = root.elements();
         while (it.hasNext()) {
-            String[] row = jsonNodeToStrings(columnPositions, it.next());
+            JsonNode node = it.next();
+
+            if (!node.isContainerNode()) {
+                ArrayNode array = this.nodeFactory.arrayNode(1);
+                array.add(node);
+                node = array;
+            }
+
+            String[] row = createCSVRow(columnPositions, node);
             if (row != null) {
                 rows.add(row);
             }
@@ -151,31 +179,83 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         }
     }
 
-    private String[] jsonNodeToStrings(Map<String, Integer> columnPositions, JsonNode object) {
-        // TODO handle arrays too
-        if (!object.isObject()) {
-            return null;
-        }
+    /**
+     * Create a CSV row for each JsonNode in the root array
+     *
+     * @param columnPositions
+     * @param node
+     * @return
+     */
+    private String[] createCSVRow(Map<String, Integer> columnPositions, JsonNode node) {
+        int numColumns = columnPositions.size();
+        List<String> columns = new ArrayList<>(numColumns);
+        this.expandList(columns, numColumns);
 
-        String[] columns = new String[columnPositions.size()];
+        this.traverseAndSetColumns(columnPositions, columns, node, null);
+        return columns.toArray(new String[columns.size()]);
+    }
 
-        Iterator<Entry<String, JsonNode>> it = object.fields();
-        while (it.hasNext()) {
-            Entry<String, JsonNode> entry = it.next();
-            String propertyName = entry.getKey();
-
-            int columnNum = columnPositions.computeIfAbsent(propertyName, name -> columnPositions.size());
-            if (columnNum >= columns.length) {
-                columns = Arrays.copyOf(columns, columnPositions.size());
+    /**
+     * Recursively traverse the JSON tree structure and set the columns in the CSV accordingly.
+     *
+     * @param columnPositions
+     * @param columns
+     * @param node
+     * @param path
+     */
+    private void traverseAndSetColumns(Map<String, Integer> columnPositions, List<String> columns, JsonNode node, String path) {
+        if (node.isObject()) {
+            Iterator<Entry<String, JsonNode>> it = node.fields();
+            while (it.hasNext()) {
+                Entry<String, JsonNode> entry = it.next();
+                JsonNode value = entry.getValue();
+                String propertyName = entry.getKey();
+                this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
             }
-
-            JsonNode value = entry.getValue();
-            if (value.isValueNode() && !value.isNull()) {
-                columns[columnNum] = value.asText();
+        } else if (node.isArray()) {
+            Iterator<JsonNode> it = node.elements();
+            int i = 0;
+            while (it.hasNext()) {
+                JsonNode value = it.next();
+                String propertyName = Integer.toString(i++);
+                this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
             }
+        } else if (node.isValueNode()) {
+            this.setColumn(columnPositions, columns, path, node);
         }
+    }
 
-        return columns;
+    /**
+     * Expand the given list to the given size.
+     *
+     * @param list
+     * @param size
+     */
+    private void expandList(List<String> list, int size) {
+        while (list.size() < size) {
+            list.add(null);
+        }
+    }
+
+    /**
+     * Set the value of a column to the given JsonNode value
+     *
+     * @param columnPositions
+     * @param columns
+     * @param propertyName
+     * @param value
+     */
+    private void setColumn(Map<String, Integer> columnPositions, List<String> columns, String propertyName, JsonNode value) {
+        int columnNum = columnPositions.computeIfAbsent(propertyName, name -> columnPositions.size());
+        this.expandList(columns, columnNum + 1);
+
+        if (value.isNull()) {
+            // columns default to null value which is encoded in the CSV as an empty string
+            // use our designated NULL string instead
+            columns.set(columnNum, NULL_STRING);
+        } else {
+            columns.set(columnNum, value.asText());
+        }
     }
 
     @Override
@@ -227,6 +307,9 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                     return null;
                 }
             }
+            if (javaType.isPrimitive() && rootNode.isArray() && rootNode.size() > 0) {
+                rootNode = rootNode.get(0);
+            }
             return reader.readValue(this.objectMapper.treeAsTokens(rootNode));
         }
         catch (JsonProcessingException ex) {
@@ -247,9 +330,15 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         return StandardCharsets.UTF_8;
     }
 
+    /**
+     * Build an ArrayNode from the lines read from the CSV
+     *
+     * @param reader
+     * @return
+     * @throws IOException
+     */
     private ArrayNode readCSV(CSVReader reader) throws IOException {
-        JsonNodeFactory nf = this.objectMapper.getNodeFactory();
-        ArrayNode root = nf.arrayNode();
+        ArrayNode root = this.nodeFactory.arrayNode();
 
         String[] header = reader.readNext();
         Map<Integer, String> columnPositions = new HashMap<>();
@@ -260,22 +349,110 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
         String[] row;
         while((row = reader.readNext()) != null) {
-            root.add(readCSVRow(nf, columnPositions, row));
+            root.add(readCSVRow(columnPositions, row));
         }
 
         return root;
     }
 
-    private ObjectNode readCSVRow(JsonNodeFactory nf, Map<Integer, String> columnPositions, String[] row) {
-        // TODO handle arrays too
-        ObjectNode object = nf.objectNode();
+    /**
+     * Create a Json object or array from a CSV row. All values will be string values
+     * or null values. We rely on Jackson to interpret these string values as the correct type
+     * when converting the tree to the model object.
+     *
+     * @param columnPositions
+     * @param row
+     * @return
+     */
+    private JsonNode readCSVRow(Map<Integer, String> columnPositions, String[] row) {
+        ObjectNode object = this.nodeFactory.objectNode();
 
         int position = 0;
         for (String value : row) {
-            String propertyName = columnPositions.get(position++);
-            if (propertyName != null) {
-                object.set(propertyName, value == null ? nf.nullNode() : nf.textNode(value));
+            String path = columnPositions.get(position++);
+            if (path != null) {
+                String[] pathArray = path.split("/");
+                if (pathArray.length > 0) {
+                    JsonNode valueNode;
+                    if (value == null || NULL_STRING.equals(value)) {
+                        valueNode = this.nodeFactory.nullNode();
+                    } else {
+                        valueNode = this.nodeFactory.textNode(value);
+                    }
+
+                    this.setValue(object, pathArray, valueNode);
+                }
             }
+        }
+
+        return this.convertObjectsToArrays(object);
+    }
+
+    /**
+     * Set the value of a property inside an object using a path. Any objects on the path which do
+     * not already exist will be created.
+     *
+     * @param object
+     * @param path
+     * @param value
+     */
+    private void setValue(ObjectNode object, String[] path, JsonNode value) {
+        String propertyName = path[0];
+        if (propertyName == null || propertyName.isEmpty()) return;
+
+        if (path.length == 1) {
+            object.set(propertyName, value);
+        } else {
+            JsonNode child = object.get(propertyName);
+            if (child == null) {
+                child = this.nodeFactory.objectNode();
+                object.set(propertyName, child);
+            }
+
+            if (child.isObject()) {
+                this.setValue((ObjectNode) child, Arrays.copyOfRange(path, 1, path.length), value);
+            }
+        }
+    }
+
+    /**
+     * Traverses the object and replaces any child objects which contain all all integer field names
+     * with array nodes.
+     *
+     * @param object
+     * @return
+     */
+    private JsonNode convertObjectsToArrays(ObjectNode object) {
+        boolean hasChild = false;
+        boolean allIntegers = true;
+
+        Iterator<Entry<String, JsonNode>> it = object.fields();
+        while(it.hasNext()) {
+            hasChild = true;
+
+            Entry<String, JsonNode> entry = it.next();
+            String propertyName = entry.getKey();
+            JsonNode value = entry.getValue();
+
+            if (allIntegers && !INTEGER_PATTERN.matcher(propertyName).matches()) {
+                allIntegers = false;
+            }
+
+            if (value.isObject()) {
+                JsonNode result = this.convertObjectsToArrays((ObjectNode) value);
+                if (result.isArray()) {
+                    entry.setValue(result);
+                }
+            }
+        }
+
+        if (hasChild && allIntegers) {
+            ArrayNode arrayNode = this.nodeFactory.arrayNode();
+            Iterator<JsonNode> elementIt = object.elements();
+            while (elementIt.hasNext()) {
+                arrayNode.add(elementIt.next());
+            }
+            return arrayNode;
         }
 
         return object;
