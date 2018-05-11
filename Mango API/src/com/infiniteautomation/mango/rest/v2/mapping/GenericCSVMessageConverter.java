@@ -361,7 +361,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
         int position = 0;
         for (String value : row) {
-            String path = columnPositions.get(position++);
+            String path = columnPositions.get(position);
+
+            // empty header row, assume empty string
+            if (position == 0 && path == null && columnPositions.isEmpty()) {
+                path = "";
+            }
+
             if (path != null) {
                 JsonNode valueNode;
                 if (value == null || NULL_STRING.equals(value)) {
@@ -377,6 +383,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 String[] pathArray = path.split("/");
                 this.setValue(object, pathArray, valueNode);
             }
+
+            position++;
         }
 
         return this.convertObjectsToArrays(object);
