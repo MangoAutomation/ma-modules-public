@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
@@ -309,6 +311,53 @@ public class DataPointRestController extends BaseMangoRestController {
         return new DataPointModel(dataPoint);
     }
 
+    @ApiOperation(value = "Gets a list of data points for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.GET, value = "/bulk/points", produces="text/csv")
+    public StreamedArrayWithTotal returnList(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        return doQuery(rql, user, dataPointModel -> {
+            ActionAndModel<DataPointModel> actionAndModel = new ActionAndModel<>();
+            actionAndModel.setAction(VoAction.UPDATE);
+            actionAndModel.setOriginalXid(dataPointModel.getXid());
+            actionAndModel.setModel(dataPointModel);
+            return actionAndModel;
+        });
+    }
+
+    @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes="text/csv")
+    public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperationCSV(
+            @RequestBody
+            List<ActionAndModel<DataPointModel>> points,
+
+            @AuthenticationPrincipal
+            User user,
+
+            UriComponentsBuilder builder) {
+
+        DataPointBulkRequest bulkRequest = new DataPointBulkRequest();
+
+        bulkRequest.setRequests(points.stream().map(actionAndModel -> {
+            DataPointModel point = actionAndModel.getModel();
+            VoAction action = actionAndModel.getAction();
+            String originalXid = actionAndModel.getOriginalXid();
+            if (originalXid == null && point != null) {
+                originalXid = point.getXid();
+            }
+
+            DataPointIndividualRequest request = new DataPointIndividualRequest();
+            request.setAction(action == null ? VoAction.UPDATE : action);
+            request.setXid(originalXid);
+            request.setBody(point);
+            return request;
+        }).collect(Collectors.toList()));
+
+        return this.bulkDataPointOperation(bulkRequest, user, builder);
+    }
+
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperation(
@@ -454,6 +503,7 @@ public class DataPointRestController extends BaseMangoRestController {
         DataPointIndividualResponse result = new DataPointIndividualResponse();
 
         try {
+            // TODO use id from request body instead of XID if it is set
             String xid = request.getXid();
 
             VoAction action = request.getAction() == null ? defaultAction : request.getAction();
@@ -501,6 +551,10 @@ public class DataPointRestController extends BaseMangoRestController {
     }
 
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+        return doQuery(rql, user, null);
+    }
+
+    private static StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
         if (user.isAdmin()) {
             return new StreamedVOQueryWithTotal<>(DataPointDao.instance, rql, item -> {
                 DataPointDao.instance.loadPartialRelationalData(item);
@@ -524,7 +578,14 @@ public class DataPointRestController extends BaseMangoRestController {
                 return true;
             }, item -> {
                 DataPointDao.instance.loadPartialRelationalData(item);
-                return new DataPointModel(item);
+                DataPointModel pointModel = new DataPointModel(item);
+
+                // option to apply a further transformation
+                if (toModel != null) {
+                    return toModel.apply(pointModel);
+                }
+
+                return pointModel;
             });
         }
     }
