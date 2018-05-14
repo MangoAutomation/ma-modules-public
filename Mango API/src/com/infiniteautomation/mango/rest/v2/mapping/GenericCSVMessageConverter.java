@@ -56,6 +56,13 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 
     public static final String NULL_STRING = "NULL";
+
+    // Excel converts true -> TRUE, false -> FALSE when reading CSV for some reason
+    // true, false, True and False are handled by Jackson
+    // only used when parsing the CSV
+    public static final String TRUE_STRING = "TRUE";
+    public static final String FALSE_STRING = "FALSE";
+
     public static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
     private JsonNodeFactory nodeFactory;
@@ -93,6 +100,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             else {
                 objectWriter = this.objectMapper.writer();
             }
+
+            // TODO enable writer features/formats
+            // e.g. Dates encoded as excel compatible date format
+
             if (javaType != null && javaType.isContainerType()) {
                 objectWriter = objectWriter.forType(javaType);
             }
@@ -281,6 +292,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             } else {
                 reader = this.objectMapper.reader();
             }
+
+            // TODO enable reader features/formats
+            // e.g. Dates encoded as excel compatible date format
+
             reader = reader.forType(javaType);
 
             MediaType contentType = inputMessage.getHeaders().getContentType();
@@ -372,6 +387,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 JsonNode valueNode;
                 if (value == null || NULL_STRING.equals(value)) {
                     valueNode = this.nodeFactory.nullNode();
+                } else if (TRUE_STRING.equals(value)) {
+                    valueNode = this.nodeFactory.booleanNode(true);
+                } else if (FALSE_STRING.equals(value)) {
+                    valueNode = this.nodeFactory.booleanNode(false);
                 } else {
                     valueNode = this.nodeFactory.textNode(value);
                 }
