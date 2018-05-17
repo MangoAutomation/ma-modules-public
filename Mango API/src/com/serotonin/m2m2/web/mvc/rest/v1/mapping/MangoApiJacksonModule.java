@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
- * 
+ *
  * @author Terry Packer
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.mapping;
@@ -18,6 +18,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.email.EmailRecipientModel;
 
+import net.jazdw.rql.parser.ASTNode;
+
 /**
  * @author Terry Packer
  *
@@ -26,22 +28,25 @@ public class MangoApiJacksonModule extends SimpleModule {
     private static final long serialVersionUID = 1L;
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public MangoApiJacksonModule() {
-		super("MangoApiJson", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation", "mango"));
-		
-		this.addSerializer(JSONStreamedArray.class, new JSONStreamedArraySerializer());
-		this.addSerializer(QueryArrayStream.class, new JsonArraySerializer());
-		this.addSerializer(QueryDataPageStream.class, new JsonDataPageSerializer());
-		this.addSerializer(ObjectStream.class, new JsonObjectSerializer());
+    public MangoApiJacksonModule() {
+        super("MangoApiJson", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation", "mango"));
+
+        this.addSerializer(JSONStreamedArray.class, new JSONStreamedArraySerializer());
+        this.addSerializer(QueryArrayStream.class, new JsonArraySerializer());
+        this.addSerializer(QueryDataPageStream.class, new JsonDataPageSerializer());
+        this.addSerializer(ObjectStream.class, new JsonObjectSerializer());
         this.addSerializer(JsonStream.class, new JsonStreamSerializer());
-		this.addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
+        this.addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
         this.addSerializer(ValueMonitor.class, new ValueMonitorSerializer());
         this.addSerializer(PointValueTimeStream.class, new PointValueTimeStreamJsonSerializer());
-		
-        this.addDeserializer(EmailRecipientModel.class, new EmailRecipientModelDeserializer());
-		this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
 
-	}
+        this.addSerializer(ASTNode.class, new ASTNodeSerializer());
+        this.addDeserializer(ASTNode.class, new ASTNodeDeserializer());
+
+        this.addDeserializer(EmailRecipientModel.class, new EmailRecipientModelDeserializer());
+        this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
+
+    }
 
     @Override
     public void setupModule(SetupContext context) {

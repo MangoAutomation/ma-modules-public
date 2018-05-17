@@ -199,6 +199,33 @@ public class DataPointRestController extends BaseMangoRestController {
         return doQuery(rql, user);
     }
 
+    @ApiOperation(value = "Gets a list of data points for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.GET, produces="text/csv")
+    public StreamedArrayWithTotal queryCsv(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        return this.queryCsvPost(rql, user);
+    }
+
+    @ApiOperation(value = "Gets a list of data points for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.POST, value = "/query", produces="text/csv")
+    public StreamedArrayWithTotal queryCsvPost(
+            @ApiParam(value="RQL query AST", required = true)
+            @RequestBody ASTNode rql,
+
+            @AuthenticationPrincipal User user) {
+
+        return doQuery(rql, user, dataPointModel -> {
+            ActionAndModel<DataPointModel> actionAndModel = new ActionAndModel<>();
+            actionAndModel.setAction(VoAction.UPDATE);
+            actionAndModel.setOriginalXid(dataPointModel.getXid());
+            actionAndModel.setModel(dataPointModel);
+            return actionAndModel;
+        });
+    }
+
     @ApiOperation(value = "Update an existing data point")
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<DataPointModel> updateDataPoint(
@@ -309,22 +336,6 @@ public class DataPointRestController extends BaseMangoRestController {
 
         Common.runtimeManager.deleteDataPoint(dataPoint);
         return new DataPointModel(dataPoint);
-    }
-
-    @ApiOperation(value = "Gets a list of data points for bulk import via CSV", notes = "Adds an additional action and originalXid column")
-    @RequestMapping(method = RequestMethod.GET, value = "/bulk/points", produces="text/csv")
-    public StreamedArrayWithTotal returnList(
-            HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
-
-        ASTNode rql = parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user, dataPointModel -> {
-            ActionAndModel<DataPointModel> actionAndModel = new ActionAndModel<>();
-            actionAndModel.setAction(VoAction.UPDATE);
-            actionAndModel.setOriginalXid(dataPointModel.getXid());
-            actionAndModel.setModel(dataPointModel);
-            return actionAndModel;
-        });
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
@@ -555,11 +566,20 @@ public class DataPointRestController extends BaseMangoRestController {
     }
 
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
+        final Function<DataPointVO, Object> transformPoint = item -> {
+            DataPointDao.instance.loadPartialRelationalData(item);
+            DataPointModel pointModel = new DataPointModel(item);
+
+            // option to apply a further transformation
+            if (toModel != null) {
+                return toModel.apply(pointModel);
+            }
+
+            return pointModel;
+        };
+
         if (user.isAdmin()) {
-            return new StreamedVOQueryWithTotal<>(DataPointDao.instance, rql, item -> {
-                DataPointDao.instance.loadPartialRelationalData(item);
-                return new DataPointModel(item);
-            });
+            return new StreamedVOQueryWithTotal<>(DataPointDao.instance, rql, transformPoint);
         } else {
             // Add some conditions to restrict based on user permissions
             ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
@@ -576,17 +596,7 @@ public class DataPointRestController extends BaseMangoRestController {
                 }
 
                 return true;
-            }, item -> {
-                DataPointDao.instance.loadPartialRelationalData(item);
-                DataPointModel pointModel = new DataPointModel(item);
-
-                // option to apply a further transformation
-                if (toModel != null) {
-                    return toModel.apply(pointModel);
-                }
-
-                return pointModel;
-            });
+            }, transformPoint);
         }
     }
 
