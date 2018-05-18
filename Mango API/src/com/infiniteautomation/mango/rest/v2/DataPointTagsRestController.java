@@ -66,7 +66,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     private static final String RESOURCE_TYPE_BULK_DATA_POINT_TAGS = "BULK_DATA_POINT_TAGS";
 
     public static enum BulkTagAction {
-        GET, SET, MERGE
+        GET, SET, MERGE, UPDATE // synonym for MERGE
     }
 
     public static class TagIndividualRequest extends IndividualRequest<BulkTagAction, Map<String, String>> {
@@ -225,6 +225,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                     result.setBody(this.setTagsForDataPoint(xid, tags, user));
                     break;
                 case MERGE:
+                case UPDATE:
                     if (tags == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
                     }
@@ -262,6 +263,59 @@ public class DataPointTagsRestController extends BaseMangoRestController {
         }
 
         return response;
+    }
+
+    public static class ActionAndTags {
+        BulkTagAction action;
+        String xid;
+        Map<String, String> tags;
+
+        public BulkTagAction getAction() {
+            return action;
+        }
+        public void setAction(BulkTagAction action) {
+            this.action = action;
+        }
+        public String getXid() {
+            return xid;
+        }
+        public void setXid(String xid) {
+            this.xid = xid;
+        }
+        public Map<String, String> getTags() {
+            return tags;
+        }
+        public void setTags(Map<String, String> tags) {
+            this.tags = tags;
+        }
+    }
+
+    @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs for CSV", notes = "User must have read/edit permission for the data point")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes="text/csv")
+    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperationCsv(
+            @RequestBody
+            List<ActionAndTags> requestBody,
+
+            @AuthenticationPrincipal
+            User user,
+
+            UriComponentsBuilder builder) {
+
+        TagBulkRequest bulkRequest = new TagBulkRequest();
+
+        bulkRequest.setRequests(requestBody.stream().map(actionAndModel -> {
+            Map<String, String> tags = actionAndModel.getTags();
+            BulkTagAction action = actionAndModel.getAction();
+            String xid = actionAndModel.getXid();
+
+            TagIndividualRequest request = new TagIndividualRequest();
+            request.setAction(action == null ? BulkTagAction.MERGE : action);
+            request.setXid(xid);
+            request.setBody(tags);
+            return request;
+        }).collect(Collectors.toList()));
+
+        return this.bulkDataPointTagOperation(bulkRequest, user, builder);
     }
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
