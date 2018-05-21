@@ -56,6 +56,9 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 
     public static final String NULL_STRING = "NULL";
+    public static final String ARRAY_STRING = "ARRAY";
+    public static final String OBJECT_STRING = "OBJECT";
+    public static final String UNDEFINED_STRING = "UNDEFINED";
 
     // Excel converts true -> TRUE, false -> FALSE when reading CSV for some reason
     // true, false, True and False are handled by Jackson
@@ -209,7 +212,12 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @param path
      */
     private void traverseAndSetColumns(Map<String, Integer> columnPositions, List<String> columns, JsonNode node, String path) {
+        int columnNum = columnPositions.computeIfAbsent(path, name -> columnPositions.size());
+        this.expandList(columns, columnNum + 1);
+
         if (node.isObject()) {
+            columns.set(columnNum, OBJECT_STRING);
+
             Iterator<Entry<String, JsonNode>> it = node.fields();
             while (it.hasNext()) {
                 Entry<String, JsonNode> entry = it.next();
@@ -218,6 +226,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
             }
         } else if (node.isArray()) {
+            columns.set(columnNum, ARRAY_STRING);
+
             Iterator<JsonNode> it = node.elements();
             int i = 0;
             while (it.hasNext()) {
@@ -226,7 +236,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
             }
         } else if (node.isValueNode()) {
-            this.setColumn(columnPositions, columns, path, node);
+            if (node.isNull()) {
+                // columns default to null value which is encoded in the CSV as an empty string
+                // use our designated NULL string instead
+                columns.set(columnNum, NULL_STRING);
+            } else {
+                columns.set(columnNum, node.asText());
+            }
         }
     }
 
@@ -239,27 +255,6 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private void expandList(List<String> list, int size) {
         while (list.size() < size) {
             list.add(null);
-        }
-    }
-
-    /**
-     * Set the value of a column to the given JsonNode value
-     *
-     * @param columnPositions
-     * @param columns
-     * @param propertyName
-     * @param value
-     */
-    private void setColumn(Map<String, Integer> columnPositions, List<String> columns, String propertyName, JsonNode value) {
-        int columnNum = columnPositions.computeIfAbsent(propertyName, name -> columnPositions.size());
-        this.expandList(columns, columnNum + 1);
-
-        if (value.isNull()) {
-            // columns default to null value which is encoded in the CSV as an empty string
-            // use our designated NULL string instead
-            columns.set(columnNum, NULL_STRING);
-        } else {
-            columns.set(columnNum, value.asText());
         }
     }
 
