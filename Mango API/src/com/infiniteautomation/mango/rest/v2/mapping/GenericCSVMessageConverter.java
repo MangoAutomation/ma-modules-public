@@ -12,7 +12,6 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -68,11 +67,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
     public static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
-    private JsonNodeFactory nodeFactory;
+    private final JsonNodeFactory nodeFactory;
+    private final boolean alwaysIncludeObjectType;
 
-    public GenericCSVMessageConverter(ObjectMapper objectMapper) {
+    public GenericCSVMessageConverter(ObjectMapper objectMapper, boolean alwaysIncludeObjectType) {
         super(objectMapper, new MediaType("text", "csv"));
         this.nodeFactory = objectMapper.getNodeFactory();
+        this.alwaysIncludeObjectType = alwaysIncludeObjectType;
     }
 
     @Override
@@ -212,11 +213,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @param path
      */
     private void traverseAndSetColumns(Map<String, Integer> columnPositions, List<String> columns, JsonNode node, String path) {
-        int columnNum = columnPositions.computeIfAbsent(path, name -> columnPositions.size());
-        this.expandList(columns, columnNum + 1);
-
         if (node.isObject()) {
-            columns.set(columnNum, OBJECT_STRING);
+            if (alwaysIncludeObjectType || columnPositions.containsKey(path)) {
+                setColumnValue(columnPositions, path, columns, OBJECT_STRING);
+            }
 
             Iterator<Entry<String, JsonNode>> it = node.fields();
             while (it.hasNext()) {
@@ -226,7 +226,9 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
             }
         } else if (node.isArray()) {
-            columns.set(columnNum, ARRAY_STRING);
+            if (alwaysIncludeObjectType || columnPositions.containsKey(path)) {
+                setColumnValue(columnPositions, path, columns, ARRAY_STRING);
+            }
 
             Iterator<JsonNode> it = node.elements();
             int i = 0;
@@ -239,11 +241,25 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             if (node.isNull()) {
                 // columns default to null value which is encoded in the CSV as an empty string
                 // use our designated NULL string instead
-                columns.set(columnNum, NULL_STRING);
+                setColumnValue(columnPositions, path, columns, NULL_STRING);
             } else {
-                columns.set(columnNum, node.asText());
+                setColumnValue(columnPositions, path, columns, node.asText());
             }
         }
+    }
+
+    /**
+     * Set the value of a column to the given String value
+     *
+     * @param columnPositions
+     * @param propertyPath
+     * @param columns
+     * @param value
+     */
+    private void setColumnValue(Map<String, Integer> columnPositions, String propertyPath, List<String> columns, String value) {
+        int columnNum = columnPositions.computeIfAbsent(propertyPath, name -> columnPositions.size());
+        this.expandList(columns, columnNum + 1);
+        columns.set(columnNum, value);
     }
 
     /**
@@ -357,6 +373,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         return root;
     }
 
+    private static enum ObjectType {
+        OBJECT, ARRAY, NOT_SPECIFIED
+    }
+
     /**
      * Create a Json object or array from a CSV row. All values will be string values
      * or null values. We rely on Jackson to interpret these string values as the correct type
@@ -369,6 +389,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private JsonNode readCSVRow(Map<Integer, String> columnPositions, String[] row) {
         ObjectNode object = this.nodeFactory.objectNode();
 
+        Map<String, ObjectType> objectTypes = new HashMap<>();
+
         int position = 0;
         for (String value : row) {
             String path = columnPositions.get(position);
@@ -379,29 +401,39 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             if (path != null) {
-                JsonNode valueNode;
-                if (value == null || NULL_STRING.equals(value)) {
+                JsonNode valueNode = null;
+
+                if (value == null || UNDEFINED_STRING.equals(value)) {
+                    // do nothing
+                } else if (NULL_STRING.equals(value)) {
                     valueNode = this.nodeFactory.nullNode();
                 } else if (TRUE_STRING.equals(value)) {
                     valueNode = this.nodeFactory.booleanNode(true);
                 } else if (FALSE_STRING.equals(value)) {
                     valueNode = this.nodeFactory.booleanNode(false);
+                } else if (OBJECT_STRING.equals(value)) {
+                    objectTypes.put(path, ObjectType.OBJECT);
+                } else if (ARRAY_STRING.equals(value)) {
+                    objectTypes.put(path, ObjectType.ARRAY);
                 } else {
                     valueNode = this.nodeFactory.textNode(value);
                 }
 
-                if (path.isEmpty()) {
-                    return valueNode;
-                }
+                // only call setValue() for value nodes
+                if (valueNode != null) {
+                    // root path is set to a value node, return this as the result for the whole row
+                    if (path.isEmpty()) {
+                        return valueNode;
+                    }
 
-                String[] pathArray = path.split("/");
-                this.setValue(object, pathArray, valueNode);
+                    this.setObjectValue(object, path, valueNode);
+                }
             }
 
             position++;
         }
 
-        return this.convertObjectsToArrays(object);
+        return this.convertObjectsToArrays(object, objectTypes, "");
     }
 
     /**
@@ -412,20 +444,26 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @param path
      * @param value
      */
-    private void setValue(ObjectNode object, String[] path, JsonNode value) {
-        String propertyName = path[0];
+    private void setObjectValue(ObjectNode object, String path, JsonNode value) {
+        String[] pathArray = path.split("/");
+        for (int i = 0; i < pathArray.length; i++) {
+            String propertyName = pathArray[i];
 
-        if (path.length == 1) {
-            object.set(propertyName, value);
-        } else {
-            JsonNode child = object.get(propertyName);
-            if (child == null) {
-                child = this.nodeFactory.objectNode();
-                object.set(propertyName, child);
-            }
+            if (i == pathArray.length - 1) {
+                object.set(propertyName, value);
+            } else {
+                JsonNode child = object.get(propertyName);
+                if (child == null) {
+                    child = this.nodeFactory.objectNode();
+                    object.set(propertyName, child);
+                }
 
-            if (child.isObject()) {
-                this.setValue((ObjectNode) child, Arrays.copyOfRange(path, 1, path.length), value);
+                if (!child.isObject()) {
+                    // most likely a null value, just skip setting the value
+                    break;
+                } else {
+                    object = (ObjectNode) child;
+                }
             }
         }
     }
@@ -435,12 +473,16 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * with array nodes.
      *
      * @param object
+     * @param isArrayMap
      * @return
      */
-    private JsonNode convertObjectsToArrays(ObjectNode object) {
+    private JsonNode convertObjectsToArrays(ObjectNode object, Map<String, ObjectType> objectTypes, String path) {
         boolean hasChild = false;
         boolean allIntegers = true;
         int highestIndex = -1;
+
+        // The type of object might have been explicitly set in the CSV, if not we will auto detect it
+        ObjectType type = objectTypes.getOrDefault(path, ObjectType.NOT_SPECIFIED);
 
         Iterator<Entry<String, JsonNode>> it = object.fields();
         while(it.hasNext()) {
@@ -450,7 +492,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             String propertyName = entry.getKey();
             JsonNode value = entry.getValue();
 
-            if (allIntegers) {
+            if (type == ObjectType.ARRAY || (type == ObjectType.NOT_SPECIFIED && allIntegers)) {
                 if (INTEGER_PATTERN.matcher(propertyName).matches()) {
                     int index = Integer.parseInt(propertyName);
                     if (index > highestIndex) {
@@ -462,14 +504,20 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             if (value.isObject()) {
-                JsonNode result = this.convertObjectsToArrays((ObjectNode) value);
+                JsonNode result = this.convertObjectsToArrays((ObjectNode) value, objectTypes, path + "/" + propertyName);
                 if (result.isArray()) {
                     entry.setValue(result);
                 }
             }
         }
 
-        if (hasChild && allIntegers) {
+        // object type was not explicitly set and we detected an object will all integer keys,
+        // assume its an array
+        if (type == ObjectType.NOT_SPECIFIED && hasChild && allIntegers) {
+            type = ObjectType.ARRAY;
+        }
+
+        if (type == ObjectType.ARRAY) {
             int size = highestIndex + 1;
             ArrayNode arrayNode = this.nodeFactory.arrayNode(size);
             for (int i = 0; i < size; i++) {
