@@ -59,7 +59,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     public static final String NULL_STRING = "NULL";
     public static final String ARRAY_STRING = "ARRAY";
     public static final String OBJECT_STRING = "OBJECT";
-    public static final String UNDEFINED_STRING = "UNDEFINED";
+    public static final String EMPTY_STRING = "EMPTY";
 
     // Excel converts true -> TRUE, false -> FALSE when reading CSV for some reason
     // true, false, True and False are handled by Jackson
@@ -250,6 +250,9 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             if (node.isNull()) {
                 // we can't set the column to null as its encoded as an empty string, use our designated NULL string instead
                 columns.set(columnNum, NULL_STRING);
+            } else if (node.isTextual() && node.asText().isEmpty()) {
+                // we can't set the column to null as its encoded as an empty string, use our designated NULL string instead
+                columns.set(columnNum, EMPTY_STRING);
             } else {
                 columns.set(columnNum, node.asText());
             }
@@ -257,14 +260,14 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     }
 
     /**
-     * Expand a list to the given size, filling it with our UNDEFINED string
+     * Expand a list to the given size, filling it with null (encoded as empty string)
      *
      * @param list
      * @param size
      */
     private void expandList(List<String> list, int size) {
         while (list.size() < size) {
-            list.add(UNDEFINED_STRING);
+            list.add(null);
         }
     }
 
@@ -403,7 +406,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 path = "";
             }
 
-            if (path == null || value == null || UNDEFINED_STRING.equals(value)) {
+            if (path == null || value == null || value.isEmpty()) {
                 // no header for the column, or value was undefined, do nothing
             } else if (OBJECT_STRING.equals(value)) {
                 objectTypes.put(path, ObjectType.OBJECT);
@@ -417,6 +420,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                     valueNode = this.nodeFactory.booleanNode(true);
                 } else if (FALSE_STRING.equals(value)) {
                     valueNode = this.nodeFactory.booleanNode(false);
+                } else if (EMPTY_STRING.equals(value)) {
+                    valueNode = this.nodeFactory.textNode("");
                 } else {
                     valueNode = this.nodeFactory.textNode(value);
                 }
