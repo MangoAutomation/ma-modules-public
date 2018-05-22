@@ -38,6 +38,6 @@ public class MangoRestModuleSpringConfiguration extends WebMvcConfigurerAdapter{
         converters.add(new PointValueTimeStreamCsvMessageConverter());
         //converters.add(new DataPointCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
-        converters.add(new GenericCSVMessageConverter(mapper, false));
+        converters.add(new GenericCSVMessageConverter(mapper));
     }
 }

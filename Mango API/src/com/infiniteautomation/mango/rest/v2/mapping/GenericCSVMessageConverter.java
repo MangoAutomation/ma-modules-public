@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -68,12 +70,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     public static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
     private final JsonNodeFactory nodeFactory;
-    private final boolean alwaysIncludeObjectType;
 
-    public GenericCSVMessageConverter(ObjectMapper objectMapper, boolean alwaysIncludeObjectType) {
+    public GenericCSVMessageConverter(ObjectMapper objectMapper) {
         super(objectMapper, new MediaType("text", "csv"));
         this.nodeFactory = objectMapper.getNodeFactory();
-        this.alwaysIncludeObjectType = alwaysIncludeObjectType;
     }
 
     @Override
@@ -140,6 +140,11 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             Charset charset = this.charsetForContentType(contentType);
 
             try (Writer out = new OutputStreamWriter(outputMessage.getBody(), charset)) {
+                if (charset.name().startsWith("UTF-")) {
+                    // write the UTF BOM (byte order mark)
+                    out.write('\ufeff');
+                }
+
                 if (!root.isArray()) {
                     ArrayNode array = this.nodeFactory.arrayNode(1);
                     array.add(root);
@@ -165,16 +170,18 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      */
     private void writeCSV(CSVWriter csvWriter, ArrayNode root) throws IOException {
         Map<String, Integer> columnPositions = new HashMap<>();
-        List<String[]> rows = new ArrayList<>();
+        List<List<String>> rows = new ArrayList<>();
 
+        int maxRowSize = 0;
         Iterator<JsonNode> it = root.elements();
         while (it.hasNext()) {
             JsonNode node = it.next();
 
-            String[] row = createCSVRow(columnPositions, node);
-            if (row != null) {
-                rows.add(row);
+            List<String> row = createCSVRow(columnPositions, node);
+            if (row.size() > maxRowSize) {
+                maxRowSize = row.size();
             }
+            rows.add(row);
         }
 
         String[] header = new String[columnPositions.size()];
@@ -183,8 +190,11 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         }
         csvWriter.writeNext(header);
 
-        for (String[] row : rows) {
-            csvWriter.writeNext(row);
+        for (List<String> row : rows) {
+            if (row.size() < maxRowSize) {
+                this.expandList(row, maxRowSize);
+            }
+            csvWriter.writeNext(row.toArray(new String[row.size()]));
         }
     }
 
@@ -195,13 +205,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @param node
      * @return
      */
-    private String[] createCSVRow(Map<String, Integer> columnPositions, JsonNode node) {
+    private List<String> createCSVRow(Map<String, Integer> columnPositions, JsonNode node) {
         int numColumns = columnPositions.size();
         List<String> columns = new ArrayList<>(numColumns);
         this.expandList(columns, numColumns);
 
-        this.traverseAndSetColumns(columnPositions, columns, node, null);
-        return columns.toArray(new String[columns.size()]);
+        this.traverseAndSetColumns(columnPositions, columns, node, "");
+        return columns;
     }
 
     /**
@@ -213,64 +223,48 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @param path
      */
     private void traverseAndSetColumns(Map<String, Integer> columnPositions, List<String> columns, JsonNode node, String path) {
+        int columnNum = columnPositions.computeIfAbsent(path, p -> columnPositions.size());
+        this.expandList(columns, columnNum + 1);
+
         if (node.isObject()) {
-            if (alwaysIncludeObjectType || columnPositions.containsKey(path)) {
-                setColumnValue(columnPositions, path, columns, OBJECT_STRING);
-            }
+            columns.set(columnNum, OBJECT_STRING);
 
             Iterator<Entry<String, JsonNode>> it = node.fields();
             while (it.hasNext()) {
                 Entry<String, JsonNode> entry = it.next();
                 JsonNode value = entry.getValue();
                 String propertyName = entry.getKey();
-                this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
+                this.traverseAndSetColumns(columnPositions, columns, value, path.isEmpty() ? propertyName : path + "/" + propertyName);
             }
         } else if (node.isArray()) {
-            if (alwaysIncludeObjectType || columnPositions.containsKey(path)) {
-                setColumnValue(columnPositions, path, columns, ARRAY_STRING);
-            }
+            columns.set(columnNum, ARRAY_STRING);
 
             Iterator<JsonNode> it = node.elements();
             int i = 0;
             while (it.hasNext()) {
                 JsonNode value = it.next();
                 String propertyName = Integer.toString(i++);
-                this.traverseAndSetColumns(columnPositions, columns, value, path == null ? propertyName : path + "/" + propertyName);
+                this.traverseAndSetColumns(columnPositions, columns, value, path.isEmpty() ? propertyName : path + "/" + propertyName);
             }
         } else if (node.isValueNode()) {
             if (node.isNull()) {
-                // columns default to null value which is encoded in the CSV as an empty string
-                // use our designated NULL string instead
-                setColumnValue(columnPositions, path, columns, NULL_STRING);
+                // we can't set the column to null as its encoded as an empty string, use our designated NULL string instead
+                columns.set(columnNum, NULL_STRING);
             } else {
-                setColumnValue(columnPositions, path, columns, node.asText());
+                columns.set(columnNum, node.asText());
             }
         }
     }
 
     /**
-     * Set the value of a column to the given String value
-     *
-     * @param columnPositions
-     * @param propertyPath
-     * @param columns
-     * @param value
-     */
-    private void setColumnValue(Map<String, Integer> columnPositions, String propertyPath, List<String> columns, String value) {
-        int columnNum = columnPositions.computeIfAbsent(propertyPath, name -> columnPositions.size());
-        this.expandList(columns, columnNum + 1);
-        columns.set(columnNum, value);
-    }
-
-    /**
-     * Expand the given list to the given size.
+     * Expand a list to the given size, filling it with our UNDEFINED string
      *
      * @param list
      * @param size
      */
     private void expandList(List<String> list, int size) {
         while (list.size() < size) {
-            list.add(null);
+            list.add(UNDEFINED_STRING);
         }
     }
 
@@ -313,9 +307,18 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             Charset charset = this.charsetForContentType(contentType);
 
             ArrayNode root;
-            try (Reader in = new InputStreamReader(inputMessage.getBody(), charset)) {
-                CSVReader csvReader = new CSVReader(in);
-                root = readCSV(csvReader);
+            try (BOMInputStream is = new BOMInputStream(inputMessage.getBody(), false, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE,
+                    ByteOrderMark.UTF_32LE, ByteOrderMark.UTF_32BE)) {
+
+                String charsetName = is.getBOMCharsetName();
+                if (charsetName != null) {
+                    charset = Charset.forName(charsetName);
+                }
+
+                try (Reader in = new InputStreamReader(is, charset)) {
+                    CSVReader csvReader = new CSVReader(in);
+                    root = readCSV(csvReader);
+                }
             }
 
             JsonNode rootNode = root;
@@ -391,46 +394,40 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
         Map<String, ObjectType> objectTypes = new HashMap<>();
 
-        int position = 0;
-        for (String value : row) {
-            String path = columnPositions.get(position);
+        for (int i = 0; i < row.length; i++) {
+            String value = row[i];
+            String path = columnPositions.get(i);
 
-            // empty header row, assume empty string
-            if (position == 0 && path == null && columnPositions.isEmpty()) {
+            // empty header row, assume path is the root object
+            if (i == 0 && path == null && columnPositions.isEmpty()) {
                 path = "";
             }
 
-            if (path != null) {
+            if (path == null || value == null || UNDEFINED_STRING.equals(value)) {
+                // no header for the column, or value was undefined, do nothing
+            } else if (OBJECT_STRING.equals(value)) {
+                objectTypes.put(path, ObjectType.OBJECT);
+            } else if (ARRAY_STRING.equals(value)) {
+                objectTypes.put(path, ObjectType.ARRAY);
+            } else {
                 JsonNode valueNode = null;
-
-                if (value == null || UNDEFINED_STRING.equals(value)) {
-                    // do nothing
-                } else if (NULL_STRING.equals(value)) {
+                if (NULL_STRING.equals(value)) {
                     valueNode = this.nodeFactory.nullNode();
                 } else if (TRUE_STRING.equals(value)) {
                     valueNode = this.nodeFactory.booleanNode(true);
                 } else if (FALSE_STRING.equals(value)) {
                     valueNode = this.nodeFactory.booleanNode(false);
-                } else if (OBJECT_STRING.equals(value)) {
-                    objectTypes.put(path, ObjectType.OBJECT);
-                } else if (ARRAY_STRING.equals(value)) {
-                    objectTypes.put(path, ObjectType.ARRAY);
                 } else {
                     valueNode = this.nodeFactory.textNode(value);
                 }
 
-                // only call setValue() for value nodes
-                if (valueNode != null) {
-                    // root path is set to a value node, return this as the result for the whole row
-                    if (path.isEmpty()) {
-                        return valueNode;
-                    }
-
-                    this.setObjectValue(object, path, valueNode);
+                // root path is a value node, return this as the result for the whole row
+                if (path.isEmpty()) {
+                    return valueNode;
                 }
-            }
 
-            position++;
+                this.setObjectValue(object, path, valueNode);
+            }
         }
 
         return this.convertObjectsToArrays(object, objectTypes, "");
@@ -458,12 +455,14 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                     object.set(propertyName, child);
                 }
 
-                if (!child.isObject()) {
-                    // most likely a null value, just skip setting the value
-                    break;
-                } else {
-                    object = (ObjectNode) child;
+                if (!child.isContainerNode()) {
+                    // child is a value node (most likely a null), can't set a property on a value node
+                    // so just skip setting the value
+                    return;
                 }
+
+                // can't be an array node (our tree is built only with objects)
+                object = (ObjectNode) child;
             }
         }
     }
