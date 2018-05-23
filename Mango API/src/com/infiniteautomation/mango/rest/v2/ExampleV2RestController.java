@@ -180,4 +180,13 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
         Common.eventManager.raiseEvent(model.getEvent().getEventTypeInstance(), Common.timer.currentTimeMillis(), true, AlarmLevels.CODES.getId(model.getLevel()), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Identity function", notes = "Returns whatever is sent in the request body. Useful for testing message converters. Must be admin")
+    @RequestMapping(method = RequestMethod.POST, value = {"/identity"})
+    public Object identityFunction(
+            @RequestBody Object node) {
+
+        return node;
+    }
 }

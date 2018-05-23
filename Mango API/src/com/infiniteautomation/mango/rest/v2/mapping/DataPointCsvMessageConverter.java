@@ -32,7 +32,7 @@ public class DataPointCsvMessageConverter extends AbstractJackson2HttpMessageCon
     }
 
     public DataPointCsvMessageConverter(CsvMapper csvMapper) {
-        super(csvMapper, new MediaType("text", "csv"));
+        super(csvMapper, MediaTypes.CSV);
         this.objectMapper = csvMapper;
         this.objectMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
     }

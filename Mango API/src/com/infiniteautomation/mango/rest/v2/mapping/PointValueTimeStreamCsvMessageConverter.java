@@ -50,7 +50,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     }
 
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
-        super(csvMapper, new MediaType("text", "csv"));
+        super(csvMapper, MediaTypes.CSV);
         ((CsvMapper)this.objectMapper).configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
     }
 

@@ -59,8 +59,8 @@ import com.wordnik.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
- * 
- * 
+ *
+ *
  * @author Terry Packer
  *
  */
@@ -68,297 +68,297 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController()
 @RequestMapping("/v1/events")
 public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
-    
-	private static Log LOG = LogFactory.getLog(EventsRestController.class);
-	
-	public EventsRestController(){ 
-		super(EventInstanceDao.instance);
-		
-		//Add in our mappings
-		this.modelMap.put("eventType", "typeName");
-		this.modelMap.put("referenceId1", "typeRef1");
-		this.modelMap.put("referenceId2", "typeRef2");
-		this.modelMap.put("dataPointId", "typeRef1");
-		this.modelMap.put("active", "rtnTs");
-		this.modelMap.put("acknowledged", "ackTs");
-		
-		this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
-		
-		//If we query on the member active
-		this.appenders.put("active", new GenericSQLColumnQueryAppender(){
 
-			@Override
-			public void appendSQL(SQLQueryColumn column,
-					StringBuilder selectSql, StringBuilder countSql,
-					List<Object> selectArgs, List<Object> columnArgs,
-					ComparisonEnum comparison) {
-				
-				if(columnArgs.size() == 0)
-					return;
-				
-				//Hack to allow still querying on rtnTs as number
-				if(!(columnArgs.get(0) instanceof Boolean))
-					return;
-				
-				Boolean condition = (Boolean)columnArgs.get(0);
-				if(condition){
-					appendSQL(column.getName(), " IS ? ", selectSql, countSql);
-					selectArgs.add(null);
-				}else{
-					appendSQL(column.getName(), " IS NOT ? ", selectSql, countSql);
-					selectArgs.add(null);
-				}
-				
-				appendSQL("AND evt.rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
-				selectArgs.add("Y");
-			}
-		
-		});	
-		//If we query on the member acknowledged
-		this.appenders.put("acknowledged", new GenericSQLColumnQueryAppender(){
+    private static Log LOG = LogFactory.getLog(EventsRestController.class);
 
-			@Override
-			public void appendSQL(SQLQueryColumn column,
-					StringBuilder selectSql, StringBuilder countSql,
-					List<Object> selectArgs, List<Object> columnArgs,
-					ComparisonEnum comparison) {
-				
-				if(columnArgs.size() == 0)
-					return;
-				
-				//Hack to allow querying on ackTs as number
-				if(!(columnArgs.get(0) instanceof Boolean))
-					return;
-				
-				Boolean condition = (Boolean)columnArgs.get(0);
-				if(condition){
-					appendSQL(column.getName(), " IS NOT ? ", selectSql, countSql);
-					selectArgs.add(null);
-				}else{
-					appendSQL(column.getName(), " IS ? ", selectSql, countSql);
-					selectArgs.add(null);
-				}
-			}
-		
-		});	
-		
-		//Ensure we are querying on Type of Data Point for dataPointId queries
-		this.appenders.put("dataPointId", new GenericSQLColumnQueryAppender(){
+    public EventsRestController(){
+        super(EventInstanceDao.instance);
 
-			@Override
-			public void appendSQL(SQLQueryColumn column,
-					StringBuilder selectSql, StringBuilder countSql,
-					List<Object> selectArgs, List<Object> columnArgs,
-					ComparisonEnum comparison) {
-				
-				selectSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
-				countSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
-				selectArgs.add(columnArgs.get(0));
-			}
-		});
-	}
+        //Add in our mappings
+        this.modelMap.put("eventType", "typeName");
+        this.modelMap.put("referenceId1", "typeRef1");
+        this.modelMap.put("referenceId2", "typeRef2");
+        this.modelMap.put("dataPointId", "typeRef1");
+        this.modelMap.put("active", "rtnTs");
+        this.modelMap.put("acknowledged", "ackTs");
 
-	
-	@ApiOperation(
-			value = "Get all events",
-			notes = "",
-			response=EventInstanceModel.class,
-			responseContainer="Array"
-			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
-    public ResponseEntity<QueryArrayStream<EventInstanceVO>> getAll(HttpServletRequest request, 
+        this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
+
+        //If we query on the member active
+        this.appenders.put("active", new GenericSQLColumnQueryAppender(){
+
+            @Override
+            public void appendSQL(SQLQueryColumn column,
+                    StringBuilder selectSql, StringBuilder countSql,
+                    List<Object> selectArgs, List<Object> columnArgs,
+                    ComparisonEnum comparison) {
+
+                if(columnArgs.size() == 0)
+                    return;
+
+                //Hack to allow still querying on rtnTs as number
+                if(!(columnArgs.get(0) instanceof Boolean))
+                    return;
+
+                Boolean condition = (Boolean)columnArgs.get(0);
+                if(condition){
+                    appendSQL(column.getName(), " IS ? ", selectSql, countSql);
+                    selectArgs.add(null);
+                }else{
+                    appendSQL(column.getName(), " IS NOT ? ", selectSql, countSql);
+                    selectArgs.add(null);
+                }
+
+                appendSQL("AND evt.rtnApplicable", EQUAL_TO_SQL, selectSql, countSql);
+                selectArgs.add("Y");
+            }
+
+        });
+        //If we query on the member acknowledged
+        this.appenders.put("acknowledged", new GenericSQLColumnQueryAppender(){
+
+            @Override
+            public void appendSQL(SQLQueryColumn column,
+                    StringBuilder selectSql, StringBuilder countSql,
+                    List<Object> selectArgs, List<Object> columnArgs,
+                    ComparisonEnum comparison) {
+
+                if(columnArgs.size() == 0)
+                    return;
+
+                //Hack to allow querying on ackTs as number
+                if(!(columnArgs.get(0) instanceof Boolean))
+                    return;
+
+                Boolean condition = (Boolean)columnArgs.get(0);
+                if(condition){
+                    appendSQL(column.getName(), " IS NOT ? ", selectSql, countSql);
+                    selectArgs.add(null);
+                }else{
+                    appendSQL(column.getName(), " IS ? ", selectSql, countSql);
+                    selectArgs.add(null);
+                }
+            }
+
+        });
+
+        //Ensure we are querying on Type of Data Point for dataPointId queries
+        this.appenders.put("dataPointId", new GenericSQLColumnQueryAppender(){
+
+            @Override
+            public void appendSQL(SQLQueryColumn column,
+                    StringBuilder selectSql, StringBuilder countSql,
+                    List<Object> selectArgs, List<Object> columnArgs,
+                    ComparisonEnum comparison) {
+
+                selectSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
+                countSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
+                selectArgs.add(columnArgs.get(0));
+            }
+        });
+    }
+
+
+    @ApiOperation(
+            value = "Get all events",
+            notes = "",
+            response=EventInstanceModel.class,
+            responseContainer="Array"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/list")
+    public ResponseEntity<QueryArrayStream<EventInstanceVO>> getAll(HttpServletRequest request,
             @RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
         RestProcessResult<QueryArrayStream<EventInstanceVO>> result = new RestProcessResult<QueryArrayStream<EventInstanceVO>>(HttpStatus.OK);
-        
+
         User user = this.checkUser(request, result);
         if(result.isOk()){
-    		ASTNode root = new ASTNode("and", new ASTNode("eq", "userId", user.getId()), new ASTNode("limit", limit));
-		    return result.createResponseEntity(getPageStream(root));
-    	}
-        return result.createResponseEntity();
-	}
-	
-	@ApiOperation(
-			value = "Get event by ID",
-			notes = ""
-			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/{id}")
-    public ResponseEntity<EventInstanceModel> getById(
-    		@ApiParam(value = "Valid Event ID", required = true, allowMultiple = false)
-    		@PathVariable Integer id, HttpServletRequest request) {
-
-		RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
-
-		User user = this.checkUser(request, result);
-        if(result.isOk()){
-	        EventInstanceVO vo = EventInstanceDao.instance.get(id);
-	        if (vo == null) {
-	    		result.addRestMessage(getDoesNotExistMessage());
-	    		return result.createResponseEntity();
-	        }
-	        
-	        if(!Permissions.hasEventTypePermission(user, vo.getEventType())) {
-	            result.addRestMessage(getUnauthorizedMessage());
-	            return result.createResponseEntity();
-	        }
-
-	        EventInstanceModel model = new EventInstanceModel(vo);
-	        return result.createResponseEntity(model);
+            ASTNode root = new ASTNode("and", new ASTNode("eq", "userId", user.getId()), new ASTNode("limit", limit));
+            return result.createResponseEntity(getPageStream(root));
         }
         return result.createResponseEntity();
     }
-	
-	
-	@ApiOperation(
-			value = "Query Events",
-			notes = "Query by posting AST Model",
-			response=EventInstanceModel.class,
-			responseContainer="Array"
-			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
+
+    @ApiOperation(
+            value = "Get event by ID",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/{id}")
+    public ResponseEntity<EventInstanceModel> getById(
+            @ApiParam(value = "Valid Event ID", required = true, allowMultiple = false)
+            @PathVariable Integer id, HttpServletRequest request) {
+
+        RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
+
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            EventInstanceVO vo = EventInstanceDao.instance.get(id);
+            if (vo == null) {
+                result.addRestMessage(getDoesNotExistMessage());
+                return result.createResponseEntity();
+            }
+
+            if(!Permissions.hasEventTypePermission(user, vo.getEventType())) {
+                result.addRestMessage(getUnauthorizedMessage());
+                return result.createResponseEntity();
+            }
+
+            EventInstanceModel model = new EventInstanceModel(vo);
+            return result.createResponseEntity(model);
+        }
+        return result.createResponseEntity();
+    }
+
+
+    @ApiOperation(
+            value = "Query Events",
+            notes = "Query by posting AST Model",
+            response=EventInstanceModel.class,
+            responseContainer="Array"
+            )
+    @RequestMapping(method = RequestMethod.POST, value = "/query")
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> query(
-    		@ApiParam(value="Query", required=true)
-    		@RequestBody(required=true) ASTNode query, 
-    		   		
-    		HttpServletRequest request) {
-		
-		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    		query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-		    return result.createResponseEntity(getPageStream(query));
-    	}
-    	
-    	return result.createResponseEntity();
-	}
-	
-	@ApiOperation(
-			value = "Query Events",
-			notes = "Query via rql in url",
-			response=EventInstanceModel.class,
-			responseContainer="Array"
-			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+            @ApiParam(value="Query", required=true)
+            @RequestBody(required=true) ASTNode query,
+
+            HttpServletRequest request) {
+
+        RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
+            return result.createResponseEntity(getPageStream(query));
+        }
+
+        return result.createResponseEntity();
+    }
+
+    @ApiOperation(
+            value = "Query Events",
+            notes = "Query via rql in url",
+            response=EventInstanceModel.class,
+            responseContainer="Array"
+            )
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> queryRQL(HttpServletRequest request) {
-		
-		RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
-    	
-		User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    		try{
-    			//Parse the RQL Query
-	    		ASTNode query = parseRQLtoAST(request.getQueryString());
-	    		query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-	    		return result.createResponseEntity(getPageStream(query));
-    		}catch(InvalidRQLRestException e){
-    			LOG.error(e.getMessage(), e);
-    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-				return result.createResponseEntity();
-    		}
-    	}
-    	
-    	return result.createResponseEntity();
-	}
-	
-	/**
-	 * Update an event
-	 * @param vo
-	 * @param xid
-	 * @param builder
-	 * @param request
-	 * @return
-	 */
-	@ApiOperation(
-			value = "Acknowledge an existing event",
-			notes = ""
-			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/acknowledge/{id}")
+
+        RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
+
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            try{
+                //Parse the RQL Query
+                ASTNode query = parseRQLtoAST(request.getQueryString());
+                query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
+                return result.createResponseEntity(getPageStream(query));
+            }catch(InvalidRQLRestException e){
+                LOG.error(e.getMessage(), e);
+                result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+                return result.createResponseEntity();
+            }
+        }
+
+        return result.createResponseEntity();
+    }
+
+    /**
+     * Update an event
+     * @param vo
+     * @param xid
+     * @param builder
+     * @param request
+     * @return
+     */
+    @ApiOperation(
+            value = "Acknowledge an existing event",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.PUT, value = "/acknowledge/{id}")
     public ResponseEntity<EventInstanceModel> acknowledgeEvent(
-    		@PathVariable Integer id,
-    		@RequestBody(required=false) TranslatableMessageModel message, 
-    		UriComponentsBuilder builder, HttpServletRequest request) {
+            @PathVariable Integer id,
+            @RequestBody(required=false) TranslatableMessageModel message,
+            UriComponentsBuilder builder, HttpServletRequest request) {
 
-		RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
+        RestProcessResult<EventInstanceModel> result = new RestProcessResult<EventInstanceModel>(HttpStatus.OK);
 
-		User user = this.checkUser(request, result);
+        User user = this.checkUser(request, result);
         if (result.isOk()) {
-	        TranslatableMessage tlm = null;
-	        if (message != null)
-	        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
+            TranslatableMessage tlm = null;
+            if (message != null)
+                tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-	        EventInstance event = EventDao.instance.get(id);
-	        if (event == null) {
+            EventInstance event = EventDao.instance.get(id);
+            if (event == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
             } else if(!Permissions.hasEventTypePermission(user, event.getEventType())) {
                 result.addRestMessage(getUnauthorizedMessage());
                 return result.createResponseEntity();
             }
-	        
-	        Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user, tlm);
-	        
-	        // if event has a different ack timestamp, user or message it was already acked, we could return a different message
 
-	        EventInstanceModel model = new EventInstanceModel(event);
-	        
-	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/events/{id}").buildAndExpand(id).toUri();
-	    	result.addRestMessage(getResourceUpdatedMessage(location));
-	        return result.createResponseEntity(model);
+            Common.eventManager.acknowledgeEventById(id, System.currentTimeMillis(), user, tlm);
+
+            // if event has a different ack timestamp, user or message it was already acked, we could return a different message
+
+            EventInstanceModel model = new EventInstanceModel(event);
+
+            //Put a link to the updated data in the header?
+            URI location = builder.path("/v1/events/{id}").buildAndExpand(id).toUri();
+            result.addRestMessage(getResourceUpdatedMessage(location));
+            return result.createResponseEntity(model);
         }
         //Not logged in
         return result.createResponseEntity();
     }
-	
-	
-	@ApiOperation(
-			value = "Acknowledge many existing events",
-			notes = ""
-			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/acknowledge")
+
+
+    @ApiOperation(
+            value = "Acknowledge many existing events",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.POST, value = "/acknowledge")
     public ResponseEntity<EventAcknowledgeQueryStream> acknowledgeManyEvents(
-    		@RequestBody(required=false) TranslatableMessageModel message, 
-    		UriComponentsBuilder builder, HttpServletRequest request) {
+            @RequestBody(required=false) TranslatableMessageModel message,
+            UriComponentsBuilder builder, HttpServletRequest request) {
 
-		RestProcessResult<EventAcknowledgeQueryStream> result = new RestProcessResult<EventAcknowledgeQueryStream>(HttpStatus.OK);
+        RestProcessResult<EventAcknowledgeQueryStream> result = new RestProcessResult<EventAcknowledgeQueryStream>(HttpStatus.OK);
 
-		User user = this.checkUser(request, result);
+        User user = this.checkUser(request, result);
         if(result.isOk()){
 
-        	//Parse the RQL Query
-    		ASTNode query;
-			try {
-				query = parseRQLtoAST(request.getQueryString());
-				query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-	    		
-		        TranslatableMessage tlm = null;
-		        if(message != null)
-		        	tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
+            //Parse the RQL Query
+            ASTNode query;
+            try {
+                query = parseRQLtoAST(request.getQueryString());
+                query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
 
-		        //Perform the query and stream through acknowledger
-		        EventAcknowledgeQueryStreamCallback callback = new EventAcknowledgeQueryStreamCallback(user, tlm);
-		        EventAcknowledgeQueryStream stream = new EventAcknowledgeQueryStream(dao, this, query, callback);
-				//Ensure its ready
-				stream.setupQuery();
+                TranslatableMessage tlm = null;
+                if(message != null)
+                    tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-				return result.createResponseEntity(stream);
-			} catch (InvalidRQLRestException e) {
-				LOG.error(e.getMessage(), e);
-    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-				return result.createResponseEntity();
-			}
-    		
+                //Perform the query and stream through acknowledger
+                EventAcknowledgeQueryStreamCallback callback = new EventAcknowledgeQueryStreamCallback(user, tlm);
+                EventAcknowledgeQueryStream stream = new EventAcknowledgeQueryStream(dao, this, query, callback);
+                //Ensure its ready
+                stream.setupQuery();
+
+                return result.createResponseEntity(stream);
+            } catch (InvalidRQLRestException e) {
+                LOG.error(e.getMessage(), e);
+                result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+                return result.createResponseEntity();
+            }
+
         }
         //Not logged in
         return result.createResponseEntity();
     }
-	
-	@ApiOperation(
+
+    @ApiOperation(
             value = "Get the active events summary",
             notes = "List of counts for all active events by type and the most recent active alarm for each."
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/active-summary")
+    @RequestMapping(method = RequestMethod.GET, value = "/active-summary")
     public ResponseEntity<List<EventLevelSummaryModel>> getActiveSummary(
             HttpServletRequest request) {
 
@@ -487,7 +487,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         return result.createResponseEntity();
     }
 
-	//TODO 2 new endpoints 1 for module defined query, 1 for explain all
+    //TODO 2 new endpoints 1 for module defined query, 1 for explain all
     @ApiOperation(
             value = "Query Events By Custom Module Defined Query",
             notes = "See explain-module-defined-queries for all options",
@@ -497,14 +497,14 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     @RequestMapping(method = RequestMethod.POST, value = "/module-defined-query")
     public ResponseEntity<QueryDataPageStream<EventInstanceVO>> moduleDefinedQuery(
             @ApiParam(value="Query Payload", required=true)
-            @RequestBody(required=true) ModuleQueryModel model, 
+            @RequestBody(required=true) ModuleQueryModel model,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException {
         model.ensureValid(user, this.dao.tableName);
         ASTNode query = model.createQuery(user);
         return ResponseEntity.ok(getPageStream(query));
     }
-    
+
     @ApiOperation(
             value = "Explain all module defined queries for this controller",
             notes = ""
@@ -513,7 +513,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     public ResponseEntity<List<ModuleQueryExplainModel>> explainModuleDefinedQueries(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
-        
+
         List<ModuleQueryExplainModel> models = new ArrayList<>();
         Map<String, ModuleQueryDefinition> defs = ModuleRegistry.getModuleQueryDefinitions();
         defs.forEach((k,v) -> {
@@ -523,72 +523,72 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         return ResponseEntity.ok(models);
     }
 
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
-	 */
-	@Override
-	public EventInstanceModel createModel(EventInstanceVO vo) {
-		return new EventInstanceModel(vo);
-	}
-	
-	class EventAcknowledgeQueryStream extends QueryObjectStream<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
 
-		/**
-		 * @param dao
-		 * @param controller
-		 * @param root
-		 * @param queryCallback
-		 */
-		public EventAcknowledgeQueryStream(EventInstanceDao dao,
-				MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao> controller, ASTNode root,
-				QueryStreamCallback<EventInstanceVO> queryCallback) {
-			super(dao, controller, root, queryCallback);
-		}
-		
-		/* (non-Javadoc)
-		 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
-		 */
-		@Override
-		public void streamData(JsonGenerator jgen) throws IOException {
-			this.queryCallback.setJsonGenerator(jgen);
-			this.results.query();
-			((EventAcknowledgeQueryStreamCallback)this.queryCallback).finish();
-		}
-		
-	}
-	
-	class EventAcknowledgeQueryStreamCallback extends QueryStreamCallback<EventInstanceVO>{
-		
-		private int count;
-		private User user;
-		private TranslatableMessage message;
-		private long ackTimestamp;
-		
-		
-		/**
-		 * @param user2
-		 * @param tlm
-		 */
-		public EventAcknowledgeQueryStreamCallback(User user, TranslatableMessage message) {
-			this.user = user;
-			this.message = message;
-			this.ackTimestamp = System.currentTimeMillis();
-		}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
+     */
+    @Override
+    public EventInstanceModel createModel(EventInstanceVO vo) {
+        return new EventInstanceModel(vo);
+    }
 
-		/* (non-Javadoc)
-		 * @see com.serotonin.db.MappedRowCallback#row(java.lang.Object, int)
-		 */
-		@Override
-		public void row(EventInstanceVO vo, int index) {
-			EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, message);
-			if (event != null && event.isAcknowledged()) {
-			    this.count++;
-			}
-		}
-		
-		public void finish() throws IOException{
-			this.jgen.writeNumberField("count", this.count);
-		}
-	}
+    class EventAcknowledgeQueryStream extends QueryObjectStream<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
+
+        /**
+         * @param dao
+         * @param controller
+         * @param root
+         * @param queryCallback
+         */
+        public EventAcknowledgeQueryStream(EventInstanceDao dao,
+                MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao> controller, ASTNode root,
+                QueryStreamCallback<EventInstanceVO> queryCallback) {
+            super(dao, controller, root, queryCallback);
+        }
+
+        /* (non-Javadoc)
+         * @see com.serotonin.m2m2.web.mvc.rest.v1.model.JsonArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
+         */
+        @Override
+        public void streamData(JsonGenerator jgen) throws IOException {
+            this.queryCallback.setJsonGenerator(jgen);
+            this.results.query();
+            ((EventAcknowledgeQueryStreamCallback)this.queryCallback).finish();
+        }
+
+    }
+
+    class EventAcknowledgeQueryStreamCallback extends QueryStreamCallback<EventInstanceVO>{
+
+        private int count;
+        private User user;
+        private TranslatableMessage message;
+        private long ackTimestamp;
+
+
+        /**
+         * @param user2
+         * @param tlm
+         */
+        public EventAcknowledgeQueryStreamCallback(User user, TranslatableMessage message) {
+            this.user = user;
+            this.message = message;
+            this.ackTimestamp = System.currentTimeMillis();
+        }
+
+        /* (non-Javadoc)
+         * @see com.serotonin.db.MappedRowCallback#row(java.lang.Object, int)
+         */
+        @Override
+        public void row(EventInstanceVO vo, int index) {
+            EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, message);
+            if (event != null && event.isAcknowledged()) {
+                this.count++;
+            }
+        }
+
+        public void finish() throws IOException{
+            this.jgen.writeNumberField("count", this.count);
+        }
+    }
 }

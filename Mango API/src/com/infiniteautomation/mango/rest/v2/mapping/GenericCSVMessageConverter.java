@@ -72,7 +72,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private final JsonNodeFactory nodeFactory;
 
     public GenericCSVMessageConverter(ObjectMapper objectMapper) {
-        super(objectMapper, new MediaType("text", "csv"));
+        super(objectMapper, MediaTypes.CSV, MediaTypes.GENERIC_CSV);
         this.nodeFactory = objectMapper.getNodeFactory();
     }
 
@@ -325,7 +325,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             JsonNode rootNode = root;
-            if (!javaType.isCollectionLikeType()) {
+            if (!javaType.isCollectionLikeType()) { // TODO support arraynode
                 // return the first element
                 if (root.size() >= 0) {
                     rootNode = root.get(0);
