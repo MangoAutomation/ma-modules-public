@@ -72,7 +72,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private final JsonNodeFactory nodeFactory;
 
     public GenericCSVMessageConverter(ObjectMapper objectMapper) {
-        super(objectMapper, MediaTypes.CSV, MediaTypes.GENERIC_CSV);
+        super(objectMapper, MediaTypes.CSV_V2);
         this.nodeFactory = objectMapper.getNodeFactory();
     }
 

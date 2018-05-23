@@ -32,7 +32,7 @@ public class CsvObjectStreamMessageConverter extends AbstractHttpMessageConverte
     }
 
     public CsvObjectStreamMessageConverter(char separator, char quote) {
-        super(MediaTypes.CSV);
+        super(MediaTypes.CSV_V1);
         this.separator = separator;
         this.quote = quote;
     }
