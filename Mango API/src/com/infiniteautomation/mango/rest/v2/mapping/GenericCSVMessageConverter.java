@@ -325,13 +325,11 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             JsonNode rootNode = root;
-            if (!javaType.isCollectionLikeType()) { // TODO support arraynode
-                // return the first element
-                if (root.size() >= 0) {
-                    rootNode = root.get(0);
-                } else {
-                    return null;
-                }
+            
+            if (root.size() == 1 && !(
+                    javaType.isCollectionLikeType() ||
+                    ArrayNode.class.isAssignableFrom(javaType.getRawClass()))) {
+                rootNode = root.get(0);
             }
 
             return reader.readValue(this.objectMapper.treeAsTokens(rootNode));
