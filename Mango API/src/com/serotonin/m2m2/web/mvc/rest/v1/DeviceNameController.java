@@ -48,7 +48,7 @@ public class DeviceNameController extends MangoRestController {
             value = "List device names",
             response = String.class,
             responseContainer = "Set")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Set<String>> deviceNames(
             @RequestParam(value="contains", required=false) String contains,
             HttpServletRequest request) {
@@ -72,7 +72,7 @@ public class DeviceNameController extends MangoRestController {
             value = "List device names by data source ID",
             response = String.class,
             responseContainer = "Set")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-data-source-id/{id}")
+    @RequestMapping(method = RequestMethod.GET, value = "/by-data-source-id/{id}")
     public ResponseEntity<Set<String>> deviceNamesByDataSourceId(
             @PathVariable int id,
             @RequestParam(value="contains", required=false) String contains,
@@ -97,7 +97,7 @@ public class DeviceNameController extends MangoRestController {
             value = "List device names by data source XID",
             response = String.class,
             responseContainer = "Set")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-data-source-xid/{xid}")
+    @RequestMapping(method = RequestMethod.GET, value = "/by-data-source-xid/{xid}")
     public ResponseEntity<Set<String>> deviceNamesByDataSourceXid(
             @PathVariable String xid,
             @RequestParam(value="contains", required=false) String contains,

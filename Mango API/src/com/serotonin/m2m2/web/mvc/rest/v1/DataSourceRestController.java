@@ -68,7 +68,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 			response=AbstractDataSourceModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<DataSourceVO<?>>> queryRQL(
     		   		   		
     		HttpServletRequest request) {
@@ -93,7 +93,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 			value = "Get all data sources",
 			notes = "Only returns data sources available to logged in user"
 			)
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/list")
+    @RequestMapping(method = RequestMethod.GET, value = "/list")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<AbstractDataSourceModel<?>>> getAllDataSources(HttpServletRequest request) {
     	
@@ -121,7 +121,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 			value = "Get data source by xid",
 			notes = "Only returns data sources available to logged in user"
 			)
-	@RequestMapping(method = RequestMethod.GET, value = "/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> getDataSource(HttpServletRequest request, @PathVariable String xid) {
 		
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
@@ -153,7 +153,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        value = "Get data source by ID",
 	        notes = "Only returns data sources available to logged in user"
 	        )
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-id/{id}")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{id}")
 	public ResponseEntity<AbstractDataSourceModel<?>> getDataSourceById(
 	        @ApiParam(value = "Valid Data Source ID", required = true, allowMultiple = false)
 	        @PathVariable int id, HttpServletRequest request) {
@@ -192,7 +192,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	 * @return
 	 */
 	@ApiOperation(value = "Update data source")
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> updateDataSource(
     		@PathVariable String xid,
     		@RequestBody(required=true) AbstractDataSourceModel<?> model, 
@@ -246,8 +246,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 
 	@ApiOperation(value = "Save data source")
 	@RequestMapping(
-			method = {RequestMethod.POST},
-			produces = {"application/json"}
+			method = {RequestMethod.POST}
 	)
 	public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(
 			@RequestBody(required=true) AbstractDataSourceModel<?> model,
@@ -301,8 +300,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	@ApiOperation(value = "Delete data source")
 	@RequestMapping(
 			method = {RequestMethod.DELETE},
-			value = {"/{xid}"},
-			produces = {"application/json"}
+			value = {"/{xid}"}
 	)
 	public ResponseEntity<AbstractDataSourceModel<?>> deleteDataSource(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
 		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
@@ -332,7 +330,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	}
 
 	@ApiOperation(value = "Copy data source", notes="Copy the data source with optional new XID and Name and enable/disable state (default disabled)")
-	@RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> copy(
     		@PathVariable String xid,
             @ApiParam(value = "Copy's new XID", required = false, defaultValue="null", allowMultiple = false)

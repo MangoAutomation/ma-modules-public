@@ -49,7 +49,7 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
 			response=DataPointSummary.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
+	@RequestMapping(method = RequestMethod.POST, value = "/query")
     public ResponseEntity<QueryDataPageStream<DataPointVO>> query(
     		@ApiParam(value="Query", required=true)
     		@RequestBody(required=true) ASTNode query, 
@@ -71,7 +71,7 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
 			response=DataPointSummary.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<DataPointVO>> queryRQL(HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<DataPointVO>> result = new RestProcessResult<QueryDataPageStream<DataPointVO>>(HttpStatus.OK);

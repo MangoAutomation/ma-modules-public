@@ -114,8 +114,7 @@ public class PointValueRestController extends MangoRestController {
             value = "Get Latest Point Values Directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. For the most efficient use of this endpoint "
                     + " the data point's default cache size should be the size that you will typically query the latest values of.")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/latest",
-            produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/latest")
     public ResponseEntity<List<RecentPointValueTimeModel>> getLatestPointValues(
             HttpServletRequest request,
 
@@ -300,8 +299,7 @@ public class PointValueRestController extends MangoRestController {
             value = "Get Latest Point Values for all points on a data source directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. Returns as single time ordered array.")
     @RequestMapping(method = RequestMethod.GET,
-            value = "/{dataSourceXid}/latest-data-source-single-array",
-            produces = {"application/json", "text/csv"})
+            value = "/{dataSourceXid}/latest-data-source-single-array")
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getLatestPointValuesForDataSourceAsSingleArray(
             HttpServletRequest request,
 
@@ -405,8 +403,7 @@ public class PointValueRestController extends MangoRestController {
             value = "Get Latest Point Values for all points on a data source directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. Returns data as map of xid to values.")
     @RequestMapping(method = RequestMethod.GET,
-            value = "/{dataSourceXid}/latest-data-source-multiple-arrays",
-            produces = {"application/json", "text/csv"})
+            value = "/{dataSourceXid}/latest-data-source-multiple-arrays")
     public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getLatestPointValuesForDataSourceAsMultipleArrays(
             HttpServletRequest request,
 
@@ -511,8 +508,7 @@ public class PointValueRestController extends MangoRestController {
             value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. Returns as single time ordered array.")
     @RequestMapping(method = RequestMethod.GET,
-            value = "/{xids}/latest-multiple-points-single-array",
-            produces = {"application/json", "text/csv"})
+            value = "/{xids}/latest-multiple-points-single-array")
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getLatestPointValuesForMultiplePointsAsSingleArray(
             HttpServletRequest request,
 
@@ -555,8 +551,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(
             value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. Returns as single time ordered array.")
-    @RequestMapping(method = RequestMethod.POST, value = "/latest-multiple-points-single-array",
-            consumes = {"application/json"}, produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.POST, value = "/latest-multiple-points-single-array")
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getLatestPointValuesForMultiplePointsAsSingleArrayAsPost(
             HttpServletRequest request,
 
@@ -643,8 +638,7 @@ public class PointValueRestController extends MangoRestController {
             value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. Returns data as map of xid to values.")
     @RequestMapping(method = RequestMethod.GET,
-            value = "/{xids}/latest-multiple-points-multiple-arrays",
-            produces = {"application/json", "text/csv"})
+            value = "/{xids}/latest-multiple-points-multiple-arrays")
     public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getLatestPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request,
 
@@ -688,8 +682,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(
             value = "Get Latest Point Values for multiple points directly from the Runtime Manager, this makes Cached and Intra-Interval data available.",
             notes = "Default limit 100, time descending order, Default to return cached data. Returns data as map of xid to values.")
-    @RequestMapping(method = RequestMethod.POST, value = "/latest-multiple-points-multiple-arrays",
-            consumes = {"application/json"}, produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.POST, value = "/latest-multiple-points-multiple-arrays")
     public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getLatestPointValuesForMultiplePointsAsMultipleArraysAsPost(
             HttpServletRequest request,
 
@@ -765,8 +758,7 @@ public class PointValueRestController extends MangoRestController {
 
     @ApiOperation(value = "First and last point values",
             notes = "Retrieves the first and last point values within a time range, used to read accumulators")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/first-last",
-            produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/first-last")
     public ResponseEntity<List<PointValueTimeModel>> firstAndLastPointValues(
             HttpServletRequest request,
 
@@ -910,8 +902,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(value = "Query Time Range for Multiple Points",
             notes = "From time inclusive, To time exclusive. Return in single array, use limit if provided",
             response = PointValueTimeModel.class, responseContainer = "List")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xids}/multiple-points-single-array",
-            produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xids}/multiple-points-single-array")
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getPointValuesForMultiplePointsAsSingleArray(
             HttpServletRequest request,
 
@@ -963,8 +954,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(value = "Query Time Range for Multiple Points",
             notes = "From time inclusive, To time exclusive. Return in single array, use limit if provided",
             response = PointValueTimeModel.class, responseContainer = "List")
-    @RequestMapping(method = RequestMethod.POST, value = "/multiple-points-single-array",
-            consumes = {"application/json"}, produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.POST, value = "/multiple-points-single-array")
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getPointValuesForMultiplePointsAsSingleArrayViaPost(
             HttpServletRequest request,
 
@@ -1081,8 +1071,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(value = "Query Time Range for Multiple Points",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays",
             response = PointValueTimeModel.class, responseContainer = "List")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xids}/multiple-points-multiple-arrays",
-            produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xids}/multiple-points-multiple-arrays")
     public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request,
 
@@ -1135,8 +1124,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(value = "Query Time Range for Multiple Points",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays",
             response = PointValueTimeModel.class, responseContainer = "List")
-    @RequestMapping(method = RequestMethod.POST, value = "/multiple-points-multiple-arrays",
-            produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.POST, value = "/multiple-points-multiple-arrays")
     public ResponseEntity<ObjectStream<Map<String, List<PointValueTime>>>> getPointValuesForMultiplePointsAsMultipleArraysAsPost(
             HttpServletRequest request,
 
@@ -1252,8 +1240,7 @@ public class PointValueRestController extends MangoRestController {
 
     @ApiOperation(value = "Query Time Range", notes = "From time inclusive, To time exclusive",
             response = PointValueTimeModel.class, responseContainer = "List")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xid}",
-            produces = {"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<QueryArrayStream<PointValueTimeModel>> getPointValues(
             HttpServletRequest request,
 
@@ -1387,8 +1374,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(value = "Count point values in a Time Range",
             notes = "From time inclusive, To time exclusive", response = PointValueTimeModel.class,
             responseContainer = "List")
-    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/count",
-            produces = {"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/count")
     public ResponseEntity<Long> count(HttpServletRequest request,
 
             @ApiParam(value = "Point xid", required = true,
@@ -1489,8 +1475,7 @@ public class PointValueRestController extends MangoRestController {
     @ApiOperation(value = "Get Point Statistics", notes = "From time inclusive, To time exclusive"
     // TODO Implement a Statistics Model for the stream and put as response class here
     )
-    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/statistics",
-            produces = {"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value = "/{xid}/statistics")
     public ResponseEntity<StatisticsStream> getPointStatistics(HttpServletRequest request,
 
             @ApiParam(value = "Point xid", required = true,
@@ -1591,8 +1576,7 @@ public class PointValueRestController extends MangoRestController {
      */
     @ApiOperation(value = "Update an existing data point's value",
             notes = "Data point must exist and be enabled")
-    @RequestMapping(method = RequestMethod.PUT, value = "/{xid}", produces = {"application/json"},
-            consumes = {"application/json"})
+    @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<PointValueTimeModel> putPointValue(HttpServletRequest request,
             @RequestBody(required = true) PointValueTimeModel model, @PathVariable String xid,
 
@@ -1620,8 +1604,7 @@ public class PointValueRestController extends MangoRestController {
 
     @ApiOperation(value = "Update one or many data point's current value",
             notes = "Each data point must exist and be enabled")
-    @RequestMapping(method = RequestMethod.PUT, produces = {"application/json"},
-            consumes = {"application/json"})
+    @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<List<XidPointValueTimeModel>> putPointsValues(HttpServletRequest request,
             @RequestBody(required = true) List<XidPointValueTimeModel> models,
 

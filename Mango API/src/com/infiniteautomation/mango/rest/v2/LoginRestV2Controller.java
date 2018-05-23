@@ -51,7 +51,7 @@ public class LoginRestV2Controller {
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "Login", notes = "Used to login using POST and JSON credentials")
-	@RequestMapping(method = RequestMethod.POST,  produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<UserModel> loginPost(
             @AuthenticationPrincipal User user,
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -83,7 +83,7 @@ public class LoginRestV2Controller {
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "Switch User", notes = "Used to switch User using GET")
-	@RequestMapping(method = RequestMethod.POST,  value="/su", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST,  value="/su")
 	public ResponseEntity<UserModel> switchUser(
 			@ApiParam(value = "Username to switch to", required = true, allowMultiple = false)
     		@RequestParam(required=true) String username,
@@ -117,7 +117,7 @@ public class LoginRestV2Controller {
 	 * @throws IOException 
 	 */
 	@ApiOperation(value = "Exit Switch User", notes = "Used to switch User using POST")
-	@RequestMapping(method = RequestMethod.POST,  value="/exit-su", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST,  value="/exit-su")
 	public ResponseEntity<UserModel> exitSwitchUser(
             @AuthenticationPrincipal User user,
 			HttpServletRequest request, HttpServletResponse response) throws IOException {

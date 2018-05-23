@@ -63,7 +63,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			response=UserCommentModel.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/list")
+	@RequestMapping(method = RequestMethod.GET, value="/list")
     public ResponseEntity<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>> getAll(HttpServletRequest request, 
     		@RequestParam(value="limit", required=false, defaultValue="100")Integer limit) {
 
@@ -83,7 +83,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			response=UserCommentModel.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"}, value = "/query")
+	@RequestMapping(method = RequestMethod.POST, value = "/query")
     public ResponseEntity<QueryDataPageStream<UserCommentVO>> query(
     		
     		@ApiParam(value="Query", required=true)
@@ -106,7 +106,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			response=UserCommentModel.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<UserCommentVO>> queryRQL(
     		   		   		
     		HttpServletRequest request) {
@@ -142,7 +142,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 			value = "Create New User Comment",
 			notes = ""
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserCommentModel> createNewUserComment(
     		@ApiParam( value = "User Comment to save", required = true )
     		@RequestBody(required=true)
@@ -190,7 +190,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	}
 
 	@ApiOperation(value = "Delete A User Comment by XID")
-	@RequestMapping(method = RequestMethod.DELETE,  produces={"application/json"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<UserCommentModel> deleteUserComment(
     		@ApiParam(value = "xid", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -220,7 +220,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	}
 	
 	@ApiOperation(value = "Get user comment by xid", notes = "Returns the user comment specified by the given xid")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<UserCommentModel> getUserComment(
     		@ApiParam(value = "Valid xid", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -242,7 +242,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	}
 
 	@ApiOperation(value = "Updates a user comment")
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<UserCommentModel> updateUserComment(
     		@PathVariable String xid,
     		@RequestBody(required=true) UserCommentModel model,

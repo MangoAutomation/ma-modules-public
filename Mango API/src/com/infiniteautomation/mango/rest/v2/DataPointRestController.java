@@ -36,6 +36,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
@@ -200,7 +201,7 @@ public class DataPointRestController extends BaseMangoRestController {
     }
 
     @ApiOperation(value = "Gets a list of data points for bulk import via CSV", notes = "Adds an additional action and originalXid column")
-    @RequestMapping(method = RequestMethod.GET, produces="text/csv")
+    @RequestMapping(method = RequestMethod.GET, produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsv(
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
@@ -210,7 +211,7 @@ public class DataPointRestController extends BaseMangoRestController {
     }
 
     @ApiOperation(value = "Gets a list of data points for bulk import via CSV", notes = "Adds an additional action and originalXid column")
-    @RequestMapping(method = RequestMethod.POST, value = "/query", produces="text/csv")
+    @RequestMapping(method = RequestMethod.POST, value = "/query", produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsvPost(
             @ApiParam(value="RQL query AST", required = true)
             @RequestBody ASTNode rql,
@@ -339,7 +340,7 @@ public class DataPointRestController extends BaseMangoRestController {
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
-    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes="text/csv")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperationCSV(
             @RequestBody
             List<ActionAndModel<DataPointModel>> points,

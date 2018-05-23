@@ -45,7 +45,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	private static Log LOG = LogFactory.getLog(BackgroundProcessingRestController.class);
 
 	@ApiOperation(value = "Get the High Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/high-priority-thread-pool-settings")
+	@RequestMapping(method = RequestMethod.GET, value = "/high-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getHighPriorityThreadPoolSettings( HttpServletRequest request) {
 		
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
@@ -74,7 +74,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			value = "Update high priority queue settings",
 			notes = ""
 	)
-	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/high-priority-thread-pool-settings")
+	@RequestMapping(method = RequestMethod.PUT, value = "/high-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> setHighPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)
@@ -136,7 +136,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Get the Medium Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/medium-priority-thread-pool-settings")
+	@RequestMapping(method = RequestMethod.GET, value = "/medium-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getMediumPriorityThreadPoolSettings( HttpServletRequest request) {
 		
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
@@ -163,7 +163,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			value = "Update medium priority queue settings",
 			notes = "Only corePoolSize and maximumPoolSize are used"
 	)
-	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/medium-priority-thread-pool-settings")
+	@RequestMapping(method = RequestMethod.PUT, value = "/medium-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> setMediumPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)
@@ -219,7 +219,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Get the Low Priority Service Thread Pool Settings", notes="active count and largest pool size are read only")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/low-priority-thread-pool-settings")
+	@RequestMapping(method = RequestMethod.GET, value = "/low-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> getLowPriorityThreadPoolSettings( HttpServletRequest request) {
 		
 		RestProcessResult<ThreadPoolSettingsModel> result = new RestProcessResult<ThreadPoolSettingsModel>(HttpStatus.OK);
@@ -246,7 +246,7 @@ public class BackgroundProcessingRestController extends MangoRestController{
 			value = "Update low priority service settings",
 			notes = "Only corePoolSize and maximumPoolSize are used"
 	)
-	@RequestMapping(method = RequestMethod.PUT,  produces={"application/json"}, value = "/low-priority-thread-pool-settings")
+	@RequestMapping(method = RequestMethod.PUT, value = "/low-priority-thread-pool-settings")
     public ResponseEntity<ThreadPoolSettingsModel> setLowPrioritySettings(
     		
     		@ApiParam(value = "Settings", required = true, allowMultiple = false)

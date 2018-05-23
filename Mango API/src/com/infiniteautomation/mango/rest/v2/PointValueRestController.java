@@ -769,7 +769,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             value = "Delete point values >= from  and < to",
             notes = "The user must have set permission to the data point. If date is not supplied it defaults to now."
             )
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json", "text/csv", "application/sero-json"})
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<Long> deletePointValues(
             @ApiParam(value = "Point xids", required = true)
             @PathVariable 

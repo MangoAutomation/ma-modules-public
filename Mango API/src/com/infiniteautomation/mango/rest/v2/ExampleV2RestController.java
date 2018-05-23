@@ -56,7 +56,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/admin-get/{resourceId}"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/admin-get/{resourceId}"} )
     public ResponseEntity<Object> exampleGet(@AuthenticationPrincipal User user,
             @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId) {
         return new ResponseEntity<Object>(HttpStatus.OK);
@@ -68,7 +68,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/user-get/{resourceId}"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/user-get/{resourceId}"} )
     public ResponseEntity<Object> userGet(@AuthenticationPrincipal User user,
             @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId) {
         return new ResponseEntity<Object>(HttpStatus.OK);
@@ -79,7 +79,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"} )
     public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal User user) {
         throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
     }
@@ -89,7 +89,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/access-denied-exception"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/access-denied-exception"} )
     public ResponseEntity<Object> accessDenied(@AuthenticationPrincipal User user) {
         throw new AccessDeniedException("I don't have access.");
     }
@@ -99,7 +99,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/generic-exception"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/generic-exception"} )
     public ResponseEntity<Object> genericFailure(@AuthenticationPrincipal User user) {
         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -109,7 +109,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/runtime-exception"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/runtime-exception"} )
     public ResponseEntity<Object> runtimeFailure(@AuthenticationPrincipal User user) {
         throw new RuntimeException("I'm a runtime Exception");
     }
@@ -119,7 +119,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/io-exception"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/io-exception"} )
     public ResponseEntity<Object> ioFailure(@AuthenticationPrincipal User user) throws IOException{
         throw new IOException("I'm an Exception");
     }
@@ -129,7 +129,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/license-violation"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/license-violation"} )
     public ResponseEntity<Object> licenseViolation(@AuthenticationPrincipal User user) throws IOException{
         throw new LicenseViolatedException(new TranslatableMessage("common.default", "Test Violiation"));
     }
@@ -139,7 +139,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/expire-session"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/expire-session"} )
     public ResponseEntity<Object> expireSessions(@AuthenticationPrincipal User user){
         List<SessionInformation> infos = sessionRegistry.getAllSessions(user, false);
         for(SessionInformation info : infos)
@@ -152,7 +152,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.GET}, value = {"/{resourceId}/**"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/{resourceId}/**"} )
     public ResponseEntity<String> matchPath(@AuthenticationPrincipal User user,
             @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
             HttpServletRequest request) {
@@ -172,7 +172,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
     })
-    @RequestMapping( method = {RequestMethod.POST}, value = {"/raise-event"}, produces = {"application/json"} )
+    @RequestMapping( method = {RequestMethod.POST}, value = {"/raise-event"} )
     public ResponseEntity<Object> raiseExampleEvent(@AuthenticationPrincipal User user,
             @RequestBody(required=true) RaiseEventModel model){
         if(model == null)

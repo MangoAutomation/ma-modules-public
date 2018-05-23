@@ -45,7 +45,7 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
 		@ApiResponse(code = 404, message = "No Exception exists", response=ResponseEntity.class),
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/latest"}, produces = {"application/json"} )
+	@RequestMapping( method = {RequestMethod.GET}, value = {"/latest"} )
 	public ResponseEntity<Map<String,Exception>> getLatest(HttpServletRequest request) {
 		RestProcessResult<Map<String,Exception>> result = new RestProcessResult<>(HttpStatus.OK);
 		
@@ -68,7 +68,7 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
 		@ApiResponse(code = 404, message = "No Exception exists", response=ResponseEntity.class),
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
-	@RequestMapping( method = {RequestMethod.PUT}, value = {"/latest"}, produces = {"application/json"} )
+	@RequestMapping( method = {RequestMethod.PUT}, value = {"/latest"} )
 	public ResponseEntity<Map<String,Exception>> clearLatest(HttpServletRequest request) {
 		RestProcessResult<Map<String,Exception>> result = new RestProcessResult<>(HttpStatus.OK);
 		

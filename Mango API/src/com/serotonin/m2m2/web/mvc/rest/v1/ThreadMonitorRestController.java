@@ -54,7 +54,7 @@ public class ThreadMonitorRestController extends MangoRestController {
 	}
 	
 	@ApiOperation(value = "Get all threads", notes = "Larger stack depth will slow this request")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<List<ThreadModel>> getThreads(HttpServletRequest request,
 			@ApiParam(value = "Limit size of stack trace", allowMultiple = false, defaultValue="10")
 			@RequestParam(value="stackDepth", defaultValue="10") int stackDepth,

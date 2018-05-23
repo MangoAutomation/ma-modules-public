@@ -31,7 +31,7 @@ public class ExampleRestController {
 	@ApiResponses({
 		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
 	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"}, produces = {"application/json"} )
+	@RequestMapping( method = {RequestMethod.GET}, value = {"/permissions-exception"} )
 	public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal User user) {
 		throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
 	}

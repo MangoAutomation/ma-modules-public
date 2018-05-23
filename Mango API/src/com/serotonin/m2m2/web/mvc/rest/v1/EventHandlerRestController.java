@@ -61,7 +61,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			value = "Get EventHandler by XID",
 			notes = "EventType permission required"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "application/sero-json"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<AbstractEventHandlerModel<?>> get(
     		@ApiParam(value = "Valid Eventh Handler XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -91,7 +91,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			response=AbstractEventHandlerModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<AbstractEventHandlerVO<?>>> queryRQL(HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<AbstractEventHandlerVO<?>>> result = new RestProcessResult<QueryDataPageStream<AbstractEventHandlerVO<?>>>(HttpStatus.OK);
@@ -118,7 +118,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			value = "Update an existing event handler",
 			notes = ""
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractEventHandlerModel<?>> update(
     		@PathVariable String xid,
     		@ApiParam(value = "Updated model", required = true)
@@ -168,7 +168,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			value = "Save a new event handler",
 			notes = "User must have event type permission"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractEventHandlerModel<?>> save(
     		@RequestBody(required=true) AbstractEventHandlerModel<?> model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
@@ -212,7 +212,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			value = "Delete an event handler",
 			notes = "The user must have event type permission"
 			)
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<AbstractEventHandlerModel<?>> delete(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
 		RestProcessResult<AbstractEventHandlerModel<?>> result = new RestProcessResult<AbstractEventHandlerModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);

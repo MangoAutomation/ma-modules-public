@@ -60,7 +60,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "Query realtime values", 
 				  notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<RealTimeModel>> query(HttpServletRequest request) {
     	RestProcessResult<List<RealTimeModel>> result = new RestProcessResult<List<RealTimeModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
@@ -106,7 +106,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	 */
 	@ApiOperation(value = "List realtime values", 
 			  notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
-    @RequestMapping(method = RequestMethod.GET, value = "/list", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value = "/list")
     public ResponseEntity<List<RealTimeModel>> getAll(HttpServletRequest request, 
     		@ApiParam(value = "Limit the number of results", required=false)
     		@RequestParam(value="limit", required=false, defaultValue="100")int limit) {
@@ -139,7 +139,7 @@ public class RealTimeDataRestController extends MangoRestController{
 	
 	@ApiOperation(value = "Get realtime value of point based on XID", 
 			  notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
-	@RequestMapping(method = RequestMethod.GET, value = "/by-xid/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, value = "/by-xid/{xid}")
     public ResponseEntity<RealTimeModel> get(@PathVariable String xid, HttpServletRequest request) {
 		
 		RestProcessResult<RealTimeModel> result = new RestProcessResult<RealTimeModel>(HttpStatus.OK);

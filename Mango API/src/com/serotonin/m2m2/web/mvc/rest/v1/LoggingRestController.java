@@ -59,7 +59,7 @@ public class LoggingRestController extends MangoRestController{
 	
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "List Log Files", notes = "Returns a list of logfile metadata")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/files")
+	@RequestMapping(method = RequestMethod.GET, value = "/files")
     public ResponseEntity<List<FileModel>> list (
     		@RequestParam(value = "limit", required = false) Integer limit,
     		HttpServletRequest request) throws IOException{
@@ -88,7 +88,7 @@ public class LoggingRestController extends MangoRestController{
 					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
 					"by-filename/ma.log/?methodName=setPointValue\n" + 
 					"NOTE: Querying non ma.log files is not supported.")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-filename/{filename}")
+	@RequestMapping(method = RequestMethod.GET, value="/by-filename/{filename}")
     public ResponseEntity<QueryArrayStream<?>> query(
     		@PathVariable String filename, 
     		HttpServletRequest request) {
@@ -143,7 +143,7 @@ public class LoggingRestController extends MangoRestController{
 	@ApiResponse(code = 200, message = "Ok"),
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/explain-query")
+	@RequestMapping(method = RequestMethod.GET, value = "/explain-query")
     public ResponseEntity<TableModel> getTableModel(HttpServletRequest request) {
         
         RestProcessResult<TableModel> result = new RestProcessResult<TableModel>(HttpStatus.OK);

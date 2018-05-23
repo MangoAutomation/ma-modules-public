@@ -65,7 +65,7 @@ public class ScriptUtilRestController {
 		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
-	@RequestMapping(method = RequestMethod.POST, value = {"/test"}, consumes={"application/json"}, produces = {"application/json"})
+	@RequestMapping(method = RequestMethod.POST, value = {"/test"})
 	public ResponseEntity<ScriptRestResult> testScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
 		if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
 		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext(), true);
@@ -129,7 +129,7 @@ public class ScriptUtilRestController {
 		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
-	@RequestMapping(method = RequestMethod.POST, value = {"/run"}, consumes={"application/json"}, produces = {"application/json"})
+	@RequestMapping(method = RequestMethod.POST, value = {"/run"})
 	public ResponseEntity<ScriptRestResult> runScript(@AuthenticationPrincipal User user, @RequestBody ScriptRestModel scriptModel) {
 		if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
 		Map<String, IDataPointValueSource> context = convertContextModel(scriptModel.getContext(), false);

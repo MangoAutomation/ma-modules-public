@@ -57,7 +57,7 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="")
+    @RequestMapping(method = RequestMethod.GET, value="")
     public ResponseEntity<List<EventTypeModel>> getEventTypes(@AuthenticationPrincipal User user,
             @RequestParam(value = "typeName", required = false) String typeName,
             @RequestParam(value = "subtypeName", required = false) String subtypeName,
@@ -97,7 +97,7 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-point") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-point") 
     public ResponseEntity<List<EventTypeModel>> getDataPointEventTypes(@AuthenticationPrincipal User user,
             @ApiParam(value = "ID of the data point", required = false, allowMultiple = false) 
             @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
@@ -115,7 +115,7 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-point/{dpid}") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-point/{dpid}") 
     public ResponseEntity<List<EventTypeModel>> getDataPointEventTypesByPoint(@AuthenticationPrincipal User user,
             @ApiParam(value = "ID of the data point", required = false, allowMultiple = false) 
             @PathVariable Integer dpid,
@@ -133,7 +133,7 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-source") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-source") 
     public ResponseEntity<List<EventTypeModel>> getDataSourceEventTypes(@AuthenticationPrincipal User user,
             @ApiParam(value = "ID of the data source", required = false, allowMultiple = false) 
             @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
@@ -152,7 +152,7 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/data-source/{dsid}") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-source/{dsid}") 
     public ResponseEntity<List<EventTypeModel>> getDataSourceEventTypesBySource(@AuthenticationPrincipal User user,
             @ApiParam(value = "ID of the data source", required = false, allowMultiple = false) @PathVariable Integer dsid,
             

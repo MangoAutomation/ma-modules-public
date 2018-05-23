@@ -88,7 +88,7 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
             @ApiResponse(code = 200, message = "Ok"),
             @ApiResponse(code = 403, message = "User does not have access")
         })
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/explain-query")
+    @RequestMapping(method = RequestMethod.GET, value = "/explain-query")
     public ResponseEntity<TableModel> getTableModel(HttpServletRequest request) {
         Map<String, QueryAttribute> attributeMap = new HashMap<>();
         

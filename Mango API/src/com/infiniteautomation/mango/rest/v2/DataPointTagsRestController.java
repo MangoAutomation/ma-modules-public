@@ -33,6 +33,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
@@ -291,7 +292,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     }
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs for CSV", notes = "User must have read/edit permission for the data point")
-    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes="text/csv")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperationCsv(
             @RequestBody
             List<ActionAndTags> requestBody,

@@ -41,7 +41,7 @@ public class MailingListRestController extends MangoRestController{
 
 	
 	@ApiOperation(value = "Get Mailing List by XID", notes = "Returns a Mailing List")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<MailingListModel> get(
     		@ApiParam(value = "Valid mailing list xid", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
@@ -64,7 +64,7 @@ public class MailingListRestController extends MangoRestController{
 	}
 	
 	@ApiOperation(value = "Get Mailing List", notes = "Returns all Mailing Lists, eventually will be RQL endpoint")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<MailingListModel>> getAll(HttpServletRequest request) {
 		
 		RestProcessResult<List<MailingListModel>> result = new RestProcessResult<List<MailingListModel>>(HttpStatus.OK);

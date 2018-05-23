@@ -94,7 +94,7 @@ public class ServerRestController extends MangoRestController{
             response=TimezoneModel.class,
             responseContainer="Array"
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/timezones")
+    @RequestMapping(method = RequestMethod.GET, value="/timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(HttpServletRequest request) {
 
         RestProcessResult<PageQueryResultModel<TimezoneModel>> result = new RestProcessResult<PageQueryResultModel<TimezoneModel>>(HttpStatus.OK);
@@ -120,7 +120,7 @@ public class ServerRestController extends MangoRestController{
     }
 
     @ApiOperation(value = "Send a test email", notes="Sends email to supplied address")
-    @RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/email/test")
+    @RequestMapping(method = RequestMethod.PUT, value = "/email/test")
     public ResponseEntity<String> sendTestEmail(
             @RequestParam(value = "email", required = true, defaultValue = "") String email,
             @RequestParam(value = "username", required = true, defaultValue = "") String username,
@@ -155,7 +155,7 @@ public class ServerRestController extends MangoRestController{
             notes = "Provides disk use, db sizes and point, event counts",
             response=Map.class
             )
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/system-info")
+    @RequestMapping(method = RequestMethod.GET, value="/system-info")
     public ResponseEntity<SystemInfoModel> getSystemInfo(HttpServletRequest request) {
 
         RestProcessResult<SystemInfoModel> result = new RestProcessResult<SystemInfoModel>(HttpStatus.OK);
@@ -216,7 +216,7 @@ public class ServerRestController extends MangoRestController{
     }
 
     @ApiOperation(value = "Restart Mango", notes="Returns URL for status updates while web interface is still active")
-    @RequestMapping(method = RequestMethod.PUT, produces={"application/json"}, value = "/restart")
+    @RequestMapping(method = RequestMethod.PUT, value = "/restart")
     public ResponseEntity<String> restart(UriComponentsBuilder builder, HttpServletRequest request) throws RestValidationFailedException {
 
         RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
@@ -243,7 +243,7 @@ public class ServerRestController extends MangoRestController{
 
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "List session information for all sessions", notes = "Admin only")
-    @RequestMapping(method = RequestMethod.GET,  value="/http-sessions", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET,  value="/http-sessions")
     public ResponseEntity<List<SessionInformation>> listSessions(
             @AuthenticationPrincipal User user,
             HttpServletRequest request, HttpServletResponse response) throws IOException {

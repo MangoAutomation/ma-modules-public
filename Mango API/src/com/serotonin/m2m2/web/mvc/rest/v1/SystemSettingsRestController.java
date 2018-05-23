@@ -47,7 +47,7 @@ public class SystemSettingsRestController extends MangoRestController{
 			value = "Get System Setting By key",
 			notes = "Admin Permission Required, if no type supplied assume to be string"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "application/sero-json"}, value = "/{key}")
+	@RequestMapping(method = RequestMethod.GET, value = "/{key}")
     public ResponseEntity<Object> get(
     		@ApiParam(value = "Valid System Setting ID", required = true, allowMultiple = false)
     		@PathVariable String key,
@@ -105,7 +105,7 @@ public class SystemSettingsRestController extends MangoRestController{
 			value = "Get All System Settings",
 			notes = "Admin Permission Required, All settings returned as string types"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "application/sero-json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getAll(HttpServletRequest request) {
 		RestProcessResult<Map<String, Object>> result = new RestProcessResult<Map<String, Object>>(HttpStatus.OK);
 
@@ -121,7 +121,7 @@ public class SystemSettingsRestController extends MangoRestController{
 			value = "Update an existing System Setting",
 			notes = "If no type is provided, String is assumed"
 			)
-	@RequestMapping(method = RequestMethod.PUT, consumes={"application/json"}, produces={"application/json"}, value = "/{key}")
+	@RequestMapping(method = RequestMethod.PUT, value = "/{key}")
     public ResponseEntity<Object> update(
     		@PathVariable String key,
     		@ApiParam(value = "Updated model", required = true)
@@ -184,7 +184,7 @@ public class SystemSettingsRestController extends MangoRestController{
 			value = "Update Many System Settings",
 			notes = "Admin Privs Required"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json"}, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> updateMany(
     		@ApiParam(value = "Updated settings", required = true)
     		@RequestBody(required=true) Map<String,Object> settings,

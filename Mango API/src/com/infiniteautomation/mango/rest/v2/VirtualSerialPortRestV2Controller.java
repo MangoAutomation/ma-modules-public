@@ -44,7 +44,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			value = "List all Virtual Serial Ports",
 			notes = "Admin Only"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<VirtualSerialPortConfig>> list(HttpServletRequest request) {
 		return new ResponseEntity<>(VirtualSerialPortConfigDao.instance.getAll(), HttpStatus.OK);
 	}
@@ -54,7 +54,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			value = "Get Virtual Serial Port by XID",
 			notes = "Admin Only"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{xid}")
+	@RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public ResponseEntity<VirtualSerialPortConfig> get(
     		@ApiParam(value = "Valid Configuration XID", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -72,7 +72,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			value = "Create a virtual serial port",
 			notes = "Cannot already exist, admin only"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes={"application/json", "application/sero-json"}, produces={"application/json", "text/csv", "application/sero-json"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<VirtualSerialPortConfig> save(
     		@ApiParam(value = "Serial Port", required = true)
     		@RequestBody(required=true)  VirtualSerialPortConfig model,
@@ -103,10 +103,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			value = "Update virtual serial port",
 			notes = ""
 			)
-	@RequestMapping(method = RequestMethod.PUT, 
-		consumes={"application/json", "application/sero-json"}, 
-		produces={"application/json", "text/csv", "application/sero-json"},
-		value={"/{xid}"})
+	@RequestMapping(method = RequestMethod.PUT, value={"/{xid}"})
     public ResponseEntity<VirtualSerialPortConfig> update(
     		@ApiParam(value = "Valid virtual serial port id", required = true, allowMultiple = false)
     		@PathVariable String xid,
@@ -137,10 +134,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			value = "Delete virtual serial port",
 			notes = ""
 			)
-	@RequestMapping(method = RequestMethod.DELETE, 
-		consumes={"application/json", "application/sero-json"}, 
-		produces={"application/json", "text/csv", "application/sero-json"},
-		value={"/{xid}"})
+	@RequestMapping(method = RequestMethod.DELETE, value={"/{xid}"})
     public ResponseEntity<VirtualSerialPortConfig> delete(
        		@ApiParam(value = "Valid Virtual serial port XID", required = true, allowMultiple = false)
        	 	@PathVariable String xid,

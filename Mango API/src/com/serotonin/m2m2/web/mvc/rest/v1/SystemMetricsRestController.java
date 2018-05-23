@@ -45,7 +45,7 @@ public class SystemMetricsRestController extends MangoRestController{
 			value = "Get the current value for all System Metrics",
 			notes = "TBD Add RQL Support to this endpoint"
 			)
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ValueMonitor<?>>> query(HttpServletRequest request){
         
     	RestProcessResult<List<ValueMonitor<?>>> result = new RestProcessResult<List<ValueMonitor<?>>>(HttpStatus.OK);
@@ -69,7 +69,7 @@ public class SystemMetricsRestController extends MangoRestController{
 			value = "Get the current value for one System Metric by its ID",
 			notes = ""
 			)
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/{id}")
+    @RequestMapping(method = RequestMethod.GET, value="/{id}")
     public ResponseEntity<ValueMonitor<?>> get(
     		@ApiParam(value = "Valid Monitor id", required = true, allowMultiple = false)
     		@PathVariable String id, HttpServletRequest request) {

@@ -105,7 +105,7 @@ public abstract class AbstractMangoVoRestV2Controller <VO extends AbstractBasicV
 	@ApiResponse(code = 200, message = "Ok"),
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/explain-query")
+	@RequestMapping(method = RequestMethod.GET, value = "/explain-query")
     public ResponseEntity<TableModel> getTableModel(HttpServletRequest request) {
         RestProcessResult<TableModel> result = new RestProcessResult<TableModel>(HttpStatus.OK);
         return result.createResponseEntity(this.getQueryAttributeModel());

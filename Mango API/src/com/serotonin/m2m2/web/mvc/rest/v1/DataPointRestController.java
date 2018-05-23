@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -235,7 +236,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         User user = this.checkUser(request, result);
         if(result.isOk()){
             boolean contentTypeCsv = false;
-            if(request.getContentType().toLowerCase().contains("text/csv"))
+            if(request.getContentType().toLowerCase().contains(MediaTypes.CSV_VALUE))
                 contentTypeCsv = true;
 
             DataPointVO vo = model.getData();
@@ -340,7 +341,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         User user = this.checkUser(request, result);
         if(result.isOk()){
             boolean contentTypeCsv = false;
-            if(request.getContentType().toLowerCase().contains("text/csv"))
+            if(request.getContentType().toLowerCase().contains(MediaTypes.CSV_VALUE))
                 contentTypeCsv = true;
 
             DataPointVO vo = model.getData();
@@ -442,7 +443,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         User user = this.checkUser(request, result);
         if(result.isOk()){
             boolean contentTypeCsv = false;
-            if(request.getContentType().toLowerCase().contains("text/csv"))
+            if(request.getContentType().toLowerCase().contains(MediaTypes.CSV_VALUE))
                 contentTypeCsv = true;
 
             DataPointModel first;

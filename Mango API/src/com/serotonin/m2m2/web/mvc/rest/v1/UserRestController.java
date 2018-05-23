@@ -71,7 +71,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     }
 
     @ApiOperation(value = "Get all users", notes = "Returns a list of all users")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value="list")
+    @RequestMapping(method = RequestMethod.GET, value="list")
     public ResponseEntity<List<UserModel>> getAll(HttpServletRequest request) {
         RestProcessResult<List<UserModel>> result = new RestProcessResult<List<UserModel>>(HttpStatus.OK);
 
@@ -96,7 +96,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     }
 
     @ApiOperation(value = "Get current user", notes = "Returns the logged in user")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/current")
+    @RequestMapping(method = RequestMethod.GET, value = "/current")
     public ResponseEntity<UserModel> getCurrentUser(HttpServletRequest request) {
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
@@ -110,7 +110,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     }
 
     @ApiOperation(value = "Get user by name", notes = "Returns the user specified by the given username")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/{username}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{username}")
     public ResponseEntity<UserModel> getUser(
             @ApiParam(value = "Valid username", required = true, allowMultiple = false)
             @PathVariable String username, HttpServletRequest request) {
@@ -142,7 +142,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     }
 
     @ApiOperation(value = "Get new user", notes = "Returns a new user with default values")
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json", "text/csv"}, value = "/new/user")
+    @RequestMapping(method = RequestMethod.GET, value = "/new/user")
     public ResponseEntity<UserModel> getNewUser(HttpServletRequest request) {
 
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
@@ -155,7 +155,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
 
     @ApiOperation(value = "Updates a user")
-    @RequestMapping(method = RequestMethod.PUT, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"}, value = "/{username}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}")
     public ResponseEntity<UserModel> updateUser(
             @PathVariable String username,
             @RequestBody(required=true) UserModel model,
@@ -312,7 +312,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
         @ApiResponse(code = 409, message = "User Already Exists")
     })
-    @RequestMapping(method = RequestMethod.POST, consumes={"application/json", "text/csv"}, produces={"application/json", "text/csv"})
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserModel> createNewUser(
             @ApiParam( value = "User to save", required = true )
             @RequestBody(required=true)
@@ -361,7 +361,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
     }
 
     @ApiOperation(value = "Update a user's home url")
-    @RequestMapping(method = RequestMethod.PUT,  produces={"application/json", "text/csv"}, value = "/{username}/homepage")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}/homepage")
     public ResponseEntity<UserModel> updateHomeUrl(
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,
@@ -424,7 +424,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             value = "Update a user's audio mute setting",
             notes = "If you do not provide the mute parameter the current setting will be toggled"
             )
-    @RequestMapping(method = RequestMethod.PUT,  produces={"application/json", "text/csv"}, value = "/{username}/mute")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}/mute")
     public ResponseEntity<UserModel> updateMuted(
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,
@@ -523,7 +523,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             @ApiResponse(code = 200, message = "Ok", response=UserModel.class),
             @ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
     })
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<User>> queryRQL(HttpServletRequest request) {
 
         RestProcessResult<QueryDataPageStream<User>> result = new RestProcessResult<QueryDataPageStream<User>>(HttpStatus.OK);
@@ -557,7 +557,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             @ApiResponse(code = 200, message = "Ok", response=PermissionDetails.class),
             @ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
     })
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions")
     public ResponseEntity<List<PermissionDetails>> getUserPermissions(HttpServletRequest request) {
 
         RestProcessResult<List<PermissionDetails>> result = new RestProcessResult<List<PermissionDetails>>(HttpStatus.OK);
@@ -587,7 +587,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             @ApiResponse(code = 200, message = "Ok", response=PermissionDetails.class),
             @ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
     })
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions/{query}")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions/{query}")
     public ResponseEntity<List<PermissionDetails>> getUserPermissions(
             @ApiParam(value = "Query of permissions to show as already added", required = true, allowMultiple = false)
             @PathVariable String query,
@@ -621,7 +621,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             @ApiResponse(code = 200, message = "Ok", response=String.class),
             @ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
     })
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions-groups")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups")
     public ResponseEntity<Set<String>> getAllUserGroups(HttpServletRequest request) {
 
         RestProcessResult<Set<String>> result = new RestProcessResult<Set<String>>(HttpStatus.OK);
@@ -652,7 +652,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             @ApiResponse(code = 200, message = "Ok", response=String.class),
             @ApiResponse(code = 403, message = "User does not have access", response=ResponseEntity.class)
     })
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/permissions-groups/{exclude}")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups/{exclude}")
     public ResponseEntity<Set<String>> getAllUserGroups(
             @ApiParam(value = "Exclude Groups comma separated", required = false, allowMultiple = false, defaultValue="")
             @PathVariable String exclude,
@@ -681,7 +681,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
 
     @ApiOperation(value = "Delete A User")
-    @RequestMapping(method = RequestMethod.DELETE,  produces={"application/json", "text/csv"}, value = "/{username}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{username}")
     public ResponseEntity<UserModel> deleteUser(
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,

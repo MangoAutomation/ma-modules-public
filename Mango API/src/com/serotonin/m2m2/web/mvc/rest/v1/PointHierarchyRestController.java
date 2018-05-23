@@ -56,7 +56,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "Get full point hierarchy", notes = "Hierarchy based on user priviledges")
-    @RequestMapping(method = RequestMethod.GET, value = "/full", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value = "/full")
     public ResponseEntity<JsonStream<PointHierarchyModel>> getPointHierarchy(
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
             @RequestParam(name="points", defaultValue="true") boolean getPoints,
@@ -80,7 +80,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "Get point hierarchy folder by name", notes = "Points returned based on user priviledges")
-	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, value = "/by-name/{folderName}")
     public ResponseEntity<JsonStream<PointHierarchyModel>> getFolder(
             @PathVariable String folderName,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
@@ -119,7 +119,7 @@ public class PointHierarchyRestController extends MangoRestController{
      * @return
      */
     @ApiOperation(value = "Get point hierarchy folder by path", notes = "Points returned based on user priviledges")
-    @RequestMapping(method = RequestMethod.GET, value = "/by-path/{folderPath}", produces={"application/json"})
+    @RequestMapping(method = RequestMethod.GET, value = "/by-path/{folderPath}")
     public ResponseEntity<JsonStream<PointHierarchyModel>> getFolder(
             @PathVariable List<String> folderPath,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
@@ -144,7 +144,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "Get point hierarchy folder by ID", notes = "Points returned based on user priviledges")
-	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{folderId}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{folderId}")
     public ResponseEntity<JsonStream<PointHierarchyModel>> getFolder(
             @PathVariable Integer folderId,
             @RequestParam(name="subfolders", defaultValue="true") boolean getSubFolders,
@@ -183,7 +183,7 @@ public class PointHierarchyRestController extends MangoRestController{
 	 * @return
 	 */
 	@ApiOperation(value = "Get path to a point using point's XID", notes = "Points returned based on user priviledges")
-	@RequestMapping(method = RequestMethod.GET, value = "/path/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, value = "/path/{xid}")
     public ResponseEntity<List<String>> getPath(@PathVariable String xid, HttpServletRequest request) {
 
     	RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);

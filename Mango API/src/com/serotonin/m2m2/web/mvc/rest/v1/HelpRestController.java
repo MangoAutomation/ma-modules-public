@@ -53,7 +53,7 @@ public class HelpRestController extends MangoRestController{
 			response=HelpModel.class,
 			responseContainer="Array"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value="/by-id/{helpId}")
+	@RequestMapping(method = RequestMethod.GET, value="/by-id/{helpId}")
     public ResponseEntity<HelpModel> getHelp(
     		@PathVariable String helpId,
     		HttpServletRequest request) {

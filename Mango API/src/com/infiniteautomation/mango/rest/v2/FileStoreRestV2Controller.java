@@ -90,7 +90,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			value = "List all file store names",
 			notes = "Must have read access to see the store"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<String>> list(
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request) {
@@ -119,7 +119,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 			value = "Upload a file to a store with a path",
 			notes = "Must have write access to the store"
 			)
-	@RequestMapping(method = RequestMethod.POST, consumes=MediaType.MULTIPART_FORM_DATA_VALUE, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{name}/**")
+	@RequestMapping(method = RequestMethod.POST, consumes=MediaType.MULTIPART_FORM_DATA_VALUE, value="/{name}/**")
     public ResponseEntity<List<FileModel>> uploadWithPath(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,
@@ -193,7 +193,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             value = "Create a folder or copy/move/rename an existing file or folder",
             notes = "Must have write access to the store"
             )
-    @RequestMapping(method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_UTF8_VALUE, value="/{fileStoreName}/**")
+    @RequestMapping(method = RequestMethod.POST, value="/{fileStoreName}/**")
     public ResponseEntity<FileModel> createNewFolder(
             @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
             @PathVariable("fileStoreName") String fileStoreName,
@@ -335,7 +335,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
 	}
 	
     @ApiOperation(value = "Delete a file or directory")
-    @RequestMapping(method = RequestMethod.DELETE, produces={}, value="/{name}/**")
+    @RequestMapping(method = RequestMethod.DELETE, value="/{name}/**")
     public ResponseEntity<Void> delete(
             @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
             @PathVariable("name") String name,
@@ -372,7 +372,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     }
 
 	@ApiOperation(value = "List a directory or download a file from a store")
-	@RequestMapping(method = RequestMethod.GET, produces={}, value="/{name}/**")
+	@RequestMapping(method = RequestMethod.GET, value="/{name}/**")
     public ResponseEntity<?> download(
        		@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
        	 	@PathVariable("name") String name,

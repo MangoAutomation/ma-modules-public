@@ -54,7 +54,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 			response=AbstractPublisherModel.class,
 			responseContainer="List"
 			)
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json", "application/sero-json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<PublisherVO<?>>> queryRQL(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
 		ASTNode node = parseRQLtoAST(request.getQueryString());
@@ -65,7 +65,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 			value = "Get all data publishers",
 			notes = "Only returns publishers to admin users"
 			)
-    @RequestMapping(method = RequestMethod.GET, produces={"application/json", "application/sero-json"}, value = "/list")
+    @RequestMapping(method = RequestMethod.GET, value = "/list")
     public ResponseEntity<List<AbstractPublisherModel<?,?>>> getAll(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
         List<PublisherVO<?>> publishers = this.dao.getAll();
@@ -79,7 +79,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 			value = "Get publisher by xid",
 			notes = "Only returns publishers for admin users"
 			)
-	@RequestMapping(method = RequestMethod.GET, value = "/{xid}", produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> getPublisher(
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request, 
@@ -103,9 +103,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 	 * @return
 	 */
 	@ApiOperation(value = "Create publisher", notes="Admin only")
-	@RequestMapping(method = RequestMethod.POST, 		
-		consumes={"application/json", "application/sero-json"}, 
-		produces={"application/json", "application/sero-json"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
     		@AuthenticationPrincipal User user,
     		@RequestBody(required=true) AbstractPublisherModel<?,?> model, 
@@ -133,9 +131,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 	 * @return
 	 */
 	@ApiOperation(value = "Update publisher", notes="admin only")
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}", 
-			consumes={"application/json", "application/sero-json"}, 
-			produces={"application/json", "application/sero-json"})
+	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> updatePublisher(
     		@AuthenticationPrincipal User user,
        		@ApiParam(value = "Valid Publisher XID", required = true, allowMultiple = false)
@@ -163,10 +159,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 			value = "Delete publisher",
 			notes = "admin only"
 			)
-	@RequestMapping(method = RequestMethod.DELETE, 
-		consumes={"application/json", "application/sero-json"}, 
-		produces={"application/json", "application/sero-json"},
-		value={"/{xid}"})
+	@RequestMapping(method = RequestMethod.DELETE, value={"/{xid}"})
     public ResponseEntity<AbstractPublisherModel<?,?>> delete(
        		@ApiParam(value = "Valid Publisher XID", required = true, allowMultiple = false)
        	 	@PathVariable String xid,

@@ -45,7 +45,7 @@ public class WorkItemRestController extends MangoRestController{
 	private static Log LOG = LogFactory.getLog(WorkItemRestController.class);
 	
 	@ApiOperation(value = "Get all work items", notes = "Returns a list of all work items, optionally filterable on classname")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<WorkItemModel>> getAll(@RequestParam(value = "classname", required = false, defaultValue="") String classname,
     		HttpServletRequest request) {
 		RestProcessResult<List<WorkItemModel>> result = new RestProcessResult<List<WorkItemModel>>(HttpStatus.OK);
@@ -79,7 +79,7 @@ public class WorkItemRestController extends MangoRestController{
     }
 	
 	@ApiOperation(value = "Get list of work items by classname", notes = "Returns the Work Item specified by the given classname and priority")
-	@RequestMapping(method = RequestMethod.GET, produces={"application/json"}, value = "/by-priority/{priority}")
+	@RequestMapping(method = RequestMethod.GET, value = "/by-priority/{priority}")
     public ResponseEntity<List<WorkItemModel>> getWorkItemsByPriority(
     		@ApiParam(value = "priority", required = true, allowMultiple = false)
     		@PathVariable String priority,
@@ -132,7 +132,7 @@ public class WorkItemRestController extends MangoRestController{
 	
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get Queued Work Item Counts", notes = "Returns Work Item names to instance count for High, Medium and Low thread pools")
-    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/queue-counts")
+    @RequestMapping(method = RequestMethod.GET, value = "/queue-counts")
     public ResponseEntity<BackgroundProcessingQueueCounts> getQueueCounts(HttpServletRequest request) throws IOException {
         
         BackgroundProcessingQueueCounts model = new BackgroundProcessingQueueCounts();
@@ -145,7 +145,7 @@ public class WorkItemRestController extends MangoRestController{
     
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get Running Work Item Statistics", notes = "Returns information on all tasks running in the High and Medium thread pools")
-    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/running-stats")
+    @RequestMapping(method = RequestMethod.GET, value = "/running-stats")
     public ResponseEntity<BackgroundProcessingRunningStats> getRunningStats(HttpServletRequest request) throws IOException {
         
         BackgroundProcessingRunningStats model = new BackgroundProcessingRunningStats();
@@ -157,7 +157,7 @@ public class WorkItemRestController extends MangoRestController{
 
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get Rejected Task Statistics", notes = "Returns information on all tasks rejected from the High and Medium thread pools")
-    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/rejected-stats")
+    @RequestMapping(method = RequestMethod.GET, value = "/rejected-stats")
     public ResponseEntity<BackgroundProcessingRejectedTaskStats> getRejectedStats(HttpServletRequest request) throws IOException {
         
         BackgroundProcessingRejectedTaskStats model = new BackgroundProcessingRejectedTaskStats();

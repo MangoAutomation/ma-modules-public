@@ -99,7 +99,7 @@ public class ModulesRestController extends MangoRestController {
     private final File moduleDir = new File(coreDir, MODULES_WEB_DIR);
 
     @ApiOperation(value = "AngularJS Modules", notes = "Publicly Available Angular JS Modules")
-    @RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/public", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/public")
     public ResponseEntity<AngularJSModuleDefinitionGroupModel> getPublicAngularJSModules(HttpServletRequest request) {
 
         RestProcessResult<AngularJSModuleDefinitionGroupModel> result = new RestProcessResult<AngularJSModuleDefinitionGroupModel>(
@@ -125,7 +125,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version")
-    @RequestMapping(method = RequestMethod.GET, value = "/core", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/core")
     public ResponseEntity<MappingJacksonValue> getCore(HttpServletRequest request) {
 
         RestProcessResult<MappingJacksonValue> result = new RestProcessResult<>(HttpStatus.OK);
@@ -144,7 +144,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "List Current Installed Modules", notes = "List all installed")
-    @RequestMapping(method = RequestMethod.GET, value = "/list", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/list")
     public ResponseEntity<List<ModuleModel>> listModules(HttpServletRequest request) {
 
         RestProcessResult<List<ModuleModel>> result = new RestProcessResult<List<ModuleModel>>(HttpStatus.OK);
@@ -177,7 +177,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "List Current Missing Module Dependencies", notes = "List all installed")
-    @RequestMapping(method = RequestMethod.GET, value = "/list-missing-dependencies", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/list-missing-dependencies")
     public ResponseEntity<Map<String, String>> listMissingModuleDependencies(HttpServletRequest request) {
 
         RestProcessResult<Map<String, String>> result = new RestProcessResult<>(HttpStatus.OK);
@@ -193,7 +193,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Get Available Upgrades", notes = "Check the store for Upgrades")
-    @RequestMapping(method = RequestMethod.GET, value = "/upgrades-available", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/upgrades-available")
     public ResponseEntity<ModuleUpgradesModel> getUpgrades(HttpServletRequest request) {
 
         RestProcessResult<ModuleUpgradesModel> result = new RestProcessResult<ModuleUpgradesModel>(HttpStatus.OK);
@@ -250,8 +250,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Download Upgrades and optionally backup and restart", notes = "Use Modules web socket to track progress")
-    @RequestMapping(method = RequestMethod.POST, consumes = { "application/json" }, produces = {
-    "application/json" }, value = "/upgrade")
+    @RequestMapping(method = RequestMethod.POST, value = "/upgrade")
 
     public ResponseEntity<Void> upgrade(
             @ApiParam(value = "Perform Backup first", required = false, defaultValue = "false", allowMultiple = false) @RequestParam(required = false, defaultValue = "false") boolean backup,
@@ -282,8 +281,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Cancel Download of Upgrades", notes = "")
-    @RequestMapping(method = RequestMethod.PUT, consumes = { "application/json" }, produces = {
-    "application/json" }, value = "/upgrade")
+    @RequestMapping(method = RequestMethod.PUT, value = "/upgrade")
     public ResponseEntity<Void> cancelUpgrade(HttpServletRequest request) {
 
         RestProcessResult<Void> result = new RestProcessResult<Void>(HttpStatus.OK);
@@ -305,7 +303,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Get Current Upgrade Task Status", notes = "")
-    @RequestMapping(method = RequestMethod.GET, value = "/upgrade-status", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/upgrade-status")
     public ResponseEntity<UpgradeStatusModel> getUpgradeStatus(HttpServletRequest request) {
 
         RestProcessResult<UpgradeStatusModel> result = new RestProcessResult<UpgradeStatusModel>(HttpStatus.OK);
@@ -342,7 +340,7 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Set Marked For Deletion state of Module", notes = "Marking a module for deletion will un-install it upon restart")
-    @RequestMapping(method = RequestMethod.PUT, produces = {"application/json" }, value = "/deletion-state/{moduleName}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/deletion-state/{moduleName}")
     public ResponseEntity<ModuleModel> markForDeletion(
             @ApiParam(value = "Module name", required = false, allowMultiple = false)
             @PathVariable(required = false)
@@ -382,8 +380,6 @@ public class ModulesRestController extends MangoRestController {
     @ApiOperation(value = "Download your license from the store", notes = "Admin Only")
     @RequestMapping(
             method = RequestMethod.PUT,
-            consumes = { "application/json" },
-            produces = { "application/json" },
             value = "/download-license")
     public ResponseEntity<Void> downloadLicense(
             @ApiParam(value = "Connection retries", required = false, defaultValue = "0", allowMultiple = false)

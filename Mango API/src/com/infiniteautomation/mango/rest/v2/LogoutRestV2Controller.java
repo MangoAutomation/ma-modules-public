@@ -34,7 +34,7 @@ public class LogoutRestV2Controller {
 	 * @return
 	 */
 	@ApiOperation(value = "Logout", notes = "Perform logout using POST")
-	@RequestMapping(method = RequestMethod.POST, produces={"application/json"})
+	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Void> logoutPost(
             @AuthenticationPrincipal User user,
     		HttpServletRequest request, HttpServletResponse response) {

@@ -50,7 +50,7 @@ public class TranslationsController extends MangoRestController {
 	}
 	
 	@ApiOperation(value = "Get all translations", notes = "Kitchen sink of translations")
-    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"})
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Map<String, ?>> translations(
     		@ApiParam(value = "Language for translations", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
@@ -61,7 +61,7 @@ public class TranslationsController extends MangoRestController {
     }
     
 	@ApiOperation(value = "Get translations based on namespaces", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public")
-    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/{namespaces}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{namespaces}")
     public ResponseEntity<Map<String, ?>> namespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
             @PathVariable String[] namespaces,
@@ -90,7 +90,7 @@ public class TranslationsController extends MangoRestController {
     }
 	
 	@ApiOperation(value = "Get translations for public namespaces", notes = "Namespace must be base , ie public not public.messages. Returns sub-namespaces too. For > 1 use comma common,public")
-    @RequestMapping(method = RequestMethod.GET, produces = {"application/json"}, value = "/public/{namespaces}")
+    @RequestMapping(method = RequestMethod.GET, value = "/public/{namespaces}")
     public ResponseEntity<Map<String, ?>> publicNamespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
             @PathVariable String[] namespaces,
