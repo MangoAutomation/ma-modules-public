@@ -325,7 +325,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             JsonNode rootNode = root;
-            
+
             if (root.size() == 1 && !(
                     javaType.isCollectionLikeType() ||
                     ArrayNode.class.isAssignableFrom(javaType.getRawClass()))) {
@@ -377,10 +377,6 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         return root;
     }
 
-    private static enum ObjectType {
-        OBJECT, ARRAY, NOT_SPECIFIED
-    }
-
     /**
      * Create a Json object or array from a CSV row. All values will be string values
      * or null values. We rely on Jackson to interpret these string values as the correct type
@@ -391,9 +387,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @return
      */
     private JsonNode readCSVRow(Map<Integer, String> columnPositions, String[] row) {
-        ObjectNode object = this.nodeFactory.objectNode();
-
-        Map<String, ObjectType> objectTypes = new HashMap<>();
+        JsonNode rootNode = null;
 
         for (int i = 0; i < row.length; i++) {
             String value = row[i];
@@ -404,58 +398,71 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 path = "";
             }
 
+            JsonNode node;
+
             if (path == null || value == null || value.isEmpty()) {
                 // no header for the column, or value was undefined, do nothing
-            } else if (OBJECT_STRING.equals(value)) {
-                objectTypes.put(path, ObjectType.OBJECT);
-            } else if (ARRAY_STRING.equals(value)) {
-                objectTypes.put(path, ObjectType.ARRAY);
-            } else {
-                JsonNode valueNode = null;
-                if (NULL_STRING.equals(value)) {
-                    valueNode = this.nodeFactory.nullNode();
-                } else if (TRUE_STRING.equals(value)) {
-                    valueNode = this.nodeFactory.booleanNode(true);
-                } else if (FALSE_STRING.equals(value)) {
-                    valueNode = this.nodeFactory.booleanNode(false);
-                } else if (EMPTY_STRING.equals(value)) {
-                    valueNode = this.nodeFactory.textNode("");
+                continue;
+            }
+
+            switch (value) {
+                case OBJECT_STRING:
+                    node = this.nodeFactory.objectNode(); break;
+                case ARRAY_STRING:
+                    node = this.nodeFactory.arrayNode(); break;
+                case NULL_STRING:
+                    node = this.nodeFactory.nullNode(); break;
+                case TRUE_STRING:
+                    node = this.nodeFactory.booleanNode(true); break;
+                case FALSE_STRING:
+                    node = this.nodeFactory.booleanNode(false); break;
+                case EMPTY_STRING:
+                    node = this.nodeFactory.textNode(""); break;
+                default:
+                    node = this.nodeFactory.textNode(value); break;
+            }
+
+            if (path.isEmpty()) {
+                // root path
+                if (node.isValueNode()) {
+                    // root node is a value node, return this as the result for the whole row
+                    return node;
                 } else {
-                    valueNode = this.nodeFactory.textNode(value);
+                    rootNode = node;
+                }
+            } else {
+                if (rootNode == null) {
+                    rootNode = this.nodeFactory.objectNode();
                 }
 
-                // root path is a value node, return this as the result for the whole row
-                if (path.isEmpty()) {
-                    return valueNode;
-                }
-
-                this.setObjectValue(object, path, valueNode);
+                this.setValueUsingPath(rootNode, path, node);
             }
         }
 
-        return this.convertObjectsToArrays(object, objectTypes, "");
+        return rootNode;
     }
 
     /**
-     * Set the value of a property inside an object using a path. Any objects on the path which do
-     * not already exist will be created.
+     * Set the value of a property inside a container node (object or array) using a path. Any nodes on the path which do
+     * not already exist will be created as objects.
      *
-     * @param object
+     * @param containerNode
      * @param path
      * @param value
      */
-    private void setObjectValue(ObjectNode object, String path, JsonNode value) {
+    private void setValueUsingPath(JsonNode containerNode, String path, JsonNode value) {
         String[] pathArray = path.split("/");
         for (int i = 0; i < pathArray.length; i++) {
             String propertyName = pathArray[i];
 
             if (i == pathArray.length - 1) {
-                object.set(propertyName, value);
+                setContainerNodeProperty(containerNode, propertyName, value);
             } else {
-                JsonNode child = object.get(propertyName);
+                JsonNode child = getContainerNodeProperty(containerNode, propertyName);
+
                 if (child == null) {
                     child = this.nodeFactory.objectNode();
-                    object.set(propertyName, child);
+                    setContainerNodeProperty(containerNode, propertyName, child);
                 }
 
                 if (!child.isContainerNode()) {
@@ -465,74 +472,31 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 }
 
                 // can't be an array node (our tree is built only with objects)
-                object = (ObjectNode) child;
+                containerNode = child;
             }
         }
     }
 
-    /**
-     * Traverses the object and replaces any child objects which contain all all integer field names
-     * with array nodes.
-     *
-     * @param object
-     * @param isArrayMap
-     * @return
-     */
-    private JsonNode convertObjectsToArrays(ObjectNode object, Map<String, ObjectType> objectTypes, String path) {
-        boolean hasChild = false;
-        boolean allIntegers = true;
-        int highestIndex = -1;
-
-        // The type of object might have been explicitly set in the CSV, if not we will auto detect it
-        ObjectType type = objectTypes.getOrDefault(path, ObjectType.NOT_SPECIFIED);
-
-        Iterator<Entry<String, JsonNode>> it = object.fields();
-        while(it.hasNext()) {
-            hasChild = true;
-
-            Entry<String, JsonNode> entry = it.next();
-            String propertyName = entry.getKey();
-            JsonNode value = entry.getValue();
-
-            if (type == ObjectType.ARRAY || (type == ObjectType.NOT_SPECIFIED && allIntegers)) {
-                if (INTEGER_PATTERN.matcher(propertyName).matches()) {
-                    int index = Integer.parseInt(propertyName);
-                    if (index > highestIndex) {
-                        highestIndex = index;
-                    }
-                } else {
-                    allIntegers = false;
-                }
-            }
-
-            if (value.isObject()) {
-                JsonNode result = this.convertObjectsToArrays((ObjectNode) value, objectTypes, path + "/" + propertyName);
-                if (result.isArray()) {
-                    entry.setValue(result);
-                }
-            }
+    private JsonNode getContainerNodeProperty(JsonNode containerNode, String propertyName) {
+        if (containerNode.isObject()) {
+            return containerNode.get(propertyName);
+        } else if (containerNode.isArray()) {
+            int arrayIndex = Integer.parseInt(propertyName);
+            return ((ArrayNode) containerNode).get(arrayIndex);
         }
+        return null;
+    }
 
-        // object type was not explicitly set and we detected an object will all integer keys,
-        // assume its an array
-        if (type == ObjectType.NOT_SPECIFIED && hasChild && allIntegers) {
-            type = ObjectType.ARRAY;
-        }
-
-        if (type == ObjectType.ARRAY) {
-            int size = highestIndex + 1;
-            ArrayNode arrayNode = this.nodeFactory.arrayNode(size);
-            for (int i = 0; i < size; i++) {
-                JsonNode value = object.get(Integer.toString(i));
-                if (value == null) {
-                    value = this.nodeFactory.nullNode();
-                }
-                arrayNode.add(value);
+    private void setContainerNodeProperty(JsonNode containerNode, String propertyName, JsonNode value) {
+        if (containerNode.isArray()) {
+            ArrayNode arrayNode = (ArrayNode) containerNode;
+            int arrayIndex = Integer.parseInt(propertyName);
+            while (arrayNode.size() < arrayIndex + 1) {
+                arrayNode.addNull();
             }
-
-            return arrayNode;
+            arrayNode.set(arrayIndex, value);
+        } else if (containerNode.isObject()) {
+            ((ObjectNode) containerNode).set(propertyName, value);
         }
-
-        return object;
     }
 }
