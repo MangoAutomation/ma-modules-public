@@ -36,6 +36,7 @@ import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
@@ -52,6 +53,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+import com.serotonin.provider.Providers;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -205,6 +207,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         Map<String, String> mangoInfo = new HashMap<>();
 
         mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        mangoInfo.put("guid", Providers.get(ICoreLicense.class).getGuid());
         mangoInfo.put("coreVersion", Common.getVersion().toString());
         mangoInfo.put("coreVersionNormalized", Common.getVersion().getNormalVersion());
         mangoInfo.put("locale", Common.getLocale().toLanguageTag());
