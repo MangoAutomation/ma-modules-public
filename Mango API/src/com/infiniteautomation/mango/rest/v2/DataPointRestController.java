@@ -515,8 +515,8 @@ public class DataPointRestController extends BaseMangoRestController {
         DataPointIndividualResponse result = new DataPointIndividualResponse();
 
         try {
-            // TODO use id from request body instead of XID if it is set
             String xid = request.getXid();
+            result.setXid(xid);
 
             VoAction action = request.getAction() == null ? defaultAction : request.getAction();
             if (action == null) {
