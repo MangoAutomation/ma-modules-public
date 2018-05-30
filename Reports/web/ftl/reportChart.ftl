@@ -131,6 +131,12 @@
 	              <td>${point.startValue}</td>
 	            </tr>
 	          </#if>
+	          <#if point.endValue??>
+	            <tr>
+	              <td class="label"><@fmt key="common.stats.end"/></td>
+	              <td>${point.endValue}</td>
+	            </tr>
+	          </#if>
 	          <#if point.dataType == NUMERIC>
 	            <tr>
 	              <td class="label"><@fmt key="common.stats.min"/></td>

@@ -342,6 +342,8 @@ public class ReportChartCreator {
         private int dataType;
         private String dataTypeDescription;
         private String startValue;
+        private String endValue;
+        private ExportDataValue lastValue;
         private TextRenderer textRenderer;
         private StatisticsGenerator stats;
         //private TimeSeries numericTimeSeries;
@@ -398,6 +400,14 @@ public class ReportChartCreator {
 
         public void setStartValue(String startValue) {
             this.startValue = startValue;
+        }
+        
+        public String getEndValue() {
+            return endValue;
+        }
+        
+        public void setEndValue(String endValue) {
+            this.endValue = endValue;
         }
 
         public StatisticsGenerator getStats() {
@@ -532,6 +542,15 @@ public class ReportChartCreator {
         public void setTags(String tags) {
             this.tags = tags;
         }
+        
+        public void setLastValue(ExportDataValue lastValue) {
+            this.lastValue = lastValue;
+        }
+        
+        public void done() {
+            if(lastValue != null)
+                endValue = textRenderer.getText(lastValue.getValue(), TextRenderer.HINT_SPECIFIC);
+        }
     }
 
     public static class StartsAndRuntimeWrapper {
@@ -627,9 +646,11 @@ public class ReportChartCreator {
             point.setDataType(pointInfo.getDataType());
             point.setDataTypeDescription(DataTypes.getDataTypeMessage(pointInfo.getDataType()).translate(translations));
             point.setTextRenderer(pointInfo.getTextRenderer());
-            if (pointInfo.getStartValue() != null)
+            if (pointInfo.getStartValue() != null) {
                 point.setStartValue(pointInfo.getTextRenderer().getText(pointInfo.getStartValue(),
                         TextRenderer.HINT_SPECIFIC));
+                point.setEndValue(point.getStartValue());
+            }
             
             // Make the DataPointVO available to the freemarker template, may be null if the point was deleted
             DataPointVO vo = DataPointDao.instance.getDataPoint(pointInfo.getXid());
@@ -729,6 +750,7 @@ public class ReportChartCreator {
             if (quantizer != null)
                 quantizer.data(rdv);
             point.getStats().addValueTime(rdv);
+            point.setLastValue(rdv);
             if (exportCsvStreamer != null)
                 exportCsvStreamer.pointData(rdv);
         }
@@ -736,9 +758,11 @@ public class ReportChartCreator {
         private void donePoint() {
             if (quantizer != null)
                 quantizer.done();
-            if (point != null)
+            if (point != null) {
                 // Add in an end value to calculate stats until the end of the report. 
                 point.getStats().done();
+                point.done();
+            }
         }
 
         @Override
