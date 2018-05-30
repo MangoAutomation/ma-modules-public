@@ -12,7 +12,8 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infiniteautomation.mango.rest.v2.mapping.GenericCSVMessageConverter;
+import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
+import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 
 /**
@@ -24,10 +25,19 @@ import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessa
  *
  */
 @Configuration
-public class MangoRestModuleSpringConfiguration extends WebMvcConfigurerAdapter{
+public class MangoRestModuleSpringConfiguration extends WebMvcConfigurerAdapter {
 
     @Autowired
     ObjectMapper mapper;
+
+    // TODO Mango 3.5 make this available as a bean
+    // The ObjectMapper in core wasn't previously marked as primary
+    //@Bean("csvObjectMapper")
+    public ObjectMapper csvObjectMapper() {
+        return mapper.copy()
+                .setDateFormat(GenericCSVMessageConverter.EXCEL_DATE_FORMAT)
+                .registerModule(new CsvJacksonModule());
+    }
 
     /**
      * Configure the Message Converters for the API for now only JSON
@@ -38,6 +48,6 @@ public class MangoRestModuleSpringConfiguration extends WebMvcConfigurerAdapter{
         converters.add(new PointValueTimeStreamCsvMessageConverter());
         //converters.add(new DataPointCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
-        converters.add(new GenericCSVMessageConverter(mapper));
+        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
     }
 }

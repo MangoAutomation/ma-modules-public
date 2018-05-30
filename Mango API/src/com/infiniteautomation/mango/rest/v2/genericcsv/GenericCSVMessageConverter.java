@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.mapping;
+package com.infiniteautomation.mango.rest.v2.genericcsv;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
@@ -76,7 +77,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private final JsonNodeFactory nodeFactory;
 
     public GenericCSVMessageConverter(ObjectMapper objectMapper) {
-        super(objectMapper.copy().setDateFormat(EXCEL_DATE_FORMAT), MediaTypes.CSV_V2);
+        super(objectMapper, MediaTypes.CSV_V2);
         this.nodeFactory = objectMapper.getNodeFactory();
     }
 
