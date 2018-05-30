@@ -11,6 +11,8 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,6 +58,8 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 
+    public static final DateFormat EXCEL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
     public static final String NULL_STRING = "NULL";
     public static final String ARRAY_STRING = "ARRAY";
     public static final String OBJECT_STRING = "OBJECT";
@@ -72,7 +76,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
     private final JsonNodeFactory nodeFactory;
 
     public GenericCSVMessageConverter(ObjectMapper objectMapper) {
-        super(objectMapper, MediaTypes.CSV_V2);
+        super(objectMapper.copy().setDateFormat(EXCEL_DATE_FORMAT), MediaTypes.CSV_V2);
         this.nodeFactory = objectMapper.getNodeFactory();
     }
 
@@ -105,8 +109,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 objectWriter = this.objectMapper.writer();
             }
 
-            // TODO enable writer features/formats
-            // e.g. Dates encoded as excel compatible date format
+            // TODO Mango 3.5
+            // setting the date format here doesn't work, also no way to set the date format on the reader?
+            // Remove the copy of the object mapper in the construction once fixed
+            //objectWriter = objectWriter.with(EXCEL_DATE_FORMAT);
 
             if (javaType != null && javaType.isContainerType()) {
                 objectWriter = objectWriter.forType(javaType);
@@ -300,9 +306,6 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             } else {
                 reader = this.objectMapper.reader();
             }
-
-            // TODO enable reader features/formats
-            // e.g. Dates encoded as excel compatible date format
 
             reader = reader.forType(javaType);
 
