@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
-import com.fasterxml.jackson.databind.util.AccessPattern;
 
 /**
  * @author Jared Wiltshire
@@ -63,11 +62,6 @@ public class LongAsDateDeserializer extends StdScalarDeserializer<Long> implemen
         }
 
         return result.getTime();
-    }
-
-    @Override
-    public AccessPattern getNullAccessPattern() {
-        return super.getNullAccessPattern();
     }
 
     @Override
