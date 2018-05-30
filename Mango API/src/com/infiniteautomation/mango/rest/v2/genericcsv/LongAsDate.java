@@ -14,6 +14,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LongAsDate {
-    boolean useNullValue() default true;
+    boolean useNullValue() default false;
     long nullValue() default 0;
 }

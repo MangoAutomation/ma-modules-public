@@ -30,7 +30,7 @@ public class LongAsDateSerializer extends StdScalarSerializer<Long> implements C
         this.nullValue = null;
     }
 
-    public LongAsDateSerializer(JsonSerializer<Object> dateSerializer, Long nullValue) {
+    protected LongAsDateSerializer(JsonSerializer<Object> dateSerializer, Long nullValue) {
         super(Long.class);
         this.dateSerializer = dateSerializer;
         this.nullValue = nullValue;

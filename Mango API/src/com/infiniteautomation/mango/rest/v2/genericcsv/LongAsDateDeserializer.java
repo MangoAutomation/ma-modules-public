@@ -14,33 +14,32 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
+import com.fasterxml.jackson.databind.util.AccessPattern;
 
 /**
  * @author Jared Wiltshire
  */
-public class LongAsDateDeserializer extends StdScalarDeserializer<Date> implements ContextualDeserializer {
+public class LongAsDateDeserializer extends StdScalarDeserializer<Long> implements ContextualDeserializer {
 
     private static final long serialVersionUID = 1L;
 
-    private final JsonDeserializer<Object> numberDeserializer;
+    private final JsonDeserializer<Object> dateDeserializer;
     private final Long nullValue;
 
     public LongAsDateDeserializer() {
         super(Long.class);
-        this.numberDeserializer = null;
+        this.dateDeserializer = null;
         this.nullValue = null;
     }
 
-    public LongAsDateDeserializer(JsonDeserializer<Object> numberDeserializer, Long nullValue) {
+    protected LongAsDateDeserializer(JsonDeserializer<Object> dateDeserializer, Long nullValue) {
         super(Long.class);
-        this.numberDeserializer = numberDeserializer;
+        this.dateDeserializer = dateDeserializer;
         this.nullValue = nullValue;
     }
 
     @Override
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-        JsonDeserializer<Object> numberDeserializer = ctxt.findContextualValueDeserializer(ctxt.constructType(Number.class), property);
-
         LongAsDate annotation;
         if (property != null && (annotation = property.getAnnotation(LongAsDate.class)) != null) {
             Long nullValue = null;
@@ -48,20 +47,33 @@ public class LongAsDateDeserializer extends StdScalarDeserializer<Date> implemen
                 nullValue = annotation.nullValue();
             }
 
-            return new LongAsDateDeserializer(numberDeserializer, nullValue);
+            JsonDeserializer<Object> dateDeserializer = ctxt.findContextualValueDeserializer(ctxt.constructType(Date.class), property);
+            return new LongAsDateDeserializer(dateDeserializer, nullValue);
         }
 
-        return numberDeserializer;
+        return ctxt.findContextualValueDeserializer(ctxt.constructType(Number.class), property);
     }
 
     @Override
-    public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        Long result = (Long) this.numberDeserializer.deserialize(p, ctxt);
+    public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        Date result = (Date) this.dateDeserializer.deserialize(p, ctxt);
 
-        if (result == null || result.equals(this.nullValue)) {
-            return null;
+        if (result == null) {
+            return this.getNullValue(ctxt);
         }
 
-        return new Date(result);
+        return result.getTime();
     }
+
+    @Override
+    public AccessPattern getNullAccessPattern() {
+        return super.getNullAccessPattern();
+    }
+
+    @Override
+    public Long getNullValue(DeserializationContext ctxt) throws JsonMappingException {
+        // this is always going to return null as it doesn't use the contextual deserializer to get the null value
+        return this.nullValue;
+    }
+
 }

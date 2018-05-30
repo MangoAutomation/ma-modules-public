@@ -16,6 +16,10 @@ public class CsvJacksonModule extends SimpleModule {
         LongAsDateSerializer longAsDateSerializer = new LongAsDateSerializer();
         this.addSerializer(Long.class, longAsDateSerializer);
         this.addSerializer(long.class, longAsDateSerializer);
+
+        LongAsDateDeserializer longAsDateDeserializer = new LongAsDateDeserializer();
+        this.addDeserializer(Long.class, longAsDateDeserializer);
+        this.addDeserializer(long.class, longAsDateDeserializer);
     }
 
 }

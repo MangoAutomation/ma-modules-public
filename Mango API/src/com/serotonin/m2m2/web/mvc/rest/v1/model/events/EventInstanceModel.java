@@ -93,24 +93,24 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
         this.data.setAlarmLevel(AlarmLevels.CODES.getId(level));
     }
 
-    @LongAsDate
+    @LongAsDate(useNullValue = true, nullValue = 0)
     @JsonGetter
     public long getActiveTimestamp(){
         return this.data.getActiveTimestamp();
     }
     @JsonSetter
-    public void setActiveTimestamp(long activeTimestamp){
-        this.data.setActiveTimestamp(activeTimestamp);
+    public void setActiveTimestamp(Long activeTimestamp){
+        this.data.setActiveTimestamp(activeTimestamp == null ? 0 : activeTimestamp);
     }
 
-    @LongAsDate
+    @LongAsDate(useNullValue = true, nullValue = 0)
     @JsonGetter
     public long getReturnToNormalTimestamp(){
         return this.data.getRtnTimestamp();
     }
     @JsonSetter
-    public void setReturnToNormalTimestamp(long timestamp){
-        this.data.setRtnTimestamp(timestamp);
+    public void setReturnToNormalTimestamp(Long timestamp){
+        this.data.setRtnTimestamp(timestamp == null ? 0 : timestamp);
     }
 
     @JsonGetter
@@ -227,14 +227,14 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
         //No op for now
     }
 
-    @LongAsDate
+    @LongAsDate(useNullValue = true, nullValue = 0)
     public long getAcknowledgedTimestamp() {
         return this.data.getAcknowledgedTimestamp();
     }
 
 
-    public void setAcknowledgedTimestamp(long acknowledgedTimestamp) {
-        this.data.setAcknowledgedTimestamp(acknowledgedTimestamp);
+    public void setAcknowledgedTimestamp(Long acknowledgedTimestamp) {
+        this.data.setAcknowledgedTimestamp(acknowledgedTimestamp == null ? 0 : acknowledgedTimestamp);
     }
 
     public int getAcknowledgedByUserId() {

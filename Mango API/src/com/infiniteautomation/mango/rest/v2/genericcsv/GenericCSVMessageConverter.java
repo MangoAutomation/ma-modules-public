@@ -59,6 +59,8 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 
+    // when saving in Excel ensure that dates are saved in this format, the equivalent excel format pattern is
+    // yyyy-mm-dd h:mm:ss.000
     public static final DateFormat EXCEL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     public static final String NULL_STRING = "NULL";
