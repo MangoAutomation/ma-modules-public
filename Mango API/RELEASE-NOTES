@@ -1,3 +1,8 @@
+*Version 3.4.2*
+* Add HTTP message converters for generic CSV format
+* Add methods for getting data points and tags as CSV
+* Add guid to mango-info endpoint
+
 *Version 3.4.1*
 * Fixed DeviceNameController to consider setPermission and data source edit permission in getting list
 
