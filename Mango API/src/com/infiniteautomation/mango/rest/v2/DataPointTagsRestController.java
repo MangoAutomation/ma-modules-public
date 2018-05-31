@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
@@ -34,6 +35,8 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
+import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
@@ -106,6 +109,62 @@ public class DataPointTagsRestController extends BaseMangoRestController {
     public DataPointTagsRestController() {
         this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(this.websocket);
+    }
+
+    //    @ApiOperation(value = "Query for data point tags using RQL", notes = "User must have read permission for the data points")
+    //    @RequestMapping(method = RequestMethod.GET, value="/points")
+    //    public StreamedArrayWithTotal queryTagsForDataPoint(
+    //            HttpServletRequest request,
+    //            @AuthenticationPrincipal User user) {
+    //
+    //        ASTNode rql = parseRQLtoAST(request.getQueryString());
+    //        ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
+    //
+    //        if (!user.isAdmin()) {
+    //            conditions.addCondition(DataPointDao.instance.userHasPermission(user));
+    //        }
+    //
+    //        return new StreamedVOQueryWithTotal<>(DataPointDao.instance, conditions, item -> true, dataPoint -> {
+    //            Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+    //
+    //            // we set the tags on the data point then retrieve them so that the device and name tags are removed
+    //            dataPoint.setTags(tags);
+    //
+    //            TagIndividualRequest individualRequest = new TagIndividualRequest();
+    //            individualRequest.setAction(BulkTagAction.MERGE);
+    //            individualRequest.setXid(dataPoint.getXid());
+    //            individualRequest.setBody(dataPoint.getTags());
+    //
+    //            return individualRequest;
+    //        });
+    //    }
+
+    @ApiOperation(value = "Query for data point tags using RQL", notes = "User must have read permission for the data points")
+    @RequestMapping(method = RequestMethod.GET, value="/points", produces=MediaTypes.CSV_VALUE)
+    public StreamedArrayWithTotal queryTagsForDataPointCSV(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
+
+        if (!user.isAdmin()) {
+            conditions.addCondition(DataPointDao.instance.userHasPermission(user));
+        }
+
+        return new StreamedVOQueryWithTotal<>(DataPointDao.instance, conditions, item -> true, dataPoint -> {
+            Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+
+            // we set the tags on the data point then retrieve them so that the device and name tags are removed
+            dataPoint.setTags(tags);
+
+            ActionAndTags individualRequest = new ActionAndTags();
+            individualRequest.setAction(BulkTagAction.MERGE);
+            individualRequest.setXid(dataPoint.getXid());
+            individualRequest.setTags(dataPoint.getTags());
+
+            return individualRequest;
+        });
     }
 
     @ApiOperation(value = "Get data point tags by data point XID", notes = "User must have read permission for the data point")
@@ -293,7 +352,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs for CSV", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
-    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperationCsv(
+    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperationCSV(
             @RequestBody
             List<ActionAndTags> requestBody,
 
