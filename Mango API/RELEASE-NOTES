@@ -1,3 +1,6 @@
+*Version 3.4.3*
+* Fixed NPE from no data point set in event detector permissions checking
+
 *Version 3.4.2*
 * Add HTTP message converters for generic CSV format
 * Add methods for getting data points and tags as CSV
