@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.eventDetector;
 
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.User;
@@ -38,6 +39,8 @@ public class EventDetectorStreamCallback extends FilteredVoStreamCallback<Abstra
 	protected boolean filter(AbstractEventDetectorVO<?> vo) {
 		switch(vo.getDetectorSourceType()){
 		case EventType.EventTypeNames.DATA_POINT:
+		    //The row mapper will not have set the data point vo to the point event detectors
+		    ((AbstractPointEventDetectorVO<?>)vo).njbSetDataPoint(DataPointDao.instance.getDataPoint(vo.getSourceId(), false));
 			return !this.filter.hasDataPointReadPermission(((AbstractPointEventDetectorVO<?>)vo).njbGetDataPoint());
 		default:
 			return true;
