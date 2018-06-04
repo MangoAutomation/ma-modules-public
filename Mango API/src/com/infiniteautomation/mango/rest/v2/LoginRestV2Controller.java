@@ -28,9 +28,9 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Login/Switch User Actions
- * 
+ *
  * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
- * 
+ *
  * @author Terry Packer
  */
 @Api(value = "Login", description = "Login")
@@ -38,104 +38,107 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RequestMapping("/v2/login")
 public class LoginRestV2Controller {
 
-	//private static final Log LOG = LogFactory.getLog(LoginRestController.class);
+    //private static final Log LOG = LogFactory.getLog(LoginRestController.class);
     public static final String LOGIN_DEFAULT_URI_HEADER = "X-Mango-Default-URI";
 
-	/**
-	 * The actual authentication for the login occurs in the core, by the time this
-	 * end point is actually reached the user is either already authenticated or not
-	 * The Spring Security authentication success handler forwards the request here
-	 * 
+    /**
+     * The actual authentication for the login occurs in the core, by the time this
+     * end point is actually reached the user is either already authenticated or not
+     * The Spring Security authentication success handler forwards the request here
+     *
      * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
-	 * 
-	 * @throws IOException 
-	 */
-	@ApiOperation(value = "Login", notes = "Used to login using POST and JSON credentials")
-	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<UserModel> loginPost(
+     *
+     * @throws IOException
+     */
+    @ApiOperation(value = "Login", notes = "Used to login using POST and JSON credentials")
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<UserModel> loginPost(
             @AuthenticationPrincipal User user,
-			HttpServletRequest request, HttpServletResponse response) throws IOException {
-	    
-	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-	    if (ex != null) {
+        AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+
+        // TODO Mango 3.5 check exception type and return TOO_MANY_REQUESTS and localized
+        // message for rate limited attempts
+
+        if (ex != null) {
             //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-	        response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-	        return null;
-	    }
-	    
-	    if (user == null) {
-	        return new ResponseEntity<>(HttpStatus.OK);
-	    } else {
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+            return null;
+        }
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
             String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
-	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
-	    }
-	}
-	
-	/**
-	 * The actual authentication for the switch user occurs in the core by the SwitchUserFilter,
-	 *  by the time this end point is actually reached the user is either already authenticated or not
-	 * The Spring Security authentication success handler forwards the request here
-	 * 
-	 * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
-	 * 
-	 * @throws IOException 
-	 */
-	@ApiOperation(value = "Switch User", notes = "Used to switch User using GET")
-	@RequestMapping(method = RequestMethod.POST,  value="/su")
-	public ResponseEntity<UserModel> switchUser(
-			@ApiParam(value = "Username to switch to", required = true, allowMultiple = false)
-    		@RequestParam(required=true) String username,
-            @AuthenticationPrincipal User user,
-			HttpServletRequest request, HttpServletResponse response) throws IOException {
-	    
-	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+            return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
+        }
+    }
 
-	    if (ex != null) {
-            //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-	        response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-	        return null;
-	    }
-	    
-	    if (user == null) {
-	        return new ResponseEntity<>(HttpStatus.OK);
-	    } else {
-            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
-            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
-	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
-	    }
-	}
-	
-	/**
-	 * The actual authentication for the exit user occurs in the core by the SwitchUserFilter,
-	 *  by the time this end point is actually reached the user is either already authenticated or not
-	 * The Spring Security authentication success handler forwards the request here
-	 * 
+    /**
+     * The actual authentication for the switch user occurs in the core by the SwitchUserFilter,
+     *  by the time this end point is actually reached the user is either already authenticated or not
+     * The Spring Security authentication success handler forwards the request here
+     *
      * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
-	 * 
-	 * @throws IOException 
-	 */
-	@ApiOperation(value = "Exit Switch User", notes = "Used to switch User using POST")
-	@RequestMapping(method = RequestMethod.POST,  value="/exit-su")
-	public ResponseEntity<UserModel> exitSwitchUser(
+     *
+     * @throws IOException
+     */
+    @ApiOperation(value = "Switch User", notes = "Used to switch User using GET")
+    @RequestMapping(method = RequestMethod.POST,  value="/su")
+    public ResponseEntity<UserModel> switchUser(
+            @ApiParam(value = "Username to switch to", required = true, allowMultiple = false)
+            @RequestParam(required=true) String username,
             @AuthenticationPrincipal User user,
-			HttpServletRequest request, HttpServletResponse response) throws IOException {
-	    
-	    AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-	    
-	    if (ex != null) {
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+
+        if (ex != null) {
             //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-	        response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-	        return null;
-	    }
-	    
-	    if (user == null) {
-	        return new ResponseEntity<>(HttpStatus.OK);
-	    } else {
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+            return null;
+        }
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
             String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
-	        return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
-	    }
-	}
+            return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
+        }
+    }
+
+    /**
+     * The actual authentication for the exit user occurs in the core by the SwitchUserFilter,
+     *  by the time this end point is actually reached the user is either already authenticated or not
+     * The Spring Security authentication success handler forwards the request here
+     *
+     * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
+     *
+     * @throws IOException
+     */
+    @ApiOperation(value = "Exit Switch User", notes = "Used to switch User using POST")
+    @RequestMapping(method = RequestMethod.POST,  value="/exit-su")
+    public ResponseEntity<UserModel> exitSwitchUser(
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+
+        if (ex != null) {
+            //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+            return null;
+        }
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
+            return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
+        }
+    }
 }
