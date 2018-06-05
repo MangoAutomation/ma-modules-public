@@ -54,7 +54,7 @@
             <c:forEach items="${data}" var="row">
               <tr class="row">
                 <c:forEach items="${row}" var="col">
-                  <td>${col}</td>
+                  <td>${fn:escapeXml(col)}</td>
                 </c:forEach>
               </tr>
             </c:forEach>
