@@ -51,22 +51,22 @@
       dojo.require("dijit.form.ComboBox");
       dojo.require("dijit.form.FilteringSelect");
       
-      var globalUsername = "${username}"; //Username for new lists
+      var globalUsername = "${fn:escapeXml(username)}"; //Username for new lists
 
       var watchListMap = [
           <c:forEach items="${watchLists}" var="wl">
           {   id: ${wl.id},
-        	  watchListName: "${wl.name}",
-        	  watchListUsername: "${wl.username}",
-        	  htmlName: "<b>${wl.name}</b>&nbsp-&nbsp${wl.username}"
+        	  watchListName: "${fn:escapeXml(wl.name)}",
+        	  watchListUsername: "${fn:escapeXml(wl.username)}",
+        	  htmlName: "<b>${fn:escapeXml(wl.name)}</b>&nbsp-&nbsp${fn:escapeXml(wl.username)}"
           },</c:forEach>
       ];
 	
       var users = [
 		<c:forEach items="${usernames}" var="username">
 		{
-			id: "${username}", 
-			username: "${username}", 
+			id: "${fn:escapeXml(username)}", 
+			username: "${fn:escapeXml(username)}", 
 		},</c:forEach>
       ];
       
@@ -236,7 +236,7 @@
               // Add subfolders
               for (i=0; i<pointFolder.subfolders.length; i++) {
                   var folder = pointFolder.subfolders[i];
-                  var node = {name: "<img src='images/folder_brick.png'/> "+ folder.name, children: []};
+                  var node = {name: "<img src='images/folder_brick.png'/> "+ encodeHtml(folder.name), children: []};
                   parent.push(node);
                   addFolder(node.children, folder);
               }
@@ -246,7 +246,7 @@
                   var dps = pointFolder.points[i];
                   var node = {pointId: dps.id, fresh: true };
                   var name = dps.extendedName;
-                  node.name = "<img src='images/icon_comp.png'/> <span id='ph"+ dps.id +"Name'>"+ name +"</span> "+
+                  node.name = "<img src='images/icon_comp.png'/> <span id='ph"+ dps.id +"Name'>"+ encodeHtml(name) +"</span> "+
                       "<img src='images/bullet_go.png' id='ph"+ dps.id +"Image' title='<fmt:message key="watchlist.addToWatchlist"/>'/>";
                   parent.push(node);
                   pointNames[dps.id] = dps;
@@ -457,7 +457,7 @@
               show("p"+ pointId +"Delete");
           }
           
-          $("p"+ pointId +"Name").innerHTML = pointNames[pointId].extendedName;
+          $("p"+ pointId +"Name").innerHTML = encodeHtml(pointNames[pointId].extendedName);
           
           // Disable the element in the point list.
           togglePointTreeIcon(pointId, false);

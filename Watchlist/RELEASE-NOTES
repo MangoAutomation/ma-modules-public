@@ -1,3 +1,6 @@
+*Version 3.4.2*
+* Escape HTML in point, folder, and watchlist names
+
 *Version 3.4.1*
 * Validate checks that a user with edit permission retains edit permission when saving
 
