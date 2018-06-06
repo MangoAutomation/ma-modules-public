@@ -20,8 +20,8 @@
         
         dwr.util.removeAllRows(listId);
         dwr.util.addRows(listId, list, [
-                function(t) { return t.id; },
-                function(t) { return t.name; },
+                function(t) { return encodeHtml(t.id); },
+                function(t) { return encodeHtml(t.name); },
                 function(t) { return t.currentQueueSize; },
                 function(t) { return t.maxQueueSize; },
                 function(t) { return t.queueSizeLimit; },

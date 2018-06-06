@@ -35,7 +35,7 @@
             }
             
             dwr.util.addRows("varList", list, [
-                    function(t) { return t.name; },
+                    function(t) { return encodeHtml(t.name); },
                     function(t) { return clipValue(t.value); },
                 ],
                 {

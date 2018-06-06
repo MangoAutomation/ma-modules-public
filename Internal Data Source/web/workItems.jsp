@@ -25,7 +25,7 @@
         
         dwr.util.removeAllRows(listId);
         dwr.util.addRows(listId, list, [
-                function(t) { return t.name; },
+                function(t) { return encodeHtml(t.name); },
                 function(t) { return t.count; },
             ],
             {

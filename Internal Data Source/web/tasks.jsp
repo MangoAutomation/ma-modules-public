@@ -22,11 +22,11 @@
         dwr.util.addRows(listId, list, [
                 function(t) { 
                 	if(t.id != null)
-                		return t.id;
+                		return encodeHtml(t.id);
                 	else
                 		return 'N/A';
                 },
-                function(t) { return t.name; },
+                function(t) { return encodeHtml(t.name); },
                 function(t) { return t.currentlyRunning; },
                 function(t) { return t.poolFull; },
                 function(t) { return t.queueFull; },
