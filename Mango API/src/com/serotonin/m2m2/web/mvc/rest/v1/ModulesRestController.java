@@ -62,6 +62,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.AngularJSModuleDefinition;
 import com.serotonin.m2m2.module.Module;
+import com.serotonin.m2m2.module.ModuleNotificationListener.UpgradeState;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.work.BackupWorkItem;
 import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
@@ -328,7 +329,7 @@ public class ModulesRestController extends MangoRestController {
                     Object error = status.getData().get("error");
                     if (error != null)
                         model.setError((String) error);
-                    model.setStage((String) status.getData().get("stage"));
+                    model.setStage(((UpgradeState) status.getData().get("stage")).name());
                 }
 
                 return result.createResponseEntity(model);

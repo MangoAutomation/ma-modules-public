@@ -1,3 +1,6 @@
+*Version 3.4.4*
+* Fixed cast exception for upgrade state
+
 *Version 3.4.3*
 * Fixed NPE from no data point set in event detector permissions checking
 
