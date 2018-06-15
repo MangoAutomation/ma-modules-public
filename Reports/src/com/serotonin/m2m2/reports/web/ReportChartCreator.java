@@ -31,6 +31,7 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.email.MessageFormatDirective;
 import com.serotonin.m2m2.email.SubjectDirective;
 import com.serotonin.m2m2.email.UsedImagesDirective;
@@ -659,6 +660,7 @@ public class ReportChartCreator {
             // Generate a tag string for easy use in the template
             List<String> tagList = new ArrayList<>();
             if (vo != null) {
+                vo.setTags(DataPointTagsDao.instance.getTagsForDataPointId(vo.getId()));
                 Map<String, String> tags = vo.getTags();
                 for (Entry<String, String> entry : tags.entrySet()) {
                     tagList.add(entry.getKey() + ": " + entry.getValue());
