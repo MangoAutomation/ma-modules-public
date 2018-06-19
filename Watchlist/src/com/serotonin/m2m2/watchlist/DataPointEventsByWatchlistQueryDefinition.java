@@ -17,6 +17,7 @@ import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleQueryDefinition;
+import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.exception.NotFoundException;
@@ -106,7 +107,7 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
         if(args.size() > 0) {
             ASTNode query = new ASTNode("in", args);
             query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-            query = addAndRestriction(query, new ASTNode("eq", "typeName", "DATA_POINT"));
+            query = addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_POINT));
     
             //TODO Should we force a limit if none is supplied?
             if(parameters.has("limit")) {

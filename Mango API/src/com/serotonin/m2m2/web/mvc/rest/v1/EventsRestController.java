@@ -39,6 +39,7 @@ import com.serotonin.m2m2.module.ModuleQueryDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -151,8 +152,9 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
                     List<Object> selectArgs, List<Object> columnArgs,
                     ComparisonEnum comparison) {
 
-                selectSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
-                countSql.append(" typeName = 'DATA_POINT' AND typeRef1 = ? ");
+                selectSql.append(" typeName = ? AND typeRef1 = ? ");
+                countSql.append(" typeName = ? AND typeRef1 = ? ");
+                selectArgs.add(EventTypeNames.DATA_POINT);
                 selectArgs.add(columnArgs.get(0));
             }
         });
