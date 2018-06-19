@@ -6,6 +6,7 @@ package com.serotonin.m2m2.reports.importer;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -225,12 +226,13 @@ public class M2MReportDao {
 	 * @return
 	 */
 	public String getDataPointXid(int pointId) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         ResultSet rs = null;
         
         try {
-        stmt = this.connection.createStatement();
-        stmt.execute(DATA_POINT_XID_SELECT + " where id = " + pointId);
+        stmt = this.connection.prepareStatement(DATA_POINT_XID_SELECT + " where id = ?");
+        stmt.setInt(1, pointId);
+        stmt.execute();
         rs = stmt.getResultSet();
         
         if(rs.next()){
@@ -264,12 +266,13 @@ public class M2MReportDao {
 	 * @return
 	 */
 	public String getUsername(int userId) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         ResultSet rs = null;
         
         try {
-        stmt = this.connection.createStatement();
-        stmt.execute(USER_NAME_SELECT + " where id = " + userId);
+        stmt = this.connection.prepareStatement(USER_NAME_SELECT + " where id = ?");
+        stmt.setInt(1, userId);
+        stmt.execute();
         rs = stmt.getResultSet();
         
         if(rs.next()){
@@ -303,12 +306,13 @@ public class M2MReportDao {
 	 * @return
 	 */
 	public String getMailingListXid(int listId) {
-        Statement stmt = null;
+	    PreparedStatement stmt = null;
         ResultSet rs = null;
         
         try {
-        stmt = this.connection.createStatement();
-        stmt.execute(MAILING_LIST_XID_SELECT + " where id = " + listId);
+        stmt = this.connection.prepareStatement(MAILING_LIST_XID_SELECT + " where id = ?");
+        stmt.setInt(1, listId);
+        stmt.execute();
         rs = stmt.getResultSet();
         
         if(rs.next()){
