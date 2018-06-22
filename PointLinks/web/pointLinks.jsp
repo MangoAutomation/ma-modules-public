@@ -182,7 +182,7 @@
             hide("scriptValidationOutput");
             if (response.data.out){
                 output = response.data.out;
-                $set("scriptValidationOutput", output);
+                $set("scriptValidationOutput", encodeHtml(output));
                 show("scriptValidationOutput");
             }
         });
