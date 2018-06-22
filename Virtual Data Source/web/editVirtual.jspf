@@ -391,7 +391,7 @@
       <td class="formLabelRequired"><fmt:message key="dsEdit.virtual.attractionPoint"/></td>
       <td class="formField"><select id="analogAttractorChange.attractionPointId">
         <c:forEach items="${analogPoints}" var="dataPoint">
-          <option value="${dataPoint.id}">${dataPoint.extendedName}</option>
+          <option value="${dataPoint.id}">${fn:escapeXml(dataPoint.extendedName)}</option>
         </c:forEach>
       </select></td>
     </tr>
