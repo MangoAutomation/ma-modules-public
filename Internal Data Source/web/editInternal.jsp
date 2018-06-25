@@ -78,7 +78,7 @@
     	<select id="monitorId">
     	<c:set var="monitorItems" value="<%= Common.MONITORED_VALUES.getMonitors() %>" />
         <c:forEach items="${monitorItems}" var="monit">
-            <option value="${monit.id}"><m2m2:translate message="${monit.name}"/></option>
+            <option value='${sst:quotEncode(monit.id)}'><m2m2:translate message="${monit.name}"/></option>
         </c:forEach>
     	</select>
     </td>
