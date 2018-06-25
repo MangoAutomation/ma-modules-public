@@ -575,7 +575,7 @@
                         <input id="commPortId" type="text" value="${dataSource.serialDirect ? dataSource.connection.portName : ''}"/><br/>
                         <sst:select id="commPortIds" value="${dataSource.serialDirect ? dataSource.connection.portName : ''}">
                             <c:forEach items="${commPorts}" var="port">
-                                <sst:option value="${port.name}">${port.name}</sst:option>
+                                <sst:option value='${sst:quotEncode(port.name)}'>${fn:escapeXml(port.name)}</sst:option>
                             </c:forEach>
                         </sst:select>
                         <tag:img id='commPortsLoadingImg' src="/images/hourglass.png" style='display: none;'/>
