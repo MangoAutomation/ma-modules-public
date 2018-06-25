@@ -19,7 +19,7 @@
       <td align="right">
         <sst:select value="${currentView.id}" onchange="window.location='?viewId='+ this.value;">
           <c:forEach items="${views}" var="aView">
-            <sst:option value="${aView.key}">${sst:escapeLessThan(aView.value)}</sst:option>
+            <sst:option value='${sst:quotEncode(aView.key)}'>${sst:escapeLessThan(aView.value)}</sst:option>
           </c:forEach>
         </sst:select>
         <c:if test="${!empty currentView}">
@@ -47,7 +47,7 @@
   <table width="100%" cellspacing="0" cellpadding="0">
     <tr>
       <td>
-        <views:displayView view="${currentView}" emptyMessageKey="views.noViews"/>
+        <views:displayView view='${sst:quotEncode(currentView)}' emptyMessageKey="views.noViews"/>
       </td>
     </tr>
   </table>
