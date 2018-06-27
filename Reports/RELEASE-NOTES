@@ -1,3 +1,10 @@
+*Version 3.4.2*
+* Added endValue property to point ftl models for the point's value at the end of the period
+* Fix tags property to only trust the DAO
+* Inline images for emails from the overrides directory if they exist there
+* Workaround for class cast error for different annotated point values classes in cache, infiniteautomation/ma-core-public#1284
+* Re-release of 3.4.1
+
 *Version 3.4.1*
 * Added endValue property to point ftl models for the point's value at the end of the period
 * Fix tags property to only trust the DAO
