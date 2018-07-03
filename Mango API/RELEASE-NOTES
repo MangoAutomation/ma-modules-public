@@ -1,5 +1,6 @@
 *Version 3.4.4*
 * Fixed cast exception for upgrade state
+* Remove un-necessary jsonClassType parameter from GET system-settings/{key} endpoint
 
 *Version 3.4.3*
 * Fixed NPE from no data point set in event detector permissions checking

@@ -4,12 +4,14 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -41,6 +44,9 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RequestMapping("/v1/system-settings")
 public class SystemSettingsRestController extends MangoRestController{
 	
+    @Autowired
+    ObjectMapper mapper;
+    
 	private SystemSettingsDao dao = SystemSettingsDao.instance;
 
 	@ApiOperation(
@@ -51,11 +57,9 @@ public class SystemSettingsRestController extends MangoRestController{
     public ResponseEntity<Object> get(
     		@ApiParam(value = "Valid System Setting ID", required = true, allowMultiple = false)
     		@PathVariable String key,
-    		@ApiParam(value = "Return Type", required = false, defaultValue="false", allowMultiple = false)
+    		@ApiParam(value = "Return Type", required = false, defaultValue="STRING", allowMultiple = false)
     		@RequestParam(required=false, defaultValue="STRING") SystemSettingTypeEnum type,
-    		@ApiParam(value = "JsonValue Type", required = false, defaultValue="", allowMultiple = false)
-    		@RequestParam(required=false, defaultValue="false") String jsonClassType,
-    		HttpServletRequest request) {
+    		HttpServletRequest request) throws IOException {
 		RestProcessResult<Object> result = new RestProcessResult<Object>(HttpStatus.OK);
 
 		this.checkUser(request, result);
@@ -69,12 +73,10 @@ public class SystemSettingsRestController extends MangoRestController{
 				value = SystemSettingsDao.instance.getIntValue(key);
 				break;
 			case JSON:
-				try{
-					Class<?> jsonClass = Class.forName(jsonClassType);
-					value = SystemSettingsDao.instance.getJsonObject(key, jsonClass);
-				}catch(ClassNotFoundException e){
-					result.addRestMessage(this.getInternalServerErrorMessage(e.getMessage()));
-				}
+			    String json = SystemSettingsDao.instance.getValue(key);
+			    if(json != null) {
+			        value = this.mapper.reader().readTree(json);
+			    }
 				break;
 			case STRING:
 			default:
