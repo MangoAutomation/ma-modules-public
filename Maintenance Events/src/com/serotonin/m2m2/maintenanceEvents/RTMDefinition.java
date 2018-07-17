@@ -7,8 +7,6 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.springframework.util.Assert;
-
 import com.serotonin.m2m2.module.RuntimeManagerDefinition;
 
 public class RTMDefinition extends RuntimeManagerDefinition {
@@ -93,7 +91,8 @@ public class RTMDefinition extends RuntimeManagerDefinition {
                 return;
 
             // Ensure that the maintenance event is enabled.
-            Assert.isTrue(!vo.isDisabled());
+            if(vo.isDisabled())
+                return;
 
             // Create and start the runtime version of the maintenance event.
             MaintenanceEventRT rt = new MaintenanceEventRT(vo);
