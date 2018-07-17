@@ -4,50 +4,293 @@
  */
 package com.serotonin.m2m2.maintenanceEvents;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.BaseDao;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
+import com.serotonin.db.MappedRowCallback;
+import com.serotonin.db.pair.IntStringPair;
+import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
-public class MaintenanceEventDao extends BaseDao {
-    private static final String MAINTENANCE_EVENT_SELECT = //
-    "select m.id, m.xid, m.dataSourceId, m.alias, m.alarmLevel, "
-            + "  m.scheduleType, m.disabled, m.activeYear, m.activeMonth, m.activeDay, m.activeHour, m.activeMinute, "
-            + "  m.activeSecond, m.activeCron, m.inactiveYear, m.inactiveMonth, m.inactiveDay, m.inactiveHour, "
-            + "  m.inactiveMinute, m.inactiveSecond, m.inactiveCron, d.dataSourceType, d.name, d.xid " //
-            + "from maintenanceEvents m join dataSources d on m.dataSourceId=d.id ";
+public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
+    
+    public static final MaintenanceEventDao instance = new MaintenanceEventDao();
+    
+    private MaintenanceEventDao() {
+        super(ModuleRegistry.getWebSocketHandlerDefinition(MaintenanceEventWebSocketDefinition.TYPE_NAME),
+                AuditEvent.TYPE_NAME, "m",
+                new String[] {},
+                false, new TranslatableMessage("header.maintenanceEvents"));
+    }
+    
+    private static final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventPoints WHERE maintenanceEventId=?";
+    private static final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
+    
+    private static final String SELECT_POINTS = DataPointDao.instance.getSelectAllSql() + " JOIN maintenanceEventPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
+    private static final String SELECT_DATA_SOURCES = DataSourceDao.instance.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON mep.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
 
-    public String generateUniqueXid() {
-        return generateUniqueXid(MaintenanceEventVO.XID_PREFIX, "maintenanceEvents");
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#delete(int, java.lang.String)
+     */
+    @Override
+    public void delete(MaintenanceEventVO vo, String initiatorId) {
+        if (vo != null) {
+            getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    ejt.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
+                            MaintenanceEventType.TYPE_NAME, vo.getId() });
+                    MaintenanceEventDao.super.delete(vo, initiatorId);
+                }
+            });
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#loadRelationalData(com.serotonin.m2m2.vo.AbstractBasicVO)
+     */
+    @Override
+    public void loadRelationalData(MaintenanceEventVO vo) {
+        vo.setDataPointIds(queryForList(SELECT_POINT_IDS, Integer.class));
+        vo.setDataSourceIds(queryForList(SELECT_DATA_SOURCE_IDS, Integer.class));
+    }
+    
+    /**
+     * Get the points for a maintenance event
+     * @param maintenanceEventId
+     * @param callback
+     */
+    public void getPoints(int maintenanceEventId, final MappedRowCallback<DataPointVO> callback){
+
+        RowMapper<DataPointVO> pointMapper = DataPointDao.instance.getRowMapper();
+
+        this.ejt.query(SELECT_POINTS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
+            private int row = 0;
+            
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                callback.row(pointMapper.mapRow(rs, row), row);
+                row++;
+            }
+            
+        });
+    }
+    
+    /**
+     * Get the points for a maintenance event
+     * @param maintenanceEventId
+     * @param callback
+     */
+    public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO<?>> callback){
+
+        RowMapper<DataSourceVO<?>> mapper = DataSourceDao.instance.getRowMapper();
+
+        this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
+            private int row = 0;
+            
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                callback.row(mapper.mapRow(rs, row), row);
+                row++;
+            }
+            
+        });
+    }
+    
+    private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources VALUES (?,?)";
+    private static final String DELETE_DATA_SOURCE_IDS = "DELETE FROM maintenanceEventDataSources WHERE dataSourceId=?";
+    
+    private static final String INSERT_DATA_POINT_IDS = "INSERT INTO maintenanceEventDataPoints VALUES (?,?)";
+    private static final String DELETE_DATA_POINT_IDS = "DELETE FROM maintenanceEventDataPoints WHERE dataPointId=?";
+    
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#saveRelationalData(com.serotonin.m2m2.vo.AbstractBasicVO, boolean)
+     */
+    @Override
+    public void saveRelationalData(MaintenanceEventVO vo, boolean insert) {
+        if(vo.getDataSourceIds().size() > 0) {
+            if(insert) {
+                ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
+            }else {
+                //Delete and insert
+                ejt.update(DELETE_DATA_SOURCE_IDS, new Object[] {vo.getId()});
+                ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
+            }
+        }
+        
+        if(vo.getDataPointIds().size() > 0) {
+            if(insert) {
+                ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
+            }else {
+                //Delete and insert
+                ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
+                ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
+            }
+        }
+    }
+    
+    private static class InsertDataSources implements BatchPreparedStatementSetter {
+        MaintenanceEventVO vo;
+        
+        InsertDataSources(MaintenanceEventVO vo) {
+            this.vo = vo;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#getBatchSize()
+         */
+        @Override
+        public int getBatchSize() {
+            return vo.getDataSourceIds().size();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#setValues(java.sql.PreparedStatement, int)
+         */
+        @Override
+        public void setValues(PreparedStatement ps, int i) throws SQLException {
+            ps.setInt(1, vo.getId());
+            ps.setInt(2, vo.getDataSourceIds().get(i));
+        }
+    }
+    
+    private static class InsertDataPoints implements BatchPreparedStatementSetter {
+        MaintenanceEventVO vo;
+        
+        InsertDataPoints(MaintenanceEventVO vo) {
+            this.vo = vo;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#getBatchSize()
+         */
+        @Override
+        public int getBatchSize() {
+            return vo.getDataPointIds().size();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#setValues(java.sql.PreparedStatement, int)
+         */
+        @Override
+        public void setValues(PreparedStatement ps, int i) throws SQLException {
+            ps.setInt(1, vo.getId());
+            ps.setInt(2, vo.getDataPointIds().get(i));
+        }
     }
 
-    public boolean isXidUnique(String xid, int excludeId) {
-        return isXidUnique(xid, excludeId, "maintenanceEvents");
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
+     */
+    @Override
+    protected String getXidPrefix() {
+        return MaintenanceEventVO.XID_PREFIX;
     }
 
-    public List<MaintenanceEventVO> getMaintenanceEvents() {
-        return query(MAINTENANCE_EVENT_SELECT, new MaintenanceEventRowMapper());
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
+     */
+    @Override
+    public MaintenanceEventVO getNewVo() {
+        return new MaintenanceEventVO();
     }
 
-    public MaintenanceEventVO getMaintenanceEvent(int id) {
-        MaintenanceEventVO me = queryForObject(MAINTENANCE_EVENT_SELECT + "where m.id=?", new Object[] { id },
-                new MaintenanceEventRowMapper());
-        return me;
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
+     */
+    @Override
+    protected String getTableName() {
+        return SchemaDefinition.TABLE_NAME;
     }
 
-    public MaintenanceEventVO getMaintenanceEvent(String xid) {
-        return queryForObject(MAINTENANCE_EVENT_SELECT + "where m.xid=?", new Object[] { xid },
-                new MaintenanceEventRowMapper(), null);
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(com.serotonin.m2m2.vo.AbstractBasicVO)
+     */
+    @Override
+    protected Object[] voToObjectArray(MaintenanceEventVO me) {
+        return new Object[] {
+                me.getXid(), 
+                me.getName(),
+                me.getAlarmLevel(),
+                me.getScheduleType(),
+                boolToChar(me.isDisabled()),
+                me.getActiveYear(),
+                me.getActiveMonth(),
+                me.getActiveDay(),
+                me.getActiveHour(),
+                me.getActiveMinute(),
+                me.getActiveSecond(),
+                me.getActiveCron(),
+                me.getInactiveYear(),
+                me.getInactiveMonth(),
+                me.getInactiveDay(),
+                me.getInactiveHour(),
+                me.getInactiveMinute(),
+                me.getInactiveSecond(),
+                me.getInactiveCron()   
+        };
     }
 
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
+     */
+    @Override
+    protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+        map.put("id", Types.INTEGER);
+        map.put("xid", Types.VARCHAR);
+        map.put("alias", Types.VARCHAR);
+        map.put("alarmLevel", Types.INTEGER);
+        map.put("scheduleType", Types.INTEGER);
+        map.put("disabled", Types.CHAR);
+        map.put("activeYear", Types.INTEGER);
+        map.put("activeMonth", Types.INTEGER);
+        map.put("activeDay", Types.INTEGER);
+        map.put("activeHour", Types.INTEGER);
+        map.put("activeMinute", Types.INTEGER);
+        map.put("activeSecond", Types.INTEGER);
+        map.put("activeCron", Types.VARCHAR);
+        map.put("inactiveYear", Types.INTEGER);
+        map.put("inactiveMonth", Types.INTEGER);
+        map.put("inactiveDay", Types.INTEGER);
+        map.put("inactiveHour", Types.INTEGER);
+        map.put("inactiveMinute", Types.INTEGER);
+        map.put("inactiveSecond", Types.INTEGER);
+        map.put("inactiveCron", Types.VARCHAR);
+        return map;
+    }
+
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
+     */
+    @Override
+    protected Map<String, IntStringPair> getPropertiesMap() {
+        HashMap<String, IntStringPair> map = new HashMap<String, IntStringPair>();
+        return map;
+    }
+
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
+     */
+    @Override
+    public RowMapper<MaintenanceEventVO> getRowMapper() {
+        return new MaintenanceEventRowMapper();
+    }
+    
     class MaintenanceEventRowMapper implements RowMapper<MaintenanceEventVO> {
         @Override
         public MaintenanceEventVO mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -55,8 +298,7 @@ public class MaintenanceEventDao extends BaseDao {
             int i = 0;
             me.setId(rs.getInt(++i));
             me.setXid(rs.getString(++i));
-            me.setDataSourceId(rs.getInt(++i));
-            me.setAlias(rs.getString(++i));
+            me.setName(rs.getString(++i));
             me.setAlarmLevel(rs.getInt(++i));
             me.setScheduleType(rs.getInt(++i));
             me.setDisabled(charToBool(rs.getString(++i)));
@@ -74,74 +316,8 @@ public class MaintenanceEventDao extends BaseDao {
             me.setInactiveMinute(rs.getInt(++i));
             me.setInactiveSecond(rs.getInt(++i));
             me.setInactiveCron(rs.getString(++i));
-            me.setDataSourceTypeId(rs.getString(++i));
-            me.setDataSourceName(rs.getString(++i));
-            me.setDataSourceXid(rs.getString(++i));
+
             return me;
-        }
-    }
-
-    public void saveMaintenanceEvent(final MaintenanceEventVO me) {
-        if (me.getId() == Common.NEW_ID)
-            insertMaintenanceEvent(me);
-        else
-            updateMaintenanceEvent(me);
-    }
-
-    private void insertMaintenanceEvent(MaintenanceEventVO me) {
-        me.setId(doInsert(
-                "insert into maintenanceEvents ("
-                        + "  xid, dataSourceId, alias, alarmLevel, scheduleType, disabled, "
-                        + "  activeYear, activeMonth, activeDay, activeHour, activeMinute, activeSecond, activeCron, "
-                        + "  inactiveYear, inactiveMonth, inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, inactiveCron "
-                        + ") values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                new Object[] { me.getXid(), me.getDataSourceId(), me.getAlias(), me.getAlarmLevel(),
-                        me.getScheduleType(), boolToChar(me.isDisabled()), me.getActiveYear(), me.getActiveMonth(),
-                        me.getActiveDay(), me.getActiveHour(), me.getActiveMinute(), me.getActiveSecond(),
-                        me.getActiveCron(), me.getInactiveYear(), me.getInactiveMonth(), me.getInactiveDay(),
-                        me.getInactiveHour(), me.getInactiveMinute(), me.getInactiveSecond(), me.getInactiveCron() }));
-        AuditEventType.raiseAddedEvent(AuditEvent.TYPE_NAME, me);
-    }
-
-    private void updateMaintenanceEvent(MaintenanceEventVO me) {
-        MaintenanceEventVO old = getMaintenanceEvent(me.getId());
-        ejt.update(
-                "update maintenanceEvents set "
-                        + "  xid=?, dataSourceId=?, alias=?, alarmLevel=?, scheduleType=?, disabled=?, "
-                        + "  activeYear=?, activeMonth=?, activeDay=?, activeHour=?, activeMinute=?, activeSecond=?, activeCron=?, "
-                        + "  inactiveYear=?, inactiveMonth=?, inactiveDay=?, inactiveHour=?, inactiveMinute=?, inactiveSecond=?, "
-                        + "  inactiveCron=? "//
-                        + "where id=?",
-                new Object[] { me.getXid(), me.getDataSourceId(), me.getAlias(), me.getAlarmLevel(),
-                        me.getScheduleType(), boolToChar(me.isDisabled()), me.getActiveYear(), me.getActiveMonth(),
-                        me.getActiveDay(), me.getActiveHour(), me.getActiveMinute(), me.getActiveSecond(),
-                        me.getActiveCron(), me.getInactiveYear(), me.getInactiveMonth(), me.getInactiveDay(),
-                        me.getInactiveHour(), me.getInactiveMinute(), me.getInactiveSecond(), me.getInactiveCron(),
-                        me.getId() });
-        AuditEventType.raiseChangedEvent(AuditEvent.TYPE_NAME, old, me);
-    }
-
-    public void deleteMaintenanceEventsForDataSource(int dataSourceId) {
-        List<Integer> ids = queryForList("select id from maintenanceEvents where dataSourceId=?",
-                new Object[] { dataSourceId }, Integer.class);
-        for (Integer id : ids)
-            deleteMaintenanceEvent(id);
-    }
-
-    public void deleteMaintenanceEvent(final int maintenanceEventId) {
-        MaintenanceEventVO me = getMaintenanceEvent(maintenanceEventId);
-        final ExtendedJdbcTemplate ejt2 = ejt;
-        if (me != null) {
-            getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    ejt2.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
-                            MaintenanceEventType.TYPE_NAME, maintenanceEventId });
-                    ejt2.update("delete from maintenanceEvents where id=?", new Object[] { maintenanceEventId });
-                }
-            });
-
-            AuditEventType.raiseDeletedEvent(AuditEvent.TYPE_NAME, me);
         }
     }
 }

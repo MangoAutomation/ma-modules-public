@@ -11,9 +11,12 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
 
 public class SchemaDefinition extends DatabaseSchemaDefinition {
+    
+    public static final String TABLE_NAME = "maintenanceEvents";
+    
     @Override
     public void newInstallationCheck(ExtendedJdbcTemplate ejt) {
-        if (!Common.databaseProxy.tableExists(ejt, "maintenanceEvents")) {
+        if (!Common.databaseProxy.tableExists(ejt, TABLE_NAME)) {
             String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/createTables-"
                     + Common.databaseProxy.getType().name() + ".sql";
             Common.databaseProxy.runScriptFile(path, null);
@@ -22,7 +25,7 @@ public class SchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public void addConversionTableNames(List<String> tableNames) {
-        tableNames.add("maintenanceEvents");
+        tableNames.add(TABLE_NAME);
     }
 
     @Override

@@ -25,12 +25,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        MaintenanceEventDao maintenanceEventDao = new MaintenanceEventDao();
-        for (MaintenanceEventVO vo : maintenanceEventDao.getMaintenanceEvents()) {
+        for (MaintenanceEventVO vo : MaintenanceEventDao.instance.getAllFull()) {
             if (!vo.isDisabled()) {
                 if (safe) {
                     vo.setDisabled(true);
-                    maintenanceEventDao.saveMaintenanceEvent(vo);
+                    MaintenanceEventDao.instance.save(vo);
                 }
                 else
                     startMaintenanceEvent(vo);
@@ -56,9 +55,19 @@ public class RTMDefinition extends RuntimeManagerDefinition {
         return null;
     }
 
-    public boolean isActiveMaintenanceEvent(int dataSourceId) {
+    public boolean isActiveMaintenanceEventForDataSource(int dataSourceId) {
         for (MaintenanceEventRT rt : maintenanceEvents) {
-            if (rt.getVo().getDataSourceId() == dataSourceId && rt.isEventActive())
+            for(Integer dsId : rt.getVo().getDataSourceIds())
+            if (dsId == dataSourceId && rt.isEventActive())
+                return true;
+        }
+        return false;
+    }
+    
+    public boolean isActiveMaintenanceEventForDataPoint(int dataPointId) {
+        for (MaintenanceEventRT rt : maintenanceEvents) {
+            for(Integer dpId : rt.getVo().getDataPointIds())
+            if (dpId == dataPointId && rt.isEventActive())
                 return true;
         }
         return false;
@@ -70,14 +79,14 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     public void deleteMaintenanceEvent(int id) {
         stopMaintenanceEvent(id);
-        new MaintenanceEventDao().deleteMaintenanceEvent(id);
+        MaintenanceEventDao.instance.delete(id);
     }
 
     public void saveMaintenanceEvent(MaintenanceEventVO vo) {
         // If the maintenance event is running, stop it.
         stopMaintenanceEvent(vo.getId());
 
-        new MaintenanceEventDao().saveMaintenanceEvent(vo);
+        MaintenanceEventDao.instance.saveFull(vo);
 
         // If the maintenance event is enabled, start it.
         if (!vo.isDisabled())

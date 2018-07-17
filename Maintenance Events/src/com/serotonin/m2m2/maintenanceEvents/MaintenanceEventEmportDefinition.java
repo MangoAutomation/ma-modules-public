@@ -27,19 +27,19 @@ public class MaintenanceEventEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return new MaintenanceEventDao().getMaintenanceEvents();
+        return MaintenanceEventDao.instance.getAllFull();
     }
 
     @Override
     public void doImport(JsonValue jsonValue, ImportContext importContext) throws JsonException {
-        MaintenanceEventDao maintenanceEventDao = new MaintenanceEventDao();
+
         JsonObject maintenanceEvent = jsonValue.toJsonObject();
 
         String xid = maintenanceEvent.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = maintenanceEventDao.generateUniqueXid();
+            xid = MaintenanceEventDao.instance.generateUniqueXid();
 
-        MaintenanceEventVO vo = maintenanceEventDao.getMaintenanceEvent(xid);
+        MaintenanceEventVO vo = MaintenanceEventDao.instance.getFullByXid(xid);
         if (vo == null) {
             vo = new MaintenanceEventVO();
             vo.setXid(xid);

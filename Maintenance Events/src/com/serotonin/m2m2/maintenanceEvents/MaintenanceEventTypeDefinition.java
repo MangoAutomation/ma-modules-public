@@ -40,7 +40,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     public List<EventTypeVO> getEventTypeVOs() {
         List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
 
-        for (MaintenanceEventVO me : new MaintenanceEventDao().getMaintenanceEvents())
+        for (MaintenanceEventVO me : MaintenanceEventDao.instance.getAll())
             vos.add(me.getEventType());
 
         return vos;

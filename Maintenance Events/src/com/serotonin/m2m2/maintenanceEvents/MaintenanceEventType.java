@@ -9,8 +9,10 @@ import java.io.IOException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
@@ -91,16 +93,16 @@ public class MaintenanceEventType extends EventType {
         String xid = jsonObject.getString("XID");
         if (xid == null)
             throw new TranslatableJsonException("emport.error.eventType.missing.reference", "XID");
-        MaintenanceEventVO me = new MaintenanceEventDao().getMaintenanceEvent(xid);
-        if (me == null)
+        Integer id = MaintenanceEventDao.instance.getIdByXid(xid);
+        if (id == null)
             throw new TranslatableJsonException("emport.error.eventType.invalid.reference", "XID", xid);
-        maintenanceId = me.getId();
+        maintenanceId = id;
     }
 
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-        writer.writeEntry("XID", new MaintenanceEventDao().getMaintenanceEvent(maintenanceId).getXid());
+        writer.writeEntry("XID", MaintenanceEventDao.instance.getXidById(maintenanceId));
     }
 
 	/* (non-Javadoc)
@@ -115,10 +117,20 @@ public class MaintenanceEventType extends EventType {
 	 */
 	@Override
 	public boolean hasPermission(User user) {
-	    MaintenanceEventVO vo = new MaintenanceEventDao().getMaintenanceEvent(maintenanceId);
+	    MaintenanceEventVO vo = MaintenanceEventDao.instance.getFull(maintenanceId);
 	    if(vo == null)
 	        return false;
-	    else
-	        return Permissions.hasDataSourcePermission(user, vo.getDataSourceId());
+	    else {
+	        for(int dsId : vo.getDataSourceIds())
+	            if(!Permissions.hasDataSourcePermission(user, dsId))
+	                return false;
+	        
+	        for(int dpId : vo.getDataPointIds()) {
+	            DataPointVO dp = DataPointDao.instance.get(dpId);
+	            if(dp != null && !Permissions.hasDataPointReadPermission(user, dp))
+	                return false;
+	        }
+	    }
+	    return true;
 	}
 }

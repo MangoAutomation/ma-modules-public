@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import com.serotonin.db.pair.IntStringPair;
@@ -31,7 +30,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         ProcessResult response = new ProcessResult();
         final Translations translations = getTranslations();
 
-        List<MaintenanceEventVO> events = new MaintenanceEventDao().getMaintenanceEvents();
+        List<MaintenanceEventVO> events = MaintenanceEventDao.instance.getAllFull();
         Collections.sort(events, new Comparator<MaintenanceEventVO>() {
             @Override
             public int compare(MaintenanceEventVO m1, MaintenanceEventVO m2) {
@@ -58,14 +57,14 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         if (id == Common.NEW_ID) {
             DateTime dt = new DateTime();
             me = new MaintenanceEventVO();
-            me.setXid(new MaintenanceEventDao().generateUniqueXid());
+            me.setXid(MaintenanceEventDao.instance.generateUniqueXid());
             me.setActiveYear(dt.getYear());
             me.setInactiveYear(dt.getYear());
             me.setActiveMonth(dt.getMonthOfYear());
             me.setInactiveMonth(dt.getMonthOfYear());
         }
         else {
-            me = new MaintenanceEventDao().getMaintenanceEvent(id);
+            me = MaintenanceEventDao.instance.getFull(id);
 
             MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(me.getId());
             if (rt != null)
@@ -86,8 +85,8 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         MaintenanceEventVO e = new MaintenanceEventVO();
         e.setId(id);
         e.setXid(xid);
-        e.setDataSourceId(dataSourceId);
-        e.setAlias(alias);
+        e.getDataSourceIds().add(dataSourceId);
+        e.setName(alias);
         e.setAlarmLevel(alarmLevel);
         e.setScheduleType(scheduleType);
         e.setDisabled(disabled);
@@ -107,13 +106,6 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         e.setInactiveCron(inactiveCron);
 
         ProcessResult response = new ProcessResult();
-        MaintenanceEventDao maintenanceEventDao = new MaintenanceEventDao();
-
-        if (StringUtils.isBlank(xid))
-            response.addContextualMessage("xid", "validate.required");
-        else if (!maintenanceEventDao.isXidUnique(xid, id))
-            response.addContextualMessage("xid", "validate.xidUsed");
-
         e.validate(response);
 
         // Save the maintenance event
