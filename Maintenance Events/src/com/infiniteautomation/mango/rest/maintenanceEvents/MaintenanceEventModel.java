@@ -8,6 +8,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 
 /**
  *
@@ -20,9 +21,9 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> dataPoints;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Integer alarmLevel;
+    private String alarmLevel;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Integer scheduleType;
+    private String scheduleType;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean disabled;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -69,6 +70,9 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     public MaintenanceEventVO toVO() {
         MaintenanceEventVO vo = super.toVO();
         vo.setDataSources(dataSources);
+        vo.setDataPoints(dataPoints);
+        vo.setAlarmLevel(AlarmLevels.CODES.getId(alarmLevel));
+        vo.setScheduleType(MaintenanceEventVO.TYPE_CODES.getId(scheduleType));
         //TODO Fill out remaining memebers
         return vo;
     }
@@ -80,6 +84,9 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     public void fromVO(MaintenanceEventVO vo) {
         super.fromVO(vo);
         dataSources = vo.getDataSources();
+        dataPoints = vo.getDataPoints();
+        alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
+        scheduleType = MaintenanceEventVO.TYPE_CODES.getCode(vo.getScheduleType());
         //TODO Fill out remaining memebers
     }
     
@@ -107,19 +114,19 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         this.dataPoints = dataPoints;
     }
 
-    public Integer getAlarmLevel() {
+    public String getAlarmLevel() {
         return alarmLevel;
     }
 
-    public void setAlarmLevel(Integer alarmLevel) {
+    public void setAlarmLevel(String alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
 
-    public Integer getScheduleType() {
+    public String getScheduleType() {
         return scheduleType;
     }
 
-    public void setScheduleType(Integer scheduleType) {
+    public void setScheduleType(String scheduleType) {
         this.scheduleType = scheduleType;
     }
 
