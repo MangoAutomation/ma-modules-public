@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.PatchableField;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 
@@ -15,45 +17,93 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
  * @author Terry Packer
  */
 public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
-    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> dataSources;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> dataPoints;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String alarmLevel;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String scheduleType;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean disabled;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeYear;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeMonth;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeDay;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeHour;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeMinute;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeSecond;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String activeCron;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveYear;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveMonth;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveDay;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveHour;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveMinute;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveSecond;
+    
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String inactiveCron;
+    
+    @PatchableField
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer timeoutPeriods;
+    
+    @PatchableField
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String timeoutPeriodType;
+    
+    @PatchableField
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String togglePermission;
     
     public MaintenanceEventModel() {
         super(new MaintenanceEventVO());
@@ -69,11 +119,30 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     @Override
     public MaintenanceEventVO toVO() {
         MaintenanceEventVO vo = super.toVO();
-        vo.setDataSources(dataSources);
-        vo.setDataPoints(dataPoints);
+        if(dataSources != null)
+            vo.setDataSources(dataSources);
+        if(dataPoints != null)
+            vo.setDataPoints(dataPoints);
         vo.setAlarmLevel(AlarmLevels.CODES.getId(alarmLevel));
         vo.setScheduleType(MaintenanceEventVO.TYPE_CODES.getId(scheduleType));
-        //TODO Fill out remaining memebers
+        vo.setDisabled(disabled);
+        vo.setActiveYear(activeYear);
+        vo.setActiveMonth(activeMonth);
+        vo.setActiveDay(activeDay);
+        vo.setActiveHour(activeHour);
+        vo.setActiveMinute(activeMinute);
+        vo.setActiveSecond(activeSecond);
+        vo.setActiveCron(activeCron);
+        vo.setInactiveYear(inactiveYear);
+        vo.setInactiveMonth(inactiveMonth);
+        vo.setInactiveDay(inactiveDay);
+        vo.setInactiveHour(inactiveHour);
+        vo.setInactiveMinute(inactiveMinute);
+        vo.setInactiveSecond(inactiveSecond);
+        vo.setInactiveCron(inactiveCron);
+        vo.setTimeoutPeriods(timeoutPeriods);
+        vo.setTimeoutPeriodType(Common.TIME_PERIOD_CODES.getId(timeoutPeriodType));
+        vo.setTogglePermission(togglePermission);
         return vo;
     }
     
@@ -83,11 +152,28 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     @Override
     public void fromVO(MaintenanceEventVO vo) {
         super.fromVO(vo);
-        dataSources = vo.getDataSources();
-        dataPoints = vo.getDataPoints();
+        dataSources = vo.getDataSources().size() > 0 ? vo.getDataSources() : null;
+        dataPoints = vo.getDataPoints().size() > 0 ? vo.getDataPoints() : null;
         alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
         scheduleType = MaintenanceEventVO.TYPE_CODES.getCode(vo.getScheduleType());
-        //TODO Fill out remaining memebers
+        disabled = vo.isDisabled();
+        activeYear = vo.getActiveYear();
+        activeMonth = vo.getActiveMonth();
+        activeDay = vo.getActiveDay();
+        activeHour = vo.getActiveHour();
+        activeMinute = vo.getActiveMinute();
+        activeSecond = vo.getActiveMinute();
+        activeCron = vo.getActiveCron();
+        inactiveYear = vo.getInactiveYear();
+        inactiveMonth = vo.getInactiveMonth();
+        inactiveDay = vo.getInactiveDay();
+        inactiveHour = vo.getInactiveHour();
+        inactiveMinute = vo.getInactiveMinute();
+        inactiveSecond = vo.getInactiveSecond();
+        inactiveCron = vo.getInactiveCron();
+        timeoutPeriods = vo.getTimeoutPeriods();
+        timeoutPeriodType = Common.TIME_PERIOD_CODES.getCode(vo.getTimeoutPeriodType());
+        togglePermission = vo.getTogglePermission();
     }
     
     /* (non-Javadoc)
@@ -249,4 +335,29 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     public void setInactiveCron(String inactiveCron) {
         this.inactiveCron = inactiveCron;
     }
+
+    public Integer getTimeoutPeriods() {
+        return timeoutPeriods;
+    }
+
+    public void setTimeoutPeriods(Integer timeoutPeriods) {
+        this.timeoutPeriods = timeoutPeriods;
+    }
+
+    public String getTimeoutPeriodType() {
+        return timeoutPeriodType;
+    }
+
+    public void setTimeoutPeriodType(String timeoutPeriodType) {
+        this.timeoutPeriodType = timeoutPeriodType;
+    }
+
+    public String getTogglePermission() {
+        return togglePermission;
+    }
+
+    public void setTogglePermission(String togglePermission) {
+        this.togglePermission = togglePermission;
+    }
+    
 }

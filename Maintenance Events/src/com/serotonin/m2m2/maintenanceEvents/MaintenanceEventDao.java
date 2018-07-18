@@ -237,7 +237,10 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
                 me.getInactiveHour(),
                 me.getInactiveMinute(),
                 me.getInactiveSecond(),
-                me.getInactiveCron()   
+                me.getInactiveCron(),
+                me.getTimeoutPeriods(),
+                me.getTimeoutPeriodType(),
+                me.getTogglePermission()
         };
     }
 
@@ -267,6 +270,9 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         map.put("inactiveMinute", Types.INTEGER);
         map.put("inactiveSecond", Types.INTEGER);
         map.put("inactiveCron", Types.VARCHAR);
+        map.put("timeoutPeriods", Types.INTEGER);
+        map.put("timeoutPeriodType", Types.INTEGER);
+        map.put("togglePermission", Types.VARCHAR);
         return map;
     }
 
@@ -312,7 +318,9 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             me.setInactiveMinute(rs.getInt(++i));
             me.setInactiveSecond(rs.getInt(++i));
             me.setInactiveCron(rs.getString(++i));
-
+            me.setTimeoutPeriods(rs.getInt(++i));
+            me.setTimeoutPeriodType(rs.getInt(++i));
+            me.setTogglePermission(rs.getString(++i));
             return me;
         }
     }

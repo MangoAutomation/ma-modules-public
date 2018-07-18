@@ -53,6 +53,13 @@ public class Upgrade2 extends DBUpgrade {
         scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), dropDataSourceId);
         runScript(scripts);
 
+        //Add the timeout columns
+        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), addTimeoutColumns);
+        scripts.put(DatabaseProxy.DatabaseType.H2.name(), addTimeoutColumns);
+        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), addTimeoutColumns);
+        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), addTimeoutColumns);
+        runScript(scripts);
+        
     }
 
     @Override
@@ -67,7 +74,9 @@ public class Upgrade2 extends DBUpgrade {
             
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL) engine=InnoDB;",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;"
+            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
+            
+            "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission VARCHAR(255);"
 
     };
     private final String[] h2CreateTables = new String[] {
@@ -77,7 +86,9 @@ public class Upgrade2 extends DBUpgrade {
 
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL);",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;"
+            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
+            
+            "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission VARCHAR(255);"
 
     };
     private final String[] mssqlCreateTables = new String[] {
@@ -87,7 +98,9 @@ public class Upgrade2 extends DBUpgrade {
 
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL);",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;"
+            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
+            
+            "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission NVARCHAR(255);"
 
     };
     private final String[] postgresCreateTables = new String[] {
@@ -97,12 +110,17 @@ public class Upgrade2 extends DBUpgrade {
             
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL);",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;"
-
+            "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
+            
+            "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission VARCHAR(255);"
     };
     
     private final String[] dropDataSourceId = new String[] {
             "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;",
+    };
+    private final String[] addTimeoutColumns = new String[] {
+            "ALTER TABLE maintenanceEvents ADD COLUMN timeoutPeriods INT;",
+            "ALTER TABLE maintenanceEvents ADD COLUMN timeoutPeriodType INT;"
     };
     
 }

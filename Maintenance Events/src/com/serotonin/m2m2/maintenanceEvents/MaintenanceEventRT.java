@@ -5,10 +5,14 @@
 package com.serotonin.m2m2.maintenanceEvents;
 
 import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -64,9 +68,21 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
 
     @Override
     synchronized public void scheduleTimeout(Boolean active, long fireTime) {
-        if (active)
+        if (active) {
             raiseEvent(fireTime);
-        else
+            //Set the timeout if it is a manual event
+            if (vo.getScheduleType() == MaintenanceEventVO.TYPE_MANUAL) {
+                //Do we have a timeout set?
+                if(vo.getTimeoutPeriods() > 0) {
+                    //Compute fire time
+                    NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(vo.getTimeoutPeriodType(), vo.getTimeoutPeriods());
+                    ZonedDateTime time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Common.timer.currentTimeMillis()), TimeZone.getDefault().toZoneId());
+                    time = (ZonedDateTime) adjuster.adjustInto(time);
+                    TimerTrigger inactiveTrigger = new OneTimeTrigger(new Date(time.toInstant().toEpochMilli()));
+                    inactiveTask = new ModelTimeoutTask<Boolean>(inactiveTrigger, this, false);
+                }
+            }
+        }else
             returnToNormal(fireTime);
     }
 

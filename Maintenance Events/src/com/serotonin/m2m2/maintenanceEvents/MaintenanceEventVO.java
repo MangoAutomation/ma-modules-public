@@ -20,6 +20,7 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -96,6 +97,11 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     private int inactiveSecond;
     @JsonProperty
     private String inactiveCron;
+    //Manual events can have a timeout if timeout periods > 0
+    private int timeoutPeriods = 0;
+    private int timeoutPeriodType = TimePeriods.HOURS;
+    @JsonProperty
+    private String togglePermission;
 
     public boolean isNew() {
         return id == Common.NEW_ID;
@@ -273,6 +279,30 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
     public void setInactiveCron(String inactiveCron) {
         this.inactiveCron = inactiveCron;
+    }
+    
+    public int getTimeoutPeriods() {
+        return timeoutPeriods;
+    }
+
+    public void setTimeoutPeriods(int timeoutPeriods) {
+        this.timeoutPeriods = timeoutPeriods;
+    }
+
+    public int getTimeoutPeriodType() {
+        return timeoutPeriodType;
+    }
+
+    public void setTimeoutPeriodType(int timeoutPeriodType) {
+        this.timeoutPeriodType = timeoutPeriodType;
+    }
+
+    public String getTogglePermission() {
+        return togglePermission;
+    }
+
+    public void setTogglePermission(String togglePermission) {
+        this.togglePermission = togglePermission;
     }
 
     public EventTypeVO getEventType() {
@@ -463,6 +493,10 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                     inactiveSecond, 0);
             if (idt.getMillis() <= adt.getMillis())
                 response.addContextualMessage("scheduleType", "maintenanceEvents.validate.invalidRtn");
+            if(timeoutPeriods > 0) {
+                if (!Common.TIME_PERIOD_CODES.isValidId(timeoutPeriods))
+                    response.addContextualMessage("updatePeriodType", "validate.invalidValue");
+            }
         }
     }
 
@@ -495,6 +529,10 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         }
         if(dataPointXids.size() > 0)
             writer.writeEntry("dataPointXids", dataPointXids);
+        if(scheduleType == TYPE_MANUAL && timeoutPeriods > 0) {
+            writer.writeEntry("timeoutPeriods", timeoutPeriods);
+            writer.writeEntry("timeoutPeriodType", Common.TIME_PERIOD_CODES.getCode(timeoutPeriodType));
+        }
     }
 
     @Override
@@ -545,6 +583,14 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             if (!TYPE_CODES.isValidId(scheduleType))
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "scheduleType", text,
                         TYPE_CODES.getCodeList());
+        }
+        timeoutPeriods = jsonObject.getInt("timeoutPeriods", -1);
+        text = jsonObject.getString("timeoutPeriodType");
+        if(text != null) {
+            timeoutPeriodType = Common.TIME_PERIOD_CODES.getId(text);
+            if(!Common.TIME_PERIOD_CODES.isValidId(timeoutPeriodType))
+                throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "timeoutPeriodType", text,
+                        Common.TIME_PERIOD_CODES.getCodeList());
         }
     }
 

@@ -16,11 +16,13 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
  * @author Terry Packer
  */
 public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
-
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer id;
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String xid;
+    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String name;
     
@@ -84,8 +86,8 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
         Class<?> c = update.getClass();
         while(c != Object.class) {
             for(Field f : c.getDeclaredFields()) {
-                JsonInclude i = f.getAnnotation(JsonInclude.class);
-                if(i != null && i.value().equals(JsonInclude.Include.NON_NULL)) {
+                PatchableField i = f.getAnnotation(PatchableField.class);
+                if(i != null) {
                     //Do update if value is NOT null
                     f.setAccessible(true);
                     try {
