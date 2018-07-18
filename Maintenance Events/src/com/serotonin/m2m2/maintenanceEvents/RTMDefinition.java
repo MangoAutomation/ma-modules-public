@@ -57,7 +57,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     public boolean isActiveMaintenanceEventForDataSource(int dataSourceId) {
         for (MaintenanceEventRT rt : maintenanceEvents) {
-            for(Integer dsId : rt.getVo().getDataSourceIds())
+            for(Integer dsId : rt.getVo().getDataSources())
             if (dsId == dataSourceId && rt.isEventActive())
                 return true;
         }
@@ -66,7 +66,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
     
     public boolean isActiveMaintenanceEventForDataPoint(int dataPointId) {
         for (MaintenanceEventRT rt : maintenanceEvents) {
-            for(Integer dpId : rt.getVo().getDataPointIds())
+            for(Integer dpId : rt.getVo().getDataPoints())
             if (dpId == dataPointId && rt.isEventActive())
                 return true;
         }

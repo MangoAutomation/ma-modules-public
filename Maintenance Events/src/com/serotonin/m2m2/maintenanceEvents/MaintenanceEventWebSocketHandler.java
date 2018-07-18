@@ -3,7 +3,7 @@
  */
 package com.serotonin.m2m2.maintenanceEvents;
 
-import com.infiniteautomation.rest.v2.maintenanceEvents.MaintenanceEventModel;
+import com.infiniteautomation.mango.rest.maintenanceEvents.MaintenanceEventModel;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 

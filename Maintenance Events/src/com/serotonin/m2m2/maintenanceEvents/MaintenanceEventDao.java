@@ -67,8 +67,8 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      */
     @Override
     public void loadRelationalData(MaintenanceEventVO vo) {
-        vo.setDataPointIds(queryForList(SELECT_POINT_IDS, Integer.class));
-        vo.setDataSourceIds(queryForList(SELECT_DATA_SOURCE_IDS, Integer.class));
+        vo.setDataPoints(queryForList(SELECT_POINT_IDS, new Object[] {vo.getId()}, Integer.class));
+        vo.setDataSources(queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {vo.getId()}, Integer.class));
     }
     
     /**
@@ -77,9 +77,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      * @param callback
      */
     public void getPoints(int maintenanceEventId, final MappedRowCallback<DataPointVO> callback){
-
         RowMapper<DataPointVO> pointMapper = DataPointDao.instance.getRowMapper();
-
         this.ejt.query(SELECT_POINTS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
             
@@ -98,9 +96,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      * @param callback
      */
     public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO<?>> callback){
-
         RowMapper<DataSourceVO<?>> mapper = DataSourceDao.instance.getRowMapper();
-
         this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
             
@@ -113,18 +109,18 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         });
     }
     
-    private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources VALUES (?,?)";
-    private static final String DELETE_DATA_SOURCE_IDS = "DELETE FROM maintenanceEventDataSources WHERE dataSourceId=?";
+    private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources (maintenanceEventId, dataSourceId) VALUES (?,?)";
+    private static final String DELETE_DATA_SOURCE_IDS = "DELETE FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
     
-    private static final String INSERT_DATA_POINT_IDS = "INSERT INTO maintenanceEventDataPoints VALUES (?,?)";
-    private static final String DELETE_DATA_POINT_IDS = "DELETE FROM maintenanceEventDataPoints WHERE dataPointId=?";
+    private static final String INSERT_DATA_POINT_IDS = "INSERT INTO maintenanceEventDataPoints (maintenanceEventId, dataPointId) VALUES (?,?)";
+    private static final String DELETE_DATA_POINT_IDS = "DELETE FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
     
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#saveRelationalData(com.serotonin.m2m2.vo.AbstractBasicVO, boolean)
      */
     @Override
     public void saveRelationalData(MaintenanceEventVO vo, boolean insert) {
-        if(vo.getDataSourceIds().size() > 0) {
+        if(vo.getDataSources().size() > 0) {
             if(insert) {
                 ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
             }else {
@@ -134,7 +130,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             }
         }
         
-        if(vo.getDataPointIds().size() > 0) {
+        if(vo.getDataPoints().size() > 0) {
             if(insert) {
                 ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
             }else {
@@ -157,7 +153,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
          */
         @Override
         public int getBatchSize() {
-            return vo.getDataSourceIds().size();
+            return vo.getDataSources().size();
         }
         /* (non-Javadoc)
          * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#setValues(java.sql.PreparedStatement, int)
@@ -165,7 +161,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         @Override
         public void setValues(PreparedStatement ps, int i) throws SQLException {
             ps.setInt(1, vo.getId());
-            ps.setInt(2, vo.getDataSourceIds().get(i));
+            ps.setInt(2, vo.getDataSources().get(i));
         }
     }
     
@@ -181,7 +177,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
          */
         @Override
         public int getBatchSize() {
-            return vo.getDataPointIds().size();
+            return vo.getDataPoints().size();
         }
         /* (non-Javadoc)
          * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#setValues(java.sql.PreparedStatement, int)
@@ -189,7 +185,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         @Override
         public void setValues(PreparedStatement ps, int i) throws SQLException {
             ps.setInt(1, vo.getId());
-            ps.setInt(2, vo.getDataPointIds().get(i));
+            ps.setInt(2, vo.getDataPoints().get(i));
         }
     }
 

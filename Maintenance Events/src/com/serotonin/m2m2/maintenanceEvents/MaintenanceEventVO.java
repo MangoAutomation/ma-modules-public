@@ -62,10 +62,8 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         TYPE_CODES.addElement(TYPE_CRON, "CRON", "maintenanceEvents.type.cron");
     }
 
-    private int id = Common.NEW_ID;
-    private String xid;
-    private List<Integer> dataSourceIds = new ArrayList<>();
-    private List<Integer> dataPointIds = new ArrayList<>();
+    private List<Integer> dataSources = new ArrayList<>();
+    private List<Integer> dataPoints = new ArrayList<>();
     private int alarmLevel = AlarmLevels.NONE;
     private int scheduleType = TYPE_MANUAL;
     @JsonProperty
@@ -103,15 +101,6 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         return id == Common.NEW_ID;
     }
 
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getXid() {
         return xid;
     }
@@ -120,20 +109,20 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         this.xid = xid;
     }
 
-    public List<Integer> getDataSourceIds() {
-        return dataSourceIds;
+    public List<Integer> getDataSources() {
+        return dataSources;
     }
 
-    public void setDataSourceIds(List<Integer> dataSourceIds) {
-        this.dataSourceIds = dataSourceIds;
+    public void setDataSources(List<Integer> dataSourceIds) {
+        this.dataSources = dataSourceIds;
     }
     
-    public List<Integer> getDataPointIds() {
-        return dataPointIds;
+    public List<Integer> getDataPoints() {
+        return dataPoints;
     }
 
-    public void setDataPointIds(List<Integer> dataPointIds) {
-        this.dataPointIds = dataPointIds;
+    public void setDataPoints(List<Integer> dataPointIds) {
+        this.dataPoints = dataPointIds;
     }
 
     /**
@@ -300,17 +289,17 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             String eventName = "N/A";
 
             //Single data point
-            if((dataPointIds.size() == 1) && (dataSourceIds.size() == 0)) {
-                DataPointVO vo = DataPointDao.instance.get(dataPointIds.get(0));
+            if((dataPoints.size() == 1) && (dataSources.size() == 0)) {
+                DataPointVO vo = DataPointDao.instance.get(dataPoints.get(0));
                 if(vo != null)
                     eventName = vo.getName();
-            }else if((dataPointIds.size() == 0) && (dataSourceIds.size() == 1)){
-                DataSourceVO<?> vo = DataSourceDao.instance.get(dataSourceIds.get(0));
+            }else if((dataPoints.size() == 0) && (dataSources.size() == 1)){
+                DataSourceVO<?> vo = DataSourceDao.instance.get(dataSources.get(0));
                 if(vo != null)
                     eventName = vo.getName();
-            }else if((dataPointIds.size() > 1) && (dataSourceIds.size() == 0)){
+            }else if((dataPoints.size() > 1) && (dataSources.size() == 0)){
                 eventName = "Multiple points"; //TODO Better name/translation?
-            }else if((dataPointIds.size() == 0) && (dataSourceIds.size() > 1)){
+            }else if((dataPoints.size() == 0) && (dataSources.size() > 1)){
                 eventName = "Multiple data sources"; //TODO Better name/translation?
             }else {
                 eventName = "Multiple data points and sources"; //TODO Better name/translation?
@@ -414,23 +403,23 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     public void validate(ProcessResult response) {
         super.validate(response);
 
-        if((dataSourceIds.size() < 1) &&(dataPointIds.size() < 1)) {
-            response.addContextualMessage("dataSourceIds", "validate.invalidValue");
-            response.addContextualMessage("dataPointIds", "validate.invalidValue");
+        if((dataSources.size() < 1) &&(dataPoints.size() < 1)) {
+            response.addContextualMessage("dataSources", "validate.invalidValue");
+            response.addContextualMessage("dataPoints", "validate.invalidValue");
         }
         
         //Validate that the ids are legit
-        for(int i=0; i<dataSourceIds.size(); i++) {
-            DataSourceVO<?> vo = DataSourceDao.instance.get(i);
+        for(int i=0; i<dataSources.size(); i++) {
+            DataSourceVO<?> vo = DataSourceDao.instance.get(dataSources.get(i));
             if(vo == null) {
-                response.addContextualMessage("dataSourceIds[" + i + "]", "validate.invalidValue");
+                response.addContextualMessage("dataSources[" + i + "]", "validate.invalidValue");
             }
         }
 
-        for(int i=0; i<dataPointIds.size(); i++) {
-            DataPointVO vo = DataPointDao.instance.get(i);
+        for(int i=0; i<dataPoints.size(); i++) {
+            DataPointVO vo = DataPointDao.instance.get(dataPoints.get(i));
             if(vo == null) {
-                response.addContextualMessage("dataPointIds[" + i + "]", "validate.invalidValue");
+                response.addContextualMessage("dataPoints[" + i + "]", "validate.invalidValue");
             }
         }
         
@@ -490,8 +479,8 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         
         List<String> dataSourceXids = new ArrayList<>();
         //Validate that the ids are legit
-        for(int i=0; i<dataSourceIds.size(); i++) {
-            String xid = DataSourceDao.instance.getXidById(dataSourceIds.get(i));
+        for(int i=0; i<dataSources.size(); i++) {
+            String xid = DataSourceDao.instance.getXidById(dataSources.get(i));
             if(xid != null) 
                 dataSourceXids.add(xid);
         }
@@ -499,8 +488,8 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             writer.writeEntry("dataSourceXids", dataSourceXids);
         
         List<String> dataPointXids = new ArrayList<>();
-        for(int i=0; i<dataPointIds.size(); i++) {
-            String xid = DataPointDao.instance.getXidById(dataPointIds.get(i));
+        for(int i=0; i<dataPoints.size(); i++) {
+            String xid = DataPointDao.instance.getXidById(dataPoints.get(i));
             if(xid != null)
                 dataPointXids.add(xid);
         }
@@ -516,29 +505,29 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             DataSourceVO<?> ds = DataSourceDao.instance.getDataSource(text);
             if (ds == null)
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "dataSourceXid", text);
-            dataSourceIds.add(ds.getId());
+            dataSources.add(ds.getId());
         }
 
         JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPointXids");
         if(jsonDataPoints != null) {
-            dataPointIds.clear();
+            dataPoints.clear();
             for(JsonValue jv : jsonDataPoints) {
                 String xid = jv.toString();
                 Integer id = DataPointDao.instance.getIdByXid(xid);
                 if (id == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
-                dataPointIds.add(id);
+                dataPoints.add(id);
             }
         }
         JsonArray jsonDataSources = jsonObject.getJsonArray("dataSourceXids");
         if(jsonDataSources != null) {
-            dataSourceIds.clear();
-            for(JsonValue jv : jsonDataPoints) {
+            dataSources.clear();
+            for(JsonValue jv : jsonDataSources) {
                 String xid = jv.toString();
-                Integer id = DataPointDao.instance.getIdByXid(xid);
+                Integer id = DataSourceDao.instance.getIdByXid(xid);
                 if (id == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
-                dataSourceIds.add(id);
+                dataSources.add(id);
             }
         }
         

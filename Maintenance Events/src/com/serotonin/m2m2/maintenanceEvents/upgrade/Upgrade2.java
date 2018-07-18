@@ -47,10 +47,10 @@ public class Upgrade2 extends DBUpgrade {
         });
         
         //Drop the dataSourceId
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), mysqlDropDataSourceId);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), h2DropDataSourceId);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), mssqlDropDataSourceId);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), postgresDropDataSourceId);
+        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), dropDataSourceId);
+        scripts.put(DatabaseProxy.DatabaseType.H2.name(), dropDataSourceId);
+        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), dropDataSourceId);
+        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), dropDataSourceId);
         runScript(scripts);
 
     }
@@ -101,24 +101,8 @@ public class Upgrade2 extends DBUpgrade {
 
     };
     
-    private final String[] mysqlDropDataSourceId = new String[] {
+    private final String[] dropDataSourceId = new String[] {
             "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;",
-            "ALTER TABLE maintenanceEvents DROP FOREIGN KEY maintenanceEventsFk1;"
-    };
-    
-    private final String[] h2DropDataSourceId = new String[] {
-            "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;",
-            "ALTER TABLE maintenanceEvents DROP CONSTRAINT maintenanceEventsFk1;"
-    };
-
-    private final String[] mssqlDropDataSourceId = new String[] {
-            "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;",
-            "ALTER TABLE maintenanceEvents DROP CONSTRAINT maintenanceEventsFk1;"
-    };
-
-    private final String[] postgresDropDataSourceId = new String[] {
-            "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;",
-            "ALTER TABLE maintenanceEvents DROP FOREIGN KEY maintenanceEventsFk1;"
     };
     
 }

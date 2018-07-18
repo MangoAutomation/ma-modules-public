@@ -85,7 +85,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         MaintenanceEventVO e = new MaintenanceEventVO();
         e.setId(id);
         e.setXid(xid);
-        e.getDataSourceIds().add(dataSourceId);
+        e.getDataSources().add(dataSourceId);
         e.setName(alias);
         e.setAlarmLevel(alarmLevel);
         e.setScheduleType(scheduleType);
