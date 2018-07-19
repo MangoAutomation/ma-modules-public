@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.4.6-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>scheduled-events</artifactId>
     <name>scheduledEvents</name>
     <description>Page for creating and editing schedules that raise events at appropriate times.</description>
-    <version>3.4.1-SNAPSHOT</version>
+    <version>3.5.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
