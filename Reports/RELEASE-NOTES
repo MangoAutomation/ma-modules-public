@@ -1,3 +1,6 @@
+*Version 3.5.0*
+* Upgraded to work with core version 3.5.x
+
 *Version 3.4.2*
 * Added endValue property to point ftl models for the point's value at the end of the period
 * Fix tags property to only trust the DAO
