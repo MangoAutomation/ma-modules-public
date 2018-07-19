@@ -102,7 +102,6 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
                 PatchableField i = f.getAnnotation(PatchableField.class);
                 if(i != null && !i.enabled())
                     continue;
-                //Do update if value is NOT null
                 f.setAccessible(true);
                 try {
                     Object value = f.get(update);

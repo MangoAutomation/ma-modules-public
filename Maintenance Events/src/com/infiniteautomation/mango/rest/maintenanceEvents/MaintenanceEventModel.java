@@ -17,92 +17,33 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
  * @author Terry Packer
  */
 public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
-    @PatchableField
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> dataSources;
     
-    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> dataPoints;
     
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String alarmLevel;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String scheduleType;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean disabled;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeYear;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeMonth;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeDay;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeHour;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeMinute;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer activeSecond;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String activeCron;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveYear;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveMonth;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveDay;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveHour;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveMinute;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer inactiveSecond;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String inactiveCron;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer timeoutPeriods;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String timeoutPeriodType;
-    
-    @PatchableField
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @PatchableField()
     private String togglePermission;
     
     public MaintenanceEventModel() {

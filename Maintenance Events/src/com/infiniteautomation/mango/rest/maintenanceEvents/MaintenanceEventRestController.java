@@ -252,9 +252,19 @@ public class MaintenanceEventRestController extends BaseMangoRestController {
         }
     }
     
-    
+    /**
+     * Ensure the user has permission to toggle this event
+     * @param user
+     * @param vo
+     */
     private void ensureTogglePermission(User user, MaintenanceEventVO vo) {
-        
+        if(user.isAdmin())
+            return;
+        else if(Permissions.hasDataSourcePermission(user))
+            //TODO Review how this permission works
+            return;
+        else if(!Permissions.hasPermission(user, vo.getTogglePermission()));
+            throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
     }
     
     /**
