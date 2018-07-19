@@ -1,5 +1,11 @@
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
+* Allowing multiple data points to link to an event
+* Allowing multiple data sources to link to an event 
+* Adding timeout for Manual type events
+* Adding toggle permission to allow toggling the event if not admin
+* Adding REST endpoints and websockets to manage events
+* Adding monitor point to track count of created Maintenance event configurations
 
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x
