@@ -5,7 +5,6 @@
 create table maintenanceEvents (
   id int not null auto_increment,
   xid varchar(100) not null,
-  dataSourceId int not null,
   alias varchar(255),
   alarmLevel int not null,
   scheduleType int not null,
@@ -24,7 +23,24 @@ create table maintenanceEvents (
   inactiveMinute int,
   inactiveSecond int,
   inactiveCron varchar(25),
+  timeoutPeriods int,
+  timeoutPeriodType int,
+  togglePermission varchar(255),
   primary key (id)
 ) engine=InnoDB;
 alter table maintenanceEvents add constraint maintenanceEventsUn1 unique (xid);
-alter table maintenanceEvents add constraint maintenanceEventsFk1 foreign key (dataSourceId) references dataSources(id) on delete cascade;
+
+CREATE TABLE maintenanceEventPoints (
+  maintenanceEventId int NOT NULL,
+  dataPointId int NOT NULL
+) engine=InnoDB;
+ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;
+ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;
+
+CREATE TABLE maintenanceEventDataSources (
+  maintenanceEventId int NOT NULL,
+  dataSourceId int NOT NULL
+) engine=InnoDB;
+ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;
+ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;
+

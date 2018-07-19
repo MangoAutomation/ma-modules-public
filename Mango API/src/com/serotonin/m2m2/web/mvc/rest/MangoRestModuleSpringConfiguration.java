@@ -2,7 +2,7 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.serotonin.m2m2.web.mvc.rest.v1;
+package com.serotonin.m2m2.web.mvc.rest;
 
 import java.util.List;
 
@@ -12,9 +12,11 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.rest.v2.converter.ProxyMappingJackson2HttpMessageConverter;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
 
 /**
  * Class to configure spring for any module specific REST components.
@@ -45,8 +47,8 @@ public class MangoRestModuleSpringConfiguration extends WebMvcConfigurerAdapter 
     @Override
     public void configureMessageConverters(
             List<HttpMessageConverter<?>> converters) {
+        converters.add(0, new ProxyMappingJackson2HttpMessageConverter(mapper));
         converters.add(new PointValueTimeStreamCsvMessageConverter());
-        //converters.add(new DataPointCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
     }

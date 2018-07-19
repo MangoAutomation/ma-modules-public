@@ -7,8 +7,6 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.springframework.util.Assert;
-
 import com.serotonin.m2m2.module.RuntimeManagerDefinition;
 
 public class RTMDefinition extends RuntimeManagerDefinition {
@@ -27,12 +25,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        MaintenanceEventDao maintenanceEventDao = new MaintenanceEventDao();
-        for (MaintenanceEventVO vo : maintenanceEventDao.getMaintenanceEvents()) {
+        for (MaintenanceEventVO vo : MaintenanceEventDao.instance.getAllFull()) {
             if (!vo.isDisabled()) {
                 if (safe) {
                     vo.setDisabled(true);
-                    maintenanceEventDao.saveMaintenanceEvent(vo);
+                    MaintenanceEventDao.instance.save(vo);
                 }
                 else
                     startMaintenanceEvent(vo);
@@ -58,9 +55,19 @@ public class RTMDefinition extends RuntimeManagerDefinition {
         return null;
     }
 
-    public boolean isActiveMaintenanceEvent(int dataSourceId) {
+    public boolean isActiveMaintenanceEventForDataSource(int dataSourceId) {
         for (MaintenanceEventRT rt : maintenanceEvents) {
-            if (rt.getVo().getDataSourceId() == dataSourceId && rt.isEventActive())
+            for(Integer dsId : rt.getVo().getDataSources())
+            if (dsId == dataSourceId && rt.isEventActive())
+                return true;
+        }
+        return false;
+    }
+    
+    public boolean isActiveMaintenanceEventForDataPoint(int dataPointId) {
+        for (MaintenanceEventRT rt : maintenanceEvents) {
+            for(Integer dpId : rt.getVo().getDataPoints())
+            if (dpId == dataPointId && rt.isEventActive())
                 return true;
         }
         return false;
@@ -72,14 +79,14 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     public void deleteMaintenanceEvent(int id) {
         stopMaintenanceEvent(id);
-        new MaintenanceEventDao().deleteMaintenanceEvent(id);
+        MaintenanceEventDao.instance.delete(id);
     }
 
     public void saveMaintenanceEvent(MaintenanceEventVO vo) {
         // If the maintenance event is running, stop it.
         stopMaintenanceEvent(vo.getId());
 
-        new MaintenanceEventDao().saveMaintenanceEvent(vo);
+        MaintenanceEventDao.instance.saveFull(vo);
 
         // If the maintenance event is enabled, start it.
         if (!vo.isDisabled())
@@ -93,7 +100,8 @@ public class RTMDefinition extends RuntimeManagerDefinition {
                 return;
 
             // Ensure that the maintenance event is enabled.
-            Assert.isTrue(!vo.isDisabled());
+            if(vo.isDisabled())
+                return;
 
             // Create and start the runtime version of the maintenance event.
             MaintenanceEventRT rt = new MaintenanceEventRT(vo);

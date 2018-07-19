@@ -8,6 +8,12 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.virtual.vo.IncrementAnalogChangeVO;
 
+/**
+ * NOTE: We are relying on a bug in this code that allows a negative change
+ * to always decrement down and ignore the minimum value
+ *
+ * @author Terry Packer
+ */
 public class IncrementAnalogChangeRT extends ChangeTypeRT {
     private final IncrementAnalogChangeVO vo;
     private boolean decrement = false;

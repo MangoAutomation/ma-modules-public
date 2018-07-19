@@ -5,6 +5,8 @@
 package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -14,9 +16,13 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
@@ -24,11 +30,11 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.web.taglib.Functions;
 import com.serotonin.timer.CronTimerTrigger;
-import com.serotonin.validation.StringValidation;
 
 public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
@@ -57,11 +63,8 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         TYPE_CODES.addElement(TYPE_CRON, "CRON", "maintenanceEvents.type.cron");
     }
 
-    private int id = Common.NEW_ID;
-    private String xid;
-    private int dataSourceId;
-    @JsonProperty
-    private String alias;
+    private List<Integer> dataSources = new ArrayList<>();
+    private List<Integer> dataPoints = new ArrayList<>();
     private int alarmLevel = AlarmLevels.NONE;
     private int scheduleType = TYPE_MANUAL;
     @JsonProperty
@@ -94,26 +97,14 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     private int inactiveSecond;
     @JsonProperty
     private String inactiveCron;
-
-    //
-    //
-    // Convenience data from data source
-    //
-    private String dataSourceTypeId;
-    private String dataSourceName;
-    private String dataSourceXid;
+    //Manual events can have a timeout if timeout periods > 0
+    private int timeoutPeriods = 0;
+    private int timeoutPeriodType = TimePeriods.HOURS;
+    @JsonProperty
+    private String togglePermission;
 
     public boolean isNew() {
         return id == Common.NEW_ID;
-    }
-
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getXid() {
@@ -124,20 +115,34 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         this.xid = xid;
     }
 
-    public int getDataSourceId() {
-        return dataSourceId;
+    public List<Integer> getDataSources() {
+        return dataSources;
     }
 
-    public void setDataSourceId(int dataSourceId) {
-        this.dataSourceId = dataSourceId;
+    public void setDataSources(List<Integer> dataSourceIds) {
+        this.dataSources = dataSourceIds;
+    }
+    
+    public List<Integer> getDataPoints() {
+        return dataPoints;
     }
 
+    public void setDataPoints(List<Integer> dataPointIds) {
+        this.dataPoints = dataPointIds;
+    }
+
+    /**
+     * Deprecated as we should just use the name. Leaving here as I believe these are probably accessed on the legacy page via DWR.
+     * @return
+     */
+    @Deprecated
     public String getAlias() {
-        return alias;
+        return name;
     }
 
+    @Deprecated
     public void setAlias(String alias) {
-        this.alias = alias;
+        this.name = alias;
     }
 
     public int getAlarmLevel() {
@@ -275,29 +280,29 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     public void setInactiveCron(String inactiveCron) {
         this.inactiveCron = inactiveCron;
     }
-
-    public String getDataSourceTypeId() {
-        return dataSourceTypeId;
+    
+    public int getTimeoutPeriods() {
+        return timeoutPeriods;
     }
 
-    public void setDataSourceTypeId(String dataSourceTypeId) {
-        this.dataSourceTypeId = dataSourceTypeId;
+    public void setTimeoutPeriods(int timeoutPeriods) {
+        this.timeoutPeriods = timeoutPeriods;
     }
 
-    public String getDataSourceName() {
-        return dataSourceName;
+    public int getTimeoutPeriodType() {
+        return timeoutPeriodType;
     }
 
-    public void setDataSourceName(String dataSourceName) {
-        this.dataSourceName = dataSourceName;
+    public void setTimeoutPeriodType(int timeoutPeriodType) {
+        this.timeoutPeriodType = timeoutPeriodType;
     }
 
-    public String getDataSourceXid() {
-        return dataSourceXid;
+    public String getTogglePermission() {
+        return togglePermission;
     }
 
-    public void setDataSourceXid(String dataSourceXid) {
-        this.dataSourceXid = dataSourceXid;
+    public void setTogglePermission(String togglePermission) {
+        this.togglePermission = togglePermission;
     }
 
     public EventTypeVO getEventType() {
@@ -306,42 +311,63 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
     public TranslatableMessage getDescription() {
         TranslatableMessage message;
+        
+        if (!StringUtils.isBlank(name)) {
+            message = new TranslatableMessage("common.default", name);
+        } else {
+            //Hack together a name for the message
+            String eventName = "N/A";
 
-        if (!StringUtils.isBlank(alias))
-            message = new TranslatableMessage("common.default", alias);
-        else if (scheduleType == TYPE_MANUAL)
-            message = new TranslatableMessage("maintenanceEvents.schedule.manual", dataSourceName);
-        else if (scheduleType == TYPE_ONCE) {
-            message = new TranslatableMessage("maintenanceEvents.schedule.onceUntil", dataSourceName,
-                    Functions.getTime(new DateTime(activeYear, activeMonth, activeDay, activeHour, activeMinute,
-                            activeSecond, 0).getMillis()), Functions.getTime(new DateTime(inactiveYear, inactiveMonth,
-                            inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, 0).getMillis()));
+            //Single data point
+            if((dataPoints.size() == 1) && (dataSources.size() == 0)) {
+                DataPointVO vo = DataPointDao.instance.get(dataPoints.get(0));
+                if(vo != null)
+                    eventName = vo.getName();
+            }else if((dataPoints.size() == 0) && (dataSources.size() == 1)){
+                DataSourceVO<?> vo = DataSourceDao.instance.get(dataSources.get(0));
+                if(vo != null)
+                    eventName = vo.getName();
+            }else if((dataPoints.size() > 1) && (dataSources.size() == 0)){
+                eventName = "Multiple points"; //TODO Better name/translation?
+            }else if((dataPoints.size() == 0) && (dataSources.size() > 1)){
+                eventName = "Multiple data sources"; //TODO Better name/translation?
+            }else {
+                eventName = "Multiple data points and sources"; //TODO Better name/translation?
+            }
+            
+            if (scheduleType == TYPE_MANUAL)
+                message = new TranslatableMessage("maintenanceEvents.schedule.manual", eventName);
+            else if (scheduleType == TYPE_ONCE) {
+                message = new TranslatableMessage("maintenanceEvents.schedule.onceUntil", eventName,
+                        Functions.getTime(new DateTime(activeYear, activeMonth, activeDay, activeHour, activeMinute,
+                                activeSecond, 0).getMillis()), Functions.getTime(new DateTime(inactiveYear, inactiveMonth,
+                                inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, 0).getMillis()));
+            }
+            else if (scheduleType == TYPE_HOURLY) {
+                String activeTime = StringUtils.leftPad(Integer.toString(activeMinute), 2, '0') + ":"
+                        + StringUtils.leftPad(Integer.toString(activeSecond), 2, '0');
+                message = new TranslatableMessage("maintenanceEvents.schedule.hoursUntil", eventName, activeTime,
+                        StringUtils.leftPad(Integer.toString(inactiveMinute), 2, '0') + ":"
+                                + StringUtils.leftPad(Integer.toString(inactiveSecond), 2, '0'));
+            }
+            else if (scheduleType == TYPE_DAILY)
+                message = new TranslatableMessage("maintenanceEvents.schedule.dailyUntil", eventName, activeTime(),
+                        inactiveTime());
+            else if (scheduleType == TYPE_WEEKLY)
+                message = new TranslatableMessage("maintenanceEvents.schedule.weeklyUntil", eventName, weekday(true),
+                        activeTime(), weekday(false), inactiveTime());
+            else if (scheduleType == TYPE_MONTHLY)
+                message = new TranslatableMessage("maintenanceEvents.schedule.monthlyUntil", eventName,
+                        monthday(true), activeTime(), monthday(false), inactiveTime());
+            else if (scheduleType == TYPE_YEARLY)
+                message = new TranslatableMessage("maintenanceEvents.schedule.yearlyUntil", eventName, monthday(true),
+                        month(true), activeTime(), monthday(false), month(false), inactiveTime());
+            else if (scheduleType == TYPE_CRON)
+                message = new TranslatableMessage("maintenanceEvents.schedule.cronUntil", eventName, activeCron,
+                        inactiveCron);
+            else
+                throw new ShouldNeverHappenException("Unknown schedule type: " + scheduleType);
         }
-        else if (scheduleType == TYPE_HOURLY) {
-            String activeTime = StringUtils.leftPad(Integer.toString(activeMinute), 2, '0') + ":"
-                    + StringUtils.leftPad(Integer.toString(activeSecond), 2, '0');
-            message = new TranslatableMessage("maintenanceEvents.schedule.hoursUntil", dataSourceName, activeTime,
-                    StringUtils.leftPad(Integer.toString(inactiveMinute), 2, '0') + ":"
-                            + StringUtils.leftPad(Integer.toString(inactiveSecond), 2, '0'));
-        }
-        else if (scheduleType == TYPE_DAILY)
-            message = new TranslatableMessage("maintenanceEvents.schedule.dailyUntil", dataSourceName, activeTime(),
-                    inactiveTime());
-        else if (scheduleType == TYPE_WEEKLY)
-            message = new TranslatableMessage("maintenanceEvents.schedule.weeklyUntil", dataSourceName, weekday(true),
-                    activeTime(), weekday(false), inactiveTime());
-        else if (scheduleType == TYPE_MONTHLY)
-            message = new TranslatableMessage("maintenanceEvents.schedule.monthlyUntil", dataSourceName,
-                    monthday(true), activeTime(), monthday(false), inactiveTime());
-        else if (scheduleType == TYPE_YEARLY)
-            message = new TranslatableMessage("maintenanceEvents.schedule.yearlyUntil", dataSourceName, monthday(true),
-                    month(true), activeTime(), monthday(false), month(false), inactiveTime());
-        else if (scheduleType == TYPE_CRON)
-            message = new TranslatableMessage("maintenanceEvents.schedule.cronUntil", dataSourceName, activeCron,
-                    inactiveCron);
-        else
-            throw new ShouldNeverHappenException("Unknown schedule type: " + scheduleType);
-
         return message;
     }
 
@@ -405,12 +431,28 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     }
 
     public void validate(ProcessResult response) {
-        if (StringValidation.isLengthGreaterThan(alias, 50))
-            response.addContextualMessage("alias", "maintenanceEvents.validate.aliasTooLong");
+        super.validate(response);
 
-        if (dataSourceId <= 0)
-            response.addContextualMessage("dataSourceId", "validate.invalidValue");
+        if((dataSources.size() < 1) &&(dataPoints.size() < 1)) {
+            response.addContextualMessage("dataSources", "validate.invalidValue");
+            response.addContextualMessage("dataPoints", "validate.invalidValue");
+        }
+        
+        //Validate that the ids are legit
+        for(int i=0; i<dataSources.size(); i++) {
+            DataSourceVO<?> vo = DataSourceDao.instance.get(dataSources.get(i));
+            if(vo == null) {
+                response.addContextualMessage("dataSources[" + i + "]", "validate.invalidValue");
+            }
+        }
 
+        for(int i=0; i<dataPoints.size(); i++) {
+            DataPointVO vo = DataPointDao.instance.get(dataPoints.get(i));
+            if(vo == null) {
+                response.addContextualMessage("dataPoints[" + i + "]", "validate.invalidValue");
+            }
+        }
+        
         // Check that cron patterns are ok.
         if (scheduleType == TYPE_CRON) {
             try {
@@ -451,6 +493,10 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                     inactiveSecond, 0);
             if (idt.getMillis() <= adt.getMillis())
                 response.addContextualMessage("scheduleType", "maintenanceEvents.validate.invalidRtn");
+            if(timeoutPeriods > 0) {
+                if (!Common.TIME_PERIOD_CODES.isValidId(timeoutPeriods))
+                    response.addContextualMessage("updatePeriodType", "validate.invalidValue");
+            }
         }
     }
 
@@ -461,21 +507,68 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         writer.writeEntry("xid", xid);
-        writer.writeEntry("dataSourceXid", dataSourceXid);
+        writer.writeEntry("alias", name);
         writer.writeEntry("alarmLevel", AlarmLevels.CODES.getCode(alarmLevel));
         writer.writeEntry("scheduleType", TYPE_CODES.getCode(scheduleType));
+        
+        List<String> dataSourceXids = new ArrayList<>();
+        //Validate that the ids are legit
+        for(int i=0; i<dataSources.size(); i++) {
+            String xid = DataSourceDao.instance.getXidById(dataSources.get(i));
+            if(xid != null) 
+                dataSourceXids.add(xid);
+        }
+        if(dataSourceXids.size() > 0)
+            writer.writeEntry("dataSourceXids", dataSourceXids);
+        
+        List<String> dataPointXids = new ArrayList<>();
+        for(int i=0; i<dataPoints.size(); i++) {
+            String xid = DataPointDao.instance.getXidById(dataPoints.get(i));
+            if(xid != null)
+                dataPointXids.add(xid);
+        }
+        if(dataPointXids.size() > 0)
+            writer.writeEntry("dataPointXids", dataPointXids);
+        if(scheduleType == TYPE_MANUAL && timeoutPeriods > 0) {
+            writer.writeEntry("timeoutPeriods", timeoutPeriods);
+            writer.writeEntry("timeoutPeriodType", Common.TIME_PERIOD_CODES.getCode(timeoutPeriodType));
+        }
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
+        name = jsonObject.getString("alias");
         String text = jsonObject.getString("dataSourceXid");
         if (text != null) {
             DataSourceVO<?> ds = DataSourceDao.instance.getDataSource(text);
             if (ds == null)
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "dataSourceXid", text);
-            dataSourceId = ds.getId();
+            dataSources.add(ds.getId());
         }
 
+        JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPointXids");
+        if(jsonDataPoints != null) {
+            dataPoints.clear();
+            for(JsonValue jv : jsonDataPoints) {
+                String xid = jv.toString();
+                Integer id = DataPointDao.instance.getIdByXid(xid);
+                if (id == null)
+                    throw new TranslatableJsonException("emport.error.missingPoint", xid);
+                dataPoints.add(id);
+            }
+        }
+        JsonArray jsonDataSources = jsonObject.getJsonArray("dataSourceXids");
+        if(jsonDataSources != null) {
+            dataSources.clear();
+            for(JsonValue jv : jsonDataSources) {
+                String xid = jv.toString();
+                Integer id = DataSourceDao.instance.getIdByXid(xid);
+                if (id == null)
+                    throw new TranslatableJsonException("emport.error.missingPoint", xid);
+                dataSources.add(id);
+            }
+        }
+        
         text = jsonObject.getString("alarmLevel");
         if (text != null) {
             alarmLevel = AlarmLevels.CODES.getId(text);
@@ -491,6 +584,14 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "scheduleType", text,
                         TYPE_CODES.getCodeList());
         }
+        timeoutPeriods = jsonObject.getInt("timeoutPeriods", -1);
+        text = jsonObject.getString("timeoutPeriodType");
+        if(text != null) {
+            timeoutPeriodType = Common.TIME_PERIOD_CODES.getId(text);
+            if(!Common.TIME_PERIOD_CODES.isValidId(timeoutPeriodType))
+                throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "timeoutPeriodType", text,
+                        Common.TIME_PERIOD_CODES.getCodeList());
+        }
     }
 
 	/* (non-Javadoc)
@@ -498,7 +599,6 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 	 */
 	@Override
 	protected AbstractDao<MaintenanceEventVO> getDao() {
-		// TODO Auto-generated method stub
-		return null;
+		return MaintenanceEventDao.instance;
 	}
 }
