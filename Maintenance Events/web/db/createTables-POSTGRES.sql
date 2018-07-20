@@ -32,9 +32,9 @@ create table maintenanceEvents (
 alter table maintenanceEvents add constraint maintenanceEventsUn1 unique (xid);
 alter table maintenanceEvents add constraint maintenanceEventsFk1 foreign key (dataSourceId) references dataSources(id) on delete cascade;
 
-CREATE TABLE maintenanceEventPoints (
+CREATE TABLE maintenanceEventDataPoints (
   maintenanceEventId int NOT NULL,
   dataPointId int NOT NULL
 ) ;
-ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;
-ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;
+ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;
+ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;

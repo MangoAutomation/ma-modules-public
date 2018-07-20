@@ -4,7 +4,9 @@
 package com.infiniteautomation.mango.rest.maintenanceEvents;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -53,7 +55,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Maintenance Events API")
 @RestController()
 @RequestMapping("/v2/maintenance-events")
-public class MaintenanceEventRestController extends BaseMangoRestController {
+public class MaintenanceEventsRestController extends BaseMangoRestController {
 
     @ApiOperation(
             value = "Get maintenance event by XID",
@@ -223,6 +225,34 @@ public class MaintenanceEventRestController extends BaseMangoRestController {
 
         ASTNode rql = parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
+    }
+    
+    @ApiOperation(
+            value = "Find Maintenance Events linked to data points",
+            notes = "Returns a map of point ids to a list of events",
+            response=Map.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/query/get-for-points/{pointIds}")
+    public Map<Integer, List<MaintenanceEventModel>> getForPoints(
+            @PathVariable(required = true) List<Integer> pointIds,
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        Map<Integer, List<MaintenanceEventModel>> map = new HashMap<>();
+        for(Integer id: pointIds) {
+            List<MaintenanceEventModel> models = new ArrayList<>();
+            map.put(id, models);
+            MaintenanceEventDao.instance.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
+
+                @Override
+                public void row(MaintenanceEventVO vo, int index) {
+                    models.add(new MaintenanceEventModel(vo));
+                }
+                
+            });
+        }
+        return map;
     }
     
     protected static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {

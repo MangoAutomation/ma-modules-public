@@ -68,9 +68,9 @@ public class Upgrade2 extends DBUpgrade {
     }
 
     private final String[] mysqlCreateTables = new String[] {
-            "CREATE TABLE maintenanceEventPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL) engine=InnoDB;",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",
+            "CREATE TABLE maintenanceEventDataPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL) engine=InnoDB;",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",
             
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL) engine=InnoDB;",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
@@ -80,9 +80,9 @@ public class Upgrade2 extends DBUpgrade {
 
     };
     private final String[] h2CreateTables = new String[] {
-            "CREATE TABLE maintenanceEventPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL);",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",
+            "CREATE TABLE maintenanceEventDataPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL);",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",
 
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL);",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
@@ -92,9 +92,9 @@ public class Upgrade2 extends DBUpgrade {
 
     };
     private final String[] mssqlCreateTables = new String[] {
-            "CREATE TABLE maintenanceEventPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL);",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",            
+            "CREATE TABLE maintenanceEventDataPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL);",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",            
 
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL);",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
@@ -104,9 +104,9 @@ public class Upgrade2 extends DBUpgrade {
 
     };
     private final String[] postgresCreateTables = new String[] {
-            "CREATE TABLE maintenanceEventPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL);",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
-            "ALTER TABLE maintenanceEventPoints add constraint maintenanceEventPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",
+            "CREATE TABLE maintenanceEventDataPoints (maintenanceEventId int NOT NULL, dataPointId int NOT NULL);",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
+            "ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;",
             
             "CREATE TABLE maintenanceEventDataSources (maintenanceEventId int NOT NULL, dataSourceId int NOT NULL);",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",

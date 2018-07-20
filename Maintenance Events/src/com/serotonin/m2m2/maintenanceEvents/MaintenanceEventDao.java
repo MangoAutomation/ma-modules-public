@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -39,10 +40,10 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
                 false, new TranslatableMessage("header.maintenanceEvents"));
     }
     
-    private static final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventPoints WHERE maintenanceEventId=?";
+    private static final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
     private static final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
     
-    private static final String SELECT_POINTS = DataPointDao.instance.getSelectAllSql() + " JOIN maintenanceEventPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
+    private static final String SELECT_POINTS = DataPointDao.instance.getSelectAllSql() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
     private static final String SELECT_DATA_SOURCES = DataSourceDao.instance.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON mep.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
 
     /* (non-Javadoc)
@@ -107,6 +108,40 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             }
             
         });
+    }
+    
+    private static final String SELECT_BY_DATA_POINT = "SELECT maintenanceEventId FROM maintenanceEventDataPoints WHERE dataPointId=?";
+    private static final String SELECT_BY_DATA_SOURCE = "SELECT maintenanceEventId FROM maintenanceEventDataSources WHERE dataSourceId=?";
+    public void getForDataPoint(int dataPointId, MappedRowCallback<MaintenanceEventVO> callback) {
+
+        DataPointVO vo = DataPointDao.instance.getDataPoint(dataPointId);
+        if(vo == null)
+            return;
+        
+        //Get the events that are listed for this point
+        List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {dataPointId}, Integer.class);
+        if(ids.size() == 0)
+            return;
+        StringBuilder b = new StringBuilder();
+        b.append(SELECT_ALL);
+        b.append(" WHERE id IN(?");
+        for(int i=0; i<ids.size() - 1; i++)
+            b.append(",?");
+        b.append(")");
+        query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
+    
+        //Get the events that are listed for the point's data source
+        ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {vo.getDataSourceId()}, Integer.class);
+        if(ids.size() == 0)
+            return;
+        b = new StringBuilder();
+        b.append(SELECT_ALL);
+        b.append(" WHERE id IN(?");
+        for(int i=0; i<ids.size() - 1; i++)
+            b.append(",?");
+        b.append(")");
+        query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
+
     }
     
     private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources (maintenanceEventId, dataSourceId) VALUES (?,?)";
