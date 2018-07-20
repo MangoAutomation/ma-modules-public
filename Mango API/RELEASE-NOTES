@@ -2,6 +2,7 @@
 * Upgraded to work with core version 3.5.x
 * Adding ExportCode and ExportCodes models for use in REST api to provide code/id/i18n key and translated description
 * Adding PATCH framework to simplify partial update logic for V2 models, used in new PATCH endpoints
+* Expose tags in realtime endpoint results
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state
