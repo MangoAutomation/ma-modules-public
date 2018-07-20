@@ -6,14 +6,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,10 +30,7 @@ import com.infiniteautomation.mango.db.query.ComparisonEnum;
 import com.infiniteautomation.mango.db.query.SQLQueryColumn;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
@@ -59,7 +51,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryObjectStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.TranslatableMessageModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventActiveInPeriodQueryModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
 import com.wordnik.swagger.annotations.Api;
@@ -496,60 +487,6 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             return result.createResponseEntity(list);
         }
         return result.createResponseEntity();
-    }
-    
-    @ApiOperation(
-            value = "Query for events active within time range",
-            notes = "returns events that are active during the period, even if they were active before the start of the period.  Inclusive of start, exclusive of end",
-            response=EventInstanceModel.class,
-            responseContainer="Array"
-            )
-    @RequestMapping(method = RequestMethod.POST, value = "/query/active-in-period")
-    public StreamedArrayWithTotal queryActivePeriod(
-            @ApiParam(value="Query", required=true)
-            @RequestBody(required=true) EventActiveInPeriodQueryModel query,
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
-
-        return doQuery(query, user);
-    }
-
-    protected static StreamedArrayWithTotal doQuery(EventActiveInPeriodQueryModel model, User user) {
-        final Function<EventInstanceVO, Object> transform = item -> {
-            return new EventInstanceModel(item);
-        };
-        ZoneId zoneId;
-        String timezone = model.getTimezone();
-        ZonedDateTime from = model.getFrom();
-        ZonedDateTime to = model.getTo();
-        long current = Common.timer.currentTimeMillis();
-
-        if (timezone == null) {
-            if (from != null)
-                zoneId = from.getZone();
-            else
-                zoneId = TimeZone.getDefault().toZoneId();
-        } else {
-            zoneId = ZoneId.of(timezone);
-        }
-        
-        if (from != null)
-            from = from.withZoneSameInstant(zoneId);
-        else {
-            from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
-        }
-        
-        // Set the timezone on the from and to dates
-        if (to != null)
-            to = to.withZoneSameInstant(zoneId);
-        else
-            to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
-
-        // Validate time
-        if (!to.isAfter(from))
-            throw new BadRequestException(new TranslatableMessage("rest.validate.timeRange.invalid"));
-
-        return new StreamedVOQueryWithTotal<>(EventInstanceDao.instance, EventInstanceDao.instance.activeEventsInPeriod(user, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), model.getEventTypes(), model.getReferenceId1s(), model.getReferenceId2s(), model.getLimit(), model.getOffset()), item -> true, transform);
     }
 
     @ApiOperation(
