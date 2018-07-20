@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.text.StringEscapeUtils;
 
 import com.infiniteautomation.mango.regex.MatchCallback;
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
@@ -31,7 +31,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
             int flowControlOut, int dataBits, int stopBits, int parity, int readTimeout, boolean useTerminator,
             String messageTerminator, String messageRegex, int pointIdentifierIndex,
             boolean hex, boolean logIO, int maxMessageSize, float ioLogFileSizeMBytes, int maxHistoricalIOLogs, int retries) {
-        SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
+        SerialDataSourceVO ds = (SerialDataSourceVO) Common.getHttpUser().getEditDataSource();
 
         setBasicProps(ds, basic);
         ds.setCommPortId(commPortId);
@@ -65,7 +65,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
     
     @DwrPermission(user = true)
     public String getSafeTerminator() {
-    	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getUser().getEditDataSource();
+    	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getHttpUser().getEditDataSource();
     	return StringEscapeUtils.escapeJava(ds.getMessageTerminator());
     }
     
