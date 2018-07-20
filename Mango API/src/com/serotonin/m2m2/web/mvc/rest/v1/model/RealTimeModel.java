@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
 
@@ -70,6 +72,9 @@ public class RealTimeModel extends AbstractRestModel<RealTimeDataPointValue>{
 	public String getXid(){
 		return this.data.getXid();
 	}
-
+	@JsonGetter("tags")
+	public Map<String,String> getTags( ){
+	    return this.data.getTags();
+	}
 
 }
