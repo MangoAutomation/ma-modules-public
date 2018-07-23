@@ -301,6 +301,18 @@ public class UserModel extends AbstractRestModel<User> {
         return "";
     }
 
+    @CSVColumnGetter(order=19, header="lastName")
+    @JsonGetter("lastName")
+    public String getLastName() {
+        return data.getLastName();
+    }
+
+    @CSVColumnSetter(order=19, header="lastName")
+    @JsonSetter("lastName")
+    public void setLastName(String lastName) {
+        this.data.setLastName(lastName);
+    }
+    
     @CSVColumnSetter(order=18, header="hashAlgorithm")
     @JsonSetter("hashAlgorithm")
     public void setHashAlgorithm(String hashAlgorithm) {
