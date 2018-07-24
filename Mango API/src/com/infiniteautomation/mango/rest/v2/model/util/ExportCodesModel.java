@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.serotonin.m2m2.util.ExportCodes;
@@ -18,6 +19,7 @@ public class ExportCodesModel {
     public ExportCodesModel() { }
     
     public ExportCodesModel(ExportCodes codes) {
+        this.codes = new ArrayList<>();
         for(Element e : codes.getElements())
             this.codes.add(new ExportCodeElementModel(e));
     }
