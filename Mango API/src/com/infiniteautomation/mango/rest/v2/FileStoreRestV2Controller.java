@@ -60,12 +60,16 @@ import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.FileStoreDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.FileStoreDefinition;
+import com.serotonin.m2m2.module.definitions.permissions.UserFileStoreCreatePermissionDefinition;
 import com.serotonin.m2m2.util.FileStoreUtils;
 import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.filter.MangoShallowEtagHeaderFilter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -316,7 +320,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     }
     
     @ApiOperation(value = "Get a user file store model")
-    @RequestMapping(method = RequestMethod.GET, produces= {"application/json"}, value="/user-store/{storeName}")
+    @RequestMapping(method = RequestMethod.GET, value="/user-store/{storeName}")
     public ResponseEntity<FileStore> getUserFileStoreModel(@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
             @PathVariable("storeName") String storeName,
             @AuthenticationPrincipal User user,
@@ -333,7 +337,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     }
     
     @ApiOperation(value = "Create a user file store")
-    @RequestMapping(method = RequestMethod.POST, consumes= {"application/json"}, produces= {"application/json"}, value="/user-store/{storeName}")
+    @RequestMapping(method = RequestMethod.POST, value="/user-store/{storeName}")
     public ResponseEntity<FileStore> createUserFileStore(
             @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
             @PathVariable("storeName") String storeName,
@@ -348,14 +352,15 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         FileStoreDefinition fsd = FileStoreDao.instance.getFileStoreDefinition(storeName);
         if(fsd != null)
             throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileStoreExists", fileStore.getStoreName()));
-        //TODO check user has create file store permissions
+        if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(UserFileStoreCreatePermissionDefinition.TYPE_NAME)))
+            throw new PermissionException(new TranslatableMessage("filestore.user.createPermissionDenied", user.getUsername()), user);
         fileStore.setId(Common.NEW_ID);
         FileStoreDao.instance.saveFileStore(fileStore);
         return new ResponseEntity<>(fileStore, HttpStatus.OK);
     }
     
     @ApiOperation(value = "Update a user file store")
-    @RequestMapping(method = RequestMethod.PUT, consumes= {"application/json"}, produces= {"application/json"}, value="/user-store/{id}")
+    @RequestMapping(method = RequestMethod.PUT, value="/user-store/{id}")
     public ResponseEntity<FileStore> updateUserFileStore(
             @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
             @PathVariable("id") Integer id,
@@ -378,8 +383,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     }
     
     @ApiOperation(value = "Delete a user file store")
-    @RequestMapping(method = RequestMethod.DELETE, consumes= {}, produces= {"application/json"}, value="/user-store/{storeName}")
-    public ResponseEntity<FileStore> updateUserFileStore(
+    @RequestMapping(method = RequestMethod.DELETE, value="/user-store/{storeName}")
+    public ResponseEntity<FileStore> deleteUserFileStore(
             @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
             @PathVariable("storeName") String storeName,
             @ApiParam(value = "Purge all files in file store", required = false, defaultValue="false", allowMultiple = false)
