@@ -40,18 +40,22 @@ public class ValueMonitorSerializer<T> extends JsonSerializer<ValueMonitor<T>>{
 		jgen.writeStartObject();
 		jgen.writeStringField(ID, value.getId());
 		jgen.writeStringField(NAME, value.getName().translate(Common.getTranslations()));
-		if(value instanceof AtomicIntegerMonitor){
-			jgen.writeNumberField(VALUE, ((AtomicIntegerMonitor)value).getValue());
-		}else if (value instanceof DoubleMonitor){
-			jgen.writeNumberField(VALUE, ((DoubleMonitor)value).getValue());
-		}else if (value instanceof FloatMonitor){
-			jgen.writeNumberField(VALUE, ((FloatMonitor)value).getValue());
-		}else if (value instanceof IntegerMonitor){
-			jgen.writeNumberField(VALUE, ((IntegerMonitor)value).getValue());
-		}else if (value instanceof LongMonitor){
-			jgen.writeNumberField(VALUE, ((LongMonitor)value).getValue());
-		}else if (value instanceof ObjectMonitor){
-			jgen.writeObjectField(VALUE, ((ObjectMonitor<T>)value).getValue());
+		if(value.getValue() == null)
+		    jgen.writeNullField(VALUE);
+		else {
+    		if(value instanceof AtomicIntegerMonitor){
+    			jgen.writeNumberField(VALUE, ((AtomicIntegerMonitor)value).getValue().get());
+    		}else if (value instanceof DoubleMonitor){
+    			jgen.writeNumberField(VALUE, ((DoubleMonitor)value).getValue());
+    		}else if (value instanceof FloatMonitor){
+    			jgen.writeNumberField(VALUE, ((FloatMonitor)value).getValue());
+    		}else if (value instanceof IntegerMonitor){
+    			jgen.writeNumberField(VALUE, ((IntegerMonitor)value).getValue());
+    		}else if (value instanceof LongMonitor){
+    			jgen.writeNumberField(VALUE, ((LongMonitor)value).getValue());
+    		}else if (value instanceof ObjectMonitor){
+    			jgen.writeObjectField(VALUE, ((ObjectMonitor<T>)value).getValue());
+    		}
 		}
 		jgen.writeStringField(TYPE, value.getClass().getSimpleName());
 		jgen.writeEndObject();

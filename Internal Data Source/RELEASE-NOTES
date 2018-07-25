@@ -1,5 +1,6 @@
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
+* Changes to handle Monitor points with null values as this can now happen in Mango 3.5 to indicate a monitor has no information and is not actually 0
 
 *Version 3.4.1*
 * Escape HTML

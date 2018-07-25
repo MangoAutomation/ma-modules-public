@@ -5,6 +5,7 @@
 * Expose tags in realtime endpoint results
 * Adding lastName to user model
 * Fix bug where PUT endpoints were returning the old XID in the location header if the xid was changed (v2/data-points, v2/publishers, v1/data-sources)
+* Allowing null values to be returned in ValueMonitor model
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state

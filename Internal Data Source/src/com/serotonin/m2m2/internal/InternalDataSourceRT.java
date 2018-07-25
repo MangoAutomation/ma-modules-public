@@ -82,16 +82,19 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
     @Override
     public void forcePointRead(DataPointRT dataPoint) {
     	InternalPointLocatorRT locator = dataPoint.getPointLocator();
-        ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
+        ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());        
         if (m != null){
-        	if(m instanceof IntegerMonitor)
-        		dataPoint.updatePointValue(new PointValueTime((double) ((IntegerMonitor)m).getValue(), Common.timer.currentTimeMillis()));
-        	else if(m instanceof LongMonitor)
-        		dataPoint.updatePointValue(new PointValueTime((double) ((LongMonitor)m).getValue(), Common.timer.currentTimeMillis()));
-        	else if(m instanceof DoubleMonitor)
-        		dataPoint.updatePointValue(new PointValueTime((double) ((DoubleMonitor)m).getValue(), Common.timer.currentTimeMillis()));
-        	else if(m instanceof AtomicIntegerMonitor)
-        		dataPoint.updatePointValue(new PointValueTime((double) ((AtomicIntegerMonitor)m).getValue(), Common.timer.currentTimeMillis()));
+            Object value = m.getValue();
+            if(value == null)
+                return;
+            if(m instanceof IntegerMonitor)
+                dataPoint.updatePointValue(new PointValueTime(((IntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+            else if(m instanceof LongMonitor)
+                dataPoint.updatePointValue(new PointValueTime(((LongMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+            else if(m instanceof DoubleMonitor)
+                dataPoint.updatePointValue(new PointValueTime(((DoubleMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+            else if(m instanceof AtomicIntegerMonitor)
+                dataPoint.updatePointValue(new PointValueTime(((AtomicIntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
         }
     }
     
@@ -107,15 +110,19 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         for (DataPointRT dataPoint : dataPoints) {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
             ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
+            
             if (m != null){
-            	if(m instanceof IntegerMonitor)
-            		dataPoint.updatePointValue(new PointValueTime((double) ((IntegerMonitor)m).getValue(), time));
-            	else if(m instanceof LongMonitor)
-            		dataPoint.updatePointValue(new PointValueTime((double) ((LongMonitor)m).getValue(), time));
-            	else if(m instanceof DoubleMonitor)
-            		dataPoint.updatePointValue(new PointValueTime((double) ((DoubleMonitor)m).getValue(), time));
-            	else if(m instanceof AtomicIntegerMonitor)
-            		dataPoint.updatePointValue(new PointValueTime((double) ((AtomicIntegerMonitor)m).getValue(), time));
+                Object value = m.getValue();
+                if(value == null)
+                    continue;
+                if(m instanceof IntegerMonitor)
+                    dataPoint.updatePointValue(new PointValueTime(((IntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+                else if(m instanceof LongMonitor)
+                    dataPoint.updatePointValue(new PointValueTime(((LongMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+                else if(m instanceof DoubleMonitor)
+                    dataPoint.updatePointValue(new PointValueTime(((DoubleMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+                else if(m instanceof AtomicIntegerMonitor)
+                    dataPoint.updatePointValue(new PointValueTime(((AtomicIntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
             }
         }
     }
