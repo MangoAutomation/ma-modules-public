@@ -277,7 +277,7 @@ public class DataPointRestController extends BaseMangoRestController {
         DataPointDao.instance.setEventDetectors(dataPoint);
         Common.runtimeManager.saveDataPoint(dataPoint);
 
-        URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(xid).toUri();
+        URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 

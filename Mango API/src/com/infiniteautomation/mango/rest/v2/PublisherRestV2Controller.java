@@ -151,7 +151,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
         vo.ensureValid();
         Common.runtimeManager.savePublisher(vo);
      
-    	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(xid).toUri();
+    	URI location = builder.path("/v2/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
     	return getResourceUpdated(vo.asModel(), location);
     }
 

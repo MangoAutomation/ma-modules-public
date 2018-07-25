@@ -236,7 +236,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 	        }
 	        
 	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(xid).toUri();
+	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
 	    	result.addRestMessage(getResourceUpdatedMessage(location));
 	        return result.createResponseEntity(model);
         }
