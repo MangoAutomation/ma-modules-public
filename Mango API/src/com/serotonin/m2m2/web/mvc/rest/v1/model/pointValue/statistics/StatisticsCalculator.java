@@ -5,13 +5,13 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.AnalogStatistics;
 import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
@@ -36,18 +36,18 @@ public class StatisticsCalculator implements MappedRowCallback<PointValueTime>{
 	 * @param startValue
 	 * @param dateTimeFormat Data Point in question
 	 */
-	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, DataValue startValue, String dateTimeFormat, String timezone) {
+	public StatisticsCalculator(JsonGenerator jgen, DataPointVO vo, boolean useRendered, boolean unitConversion, long from, long to, PointValueTime startValue, List<PointValueTime> values, String dateTimeFormat, String timezone) {
 		switch(vo.getPointLocator().getDataTypeId()){
 			case DataTypes.BINARY:
 			case DataTypes.MULTISTATE:
-				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue), dateTimeFormat, timezone);
+				this.statsGenerator = new StartsAndRuntimeListJsonGenerator(jgen, vo, useRendered, unitConversion, new StartsAndRuntimeList(from, to, startValue, values), dateTimeFormat, timezone);
 			break;
 			case DataTypes.ALPHANUMERIC:
 			case DataTypes.IMAGE:
-				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue), dateTimeFormat, timezone);
+				this.statsGenerator = new ValueChangeCounterJsonGenerator(jgen, vo, useRendered, unitConversion, new ValueChangeCounter(from, to, startValue, values), dateTimeFormat, timezone);
 			break;
 			case DataTypes.NUMERIC:
-				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue == null ? null : startValue.getDoubleValue()), dateTimeFormat, timezone);
+				this.statsGenerator = new AnalogStatisticsJsonGenerator(jgen, vo, useRendered, unitConversion, new AnalogStatistics(from, to, startValue, values), dateTimeFormat, timezone);
 			break;
 			default:
 				throw new ShouldNeverHappenException("Invalid Data Type: "+ vo.getPointLocator().getDataTypeId());
