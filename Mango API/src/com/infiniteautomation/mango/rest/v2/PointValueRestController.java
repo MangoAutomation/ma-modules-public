@@ -15,6 +15,7 @@ import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
@@ -39,12 +40,14 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryIn
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointSimplifyLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointSimplifyTimeRangeDatabaseStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidLatestQueryInfoModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidRollupTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -737,6 +740,52 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         return generateStream(user, 
                 model.createZonedDateTimeRangeQueryInfo(false, false, rollup), 
                 model.getXids());
+    }
+    
+    @ApiOperation(value = "GET statistics for data point(s) over the given time range",
+            notes = "From time inclusive, To time exclusive. Returns map of xid to Statistics object",
+            response = PointValueTimeModel.class, responseContainer = "Map")
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/{xids}")
+    public ResponseEntity<MultiPointStatisticsStream> getStatistics(
+            HttpServletRequest request,
+
+            @ApiParam(value = "Point xids", required = true,
+                    allowMultiple = true) 
+            @PathVariable String[] xids,
+            
+            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+            @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime from,
+
+            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            ZonedDateTime to,
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false) 
+            String timezone,
+
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
+                    required = false, allowMultiple = false) 
+            @RequestParam(value = "dateTimeFormat", required = false) 
+            String dateTimeFormat,
+            
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+            PointValueTimeCacheControl useCache,
+            
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
+            @RequestParam(required = false) 
+            PointValueField[] fields,
+            
+            @AuthenticationPrincipal User user
+            ) {
+        
+        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, useCache, fields);
+        Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
+        return ResponseEntity.ok(new MultiPointStatisticsStream(info, voMap, this.dao));
     }
     
     @ApiOperation(

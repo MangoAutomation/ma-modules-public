@@ -77,6 +77,7 @@ public abstract class PointValueTimeWriter {
     public abstract void writeStartArray() throws IOException;
 	public abstract void writeStartArray(String name) throws IOException;
     public abstract void writeEndArray() throws IOException;
+    public abstract void writeStartObject(String name) throws IOException;
     public abstract void writeStartObject() throws IOException;
     public abstract void writeEndObject() throws IOException;
     

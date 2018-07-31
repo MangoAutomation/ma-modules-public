@@ -8,6 +8,7 @@
 * Allowing null values to be returned in ValueMonitor model
 * Added endpoints for user filestore CRUD
 * Fix for class cast error due to annotated point value classes in cache
+* Adding v2 point value statistics endpoint at /v2/point-values/statistics/{xids}
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state
