@@ -5,13 +5,12 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
@@ -62,20 +61,10 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 	@Override
 	public void streamData(JsonGenerator jgen) throws IOException {
 		
-		//TODO Can't use the Facade as there is no way to perform the callback integrated with the PointValueCache
-		//PointValueFacade pointValueFacade = new PointValueFacade(this.dataPointId);
-		
-		//First find the start value
-	    PointValueDao pvd = Common.databaseProxy.newPointValueDao();
-		PointValueTime startPvt  = pvd.getPointValueBefore(vo.getId(), from);
-		DataValue startValue = null;
-		if(startPvt != null)
-			startValue = startPvt.getValue();
-		StatisticsCalculator calculator = new StatisticsCalculator(jgen, vo, useRendered, unitConversion, this.from, this.to, startValue, dateTimeFormat, timezone);
-
-		//Do the main work
-		pvd.getPointValuesBetween(vo.getId(), from, to, calculator);
-		//Finish
+		PointValueFacade point = new PointValueFacade(vo.getId());
+        PointValueTime start = point.getPointValueBefore(from);
+        List<PointValueTime> values = point.getPointValuesBetween(from, to);
+		StatisticsCalculator calculator = new StatisticsCalculator(jgen, vo, useRendered, unitConversion, this.from, this.to, start, values, dateTimeFormat, timezone);
 		calculator.done();
 	}
 
