@@ -2,3 +2,6 @@
 /bin
 *~
 /maven-target
+/node_modules/
+/node/
+.vscode
