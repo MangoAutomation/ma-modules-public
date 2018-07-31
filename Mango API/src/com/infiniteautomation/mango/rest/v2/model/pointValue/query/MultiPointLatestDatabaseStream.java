@@ -20,8 +20,8 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWrite
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -244,8 +244,8 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 List<IdPointValueTime> idPvtCache = new ArrayList<>(cache.size());
                 for(PointValueTime pvt : cache) {
                     if(includeCachedPoint(pvt)) {
-                        if(pvt.isAnnotated())
-                            idPvtCache.add(new AnnotatedIdPointValueTime(id, pvt.getValue(), pvt.getTime(), ((AnnotatedPointValueTime)pvt).getSourceMessage()));
+                        if(pvt instanceof IAnnotated)
+                            idPvtCache.add(new AnnotatedIdPointValueTime(id, pvt.getValue(), pvt.getTime(), ((IAnnotated)pvt).getSourceMessage()));
                         else
                             idPvtCache.add(new IdPointValueTime(id, pvt.getValue(), pvt.getTime()));
                     }

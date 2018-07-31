@@ -49,6 +49,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RTException;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.PointValueFacade;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
@@ -264,9 +265,9 @@ public class PointValueRestController extends MangoRestController {
             model.setType(DataTypeEnum.convertTo(pvt.getValue().getDataType()));
             model.setValue(Functions.getRenderedText(vo, pvt));
             model.setTimestamp(pvt.getTime());
-            if (pvt.isAnnotated())
+            if (pvt instanceof IAnnotated)
                 model.setAnnotation(
-                        ((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
+                        ((IAnnotated) pvt).getAnnotation(Common.getTranslations()));
         } else if (unitConversion) {
             // Convert the numeric value using the unit and rendered unit
             model = new RecentPointValueTimeModel(pvt, cached);
@@ -274,9 +275,9 @@ public class PointValueRestController extends MangoRestController {
             model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit())
                     .convert(pvt.getValue().getDoubleValue()));
             model.setTimestamp(pvt.getTime());
-            if (pvt.isAnnotated())
+            if (pvt instanceof IAnnotated)
                 model.setAnnotation(
-                        ((AnnotatedPointValueTime) pvt).getAnnotation(Common.getTranslations()));
+                        ((IAnnotated) pvt).getAnnotation(Common.getTranslations()));
         } else {
             model = new RecentPointValueTimeModel(pvt, cached);
         }
@@ -830,8 +831,8 @@ public class PointValueRestController extends MangoRestController {
                             model.setType(DataTypeEnum.convertTo(first.getValue().getDataType()));
                             model.setValue(Functions.getRenderedText(vo, first));
                             model.setTimestamp(first.getTime());
-                            if (first.isAnnotated())
-                                model.setAnnotation(((AnnotatedPointValueTime) first)
+                            if (first instanceof IAnnotated)
+                                model.setAnnotation(((IAnnotated) first)
                                         .getAnnotation(Common.getTranslations()));
                             models.add(model);
                         }
@@ -840,8 +841,8 @@ public class PointValueRestController extends MangoRestController {
                             model.setType(DataTypeEnum.convertTo(last.getValue().getDataType()));
                             model.setValue(Functions.getRenderedText(vo, last));
                             model.setTimestamp(last.getTime());
-                            if (last.isAnnotated())
-                                model.setAnnotation(((AnnotatedPointValueTime) last)
+                            if (last instanceof IAnnotated)
+                                model.setAnnotation(((IAnnotated) last)
                                         .getAnnotation(Common.getTranslations()));
                             models.add(model);
                         }
@@ -852,8 +853,8 @@ public class PointValueRestController extends MangoRestController {
                             model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit())
                                     .convert(first.getValue().getDoubleValue()));
                             model.setTimestamp(first.getTime());
-                            if (first.isAnnotated())
-                                model.setAnnotation(((AnnotatedPointValueTime) first)
+                            if (first instanceof IAnnotated)
+                                model.setAnnotation(((IAnnotated) first)
                                         .getAnnotation(Common.getTranslations()));
                             models.add(model);
                         }
@@ -863,8 +864,8 @@ public class PointValueRestController extends MangoRestController {
                             model.setValue(vo.getUnit().getConverterTo(vo.getRenderedUnit())
                                     .convert(last.getValue().getDoubleValue()));
                             model.setTimestamp(last.getTime());
-                            if (last.isAnnotated())
-                                model.setAnnotation(((AnnotatedPointValueTime) last)
+                            if (last instanceof IAnnotated)
+                                model.setAnnotation(((IAnnotated) last)
                                         .getAnnotation(Common.getTranslations()));
                             models.add(model);
                         }

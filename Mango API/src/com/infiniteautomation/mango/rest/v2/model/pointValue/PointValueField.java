@@ -12,7 +12,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointS
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 
 /**
  * Information that can optionally be returned 
@@ -64,11 +64,11 @@ public enum PointValueField {
                     writer.writeDataValue(this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false);
                 break;
             case ANNOTATION:
-                if(value.getPvt().isAnnotated()) {
+                if(value.getPvt() instanceof IAnnotated) {
                     if(useXid)
-                        writer.writeStringField(value.getVo().getXid() + PointValueTimeWriter.DOT + this.fieldName, ((AnnotatedIdPointValueTime) value.getPvt()).getAnnotation(translations));
+                        writer.writeStringField(value.getVo().getXid() + PointValueTimeWriter.DOT + this.fieldName, ((IAnnotated) value.getPvt()).getAnnotation(translations));
                     else
-                        writer.writeStringField(this.fieldName, ((AnnotatedIdPointValueTime) value.getPvt()).getAnnotation(translations));
+                        writer.writeStringField(this.fieldName, ((IAnnotated) value.getPvt()).getAnnotation(translations));
                 }
                 break;
             case BOOKEND:

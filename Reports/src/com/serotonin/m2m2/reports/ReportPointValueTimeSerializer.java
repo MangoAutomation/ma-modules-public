@@ -13,8 +13,8 @@ import com.serotonin.m2m2.ImageSaveException;
 import com.serotonin.m2m2.db.dao.nosql.ByteArrayBuilder;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDataSerializer;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
@@ -130,14 +130,8 @@ public class ReportPointValueTimeSerializer implements NoSQLDataSerializer{
 		}
 		
 		//Put in annotation
-		if(value.isAnnotated()){
-		    if(value instanceof AnnotatedPointValueTime) { //TODO resolve this workaround
-    			AnnotatedPointValueTime apv = (AnnotatedPointValueTime)value;
-    			b.putString(apv.getSourceMessage().serialize());
-		    } else if(value instanceof AnnotatedIdPointValueTime) {
-		        AnnotatedIdPointValueTime apv = (AnnotatedIdPointValueTime)value;
-                b.putString(apv.getSourceMessage().serialize());
-		    }
+		if(value instanceof IAnnotated){
+		    b.putString(((IAnnotated)value).getSourceMessage().serialize());
 		}else
 			b.putString(null);
 	}

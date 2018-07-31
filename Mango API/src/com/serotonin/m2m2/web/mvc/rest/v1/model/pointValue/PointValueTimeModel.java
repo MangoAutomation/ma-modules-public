@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
@@ -62,8 +63,8 @@ public class PointValueTimeModel extends AbstractRestModel<PointValueTime>{
 		}
 		this.timestamp = data.getTime();
 		
-		if(data.isAnnotated())
-			this.annotation = ((AnnotatedPointValueTime) data).getAnnotation(Common.getTranslations());
+		if(data instanceof IAnnotated)
+			this.annotation = ((IAnnotated) data).getAnnotation(Common.getTranslations());
 		
 	}
 	

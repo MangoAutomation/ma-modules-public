@@ -15,6 +15,7 @@ import java.util.Map;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -121,8 +122,8 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                     //Send out first value as bookend if necessary
                     if(value.getTime() != info.getFromMillis()) {
                         IdPointValueTime bookend;
-                        if(value.isAnnotated())
-                            bookend = new AnnotatedIdPointValueTime(value.getId(), value.getValue(), info.getFromMillis(),((AnnotatedIdPointValueTime)value).getSourceMessage());
+                        if(value instanceof IAnnotated)
+                            bookend = new AnnotatedIdPointValueTime(value.getId(), value.getValue(), info.getFromMillis(),((IAnnotated)value).getSourceMessage());
                         else
                             bookend = new IdPointValueTime(value.getId(), value.getValue(), info.getFromMillis());
                         processRow(bookend, index, true, false, true);
@@ -142,8 +143,8 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                 IdPointValueTime last = values.get(values.size() - 1);
                 if(last.getTime() != info.getToMillis()) {
                     IdPointValueTime bookend;
-                    if(last.isAnnotated())
-                        bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getToMillis(),((AnnotatedIdPointValueTime)last).getSourceMessage());
+                    if(last instanceof IAnnotated)
+                        bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getToMillis(),((IAnnotated)last).getSourceMessage());
                     else
                         bookend = new IdPointValueTime(last.getId(), last.getValue(), info.getToMillis());
                     processRow(bookend, index, false, true, true);

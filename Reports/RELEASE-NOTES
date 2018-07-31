@@ -1,4 +1,5 @@
 *Version 3.5.0*
+* Fix for class cast error due to annotated point value classes in cache
 * Upgraded to work with core version 3.5.x
 
 *Version 3.4.2*

@@ -13,7 +13,7 @@ import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
@@ -63,8 +63,8 @@ public class PointValueTimeCsvStreamCallback extends PointValueTimeCsvWriter imp
 		
 		try{
 			String annotation = null;
-			if(pvt.isAnnotated())
-				annotation = ((AnnotatedPointValueTime) pvt).getAnnotation(translations);
+			if(pvt instanceof IAnnotated)
+				annotation = ((IAnnotated) pvt).getAnnotation(translations);
 			if(useRendered){
 				//Convert to Alphanumeric Value
 				String textValue = Functions.getRenderedText(vo, pvt);
