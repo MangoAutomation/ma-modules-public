@@ -103,7 +103,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = \"<h1>Hola</h1>\";\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/components/maintenanceEvents.html?");
+eval("module.exports = \"<div layout=\\\"column\\\" layout-gt-md=\\\"row\\\" layout-gt-lg=\\\"row\\\" flex=\\\"noshrink\\\">\\n    <div flex=\\\"100\\\" flex-gt-md=\\\"25\\\" flex-gt-lg=\\\"20\\\">\\n        <ma-maintenance-events-list></ma-maintenance-events-list>\\n    </div>\\n\\n    <div flex>\\n        <ma-maintenance-events-setup></ma-maintenance-events-setup>\\n    </div>\\n    \\n</div>\";\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/components/maintenanceEvents.html?");
 
 /***/ }),
 
@@ -119,6 +119,52 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _mai
 
 /***/ }),
 
+/***/ "./web-src/components/maintenanceEventsList.html":
+/*!*******************************************************!*\
+  !*** ./web-src/components/maintenanceEventsList.html ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("module.exports = \"<md-card flex>\\n    <md-card-title flex=\\\"nogrow\\\">\\n        <md-card-title-text>\\n            <span class=\\\"md-headline\\\">\\n                <span ma-tr=\\\"maintenanceEvents.list\\\"></span>\\n            </span>\\n        </md-card-title-text>\\n    </md-card-title>\\n    <md-card-content>\\n        <h1>Hola</h1>\\n    </md-card-content>\\n</md-card>\";\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/components/maintenanceEventsList.html?");
+
+/***/ }),
+
+/***/ "./web-src/components/maintenanceEventsList.js":
+/*!*****************************************************!*\
+  !*** ./web-src/components/maintenanceEventsList.js ***!
+  \*****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _maintenanceEventsList_html__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./maintenanceEventsList.html */ \"./web-src/components/maintenanceEventsList.html\");\n/* harmony import */ var _maintenanceEventsList_html__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_maintenanceEventsList_html__WEBPACK_IMPORTED_MODULE_0__);\n/**\n * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.\n * @author Luis Güette\n */\n\n\n\n/**\n * @ngdoc directive\n * @name ngMango.directive:maMaintenanceEventsList\n * @restrict E\n * @description Displays a list of maintenance\n */\n\nconst $inject = Object.freeze(['$scope']);\nclass MaintenanceEventsListController {\n    static get $inject() { return $inject; }\n    static get $$ngIsClass() { return true; }\n    \n    constructor($scope) {\n        this.$scope = $scope;\n    }\n    \n    $onInit() {\n\n    }\n    \n    $onChanges(changes) {\n    }\n    \n    \n\n}\n\n/* harmony default export */ __webpack_exports__[\"default\"] = ({\n    template: _maintenanceEventsList_html__WEBPACK_IMPORTED_MODULE_0___default.a,\n    controller: MaintenanceEventsListController,\n    bindings: {},\n    // require: {\n    //     ngModelCtrl: 'ngModel'\n    // },\n    designerInfo: {\n        translation: 'maintenanceEvents.list',\n        icon: 'list'\n    }\n});\n\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/components/maintenanceEventsList.js?");
+
+/***/ }),
+
+/***/ "./web-src/components/maintenanceEventsSetup.html":
+/*!********************************************************!*\
+  !*** ./web-src/components/maintenanceEventsSetup.html ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("module.exports = \"<md-card flex>\\n    <md-card-title flex=\\\"nogrow\\\">\\n        <md-card-title-text>\\n            <span class=\\\"md-headline\\\">\\n                <span ma-tr=\\\"maintenanceEvents.setup\\\"></span>\\n            </span>\\n        </md-card-title-text>\\n    </md-card-title>\\n    <md-card-content>\\n        <h1>Hola</h1>\\n    </md-card-content>\\n</md-card>\";\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/components/maintenanceEventsSetup.html?");
+
+/***/ }),
+
+/***/ "./web-src/components/maintenanceEventsSetup.js":
+/*!******************************************************!*\
+  !*** ./web-src/components/maintenanceEventsSetup.js ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _maintenanceEventsSetup_html__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./maintenanceEventsSetup.html */ \"./web-src/components/maintenanceEventsSetup.html\");\n/* harmony import */ var _maintenanceEventsSetup_html__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_maintenanceEventsSetup_html__WEBPACK_IMPORTED_MODULE_0__);\n/**\n * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.\n * @author Luis Güette\n */\n\n\n\n/**\n * @ngdoc directive\n * @name ngMango.directive:maMaintenanceEventsSetup\n * @restrict E\n * @description Displays a form to create/edit maintenance events\n */\n\nconst $inject = Object.freeze(['$scope']);\nclass MaintenanceEventsSetupController {\n    static get $inject() { return $inject; }\n    static get $$ngIsClass() { return true; }\n    \n    constructor($scope) {\n        this.$scope = $scope;\n    }\n    \n    $onInit() {\n\n    }\n    \n    $onChanges(changes) {\n    }\n    \n    \n\n}\n\n/* harmony default export */ __webpack_exports__[\"default\"] = ({\n    template: _maintenanceEventsSetup_html__WEBPACK_IMPORTED_MODULE_0___default.a,\n    controller: MaintenanceEventsSetupController,\n    bindings: {},\n    // require: {\n    //     ngModelCtrl: 'ngModel'\n    // },\n    designerInfo: {\n        translation: 'maintenanceEvents.setup',\n        icon: 'settings'\n    }\n});\n\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/components/maintenanceEventsSetup.js?");
+
+/***/ }),
+
 /***/ "./web-src/maintenanceEvents.js":
 /*!**************************************!*\
   !*** ./web-src/maintenanceEvents.js ***!
@@ -127,7 +173,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _mai
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var angular__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! angular */ \"angular\");\n/* harmony import */ var angular__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(angular__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _components_maintenanceEvents__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/maintenanceEvents */ \"./web-src/components/maintenanceEvents.js\");\n/**\n * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.\n * @author Luis Güette\n */\n\n\n\n\n/* harmony default export */ __webpack_exports__[\"default\"] = (angular__WEBPACK_IMPORTED_MODULE_0___default.a.module('maExcelReports', ['maUiApp'])\n.component('maMaintenanceEvents', _components_maintenanceEvents__WEBPACK_IMPORTED_MODULE_1__[\"default\"])\n.config(['maUiMenuProvider', function(maUiMenuProvider) {\n    maUiMenuProvider.registerMenuItems([\n        {\n            name: 'ui.settings.system.maintenanceEvents',\n            url: '/maintenance-events',\n            template: '<ma-maintenance-events></ma-maintenance-events>',\n            menuTr: 'header.maintenanceEvents',\n            menuIcon: 'grid_on',\n            menuHidden: true\n        }\n    ]);\n}]));\n\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/maintenanceEvents.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var angular__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! angular */ \"angular\");\n/* harmony import */ var angular__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(angular__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _components_maintenanceEvents__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/maintenanceEvents */ \"./web-src/components/maintenanceEvents.js\");\n/* harmony import */ var _components_maintenanceEventsList__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/maintenanceEventsList */ \"./web-src/components/maintenanceEventsList.js\");\n/* harmony import */ var _components_maintenanceEventsSetup__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/maintenanceEventsSetup */ \"./web-src/components/maintenanceEventsSetup.js\");\n/**\n * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.\n * @author Luis Güette\n */\n\n\n\n\n\n\n/* harmony default export */ __webpack_exports__[\"default\"] = (angular__WEBPACK_IMPORTED_MODULE_0___default.a.module('maMaintenanceEvents', ['maUiApp'])\n.component('maMaintenanceEvents', _components_maintenanceEvents__WEBPACK_IMPORTED_MODULE_1__[\"default\"])\n.component('maMaintenanceEventsList', _components_maintenanceEventsList__WEBPACK_IMPORTED_MODULE_2__[\"default\"])\n.component('maMaintenanceEventsSetup', _components_maintenanceEventsSetup__WEBPACK_IMPORTED_MODULE_3__[\"default\"])\n.config(['maUiMenuProvider', function(maUiMenuProvider) {\n    maUiMenuProvider.registerMenuItems([\n        {\n            name: 'ui.settings.maintenanceEvents',\n            url: '/maintenance-events',\n            template: '<ma-maintenance-events></ma-maintenance-events>',\n            menuTr: 'header.maintenanceEvents',\n            menuIcon: 'event_busy',\n            menuHidden: false,\n            params: {\n                noPadding: false,\n                hideFooter: false\n            },\n            permission: 'superadmin'\n        },\n    ]);\n}]));\n\n\n//# sourceURL=webpack://maintenanceEvents/./web-src/maintenanceEvents.js?");
 
 /***/ }),
 
