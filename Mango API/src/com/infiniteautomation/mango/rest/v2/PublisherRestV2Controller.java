@@ -216,10 +216,10 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
             Integer pointId = point.getData().getDataPointId();
             
             if(pointId == Common.NEW_ID) {
-                response.addContextualMessage("dataPointId", "emport.error.missingPoint", point.getMissingXid());
+                response.addContextualMessage("dataPointXid", "emport.error.missingPoint", point.getMissingXid());
             } else if(set.contains(pointId)) {
                 DataPointVO vo = DataPointDao.instance.getDataPoint(pointId, false);
-                response.addContextualMessage("dataPointId", "validate.publisher.duplicatePoint", vo.getExtendedName(), vo.getXid());
+                response.addContextualMessage("dataPointXid", "validate.publisher.duplicatePoint", vo.getExtendedName(), vo.getXid());
             } else {
                 set.add(pointId);
             }
