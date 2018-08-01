@@ -6,7 +6,10 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,11 +26,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublishedPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -115,6 +124,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
         if (existing != null) 
         	throw new AlreadyExistsRestException(vo.getXid());
 
+        ensureValidPoints(model.getIncomingModelPoints());
         vo.ensureValid();
 		Common.runtimeManager.savePublisher(vo);
         
@@ -148,6 +158,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 
         vo.setId(existing.getId());
 
+        ensureValidPoints(model.getIncomingModelPoints());
         vo.ensureValid();
         Common.runtimeManager.savePublisher(vo);
      
@@ -194,5 +205,28 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 	public AbstractPublisherModel<?,?> createModel(PublisherVO<?> vo) {
 		return vo.asModel();
 	}
+	
+	private void ensureValidPoints(List<? extends AbstractPublishedPointModel<? extends PublishedPointVO>> points) {
+        ProcessResult response = new ProcessResult();
+        Set<Integer> set = new HashSet<>();
+        ListIterator<? extends AbstractPublishedPointModel<? extends PublishedPointVO>> it = points.listIterator();
+        
+        while(it.hasNext()) {
+            AbstractPublishedPointModel<? extends PublishedPointVO> point = it.next();
+            Integer pointId = point.getData().getDataPointId();
+            
+            if(pointId == Common.NEW_ID) {
+                response.addContextualMessage("dataPointId", "emport.error.missingPoint", point.getMissingXid());
+            } else if(set.contains(pointId)) {
+                DataPointVO vo = DataPointDao.instance.getDataPoint(pointId, false);
+                response.addContextualMessage("dataPointId", "validate.publisher.duplicatePoint", vo.getExtendedName(), vo.getXid());
+            } else {
+                set.add(pointId);
+            }
+        }
+        
+        if(response.getHasMessages())
+            throw new ValidationFailedRestException(response);
+    }
 
 }
