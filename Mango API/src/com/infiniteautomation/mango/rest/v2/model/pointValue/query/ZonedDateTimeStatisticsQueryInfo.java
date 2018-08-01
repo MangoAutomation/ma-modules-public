@@ -20,7 +20,7 @@ public class ZonedDateTimeStatisticsQueryInfo extends ZonedDateTimeRangeQueryInf
     public ZonedDateTimeStatisticsQueryInfo(ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, PointValueTimeCacheControl useCache, 
             PointValueField[] fields) {
-        super(from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, null, true, false, false, useCache,
+        super(from, to, dateTimeFormat, timezone, RollupEnum.ALL, null, null, true, false, false, useCache,
                 null, null, false, fields);
     }
 

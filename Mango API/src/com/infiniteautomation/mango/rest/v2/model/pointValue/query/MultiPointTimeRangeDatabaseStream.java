@@ -114,40 +114,46 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         Iterator<Integer> it = voMap.keySet().iterator();
         int index = 0;
         while(it.hasNext()) {
-            List<IdPointValueTime> values = cache.get(it.next());
-            boolean first = true;
-            int limitCount = 0;
-            for(IdPointValueTime value : values) {
-                if(first && info.isBookend()) {
-                    //Send out first value as bookend if necessary
-                    if(value.getTime() != info.getFromMillis()) {
-                        IdPointValueTime bookend;
-                        if(value instanceof IAnnotated)
-                            bookend = new AnnotatedIdPointValueTime(value.getId(), value.getValue(), info.getFromMillis(),((IAnnotated)value).getSourceMessage());
-                        else
-                            bookend = new IdPointValueTime(value.getId(), value.getValue(), info.getFromMillis());
-                        processRow(bookend, index, true, false, true);
-                        processRow(value, index, false, false, true);
+            Integer id = it.next();
+            List<IdPointValueTime> values = cache.get(id);
+            if(values == null || values.size() == 0) {
+                if(info.isBookend()) {
+                    processRow(new IdPointValueTime(id, null, info.getFromMillis()), index++, true, false, true);
+                    processRow(new IdPointValueTime(id, null, info.getToMillis()), index++, false, true, true);
+                }
+            }else { 
+                boolean first = true;
+                int limitCount = 0;
+                for(IdPointValueTime value : values) {
+                    if(first && info.isBookend()) {
+                        //Send out first value as bookend if necessary
+                        if(value.getTime() != info.getFromMillis()) {
+                            //The cache should have been pruned so the value is after the start of the query and thus a null bookend
+                            // is sent
+                            IdPointValueTime bookend = new IdPointValueTime(value.getId(), null, info.getFromMillis());
+                            processRow(bookend, index, true, false, true);
+                            processRow(value, index, false, false, true);
+                        }else
+                            processRow(value, index, false, false, true);
+                        first = false;
                     }else
-                        processRow(value, index, true, false, true);
-                    first = false;
-                }else
-                    processRow(value, index, false, false, true);
-                index++;
-                limitCount++;
-                if(info.getLimit() != null && limitCount >= info.getLimit())
-                    break;
-            }
-            //Send out last value as bookend if necessary
-            if(info.isBookend()) {
-                IdPointValueTime last = values.get(values.size() - 1);
-                if(last.getTime() != info.getToMillis()) {
-                    IdPointValueTime bookend;
-                    if(last instanceof IAnnotated)
-                        bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getToMillis(),((IAnnotated)last).getSourceMessage());
-                    else
-                        bookend = new IdPointValueTime(last.getId(), last.getValue(), info.getToMillis());
-                    processRow(bookend, index, false, true, true);
+                        processRow(value, index, false, false, true);
+                    index++;
+                    limitCount++;
+                    if(info.getLimit() != null && limitCount >= info.getLimit())
+                        break;
+                }
+                //Send out last value as bookend if necessary
+                if(info.isBookend()) {
+                    IdPointValueTime last = values.get(values.size() - 1);
+                    if(last.getTime() != info.getToMillis()) {
+                        IdPointValueTime bookend;
+                        if(last instanceof IAnnotated)
+                            bookend = new AnnotatedIdPointValueTime(last.getId(), last.getValue(), info.getToMillis(),((IAnnotated)last).getSourceMessage());
+                        else
+                            bookend = new IdPointValueTime(last.getId(), last.getValue(), info.getToMillis());
+                        processRow(bookend, index, false, true, true);
+                    }
                 }
             }
         }

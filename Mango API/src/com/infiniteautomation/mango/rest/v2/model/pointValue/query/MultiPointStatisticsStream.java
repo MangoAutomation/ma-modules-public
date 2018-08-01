@@ -5,13 +5,18 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
@@ -26,7 +31,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStream<Map<String, Object>, ZonedDateTimeStatisticsQueryInfo> {
 
     private Map<Integer, StatisticsGenerator> statsMap;
-    private boolean rendered; //TODO Implement this
     
     /**
      * @param info
@@ -55,22 +59,21 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
                 switch(vo.getPointLocator().getDataTypeId()){
                     case DataTypes.BINARY:
                     case DataTypes.MULTISTATE:
-                        v = new StartsAndRuntimeList(info.from.toInstant().toEpochMilli(), info.to.toInstant().toEpochMilli(), value.getValue() == null ? null : value.getValue());
+                        v = new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), value);
                     break;
                     case DataTypes.ALPHANUMERIC:
                     case DataTypes.IMAGE:
-                        v = new ValueChangeCounter(info.from.toInstant().toEpochMilli(), info.to.toInstant().toEpochMilli(), value.getValue() == null ? null : value.getValue());
+                        v = new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), value);
                         break;
                     case DataTypes.NUMERIC:
-                        v = new AnalogStatistics(info.from.toInstant().toEpochMilli(), info.to.toInstant().toEpochMilli(), value.getValue() == null ? null : value.getDoubleValue());
+                        v = new AnalogStatistics(info.getFromMillis(), info.getToMillis(), value);
                         break;
                     default:
                         throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getId()).getPointLocator().getDataTypeId());
                 }
-            }else {
-                if(!lastBookend) {
-                    v.addValueTime(value);
-                }
+            }
+            if(!lastBookend && !firstBookend) {
+                v.addValueTime(value);
             }
             return v;
         });
@@ -78,7 +81,29 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
         if(lastBookend) {
             generator.done();
             this.writer.writeStartObject(vo.getXid());
-            this.writer.writeAllStatistics(generator, vo, rendered); 
+            DataPointStatisticsGenerator gen = new DataPointStatisticsGenerator(vo, generator);
+            
+            //Pre-process the fields
+            boolean rendered = false;
+            Set<PointValueField> fields = new HashSet<>();
+            for(PointValueField field: this.writer.getInfo().getFields()) {
+                if(field == PointValueField.RENDERED) {
+                    rendered = true;
+                }else if(field == PointValueField.ANNOTATION) {
+                    continue;
+                }else {
+                    fields.add(field);
+                }
+            }
+            
+            //Remove the Value field we will write it after
+            fields.remove(PointValueField.VALUE);
+            
+            for(PointValueField field: fields) {
+               field.writeValue(gen, info, Common.getTranslations(), false, writer);
+            }
+            this.writer.writeAllStatistics(generator, vo, rendered);
+            
             this.writer.writeEndObject();
         }
     }

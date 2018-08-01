@@ -135,6 +135,12 @@ public abstract class PointValueTimeWriter {
         }
     }
     
+    public void writeTimestamp(Long timestamp) throws IOException {
+        if(timestamp == null)
+            writeNullField(TIMESTAMP);
+        else
+            writeTimestamp((long)timestamp);
+    }
     public void writeTimestamp(long timestamp) throws IOException {
         if (info.getDateTimeFormatter() == null)
             writeLongField(TIMESTAMP, timestamp);
@@ -180,21 +186,81 @@ public abstract class PointValueTimeWriter {
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
-            writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
-            writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
-            writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
-            writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            if(stats.getStartValue() != null) {
+                writeStartObject(RollupEnum.START.name());
+                writeTimestamp(stats.getPeriodStartTime());
+                writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);
+                if(rendered)
+                    writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.START.name());
+            }
+            
+            if(stats.getFirstValue() != null) {
+                writeStartObject(RollupEnum.FIRST.name());
+                writeTimestamp(stats.getFirstTime());
+                if(rendered)
+                writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false);
+                if(rendered)
+                    writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.FIRST.name());
+            }
+
+            if(stats.getLastValue() != null) {
+                writeStartObject(RollupEnum.LAST.name());
+                writeTimestamp(stats.getLastTime());
+                writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false);
+                if(rendered)
+                    writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.LAST.name());
+            }            writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
         } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
             StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
-            writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
-            writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
-            writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
+            if(stats.getStartValue() != null) {
+                writeStartObject(RollupEnum.START.name());
+                writeTimestamp(stats.getPeriodStartTime());
+                writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);
+                if(rendered)
+                    writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.START.name());
+            }
+            
+            if(stats.getFirstValue() != null) {
+                writeStartObject(RollupEnum.FIRST.name());
+                writeTimestamp(stats.getFirstTime());
+                writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false);
+                if(rendered)
+                    writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.FIRST.name());
+            }
+
+            if(stats.getLastValue() != null) {
+                writeStartObject(RollupEnum.LAST.name());
+                writeTimestamp(stats.getLastTime());
+                writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false);
+                if(rendered)
+                    writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.LAST.name());
+            }
             writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             if(stats.getData().size() > 0) {
                 writeStartArray("data");
                 for(StartsAndRuntime item : stats.getData()) {
                     writeStartObject();
-                    writeDataValue("value", vo, item.getDataValue(), stats.getPeriodStartTime(), rendered);
+                    writeDataValue(VALUE, vo, item.getDataValue(), stats.getPeriodStartTime(), false);
+                    if(rendered)
+                        writeDataValue(RENDERED, vo, item.getDataValue(), stats.getPeriodStartTime(), true);
                     writeIntegerField("starts", item.getStarts());
                     writeLongField("runtime", item.getRuntime());
                     writeDoubleField("proportion", item.getProportion());
@@ -206,16 +272,111 @@ public abstract class PointValueTimeWriter {
             }
         } else if (statisticsGenerator instanceof AnalogStatistics) {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
-            writeAccumulator(RollupEnum.ACCUMULATOR.name(), vo, stats, rendered);
-            writeAnalogStatistic(RollupEnum.AVERAGE.name(), vo, stats.getAverage(), rendered);
-            writeAnalogStatistic(RollupEnum.DELTA.name(), vo, stats.getDelta(), rendered);
-            writeAnalogStatistic(RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue(), rendered);
-            writeAnalogStatistic(RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue(), rendered);
-            writeAnalogStatistic(RollupEnum.SUM.name(), vo, stats.getSum(), rendered);
-            writeAnalogStatistic(RollupEnum.START.name(), vo, stats.getStartValue(), rendered);
-            writeAnalogStatistic(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered);
-            writeAnalogStatistic(RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered);
-            writeIntegral(RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
+            Double accumulatorValue = stats.getLastValue();
+            if (accumulatorValue == null) {
+                accumulatorValue = stats.getMaximumValue();
+            }
+            
+            if(accumulatorValue != null) {
+                writeStartObject(RollupEnum.ACCUMULATOR.name());
+                writeTimestamp(stats.getPeriodStartTime());
+                writeAnalogStatistic(VALUE, vo, accumulatorValue, false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, accumulatorValue, true);
+                writeEndObject();
+            }else {
+                writeNullField(RollupEnum.ACCUMULATOR.name());
+            }
+            
+            if(stats.getAverage() != null) {
+                writeStartObject(RollupEnum.AVERAGE.name());
+                writeTimestamp(stats.getPeriodStartTime());
+                writeAnalogStatistic(VALUE, vo, stats.getAverage(), false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, stats.getAverage(), true);
+                writeEndObject();
+            }else {
+                writeNullField(RollupEnum.AVERAGE.name()); 
+            }
+            
+            writeStartObject(RollupEnum.DELTA.name());
+            writeTimestamp(stats.getPeriodStartTime());
+            writeAnalogStatistic(VALUE, vo, stats.getDelta(), false);
+            if(rendered)
+                writeAnalogStatistic(RENDERED, vo, stats.getDelta(), true);
+            writeEndObject();
+            
+            if(stats.getMinimumValue() != null) {
+                writeStartObject(RollupEnum.MINIMUM.name());
+                writeTimestamp(stats.getMinimumTime());
+                writeAnalogStatistic(VALUE, vo, stats.getMinimumValue(), false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, stats.getMinimumValue(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.MINIMUM.name());
+            }
+            if(stats.getMaximumValue() != null) {
+                writeStartObject(RollupEnum.MAXIMUM.name());
+                writeTimestamp(stats.getMaximumTime());
+                writeAnalogStatistic(VALUE, vo, stats.getMaximumValue(), false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, stats.getMaximumValue(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.MAXIMUM.name());
+            }
+            
+            writeStartObject(RollupEnum.SUM.name());
+            writeTimestamp(stats.getPeriodStartTime());
+            writeAnalogStatistic(VALUE, vo, stats.getSum(), false);
+            if(rendered)
+                writeAnalogStatistic(RENDERED, vo, stats.getSum(), true);
+            writeEndObject();
+            
+            if(stats.getStartValue() != null) {
+                writeStartObject(RollupEnum.START.name());
+                writeTimestamp(stats.getPeriodStartTime());
+                writeAnalogStatistic(VALUE, vo, stats.getStartValue(), false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, stats.getStartValue(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.START.name());
+            }
+            
+            if(stats.getFirstValue() != null) {
+                writeStartObject(RollupEnum.FIRST.name());
+                writeTimestamp(stats.getFirstTime());
+                writeAnalogStatistic(VALUE, vo, stats.getFirstValue(), false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, stats.getFirstValue(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.FIRST.name());
+            }
+
+            if(stats.getLastValue() != null) {
+                writeStartObject(RollupEnum.LAST.name());
+                writeTimestamp(stats.getLastTime());
+                writeAnalogStatistic(VALUE, vo, stats.getLastValue(), false);
+                if(rendered)
+                    writeAnalogStatistic(RENDERED, vo, stats.getLastValue(), true);
+                writeEndObject();                
+            }else {
+                writeNullField(RollupEnum.LAST.name());
+            }
+            
+            if(stats.getIntegral() != null) {
+                writeStartObject(RollupEnum.INTEGRAL.name());
+                writeTimestamp(stats.getPeriodStartTime());
+                writeAnalogStatistic(VALUE, vo, stats.getIntegral(), false);
+                if(rendered)
+                    writeStringField(RENDERED, info.getIntegralString(vo, stats.getIntegral()));
+                writeEndObject();
+            }else {
+                writeNullField(RollupEnum.INTEGRAL.name());
+            }
             writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
         }
     }
