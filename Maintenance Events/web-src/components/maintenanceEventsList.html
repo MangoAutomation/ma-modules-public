@@ -6,8 +6,10 @@
             </span>
         </md-card-title-text>
     </md-card-title>
-    <md-card-content> 
-        <ma-filtering-maintenance-events-list ng-model="$ctrl.selectedEvent" ng-change="$ctrl.getEvents()"></ma-filtering-maintenance-events-list>
+    <md-card-content style="padding-left: 0; padding-right: 0;"> 
+        <div style="padding-left: 10px; padding-right: 10px;">
+            <ma-filtering-maintenance-events-list ng-model="$ctrl.selectedEvent" ng-change="$ctrl.getEvents()"></ma-filtering-maintenance-events-list>
+        </div>
 
         <md-list flex>
 
@@ -21,7 +23,7 @@
                 </md-button>
             </md-list-item>
         
-            <md-list-item ng-repeat="event in $ctrl.events" class="md-2-line" ng-click="$ctrl.selectMaintenanceEvent(event)" md-colors="{'background': $ctrl.selectedEvent ==== event ? 'accent-hue-1' : 'background-hue-1'}">
+            <md-list-item ng-repeat="event in $ctrl.events" class="md-2-line" ng-click="$ctrl.selectMaintenanceEvent(event)" md-colors="{'background': $ctrl.selectedEvent === event ? 'accent-hue-1' : 'background-hue-1'}">
                 <div class="md-list-item-text">
                     <h3> {{ event.name }} </h3>
                 </div>
