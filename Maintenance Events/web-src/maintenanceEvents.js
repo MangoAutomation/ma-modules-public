@@ -7,11 +7,15 @@ import angular from 'angular';
 import maintenanceEvents from './components/maintenanceEvents';
 import maintenanceEventsList from './components/maintenanceEventsList';
 import maintenanceEventsSetup from './components/maintenanceEventsSetup';
+import filteringMaintenanceEventsList from './components/filteringMaintenanceEventsList';
+import maintenanceEventFactory from './services/maintenanceEvent';
 
 export default angular.module('maMaintenanceEvents', ['maUiApp'])
 .component('maMaintenanceEvents', maintenanceEvents)
 .component('maMaintenanceEventsList', maintenanceEventsList)
 .component('maMaintenanceEventsSetup', maintenanceEventsSetup)
+.component('maFilteringMaintenanceEventsList', filteringMaintenanceEventsList)
+.factory('maMaintenanceEvent', maintenanceEventFactory)
 .config(['maUiMenuProvider', function(maUiMenuProvider) {
     maUiMenuProvider.registerMenuItems([
         {
