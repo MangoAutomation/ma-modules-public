@@ -6,7 +6,28 @@
             </span>
         </md-card-title-text>
     </md-card-title>
-    <md-card-content>
-        <h1>Hola</h1>
+    <md-card-content> 
+        <ma-filtering-maintenance-events-list ng-model="$ctrl.selectedEvent" ng-change="$ctrl.getEvents()"></ma-filtering-maintenance-events-list>
+
+        <md-list flex>
+
+            <md-list-item class="md-2-line" ng-click="$ctrl.newMaintenanceEvent()" md-colors="{'background': $ctrl.new ? 'accent-hue-1' : 'background-hue-1'}">
+                <div class="md-list-item-text">
+                    <h3 ma-tr="maintenanceEvents.addMe"></h3>
+                    <p ma-tr="maintenanceEvents.createMe"></p>
+                </div>
+                <md-button class="md-secondary md-icon-button" ng-click="$ctrl.newEvent()">
+                    <md-icon>add</md-icon>
+                </md-button>
+            </md-list-item>
+        
+            <md-list-item ng-repeat="event in $ctrl.events" class="md-2-line" ng-click="$ctrl.selectMaintenanceEvent(event)" md-colors="{'background': $ctrl.selectedEvent ==== event ? 'accent-hue-1' : 'background-hue-1'}">
+                <div class="md-list-item-text">
+                    <h3> {{ event.name }} </h3>
+                </div>
+            </md-list-item>
+        
+        </md-list>
+
     </md-card-content>
 </md-card>

@@ -9,26 +9,40 @@ import componentTemplate from './maintenanceEventsList.html';
  * @ngdoc directive
  * @name ngMango.directive:maMaintenanceEventsList
  * @restrict E
- * @description Displays a list of maintenance
+ * @description Displays a list of maintenance events
  */
 
-const $inject = Object.freeze(['$scope']);
+const $inject = Object.freeze(['$scope', 'maMaintenanceEvent']);
 class MaintenanceEventsListController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($scope) {
+    constructor($scope, maMaintenanceEvent) {
         this.$scope = $scope;
-    }
-    
-    $onInit() {
+        this.maMaintenanceEvent = maMaintenanceEvent;
 
     }
     
-    $onChanges(changes) {
+    $onInit() {
+        this.getEvents();
+    }
+
+    getEvents() {
+        this.maMaintenanceEvent.list().then(events => {
+            this.events = events;
+        });
     }
     
-    
+    newMaintenanceEvent() {
+        this.new = true;
+        console.log('new Event');
+    }
+
+    selectMaintenanceEvent(event) {
+        this.new = false;
+        this.selectEvent = event;
+        console.log('event selected', event);
+    }
 
 }
 
