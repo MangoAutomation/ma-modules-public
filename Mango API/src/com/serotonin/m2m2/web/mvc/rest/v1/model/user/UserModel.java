@@ -300,18 +300,6 @@ public class UserModel extends AbstractRestModel<User> {
         // just going to return empty for the CSV, field wont be visible in JSON
         return "";
     }
-
-    @CSVColumnGetter(order=19, header="lastName")
-    @JsonGetter("lastName")
-    public String getLastName() {
-        return data.getLastName();
-    }
-
-    @CSVColumnSetter(order=19, header="lastName")
-    @JsonSetter("lastName")
-    public void setLastName(String lastName) {
-        this.data.setLastName(lastName);
-    }
     
     @CSVColumnSetter(order=18, header="hashAlgorithm")
     @JsonSetter("hashAlgorithm")
