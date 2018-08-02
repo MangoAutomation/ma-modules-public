@@ -33,8 +33,8 @@ import com.serotonin.m2m2.web.mvc.controller.ControllerUtils;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.help.HelpModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.help.RelatedHelpItemModel;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * @author Terry Packer

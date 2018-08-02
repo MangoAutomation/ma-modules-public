@@ -26,9 +26,9 @@ import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.vo.User;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * 

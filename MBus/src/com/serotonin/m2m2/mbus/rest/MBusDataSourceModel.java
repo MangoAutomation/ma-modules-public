@@ -11,7 +11,7 @@ import com.serotonin.m2m2.mbus.MBusDataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 import net.sf.mbus4j.Connection;
 

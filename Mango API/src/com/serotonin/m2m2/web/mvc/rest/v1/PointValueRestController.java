@@ -85,9 +85,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 import com.serotonin.m2m2.web.taglib.Functions;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * TODO Use Point Value Facade for recent data access

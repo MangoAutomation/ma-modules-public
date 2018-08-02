@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractVoModel;
-import com.wordnik.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModel;
 
 /**
  * @author Terry Packer

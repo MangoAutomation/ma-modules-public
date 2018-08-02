@@ -38,9 +38,9 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublishedPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import net.jazdw.rql.parser.ASTNode;
 

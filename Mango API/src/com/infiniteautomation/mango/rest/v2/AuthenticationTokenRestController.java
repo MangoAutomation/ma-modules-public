@@ -30,9 +30,9 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
 import com.serotonin.m2m2.web.mvc.spring.components.TokenAuthenticationService;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

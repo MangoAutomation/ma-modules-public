@@ -80,9 +80,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpdateLicensePayloadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpgradeStatusModel;
 import com.serotonin.provider.Providers;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  *

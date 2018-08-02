@@ -59,8 +59,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.util.DirectoryInfo;
 import com.serotonin.util.DirectoryUtils;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 import net.jazdw.rql.parser.ASTNode;
 

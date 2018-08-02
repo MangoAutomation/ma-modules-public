@@ -30,9 +30,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import net.jazdw.rql.parser.ASTNode;
 

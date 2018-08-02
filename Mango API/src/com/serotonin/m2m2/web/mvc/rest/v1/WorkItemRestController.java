@@ -29,9 +29,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.workItem.BackgroundProcessingQue
 import com.serotonin.m2m2.web.mvc.rest.v1.model.workItem.BackgroundProcessingRejectedTaskStats;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.workItem.BackgroundProcessingRunningStats;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.workitem.WorkItemModel;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * @author Terry Packer

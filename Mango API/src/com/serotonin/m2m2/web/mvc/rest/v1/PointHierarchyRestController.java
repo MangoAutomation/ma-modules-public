@@ -35,8 +35,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PointHierarchyModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceSummary;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * @author Terry Packer

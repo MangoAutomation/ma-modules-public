@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.serotonin.m2m2.vo.AbstractVO;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  *

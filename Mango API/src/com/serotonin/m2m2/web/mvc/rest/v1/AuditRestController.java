@@ -29,8 +29,8 @@ import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.audit.AuditEventInstanceModel;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 import net.jazdw.rql.parser.ASTNode;
 

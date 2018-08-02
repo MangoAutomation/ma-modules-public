@@ -26,8 +26,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Terry Packer
