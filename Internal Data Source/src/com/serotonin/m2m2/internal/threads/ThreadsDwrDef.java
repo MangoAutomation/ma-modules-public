@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -37,8 +38,12 @@ public class ThreadsDwrDef extends DwrDefinition {
 
             Map<String, Object> internal = new LinkedHashMap<>();
             result.addData(translate("internal.status"), internal);
-            for (ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors())
-                internal.put(translate(monitor.getName()), monitor.getValue());
+            for (ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()) {
+                if(monitor instanceof AtomicIntegerMonitor)
+                    internal.put(translate(monitor.getName()), ((AtomicIntegerMonitor)monitor).getValue().get());
+                else
+                    internal.put(translate(monitor.getName()), monitor.getValue());
+            }
 
             //Common.databaseProxy.addStatusValues(result, getTranslations());
 
