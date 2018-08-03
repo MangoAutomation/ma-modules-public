@@ -13,15 +13,18 @@ import angular from 'angular';
  * @description Displays a form to create/edit maintenance events
  */
 
-const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper']);
+
+ const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint']);
 class MaintenanceEventsSetupController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope, maDialogHelper) {
+    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.maDialogHelper = maDialogHelper;
+        this.maDataSource = maDataSource;
+        this.maPoint = maPoint;
 
         this.dataSources = [];
         this.dataPoints = [];
@@ -29,6 +32,36 @@ class MaintenanceEventsSetupController {
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
+        // TODO: update datasources and datapoints from ids
+        this.$scope.$watch('$ctrl.selectedEvent', (newValues) => {
+            console.log(this.selectedEvent);
+            if (this.selectedEvent) {
+                this.getDataSourcesByIds(this.selectedEvent.dataSources);
+                this.getDataPointsByIds(this.selectedEvent.dataPoints);
+            }
+        });
+
+    }
+
+    getDataSourcesByIds(ids) {
+        if (!ids || ids.length == 0) return;
+        console.log(ids);
+
+        let rqlQuery = 'in(id,' + ids.join(',') +')';
+
+        this.maDataSource.rql({rqlQuery}).$promise.then(dataSources => {
+            this.dataSources = dataSources;
+        })
+    }
+
+    getDataPointsByIds(ids) {
+        if (!ids || ids.length == 0) return;
+
+        let rqlQuery = 'in(id,' + ids.join(',') +')';
+
+        this.maPoint.rql({rqlQuery}).$promise.then(points => {
+            this.dataPoints = points;
+        })
     }
     
     setViewValue() {
@@ -71,6 +104,11 @@ class MaintenanceEventsSetupController {
             this.selectedEvent = null;
             this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meSaved']});
             this.$rootScope.$broadcast('meUpdated', true);
+            this.dataSources = [];
+            this.dataPoints = [];
+            this.validationMessages = null;
+            this.form.$setPristine();
+            this.form.$setUntouched();
 
         }, (error) => {
             this.validationMessages = error.data.result.messages;
@@ -90,6 +128,9 @@ class MaintenanceEventsSetupController {
                 this.selectedEvent = null;
                 this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meDeleted']});
                 this.$rootScope.$broadcast('meUpdated', true);
+                this.dataSources = [];
+                this.dataPoints = [];
+                this.validationMessages = null;
 
             }, (error) => {
 

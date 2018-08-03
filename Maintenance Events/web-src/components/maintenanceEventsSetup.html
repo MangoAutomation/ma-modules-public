@@ -50,7 +50,7 @@
                     <md-option value="DO_NOT_LOG" ma-tr="common.alarmLevel.doNotLog"></md-option>
                     <md-option value="IGNORE" ma-tr="common.alarmLevel.ignore"></md-option>
                 </md-select>
-                <div ng-messages="$ctrl.form.rollup.$error">
+                <div ng-messages="$ctrl.form.alarmLevel.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
                 </div>
             </md-input-container>
@@ -67,7 +67,7 @@
                     <md-option value="ONCE" ma-tr="maintenanceEvents.type.once"></md-option>
                     <md-option value="CRON" ma-tr="maintenanceEvents.type.cron"></md-option>
                 </md-select>
-                <div ng-messages="$ctrl.form.rollup.$error">
+                <div ng-messages="$ctrl.form.scheculeType.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
                 </div>
             </md-input-container>
@@ -98,7 +98,31 @@
                 <span ng-if="$ctrl.checkError('dataPoints')" style="color: rgb(221,44,0);">{{ $ctrl.checkError('dataPoints').message }}</span>
             </md-input-container>
 
-            <md-input-container flex="100" flex-gt-md="45" flex-order-gt-md="6" class="ma-input-space-between">
+            <md-input-container flex="100" flex-sm="20" flex-gt-sm="20" flex-order-gt-md="6">
+                <label ma-tr="maintenanceEvents.timeoutPeriods"></label>
+                <input name="timeoutPeriods" type="number" min="1" ng-model="$ctrl.selectedEvent.timeoutPeriods" required>
+                <div ng-messages="$ctrl.form.timeoutPeriods.$error">
+                   <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+        
+            <md-input-container flex="100" flex-sm="20" flex-gt-sm="25" flex-order-gt-md="7">
+                <label ma-tr="maintenanceEvents.timeoutPeriodType"></label>
+                <md-select name="timeoutPeriodType" ng-model="$ctrl.selectedEvent.timeoutPeriodType" required>
+                    <md-option value="SECONDS" ma-tr="dateAndTime.seconds"></md-option>
+                    <md-option value="MINUTES" ma-tr="dateAndTime.minutes"></md-option>
+                    <md-option value="HOURS" ma-tr="dateAndTime.hours"></md-option>
+                    <md-option value="DAYS" ma-tr="dateAndTime.days"></md-option>
+                    <md-option value="WEEKS" ma-tr="dateAndTime.weeks"></md-option>
+                    <md-option value="MONTHS" ma-tr="dateAndTime.months"></md-option>
+                    <md-option value="YEARS" ma-tr="dateAndTime.years"></md-option>
+                </md-select>
+                <div ng-messages="$ctrl.form.timeoutPeriodType.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="45" flex-order-gt-md="8" class="ma-input-space-between">
                 <label ma-tr="maintenanceEvents.togglePermission"></label>
                 <input name="togglePermission" ng-model="$ctrl.selectedEvent.togglePermission" pattern="^\s*[\w-]+?\s*(,\s*[\w-]+?\s*)*$">
                 <div ng-messages="$ctrl.form.togglePermission.$error">
@@ -107,7 +131,7 @@
                 <ma-permissions-menu ng-model="$ctrl.selectedEvent.togglePermission"></ma-permissions-menu>
             </md-input-container>
 
-            <md-input-container flex="50" flex-gt-md="45" flex-order-gt-md="7" class="ma-input-space-between md-block">
+            <md-input-container flex="50" flex-gt-md="45" flex-order-gt-md="9" class="ma-input-space-between md-block">
                 <md-checkbox ng-model="$ctrl.selectedEvent.disabled"><span ma-tr="maintenanceEvents.disabled"></span></md-checkbox>
             </md-input-container>
         </div>
