@@ -43,10 +43,10 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -248,7 +248,10 @@ public class MaintenanceEventsRestController extends BaseMangoRestController {
 
                 @Override
                 public void row(MaintenanceEventVO vo, int index) {
-                    models.add(new MaintenanceEventModel(vo));
+                    MaintenanceEventModel model = new MaintenanceEventModel(vo);
+                    fillDataPoints(model);
+                    fillDataSources(model);
+                    models.add(model);
                 }
                 
             });
@@ -278,7 +281,10 @@ public class MaintenanceEventsRestController extends BaseMangoRestController {
     
                     @Override
                     public void row(MaintenanceEventVO vo, int index) {
-                        models.add(new MaintenanceEventModel(vo));
+                        MaintenanceEventModel model = new MaintenanceEventModel(vo);
+                        fillDataPoints(model);
+                        fillDataSources(model);
+                        models.add(model);
                     }
                     
                 });
@@ -289,7 +295,10 @@ public class MaintenanceEventsRestController extends BaseMangoRestController {
     
     protected static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         final Function<MaintenanceEventVO, Object> transformVisit = item -> {
-            return new MaintenanceEventModel(item);
+            MaintenanceEventModel model = new MaintenanceEventModel(item);
+            fillDataPoints(model);
+            fillDataSources(model);
+            return model;
         };
         
         //If we are admin or have overall data source permission we can view all
@@ -314,6 +323,35 @@ public class MaintenanceEventsRestController extends BaseMangoRestController {
         }
     }
     
+    /**
+     * Set the data point XIDs if there are any, id must be set in model
+     * @param model
+     */
+    private static void fillDataPoints(MaintenanceEventModel model) {
+        List<String> xids = new ArrayList<String>();
+        MaintenanceEventDao.instance.getPointXids(model.getId(), new MappedRowCallback<String>() {
+            @Override
+            public void row(String item, int index) {
+                xids.add(item);
+            }
+        });
+        model.setDataPoints(xids.size() == 0 ? null : xids);
+    }
+    
+    /**
+     * Set the data source XIDs if there are any, id must be set in model
+     * @param model
+     */
+    private static void fillDataSources(MaintenanceEventModel model) {
+        List<String> dsXids = new ArrayList<String>();
+        MaintenanceEventDao.instance.getSourceXids(model.getId(), new MappedRowCallback<String>() {
+            @Override
+            public void row(String item, int index) {
+                dsXids.add(item);
+            }
+        });
+        model.setDataSources(dsXids.size() == 0 ? null : dsXids);
+    }
     /**
      * Ensure the user has permission to toggle this event
      * @param user
