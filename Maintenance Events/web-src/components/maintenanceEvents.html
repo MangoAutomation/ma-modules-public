@@ -1,10 +1,9 @@
-<div layout="column" layout-gt-md="row" layout-gt-lg="row" flex="noshrink">
-    <div flex="100" flex-gt-md="25" flex-gt-lg="20">
-        <ma-maintenance-events-list></ma-maintenance-events-list>
+<div layout="column" layout-gt-md="row" flex="noshrink">
+    <div flex="100" flex-gt-md="25" flex-gt-lg="20" layout="row">
+        <ma-maintenance-events-list flex layout="row" ng-model="$ctrl.selectedEvent"></ma-maintenance-events-list>
     </div>
 
-    <div flex>
-        <ma-maintenance-events-setup></ma-maintenance-events-setup>
+    <div flex layout="row">
+        <ma-maintenance-events-setup ng-model="$ctrl.selectedEvent"></ma-maintenance-events-setup>
     </div>
-    
 </div>

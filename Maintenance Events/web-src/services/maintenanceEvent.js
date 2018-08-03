@@ -33,9 +33,11 @@ function maintenanceEventsFactory(RestResource, $http) {
         timeoutPeriods: 0,
         timeoutPeriodType: 'HOURS',
         togglePermission: null,
+        dataPoints: [],
+        dataSources: [],
         id: 1,
         xid: '',
-        name: ''
+        name: 'New maintenance event'
       };
 
     class maintenanceEventsResource extends RestResource {

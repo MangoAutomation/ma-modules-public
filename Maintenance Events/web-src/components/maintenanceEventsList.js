@@ -21,10 +21,27 @@ class MaintenanceEventsListController {
         this.$scope = $scope;
         this.maMaintenanceEvent = maMaintenanceEvent;
 
+        this.$scope.$on('meUpdated', (event) => {
+            this.new = false;
+            this.getEvents();
+        });
+
+        this.$scope.$on('meDeleted', (event) => {
+            this.getEvents();
+        });
     }
     
     $onInit() {
+        this.ngModelCtrl.$render = () => this.render();
         this.getEvents();
+    }
+
+    setViewValue() {
+        this.ngModelCtrl.$setViewValue(this.selectedEvent);
+    }
+
+    render() {
+        this.selectedEvent = this.ngModelCtrl.$viewValue;
     }
 
     getEvents() {
@@ -35,13 +52,14 @@ class MaintenanceEventsListController {
     
     newMaintenanceEvent() {
         this.new = true;
-        console.log('new Event');
+        this.selectedEvent = new this.maMaintenanceEvent();
+        this.setViewValue();
     }
 
     selectMaintenanceEvent(event) {
         this.new = false;
-        this.selectEvent = event;
-        console.log('event selected', event);
+        this.selectedEvent = event;
+        this.setViewValue();
     }
 
 }
@@ -50,9 +68,9 @@ export default {
     template: componentTemplate,
     controller: MaintenanceEventsListController,
     bindings: {},
-    // require: {
-    //     ngModelCtrl: 'ngModel'
-    // },
+    require: {
+        ngModelCtrl: 'ngModel'
+    },
     designerInfo: {
         translation: 'maintenanceEvents.list',
         icon: 'list'
