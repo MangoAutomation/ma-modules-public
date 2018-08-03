@@ -3,12 +3,17 @@
  */
 package com.infiniteautomation.mango.rest.maintenanceEvents;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.PatchableField;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 
@@ -19,10 +24,10 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Integer> dataSources;
+    private List<String> dataSources;
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Integer> dataPoints;
+    private List<String> dataPoints;
     
     private String alarmLevel;
     private String scheduleType;
@@ -60,10 +65,24 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     @Override
     public MaintenanceEventVO toVO() {
         MaintenanceEventVO vo = super.toVO();
-        if(dataSources != null)
-            vo.setDataSources(dataSources);
-        if(dataPoints != null)
-            vo.setDataPoints(dataPoints);
+        if(dataSources != null) {
+            Set<Integer> ids = new HashSet<>();
+            for(String xid : dataSources) {
+                Integer id = DataSourceDao.instance.getIdByXid(xid);
+                if(id != null)
+                    ids.add(id);
+            }
+            vo.setDataSources(new ArrayList<>(ids));
+        }
+        if(dataPoints != null) {
+            Set<Integer> ids = new HashSet<>();
+            for(String xid : dataPoints) {
+                Integer id = DataPointDao.instance.getIdByXid(xid);
+                if(id != null)
+                    ids.add(id);
+            }
+            vo.setDataPoints(new ArrayList<>(ids));
+        }
         vo.setAlarmLevel(AlarmLevels.CODES.getId(alarmLevel));
         vo.setScheduleType(MaintenanceEventVO.TYPE_CODES.getId(scheduleType));
         vo.setDisabled(disabled);
@@ -93,8 +112,24 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     @Override
     public void fromVO(MaintenanceEventVO vo) {
         super.fromVO(vo);
-        dataSources = vo.getDataSources().size() > 0 ? vo.getDataSources() : null;
-        dataPoints = vo.getDataPoints().size() > 0 ? vo.getDataPoints() : null;
+        if(vo.getDataSources().size() > 0) {
+            dataSources = new ArrayList<>();
+            for(int id : vo.getDataSources()) {
+                String xid = DataSourceDao.instance.getXidById(id);
+                if(xid != null)
+                    dataSources.add(xid);
+            }
+        }
+        
+        if(vo.getDataPoints().size() > 0) {
+            dataPoints = new ArrayList<>();
+            for(int id : vo.getDataSources()) {
+                String xid = DataPointDao.instance.getXidById(id);
+                if(xid != null)
+                    dataPoints.add(xid);
+            }
+        }
+        
         alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
         scheduleType = MaintenanceEventVO.TYPE_CODES.getCode(vo.getScheduleType());
         disabled = vo.isDisabled();
@@ -125,19 +160,19 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         return new MaintenanceEventVO();
     }
 
-    public List<Integer> getDataSources() {
+    public List<String> getDataSources() {
         return dataSources;
     }
 
-    public void setDataSources(List<Integer> dataSources) {
+    public void setDataSources(List<String> dataSources) {
         this.dataSources = dataSources;
     }
 
-    public List<Integer> getDataPoints() {
+    public List<String> getDataPoints() {
         return dataPoints;
     }
 
-    public void setDataPoints(List<Integer> dataPoints) {
+    public void setDataPoints(List<String> dataPoints) {
         this.dataPoints = dataPoints;
     }
 

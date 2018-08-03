@@ -30,6 +30,7 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
@@ -228,13 +229,13 @@ public class MaintenanceEventsRestController extends BaseMangoRestController {
     }
     
     @ApiOperation(
-            value = "Find Maintenance Events linked to data points",
+            value = "Find Maintenance Events linked to data points by point IDs",
             notes = "Returns a map of point ids to a list of events",
             response=Map.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, value="/query/get-for-points/{pointIds}")
-    public Map<Integer, List<MaintenanceEventModel>> getForPoints(
+    @RequestMapping(method = RequestMethod.GET, value="/query/get-for-points-by-ids/{pointIds}")
+    public Map<Integer, List<MaintenanceEventModel>> getForPointsByIds(
             @PathVariable(required = true) List<Integer> pointIds,
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
@@ -251,6 +252,37 @@ public class MaintenanceEventsRestController extends BaseMangoRestController {
                 }
                 
             });
+        }
+        return map;
+    }
+    
+    @ApiOperation(
+            value = "Find Maintenance Events linked to data points by point XIDs",
+            notes = "Returns a map of point ids to a list of events",
+            response=Map.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/query/get-for-points-by-xids/{pointXids}")
+    public Map<String, List<MaintenanceEventModel>> getForPointsByXid(
+            @PathVariable(required = true) List<String> pointXids,
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        Map<String, List<MaintenanceEventModel>> map = new HashMap<>();
+        for(String xid: pointXids) {
+            List<MaintenanceEventModel> models = new ArrayList<>();
+            map.put(xid, models);
+            Integer id = DataPointDao.instance.getIdByXid(xid);
+            if(id != null) {
+                MaintenanceEventDao.instance.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
+    
+                    @Override
+                    public void row(MaintenanceEventVO vo, int index) {
+                        models.add(new MaintenanceEventModel(vo));
+                    }
+                    
+                });
+            }
         }
         return map;
     }
