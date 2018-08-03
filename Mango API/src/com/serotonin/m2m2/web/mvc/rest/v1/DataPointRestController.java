@@ -955,7 +955,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
      * @return
      */
     protected ASTNode addPermissionsFilter(ASTNode query, User user){
-        Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+        Set<String> userPermissions = user.getPermissionsSet();
         List<ASTNode> permissionsLikes = new ArrayList<ASTNode>(userPermissions.size() * 3);
         for(String userPermission : userPermissions){
             permissionsLikes.add(new ASTNode("like", "readPermission", "*" + userPermission + "*"));

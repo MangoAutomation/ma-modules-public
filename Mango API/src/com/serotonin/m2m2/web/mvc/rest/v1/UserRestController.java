@@ -633,7 +633,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 for (User u : UserDao.instance.getActiveUsers())
                     groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
             }else {
-                groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
+                groups.addAll(user.getPermissionsSet());
             }
 
             return result.createResponseEntity(groups);
@@ -667,7 +667,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 for (User u : UserDao.instance.getActiveUsers())
                     groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
             }else {
-                groups.addAll(Permissions.explodePermissionGroups(user.getPermissions()));
+                groups.addAll(user.getPermissionsSet());
             }
             if (!StringUtils.isEmpty(exclude)) {
                 for (String part : exclude.split(","))

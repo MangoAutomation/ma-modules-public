@@ -30,7 +30,7 @@ public class DataPointFilter {
 	protected Map<Integer, DataSourceSummary> dsIdMap;
 	
 	public DataPointFilter(User user){
-		this.userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+		this.userPermissions = user.getPermissionsSet();
 		
 		this.dsIdMap = new HashMap<Integer, DataSourceSummary>();
 		for(DataSourceVO<?> ds : DataSourceDao.instance.getAll()){

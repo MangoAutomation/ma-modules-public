@@ -86,7 +86,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase{
             root = new ASTNode("eq", "userId", user.getId());
         }else{
             //Filter by Permissions
-            Set<String> permissions = Permissions.explodePermissionGroups(user.getPermissions());
+            Set<String> permissions = user.getPermissionsSet();
             ASTNode permRQL = new ASTNode("in", "readPermission", permissions);
 
             root = new ASTNode("or",  new ASTNode("eq", "userId", user.getId()), permRQL, queryNode);

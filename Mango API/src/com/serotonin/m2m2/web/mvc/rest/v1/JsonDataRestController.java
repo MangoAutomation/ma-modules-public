@@ -521,7 +521,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 		//Ensure we have the correct permissions
 		//First we must check to ensure that the User actually has editPermission before they can save it otherwise
 		// they won't be able to modify it.
-		Set<String> userPermissions = Permissions.explodePermissionGroups(user.getPermissions());
+		Set<String> userPermissions = user.getPermissionsSet();
 		
 		if(!user.isAdmin() && Collections.disjoint(userPermissions, editPermissions)){
 			//Return validation error
