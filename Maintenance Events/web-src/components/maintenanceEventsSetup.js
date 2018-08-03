@@ -47,7 +47,7 @@ class MaintenanceEventsSetupController {
         if (!ids || ids.length == 0) return;
         console.log(ids);
 
-        let rqlQuery = 'in(id,' + ids.join(',') +')';
+        let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
         this.maDataSource.rql({rqlQuery}).$promise.then(dataSources => {
             this.dataSources = dataSources;
@@ -57,7 +57,7 @@ class MaintenanceEventsSetupController {
     getDataPointsByIds(ids) {
         if (!ids || ids.length == 0) return;
 
-        let rqlQuery = 'in(id,' + ids.join(',') +')';
+        let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
         this.maPoint.rql({rqlQuery}).$promise.then(points => {
             this.dataPoints = points;
@@ -87,8 +87,8 @@ class MaintenanceEventsSetupController {
     }
 
     save() {
-        this.selectedEvent.dataSources = this.getIds(this.dataSources);
-        this.selectedEvent.dataPoints = this.getIds(this.dataPoints);
+        this.selectedEvent.dataSources = this.getXids(this.dataSources);
+        this.selectedEvent.dataPoints = this.getXids(this.dataPoints);
 
         if (!this.form.$valid) {
             this.maDialogHelper.toastOptions({
@@ -144,11 +144,11 @@ class MaintenanceEventsSetupController {
         }, angular.noop);  
     }
 
-    getIds (dataArray) {
+    getXids (dataArray) {
         let ids = [];
 
         dataArray.map(item => {
-            ids.push(item.id);
+            ids.push(item.xid);
         });
 
         return ids
