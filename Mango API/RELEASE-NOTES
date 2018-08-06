@@ -10,6 +10,7 @@
 * Fix for class cast error due to annotated point value classes in cache
 * Adding v2 point value statistics endpoint at /v2/point-values/statistics/{xids}
 * Use XIDs in publisher points lists
+* Add admin only endpoints in v2 demo rest controller to generate exceptions for testing
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state

@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -48,6 +51,8 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping("/v2/example")
 public class ExampleV2RestController extends AbstractMangoRestV2Controller{
 
+    private static final Log LOG = LogFactory.getLog(ExampleV2RestController.class);
+    
     @Autowired
     MangoSessionRegistry sessionRegistry;
 
@@ -188,5 +193,34 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
             @RequestBody Object node) {
 
         return node;
+    }
+    
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Log ERROR Level Message", notes = "Must be admin")
+    @RequestMapping(method = RequestMethod.POST, value = {"/log-error-message"})
+    public void logErorMessage(
+            @RequestBody String message) {
+        LOG.error(message);
+    }
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Log WARN Level Message", notes = "Must be admin")
+    @RequestMapping(method = RequestMethod.POST, value = {"/log-warn-message"})
+    public void logWarnMessage(
+            @RequestBody String message) {
+        LOG.warn(message);
+    }
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Log INFO Level Message", notes = "Must be admin")
+    @RequestMapping(method = RequestMethod.POST, value = {"/log-info-message"})
+    public void logInfoMessage(
+            @RequestBody String message) {
+        LOG.info(message);
+    }
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Log DEBUG Level Message", notes = "Must be admin")
+    @RequestMapping(method = RequestMethod.POST, value = {"/log-debug-message"})
+    public void logDebugMessage(
+            @RequestBody String message) {
+        LOG.debug(message);
     }
 }
