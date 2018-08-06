@@ -1,3 +1,6 @@
+*Version 3.4.5*
+* Change /v1/point-values/{xid}/statistics endpoint to use cached values for data points that are running during the time of the request
+
 *Version 3.4.4*
 * Fixed cast exception for upgrade state
 * Remove un-necessary jsonClassType parameter from GET system-settings/{key} endpoint
