@@ -29,7 +29,7 @@ public class ReportCommon {
             throw new RuntimeException("User does not exist");
         if (report == null)
             throw new RuntimeException("Report does not exist");
-        if (report.getUserId() != user.getId() && ! Permissions.hasAdmin(user))
+        if (report.getUserId() != user.getId() && ! Permissions.hasAdminPermission(user))
             throw new PermissionException(new TranslatableMessage("permission.reports.accessReport", user.getUsername()), user);
     }
 
@@ -38,7 +38,7 @@ public class ReportCommon {
             throw new RuntimeException("User does not exist");
         if (instance == null)
             throw new RuntimeException("Report instance does not exist");
-        if (instance.getUserId() != user.getId() && ! Permissions.hasAdmin(user))
+        if (instance.getUserId() != user.getId() && ! Permissions.hasAdminPermission(user))
             throw new PermissionException(new TranslatableMessage("permission.reports.accessReportInstance", user.getUsername()), user);
     }
     

@@ -134,7 +134,7 @@ public class ModulesRestController extends MangoRestController {
         if (result.isOk()) {
             ModuleModel coreModule = getCoreModule();
             MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModule);
-            if (Permissions.hasAdmin(user)) {
+            if (Permissions.hasAdminPermission(user)) {
                 jacksonValue.setSerializationView(ModuleModel.AdminView.class);
             } else {
                 jacksonValue.setSerializationView(Object.class);
@@ -151,7 +151,7 @@ public class ModulesRestController extends MangoRestController {
         RestProcessResult<List<ModuleModel>> result = new RestProcessResult<List<ModuleModel>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            if (Permissions.hasAdmin(user)) {
+            if (Permissions.hasAdminPermission(user)) {
                 List<ModuleModel> models = new ArrayList<ModuleModel>();
                 ModuleModel core = getCoreModule();
                 List<Module> modules = ModuleRegistry.getModules();
@@ -184,7 +184,7 @@ public class ModulesRestController extends MangoRestController {
         RestProcessResult<Map<String, String>> result = new RestProcessResult<>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            if (Permissions.hasAdmin(user)) {
+            if (Permissions.hasAdminPermission(user)) {
                 return result.createResponseEntity(ModuleRegistry.getMissingDependencies());
             } else {
                 result.addRestMessage(this.getUnauthorizedMessage());
@@ -200,7 +200,7 @@ public class ModulesRestController extends MangoRestController {
         RestProcessResult<ModuleUpgradesModel> result = new RestProcessResult<ModuleUpgradesModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            if (Permissions.hasAdmin(user)) {
+            if (Permissions.hasAdminPermission(user)) {
                 // Do the check
                 try {
                     JsonValue jsonResponse = ModulesDwr.getAvailableUpgrades();
@@ -310,7 +310,7 @@ public class ModulesRestController extends MangoRestController {
         RestProcessResult<UpgradeStatusModel> result = new RestProcessResult<UpgradeStatusModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            if (Permissions.hasAdmin(user)) {
+            if (Permissions.hasAdminPermission(user)) {
                 ProcessResult status = ModulesDwr.monitorDownloads();
                 UpgradeStatusModel model = new UpgradeStatusModel();
                 if (status.getHasMessages()) {

@@ -41,124 +41,124 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceStreamCallback;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
- * 
+ *
  */
 @Api(value="Data Sources", description="Data Sources")
 @RestController
 @RequestMapping("/v1/data-sources")
 public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>>{
 
-	public DataSourceRestController(){
-		super(DataSourceDao.instance);
-		LOG.info("Creating DS Rest Controller");
-	}
-	private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
-	
-	@ApiOperation(
-			value = "Query Data Sources",
-			notes = "Use RQL formatted query",
-			response=AbstractDataSourceModel.class,
-			responseContainer="List"
-			)
-	@RequestMapping(method = RequestMethod.GET)
+    public DataSourceRestController(){
+        super(DataSourceDao.instance);
+        LOG.info("Creating DS Rest Controller");
+    }
+    private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
+
+    @ApiOperation(
+            value = "Query Data Sources",
+            notes = "Use RQL formatted query",
+            response=AbstractDataSourceModel.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<DataSourceVO<?>>> queryRQL(
-    		   		   		
-    		HttpServletRequest request) {
-		
-		RestProcessResult<QueryDataPageStream<DataSourceVO<?>>> result = new RestProcessResult<QueryDataPageStream<DataSourceVO<?>>>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    		try{
-    			ASTNode node = parseRQLtoAST(request.getQueryString());
-    			DataSourceStreamCallback callback = new DataSourceStreamCallback(this, user);
-    			return result.createResponseEntity(getPageStream(node, callback));
-    		}catch(InvalidRQLRestException e){
-    			LOG.error(e.getMessage(), e);
-    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-				return result.createResponseEntity();
-    		}
-    	}
-    	return result.createResponseEntity();
-	}
-	
-	@ApiOperation(
-			value = "Get all data sources",
-			notes = "Only returns data sources available to logged in user"
-			)
+
+            HttpServletRequest request) {
+
+        RestProcessResult<QueryDataPageStream<DataSourceVO<?>>> result = new RestProcessResult<QueryDataPageStream<DataSourceVO<?>>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            try{
+                ASTNode node = parseRQLtoAST(request.getQueryString());
+                DataSourceStreamCallback callback = new DataSourceStreamCallback(this, user);
+                return result.createResponseEntity(getPageStream(node, callback));
+            }catch(InvalidRQLRestException e){
+                LOG.error(e.getMessage(), e);
+                result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+                return result.createResponseEntity();
+            }
+        }
+        return result.createResponseEntity();
+    }
+
+    @ApiOperation(
+            value = "Get all data sources",
+            notes = "Only returns data sources available to logged in user"
+            )
     @RequestMapping(method = RequestMethod.GET, value = "/list")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<AbstractDataSourceModel<?>>> getAllDataSources(HttpServletRequest request) {
-    	
-    	RestProcessResult<List<AbstractDataSourceModel<?>>> result = new RestProcessResult<List<AbstractDataSourceModel<?>>>(HttpStatus.OK);
-    	
-    	User user = this.checkUser(request, result);
-    	if(result.isOk()){
-	        List<DataSourceVO<?>> dataSources = DataSourceDao.instance.getAll();
-	        List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
-	        for(DataSourceVO<?> ds : dataSources){
-	        	try{
-	        		if(Permissions.hasDataSourcePermission(user, ds))
-	        			models.add(ds.asModel());
-	        	}catch(PermissionException e){
-	        		//Munch Munch
-	        	}
-	        	
-	        }
-	        return result.createResponseEntity(models);
-    	}
-    	return result.createResponseEntity();
+
+        RestProcessResult<List<AbstractDataSourceModel<?>>> result = new RestProcessResult<List<AbstractDataSourceModel<?>>>(HttpStatus.OK);
+
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            List<DataSourceVO<?>> dataSources = DataSourceDao.instance.getAll();
+            List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
+            for(DataSourceVO<?> ds : dataSources){
+                try{
+                    if(Permissions.hasDataSourcePermission(user, ds))
+                        models.add(ds.asModel());
+                }catch(PermissionException e){
+                    //Munch Munch
+                }
+
+            }
+            return result.createResponseEntity(models);
+        }
+        return result.createResponseEntity();
     }
-	
-	@ApiOperation(
-			value = "Get data source by xid",
-			notes = "Only returns data sources available to logged in user"
-			)
-	@RequestMapping(method = RequestMethod.GET, value = "/{xid}")
+
+    @ApiOperation(
+            value = "Get data source by xid",
+            notes = "Only returns data sources available to logged in user"
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> getDataSource(HttpServletRequest request, @PathVariable String xid) {
-		
-		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
-		User user = this.checkUser(request, result);
-    	if(result.isOk()){
+
+        RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
             DataSourceVO<?> vo = DataSourceDao.instance.getByXid(xid);
 
             if (vo == null) {
                 return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
             }else{
-            	try{
-	        		if(Permissions.hasDataSourcePermission(user, vo))
-	        			return result.createResponseEntity(vo.asModel());
-	        		else{
-	    	    		result.addRestMessage(getUnauthorizedMessage());
-	            		return result.createResponseEntity();
-	        		}
-	        	}catch(PermissionException e){
-	        		LOG.warn(e.getMessage(), e);
-		    		result.addRestMessage(getUnauthorizedMessage());
-	        		return result.createResponseEntity();
-	        	}
+                try{
+                    if(Permissions.hasDataSourcePermission(user, vo))
+                        return result.createResponseEntity(vo.asModel());
+                    else{
+                        result.addRestMessage(getUnauthorizedMessage());
+                        return result.createResponseEntity();
+                    }
+                }catch(PermissionException e){
+                    LOG.warn(e.getMessage(), e);
+                    result.addRestMessage(getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
             }
-    	}
+        }
         return result.createResponseEntity();
     }
 
-	@ApiOperation(
-	        value = "Get data source by ID",
-	        notes = "Only returns data sources available to logged in user"
-	        )
-	@RequestMapping(method = RequestMethod.GET, value = "/by-id/{id}")
-	public ResponseEntity<AbstractDataSourceModel<?>> getDataSourceById(
-	        @ApiParam(value = "Valid Data Source ID", required = true, allowMultiple = false)
-	        @PathVariable int id, HttpServletRequest request) {
+    @ApiOperation(
+            value = "Get data source by ID",
+            notes = "Only returns data sources available to logged in user"
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/by-id/{id}")
+    public ResponseEntity<AbstractDataSourceModel<?>> getDataSourceById(
+            @ApiParam(value = "Valid Data Source ID", required = true, allowMultiple = false)
+            @PathVariable int id, HttpServletRequest request) {
 
-	    RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
             DataSourceVO<?> vo = DataSourceDao.instance.get(id);
@@ -181,158 +181,158 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }
         }
         return result.createResponseEntity();
-	}
+    }
 
-	/**
-	 * Put a data source into the system
-	 * @param xid
-	 * @param model
+    /**
+     * Put a data source into the system
+     * @param xid
+     * @param model
      * @param builder
-	 * @param request
-	 * @return
-	 */
-	@ApiOperation(value = "Update data source")
-	@RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
+     * @param request
+     * @return
+     */
+    @ApiOperation(value = "Update data source")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> updateDataSource(
-    		@PathVariable String xid,
-    		@RequestBody(required=true) AbstractDataSourceModel<?> model, 
-    		UriComponentsBuilder builder, 
-    		HttpServletRequest request) {
+            @PathVariable String xid,
+            @RequestBody(required=true) AbstractDataSourceModel<?> model,
+            UriComponentsBuilder builder,
+            HttpServletRequest request) {
 
-		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 
-		User user = this.checkUser(request, result);
+        User user = this.checkUser(request, result);
         if(result.isOk()){
-			DataSourceVO<?> vo = model.getData();
-			
-	        DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
-	        if (existing == null) {
-	    		result.addRestMessage(getDoesNotExistMessage());
-	    		return result.createResponseEntity();
-	        }
-	        
-	        //Check permissions
-	    	try{
-	    		if(!Permissions.hasDataSourcePermission(user, existing)){
-	    			result.addRestMessage(getUnauthorizedMessage());
-	        		return result.createResponseEntity();
-	    		}
-	    	}catch(PermissionException e){
-	    		LOG.warn(e.getMessage(), e);
-	    		result.addRestMessage(getUnauthorizedMessage());
-        		return result.createResponseEntity();
-        	}
-	
-	        vo.setId(existing.getId());
-	        
-	        ProcessResult validation = new ProcessResult();
-	        vo.validate(validation);
-	        
-	        if(model.validate() && Permissions.hasDataSourcePermission(user, vo)){
-	        	Common.runtimeManager.saveDataSource(vo);
-	        }else{
-	            result.addRestMessage(this.getValidationFailedError());
-	        	return result.createResponseEntity(model); 
-	        }
-	        
-	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
-	    	result.addRestMessage(getResourceUpdatedMessage(location));
-	        return result.createResponseEntity(model);
+            DataSourceVO<?> vo = model.getData();
+
+            DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
+            if (existing == null) {
+                result.addRestMessage(getDoesNotExistMessage());
+                return result.createResponseEntity();
+            }
+
+            //Check permissions
+            try{
+                if(!Permissions.hasDataSourcePermission(user, existing)){
+                    result.addRestMessage(getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
+            }catch(PermissionException e){
+                LOG.warn(e.getMessage(), e);
+                result.addRestMessage(getUnauthorizedMessage());
+                return result.createResponseEntity();
+            }
+
+            vo.setId(existing.getId());
+
+            ProcessResult validation = new ProcessResult();
+            vo.validate(validation);
+
+            if(model.validate() && Permissions.hasDataSourcePermission(user, vo)){
+                Common.runtimeManager.saveDataSource(vo);
+            }else{
+                result.addRestMessage(this.getValidationFailedError());
+                return result.createResponseEntity(model);
+            }
+
+            //Put a link to the updated data in the header?
+            URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
+            result.addRestMessage(getResourceUpdatedMessage(location));
+            return result.createResponseEntity(model);
         }
         //Not logged in
         return result.createResponseEntity();
     }
 
-	@ApiOperation(value = "Save data source")
-	@RequestMapping(
-			method = {RequestMethod.POST}
-	)
-	public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(
-			@RequestBody(required=true) AbstractDataSourceModel<?> model,
-			UriComponentsBuilder builder,
-			HttpServletRequest request) {
-		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
-		User user = this.checkUser(request, result);
-		if(result.isOk()) {
-			
-			try {
-				if(!Permissions.hasDataSourcePermission(user)) {
-					result.addRestMessage(this.getUnauthorizedMessage());
-					return result.createResponseEntity();
-				}
-			} catch (PermissionException pe) {
-				LOG.warn(pe.getMessage(), pe);
-				result.addRestMessage(this.getUnauthorizedMessage());
-				return result.createResponseEntity();
-			}
-			
-			DataSourceVO<?> vo = model.getData();
-			//Check to see if the data source already exists
+    @ApiOperation(value = "Save data source")
+    @RequestMapping(
+            method = {RequestMethod.POST}
+            )
+    public ResponseEntity<AbstractDataSourceModel<?>> saveDataSource(
+            @RequestBody(required=true) AbstractDataSourceModel<?> model,
+            UriComponentsBuilder builder,
+            HttpServletRequest request) {
+        RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()) {
+
+            try {
+                if(!Permissions.hasDataSourcePermission(user)) {
+                    result.addRestMessage(this.getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
+            } catch (PermissionException pe) {
+                LOG.warn(pe.getMessage(), pe);
+                result.addRestMessage(this.getUnauthorizedMessage());
+                return result.createResponseEntity();
+            }
+
+            DataSourceVO<?> vo = model.getData();
+            //Check to see if the data source already exists
             if(!StringUtils.isEmpty(vo.getXid())){
-                DataSourceVO<?> existing = (DataSourceVO<?>)DataSourceDao.instance.getByXid(model.getXid());
+                DataSourceVO<?> existing = DataSourceDao.instance.getByXid(model.getXid());
                 if(existing != null){
                     result.addRestMessage(HttpStatus.CONFLICT, new TranslatableMessage("rest.exception.alreadyExists", model.getXid()));
                     return result.createResponseEntity();
                 }
             }
-            
+
             if (StringUtils.isEmpty(vo.getXid()))
                 vo.setXid(DataSourceDao.instance.generateUniqueXid());
-			
-            if(!model.validate() || !Permissions.hasPermission(vo.getEditPermission(), user.getPermissions())) {
+
+            if(!model.validate() || !Permissions.hasDataSourcePermission(user, vo)) {
                 result.addRestMessage(this.getValidationFailedError());
                 return result.createResponseEntity(model);
             }
             else {
                 Common.runtimeManager.saveDataSource(vo);
-                DataSourceVO<?> created = (DataSourceVO<?>)DataSourceDao.instance.getByXid(model.getXid());
+                DataSourceVO<?> created = DataSourceDao.instance.getByXid(model.getXid());
                 URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
                 result.addRestMessage(this.getResourceCreatedMessage(location));
                 return result.createResponseEntity(created.asModel());
             }
-		} else {
-			return result.createResponseEntity();
-		}
-	}
+        } else {
+            return result.createResponseEntity();
+        }
+    }
 
 
-	@ApiOperation(value = "Delete data source")
-	@RequestMapping(
-			method = {RequestMethod.DELETE},
-			value = {"/{xid}"}
-	)
-	public ResponseEntity<AbstractDataSourceModel<?>> deleteDataSource(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
-		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
-		User user = this.checkUser(request, result);
-		if(result.isOk()) {
-			DataSourceVO<?> existing = (DataSourceVO<?>)DataSourceDao.instance.getByXid(xid);
-			if(existing == null) {
-				result.addRestMessage(this.getDoesNotExistMessage());
-				return result.createResponseEntity();
-			} else {
-				try {
-					if(!Permissions.hasDataSourcePermission(user, existing.getId())) {
-						result.addRestMessage(this.getUnauthorizedMessage());
-						return result.createResponseEntity();
-					}
-				} catch (PermissionException pe) {
-					LOG.warn(pe.getMessage(), pe);
-					result.addRestMessage(this.getUnauthorizedMessage());
-					return result.createResponseEntity();
-				}
+    @ApiOperation(value = "Delete data source")
+    @RequestMapping(
+            method = {RequestMethod.DELETE},
+            value = {"/{xid}"}
+            )
+    public ResponseEntity<AbstractDataSourceModel<?>> deleteDataSource(@PathVariable String xid, UriComponentsBuilder builder, HttpServletRequest request) {
+        RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()) {
+            DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
+            if(existing == null) {
+                result.addRestMessage(this.getDoesNotExistMessage());
+                return result.createResponseEntity();
+            } else {
+                try {
+                    if(!Permissions.hasDataSourcePermission(user, existing.getId())) {
+                        result.addRestMessage(this.getUnauthorizedMessage());
+                        return result.createResponseEntity();
+                    }
+                } catch (PermissionException pe) {
+                    LOG.warn(pe.getMessage(), pe);
+                    result.addRestMessage(this.getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
 
-				Common.runtimeManager.deleteDataSource(existing.getId());
-				return result.createResponseEntity(existing.asModel());
-			}
-		}
-		return result.createResponseEntity();
-	}
+                Common.runtimeManager.deleteDataSource(existing.getId());
+                return result.createResponseEntity(existing.asModel());
+            }
+        }
+        return result.createResponseEntity();
+    }
 
-	@ApiOperation(value = "Copy data source", notes="Copy the data source with optional new XID and Name and enable/disable state (default disabled)")
-	@RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}")
+    @ApiOperation(value = "Copy data source", notes="Copy the data source with optional new XID and Name and enable/disable state (default disabled)")
+    @RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> copy(
-    		@PathVariable String xid,
+            @PathVariable String xid,
             @ApiParam(value = "Copy's new XID", required = false, defaultValue="null", allowMultiple = false)
             @RequestParam(required=false, defaultValue="null") String copyXid,
             @ApiParam(value = "Copy's name", required = false, defaultValue="null", allowMultiple = false)
@@ -341,118 +341,118 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             @RequestParam(required=false) String copyDeviceName,
             @ApiParam(value = "Enable/disabled state", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean enabled,
-    		UriComponentsBuilder builder, 
-    		HttpServletRequest request) {
+            UriComponentsBuilder builder,
+            HttpServletRequest request) {
 
-		RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
+        RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
 
-		User user = this.checkUser(request, result);
+        User user = this.checkUser(request, result);
         if(result.isOk()){
-	        DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
-	        if (existing == null) {
-	    		result.addRestMessage(getDoesNotExistMessage());
-	    		return result.createResponseEntity();
-	        }
-	        
-	        //Check permissions
-	    	try{
-	    		if(!Permissions.hasDataSourcePermission(user, existing)){
-	    			result.addRestMessage(getUnauthorizedMessage());
-	        		return result.createResponseEntity();
-	    		}
-	    	}catch(PermissionException e){
-	    		LOG.warn(e.getMessage(), e);
-	    		result.addRestMessage(getUnauthorizedMessage());
-        		return result.createResponseEntity();
-        	}
-	    	
-	    	//Determine the new name
-	    	String name;
-	    	if(StringUtils.isEmpty(copyName))
-	    		name = StringUtils.abbreviate(
-	                TranslatableMessage.translate(Common.getTranslations(), "common.copyPrefix", existing.getName()), 40);
-	    	else
-	    		name = copyName;
-	    	
-	    	//Determine the new xid
-	    	String newXid;
-	    	if(StringUtils.isEmpty(copyXid))
-	    		newXid = dao.generateUniqueXid();
-	    	else
-	    		newXid = copyXid;
+            DataSourceVO<?> existing = DataSourceDao.instance.getByXid(xid);
+            if (existing == null) {
+                result.addRestMessage(getDoesNotExistMessage());
+                return result.createResponseEntity();
+            }
 
-	    	
-	        //Setup the Copy
-	        DataSourceVO<?> copy = existing.copy();
-	        copy.setId(Common.NEW_ID);
-	        copy.setName(name);
-	        copy.setXid(newXid);
-	        copy.setEnabled(enabled);
-	        
-	        ProcessResult validation = new ProcessResult();
-	        copy.validate(validation);
-	        
-	        AbstractDataSourceModel<?> model = copy.asModel();
-	        
-	        if(model.validate()){
-	        	Common.runtimeManager.saveDataSource(copy);
-	        	this.dao.copyDataSourcePoints(existing.getId(), copy.getId(), copyDeviceName);
-	        }else{
-	            result.addRestMessage(this.getValidationFailedError());
-	        	return result.createResponseEntity(model); 
-	        }
-	        
-	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(copy.getXid()).toUri();
-	    	result.addRestMessage(getResourceUpdatedMessage(location));
-	        return result.createResponseEntity(model);
+            //Check permissions
+            try{
+                if(!Permissions.hasDataSourcePermission(user, existing)){
+                    result.addRestMessage(getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }
+            }catch(PermissionException e){
+                LOG.warn(e.getMessage(), e);
+                result.addRestMessage(getUnauthorizedMessage());
+                return result.createResponseEntity();
+            }
+
+            //Determine the new name
+            String name;
+            if(StringUtils.isEmpty(copyName))
+                name = StringUtils.abbreviate(
+                        TranslatableMessage.translate(Common.getTranslations(), "common.copyPrefix", existing.getName()), 40);
+            else
+                name = copyName;
+
+            //Determine the new xid
+            String newXid;
+            if(StringUtils.isEmpty(copyXid))
+                newXid = dao.generateUniqueXid();
+            else
+                newXid = copyXid;
+
+
+            //Setup the Copy
+            DataSourceVO<?> copy = existing.copy();
+            copy.setId(Common.NEW_ID);
+            copy.setName(name);
+            copy.setXid(newXid);
+            copy.setEnabled(enabled);
+
+            ProcessResult validation = new ProcessResult();
+            copy.validate(validation);
+
+            AbstractDataSourceModel<?> model = copy.asModel();
+
+            if(model.validate()){
+                Common.runtimeManager.saveDataSource(copy);
+                this.dao.copyDataSourcePoints(existing.getId(), copy.getId(), copyDeviceName);
+            }else{
+                result.addRestMessage(this.getValidationFailedError());
+                return result.createResponseEntity(model);
+            }
+
+            //Put a link to the updated data in the header?
+            URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(copy.getXid()).toUri();
+            result.addRestMessage(getResourceUpdatedMessage(location));
+            return result.createResponseEntity(model);
         }
         //Not logged in
         return result.createResponseEntity();
     }
-	
-	@ApiOperation(value = "Enable/disable/restart a data source")
-	@RequestMapping(method = RequestMethod.PUT, value = "/enable-disable/{xid}")
-	public ResponseEntity<DataPointModel> enableDisable(
+
+    @ApiOperation(value = "Enable/disable/restart a data source")
+    @RequestMapping(method = RequestMethod.PUT, value = "/enable-disable/{xid}")
+    public ResponseEntity<DataPointModel> enableDisable(
             @AuthenticationPrincipal User user,
-            
+
             @PathVariable String xid,
-            
+
             @ApiParam(value = "Enable or disable the data source", required = true, allowMultiple = false)
             @RequestParam(required=true) boolean enabled,
-            
+
             @ApiParam(value = "Restart the data source, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart) {
-	    DataSourceVO<?> dsvo = DataSourceDao.instance.getByXid(xid);
-	    if(dsvo == null)
-	        throw new NotFoundRestException();
-	    
-	    try {
-	        Permissions.ensureDataSourcePermission(user, dsvo);
-	    } catch(PermissionException e) {
-	        throw new AccessDeniedException("User does not have permission to edit the data source", e);
-	    }
-	    
-	    if (enabled && restart) {
-	        dsvo.setEnabled(true);
-	        Common.runtimeManager.saveDataSource(dsvo); //saving will restart it
-	    } else if(dsvo.isEnabled() != enabled) {
-	        dsvo.setEnabled(enabled);
-	        Common.runtimeManager.saveDataSource(dsvo);
-	    }
-	    
-	    return new ResponseEntity<>(HttpStatus.OK);
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
-	 */
-	@Override
-	public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo) {
-		if(vo != null)
-			return vo.asModel();
-		else
-			return null;
-	}
+        DataSourceVO<?> dsvo = DataSourceDao.instance.getByXid(xid);
+        if(dsvo == null)
+            throw new NotFoundRestException();
+
+        try {
+            Permissions.ensureDataSourcePermission(user, dsvo);
+        } catch(PermissionException e) {
+            throw new AccessDeniedException("User does not have permission to edit the data source", e);
+        }
+
+        if (enabled && restart) {
+            dsvo.setEnabled(true);
+            Common.runtimeManager.saveDataSource(dsvo); //saving will restart it
+        } else if(dsvo.isEnabled() != enabled) {
+            dsvo.setEnabled(enabled);
+            Common.runtimeManager.saveDataSource(dsvo);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
+     */
+    @Override
+    public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo) {
+        if(vo != null)
+            return vo.asModel();
+        else
+            return null;
+    }
 
 }

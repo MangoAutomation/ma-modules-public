@@ -75,7 +75,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	    		return result.createResponseEntity();
 	        }else{
 	        	//Check Permissions
-	        	if(Permissions.hasAdmin(user))
+	        	if(Permissions.hasAdminPermission(user))
 	        		return result.createResponseEntity(vo.asModel());
 	        	else
 	        	    result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
@@ -138,7 +138,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }
 	
 	        //Check Event Type Permission
-	        if(!Permissions.hasAdmin(user)){
+	        if(!Permissions.hasAdminPermission(user)){
 				result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 				return result.createResponseEntity();
 	        }
@@ -179,7 +179,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
         if(result.isOk()){
         	
 	        //Check Event Type Permission
-	        if(!Permissions.hasAdmin(user)){
+	        if(!Permissions.hasAdminPermission(user)){
 	            result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 				return result.createResponseEntity();
 	        }
@@ -223,7 +223,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 				return result.createResponseEntity();
 			}else {
 		        //Check Event Type Permission
-		        if(!Permissions.hasAdmin(user)){
+		        if(!Permissions.hasAdminPermission(user)){
 		            result.addRestMessage(HttpStatus.UNAUTHORIZED, new TranslatableMessage("permissions.accessDenied", user.getUsername(), SuperadminPermissionDefinition.GROUP_NAME));
 					return result.createResponseEntity();
 		        }

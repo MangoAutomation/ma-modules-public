@@ -76,7 +76,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     public boolean isEditor(User user) {
         if (isOwner(user))
             return true;
-        if (Permissions.hasAdmin(user)) // Admin
+        if (Permissions.hasAdminPermission(user)) // Admin
             return true;
         return Permissions.hasPermission(user, editPermission); // Edit group
     }

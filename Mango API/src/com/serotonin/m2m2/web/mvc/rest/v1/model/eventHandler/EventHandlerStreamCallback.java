@@ -38,7 +38,7 @@ public class EventHandlerStreamCallback extends FilteredVoStreamCallback<Abstrac
 	 */
 	@Override
 	protected boolean filter(AbstractEventHandlerVO<?> vo) {
-		return !Permissions.hasAdmin(user);
+		return !Permissions.hasAdminPermission(user);
 	}
 	
 }

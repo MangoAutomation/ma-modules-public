@@ -352,7 +352,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
             return false;
         if (vo == null)
             return false;
-        if (Permissions.hasAdmin(user))
+        if (Permissions.hasAdminPermission(user))
             return true;
         if(vo.getUserId() == user.getId())
             return true; //Owner
@@ -365,7 +365,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
             return false;
         if (vo == null)
             return false;
-        if (Permissions.hasAdmin(user))
+        if (Permissions.hasAdminPermission(user))
             return true;
         if(vo.getUserId() == user.getId())
             return true; //Owner
@@ -377,7 +377,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
             return false;
         else if (vo == null)
             return false;
-        else if (Permissions.hasAdmin(user))
+        else if (Permissions.hasAdminPermission(user))
             return true;
         else if(vo.getUserId() == user.getId())
             return true; //Owner

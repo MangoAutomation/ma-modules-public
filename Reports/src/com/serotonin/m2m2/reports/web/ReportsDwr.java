@@ -32,6 +32,7 @@ import com.serotonin.m2m2.reports.ReportPurgeDefinition;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
 import com.serotonin.m2m2.reports.vo.ReportVO;
+import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -40,48 +41,46 @@ import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 import com.serotonin.timer.CronTimerTrigger;
-import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.validation.StringValidation;
 
 /**
  * @author Matthew Lohbihler
  */
 public class ReportsDwr extends ModuleDwr {
-	
-    
-	 private static final Log LOG = LogFactory.getLog(ReportsDwr.class);
-	
-	 @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
-	 public ProcessResult init() {
+
+
+    private static final Log LOG = LogFactory.getLog(ReportsDwr.class);
+
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
+    public ProcessResult init() {
         ProcessResult response = new ProcessResult();
         ReportDao reportDao = ReportDao.instance;
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
 
         response.addData("points", getReadablePoints());
 
         response.addData("mailingLists", MailingListDao.instance.getMailingLists());
 
-        if(Permissions.hasAdmin(user)) {
-        	response.addData("users", UserDao.instance.getUsers());   
-        	response.addData("reports", reportDao.getReports());
-        	response.addData("instances", getReportInstances(user));
-    	}
+        if(Permissions.hasAdminPermission(user)) {
+            response.addData("users", UserDao.instance.getUsers());
+            response.addData("reports", reportDao.getReports());
+            response.addData("instances", getReportInstances(user));
+        }
         else {
-        	response.addData("reports", reportDao.getReports(user.getId()));
-        	response.addData("instances", getReportInstances(user));
-        	
-        	//Filter User's available to Email on User Permissions
-        	List<User> users = UserDao.instance.getUsers();
-        	List<User> availableForEmail = new ArrayList<User>();
-        	String currentUserPermissions = user.getPermissions();
-        	for(User u : users){
-        		//Check to see if there are any overlapping privs, if so then add them to the view
-        		Set<String> permissions = Permissions.findMatchingPermissions(u.getPermissions(),currentUserPermissions);
-        		if(permissions.size() > 0)
-        			availableForEmail.add(u);
-        	}
-	        response.addData("users", availableForEmail);
-    	}
+            response.addData("reports", reportDao.getReports(user.getId()));
+            response.addData("instances", getReportInstances(user));
+
+            //Filter User's available to Email on User Permissions
+            List<User> users = UserDao.instance.getUsers();
+            List<User> availableForEmail = new ArrayList<User>();
+            for(User u : users){
+                //Check to see if there are any overlapping privs, if so then add them to the view
+                Set<String> permissions = Permissions.findMatchingPermissions(user, u.getPermissions());
+                if(permissions.size() > 0)
+                    availableForEmail.add(u);
+            }
+            response.addData("users", availableForEmail);
+        }
         response.addData("templates", getTemplateList());
 
         return response;
@@ -104,24 +103,24 @@ public class ReportsDwr extends ModuleDwr {
                 report.setXid(ReportDao.instance.generateUniqueXid());
             }
 
-            ReportCommon.ensureReportPermission(Common.getUser(), report);
+            ReportCommon.ensureReportPermission(Common.getHttpUser(), report);
         }
         return report;
     }
-    
-	private List<String> getTemplateList() {
-	    List<String> list = new ArrayList<String>();
-	    if(ReportCommon.instance.OVERRIDE_TEMPLATE_DIR.isDirectory())
-	        for(String name : ReportCommon.instance.OVERRIDE_TEMPLATE_DIR.list())
-	            if(name.endsWith(".ftl")) list.add(name);
-		if(ReportCommon.instance.TEMPLATE_DIR.isDirectory())
-		    for(String name : ReportCommon.instance.TEMPLATE_DIR.list())
-		        if(!list.contains(name) && name.endsWith(".ftl"))
-		            list.add(name);
-		return list;
-	}
 
-	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
+    private List<String> getTemplateList() {
+        List<String> list = new ArrayList<String>();
+        if(ReportCommon.instance.OVERRIDE_TEMPLATE_DIR.isDirectory())
+            for(String name : ReportCommon.instance.OVERRIDE_TEMPLATE_DIR.list())
+                if(name.endsWith(".ftl")) list.add(name);
+        if(ReportCommon.instance.TEMPLATE_DIR.isDirectory())
+            for(String name : ReportCommon.instance.TEMPLATE_DIR.list())
+                if(!list.contains(name) && name.endsWith(".ftl"))
+                    list.add(name);
+        return list;
+    }
+
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult saveReport(int id, String name, String xid, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
@@ -136,13 +135,13 @@ public class ReportsDwr extends ModuleDwr {
         validateData(response, name, points, dateRangeType, relativeDateType, previousPeriodCount, pastPeriodCount);
 
         //Validate XID
-    	if (StringUtils.isBlank(xid))
+        if (StringUtils.isBlank(xid))
             response.addContextualMessage("xid", "validate.required");
         else if (StringValidation.isLengthGreaterThan(xid, 50))
             response.addMessage("xid", new TranslatableMessage("validate.notLongerThan", 50));
         else if (!ReportDao.instance.isXidUnique(xid, id))
             response.addContextualMessage("xid", "validate.xidUsed");
-        
+
         if (schedule) {
             if (schedulePeriod == ReportVO.SCHEDULE_CRON) {
                 // Check the cron pattern.
@@ -167,7 +166,7 @@ public class ReportsDwr extends ModuleDwr {
         if (response.getHasMessages())
             return response;
 
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
         ReportDao reportDao = ReportDao.instance;
         ReportVO report;
         if (id == Common.NEW_ID) {
@@ -176,7 +175,7 @@ public class ReportsDwr extends ModuleDwr {
         }
         else
             report = reportDao.getReport(id);
-        
+
         ReportCommon.ensureReportPermission(user, report);
 
         // Update the new values.
@@ -212,7 +211,7 @@ public class ReportsDwr extends ModuleDwr {
         report.setIncludeData(includeData);
         report.setZipData(zipData);
         report.setRecipients(recipients);
-        
+
         // Save the report
         reportDao.saveReport(report);
 
@@ -221,13 +220,13 @@ public class ReportsDwr extends ModuleDwr {
         WebContext webContext = WebContextFactory.get();
         int port;
         if (webContext != null) {
-        	HttpServletRequest req = webContext.getHttpServletRequest();
-        	host = req.getServerName();
-        	port = req.getLocalPort();
+            HttpServletRequest req = webContext.getHttpServletRequest();
+            host = req.getServerName();
+            port = req.getLocalPort();
         }else{
-        	port = Common.envProps.getInt("web.port", 8080);
+            port = Common.envProps.getInt("web.port", 8080);
         }
-        
+
         ReportJob.scheduleReportJob(host, port, report);
 
         // Send back the report id in case this was new.
@@ -242,9 +241,9 @@ public class ReportsDwr extends ModuleDwr {
      * @param reportPurgePeriodType
      * @return
      */
-	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult purgeNow(){
-    	ProcessResult response = new ProcessResult();
+        ProcessResult response = new ProcessResult();
         DateTime cutoff = DateUtils.truncateDateTime(new DateTime(), Common.TimePeriods.DAYS);
         cutoff = DateUtils.minus(cutoff,
                 SystemSettingsDao.instance.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE),
@@ -252,28 +251,28 @@ public class ReportsDwr extends ModuleDwr {
 
         int deleteCount = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
         LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
-    	
-    	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
-    	return response;
+
+        response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
+        return response;
     }
-    
+
     /**
      * Purge all Reports Now
      * @return
      */
-	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult purgeAllNow(){
-    	ProcessResult response = new ProcessResult();
+        ProcessResult response = new ProcessResult();
 
         int deleteCount = ReportDao.instance.purgeReportsBefore(Common.timer.currentTimeMillis());
         LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
 
-    	response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
-    	return response;
+        response.addData("purgeMessage", new TranslatableMessage("systemSettings.reports.reportsPurged", deleteCount).translate(Common.getTranslations()));
+        return response;
     }
-    
-    
-	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
+
+
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ProcessResult runReport(String xid, String name, List<ReportPointVO> points, String template, int includeEvents,
             boolean includeUserComments, int dateRangeType, int relativeDateType, int previousPeriodCount,
             int previousPeriodType, int pastPeriodCount, int pastPeriodType, boolean fromNone, int fromYear,
@@ -290,7 +289,7 @@ public class ReportsDwr extends ModuleDwr {
             ReportVO report = new ReportVO();
             report.setXid(xid);
             report.setName(name);
-            report.setUserId(Common.getUser().getId());
+            report.setUserId(Common.getHttpUser().getId());
             report.setPoints(points);
             report.setTemplate(template);
             report.setIncludeEvents(includeEvents);
@@ -323,26 +322,26 @@ public class ReportsDwr extends ModuleDwr {
             WebContext webContext = WebContextFactory.get();
             int port;
             if (webContext != null) {
-            	HttpServletRequest req = webContext.getHttpServletRequest();
-            	host = req.getServerName();
-            	port = req.getLocalPort();
+                HttpServletRequest req = webContext.getHttpServletRequest();
+                host = req.getServerName();
+                port = req.getLocalPort();
             }else{
-            	port = Common.envProps.getInt("web.port", 8080);
+                port = Common.envProps.getInt("web.port", 8080);
             }
-            
+
             ReportWorkItem.queueReport(host, port, report);
         }
 
         return response;
     }
 
-	@DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
+    @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public void deleteReport(int id) {
         ReportDao reportDao = ReportDao.instance;
 
         ReportVO report = reportDao.getReport(id);
         if (report != null) {
-            ReportCommon.ensureReportPermission(Common.getUser(), report);
+            ReportCommon.ensureReportPermission(Common.getHttpUser(), report);
             ReportJob.unscheduleReportJob(report);
             reportDao.deleteReport(id);
         }
@@ -350,8 +349,8 @@ public class ReportsDwr extends ModuleDwr {
 
     private void validateData(ProcessResult response, String name, List<ReportPointVO> points, int dateRangeType,
             int relativeDateType, int previousPeriodCount, int pastPeriodCount) {
-    	
-    	if (StringUtils.isBlank(name))
+
+        if (StringUtils.isBlank(name))
             response.addContextualMessage("name", "reports.validate.required");
         if (StringValidation.isLengthGreaterThan(name, 100))
             response.addContextualMessage("name", "reports.validate.longerThan100");
@@ -367,7 +366,7 @@ public class ReportsDwr extends ModuleDwr {
         if (pastPeriodCount < 1)
             response.addContextualMessage("pastPeriodCount", "reports.validate.periodCountLessThan1");
 
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
         DataPointDao dataPointDao = DataPointDao.instance;
         for (ReportPointVO point : points) {
             Permissions.ensureDataPointReadPermission(user, dataPointDao.getDataPoint(point.getPointId(), false));
@@ -387,7 +386,7 @@ public class ReportsDwr extends ModuleDwr {
 
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public List<ReportInstance> deleteReportInstance(int instanceId) {
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
         ReportDao reportDao = ReportDao.instance;
         reportDao.deleteReportInstance(instanceId, user.getId());
         return getReportInstances(user);
@@ -395,7 +394,7 @@ public class ReportsDwr extends ModuleDwr {
 
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public List<ReportInstance> getReportInstances() {
-        return getReportInstances(Common.getUser());
+        return getReportInstances(Common.getHttpUser());
     }
 
     /**
@@ -404,35 +403,35 @@ public class ReportsDwr extends ModuleDwr {
      * @return
      */
     private List<ReportInstance> getReportInstances(User user) {
-    	//Allow Admin access to all report instances
-    	List<ReportInstance> result;
-    	if(Permissions.hasAdmin(user))
-    		result = ReportDao.instance.getReportInstances();
-    	else
-    		result = ReportDao.instance.getReportInstances(user.getId());
+        //Allow Admin access to all report instances
+        List<ReportInstance> result;
+        if(Permissions.hasAdminPermission(user))
+            result = ReportDao.instance.getReportInstances();
+        else
+            result = ReportDao.instance.getReportInstances(user.getId());
         Translations translations = getTranslations();
         UserDao userDao = UserDao.instance;
         for (ReportInstance i : result){
             i.setTranslations(translations);
             User reportUser = userDao.getUser(i.getUserId());
             if(reportUser != null)
-            	i.setUsername(reportUser.getUsername());
+                i.setUsername(reportUser.getUsername());
             else
-            	i.setUsername(Common.translate("reports.validate.userDNE"));
-            
+                i.setUsername(Common.translate("reports.validate.userDNE"));
+
         }
         return result;
     }
 
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public void setPreventPurge(int instanceId, boolean value) {
-        ReportDao.instance.setReportInstancePreventPurge(instanceId, value, Common.getUser());
+        ReportDao.instance.setReportInstancePreventPurge(instanceId, value, Common.getHttpUser());
     }
 
     @DwrPermission(custom = ReportPermissionDefinition.PERMISSION)
     public ReportVO createReportFromWatchlist(String name, int[] dataPointIds) {
         ReportVO report = new ReportVO();
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
 
         report.setName(new TranslatableMessage("common.copyPrefix", name).translate(getTranslations()));
         report.setXid(Common.generateXid("REP_"));

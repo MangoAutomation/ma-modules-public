@@ -273,7 +273,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
      */
     public void setReportInstancePreventPurge(int id, boolean preventPurge, User user) {
 
-        if(Permissions.hasAdmin(user))
+        if(Permissions.hasAdminPermission(user))
             ejt.update("update reportInstances set preventPurge=? where id=?", new Object[] {
                     boolToChar(preventPurge), id });
         else

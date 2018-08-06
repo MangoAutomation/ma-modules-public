@@ -165,7 +165,7 @@ public class EventTypeV2RestController {
     
     private void getAllDataPointEventTypes(List<EventTypeModel> types, User user, Integer dataPointId, Integer detectorId) {
         List<DataPointVO> dataPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, true);
-        final boolean admin = Permissions.hasAdmin(user);
+        final boolean admin = Permissions.hasAdminPermission(user);
         for(DataPointVO dpvo : dataPoints)
             if((dataPointId == null || dataPointId.intValue() == dpvo.getId()) && dpvo.getEventDetectors() != null)
                 for(AbstractPointEventDetectorVO<?> ed : dpvo.getEventDetectors())
@@ -179,7 +179,7 @@ public class EventTypeV2RestController {
     
     private void getAllDataSourceEventTypes(List<EventTypeModel> types, User user, Integer dataSourceId, Integer dataSourceEventId) {
         List<DataSourceVO<?>> dataSources = DataSourceDao.instance.getAll();
-        final boolean admin = Permissions.hasAdmin(user);
+        final boolean admin = Permissions.hasAdminPermission(user);
         for(DataSourceVO<?> dsvo : dataSources)
             if(dataSourceId == null || dataSourceId.intValue() == dsvo.getId())
                 for(EventTypeVO dset : (List<EventTypeVO>)dsvo.getEventTypes())
@@ -192,7 +192,7 @@ public class EventTypeV2RestController {
     
     private void getAllPublisherEventTypes(List<EventTypeModel> types, User user, Integer publisherId, Integer publisherEventId) {
         List<PublisherVO<?>> publishers = PublisherDao.instance.getAll();
-        final boolean admin = Permissions.hasAdmin(user);
+        final boolean admin = Permissions.hasAdminPermission(user);
         for(PublisherVO<?> pvo : publishers)
             if(publisherId == null || publisherId.intValue() == pvo.getId())
                 for(EventTypeVO pet : pvo.getEventTypes())
@@ -204,7 +204,7 @@ public class EventTypeV2RestController {
     }
     
     private void getAllSystemEventTypes(List<EventTypeModel> types, User user, String subtypeName) {
-        final boolean admin = Permissions.hasAdmin(user);
+        final boolean admin = Permissions.hasAdminPermission(user);
         for(EventTypeVO sets : SystemEventType.EVENT_TYPES)
             if(subtypeName == null || subtypeName.equals(sets.getSubtype())) {
                 EventType set = sets.createEventType();
@@ -215,7 +215,7 @@ public class EventTypeV2RestController {
     }
     
     public void getAllAuditEventTypes(List<EventTypeModel> types, User user, String subtypeName, Integer typeRef1) {
-        final boolean admin = Permissions.hasAdmin(user);
+        final boolean admin = Permissions.hasAdminPermission(user);
         for(EventTypeVO aets : AuditEventType.EVENT_TYPES)
             if(typeRef1 == null || aets.getTypeRef1() == typeRef1.intValue())
                 if(subtypeName == null || subtypeName.equals(aets.getSubtype())) {

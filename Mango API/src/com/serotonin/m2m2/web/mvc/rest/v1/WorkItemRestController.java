@@ -53,7 +53,7 @@ public class WorkItemRestController extends MangoRestController{
 		User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		if(Permissions.hasAdmin(user)){
+    		if(Permissions.hasAdminPermission(user)){
     	    	List<WorkItemModel> modelList = new ArrayList<WorkItemModel>();
     	    	modelList.addAll(Common.backgroundProcessing.getHighPriorityServiceItems());
     	    	modelList.addAll(Common.backgroundProcessing.getMediumPriorityServiceQueueItems());
@@ -89,7 +89,7 @@ public class WorkItemRestController extends MangoRestController{
 		RestProcessResult<List<WorkItemModel>> result = new RestProcessResult<List<WorkItemModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		if(Permissions.hasAdmin(user)){
+    		if(Permissions.hasAdminPermission(user)){
     			List<WorkItemModel> modelList = new ArrayList<WorkItemModel>();
     			List<WorkItemModel> list;
     			if(priority.equalsIgnoreCase("HIGH")){

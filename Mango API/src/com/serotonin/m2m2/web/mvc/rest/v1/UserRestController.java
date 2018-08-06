@@ -78,7 +78,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if(result.isOk()){
 
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 List<UserModel> userModelList = new ArrayList<UserModel>();
                 List<User> users = UserDao.instance.getUsers();
                 for(User u : users){
@@ -119,7 +119,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if(result.isOk()){
             User u = UserDao.instance.getUser(username);
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
                     return result.createResponseEntity();
@@ -168,7 +168,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if(result.isOk()){
             User u = UserDao.instance.getUser(username);
 
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
                     return result.createResponseEntity();
@@ -324,7 +324,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if(result.isOk()){
             User u = UserDao.instance.getUser(model.getUsername());
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     //Create new user
                     model.getData().setId(Common.NEW_ID);
@@ -376,7 +376,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if(result.isOk()){
             User u = UserDao.instance.getUser(username);
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
                     return result.createResponseEntity();
@@ -439,7 +439,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if(result.isOk()){
             User u = UserDao.instance.getUser(username);
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
                     return result.createResponseEntity();
@@ -698,7 +698,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             }
 
             UserModel model = new UserModel(u);
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 if(u.getId() == user.getId()){
                     model.addValidationMessage(new ProcessMessage("username", new TranslatableMessage("users.validate.badDelete")));
                     result.addRestMessage(getValidationFailedError());

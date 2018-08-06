@@ -12,12 +12,13 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 /**
  * @author Matthew Lohbihler
- * 
+ *
  */
 public class ScheduledEventType extends EventType {
     public static final String TYPE_NAME = "SCHEDULED";
@@ -37,7 +38,7 @@ public class ScheduledEventType extends EventType {
         this.scheduleId = scheduleId;
         this.duplicateHandling = duplicateHandling;
     }
-    
+
     @Override
     public String getEventType() {
         return TYPE_NAME;
@@ -117,19 +118,16 @@ public class ScheduledEventType extends EventType {
         writer.writeEntry("XID", ScheduledEventDao.instance.getScheduledEvent(scheduleId).getXid());
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
-	 */
-	@Override
-	public EventTypeModel asModel() {
-		return new ScheduledEventTypeModel(this);
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.rt.event.type.EventType#hasPermission(com.serotonin.m2m2.vo.User)
-	 */
-	@Override
-	public boolean hasPermission(User user) {
-	    return user.isAdmin();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
+     */
+    @Override
+    public EventTypeModel asModel() {
+        return new ScheduledEventTypeModel(this);
+    }
+
+    @Override
+    public boolean hasPermission(PermissionHolder user) {
+        return Permissions.hasAdminPermission(user);
+    }
 }

@@ -129,7 +129,7 @@ public class ServerRestController extends MangoRestController{
         RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 try{
                     Translations translations = Common.getTranslations();
                     Map<String, Object> model = new HashMap<>();
@@ -222,7 +222,7 @@ public class ServerRestController extends MangoRestController{
         RestProcessResult<String> result = new RestProcessResult<String>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            if(Permissions.hasAdmin(user)){
+            if(Permissions.hasAdminPermission(user)){
                 ProcessResult r = ModulesDwr.scheduleRestart();
                 if(r.getData().get("shutdownUri") != null){
                     //TODO Make SystemStatus web socket and push out message around shutdown

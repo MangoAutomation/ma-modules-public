@@ -26,7 +26,7 @@ public class ReportLaunchServlet extends BaseInfoServlet{
 			String xid = request.getParameter("reportXid");
 			if(xid != null)
 				report = dao.getReport(xid);
-			if(report != null && (user.getId() == report.getUserId() || Permissions.hasAdmin(user))) {
+			if(report != null && (user.getId() == report.getUserId() || Permissions.hasAdminPermission(user))) {
 				ReportJob.scheduleReportJob(request.getServerName(), request.getLocalPort(), report);
 				try {
 					response.getWriter().write("Report " + report.getName() + " scheduled");
