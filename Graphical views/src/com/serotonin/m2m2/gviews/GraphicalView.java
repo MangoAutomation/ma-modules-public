@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -56,7 +55,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
     private String editPermission;
     @JsonProperty
     private String setPermission;
-    
+
     public void addViewComponent(ViewComponent viewComponent) {
         // Determine an index for the component.
         int min = 0;
@@ -114,8 +113,8 @@ public class GraphicalView implements Serializable, JsonSerializable {
     }
 
     public boolean isEditor(User user) {
-    	if(user == null)
-    		return false; //Anonymous never edits
+        if(user == null)
+            return false; //Anonymous never edits
         if (isOwner(user))
             return true;
         if (user.isAdmin()) // Admin
@@ -124,19 +123,19 @@ public class GraphicalView implements Serializable, JsonSerializable {
     }
 
     public boolean isReader(User user) {
-    	if(anonymousAccess == ShareUser.ACCESS_READ)
-    		return true;
+        if(anonymousAccess == ShareUser.ACCESS_READ)
+            return true;
         if (isEditor(user))
             return true;
         return Permissions.hasPermission(user, readPermission); // Read group
     }
-    
+
     public boolean isSetter(User user){
-    	if(anonymousAccess == ShareUser.ACCESS_SET)
-    		return true;
-    	if(isEditor(user))
-    		return true;
-    	return Permissions.hasPermission(user, setPermission);
+        if(anonymousAccess == ShareUser.ACCESS_SET)
+            return true;
+        if(isEditor(user))
+            return true;
+        return Permissions.hasPermission(user, setPermission);
     }
 
     public String getUserAccess(User user) {
@@ -145,7 +144,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
         if (isReader(user))
             return "read";
         if(isSetter(user))
-        	return "set";
+            return "set";
         return null;
     }
 
@@ -235,7 +234,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
     public void setSetPermission(String setPermission) {
         this.setPermission = setPermission;
     }
-    
+
     public void validate(ProcessResult response) {
         if (StringUtils.isBlank(name))
             response.addMessage("name", new TranslatableMessage("validate.required"));
@@ -251,52 +250,48 @@ public class GraphicalView implements Serializable, JsonSerializable {
 
         for (ViewComponent vc : viewComponents)
             vc.validate(response);
-        
+
         //Validate the permissions
         User user = Common.getUser();
         GraphicalView existingView = null;
         if(this.id != Common.NEW_ID){
-        	existingView = new GraphicalViewDao().getView(id);
+            existingView = new GraphicalViewDao().getView(id);
         }
-        
+
         if(existingView == null){
-			Permissions.validateAddedPermissions(this.readPermission, user, response, "readPermission");
-			Permissions.validateAddedPermissions(this.setPermission, user, response, "setPermission");
-			Permissions.validateAddedPermissions(this.editPermission, user, response, "editPermission");
+            Permissions.validateAddedPermissions(this.readPermission, user, response, "readPermission");
+            Permissions.validateAddedPermissions(this.setPermission, user, response, "setPermission");
+            Permissions.validateAddedPermissions(this.editPermission, user, response, "editPermission");
         }else{
-        	//We are updating a view so only validate the new permissions, allow existing ones to remain and don't let
-        	// the user remove permissions they do not have
-        	this.readPermission = trimPermission(this.readPermission);
-        	validateUpdatedPermissions(existingView.readPermission, this.readPermission, user, response, "readPermission");
-        	this.setPermission = trimPermission(this.setPermission);
-        	validateUpdatedPermissions(existingView.setPermission, this.setPermission, user, response, "setPermission");
-        	this.editPermission = trimPermission(this.editPermission);
-        	validateUpdatedPermissions(existingView.editPermission, this.editPermission, user, response, "editPermission");
+            //We are updating a view so only validate the new permissions, allow existing ones to remain and don't let
+            // the user remove permissions they do not have
+            this.readPermission = trimPermission(this.readPermission);
+            validateUpdatedPermissions(existingView.readPermission, this.readPermission, user, response, "readPermission");
+            this.setPermission = trimPermission(this.setPermission);
+            validateUpdatedPermissions(existingView.setPermission, this.setPermission, user, response, "setPermission");
+            this.editPermission = trimPermission(this.editPermission);
+            validateUpdatedPermissions(existingView.editPermission, this.editPermission, user, response, "editPermission");
         }
     }
 
 
     /**
      * Trim whitespace from permissions
-     * 
-	 * @param permissions - Comma separated Permissions String
-	 * @return
-	 */
-	private String trimPermission(String permissions) {
-		Set<String> set = Permissions.explodePermissionGroups(permissions);
-		Set<String> trimmed = new HashSet<String>(set.size());
-		for(String p : set)
-			trimmed.add(p.trim());
-		
-		return Permissions.implodePermissionGroups(trimmed);
-	}
+     *
+     * @param permissions - Comma separated Permissions String
+     * @return
+     */
+    private String trimPermission(String permissions) {
+        Set<String> set = Permissions.explodePermissionGroups(permissions);
+        return Permissions.implodePermissionGroups(set);
+    }
 
-	/**
+    /**
      * Validate permissions by:
-     * 
+     *
      * 1. Removed permissions must be in the user's groups
-     * 2. Added permissions must be in the user's groups 
-     * 
+     * 2. Added permissions must be in the user's groups
+     *
      * @param existingPermissionsString - Previous permissions of object
      * @param newPermissionsString - New permissions of object
      * @param user - User who's permissions to compare to
@@ -304,57 +299,57 @@ public class GraphicalView implements Serializable, JsonSerializable {
      * @param contextKey - context key for messages to be applied
      * @return
      */
-	private boolean validateUpdatedPermissions(String existingPermissionsString,
-			String newPermissionsString, User user, ProcessResult response, String contextKey) {
-		
-		if(user == null){
-			response.addContextualMessage(contextKey, "validate.invalidPermission","No User Found");
-			return false;
-		}
-		
-		//Track the result
-		boolean success = true;
-		
-		//Explode the current permissions for comparison
-		Set<String> newPermissions = Permissions.explodePermissionGroups(newPermissionsString);
-		Set<String> existingPermissions = Permissions.explodePermissionGroups(existingPermissionsString);
-		
-		//Trim the new permissions
-		//TODO add trim to the explode method?
-		for(String newPermission: newPermissions){
-			newPermission = newPermission.trim();
-			if(StringUtils.isBlank(newPermission))
-        		response.addMessage(contextKey, new TranslatableMessage("validate.cannotContainEmptyString"));
-		}
-		
-		//Check that we are not removing a permission we do not have
-    	for(String existingPermission : existingPermissions){
-    		if(!Permissions.hasPermission(user, existingPermission)){
-    			//Make sure it is in the new permissions
-    			if(!newPermissions.contains(existingPermission)){
-    				success = false;
-    				response.addMessage(contextKey, new TranslatableMessage("viewEdit.validate.ungrantedPermissionRemoved", existingPermission));
-    			}
-    		}
-    	}
-    	
-    	//Check that we are not adding a permission we do not have
-    	//Filter so we don't validate permissions that were previously there
-    	// they are assumed to be valid.
-    	for(String newPermission : newPermissions){
-    		if(!existingPermissions.contains(newPermission)){
-    			//We didn't have this permission, validate it
-    			if(!Permissions.hasPermission(user, newPermission)){
-    				success = false;
-    				response.addContextualMessage(contextKey, "validate.invalidPermission", newPermission);
-    			}
-    		}
-    	}
-    	
-    	return success;
- 	}
+    private boolean validateUpdatedPermissions(String existingPermissionsString,
+            String newPermissionsString, User user, ProcessResult response, String contextKey) {
 
-	//
+        if(user == null){
+            response.addContextualMessage(contextKey, "validate.invalidPermission","No User Found");
+            return false;
+        }
+
+        //Track the result
+        boolean success = true;
+
+        //Explode the current permissions for comparison
+        Set<String> newPermissions = Permissions.explodePermissionGroups(newPermissionsString);
+        Set<String> existingPermissions = Permissions.explodePermissionGroups(existingPermissionsString);
+
+        //Trim the new permissions
+        //TODO add trim to the explode method?
+        for(String newPermission: newPermissions){
+            newPermission = newPermission.trim();
+            if(StringUtils.isBlank(newPermission))
+                response.addMessage(contextKey, new TranslatableMessage("validate.cannotContainEmptyString"));
+        }
+
+        //Check that we are not removing a permission we do not have
+        for(String existingPermission : existingPermissions){
+            if(!Permissions.hasPermission(user, existingPermission)){
+                //Make sure it is in the new permissions
+                if(!newPermissions.contains(existingPermission)){
+                    success = false;
+                    response.addMessage(contextKey, new TranslatableMessage("viewEdit.validate.ungrantedPermissionRemoved", existingPermission));
+                }
+            }
+        }
+
+        //Check that we are not adding a permission we do not have
+        //Filter so we don't validate permissions that were previously there
+        // they are assumed to be valid.
+        for(String newPermission : newPermissions){
+            if(!existingPermissions.contains(newPermission)){
+                //We didn't have this permission, validate it
+                if(!Permissions.hasPermission(user, newPermission)){
+                    success = false;
+                    response.addContextualMessage(contextKey, "validate.invalidPermission", newPermission);
+                }
+            }
+        }
+
+        return success;
+    }
+
+    //
     //
     // Serialization
     //
