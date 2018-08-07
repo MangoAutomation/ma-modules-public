@@ -96,7 +96,7 @@ public class ScriptUtilRestController {
                         return;
                     }
 
-                    if (!Permissions.hasDataPointSetPermission(permissions.getDataPointSetPermissions(), dprt.getVO())) {
+                    if (!Permissions.hasDataPointSetPermission(permissions, dprt.getVO())) {
                         scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
                         return;
                     }
