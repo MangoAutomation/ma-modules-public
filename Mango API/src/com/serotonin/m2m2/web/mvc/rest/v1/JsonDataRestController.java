@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,14 +36,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.serotonin.m2m2.db.dao.JsonDataDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.definitions.permissions.JsonDataCreatePermissionDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -58,7 +63,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Terry Packer
  *
  */
-@Api(value="JSON Store", description="Store custom data")
+@Api(value="JSON Store")
 @RestController
 @RequestMapping("/v1/json-data")
 public class JsonDataRestController extends MangoVoRestController<JsonDataVO, JsonDataModel, JsonDataDao>{
@@ -296,9 +301,13 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@ApiParam( value = "Data to save", required = true )
     		@RequestBody(required=true)
     		JsonNode data,
+    		@AuthenticationPrincipal User user,
     		UriComponentsBuilder builder,
     		HttpServletRequest request) throws RestValidationFailedException {
 
+	    if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(JsonDataCreatePermissionDefinition.TYPE_NAME)))
+	        throw new PermissionException(new TranslatableMessage("jsonData.createPermissionDenied", user.getUsername()), user);
+    
         RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
         return modifyJsonData(MapOperation.REPLACE, result, xid, new String[] {}, readPermission, editPermission, name, publicData, data, builder, request);
 	}
