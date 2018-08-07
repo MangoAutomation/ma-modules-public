@@ -35,6 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -94,7 +95,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @RequestMapping(method = RequestMethod.GET, value = "/timezones")
     public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(
             HttpServletRequest request) {
-        ASTNode root = parseRQLtoAST(request.getQueryString());
+        ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<TimezoneModel> list =
                 root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
         PageQueryResultModel<TimezoneModel> model =

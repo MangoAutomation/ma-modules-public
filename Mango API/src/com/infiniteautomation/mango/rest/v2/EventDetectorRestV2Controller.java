@@ -25,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -74,7 +75,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     public ResponseEntity<QueryDataPageStream<AbstractEventDetectorVO<?>>> queryRQL(
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request) {
-		ASTNode node = parseRQLtoAST(request.getQueryString());
+		ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 		if(user.isAdmin()){
 			//admin users don't need to filter the results
 			return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);

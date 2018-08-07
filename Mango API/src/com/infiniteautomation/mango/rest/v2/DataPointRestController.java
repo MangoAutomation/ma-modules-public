@@ -47,6 +47,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -58,14 +59,13 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
-import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -74,7 +74,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data Points", description="Data points")
 @RestController(value="DataPointRestControllerV2")
 @RequestMapping("/v2/data-points")
-public class DataPointRestController extends BaseMangoRestController {
+public class DataPointRestController {
 
     private static Log LOG = LogFactory.getLog(DataPointRestController.class);
     private static final String RESOURCE_TYPE_BULK_DATA_POINT = "BULK_DATA_POINT";
@@ -196,7 +196,7 @@ public class DataPointRestController extends BaseMangoRestController {
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
 
-        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
 
@@ -206,7 +206,7 @@ public class DataPointRestController extends BaseMangoRestController {
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
 
-        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return this.queryCsvPost(rql, user);
     }
 
@@ -431,7 +431,7 @@ public class DataPointRestController extends BaseMangoRestController {
                 .collect(Collectors.toList());
 
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> results = preFiltered;
-        ASTNode query = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(), preFiltered);
         }

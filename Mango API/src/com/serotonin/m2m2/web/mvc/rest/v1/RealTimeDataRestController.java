@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.RealTimeDataPointValue;
@@ -68,7 +69,7 @@ public class RealTimeDataRestController extends MangoRestController{
     	if(result.isOk()){
     		ASTNode model;
 			try{
-				model = parseRQLtoAST(request.getQueryString());
+				model = RQLUtils.parseRQLtoAST(request.getQueryString());
 				if(model == null){
 					result.addRestMessage(new RestMessage(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("common.default", "Query Required")));
 					return result.createResponseEntity();

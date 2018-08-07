@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.TableModel;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
@@ -63,7 +64,7 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
             HttpServletRequest request) {
         
         //Parse the RQL Query
-        ASTNode query = parseRQLtoAST(request.getQueryString());
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventInstance> results;
         List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
         if(query != null)

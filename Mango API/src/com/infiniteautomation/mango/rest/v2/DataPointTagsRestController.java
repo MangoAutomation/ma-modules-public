@@ -43,6 +43,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -50,13 +51,12 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -65,7 +65,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data point tags", description="Get and set data point tags")
 @RestController()
 @RequestMapping("/v2/data-point-tags")
-public class DataPointTagsRestController extends BaseMangoRestController {
+public class DataPointTagsRestController {
 
     private static final String RESOURCE_TYPE_BULK_DATA_POINT_TAGS = "BULK_DATA_POINT_TAGS";
 
@@ -145,7 +145,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
 
-        ASTNode rql = parseRQLtoAST(request.getQueryString());
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
 
         if (!user.isAdmin()) {
@@ -434,7 +434,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
                 .collect(Collectors.toList());
 
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> results = preFiltered;
-        ASTNode query = BaseMangoRestController.parseRQLtoAST(request.getQueryString());
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(), preFiltered);
         }
@@ -541,7 +541,7 @@ public class DataPointTagsRestController extends BaseMangoRestController {
             return DataPointTagsDao.instance.getTagValuesForKey(tagKey, user);
         }
 
-        ASTNode rql = parseRQLtoAST(queryString);
+        ASTNode rql = RQLUtils.parseRQLtoAST(queryString);
         return DataPointTagsDao.instance.getTagValuesForKey(tagKey, rql, user);
     }
 }

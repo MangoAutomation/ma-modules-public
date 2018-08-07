@@ -33,8 +33,8 @@ import com.serotonin.m2m2.view.quantize2.FftGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -46,7 +46,7 @@ import io.swagger.annotations.ApiParam;
 @Api(value="Point Value Signal Analysis", description="Signal processing tools for point data")
 @RestController
 @RequestMapping("/v2/point-value-analysis")
-public class PointValueSignalAnalysisRestController extends BaseMangoRestController {
+public class PointValueSignalAnalysisRestController {
 
     //TODO Cross Ambiguity Function for multiple points
     //TODO Cross Correlation of 2 points

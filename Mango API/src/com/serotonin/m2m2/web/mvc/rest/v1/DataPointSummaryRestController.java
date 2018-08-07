@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -78,7 +79,7 @@ public class DataPointSummaryRestController extends MangoVoRestController<DataPo
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-	    		ASTNode query = parseRQLtoAST(request.getQueryString());
+	    		ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
 	    		DataPointSummaryStreamCallback callback = new DataPointSummaryStreamCallback(this, user);
 	    		
 	    		return result.createResponseEntity(getPageStream(query,callback));

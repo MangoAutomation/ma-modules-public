@@ -29,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -786,7 +787,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         User user = this.checkUser(request, result);
         if(result.isOk()){
             try{
-                ASTNode node = parseRQLtoAST(request.getQueryString());
+                ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
                 if(user.isAdmin()){
                     //Admin Users Don't need to filter the results
                     return result.createResponseEntity(getPageStream(node));
@@ -833,7 +834,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             try{
-                ASTNode node = parseRQLtoAST(request.getQueryString());
+                ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 
                 long changed = this.dao.bulkUpdatePermissions(node, permissions, true);
                 return result.createResponseEntity(changed);
@@ -870,7 +871,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             try{
-                ASTNode node = parseRQLtoAST(request.getQueryString());
+                ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 
                 long changed = this.dao.bulkUpdatePermissions(node, permissions, false);
                 return result.createResponseEntity(changed);
@@ -902,7 +903,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             try{
-                ASTNode node = parseRQLtoAST(request.getQueryString());
+                ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 
                 long changed = this.dao.bulkClearPermissions(node, true);
                 return result.createResponseEntity(changed);
@@ -934,7 +935,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             try{
-                ASTNode node = parseRQLtoAST(request.getQueryString());
+                ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 
                 long changed = this.dao.bulkClearPermissions(node, false);
                 return result.createResponseEntity(changed);
@@ -964,7 +965,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
         }
         if(!permissionsLikes.isEmpty()){
             ASTNode permissionOr = new ASTNode("or", permissionsLikes.toArray());
-            return addAndRestriction(query, permissionOr);
+            return RQLUtils.addAndRestriction(query, permissionOr);
         }else{
             return query;
         }

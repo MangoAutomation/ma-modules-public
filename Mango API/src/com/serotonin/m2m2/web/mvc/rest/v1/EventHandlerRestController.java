@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.EventHandlerDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.definitions.permissions.SuperadminPermissionDefinition;
@@ -98,7 +99,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
-				ASTNode node = parseRQLtoAST(request.getQueryString());
+				ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 				EventHandlerStreamCallback callback = new EventHandlerStreamCallback(this, user);
 				FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao> stream = 
 						new FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>(EventHandlerDao.instance, this, node, callback);

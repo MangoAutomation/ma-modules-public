@@ -10,14 +10,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.serotonin.m2m2.web.mvc.rest.BaseMangoRestController;
-
 /**
  * Base Rest Controller for V2 of the REST api
  * 
  * @author Terry Packer
  */
-public abstract class AbstractMangoRestV2Controller extends BaseMangoRestController {
+public abstract class AbstractMangoRestV2Controller {
 
 	/**
 	 * For created resources

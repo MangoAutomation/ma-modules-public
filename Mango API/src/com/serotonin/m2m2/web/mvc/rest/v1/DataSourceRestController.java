@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -77,7 +78,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         User user = this.checkUser(request, result);
         if(result.isOk()){
             try{
-                ASTNode node = parseRQLtoAST(request.getQueryString());
+                ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
                 DataSourceStreamCallback callback = new DataSourceStreamCallback(this, user);
                 return result.createResponseEntity(getPageStream(node, callback));
             }catch(InvalidRQLRestException e){

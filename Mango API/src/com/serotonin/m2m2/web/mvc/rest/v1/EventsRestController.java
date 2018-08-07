@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.db.query.SQLQueryColumn;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
@@ -228,7 +229,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         RestProcessResult<QueryDataPageStream<EventInstanceVO>> result = new RestProcessResult<QueryDataPageStream<EventInstanceVO>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
+            query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
             return result.createResponseEntity(getPageStream(query));
         }
 
@@ -250,8 +251,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         if(result.isOk()){
             try{
                 //Parse the RQL Query
-                ASTNode query = parseRQLtoAST(request.getQueryString());
-                query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
+                ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+                query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
                 return result.createResponseEntity(getPageStream(query));
             }catch(InvalidRQLRestException e){
                 LOG.error(e.getMessage(), e);
@@ -331,8 +332,8 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             //Parse the RQL Query
             ASTNode query;
             try {
-                query = parseRQLtoAST(request.getQueryString());
-                query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
+                query = RQLUtils.parseRQLtoAST(request.getQueryString());
+                query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
 
                 TranslatableMessage tlm = null;
                 if(message != null)

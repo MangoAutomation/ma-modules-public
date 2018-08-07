@@ -33,6 +33,7 @@ import com.infiniteautomation.mango.rest.v2.FileStoreRestV2Controller;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -94,7 +95,7 @@ public class LoggingRestController extends MangoRestController{
     		HttpServletRequest request) {
 		RestProcessResult<QueryArrayStream<?>> result = new RestProcessResult<QueryArrayStream<?>>(HttpStatus.OK);
     		try{
-    	    		ASTNode query = parseRQLtoAST(request.getQueryString());
+    	    		ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
     	    		File file = new File(Common.getLogsDir(), filename);
     	    		if(file.exists()){
     	    		    //Pattern pattern = new 

@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
@@ -532,9 +533,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if(result.isOk()){
             try{
                 //Parse the RQL Query
-                ASTNode query = parseRQLtoAST(request.getQueryString());
+                ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
                 if(!user.isAdmin()){
-                    query = addAndRestriction(query, new ASTNode("eq", "id", user.getId()));
+                    query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "id", user.getId()));
                 }
                 return result.createResponseEntity(getPageStream(query));
             }catch(InvalidRQLRestException e){

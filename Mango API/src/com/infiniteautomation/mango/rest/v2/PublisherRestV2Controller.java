@@ -27,6 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
@@ -66,7 +67,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<QueryDataPageStream<PublisherVO<?>>> queryRQL(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
-		ASTNode node = parseRQLtoAST(request.getQueryString());
+		ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 		return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);		
 	}
 	

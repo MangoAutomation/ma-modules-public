@@ -38,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventDao;
@@ -103,7 +104,7 @@ public class ServerRestController extends MangoRestController{
         if(result.isOk()){
             try{
                 //Parse the RQL Query
-                ASTNode root = parseRQLtoAST(request.getQueryString());
+                ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
 
                 List<TimezoneModel> list = root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
 
