@@ -13,7 +13,7 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
@@ -105,32 +105,30 @@ public class MaintenanceEventType extends EventType {
         writer.writeEntry("XID", MaintenanceEventDao.instance.getXidById(maintenanceId));
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
-	 */
-	@Override
-	public EventTypeModel asModel() {
-		return new MaintenanceEventTypeModel(this);
-	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.rt.event.type.EventType#hasPermission(com.serotonin.m2m2.vo.User)
-	 */
-	@Override
-	public boolean hasPermission(User user) {
-	    MaintenanceEventVO vo = MaintenanceEventDao.instance.getFull(maintenanceId);
-	    if(vo == null)
-	        return false;
-	    else {
-	        for(int dsId : vo.getDataSources())
-	            if(!Permissions.hasDataSourcePermission(user, dsId))
-	                return false;
-	        
-	        for(int dpId : vo.getDataPoints()) {
-	            DataPointVO dp = DataPointDao.instance.get(dpId);
-	            if(dp != null && !Permissions.hasDataPointReadPermission(user, dp))
-	                return false;
-	        }
-	    }
-	    return true;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
+     */
+    @Override
+    public EventTypeModel asModel() {
+        return new MaintenanceEventTypeModel(this);
+    }
+
+    @Override
+    public boolean hasPermission(PermissionHolder user) {
+        MaintenanceEventVO vo = MaintenanceEventDao.instance.getFull(maintenanceId);
+        if(vo == null)
+            return false;
+        else {
+            for(int dsId : vo.getDataSources())
+                if(!Permissions.hasDataSourcePermission(user, dsId))
+                    return false;
+
+            for(int dpId : vo.getDataPoints()) {
+                DataPointVO dp = DataPointDao.instance.get(dpId);
+                if(dp != null && !Permissions.hasDataPointReadPermission(user, dp))
+                    return false;
+            }
+        }
+        return true;
+    }
 }
