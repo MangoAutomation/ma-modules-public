@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
@@ -30,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.db.query.JoinClause;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.db.dao.AbstractDao;
@@ -54,14 +54,16 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
 	public static String TABLE_NAME = "watchLists";
 	public static WatchListDao instance;
 	DaoNotificationWebSocketHandler<WatchListVO> wsHandler;
-	
-    public WatchListDao() {
+    private final String SELECT_POINTS;
+
+    public WatchListDao(@Autowired DataPointDao dataPointDao) {
 		super(AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"}, //to allow filtering on username
 		        false,
 		        new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
 		        );
 		instance = this;
+		SELECT_POINTS = dataPointDao.getSelectAllSql() + " JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
 	}
 
 	/* (non-Javadoc)
@@ -191,8 +193,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     		
     	});
     }
-
-    private final String SELECT_POINTS = DataPointDao.instance.getSelectAllSql() + " JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
     
     /**
      * Get the Data Points for a Given Watchlist
@@ -218,7 +218,8 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     @Override
     public void delete(WatchListVO vo, String initiatorId) {
         super.delete(vo, initiatorId);
-        wsHandler.notify("delete", vo, initiatorId);
+        if(wsHandler != null)
+            wsHandler.notify("delete", vo, initiatorId);
     }
 
     @Override
@@ -231,7 +232,8 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
                 ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
                 
                 // manually trigger websocket after saving points
-                wsHandler.notify("add", vo, initiatorId);
+                if(wsHandler != null)
+                    wsHandler.notify("add", vo, initiatorId);
             }
         });
     }
@@ -252,7 +254,8 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
                 ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
 
                 // manually trigger websocket after saving points
-                wsHandler.notify("update", vo, initiatorId, oldXid);
+                if(wsHandler != null)
+                    wsHandler.notify("update", vo, initiatorId, oldXid);
             }
         });
     }
