@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -22,6 +23,7 @@ import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
  *
  * @author Terry Packer
  */
+@Component("modulesWebSocketHandler")
 public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implements ModuleNotificationListener {
 
     public ModulesWebSocketHandler() {
@@ -116,7 +118,7 @@ public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implem
     }
 
     protected boolean hasPermission(User user){
-        return user.isAdmin();
+        return user.hasAdminPermission();
     }
 
 }

@@ -21,10 +21,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.DatabaseProxy.DatabaseType;
-import com.serotonin.m2m2.reports.ReportDao;
 
 /**
  * @author Terry Packer

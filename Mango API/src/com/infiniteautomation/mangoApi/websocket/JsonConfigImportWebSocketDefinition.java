@@ -1,20 +1,21 @@
+/**
+ * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
+ */
 package com.infiniteautomation.mangoApi.websocket;
 
-import org.springframework.web.socket.WebSocketHandler;
-
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.config.JsonConfigImportWebSocketHandler;
 
 public class JsonConfigImportWebSocketDefinition extends WebSocketDefinition{
 
     public static final String TYPE_NAME = "JSON_IMPORT_HANDLER";
 
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
+     * @see com.serotonin.m2m2.module.WebSocketDefinition#getWebSocketHandlerBeanName()
      */
     @Override
-    protected WebSocketHandler createHandler() {
-        return new JsonConfigImportWebSocketHandler();
+    public String getWebSocketHandlerBeanName() {
+        return "jsonConfigImportWebSocketHandler";
     }
 
     /* (non-Javadoc)

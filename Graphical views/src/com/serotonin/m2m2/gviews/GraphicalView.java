@@ -14,6 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -23,7 +24,6 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.gviews.component.CompoundComponent;
 import com.serotonin.m2m2.gviews.component.PointComponent;
 import com.serotonin.m2m2.gviews.component.ViewComponent;

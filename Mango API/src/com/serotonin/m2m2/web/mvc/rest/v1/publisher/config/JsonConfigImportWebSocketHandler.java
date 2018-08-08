@@ -1,5 +1,9 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.config;
-
+/**
+ * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
+ */
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -13,6 +17,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
 
+@Component("jsonConfigImportWebSocketHandler")
 public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandler {
 
     // For our reference to cancel the tasks
@@ -24,7 +29,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
         User user = this.getUser(session);
         if (user == null) {
             return;
-        } else if (!user.isAdmin()) {
+        } else if (!user.hasAdminPermission()) {
             if (session.isOpen()) {
                 session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
@@ -40,7 +45,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
             User user = this.getUser(session);
             if (user == null) {
                 return;
-            } else if (!user.isAdmin()) {
+            } else if (!user.hasAdminPermission()) {
                 if (session.isOpen()) {
                     session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
                 }

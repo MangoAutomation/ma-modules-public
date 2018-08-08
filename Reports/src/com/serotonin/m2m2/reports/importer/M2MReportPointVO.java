@@ -9,10 +9,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonWriter;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.PlotTypes;

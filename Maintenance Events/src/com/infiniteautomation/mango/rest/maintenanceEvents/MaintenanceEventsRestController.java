@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,21 +24,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
-import com.infiniteautomation.mango.service.maintenanceEvents.MaintenanceEventsService;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
+import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,8 +49,8 @@ public class MaintenanceEventsRestController {
 
     private MaintenanceEventsService service;
     
-    public MaintenanceEventsRestController() {
-        this.service = new MaintenanceEventsService();
+    public MaintenanceEventsRestController(@Autowired MaintenanceEventsService service) {
+        this.service = service;
     }
     
     @ApiOperation(

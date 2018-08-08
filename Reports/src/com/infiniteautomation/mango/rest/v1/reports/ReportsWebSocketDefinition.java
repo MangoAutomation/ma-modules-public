@@ -3,8 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.v1.reports;
 
-import org.springframework.web.socket.WebSocketHandler;
-
 import com.serotonin.m2m2.module.WebSocketDefinition;
 
 /**
@@ -13,12 +11,13 @@ import com.serotonin.m2m2.module.WebSocketDefinition;
 public class ReportsWebSocketDefinition extends WebSocketDefinition{
 
     public static final String TYPE_NAME = "REPORTS";
-
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.WebSocketDefinition#getWebSocketHandlerBeanName()
+     */
     @Override
-    protected WebSocketHandler createHandler() {
-        return new ReportWebSocketHandler();
+    public String getWebSocketHandlerBeanName() {
+        return "reportWebSocketHandler";
     }
-
     @Override
     public String getUrl() {
         return "/v1/websocket/reports";

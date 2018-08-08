@@ -4,10 +4,7 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import org.springframework.web.socket.WebSocketHandler;
-
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.WatchListWebSocketHandler;
 
 /**
  * @author Terry Packer
@@ -18,13 +15,13 @@ public class WatchListWebSocketDefinition extends WebSocketDefinition{
     public static final String TYPE_NAME = "WATCH_LIST";
 
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
+     * @see com.serotonin.m2m2.module.WebSocketDefinition#getWebSocketHandlerBeanName()
      */
     @Override
-    protected WebSocketHandler createHandler() {
-        return new WatchListWebSocketHandler();
+    public String getWebSocketHandlerBeanName() {
+        return "watchListWebSocketHandler";
     }
-
+    
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.module.WebSocketDefinition#getUrl()
      */

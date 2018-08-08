@@ -3,8 +3,8 @@ package com.serotonin.m2m2.reports.servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportJob;
 import com.serotonin.m2m2.vo.User;

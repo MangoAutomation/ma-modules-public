@@ -7,6 +7,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListVO;
@@ -18,7 +20,17 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  *
  */
+@Component("watchListWebSocketHandler")
 public class WatchListWebSocketHandler extends DaoNotificationWebSocketHandler<WatchListVO> {
+    
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
+     */
+    @Override
+    public String getDaoBeanName() {
+        return "watchListDao";
+    }
+    
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#hasPermission(com.serotonin.m2m2.vo.User, com.serotonin.m2m2.vo.AbstractVO)
      */

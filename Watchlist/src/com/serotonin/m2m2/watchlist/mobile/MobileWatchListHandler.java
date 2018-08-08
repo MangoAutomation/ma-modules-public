@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.View;
 
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -22,7 +23,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.watchlist.WatchListCommon;
-import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListHandler;
 import com.serotonin.m2m2.web.dwr.BaseDwr;
 import com.serotonin.m2m2.web.taglib.Functions;

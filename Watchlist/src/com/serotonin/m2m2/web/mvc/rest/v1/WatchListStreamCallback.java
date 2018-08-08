@@ -4,8 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredVoStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListSummaryModel;

@@ -11,9 +11,9 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.PatchableField;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 

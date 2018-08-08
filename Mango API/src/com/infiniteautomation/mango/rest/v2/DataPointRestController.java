@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,13 +48,12 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.spring.dao.DataSourceDao;
+import com.infiniteautomation.mango.spring.dao.TemplateDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -61,7 +61,6 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -92,13 +91,10 @@ public class DataPointRestController {
     }
 
     private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
-    private TemporaryResourceWebSocketHandler websocket;
 
-    public DataPointRestController() {
+    public DataPointRestController(@Autowired TemporaryResourceWebSocketHandler websocket) {
         LOG.info("Creating Data Point v2 Rest Controller.");
-
-        this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(this.websocket);
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
     }
 
     @ApiOperation(

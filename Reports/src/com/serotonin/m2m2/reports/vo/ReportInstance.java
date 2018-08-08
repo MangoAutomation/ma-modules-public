@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.User;

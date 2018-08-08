@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
+import org.springframework.stereotype.Component;
+
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
@@ -12,6 +14,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  *
  */
+@Component("eventDetectorWebSocketHandler")
 public class EventDetectorWebSocketHandler extends DaoNotificationWebSocketHandler<AbstractEventDetectorVO<?>>{
 
 	/* (non-Javadoc)
@@ -20,7 +23,7 @@ public class EventDetectorWebSocketHandler extends DaoNotificationWebSocketHandl
 	@Override
 	protected boolean hasPermission(User user, AbstractEventDetectorVO<?> vo) {
 		//TODO Check permissions on point or data source
-		if(user.isAdmin())
+		if(user.hasAdminPermission())
 			return true;
 		else 
 			return false;
@@ -34,4 +37,11 @@ public class EventDetectorWebSocketHandler extends DaoNotificationWebSocketHandl
 		return vo.asModel();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
+	 */
+	@Override
+	public String getDaoBeanName() {
+	    return "eventDetectorDao";
+	}
 }

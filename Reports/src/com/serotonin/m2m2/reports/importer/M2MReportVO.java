@@ -13,11 +13,11 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.util.DateUtils;

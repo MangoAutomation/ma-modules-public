@@ -18,10 +18,11 @@ import org.directwebremoting.WebContextFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RuntimeManager;

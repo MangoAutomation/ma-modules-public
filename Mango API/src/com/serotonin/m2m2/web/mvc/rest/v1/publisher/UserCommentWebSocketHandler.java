@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
+import org.springframework.stereotype.Component;
+
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
@@ -13,6 +15,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  *
  */
+@Component("userCommentWebSocketHandler")
 public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler<UserCommentVO>{
 
 	/* (non-Javadoc)
@@ -20,7 +23,7 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
 	 */
 	@Override
 	protected boolean hasPermission(User user, UserCommentVO vo) {
-		if(user.isAdmin())
+		if(user.hasAdminPermission())
 			return true;
 		else 
 			return user.getId() == vo.getUserId();
@@ -34,4 +37,11 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
 		return new UserCommentModel(vo);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
+	 */
+	@Override
+	public String getDaoBeanName() {
+	    return "userCommentDao";
+	}
 }

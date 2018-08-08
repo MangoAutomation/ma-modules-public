@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,7 +37,6 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResource;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.util.ConfigurationExportData;
-import com.infiniteautomation.mangoApi.websocket.JsonConfigImportWebSocketDefinition;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -47,7 +47,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.dwr.emport.ImportTask;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
@@ -58,6 +57,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.publisher.config.JsonConfigImportWebSocketHandler;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.ProgressiveTaskListener;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -75,8 +75,8 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
     private final JsonConfigImportWebSocketHandler websocket;
     
     
-    public JsonEmportV2Controller(){
-        this.websocket = (JsonConfigImportWebSocketHandler)ModuleRegistry.getWebSocketHandlerDefinition(JsonConfigImportWebSocketDefinition.TYPE_NAME).getHandlerInstance();
+    public JsonEmportV2Controller(@Autowired JsonConfigImportWebSocketHandler websocket){
+        this.websocket = websocket;
         this.websocket.setController(this);
         this.importStatusResources = new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
     }

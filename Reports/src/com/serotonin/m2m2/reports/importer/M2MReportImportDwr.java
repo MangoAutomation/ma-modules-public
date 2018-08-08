@@ -12,11 +12,11 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.DatabaseProxy.DatabaseType;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;

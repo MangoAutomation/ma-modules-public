@@ -16,10 +16,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.directwebremoting.WebContext;
 import org.directwebremoting.WebContextFactory;
 
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.component.AnalogGraphicComponent;
 import com.serotonin.m2m2.gviews.component.BinaryGraphicComponent;

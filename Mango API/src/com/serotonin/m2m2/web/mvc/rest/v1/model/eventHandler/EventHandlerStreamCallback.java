@@ -4,7 +4,7 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.model.eventHandler;
 
-import com.serotonin.m2m2.db.dao.EventHandlerDao;
+import com.infiniteautomation.mango.spring.dao.EventHandlerDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.Permissions;

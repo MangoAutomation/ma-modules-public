@@ -4,10 +4,7 @@
  */
 package com.infiniteautomation.mangoApi.websocket;
 
-import org.springframework.web.socket.WebSocketHandler;
-
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.ModulesWebSocketHandler;
 
 /**
  *
@@ -16,11 +13,11 @@ import com.serotonin.m2m2.web.mvc.rest.v1.publisher.ModulesWebSocketHandler;
 public class ModulesWebSocketDefinition extends WebSocketDefinition{
 
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandler()
+     * @see com.serotonin.m2m2.module.WebSocketDefinition#getWebSocketHandlerBeanName()
      */
     @Override
-    protected WebSocketHandler createHandler() {
-        return new ModulesWebSocketHandler();
+    public String getWebSocketHandlerBeanName() {
+        return "modulesWebSocketHandler";
     }
 
     /* (non-Javadoc)

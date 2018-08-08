@@ -4,10 +4,7 @@
  */
 package com.infiniteautomation.mangoApi.websocket;
 
-import org.springframework.web.socket.WebSocketHandler;
-
 import com.serotonin.m2m2.module.WebSocketDefinition;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.datapoint.DataPointWebSocketHandler;
 
 /**
  * @author Terry Packer
@@ -16,13 +13,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.publisher.datapoint.DataPointWebSocket
 public class DataPointWebSocketDefinition extends WebSocketDefinition{
 
     public static final String TYPE_NAME = "DATA_POINT";
-
+    
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.WebSocketDefinition#getHandlerSingleton()
+     * @see com.serotonin.m2m2.module.WebSocketDefinition#getWebSocketHandlerBeanName()
      */
     @Override
-    public WebSocketHandler createHandler() {
-        return new DataPointWebSocketHandler();
+    public String getWebSocketHandlerBeanName() {
+        return "dataPointWebSocketHandler";
     }
 
     /* (non-Javadoc)

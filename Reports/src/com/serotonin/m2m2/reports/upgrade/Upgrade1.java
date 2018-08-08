@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
-import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 
 /**

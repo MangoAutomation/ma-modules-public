@@ -2,7 +2,7 @@
     Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
     @author Matthew Lohbihler
  */
-package com.serotonin.m2m2.watchlist;
+package com.infiniteautomation.mango.spring.dao;
 
 import java.sql.Clob;
 import java.sql.PreparedStatement;
@@ -18,6 +18,7 @@ import java.util.Map;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
@@ -29,15 +30,17 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.db.query.JoinClause;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.db.dao.AbstractDao;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.watchlist.AuditEvent;
+import com.serotonin.m2m2.watchlist.WatchListParameter;
+import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
@@ -45,26 +48,29 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Matthew Lohbihler
  * @author Terry Packer
  */
+@Repository("watchListDao")
 public class WatchListDao extends AbstractDao<WatchListVO> {
     
 	public static String TABLE_NAME = "watchLists";
-	public static WatchListDao instance = new WatchListDao();
+	public static WatchListDao instance;
 	DaoNotificationWebSocketHandler<WatchListVO> wsHandler;
 	
-    /**
-     * Pass null through to super constructor for websocket handler so we have full control over where it is notified
-     */
-    @SuppressWarnings("unchecked")
-    private WatchListDao() {
-		super((DaoNotificationWebSocketHandler<WatchListVO>) null,
-				AuditEvent.TYPE_NAME, "w",
+    public WatchListDao() {
+		super(AuditEvent.TYPE_NAME, "w",
 		        new String[] {"u.username"}, //to allow filtering on username
 		        false,
 		        new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
 		        );
-        wsHandler = (DaoNotificationWebSocketHandler<WatchListVO>) ModuleRegistry.getWebSocketHandlerDefinition(WatchListWebSocketDefinition.TYPE_NAME).getHandlerInstance();
+		instance = this;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#setHandler(com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler)
+	 */
+	@Override
+	public void setHandler(DaoNotificationWebSocketHandler<WatchListVO> handler) {
+	    wsHandler = handler;
+	}
 	
     /**
      * Note: this method only returns basic watchlist information. No data points or share users.

@@ -19,9 +19,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.servlet.View;
 
+import com.infiniteautomation.mango.spring.dao.UserDao;
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;

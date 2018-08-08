@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;

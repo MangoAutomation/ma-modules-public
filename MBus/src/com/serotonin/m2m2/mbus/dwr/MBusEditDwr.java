@@ -11,8 +11,8 @@ import net.sf.mbus4j.dataframes.MBusResponseFramesContainer;
 import net.sf.mbus4j.dataframes.UserDataResponse;
 import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.mbus.MBusDataSourceVO;
 import com.serotonin.m2m2.mbus.MBusPointLocatorVO;

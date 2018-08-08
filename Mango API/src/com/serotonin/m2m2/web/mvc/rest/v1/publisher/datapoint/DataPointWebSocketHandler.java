@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher.datapoint;
 
+import org.springframework.stereotype.Component;
+
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -14,6 +16,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  *
  */
+@Component("dataPointWebSocketHandler")
 public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<DataPointVO>{
 
 	/* (non-Javadoc)
@@ -21,7 +24,7 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
 	 */
 	@Override
 	protected boolean hasPermission(User user, DataPointVO vo) {
-		if(user.isAdmin())
+		if(user.hasAdminPermission())
 			return true;
 		else 
 			return Permissions.hasDataSourcePermission(user, vo.getDataSourceId());
@@ -34,5 +37,12 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
 	protected Object createModel(DataPointVO vo) {
 		return new DataPointModel(vo);
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
+	 */
+	@Override
+	public String getDaoBeanName() {
+	    return "dataPointDao";
+	}
 }

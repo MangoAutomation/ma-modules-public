@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -25,6 +26,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 /**
  * @author Jared Wiltshire
  */
+@Component("temporaryResourceWebSocketHandler")
 public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHandler {
     private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
     public static final String MESSAGE_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
@@ -79,7 +81,7 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
 
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
 
-        if (resource.getUserId() == user.getId() || (user.isAdmin() && !subscription.isOwnResourcesOnly())) {
+        if (resource.getUserId() == user.getId() || (user.hasAdminPermission() && !subscription.isOwnResourcesOnly())) {
             Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
             Set<String> resourceTypes = subscription.getResourceTypes();
 

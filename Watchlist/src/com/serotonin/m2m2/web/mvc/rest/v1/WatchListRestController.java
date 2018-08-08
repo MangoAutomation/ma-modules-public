@@ -33,14 +33,15 @@ import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -49,12 +50,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListSummaryModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -90,7 +91,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
         User user = this.checkUser(request, result);
         if(result.isOk()){
             try{
-                ASTNode query = parseRQLtoAST(request.getQueryString());
+                ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
                 if(!user.isAdmin()){
                     //We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
                     WatchListStreamCallback callback = new WatchListStreamCallback(this, user);

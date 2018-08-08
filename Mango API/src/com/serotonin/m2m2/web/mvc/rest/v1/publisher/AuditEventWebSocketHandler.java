@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
+import org.springframework.stereotype.Component;
+
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.audit.AuditEventInstanceModel;
@@ -13,6 +15,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  *
  */
+@Component("auditEventWebSocketHandler")
 public class AuditEventWebSocketHandler extends DaoNotificationWebSocketHandler<AuditEventInstanceVO>{
 
 	/* (non-Javadoc)
@@ -20,7 +23,7 @@ public class AuditEventWebSocketHandler extends DaoNotificationWebSocketHandler<
 	 */
 	@Override
 	protected boolean hasPermission(User user, AuditEventInstanceVO vo) {
-		if(user.isAdmin())
+		if(user.hasAdminPermission())
 			return true;
 		else 
 			return user.getId() == vo.getUserId();
@@ -32,6 +35,14 @@ public class AuditEventWebSocketHandler extends DaoNotificationWebSocketHandler<
 	@Override
 	protected Object createModel(AuditEventInstanceVO vo) {
 		return new AuditEventInstanceModel(vo);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
+	 */
+	@Override
+	public String getDaoBeanName() {
+	    return "auditEventDao";
 	}
 
 }

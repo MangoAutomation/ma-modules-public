@@ -2,7 +2,7 @@
     Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
     @author Matthew Lohbihler
  */
-package com.serotonin.m2m2.reports;
+package com.infiniteautomation.mango.spring.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,23 +16,24 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
 import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
-import com.infiniteautomation.mango.rest.v1.reports.ReportsWebSocketDefinition;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.BaseDao;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLQueryCallback;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.reports.ReportAuditEvent;
+import com.serotonin.m2m2.reports.ReportPointValueTimeSerializer;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportUserComment;
@@ -62,20 +63,21 @@ import com.serotonin.web.taglib.Functions;
 
 /**
  *
- * TODO Further flesh out Auditing as its not implemented
- *
  * @author Matthew Lohbihler
  */
+@Repository("reportDao")
 public class ReportDao extends AbstractDao<ReportVO> {
 
     public static final String TABLE_NAME = "reports";
-    public static final ReportDao instance = new ReportDao();
+    @Deprecated
+    public static ReportDao instance;
 
     private ReportDao(){
-        super(ModuleRegistry.getWebSocketHandlerDefinition(ReportsWebSocketDefinition.TYPE_NAME), ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
+        super(ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
         this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner);
         this.instanceCountMonitor.setValue(this.countInstances());
         Common.MONITORED_VALUES.addIfMissingStatMonitor(this.instanceCountMonitor);
+        instance = this;
     }
 
     //

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,19 +41,19 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.spring.dao.DataPointTagsDao;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataPointTagsDao;
+import com.infiniteautomation.mangoApi.websocket.TemporaryResourceWebSocketDefinition;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.TemporaryResourceWebSocketDefinition;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -104,11 +105,9 @@ public class DataPointTagsRestController {
     }
 
     private TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkResourceManager;
-    private TemporaryResourceWebSocketHandler websocket;
 
-    public DataPointTagsRestController() {
-        this.websocket = (TemporaryResourceWebSocketHandler) ModuleRegistry.getWebSocketHandlerDefinition(TemporaryResourceWebSocketDefinition.TYPE_NAME).getHandlerInstance();
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(this.websocket);
+    public DataPointTagsRestController(@Autowired TemporaryResourceWebSocketHandler websocket) {
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(websocket);
     }
 
     //    @ApiOperation(value = "Query for data point tags using RQL", notes = "User must have read permission for the data points")

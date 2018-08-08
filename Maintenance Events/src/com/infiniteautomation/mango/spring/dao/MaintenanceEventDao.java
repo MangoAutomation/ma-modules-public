@@ -2,7 +2,7 @@
     Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
     @author Matthew Lohbihler
  */
-package com.serotonin.m2m2.maintenanceEvents;
+package com.infiniteautomation.mango.spring.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,41 +13,51 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.db.dao.AbstractDao;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.maintenanceEvents.AuditEvent;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
+import com.serotonin.m2m2.maintenanceEvents.SchemaDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
+@Repository("maintenanceEventDao")
 public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     
-    public static final MaintenanceEventDao instance = new MaintenanceEventDao();
+    public static MaintenanceEventDao instance;
     
-    private MaintenanceEventDao() {
-        super(ModuleRegistry.getWebSocketHandlerDefinition(MaintenanceEventWebSocketDefinition.TYPE_NAME),
-                AuditEvent.TYPE_NAME, "m",
+    private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
+    private final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
+
+    private final String SELECT_POINT_XIDS = "SELECT xid from dataPoints AS dp JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
+    private final String SELECT_DATA_SOURCE_XIDS = "SELECT xid from dataSources AS ds JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
+
+    private final String SELECT_POINTS;
+    private final String SELECT_DATA_SOURCES;
+
+    public MaintenanceEventDao(@Autowired DataPointDao dataPointDao, @Autowired DataSourceDao<?> dataSourceDao) {
+        super(AuditEvent.TYPE_NAME, "m",
                 new String[] {},
                 false, new TranslatableMessage("header.maintenanceEvents"));
+        SELECT_POINTS = dataPointDao.getSelectAllSql() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
+        //TODO FIX WHEN Data Source DAO is available via spring
+        SELECT_DATA_SOURCES = dataSourceDao.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
+        instance = this;
     }
     
-    private static final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
-    private static final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
-    
-    private static final String SELECT_POINTS = DataPointDao.instance.getSelectAllSql() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
-    private static final String SELECT_DATA_SOURCES = DataSourceDao.instance.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
 
-    private static final String SELECT_POINT_XIDS = "SELECT xid from dataPoints AS dp JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
-    private static final String SELECT_DATA_SOURCE_XIDS = "SELECT xid from dataSources AS ds JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
+    
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#delete(int, java.lang.String)

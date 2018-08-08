@@ -9,8 +9,8 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.Test;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.spring.dao.EventInstanceDao;
 import com.serotonin.m2m2.db.dao.EventDao;
-import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;

@@ -6,6 +6,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;

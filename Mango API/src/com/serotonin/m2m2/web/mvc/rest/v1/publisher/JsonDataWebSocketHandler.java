@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
 
+import org.springframework.stereotype.Component;
+
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -14,6 +16,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  *
  */
+@Component("jsonDataWebSocketHandler")
 public class JsonDataWebSocketHandler extends DaoNotificationWebSocketHandler<JsonDataVO>{
 
     /* (non-Javadoc)
@@ -32,5 +35,11 @@ public class JsonDataWebSocketHandler extends DaoNotificationWebSocketHandler<Js
         return new JsonDataModel(vo);
     }
 
-	
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
+	 */
+	@Override
+	public String getDaoBeanName() {
+	    return "jsonDataDao";
+	}
 }

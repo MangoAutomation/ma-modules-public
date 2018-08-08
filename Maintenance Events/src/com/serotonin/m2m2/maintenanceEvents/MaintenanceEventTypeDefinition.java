@@ -7,6 +7,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;

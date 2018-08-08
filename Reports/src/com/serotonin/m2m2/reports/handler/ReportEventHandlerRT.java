@@ -10,8 +10,8 @@ import java.net.UnknownHostException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportWorkItem;
 import com.serotonin.m2m2.rt.event.EventInstance;

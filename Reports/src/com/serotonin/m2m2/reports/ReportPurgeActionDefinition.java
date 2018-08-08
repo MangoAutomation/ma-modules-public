@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.SystemActionDefinition;

@@ -1,21 +1,22 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.serotonin.m2m2.web.mvc.rest.v1.publisher;
+package com.infiniteautomation.mangoApi.websocket;
 
-import org.springframework.web.socket.WebSocketHandler;
-
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.serotonin.m2m2.module.WebSocketDefinition;
 
 public class TemporaryResourceWebSocketDefinition extends WebSocketDefinition {
 
     public static final String TYPE_NAME = "TEMPORARY_RESOURCE_WEBSOCKET";
 
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.WebSocketDefinition#getWebSocketHandlerBeanName()
+     */
     @Override
-    protected WebSocketHandler createHandler() {
-        return new TemporaryResourceWebSocketHandler();
+    public String getWebSocketHandlerBeanName() {
+        return "temporaryResourceWebSocketHandler";
     }
+    
 
     @Override
     public String getUrl() {

@@ -7,6 +7,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.m2m2.module.RuntimeManagerDefinition;
 
 public class RTMDefinition extends RuntimeManagerDefinition {

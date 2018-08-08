@@ -11,9 +11,10 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.spring.dao.DataSourceDao;
+import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;

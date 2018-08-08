@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 
+import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.servlet.ReportChartServlet;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.vo.User;
