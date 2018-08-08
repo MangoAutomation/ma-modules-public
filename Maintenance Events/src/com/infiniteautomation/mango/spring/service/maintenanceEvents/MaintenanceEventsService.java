@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
@@ -38,6 +39,11 @@ import net.jazdw.rql.parser.ASTNode;
 @Service
 public class MaintenanceEventsService {
     
+    @Autowired
+    private  MaintenanceEventDao dao;
+    @Autowired
+    private DataSourceDao<DataSourceVO<?>> dataSourceDao;
+    
     /**
      * Get the full VO if exists and has read permission else throw exception
      * @param xid
@@ -45,7 +51,7 @@ public class MaintenanceEventsService {
      * @throws NotFoundException
      */
     public MaintenanceEventVO getFullByXid(String xid, PermissionHolder user) throws NotFoundException, PermissionException {
-        MaintenanceEventVO vo = MaintenanceEventDao.instance.getFullByXid(xid);
+        MaintenanceEventVO vo = dao.getFullByXid(xid);
         if(vo == null)
             throw new NotFoundException();
         ensureReadPermission(vo, user);
@@ -66,7 +72,7 @@ public class MaintenanceEventsService {
         
         //Generate an Xid if necessary
         if(StringUtils.isEmpty(vo.getXid()))
-            vo.setXid(MaintenanceEventDao.instance.generateUniqueXid());
+            vo.setXid(dao.generateUniqueXid());
         
         vo.ensureValid();
         RTMDefinition.instance.saveMaintenanceEvent(vo);
@@ -111,7 +117,7 @@ public class MaintenanceEventsService {
      * @throws TranslatableIllegalStateException - if disabled
      */
     public boolean toggle(String xid, PermissionHolder user) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
-        MaintenanceEventVO existing = MaintenanceEventDao.instance.getByXid(xid);
+        MaintenanceEventVO existing = dao.getByXid(xid);
         if(existing == null)
             throw new NotFoundException();
         ensureTogglePermission(existing, user);
@@ -128,18 +134,18 @@ public class MaintenanceEventsService {
         
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission() || Permissions.hasDataSourcePermission(user)) {
-            return new StreamedVOQueryWithTotal<>(MaintenanceEventDao.instance, rql, transformVisit);
+            return new StreamedVOQueryWithTotal<>(dao, rql, transformVisit);
         } else {
-            return new StreamedVOQueryWithTotal<>(MaintenanceEventDao.instance, rql, item -> {
+            return new StreamedVOQueryWithTotal<>(dao, rql, item -> {
                 if(item.getDataPoints().size() > 0) {
                     DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true);
-                    MaintenanceEventDao.instance.getPoints(item.getId(), callback);
+                    dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission.booleanValue())
                         return false;
                 }
                 if(item.getDataSources().size() > 0) {
                     DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
-                    MaintenanceEventDao.instance.getDataSources(item.getId(), callback);
+                    dao.getDataSources(item.getId(), callback);
                     if(!callback.hasPermission.booleanValue())
                         return false;
                 }
@@ -162,14 +168,14 @@ public class MaintenanceEventsService {
         else {
             if(vo.getDataPoints().size() > 0) {
                 DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false);
-                MaintenanceEventDao.instance.getPoints(vo.getId(), callback);
+                dao.getPoints(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToReadPoints"), user);
             }
             
             if(vo.getDataSources().size() > 0) {
                 DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
-                MaintenanceEventDao.instance.getDataSources(vo.getId(), callback);
+                dao.getDataSources(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToEditSources"), user);
             }
@@ -205,14 +211,14 @@ public class MaintenanceEventsService {
         else {
             if(vo.getDataPoints().size() > 0) {
                 DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true);
-                MaintenanceEventDao.instance.getPoints(vo.getId(), callback);
+                dao.getPoints(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToReadPoints"), user);
             }
             
             if(vo.getDataSources().size() > 0) {
                 DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
-                MaintenanceEventDao.instance.getDataSources(vo.getId(), callback);
+                dao.getDataSources(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToEditSources"), user);
             }
@@ -225,7 +231,7 @@ public class MaintenanceEventsService {
      *
      * @author Terry Packer
      */
-    static class DataPointPermissionsCheckCallback implements MappedRowCallback<DataPointVO> {
+    class DataPointPermissionsCheckCallback implements MappedRowCallback<DataPointVO> {
 
         Map<Integer, DataSourceVO<?>> sources = new HashMap<>();
         MutableBoolean hasPermission = new MutableBoolean(true);
@@ -254,7 +260,7 @@ public class MaintenanceEventsService {
                 if(read) {
                     if(!Permissions.hasDataPointReadPermission(user, point)) {
                         DataSourceVO<?> source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
-                            DataSourceVO<?> newDs = DataSourceDao.instance.get(k);
+                            DataSourceVO<?> newDs = dataSourceDao.get(k);
                             return newDs;
                         });
                         if(!Permissions.hasDataSourcePermission(user, source))
@@ -262,7 +268,7 @@ public class MaintenanceEventsService {
                     }
                 }else {
                     DataSourceVO<?> source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
-                        DataSourceVO<?> newDs = DataSourceDao.instance.get(k);
+                        DataSourceVO<?> newDs = dataSourceDao.get(k);
                         return newDs;
                     });
                     if(!Permissions.hasDataSourcePermission(user, source))

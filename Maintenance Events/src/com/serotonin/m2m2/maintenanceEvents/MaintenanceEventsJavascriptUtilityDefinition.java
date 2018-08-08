@@ -3,15 +3,15 @@
  */
 package com.serotonin.m2m2.maintenanceEvents;
 
-import com.serotonin.m2m2.Common;
+import com.infiniteautomation.mango.maintenanceEvents.MaintenanceEventsJavascriptUtility;
+import com.infiniteautomation.mango.util.script.ScriptUtility;
 import com.serotonin.m2m2.module.MangoJavascriptContextObjectDefinition;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  *
  * @author Terry Packer
  */
-public class MaintenanceEventJavascriptUtilityDefinition extends MangoJavascriptContextObjectDefinition {
+public class MaintenanceEventsJavascriptUtilityDefinition extends MangoJavascriptContextObjectDefinition {
 
     public static final String CONTEXT_KEY = "maintenanceEventsUtility";
     
@@ -24,12 +24,12 @@ public class MaintenanceEventJavascriptUtilityDefinition extends MangoJavascript
     }
 
     /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.MangoJavascriptContextObjectDefinition#getContextObject()
+     * @see com.serotonin.m2m2.module.MangoJavascriptContextObjectDefinition#getUtilityClass()
      */
     @Override
-    public Object getContextObject(PermissionHolder holder) {
-        //TODO wire in holder and deal with singleton bean (Maybe a factory pattern?)
-        return Common.getRuntimeContext().getBean("maintenanceEventsJavascriptUtility");
+    protected Class<? extends ScriptUtility> getUtilityClass() {
+        return MaintenanceEventsJavascriptUtility.class;
     }
+
 
 }

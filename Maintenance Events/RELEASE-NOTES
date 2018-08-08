@@ -7,6 +7,7 @@
 * Adding REST endpoints and websockets to manage events
 * Adding monitor point to track count of created Maintenance event configurations
 * Adding custom query for events endpoint to return Maintenance events based on RQL query of Maintenance Event configurations
+* Adding maintenanceEventsUtility to javascript context to allow manipulation of Maintenance Events
 
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x

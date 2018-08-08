@@ -35,8 +35,6 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 @Repository("maintenanceEventDao")
 public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     
-    public static MaintenanceEventDao instance;
-    
     private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
     private final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
 
@@ -46,18 +44,40 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     private final String SELECT_POINTS;
     private final String SELECT_DATA_SOURCES;
 
-    public MaintenanceEventDao(@Autowired DataPointDao dataPointDao, @Autowired DataSourceDao<?> dataSourceDao) {
+    private DataPointDao dataPointDao;
+    private DataSourceDao<DataSourceVO<?>> dataSourceDao;
+    
+//    private static volatile MaintenanceEventDao instance = null;
+//    private static Object lock = new Object();
+    @Deprecated
+    public static MaintenanceEventDao instance;
+    private MaintenanceEventDao(@Autowired DataPointDao dataPointDao, @Autowired DataSourceDao<DataSourceVO<?>> dataSourceDao) {
         super(AuditEvent.TYPE_NAME, "m",
                 new String[] {},
                 false, new TranslatableMessage("header.maintenanceEvents"));
+        this.dataPointDao = dataPointDao;
+        this.dataSourceDao = dataSourceDao;
         SELECT_POINTS = dataPointDao.getSelectAllSql() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
-        //TODO FIX WHEN Data Source DAO is available via spring
         SELECT_DATA_SOURCES = dataSourceDao.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
         instance = this;
     }
     
-
-    
+//Optional Thread Safe access to singleton, TBD
+//    public static MaintenanceEventDao instance() {
+//        MaintenanceEventDao result = instance;
+//        if(result == null) {
+//            synchronized(lock) {
+//                result = instance;
+//                if(result == null) {
+//                    Object o = Common.getRuntimeContext().getBean("maintenanceEventDao");
+//                    if(o == null)
+//                        throw new ShouldNeverHappenException("DAO not initialized in Spring Runtime Context");
+//                    instance = result = (MaintenanceEventDao)o;
+//                }
+//            }
+//        }
+//        return result;
+//    }
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#delete(int, java.lang.String)
@@ -91,7 +111,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      * @param callback
      */
     public void getPoints(int maintenanceEventId, final MappedRowCallback<DataPointVO> callback){
-        RowMapper<DataPointVO> pointMapper = DataPointDao.instance.getRowMapper();
+        RowMapper<DataPointVO> pointMapper = dataPointDao.getRowMapper();
         this.ejt.query(SELECT_POINTS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
             
@@ -128,7 +148,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      * @param callback
      */
     public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO<?>> callback){
-        RowMapper<DataSourceVO<?>> mapper = DataSourceDao.instance.getRowMapper();
+        RowMapper<DataSourceVO<?>> mapper = dataSourceDao.getRowMapper();
         this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
             
@@ -163,7 +183,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     private static final String SELECT_BY_DATA_SOURCE = "SELECT maintenanceEventId FROM maintenanceEventDataSources WHERE dataSourceId=?";
     public void getForDataPoint(int dataPointId, MappedRowCallback<MaintenanceEventVO> callback) {
 
-        DataPointVO vo = DataPointDao.instance.getDataPoint(dataPointId);
+        DataPointVO vo = dataPointDao.getDataPoint(dataPointId);
         if(vo == null)
             return;
         

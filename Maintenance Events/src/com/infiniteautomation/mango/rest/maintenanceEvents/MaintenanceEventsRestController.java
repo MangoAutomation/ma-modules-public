@@ -47,6 +47,11 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/maintenance-events")
 public class MaintenanceEventsRestController {
 
+    @Autowired
+    private DataPointDao dataPointDao;
+    @Autowired
+    private MaintenanceEventDao dao;
+    
     private MaintenanceEventsService service;
     
     public MaintenanceEventsRestController(@Autowired MaintenanceEventsService service) {
@@ -177,7 +182,7 @@ public class MaintenanceEventsRestController {
         for(Integer id: pointIds) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(id, models);
-            MaintenanceEventDao.instance.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
+            dao.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
 
                 @Override
                 public void row(MaintenanceEventVO vo, int index) {
@@ -208,9 +213,9 @@ public class MaintenanceEventsRestController {
         for(String xid: pointXids) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(xid, models);
-            Integer id = DataPointDao.instance.getIdByXid(xid);
+            Integer id = dataPointDao.getIdByXid(xid);
             if(id != null) {
-                MaintenanceEventDao.instance.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
+               dao.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
     
                     @Override
                     public void row(MaintenanceEventVO vo, int index) {
@@ -239,9 +244,9 @@ public class MaintenanceEventsRestController {
      * Set the data point XIDs if there are any, id must be set in model
      * @param model
      */
-    private static void fillDataPoints(MaintenanceEventModel model) {
+    private void fillDataPoints(MaintenanceEventModel model) {
         List<String> xids = new ArrayList<String>();
-        MaintenanceEventDao.instance.getPointXids(model.getId(), new MappedRowCallback<String>() {
+        dao.getPointXids(model.getId(), new MappedRowCallback<String>() {
             @Override
             public void row(String item, int index) {
                 xids.add(item);
@@ -254,9 +259,9 @@ public class MaintenanceEventsRestController {
      * Set the data source XIDs if there are any, id must be set in model
      * @param model
      */
-    private static void fillDataSources(MaintenanceEventModel model) {
+    private void fillDataSources(MaintenanceEventModel model) {
         List<String> dsXids = new ArrayList<String>();
-        MaintenanceEventDao.instance.getSourceXids(model.getId(), new MappedRowCallback<String>() {
+        dao.getSourceXids(model.getId(), new MappedRowCallback<String>() {
             @Override
             public void row(String item, int index) {
                 dsXids.add(item);
