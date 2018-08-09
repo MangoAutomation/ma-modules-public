@@ -27,10 +27,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.PublisherDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -55,7 +55,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<PublisherVO<?>, AbstractPublisherModel<?, ?>, PublisherDao>{
 
 	public PublisherRestV2Controller(){
-		super(PublisherDao.instance);
+		super(PublisherDao.getInstance());
 	}
 
 	@ApiOperation(
@@ -219,7 +219,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
             if(pointId == Common.NEW_ID) {
                 response.addContextualMessage("dataPointXid", "emport.error.missingPoint", point.getMissingXid());
             } else if(set.contains(pointId)) {
-                DataPointVO vo = DataPointDao.instance.getDataPoint(pointId, false);
+                DataPointVO vo = DataPointDao.getInstance().getDataPoint(pointId, false);
                 response.addContextualMessage("dataPointXid", "validate.publisher.duplicatePoint", vo.getExtendedName(), vo.getXid());
             } else {
                 set.add(pointId);

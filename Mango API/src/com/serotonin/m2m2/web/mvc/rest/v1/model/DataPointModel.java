@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.infiniteautomation.mango.spring.dao.TemplateDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
@@ -68,7 +68,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		//We must set the local properties to ensure they are in the model since
 		// this constructor is used in the Mango Rest Controller Code
 		if(vo.getTemplateId() != null){
-			BaseTemplateVO<?> template = TemplateDao.instance.get(vo.getTemplateId());
+			BaseTemplateVO<?> template = TemplateDao.getInstance().get(vo.getTemplateId());
 			if(template != null)
 				this.templateXid = template.getXid();
 			

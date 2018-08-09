@@ -20,10 +20,9 @@ import org.junit.Test;
 import com.infiniteautomation.mango.db.query.StreamableRowCallback;
 import com.infiniteautomation.mango.db.query.StreamableSqlQuery;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
-import com.infiniteautomation.mango.spring.dao.UserDao;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.MangoTestBase;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.User;
 
@@ -63,16 +62,16 @@ public class WatchlistSqlVisitorTest extends MangoTestBase{
         user.setPassword(Common.encrypt("usernametest"));
         user.setPermissions("user,test,permission1");
         validate(user);
-        UserDao.instance.saveUser(user);
+        UserDao.getInstance().saveUser(user);
 
         //Insert some watchlists
         for(int i=0; i<120; i++) {
             WatchListVO wl = new WatchListVO();
-            wl.setXid(WatchListDao.instance.generateUniqueXid());
+            wl.setXid(WatchListDao.getInstance().generateUniqueXid());
             wl.setName("Watchilst " + i);
             wl.setUserId(user.getId());
             wl.setReadPermission("permission1");
-            WatchListDao.instance.saveWatchList(wl);
+            WatchListDao.getInstance().saveWatchList(wl);
         }
 
 
@@ -114,7 +113,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase{
         };
 
 
-        StreamableSqlQuery<WatchListVO> query = WatchListDao.instance.createQuery(root, selectCallback, countCallback, modelMap, appenders, true);
+        StreamableSqlQuery<WatchListVO> query = WatchListDao.getInstance().createQuery(root, selectCallback, countCallback, modelMap, appenders, true);
         query.query();
         query.count();
 

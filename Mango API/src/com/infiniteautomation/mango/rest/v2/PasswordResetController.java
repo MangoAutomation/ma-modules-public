@@ -26,7 +26,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
-import com.infiniteautomation.mango.spring.dao.UserDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
@@ -69,7 +69,7 @@ public class PasswordResetController extends MangoRestController {
             SendEmailRequestBody body
             ) throws AddressException, TemplateException, IOException {
         
-        User user = UserDao.instance.getUser(body.getUsername());
+        User user = UserDao.getInstance().getUser(body.getUsername());
         if (user == null) {
             throw new NotFoundRestException();
         }
@@ -142,7 +142,7 @@ public class PasswordResetController extends MangoRestController {
         boolean sendEmail = requestBody.isSendEmail();
         Date expiry = requestBody.getExpiry();
         
-        User user = UserDao.instance.getUser(username);
+        User user = UserDao.getInstance().getUser(username);
         if (user == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
         }
@@ -152,7 +152,7 @@ public class PasswordResetController extends MangoRestController {
         }
         
         if (lockPassword) {
-            UserDao.instance.lockPassword(user);
+            UserDao.getInstance().lockPassword(user);
         }
         
         CreateTokenResponse response = new CreateTokenResponse();

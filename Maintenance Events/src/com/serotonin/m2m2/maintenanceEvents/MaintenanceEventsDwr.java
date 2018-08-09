@@ -11,10 +11,9 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
-import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -31,7 +30,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         ProcessResult response = new ProcessResult();
         final Translations translations = getTranslations();
 
-        List<MaintenanceEventVO> events = MaintenanceEventDao.instance.getAllFull();
+        List<MaintenanceEventVO> events = MaintenanceEventDao.getInstance().getAllFull();
         Collections.sort(events, new Comparator<MaintenanceEventVO>() {
             @Override
             public int compare(MaintenanceEventVO m1, MaintenanceEventVO m2) {
@@ -42,7 +41,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         response.addData(MODEL_ATTR_EVENTS, events);
 
         List<IntStringPair> dataSources = new ArrayList<IntStringPair>();
-        for (DataSourceVO<?> ds : DataSourceDao.instance.getDataSources())
+        for (DataSourceVO<?> ds : DataSourceDao.getInstance().getDataSources())
             dataSources.add(new IntStringPair(ds.getId(), ds.getName()));
         response.addData("dataSources", dataSources);
 
@@ -58,14 +57,14 @@ public class MaintenanceEventsDwr extends ModuleDwr {
         if (id == Common.NEW_ID) {
             DateTime dt = new DateTime();
             me = new MaintenanceEventVO();
-            me.setXid(MaintenanceEventDao.instance.generateUniqueXid());
+            me.setXid(MaintenanceEventDao.getInstance().generateUniqueXid());
             me.setActiveYear(dt.getYear());
             me.setInactiveYear(dt.getYear());
             me.setActiveMonth(dt.getMonthOfYear());
             me.setInactiveMonth(dt.getMonthOfYear());
         }
         else {
-            me = MaintenanceEventDao.instance.getFull(id);
+            me = MaintenanceEventDao.getInstance().getFull(id);
 
             MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(me.getId());
             if (rt != null)

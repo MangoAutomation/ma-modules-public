@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.View;
 
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -23,6 +22,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.watchlist.WatchListCommon;
+import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListHandler;
 import com.serotonin.m2m2.web.dwr.BaseDwr;
 import com.serotonin.m2m2.web.taglib.Functions;
@@ -33,7 +33,7 @@ public class MobileWatchListHandler extends WatchListHandler {
     @Override
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model) {
         User user = Common.getHttpUser();
-        WatchListDao watchListDao = WatchListDao.instance;
+        WatchListDao watchListDao = WatchListDao.getInstance();
 
         // Check for a watchlist id parameter. If given, update the user.
         try {

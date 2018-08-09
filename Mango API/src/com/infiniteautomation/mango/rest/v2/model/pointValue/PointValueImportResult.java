@@ -5,8 +5,8 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -51,7 +51,7 @@ public class PointValueImportResult {
         this.result = new ProcessResult();
         this.dao = dao;
         this.user = user;
-        vo = DataPointDao.instance.getByXid(xid);
+        vo = DataPointDao.getInstance().getByXid(xid);
         if(vo == null) {
             valid = false;
             result.addContextualMessage("xid", "emport.error.missingPoint", xid);

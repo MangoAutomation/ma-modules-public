@@ -16,10 +16,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.directwebremoting.WebContext;
 import org.directwebremoting.WebContextFactory;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.component.AnalogGraphicComponent;
 import com.serotonin.m2m2.gviews.component.BinaryGraphicComponent;
@@ -270,7 +270,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         result.put("componentTypes", components);
 
         // Available points
-        List<DataPointVO> allPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
+        List<DataPointVO> allPoints = DataPointDao.getInstance().getDataPoints(DataPointExtendedNameComparator.instance, false);
         List<DataPointBean> availablePoints = new ArrayList<DataPointBean>();
         final boolean admin = Permissions.hasAdminPermission(user);
         for (DataPointVO dataPoint : allPoints) {
@@ -312,7 +312,7 @@ public class GraphicalViewDwr extends ModuleDwr {
         PointComponent pc = (PointComponent) getViewComponent(pointComponentId);
         User user = Common.getUser();
 
-        DataPointVO dp = DataPointDao.instance.getDataPoint(dataPointId);
+        DataPointVO dp = DataPointDao.getInstance().getDataPoint(dataPointId);
         if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
             response.addContextualMessage("settingsPointInfo", "validate.required");
 
@@ -629,7 +629,7 @@ public class GraphicalViewDwr extends ModuleDwr {
                 // no op
             }
 
-            DataPointVO dp = DataPointDao.instance.getDataPoint(dataPointId);
+            DataPointVO dp = DataPointDao.getInstance().getDataPoint(dataPointId);
 
             if (dp == null || !Permissions.hasDataPointReadPermission(user, dp))
                 c.setDataPoint(kvp.getKey(), null);

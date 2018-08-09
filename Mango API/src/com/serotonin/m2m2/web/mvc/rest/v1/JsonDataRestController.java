@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.spring.dao.JsonDataDao;
+import com.serotonin.m2m2.db.dao.JsonDataDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.definitions.permissions.JsonDataCreatePermissionDefinition;
@@ -77,7 +77,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 	 * @param dao
 	 */
 	public JsonDataRestController() {
-		super(JsonDataDao.instance);
+		super(JsonDataDao.getInstance());
 	}
 
 	@ApiOperation(
@@ -118,7 +118,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     		@PathVariable String xid
    		){
 		RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.OK);
-		JsonDataVO vo = JsonDataDao.instance.getByXid(xid);
+		JsonDataVO vo = JsonDataDao.getInstance().getByXid(xid);
 
 		if(vo == null){
 			result.addRestMessage(getDoesNotExistMessage());
@@ -168,7 +168,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		JsonDataVO vo = JsonDataDao.instance.getByXid(xid);
+    		JsonDataVO vo = JsonDataDao.getInstance().getByXid(xid);
     		if(vo == null){
     			result.addRestMessage(getDoesNotExistMessage());
     		} else {

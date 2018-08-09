@@ -11,8 +11,8 @@ import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.BackgroundContext;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
@@ -95,7 +95,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     private void scheduleTask(TemporaryResource<T, AbstractRestV2Exception> resource) {
         TaskData tasks = (TaskData) resource.getData();
 
-        User user = UserDao.instance.get(resource.getUserId());
+        User user = UserDao.getInstance().get(resource.getUserId());
         // user might have been deleted since task was scheduled
         if (user == null) {
             AccessDeniedException error = new AccessDeniedException();

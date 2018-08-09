@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -65,7 +65,7 @@ public class PointHierarchyRestController extends MangoRestController{
     	RestProcessResult<JsonStream<PointHierarchyModel>> result = new RestProcessResult<JsonStream<PointHierarchyModel>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+    		PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true);
 	    	PointHiearchyFolderStream stream = new PointHiearchyFolderStream(ph.getRoot(), user, getSubFolders, getPoints);
 	    	return result.createResponseEntity(stream);
     	}
@@ -91,7 +91,7 @@ public class PointHierarchyRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+			PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true);
 			PointFolder folder = ph.getRoot();
 			PointFolder desiredFolder = null;
 			if(folder.getName().equals(folderName))
@@ -129,7 +129,7 @@ public class PointHierarchyRestController extends MangoRestController{
         RestProcessResult<JsonStream<PointHierarchyModel>> result = new RestProcessResult<JsonStream<PointHierarchyModel>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+            PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true);
             PointHierarchyPathStream stream = new PointHierarchyPathStream(ph.getRoot(), user, getSubFolders, getPoints, folderPath);
 	    	return result.createResponseEntity(stream);
         }
@@ -155,7 +155,7 @@ public class PointHierarchyRestController extends MangoRestController{
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-			PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+			PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true);
 			PointFolder folder = ph.getRoot();
 			PointFolder desiredFolder = null;
 			if(folder.getId() == folderId)
@@ -188,11 +188,11 @@ public class PointHierarchyRestController extends MangoRestController{
 
     	RestProcessResult<List<String>> result = new RestProcessResult<List<String>>(HttpStatus.OK);
     	
-		PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true);
+		PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true);
 
 		User user = this.checkUser(request, result);
 		if(result.isOk()){
-			DataPointVO vo = DataPointDao.instance.getByXid(xid);
+			DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
 			if(vo == null){
 				result.addRestMessage(getDoesNotExistMessage());
 				return result.createResponseEntity();

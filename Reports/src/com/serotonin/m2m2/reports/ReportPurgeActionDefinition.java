@@ -9,7 +9,6 @@ import org.joda.time.DateTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.SystemActionDefinition;
@@ -84,7 +83,7 @@ public class ReportPurgeActionDefinition extends SystemActionDefinition{
 	                SystemSettingsDao.instance.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIOD_TYPE),
 	                SystemSettingsDao.instance.getIntValue(ReportPurgeDefinition.REPORT_PURGE_PERIODS));
 
-	        int cnt = ReportDao.instance.purgeReportsBefore(purgeAll ? Common.timer.currentTimeMillis() : cutoff.getMillis());
+	        int cnt = ReportDao.getInstance().purgeReportsBefore(purgeAll ? Common.timer.currentTimeMillis() : cutoff.getMillis());
 	        if (cnt > 0)
 	            LOG.info("Report purge ended, " + cnt + " report instances deleted");
 

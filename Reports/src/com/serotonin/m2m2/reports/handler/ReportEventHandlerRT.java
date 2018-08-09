@@ -10,8 +10,8 @@ import java.net.UnknownHostException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportWorkItem;
 import com.serotonin.m2m2.rt.event.EventInstance;
@@ -43,7 +43,7 @@ public class ReportEventHandlerRT extends EventHandlerRT<ReportEventHandlerVO>{
     	try {
 		   	if(vo.getActiveReportId() != Common.NEW_ID){
 				//Schedule the Active Report To Run
-				ReportVO report = ReportDao.instance.get(vo.getActiveReportId());
+				ReportVO report = ReportDao.getInstance().get(vo.getActiveReportId());
 				if(report != null){
 					String host = InetAddress.getLocalHost().getHostName();
 				   	int port = Common.envProps.getInt("web.port", 8080);
@@ -64,7 +64,7 @@ public class ReportEventHandlerRT extends EventHandlerRT<ReportEventHandlerVO>{
 		try{
 			if(vo.getInactiveReportId() != Common.NEW_ID){
 				//Schedule the Inactive Report to run
-				ReportVO report = ReportDao.instance.get(vo.getInactiveReportId());
+				ReportVO report = ReportDao.getInstance().get(vo.getInactiveReportId());
 				if(report != null){
 					String host = InetAddress.getLocalHost().getHostName();
 					int port = Common.envProps.getInt("web.port", 8080);

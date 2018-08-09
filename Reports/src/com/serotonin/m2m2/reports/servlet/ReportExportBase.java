@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.web.ReportCommon;
 import com.serotonin.m2m2.reports.web.UserCommentCsvStreamer;
@@ -34,7 +34,7 @@ abstract public class ReportExportBase extends HttpServlet {
         int instanceId = Integer.parseInt(request.getParameter("instanceId"));
 
         // Get the report instance
-        ReportDao reportDao = ReportDao.instance;
+        ReportDao reportDao = ReportDao.getInstance();
         ReportInstance instance = reportDao.getReportInstance(instanceId);
 
         // Ensure the user is allowed access.

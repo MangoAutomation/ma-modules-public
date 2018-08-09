@@ -26,7 +26,7 @@ public class PointDeleteDefinition extends DataPointChangeDefinition {
 
     @Override
     public void beforeDelete(int dataPointId) {
-        for (PointLinkVO link : PointLinkDao.instance.getPointLinksForPoint(dataPointId))
+        for (PointLinkVO link : PointLinkDao.getInstance().getPointLinksForPoint(dataPointId))
             RTMDefinition.instance.deletePointLink(link.getId());
     }
 

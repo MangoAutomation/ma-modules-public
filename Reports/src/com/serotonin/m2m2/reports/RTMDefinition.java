@@ -11,7 +11,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.RuntimeManagerDefinition;
@@ -28,7 +27,7 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        List<ReportVO> reports = ReportDao.instance.getReports();
+        List<ReportVO> reports = ReportDao.getInstance().getReports();
         for (ReportVO report : reports) {
             try {
             	String host = InetAddress.getLocalHost().getHostName();

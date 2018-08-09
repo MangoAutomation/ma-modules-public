@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableException;
@@ -93,7 +93,7 @@ public class DataImportController extends FileUploadController {
      */
     private void importCsv(CSVReader csvReader, Map<String, Object> model, Translations translations, List<String> errorMessages) throws IOException, TranslatableException {
     	
-        DataPointDao dataPointDao = DataPointDao.instance;
+        DataPointDao dataPointDao = DataPointDao.getInstance();
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         
         int rowErrors = 0;
@@ -201,7 +201,7 @@ public class DataImportController extends FileUploadController {
     DataSourceVO<?> getDataSource(int dataSourceId) {
         DataSourceVO<?> ds = cachedDataSources.get(dataSourceId);
         if (ds == null) {
-            ds = DataSourceDao.instance.get(dataSourceId);
+            ds = DataSourceDao.getInstance().get(dataSourceId);
             if (ds != null)
                 cachedDataSources.put(dataSourceId, ds);
         }

@@ -31,10 +31,10 @@ import com.infiniteautomation.mango.db.query.SQLQueryColumn;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
-import com.infiniteautomation.mango.spring.dao.EventInstanceDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.EventDao;
+import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleQueryDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -74,7 +74,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
     private static Log LOG = LogFactory.getLog(EventsRestController.class);
 
     public EventsRestController(){
-        super(EventInstanceDao.instance);
+        super(EventInstanceDao.getInstance());
 
         //Add in our mappings
         this.modelMap.put("eventType", "typeName");
@@ -195,7 +195,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            EventInstanceVO vo = EventInstanceDao.instance.get(id);
+            EventInstanceVO vo = EventInstanceDao.getInstance().get(id);
             if (vo == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -290,7 +290,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             if (message != null)
                 tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
 
-            EventInstance event = EventDao.instance.get(id);
+            EventInstance event = EventDao.getInstance().get(id);
             if (event == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
@@ -115,7 +114,7 @@ public class ActiveMaintenanceEventsForDataPointsDuringPeriodQuery extends Modul
         //Lookup data points by tag
         List<Object> args = new ArrayList<>();
         args.add("typeRef1");
-        MaintenanceEventDao.instance.rqlQuery(rqlAstNode, new MappedRowCallback<MaintenanceEventVO>() {
+        MaintenanceEventDao.getInstance().rqlQuery(rqlAstNode, new MappedRowCallback<MaintenanceEventVO>() {
             @Override
             public void row(MaintenanceEventVO vo, int index) {
                 args.add(Integer.toString(vo.getId()));

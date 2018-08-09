@@ -25,11 +25,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
-import com.infiniteautomation.mango.spring.dao.EventDetectorDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -62,7 +62,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>{
 
 	public EventDetectorRestV2Controller() {
-		super(EventDetectorDao.instance);
+		super(EventDetectorDao.getInstance());
 	}
 
 	@ApiOperation(
@@ -82,7 +82,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		}else{
 			EventDetectorStreamCallback callback = new EventDetectorStreamCallback(this, user);
 			FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao> stream  = 
-					new FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>(EventDetectorDao.instance,this, node, callback);
+					new FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>(EventDetectorDao.getInstance(),this, node, callback);
 			stream.setupQuery();
 			return new ResponseEntity<>(stream, HttpStatus.OK);
 		}
@@ -105,7 +105,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		//Check permissions
 		if(!user.isAdmin()){
-			DataPointVO dp = DataPointDao.instance.get(vo.getSourceId());
+			DataPointVO dp = DataPointDao.getInstance().get(vo.getSourceId());
 			Permissions.ensureDataPointReadPermission(user, dp);
 		}
 		
@@ -127,7 +127,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		// Set XID if required
         if (StringUtils.isEmpty(vo.getXid())) {
-            vo.setXid(EventDetectorDao.instance.generateUniqueXid());
+            vo.setXid(EventDetectorDao.getInstance().generateUniqueXid());
         }
         
 		//Check to see if it already exists
@@ -137,7 +137,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         }
 		
 		//Check permission
-		DataPointVO dp = DataPointDao.instance.get(vo.getSourceId());
+		DataPointVO dp = DataPointDao.getInstance().get(vo.getSourceId());
 		if(dp == null)
 		    throw new NotFoundRestException();
 		Permissions.ensureDataSourcePermission(user, dp.getDataSourceId());
@@ -150,7 +150,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		ped.ensureValid();
 		
 		//Add it to the data point
-		DataPointDao.instance.setEventDetectors(dp);
+		DataPointDao.getInstance().setEventDetectors(dp);
 		dp.getEventDetectors().add(ped);
 		
 		//Save the data point
@@ -186,7 +186,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		}
 		
 		//Check permission
-		DataPointVO dp = DataPointDao.instance.get(vo.getSourceId());
+		DataPointVO dp = DataPointDao.getInstance().get(vo.getSourceId());
 		if(dp == null)
 		    throw new NotFoundRestException();
 		Permissions.ensureDataSourcePermission(user, dp.getDataSourceId());
@@ -200,7 +200,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		//Replace it on the data point, if it isn't replaced we fail.
 		boolean replaced = false;
-		DataPointDao.instance.setEventDetectors(dp);
+		DataPointDao.getInstance().setEventDetectors(dp);
 		ListIterator<AbstractPointEventDetectorVO<?>> it = dp.getEventDetectors().listIterator();
 		while(it.hasNext()){
 			AbstractPointEventDetectorVO<?> ed = it.next();
@@ -240,7 +240,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		}
 		
 		//Check permission
-		DataPointVO dp = DataPointDao.instance.get(existing.getSourceId());
+		DataPointVO dp = DataPointDao.getInstance().get(existing.getSourceId());
 		Permissions.ensureDataSourcePermission(user, dp.getDataSourceId());
 		
 		//TODO Fix this when we have other types of detectors
@@ -249,7 +249,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		
 		//Remove it from the data point, if it isn't replaced we fail.
 		boolean removed = false;
-		DataPointDao.instance.setEventDetectors(dp);
+		DataPointDao.getInstance().setEventDetectors(dp);
 		ListIterator<AbstractPointEventDetectorVO<?>> it = dp.getEventDetectors().listIterator();
 		while(it.hasNext()){
 			AbstractPointEventDetectorVO<?> ed = it.next();
@@ -280,7 +280,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
-		DataPointVO dp = DataPointDao.instance.getByXid(xid);
+		DataPointVO dp = DataPointDao.getInstance().getByXid(xid);
 		if(dp == null)
 			throw new NotFoundRestException();
 		
@@ -288,7 +288,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 		if(!user.isAdmin())
 			Permissions.ensureDataPointReadPermission(user, dp);
 		
-		DataPointDao.instance.setEventDetectors(dp);
+		DataPointDao.getInstance().setEventDetectors(dp);
 		List<AbstractEventDetectorModel<?>> models = new ArrayList<AbstractEventDetectorModel<?>>();
 		for(AbstractPointEventDetectorVO<?> ped : dp.getEventDetectors())
 			models.add(ped.asModel());
@@ -306,11 +306,11 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     		@AuthenticationPrincipal User user,
     		@ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
     		@PathVariable String xid, HttpServletRequest request) {
-		DataSourceVO<?> ds = DataSourceDao.instance.getByXid(xid);
+		DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(xid);
 		if(ds == null)
 			throw new NotFoundRestException();
 		
-		List<DataPointVO> points = DataPointDao.instance.getDataPoints(ds.getId(), null, false);
+		List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId(), null, false);
 		List<AbstractEventDetectorModel<?>> models = new ArrayList<AbstractEventDetectorModel<?>>();
 		
 		for(DataPointVO dp : points){
@@ -318,7 +318,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 			if(!user.isAdmin())
 				Permissions.ensureDataPointReadPermission(user, dp);
 			
-			DataPointDao.instance.setEventDetectors(dp);
+			DataPointDao.getInstance().setEventDetectors(dp);
 			for(AbstractPointEventDetectorVO<?> ped : dp.getEventDetectors())
 				models.add(ped.asModel());
 		}

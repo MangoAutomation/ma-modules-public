@@ -22,8 +22,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
-import com.infiniteautomation.mango.spring.dao.UserCommentDao;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.db.dao.UserCommentDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
@@ -52,7 +52,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	private static Log LOG = LogFactory.getLog(UserCommentRestController.class);
 	
 	public UserCommentRestController(){
-		super(UserCommentDao.instance);
+		super(UserCommentDao.getInstance());
 		
 		this.appenders.put("commentType", new ExportCodeColumnQueryAppender(UserCommentVO.COMMENT_TYPE_CODES));
 		
@@ -172,7 +172,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		if(model.validate()){
     			try{
     				String initiatorId = request.getHeader("initiatorId");
-	    			UserCommentDao.instance.save(model.getData(), initiatorId);
+	    			UserCommentDao.getInstance().save(model.getData(), initiatorId);
 	    			LOG.info("User with name/id: " + user.getUsername() + "/" + user.getId() + " created a User Comment for user: " + model.getData().getUserId());
 	    			URI location = builder.path("v1/comments/{xid}").buildAndExpand(model.getXid()).toUri();
     		    	result.addRestMessage(getResourceCreatedMessage(location));
@@ -200,7 +200,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		UserCommentVO u = UserCommentDao.instance.getByXid(xid);
+    		UserCommentVO u = UserCommentDao.getInstance().getByXid(xid);
 			if (u == null) {
 				result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -210,7 +210,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		if(hasEditPermission(u, user)){
     			//Delete it
     			String initiatorId = request.getHeader("initiatorId");
-    			UserCommentDao.instance.delete(u.getId(), initiatorId);
+    			UserCommentDao.getInstance().delete(u.getId(), initiatorId);
     		}else{
     			LOG.warn("Non admin user: " + user.getUsername() + " attempted to delete user comment : " + u.getUsername());
     			result.addRestMessage(this.getUnauthorizedMessage());
@@ -229,7 +229,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
     	this.checkUser(request, result);
     	if(result.isOk()){
-    		UserCommentVO u = UserCommentDao.instance.getByXid(xid);
+    		UserCommentVO u = UserCommentDao.getInstance().getByXid(xid);
 			if (u == null) {
 				result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -253,7 +253,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 		RestProcessResult<UserCommentModel> result = new RestProcessResult<UserCommentModel>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		UserCommentVO u = UserCommentDao.instance.getByXid(xid);
+    		UserCommentVO u = UserCommentDao.getInstance().getByXid(xid);
 
 			if (u == null) {
 				result.addRestMessage(getDoesNotExistMessage());
@@ -271,7 +271,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 		        	if(!model.validate()){
 	    	        	result.addRestMessage(this.getValidationFailedError());
 	    	        }else{
-	    	        	UserCommentDao.instance.save(model.getData());
+	    	        	UserCommentDao.getInstance().save(model.getData());
 	    	        	URI location = builder.path("v1/comments/{xid}").buildAndExpand(model.getXid()).toUri();
 	    		    	result.addRestMessage(getResourceUpdatedMessage(location));
 	    	        }

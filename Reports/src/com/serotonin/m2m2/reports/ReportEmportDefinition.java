@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
@@ -40,7 +39,7 @@ public class ReportEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        List<ReportVO> wls = ReportDao.instance.getReports();
+        List<ReportVO> wls = ReportDao.getInstance().getReports();
         return wls;
     }
 
@@ -50,11 +49,11 @@ public class ReportEmportDefinition extends EmportDefinition {
 
         String xid = reportJson.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = ReportDao.instance.generateUniqueXid();
+            xid = ReportDao.getInstance().generateUniqueXid();
 
         ReportVO report = null; 
         try{
-        	report = ReportDao.instance.getReport(xid);
+        	report = ReportDao.getInstance().getReport(xid);
         }catch(IncorrectResultSizeDataAccessException e){
         	importContext.getResult().addGenericMessage("reports.emport.duplicateXids", xid);
         	return;
@@ -77,7 +76,7 @@ public class ReportEmportDefinition extends EmportDefinition {
             else {
                 // Sweet. Save it.
                 boolean isnew = report.getId() == Common.NEW_ID;
-                ReportDao.instance.saveReport(report);
+                ReportDao.getInstance().saveReport(report);
                 importContext.addSuccessMessage(isnew, "emport.report.prefix", xid);
             }
         }

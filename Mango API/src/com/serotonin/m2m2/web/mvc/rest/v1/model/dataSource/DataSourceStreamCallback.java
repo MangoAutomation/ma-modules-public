@@ -6,7 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource;
 
 import java.io.IOException;
 
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;

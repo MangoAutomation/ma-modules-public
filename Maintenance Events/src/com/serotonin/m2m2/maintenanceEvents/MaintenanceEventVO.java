@@ -11,9 +11,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
-import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -25,6 +22,8 @@ import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -321,11 +320,11 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
             //Single data point
             if((dataPoints.size() == 1) && (dataSources.size() == 0)) {
-                DataPointVO vo = DataPointDao.instance.get(dataPoints.get(0));
+                DataPointVO vo = DataPointDao.getInstance().get(dataPoints.get(0));
                 if(vo != null)
                     eventName = vo.getName();
             }else if((dataPoints.size() == 0) && (dataSources.size() == 1)){
-                DataSourceVO<?> vo = DataSourceDao.instance.get(dataSources.get(0));
+                DataSourceVO<?> vo = DataSourceDao.getInstance().get(dataSources.get(0));
                 if(vo != null)
                     eventName = vo.getName();
             }else if((dataPoints.size() > 1) && (dataSources.size() == 0)){
@@ -441,14 +440,14 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         
         //Validate that the ids are legit
         for(int i=0; i<dataSources.size(); i++) {
-            DataSourceVO<?> vo = DataSourceDao.instance.get(dataSources.get(i));
+            DataSourceVO<?> vo = DataSourceDao.getInstance().get(dataSources.get(i));
             if(vo == null) {
                 response.addContextualMessage("dataSources[" + i + "]", "validate.invalidValue");
             }
         }
 
         for(int i=0; i<dataPoints.size(); i++) {
-            DataPointVO vo = DataPointDao.instance.get(dataPoints.get(i));
+            DataPointVO vo = DataPointDao.getInstance().get(dataPoints.get(i));
             if(vo == null) {
                 response.addContextualMessage("dataPoints[" + i + "]", "validate.invalidValue");
             }
@@ -515,7 +514,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         List<String> dataSourceXids = new ArrayList<>();
         //Validate that the ids are legit
         for(int i=0; i<dataSources.size(); i++) {
-            String xid = DataSourceDao.instance.getXidById(dataSources.get(i));
+            String xid = DataSourceDao.getInstance().getXidById(dataSources.get(i));
             if(xid != null) 
                 dataSourceXids.add(xid);
         }
@@ -524,7 +523,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         
         List<String> dataPointXids = new ArrayList<>();
         for(int i=0; i<dataPoints.size(); i++) {
-            String xid = DataPointDao.instance.getXidById(dataPoints.get(i));
+            String xid = DataPointDao.getInstance().getXidById(dataPoints.get(i));
             if(xid != null)
                 dataPointXids.add(xid);
         }
@@ -541,7 +540,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         name = jsonObject.getString("alias");
         String text = jsonObject.getString("dataSourceXid");
         if (text != null) {
-            DataSourceVO<?> ds = DataSourceDao.instance.getDataSource(text);
+            DataSourceVO<?> ds = DataSourceDao.getInstance().getDataSource(text);
             if (ds == null)
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "dataSourceXid", text);
             dataSources.add(ds.getId());
@@ -552,7 +551,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             dataPoints.clear();
             for(JsonValue jv : jsonDataPoints) {
                 String xid = jv.toString();
-                Integer id = DataPointDao.instance.getIdByXid(xid);
+                Integer id = DataPointDao.getInstance().getIdByXid(xid);
                 if (id == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
                 dataPoints.add(id);
@@ -563,7 +562,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             dataSources.clear();
             for(JsonValue jv : jsonDataSources) {
                 String xid = jv.toString();
-                Integer id = DataSourceDao.instance.getIdByXid(xid);
+                Integer id = DataSourceDao.getInstance().getIdByXid(xid);
                 if (id == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
                 dataSources.add(id);
@@ -600,6 +599,6 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 	 */
 	@Override
 	protected AbstractDao<MaintenanceEventVO> getDao() {
-		return MaintenanceEventDao.instance;
+		return MaintenanceEventDao.getInstance();
 	}
 }

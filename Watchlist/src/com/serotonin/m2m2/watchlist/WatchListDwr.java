@@ -18,11 +18,10 @@ import org.directwebremoting.WebContextFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RuntimeManager;
@@ -50,9 +49,9 @@ public class WatchListDwr extends ModuleDwr {
     public Map<String, Object> init() {
         Map<String, Object> data = new HashMap<>();
 
-        PointHierarchy ph = DataPointDao.instance.getPointHierarchy(true).copyFoldersOnly();
+        PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true).copyFoldersOnly();
         User user = Common.getHttpUser();
-        List<DataPointVO> points = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
+        List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(DataPointExtendedNameComparator.instance, false);
         final boolean admin = Permissions.hasAdminPermission(user);
         for (DataPointVO point : points) {
             if (admin || Permissions.hasDataPointReadPermission(user, point))
@@ -61,7 +60,7 @@ public class WatchListDwr extends ModuleDwr {
 
         ph.parseEmptyFolders();
 
-        WatchListVO watchList = WatchListDao.instance.getSelectedWatchList(user.getId());
+        WatchListVO watchList = WatchListDao.getInstance().getSelectedWatchList(user.getId());
         setWatchList(user, watchList);
 
         data.put("pointFolder", ph.getRoot());
@@ -106,7 +105,7 @@ public class WatchListDwr extends ModuleDwr {
         WatchListVO watchList = getWatchList(user);
         WatchListCommon.ensureWatchListEditPermission(user, watchList);
         watchList.setName(name);
-        WatchListDao.instance.saveWatchList(watchList);
+        WatchListDao.getInstance().saveWatchList(watchList);
     }
 
     @DwrPermission(user = true)
@@ -120,17 +119,17 @@ public class WatchListDwr extends ModuleDwr {
             watchList.setName(translate("common.newName"));
         }
         else {
-            watchList = WatchListDao.instance.get(getWatchList().getId());
+            watchList = WatchListDao.getInstance().get(getWatchList().getId());
             watchList.setId(Common.NEW_ID);
             watchList.setName(translate(new TranslatableMessage("common.copyPrefix", watchList.getName())));
         }
         watchList.setUserId(user.getId());
-        watchList.setXid(WatchListDao.instance.generateUniqueXid());
+        watchList.setXid(WatchListDao.getInstance().generateUniqueXid());
 
-        WatchListDao.instance.saveWatchList(watchList);
+        WatchListDao.getInstance().saveWatchList(watchList);
 
         setWatchList(user, watchList);
-        WatchListDao.instance.saveSelectedWatchList(user.getId(), watchList.getId());
+        WatchListDao.getInstance().saveSelectedWatchList(user.getId(), watchList.getId());
 
         return new IntStringPair(watchList.getId(), watchList.getName());
     }
@@ -141,15 +140,15 @@ public class WatchListDwr extends ModuleDwr {
 
         WatchListVO watchList = getWatchList(user);
         if (watchList == null || watchListId != watchList.getId())
-            watchList = WatchListDao.instance.get(watchListId);
+            watchList = WatchListDao.getInstance().get(watchListId);
 
-        if (watchList == null || WatchListDao.instance.getWatchLists(user).size() == 1)
+        if (watchList == null || WatchListDao.getInstance().getWatchLists(user).size() == 1)
             // Only one watch list left. Leave it.
         	return false;
 
         // Allow the delete if the user is an editor.
         if (watchList.isEditor(user)){
-        	WatchListDao.instance.deleteWatchList(watchListId);
+        	WatchListDao.getInstance().deleteWatchList(watchListId);
         	return true;
         }
         return false;
@@ -159,9 +158,9 @@ public class WatchListDwr extends ModuleDwr {
     public Map<String, Object> setSelectedWatchList(int watchListId) {
         User user = Common.getUser();
 
-        WatchListVO watchList = WatchListDao.instance.get(watchListId);
+        WatchListVO watchList = WatchListDao.getInstance().get(watchListId);
         WatchListCommon.ensureWatchListPermission(user, watchList);
-        WatchListDao.instance.saveSelectedWatchList(user.getId(), watchList.getId());
+        WatchListDao.getInstance().saveSelectedWatchList(user.getId(), watchList.getId());
 
         Map<String, Object> data = getWatchListData(user, watchList);
         // Set the watchlist in the user object after getting the data since it may take a while, and the long poll
@@ -175,7 +174,7 @@ public class WatchListDwr extends ModuleDwr {
     public WatchListState addToWatchList(int pointId) {
         HttpServletRequest request = WebContextFactory.get().getHttpServletRequest();
         User user = Common.getUser();
-        DataPointVO point = DataPointDao.instance.getDataPoint(pointId);
+        DataPointVO point = DataPointDao.getInstance().getDataPoint(pointId);
         if (point == null)
             return null;
         WatchListVO watchList = getWatchList(user);
@@ -186,7 +185,7 @@ public class WatchListDwr extends ModuleDwr {
 
         // Add it to the watch list.
         watchList.getPointList().add(point);
-        WatchListDao.instance.saveWatchList(watchList);
+        WatchListDao.getInstance().saveWatchList(watchList);
 
         // Return the watch list state for it.
         return createWatchListState(request, point, Common.runtimeManager, new HashMap<String, Object>(), user);
@@ -204,7 +203,7 @@ public class WatchListDwr extends ModuleDwr {
                 break;
             }
         }
-        WatchListDao.instance.saveWatchList(watchList);
+        WatchListDao.getInstance().saveWatchList(watchList);
     }
 
     @DwrPermission(user = true)
@@ -224,7 +223,7 @@ public class WatchListDwr extends ModuleDwr {
             }
         }
 
-        WatchListDao.instance.saveWatchList(watchList);
+        WatchListDao.getInstance().saveWatchList(watchList);
     }
 
     @DwrPermission(user = true)
@@ -244,7 +243,7 @@ public class WatchListDwr extends ModuleDwr {
             }
         }
 
-        WatchListDao.instance.saveWatchList(watchList);
+        WatchListDao.getInstance().saveWatchList(watchList);
     }
 
     /**
@@ -452,7 +451,7 @@ public class WatchListDwr extends ModuleDwr {
         ProcessResult response = new ProcessResult();
         wl.validate(response);
         if(!response.getHasMessages())
-        	WatchListDao.instance.saveWatchList(wl);
+        	WatchListDao.getInstance().saveWatchList(wl);
         return response;
     }
 

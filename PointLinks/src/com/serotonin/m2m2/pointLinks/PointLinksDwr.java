@@ -18,10 +18,10 @@ import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -50,7 +50,7 @@ public class PointLinksDwr extends ModuleDwr {
         Map<String, Object> data = new HashMap<String, Object>();
 
         // Get the points that this user can access.
-        List<DataPointVO> allPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, false);
+        List<DataPointVO> allPoints = DataPointDao.getInstance().getDataPoints(DataPointExtendedNameComparator.instance, false);
         List<IntStringPair> sourcePoints = new ArrayList<IntStringPair>();
         List<IntStringPair> targetPoints = new ArrayList<IntStringPair>();
         for (DataPointVO point : allPoints) {
@@ -65,7 +65,7 @@ public class PointLinksDwr extends ModuleDwr {
 
         // Get the existing point links.
         List<PointLinkVO> pointLinks = new ArrayList<PointLinkVO>();
-        for (PointLinkVO pointLink : PointLinkDao.instance.getPointLinks()) {
+        for (PointLinkVO pointLink : PointLinkDao.getInstance().getPointLinks()) {
             if (containsPoint(sourcePoints, pointLink.getSourcePointId())
                     && containsPoint(targetPoints, pointLink.getTargetPointId()))
                 pointLinks.add(pointLink);
@@ -87,7 +87,7 @@ public class PointLinksDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public PointLinkVO getPointLink(int id) {
         PointLinkVO vo;
-        PointLinkDao pointLinkDao = PointLinkDao.instance;
+        PointLinkDao pointLinkDao = PointLinkDao.getInstance();
         if (id == Common.NEW_ID) {
             vo = new PointLinkVO();
             vo.setXid(pointLinkDao.generateUniqueXid());
@@ -114,7 +114,7 @@ public class PointLinksDwr extends ModuleDwr {
         vo.setLogLevel(logLevel);
 
         ProcessResult response = new ProcessResult();
-        PointLinkDao pointLinkDao = PointLinkDao.instance;
+        PointLinkDao pointLinkDao = PointLinkDao.getInstance();
 
         if (StringUtils.isBlank(xid))
             response.addContextualMessage("xid", "validate.required");
@@ -144,7 +144,7 @@ public class PointLinksDwr extends ModuleDwr {
 
         DataPointRT source = Common.runtimeManager.getDataPoint(sourcePointId);
         if (source == null) {
-            DataPointVO sourceVo = DataPointDao.instance.getDataPoint(sourcePointId, false);
+            DataPointVO sourceVo = DataPointDao.getInstance().getDataPoint(sourcePointId, false);
             if(sourceVo == null) {
                 message = new TranslatableMessage("pointLinks.validate.sourceRequired");
                 response.addMessage("script", message);
@@ -152,13 +152,13 @@ public class PointLinksDwr extends ModuleDwr {
             }
             if(sourceVo.getDefaultCacheSize() == 0)
                 sourceVo.setDefaultCacheSize(1);
-            source = new DataPointRT(sourceVo, sourceVo.getPointLocator().createRuntime(), DataSourceDao.instance.getDataSource(sourceVo.getDataSourceId()), null);
+            source = new DataPointRT(sourceVo, sourceVo.getPointLocator().createRuntime(), DataSourceDao.getInstance().getDataSource(sourceVo.getDataSourceId()), null);
             source.resetValues();
         }
 
         DataPointRT target = Common.runtimeManager.getDataPoint(targetPointId);
         if(target == null){
-            DataPointVO targetVo = DataPointDao.instance.getDataPoint(targetPointId, false);
+            DataPointVO targetVo = DataPointDao.getInstance().getDataPoint(targetPointId, false);
             if(targetVo == null) {
                 message = new TranslatableMessage("pointLinks.validate.targetRequired");
                 response.addMessage("script", message);
@@ -167,7 +167,7 @@ public class PointLinksDwr extends ModuleDwr {
 
             if(targetVo.getDefaultCacheSize() == 0)
                 targetVo.setDefaultCacheSize(1);
-            target = new DataPointRT(targetVo, targetVo.getPointLocator().createRuntime(), DataSourceDao.instance.getDataSource(targetVo.getDataSourceId()), null);
+            target = new DataPointRT(targetVo, targetVo.getPointLocator().createRuntime(), DataSourceDao.getInstance().getDataSource(targetVo.getDataSourceId()), null);
             target.resetValues();
         }
 

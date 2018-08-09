@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.PurgeDefinition;
@@ -27,7 +26,7 @@ public class ReportPurgeDefinition extends PurgeDefinition {
                 SystemSettingsDao.instance.getIntValue(REPORT_PURGE_PERIOD_TYPE),
                 SystemSettingsDao.instance.getIntValue(REPORT_PURGE_PERIODS));
 
-        int deleteCount = ReportDao.instance.purgeReportsBefore(cutoff.getMillis());
+        int deleteCount = ReportDao.getInstance().purgeReportsBefore(cutoff.getMillis());
         if (deleteCount > 0)
             LOG.info("Report purge ended, " + deleteCount + " report instances deleted");
     }

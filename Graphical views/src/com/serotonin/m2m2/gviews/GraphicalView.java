@@ -14,7 +14,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -24,6 +23,7 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.gviews.component.CompoundComponent;
 import com.serotonin.m2m2.gviews.component.PointComponent;
 import com.serotonin.m2m2.gviews.component.ViewComponent;
@@ -154,7 +154,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
      * components that render them
      */
     public void validateViewComponents(boolean makeReadOnly) {
-        User owner = UserDao.instance.getUser(userId);
+        User owner = UserDao.getInstance().getUser(userId);
         for (ViewComponent viewComponent : viewComponents)
             viewComponent.validateDataPoint(owner, makeReadOnly);
     }
@@ -373,7 +373,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
 
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        writer.writeEntry("user", UserDao.instance.getUser(userId).getUsername());
+        writer.writeEntry("user", UserDao.getInstance().getUser(userId).getUsername());
         writer.writeEntry("anonymousAccess", ShareUser.ACCESS_CODES.getCode(anonymousAccess));
         writer.writeEntry("viewComponents", viewComponents);
     }
@@ -384,7 +384,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
             String username = jsonObject.getString("user");
             if (StringUtils.isBlank(username))
                 throw new TranslatableJsonException("emport.error.missingValue", "user");
-            User user = UserDao.instance.getUser(username);
+            User user = UserDao.getInstance().getUser(username);
             if (user == null)
                 throw new TranslatableJsonException("emport.error.missingUser", username);
             userId = user.getId();

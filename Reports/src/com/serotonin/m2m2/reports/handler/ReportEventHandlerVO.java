@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.rt.event.handlers.EventHandlerRT;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
@@ -69,12 +69,12 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
 		super.validate(response);
 		
 		if(activeReportId != Common.NEW_ID){
-			ReportVO vo = ReportDao.instance.get(activeReportId);
+			ReportVO vo = ReportDao.getInstance().get(activeReportId);
 			if(vo == null)
 				response.addContextualMessage("activeReportId", "validate.invalidValue");
 		}
 		if(inactiveReportId != Common.NEW_ID){
-			ReportVO vo = ReportDao.instance.get(inactiveReportId);
+			ReportVO vo = ReportDao.getInstance().get(inactiveReportId);
 			if(vo == null)
 				response.addContextualMessage("inactiveReportId", "validate.invalidValue");
 		}
@@ -93,7 +93,7 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
 		super.jsonRead(reader, jsonObject);
 		String text = jsonObject.getString("activeReportXid");
         if (text != null){
-        	ReportVO report = ReportDao.instance.getByXid(text);
+        	ReportVO report = ReportDao.getInstance().getByXid(text);
         	if(report != null)
         		this.activeReportId = report.getId();
         }else
@@ -101,7 +101,7 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
         
 		text = jsonObject.getString("inActiveReportXid");
         if (text != null){
-        	ReportVO report = ReportDao.instance.getByXid(text);
+        	ReportVO report = ReportDao.getInstance().getByXid(text);
         	if(report != null)
         		this.inactiveReportId = report.getId();
         }else
@@ -115,10 +115,10 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
 	@Override
 	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
 		super.jsonWrite(writer);
-		ReportVO report = ReportDao.instance.get(activeReportId);
+		ReportVO report = ReportDao.getInstance().get(activeReportId);
 		if(report != null)
 			writer.writeEntry("activeReportXid", report.getXid());
-		report = ReportDao.instance.get(inactiveReportId);
+		report = ReportDao.getInstance().get(inactiveReportId);
 		if(report != null)
 			writer.writeEntry("inActiveReportXid", report.getXid());		
 	}

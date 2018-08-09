@@ -22,18 +22,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.ReportDao;
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.InvalidArgumentException;
 import com.serotonin.io.StreamUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.email.PostEmailRunnable;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.ReportLicenseChecker;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportPointVO;
@@ -82,7 +82,7 @@ public class ReportWorkItem implements WorkItem {
         LOG.debug("Queuing report with id " + report.getId());
 
         // Verify that the user is not disabled.
-        User user = UserDao.instance.getUser(report.getUserId());
+        User user = UserDao.getInstance().getUser(report.getUserId());
         if (user.isDisabled())
             return;
 
@@ -94,7 +94,7 @@ public class ReportWorkItem implements WorkItem {
         ReportInstance reportInstance = new ReportInstance(report);
 
         item.user = user;
-        item.reportDao = ReportDao.instance;
+        item.reportDao = ReportDao.getInstance();
         item.reportDao.saveReportInstance(reportInstance);
 
         // Start the report work item out of process.
@@ -130,7 +130,7 @@ public class ReportWorkItem implements WorkItem {
         Translations translations = Common.getTranslations();
 
         // Create a list of DataPointVOs to which the user has permission.
-        DataPointDao dataPointDao = DataPointDao.instance;
+        DataPointDao dataPointDao = DataPointDao.getInstance();
         List<ReportDao.PointInfo> points = new ArrayList<ReportDao.PointInfo>(reportConfig.getPoints().size());
         for (ReportPointVO reportPoint : reportConfig.getPoints()) {
             DataPointVO point = dataPointDao.getDataPoint(reportPoint.getPointId());
@@ -182,7 +182,7 @@ public class ReportWorkItem implements WorkItem {
             creator.createContent(host, port, reportInstance, reportDao, inlinePrefix, reportConfig.isIncludeData());
 
             // Create the to list
-            Set<String> addresses = MailingListDao.instance.getRecipientAddresses(reportConfig.getRecipients(),
+            Set<String> addresses = MailingListDao.getInstance().getRecipientAddresses(reportConfig.getRecipients(),
                     new DateTime(reportInstance.getReportStartTime()));
             String[] toAddrs = addresses.toArray(new String[0]);
 

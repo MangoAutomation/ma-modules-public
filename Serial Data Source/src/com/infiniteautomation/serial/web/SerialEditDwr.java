@@ -10,11 +10,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
 
 import com.infiniteautomation.mango.regex.MatchCallback;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -100,7 +100,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
     	final List<Map<String,String>> results = new ArrayList<Map<String,String>>();
 		pr.addData("results", results);
     	
-    	DataPointDao dpd = DataPointDao.instance;
+    	DataPointDao dpd = DataPointDao.getInstance();
     	List<DataPointVO> points = dpd.getDataPoints(dsId, null);
     	
     	if(useTerminator) { 

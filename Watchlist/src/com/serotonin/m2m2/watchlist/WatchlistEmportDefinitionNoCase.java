@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
@@ -47,8 +46,8 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        List<WatchListVO> wls = WatchListDao.instance.getWatchLists();
-        WatchListDao.instance.populateWatchlistData(wls);
+        List<WatchListVO> wls = WatchListDao.getInstance().getWatchLists();
+        WatchListDao.getInstance().populateWatchlistData(wls);
         return wls;
     }
 
@@ -58,9 +57,9 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
 
         String xid = watchListJson.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = WatchListDao.instance.generateUniqueXid();
+            xid = WatchListDao.getInstance().generateUniqueXid();
 
-        WatchListVO watchList = WatchListDao.instance.getWatchList(xid);
+        WatchListVO watchList = WatchListDao.getInstance().getWatchList(xid);
         if (watchList == null) {
             watchList = new WatchListVO();
             watchList.setXid(xid);
@@ -79,7 +78,7 @@ public class WatchlistEmportDefinitionNoCase extends EmportDefinition {
             else {
                 // Sweet. Save it.
                 boolean isnew = watchList.getId() == Common.NEW_ID;
-                WatchListDao.instance.saveWatchList(watchList);
+                WatchListDao.getInstance().saveWatchList(watchList);
                 importContext.addSuccessMessage(isnew, "emport.watchList.prefix", xid);
             }
         }

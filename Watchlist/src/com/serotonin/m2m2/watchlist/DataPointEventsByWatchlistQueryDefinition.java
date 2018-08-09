@@ -13,7 +13,6 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -86,7 +85,7 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
     @Override
     public ASTNode createQuery(User user, JsonNode parameters) throws IOException {
         //Lookup data points by watchlist
-        WatchListVO vo = WatchListDao.instance.getByXid(parameters.get("watchListXid").asText());
+        WatchListVO vo = WatchListDao.getInstance().getByXid(parameters.get("watchListXid").asText());
         if(vo == null)
             throw new NotFoundException();
         
@@ -95,7 +94,7 @@ public class DataPointEventsByWatchlistQueryDefinition extends ModuleQueryDefini
         
         List<Object> args = new ArrayList<>();
         args.add("typeRef1");
-        WatchListDao.instance.getPoints(vo.getId(), new MappedRowCallback<DataPointVO>(){
+        WatchListDao.getInstance().getPoints(vo.getId(), new MappedRowCallback<DataPointVO>(){
             @Override
             public void row(DataPointVO dp, int index) {
                 if(Permissions.hasDataPointReadPermission(user, dp)){

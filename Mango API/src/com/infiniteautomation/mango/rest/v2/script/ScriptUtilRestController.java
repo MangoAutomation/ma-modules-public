@@ -24,10 +24,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
@@ -168,7 +168,7 @@ public class ScriptUtilRestController {
         Map<String, IDataPointValueSource> context = new HashMap<>();
         if(contextModel != null)
             for(ScriptContextVariableModel variable : contextModel) {
-                DataPointVO dpvo = DataPointDao.instance.getByXid(variable.getXid());
+                DataPointVO dpvo = DataPointDao.getInstance().getByXid(variable.getXid());
                 if(dpvo == null)
                     throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.pointNotFound", variable.getXid()));
 
@@ -178,7 +178,7 @@ public class ScriptUtilRestController {
                         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.error.pointNotEnabled", variable.getXid()));
                     if(dpvo.getDefaultCacheSize() == 0)
                         dpvo.setDefaultCacheSize(1);
-                    dprt = new DataPointRT(dpvo, dpvo.getPointLocator().createRuntime(), DataSourceDao.instance.getDataSource(dpvo.getDataSourceId()), null);
+                    dprt = new DataPointRT(dpvo, dpvo.getPointLocator().createRuntime(), DataSourceDao.getInstance().getDataSource(dpvo.getDataSourceId()), null);
                     dprt.resetValues();
                 }
 

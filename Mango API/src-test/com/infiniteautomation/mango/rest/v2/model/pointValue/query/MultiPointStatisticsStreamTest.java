@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
@@ -40,6 +38,8 @@ import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.MangoTestBase;
 import com.serotonin.m2m2.MockMangoLifecycle;
@@ -509,22 +509,22 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     
     protected MockDataSourceVO createDataSource() {
         MockDataSourceVO vo = new MockDataSourceVO();
-        vo.setXid(DataSourceDao.instance.generateUniqueXid());
+        vo.setXid(DataSourceDao.getInstance().generateUniqueXid());
         vo.setName("Test DS");
-        DataSourceDao.instance.save(vo);
+        DataSourceDao.getInstance().save(vo);
         return vo;
     }
 
     protected DataPointVO createDataPoint(int dataSourceId, int dataType, int defaultCacheSize) {
         DataPointVO vo = new DataPointVO();
         vo.setPointLocator(new MockPointLocatorVO(dataType, true));
-        vo.setXid(DataPointDao.instance.generateUniqueXid());
+        vo.setXid(DataPointDao.getInstance().generateUniqueXid());
         vo.setName("Test point");
         vo.setLoggingType(LoggingTypes.ALL);
         vo.setDataSourceId(dataSourceId);
         vo.setDefaultCacheSize(defaultCacheSize);
         //TODO initial cache size
-        DataPointDao.instance.save(vo);
+        DataPointDao.getInstance().save(vo);
         return vo;
     }
     

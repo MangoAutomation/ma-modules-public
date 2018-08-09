@@ -24,7 +24,7 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.rest.v2.model.jwt.TokenModel;
-import com.infiniteautomation.mango.spring.dao.UserDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
@@ -76,7 +76,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
                 throw new AccessDeniedException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"));
             }
             
-            user = UserDao.instance.getUser(username);
+            user = UserDao.getInstance().getUser(username);
             if (user == null) {
                 throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
             }
@@ -108,7 +108,7 @@ public class AuthenticationTokenRestController extends MangoRestController {
             
             HttpServletRequest request) {
 
-        User user = UserDao.instance.getUser(username);
+        User user = UserDao.getInstance().getUser(username);
         if (user == null) {
             throw new NotFoundRestException();
         }

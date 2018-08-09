@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
@@ -50,14 +50,14 @@ public class AuditEventInstanceModel extends AbstractBasicVoModel<AuditEventInst
 		this.data.setAlarmLevel(AlarmLevels.CODES.getId(alarmLevel));
 	}
 	public String getUsername() {
-		User u = UserDao.instance.get(this.data.getUserId());
+		User u = UserDao.getInstance().get(this.data.getUserId());
 		if(u != null)
 			return u.getUsername();
 		else
 			return null;
 	}
 	public void setUsername(String username) {
-		User u = UserDao.instance.getUser(username);
+		User u = UserDao.getInstance().getUser(username);
 		if(u != null)
 			this.data.setUserId(u.getId());
 	}

@@ -101,9 +101,9 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     		@AuthenticationPrincipal User user,
     		HttpServletRequest request) {
 		
-		Map<String, FileStoreDefinition> defs = FileStoreDao.instance.getFileStoreMap();
+		Map<String, FileStoreDefinition> defs = FileStoreDao.getInstance().getFileStoreMap();
 		List<String> accessible = new ArrayList<String>(defs.size());
-		if(user.isAdmin()){
+		if(user.hasAdminPermission()){
 			//admin users don't need to filter the results
 			for(FileStoreDefinition def : defs.values()){
 				def.ensureStoreReadPermission(user);
@@ -137,7 +137,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     		MultipartHttpServletRequest multipartRequest,
     		HttpServletRequest request) throws IOException {
 		
-		FileStoreDefinition def = FileStoreDao.instance.getFileStoreDefinition(name);
+		FileStoreDefinition def = FileStoreDao.getInstance().getFileStoreDefinition(name);
 		if(def == null)
 			throw new NotFoundRestException();
 
@@ -216,7 +216,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, URISyntaxException {
         
-        FileStoreDefinition def = FileStoreDao.instance.getFileStoreDefinition(fileStoreName);
+        FileStoreDefinition def = FileStoreDao.getInstance().getFileStoreDefinition(fileStoreName);
         if (def == null)
             throw new NotFoundRestException();
 
@@ -292,7 +292,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
         
-        FileStoreDefinition def = FileStoreDao.instance.getFileStoreDefinition(name);
+        FileStoreDefinition def = FileStoreDao.getInstance().getFileStoreDefinition(name);
         if (def == null)
             throw new ResourceNotFoundException("File store: " + name);
         
@@ -326,7 +326,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
-        FileStore fs = FileStoreDao.instance.getUserFileStore(storeName);
+        FileStore fs = FileStoreDao.getInstance().getUserFileStore(storeName);
         if (fs == null)
             throw new ResourceNotFoundException("File store: " + storeName);
         
@@ -349,13 +349,13 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         if(storeName == null || fileStore == null)
             throw new NotFoundRestException();
         fileStore.setStoreName(storeName);
-        FileStoreDefinition fsd = FileStoreDao.instance.getFileStoreDefinition(storeName);
+        FileStoreDefinition fsd = FileStoreDao.getInstance().getFileStoreDefinition(storeName);
         if(fsd != null)
             throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileStoreExists", fileStore.getStoreName()));
         if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(UserFileStoreCreatePermissionDefinition.TYPE_NAME)))
             throw new PermissionException(new TranslatableMessage("filestore.user.createPermissionDenied", user.getUsername()), user);
         fileStore.setId(Common.NEW_ID);
-        FileStoreDao.instance.saveFileStore(fileStore);
+        FileStoreDao.getInstance().saveFileStore(fileStore);
         return new ResponseEntity<>(fileStore, HttpStatus.OK);
     }
     
@@ -371,14 +371,14 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
             HttpServletResponse response) {
         if(id == null || fileStore == null)
             throw new NotFoundRestException();
-        FileStore fs = FileStoreDao.instance.getUserFileStoreById(id);
+        FileStore fs = FileStoreDao.getInstance().getUserFileStoreById(id);
         if(fs == null)
             throw new NotFoundRestException();
         
         fs.toDefinition().ensureStoreWritePermission(user);
         
         fileStore.setId(id);
-        FileStoreDao.instance.saveFileStore(fileStore);
+        FileStoreDao.getInstance().saveFileStore(fileStore);
         return new ResponseEntity<>(fileStore, HttpStatus.OK);
     }
     
@@ -395,7 +395,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
         if(storeName == null)
             throw new NotFoundRestException();
         
-        FileStore fs = FileStoreDao.instance.getUserFileStore(storeName);
+        FileStore fs = FileStoreDao.getInstance().getUserFileStore(storeName);
         if(fs == null) {
             //TODO check if it's a module-defined filestore and give a better error?
             throw new NotFoundRestException();
@@ -422,7 +422,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller{
     		HttpServletRequest request,
     		HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
     	
-		FileStoreDefinition def = FileStoreDao.instance.getFileStoreDefinition(name);
+		FileStoreDefinition def = FileStoreDao.getInstance().getFileStoreDefinition(name);
 		if (def == null)
 			throw new ResourceNotFoundException("File store: " + name);
 		

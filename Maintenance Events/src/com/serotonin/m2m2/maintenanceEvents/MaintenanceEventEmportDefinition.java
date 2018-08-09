@@ -6,7 +6,6 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
@@ -28,7 +27,7 @@ public class MaintenanceEventEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return MaintenanceEventDao.instance.getAllFull();
+        return MaintenanceEventDao.getInstance().getAllFull();
     }
 
     @Override
@@ -38,9 +37,9 @@ public class MaintenanceEventEmportDefinition extends EmportDefinition {
 
         String xid = maintenanceEvent.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = MaintenanceEventDao.instance.generateUniqueXid();
+            xid = MaintenanceEventDao.getInstance().generateUniqueXid();
 
-        MaintenanceEventVO vo = MaintenanceEventDao.instance.getFullByXid(xid);
+        MaintenanceEventVO vo = MaintenanceEventDao.getInstance().getFullByXid(xid);
         if (vo == null) {
             vo = new MaintenanceEventVO();
             vo.setXid(xid);

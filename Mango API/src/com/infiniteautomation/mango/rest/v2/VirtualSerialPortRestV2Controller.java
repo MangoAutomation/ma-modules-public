@@ -46,7 +46,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			)
 	@RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<VirtualSerialPortConfig>> list(HttpServletRequest request) {
-		return new ResponseEntity<>(VirtualSerialPortConfigDao.instance.getAll(), HttpStatus.OK);
+		return new ResponseEntity<>(VirtualSerialPortConfigDao.getInstance().getAll(), HttpStatus.OK);
 	}
 	
 	@PreAuthorize("isAdmin()")
@@ -60,7 +60,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
     		@PathVariable String xid,
     		HttpServletRequest request) {
 		
-		VirtualSerialPortConfig config  = VirtualSerialPortConfigDao.instance.getByXid(xid);
+		VirtualSerialPortConfig config  = VirtualSerialPortConfigDao.getInstance().getByXid(xid);
 		if(config == null)
 			throw new NotFoundRestException();
 		
@@ -81,7 +81,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		
 		//Check to see if it already exists
 		if(!StringUtils.isEmpty(model.getXid())){
-			VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.instance.getByXid(model.getXid());
+			VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(model.getXid());
 			if(existing != null){
 				throw new AlreadyExistsRestException(model.getXid());
  			}
@@ -91,7 +91,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		model.ensureValid();
 
 		//Save it
-		VirtualSerialPortConfigDao.instance.save(model);
+		VirtualSerialPortConfigDao.getInstance().save(model);
 		
         //Put a link to the updated data in the header?
     	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
@@ -113,7 +113,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		//Check to see if it already exists
-		VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.instance.getByXid(model.getXid());
+		VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(model.getXid());
 		if(existing == null)
 			throw new NotFoundRestException();
 		
@@ -121,7 +121,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		model.ensureValid();
 
 		//Save it
-		VirtualSerialPortConfigDao.instance.save(model);
+		VirtualSerialPortConfigDao.getInstance().save(model);
 		
         //Put a link to the updated data in the header
     	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
@@ -142,7 +142,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		//Check to see if it already exists
-		VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.instance.getByXid(xid);
+		VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(xid);
 		if(existing == null)
 			throw new NotFoundRestException();
 		
@@ -150,7 +150,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		existing.setXid(xid);
 		
 		//Save it
-		VirtualSerialPortConfigDao.instance.remove(existing);
+		VirtualSerialPortConfigDao.getInstance().remove(existing);
 
         return new ResponseEntity<>(existing, HttpStatus.OK);
     }

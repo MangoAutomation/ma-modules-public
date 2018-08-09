@@ -47,9 +47,9 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidRollupTime
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -844,7 +844,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request) {
     
         
-        DataPointVO vo = DataPointDao.instance.getByXid(xid);
+        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
@@ -940,7 +940,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = new HashMap<Integer, DataPointVO>();
         for(String xid : xids) {
-            DataPointVO vo = DataPointDao.instance.getByXid(xid);
+            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {
                 throw new NotFoundRestException();
             }else {

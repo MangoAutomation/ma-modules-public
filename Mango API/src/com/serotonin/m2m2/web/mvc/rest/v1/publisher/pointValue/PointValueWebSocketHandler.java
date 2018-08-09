@@ -15,9 +15,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -84,7 +84,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             PointValueRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), PointValueRegistrationModel.class);
 
             // Handle message.getPayload() here
-            DataPointVO vo = DataPointDao.instance.getByXid(model.getDataPointXid());
+            DataPointVO vo = DataPointDao.getInstance().getByXid(model.getDataPointXid());
             if (vo == null) {
                 this.sendErrorMessage(session,MangoWebSocketErrorType.SERVER_ERROR,
                         new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));

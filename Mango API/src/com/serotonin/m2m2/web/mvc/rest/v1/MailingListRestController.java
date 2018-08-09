@@ -36,7 +36,7 @@ public class MailingListRestController extends MangoRestController{
 	private MailingListDao dao;
 	
 	public MailingListRestController(){
-		this.dao = MailingListDao.instance;
+		this.dao = MailingListDao.getInstance();
 	}
 
 	

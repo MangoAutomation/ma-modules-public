@@ -13,18 +13,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
-import com.infiniteautomation.mango.spring.dao.EventDetectorDao;
-import com.infiniteautomation.mango.spring.dao.EventHandlerDao;
-import com.infiniteautomation.mango.spring.dao.PublisherDao;
-import com.infiniteautomation.mango.spring.dao.TemplateDao;
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.EventDetectorDao;
+import com.serotonin.m2m2.db.dao.EventHandlerDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
+import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.db.dao.TemplateDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
@@ -119,25 +119,25 @@ public class InternalMenuItem extends MenuItemDefinition {
     	Map<String, ValueMonitor<?>> monitors = new HashMap<String, ValueMonitor<?>>();
     	
     	//Data Source Count
-    	monitors.put(DATASOURCE_COUNT_POINT_XID, DataSourceDao.instance.getCountMonitor());
+    	monitors.put(DATASOURCE_COUNT_POINT_XID, DataSourceDao.getInstance().getCountMonitor());
     	
     	//Data Point Count
-    	monitors.put(DATAPOINT_COUNT_POINT_XID, DataPointDao.instance.getCountMonitor());
+    	monitors.put(DATAPOINT_COUNT_POINT_XID, DataPointDao.getInstance().getCountMonitor());
     	
     	//Users Count
-    	monitors.put(USERS_COUNT_POINT_XID, UserDao.instance.getCountMonitor());
+    	monitors.put(USERS_COUNT_POINT_XID, UserDao.getInstance().getCountMonitor());
     	
     	//Publisher Count
-    	monitors.put(PUBLISHER_COUNT_POINT_XID, PublisherDao.instance.getCountMonitor());
+    	monitors.put(PUBLISHER_COUNT_POINT_XID, PublisherDao.getInstance().getCountMonitor());
     	
     	//Event Detector Count
-    	monitors.put(EVENT_DETECTOR_COUNT_POINT_XID, EventDetectorDao.instance.getCountMonitor());
+    	monitors.put(EVENT_DETECTOR_COUNT_POINT_XID, EventDetectorDao.getInstance().getCountMonitor());
     	
     	//Event Handler Count
-    	monitors.put(EVENT_HANDLER_COUNT_POINT_XID, EventHandlerDao.instance.getCountMonitor());
+    	monitors.put(EVENT_HANDLER_COUNT_POINT_XID, EventHandlerDao.getInstance().getCountMonitor());
 
     	//Mailing Lists Count
-    	monitors.put(MAILING_LIST_COUNT_POINT_XID, MailingListDao.instance.getMonitor());
+    	monitors.put(MAILING_LIST_COUNT_POINT_XID, MailingListDao.getInstance().getMonitor());
 
     	//Module Updates Available
     	monitors.put(AVAILABLE_UPDATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(UpgradeCheck.UPGRADES_AVAILABLE_MONITOR_ID));
@@ -164,7 +164,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 	 * 
 	 */
 	private void maybeInstallSystemMonitor(boolean safe) {
-		DataSourceVO<?> ds = DataSourceDao.instance.getByXid(SYSTEM_DATASOURCE_XID);
+		DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(SYSTEM_DATASOURCE_XID);
 		if(ds == null){
 			//Create Data Source
 			DataSourceDefinition def = ModuleRegistry.getDataSourceDefinition(InternalDataSourceDefinition.DATA_SOURCE_TYPE);
@@ -176,7 +176,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 			vo.setUpdatePeriods(10);
 			vo.setUpdatePeriodType(TimePeriods.SECONDS);
 			
-			DataSourceDao.instance.saveDataSource(vo);
+			DataSourceDao.getInstance().saveDataSource(vo);
 			
 			//Setup the Points
 			maybeCreatePoints(safe, ds);
@@ -203,7 +203,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 			String xid = it.next();
 			ValueMonitor<?> monitor = monitors.get(xid);
 			if(monitor != null){
-				DataPointVO dp = DataPointDao.instance.getByXid(xid);
+				DataPointVO dp = DataPointDao.getInstance().getByXid(xid);
 				if(dp == null){
 					InternalPointLocatorVO pl = new InternalPointLocatorVO();
 					pl.setMonitorId(monitor.getId());
@@ -221,7 +221,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 					dp.setPointLocator(pl);
 					
 					//Use default template
-					DataPointPropertiesTemplateVO template = TemplateDao.instance.getDefaultDataPointTemplate(pl.getDataTypeId());
+					DataPointPropertiesTemplateVO template = TemplateDao.getInstance().getDefaultDataPointTemplate(pl.getDataTypeId());
 					if(template != null){
 						template.updateDataPointVO(dp);
 						dp.setTemplateId(template.getId());
@@ -255,7 +255,7 @@ public class InternalMenuItem extends MenuItemDefinition {
 					dp.validate(result);
 					if(!result.getHasMessages()){
 						if(safe)
-							DataPointDao.instance.saveDataPoint(dp);
+							DataPointDao.getInstance().saveDataPoint(dp);
 						else
 							Common.runtimeManager.saveDataPoint(dp);
 					}else{

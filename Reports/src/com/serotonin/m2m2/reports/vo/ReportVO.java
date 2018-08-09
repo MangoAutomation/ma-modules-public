@@ -18,9 +18,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.ReportDao;
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.serotonin.InvalidArgumentException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -33,8 +30,11 @@ import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.web.ReportCommon;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.util.ExportCodes;
@@ -419,7 +419,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
     }
     
     public Map<String, String> getXidMapping() {
-    	DataPointDao dpd = DataPointDao.instance;
+    	DataPointDao dpd = DataPointDao.getInstance();
     	Map<String, String> ans = new HashMap<String, String>();
     	for(ReportPointVO vo : points) {
     		//Check to see if point exists
@@ -432,7 +432,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 
     //Helper for JSP Page
     public String getUsername(){
-    	UserDao userDao = UserDao.instance;
+    	UserDao userDao = UserDao.getInstance();
     	User reportUser = userDao.getUser(this.userId);
         if(reportUser != null)
         	return reportUser.getUsername();
@@ -584,7 +584,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
         if (pastPeriodCount < 1)
             response.addContextualMessage("pastPeriodCount", "reports.validate.periodCountLessThan1");
         
-        UserDao dao = UserDao.instance;
+        UserDao dao = UserDao.getInstance();
         User user = dao.getUser(userId);
         if(user == null){
             response.addContextualMessage("userId", "reports.validate.userDNE");
@@ -595,7 +595,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
         if(!t.isFile())
         	response.addContextualMessage("template", "reports.validate.template");
         
-        DataPointDao dataPointDao = DataPointDao.instance;
+        DataPointDao dataPointDao = DataPointDao.getInstance();
         for (ReportPointVO point : points) {
         	DataPointVO vo  = dataPointDao.getDataPoint(point.getPointId(), false);
         	String pointXid = "unknown";
@@ -649,7 +649,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			String username = jsonObject.getString("user");
 	        if (org.apache.commons.lang3.StringUtils.isBlank(username))
 	            throw new TranslatableJsonException("emport.error.missingValue", "user");
-	        User user = UserDao.instance.getUser(username);
+	        User user = UserDao.getInstance().getUser(username);
 	        if (user == null)
 	            throw new TranslatableJsonException("emport.error.missingUser", username);
 	        userId = user.getId();
@@ -815,7 +815,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 			JsonException {
 		super.jsonWrite(writer);
 		
-		writer.writeEntry("user", UserDao.instance.getUser(userId).getUsername());
+		writer.writeEntry("user", UserDao.getInstance().getUser(userId).getUsername());
 		writer.writeEntry("includeEvents", EVENT_CODES.getCode(includeEvents));
 		writer.writeEntry("dateRangeType", DATE_RANGE_TYPES.getCode(dateRangeType));
 		
@@ -865,7 +865,7 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 		
 		List<ReportPointVO> jsonPoints = new ArrayList<ReportPointVO>();
 		for(ReportPointVO point : this.points)
-		    if(DataPointDao.instance.getXidById(point.getPointId()) != null)
+		    if(DataPointDao.getInstance().getXidById(point.getPointId()) != null)
 		        jsonPoints.add(point);
 		    
 		writer.writeEntry("points", jsonPoints);    
@@ -884,6 +884,6 @@ public class ReportVO extends AbstractVO<ReportVO> implements Serializable, Json
 	 */
 	@Override
 	protected AbstractDao<ReportVO> getDao() {
-		return ReportDao.instance;
+		return ReportDao.getInstance();
 	}
 }

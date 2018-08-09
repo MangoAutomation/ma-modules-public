@@ -18,9 +18,9 @@ import javax.script.ScriptException;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -273,7 +273,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     @Override
     public TranslatableMessage getSetPointSourceMessage() {
         if (vo.isWriteAnnotation()){
-        	DataPointVO vo = DataPointDao.instance.get(this.vo.getSourcePointId());
+        	DataPointVO vo = DataPointDao.getInstance().get(this.vo.getSourcePointId());
         	String xid;
         	if(vo != null)
         		xid = vo.getXid();

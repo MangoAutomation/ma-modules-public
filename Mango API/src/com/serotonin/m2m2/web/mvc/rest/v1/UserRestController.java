@@ -32,9 +32,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.spring.dao.UserDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -67,7 +67,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
     @Autowired
     public UserRestController(MangoSessionRegistry sessionRegistry) {
-        super(UserDao.instance);
+        super(UserDao.getInstance());
         this.sessionRegistry = sessionRegistry;
     }
 
@@ -81,7 +81,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
             if(Permissions.hasAdminPermission(user)){
                 List<UserModel> userModelList = new ArrayList<UserModel>();
-                List<User> users = UserDao.instance.getUsers();
+                List<User> users = UserDao.getInstance().getUsers();
                 for(User u : users){
                     userModelList.add(new UserModel(u));
                 }
@@ -119,7 +119,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            User u = UserDao.instance.getUser(username);
+            User u = UserDao.getInstance().getUser(username);
             if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
@@ -167,7 +167,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            User u = UserDao.instance.getUser(username);
+            User u = UserDao.getInstance().getUser(username);
 
             if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
@@ -198,7 +198,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
                 //Cannot Rename a User to an existing Username
                 if(!model.getUsername().equals(username)){
-                    User existingUser = UserDao.instance.getUser(model.getUsername());
+                    User existingUser = UserDao.getInstance().getUser(model.getUsername());
                     if(existingUser != null){
                         model.addValidationMessage(new ProcessMessage("username", new TranslatableMessage("users.validate.usernameInUse")));
                         result.addRestMessage(getValidationFailedError());
@@ -219,7 +219,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 if(!model.validate()){
                     result.addRestMessage(this.getValidationFailedError());
                 }else{
-                    UserDao.instance.saveUser(newUser);
+                    UserDao.getInstance().saveUser(newUser);
                     sessionRegistry.userUpdated(request, newUser);
                 }
                 return result.createResponseEntity(model);
@@ -284,7 +284,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                             }
                         }
 
-                        UserDao.instance.saveUser(newUser);
+                        UserDao.getInstance().saveUser(newUser);
                         sessionRegistry.userUpdated(request, newUser);
                         URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
                         result.addRestMessage(getResourceCreatedMessage(location));
@@ -324,7 +324,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.CREATED);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            User u = UserDao.instance.getUser(model.getUsername());
+            User u = UserDao.getInstance().getUser(model.getUsername());
             if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     //Create new user
@@ -332,7 +332,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     if(model.validate()){
                         try{
                             User newUser = model.getData();
-                            UserDao.instance.saveUser(newUser);
+                            UserDao.getInstance().saveUser(newUser);
 
                             URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
                             result.addRestMessage(getResourceCreatedMessage(location));
@@ -376,7 +376,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            User u = UserDao.instance.getUser(username);
+            User u = UserDao.getInstance().getUser(username);
             if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
@@ -392,7 +392,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 if(!model.validate()){
                     result.addRestMessage(this.getValidationFailedError());
                 }else{
-                    UserDao.instance.saveHomeUrl(u.getId(), url);
+                    UserDao.getInstance().saveHomeUrl(u.getId(), url);
                     sessionRegistry.userUpdated(request, u);
                 }
                 return result.createResponseEntity(model);
@@ -410,7 +410,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                         result.addRestMessage(this.getValidationFailedError());
                     }else{
                         //We have confirmed that we are the user
-                        UserDao.instance.saveHomeUrl(u.getId(), url);
+                        UserDao.getInstance().saveHomeUrl(u.getId(), url);
                         sessionRegistry.userUpdated(request, u);
                     }
                     return result.createResponseEntity(model);
@@ -439,7 +439,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         RestProcessResult<UserModel> result = new RestProcessResult<UserModel>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            User u = UserDao.instance.getUser(username);
+            User u = UserDao.getInstance().getUser(username);
             if(Permissions.hasAdminPermission(user)){
                 if (u == null) {
                     result.addRestMessage(getDoesNotExistMessage());
@@ -459,7 +459,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 if(!model.validate()){
                     result.addRestMessage(this.getValidationFailedError());
                 }else{
-                    UserDao.instance.saveUser(u);
+                    UserDao.getInstance().saveUser(u);
                     sessionRegistry.userUpdated(request, u);
                 }
                 return result.createResponseEntity(model);
@@ -480,7 +480,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     if(!model.validate()){
                         result.addRestMessage(this.getValidationFailedError());
                     }else{
-                        UserDao.instance.saveUser(u);
+                        UserDao.getInstance().saveUser(u);
                         sessionRegistry.userUpdated(request, u);
                     }
                     return result.createResponseEntity(model);
@@ -504,12 +504,12 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             throw new AccessDeniedException();
         }
 
-        User user = UserDao.instance.getUser(username);
+        User user = UserDao.getInstance().getUser(username);
         if (user == null) {
             throw new NotFoundRestException();
         }
 
-        UserDao.instance.lockPassword(user);
+        UserDao.getInstance().lockPassword(user);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -567,7 +567,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if(result.isOk()){
 
             List<PermissionDetails> ds = new ArrayList<>();
-            for (User user : UserDao.instance.getActiveUsers()){
+            for (User user : UserDao.getInstance().getActiveUsers()){
                 PermissionDetails deets = Permissions.getPermissionDetails(currentUser, null, user);
                 if(deets != null)
                     ds.add(deets);
@@ -600,7 +600,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if(result.isOk()){
 
             List<PermissionDetails> ds = new ArrayList<>();
-            for (User user : UserDao.instance.getActiveUsers()){
+            for (User user : UserDao.getInstance().getActiveUsers()){
                 PermissionDetails deets = Permissions.getPermissionDetails(currentUser, query, user);
                 if(deets != null)
                     ds.add(deets);
@@ -631,7 +631,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
             if(user.isAdmin()) {
-                for (User u : UserDao.instance.getActiveUsers())
+                for (User u : UserDao.getInstance().getActiveUsers())
                     groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
             }else {
                 groups.addAll(user.getPermissionsSet());
@@ -665,7 +665,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
             if(user.isAdmin()) {
-                for (User u : UserDao.instance.getActiveUsers())
+                for (User u : UserDao.getInstance().getActiveUsers())
                     groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
             }else {
                 groups.addAll(user.getPermissionsSet());
@@ -692,7 +692,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            User u = UserDao.instance.getUser(username);
+            User u = UserDao.getInstance().getUser(username);
             if (u == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -705,7 +705,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     result.addRestMessage(getValidationFailedError());
                     return result.createResponseEntity(model);
                 }
-                UserDao.instance.deleteUser(u.getId());
+                UserDao.getInstance().deleteUser(u.getId());
                 return result.createResponseEntity(model);
             }else{
                 LOG.warn("Non admin user: " + user.getUsername() + " attempted to delete user : " + u.getUsername());

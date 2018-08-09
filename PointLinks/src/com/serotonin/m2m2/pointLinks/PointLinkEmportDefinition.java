@@ -29,13 +29,13 @@ public class PointLinkEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return PointLinkDao.instance.getPointLinks();
+        return PointLinkDao.getInstance().getPointLinks();
     }
 
     @Override
     public void doImport(JsonValue jsonValue, ImportContext importContext) throws JsonException {
         JsonObject pointLink = jsonValue.toJsonObject();
-        PointLinkDao pointLinkDao = PointLinkDao.instance;
+        PointLinkDao pointLinkDao = PointLinkDao.getInstance();
 
         String xid = pointLink.getString("xid");
         if (StringUtils.isBlank(xid))

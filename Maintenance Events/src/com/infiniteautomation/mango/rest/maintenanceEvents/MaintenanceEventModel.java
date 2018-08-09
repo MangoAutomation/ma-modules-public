@@ -11,9 +11,9 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.PatchableField;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 
@@ -68,7 +68,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         if(dataSources != null) {
             Set<Integer> ids = new HashSet<>();
             for(String xid : dataSources) {
-                Integer id = DataSourceDao.instance.getIdByXid(xid);
+                Integer id = DataSourceDao.getInstance().getIdByXid(xid);
                 if(id != null)
                     ids.add(id);
             }
@@ -77,7 +77,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         if(dataPoints != null) {
             Set<Integer> ids = new HashSet<>();
             for(String xid : dataPoints) {
-                Integer id = DataPointDao.instance.getIdByXid(xid);
+                Integer id = DataPointDao.getInstance().getIdByXid(xid);
                 if(id != null)
                     ids.add(id);
             }
@@ -115,7 +115,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         if(vo.getDataSources().size() > 0) {
             dataSources = new ArrayList<>();
             for(int id : vo.getDataSources()) {
-                String xid = DataSourceDao.instance.getXidById(id);
+                String xid = DataSourceDao.getInstance().getXidById(id);
                 if(xid != null)
                     dataSources.add(xid);
             }
@@ -124,7 +124,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         if(vo.getDataPoints().size() > 0) {
             dataPoints = new ArrayList<>();
             for(int id : vo.getDataSources()) {
-                String xid = DataPointDao.instance.getXidById(id);
+                String xid = DataPointDao.getInstance().getXidById(id);
                 if(xid != null)
                     dataPoints.add(xid);
             }

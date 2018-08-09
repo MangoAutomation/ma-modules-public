@@ -6,7 +6,6 @@ package com.serotonin.m2m2.pointLinks;
 
 import java.io.IOException;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -14,6 +13,7 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.script.ScriptLog;
@@ -165,7 +165,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     //
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        DataPointDao dataPointDao = DataPointDao.instance;
+        DataPointDao dataPointDao = DataPointDao.getInstance();
 
         writer.writeEntry("xid", xid);
 
@@ -184,7 +184,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        DataPointDao dataPointDao = DataPointDao.instance;
+        DataPointDao dataPointDao = DataPointDao.getInstance();
 
         String xid = jsonObject.getString("sourcePointId");
         if (xid != null) {

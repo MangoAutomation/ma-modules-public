@@ -12,9 +12,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.UserDao;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -24,6 +21,8 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -201,11 +200,11 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
             response.addMessage("xid", new TranslatableMessage("validate.required"));
         else if (StringValidation.isLengthGreaterThan(xid, 50))
             response.addMessage("xid", new TranslatableMessage("validate.notLongerThan", 50));
-        else if (!WatchListDao.instance.isXidUnique(xid, id))
+        else if (!WatchListDao.getInstance().isXidUnique(xid, id))
             response.addMessage("xid", new TranslatableMessage("validate.xidUsed"));
 
         //Validate the points
-        UserDao dao = UserDao.instance;
+        UserDao dao = UserDao.getInstance();
         User user = dao.getUser(userId);
         if(user == null){
             response.addContextualMessage("userId", "watchlists.validate.userDNE");
@@ -240,7 +239,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-    	writer.writeEntry("user", UserDao.instance.getUser(userId).getUsername());
+    	writer.writeEntry("user", UserDao.getInstance().getUser(userId).getUsername());
 
         List<String> dpXids = new ArrayList<>();
         for (DataPointVO dpVO : pointList)
@@ -255,7 +254,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     	String username = jsonObject.getString("user");
         if (StringUtils.isBlank(username))
             throw new TranslatableJsonException("emport.error.missingValue", "user");
-        User user = UserDao.instance.getUser(username);
+        User user = UserDao.getInstance().getUser(username);
         if (user == null)
             throw new TranslatableJsonException("emport.error.missingUser", username);
         userId = user.getId();
@@ -263,7 +262,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPoints");
         if (jsonDataPoints != null) {
             pointList.clear();
-            DataPointDao dataPointDao = DataPointDao.instance;
+            DataPointDao dataPointDao = DataPointDao.getInstance();
             for (JsonValue jv : jsonDataPoints) {
                 String xid = jv.toString();
                 DataPointVO dpVO = dataPointDao.getDataPoint(xid);
@@ -298,7 +297,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 	 */
 	@Override
 	protected AbstractDao<WatchListVO> getDao() {
-		return WatchListDao.instance;
+		return WatchListDao.getInstance();
 	}
 
 }

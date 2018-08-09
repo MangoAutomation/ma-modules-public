@@ -40,7 +40,7 @@ public class ScheduledEventTypeDefinition extends EventTypeDefinition {
     public List<EventTypeVO> getEventTypeVOs() {
         List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
 
-        for (ScheduledEventVO se : ScheduledEventDao.instance.getScheduledEvents())
+        for (ScheduledEventVO se : ScheduledEventDao.getInstance().getScheduledEvents())
             vos.add(se.getEventType());
 
         return vos;

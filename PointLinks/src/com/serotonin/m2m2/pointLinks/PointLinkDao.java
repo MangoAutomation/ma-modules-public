@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
+import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.BaseDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -26,7 +27,9 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
 	//If you change this the Internal Metrics DS Should be updated
 	public static final String COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
 	
-	public static final PointLinkDao instance = new PointLinkDao();
+    private static final LazyInitSupplier<PointLinkDao> instance = new LazyInitSupplier<>(() -> {
+        return new PointLinkDao();
+    });
 	
     //Monitor for count of table
     protected final AtomicIntegerMonitor countMonitor;
@@ -36,6 +39,10 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
         this.countMonitor.setValue(this.count());
     	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
 	}
+	
+    public static PointLinkDao getInstance() {
+        return instance.get();
+    }
 	
     public String generateUniqueXid() {
         return generateUniqueXid(PointLinkVO.XID_PREFIX, "pointLinks");

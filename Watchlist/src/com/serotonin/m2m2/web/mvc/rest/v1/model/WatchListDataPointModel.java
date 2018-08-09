@@ -5,7 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -84,7 +84,7 @@ public class WatchListDataPointModel{
 
     @JsonIgnore
 	public DataPointVO getDataPointVO() {
-		return DataPointDao.instance.getByXid(xid);
+		return DataPointDao.getInstance().getByXid(xid);
 	}
 	
 }

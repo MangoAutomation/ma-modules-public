@@ -26,17 +26,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jfree.data.time.TimeSeries;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataPointTagsDao;
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.InvalidArgumentException;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.email.MessageFormatDirective;
 import com.serotonin.m2m2.email.SubjectDirective;
 import com.serotonin.m2m2.email.UsedImagesDirective;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
@@ -392,7 +392,7 @@ public class ReportChartCreator {
         }
         
         public String getPointHierarchyPath() {
-            return PointHierarchy.getFlatPath(reportPointId, DataPointDao.instance.getPointHierarchy(true).getRoot());
+            return PointHierarchy.getFlatPath(reportPointId, DataPointDao.getInstance().getPointHierarchy(true).getRoot());
         }
 
         public String getStartValue() {
@@ -654,13 +654,13 @@ public class ReportChartCreator {
             }
             
             // Make the DataPointVO available to the freemarker template, may be null if the point was deleted
-            DataPointVO vo = DataPointDao.instance.getDataPoint(pointInfo.getXid());
+            DataPointVO vo = DataPointDao.getInstance().getDataPoint(pointInfo.getXid());
             point.setVo(vo);
             
             // Generate a tag string for easy use in the template
             List<String> tagList = new ArrayList<>();
             if (vo != null) {
-                vo.setTags(DataPointTagsDao.instance.getTagsForDataPointId(vo.getId()));
+                vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
                 Map<String, String> tags = vo.getTags();
                 for (Entry<String, String> entry : tags.entrySet()) {
                     tagList.add(entry.getKey() + ": " + entry.getValue());

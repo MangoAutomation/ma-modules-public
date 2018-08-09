@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
@@ -64,7 +64,7 @@ public class RuntimeManagerRestController extends MangoRestController{
 	        		return result.createResponseEntity();
 	    		}
 	    		
-	    		DataPointVO vo = DataPointDao.instance.getByXid(xid);
+	    		DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
 	    		if(vo == null){
 	    			result.addRestMessage(getDoesNotExistMessage());
 	        		return result.createResponseEntity();
@@ -108,7 +108,7 @@ public class RuntimeManagerRestController extends MangoRestController{
             @AuthenticationPrincipal User user,
             HttpServletRequest request){
         
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
         if (dataPoint == null)
             throw new NotFoundRestException();
         

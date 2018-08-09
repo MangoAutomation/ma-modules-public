@@ -21,10 +21,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.RowMapper;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.DatabaseProxy.DatabaseType;
+import com.serotonin.m2m2.reports.ReportDao;
 
 /**
  * @author Terry Packer
@@ -53,7 +53,7 @@ public class M2MReportDao {
 		mappedClasses.put("com.serotonin.mango.vo.report.ReportPointVO", M2MReportPointVO.class.getCanonicalName());
 		mappedClasses.put("com.serotonin.mango.web.dwr.beans.RecipientListEntryBean", M2MRecipientListEntryBean.class.getCanonicalName());
 		
-		this.mangoDao = ReportDao.instance;
+		this.mangoDao = ReportDao.getInstance();
 	}
 	
 	public void close() throws SQLException{

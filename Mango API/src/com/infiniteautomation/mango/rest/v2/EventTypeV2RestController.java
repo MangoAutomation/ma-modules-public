@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
-import com.infiniteautomation.mango.spring.dao.PublisherDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
@@ -164,7 +164,7 @@ public class EventTypeV2RestController {
     }
     
     private void getAllDataPointEventTypes(List<EventTypeModel> types, User user, Integer dataPointId, Integer detectorId) {
-        List<DataPointVO> dataPoints = DataPointDao.instance.getDataPoints(DataPointExtendedNameComparator.instance, true);
+        List<DataPointVO> dataPoints = DataPointDao.getInstance().getDataPoints(DataPointExtendedNameComparator.instance, true);
         final boolean admin = Permissions.hasAdminPermission(user);
         for(DataPointVO dpvo : dataPoints)
             if((dataPointId == null || dataPointId.intValue() == dpvo.getId()) && dpvo.getEventDetectors() != null)
@@ -178,7 +178,7 @@ public class EventTypeV2RestController {
     }
     
     private void getAllDataSourceEventTypes(List<EventTypeModel> types, User user, Integer dataSourceId, Integer dataSourceEventId) {
-        List<DataSourceVO<?>> dataSources = DataSourceDao.instance.getAll();
+        List<DataSourceVO<?>> dataSources = DataSourceDao.getInstance().getAll();
         final boolean admin = Permissions.hasAdminPermission(user);
         for(DataSourceVO<?> dsvo : dataSources)
             if(dataSourceId == null || dataSourceId.intValue() == dsvo.getId())
@@ -191,7 +191,7 @@ public class EventTypeV2RestController {
     }
     
     private void getAllPublisherEventTypes(List<EventTypeModel> types, User user, Integer publisherId, Integer publisherEventId) {
-        List<PublisherVO<?>> publishers = PublisherDao.instance.getAll();
+        List<PublisherVO<?>> publishers = PublisherDao.getInstance().getAll();
         final boolean admin = Permissions.hasAdminPermission(user);
         for(PublisherVO<?> pvo : publishers)
             if(publisherId == null || publisherId.intValue() == pvo.getId())

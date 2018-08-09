@@ -2,7 +2,7 @@
     Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
     @author Matthew Lohbihler
  */
-package com.infiniteautomation.mango.spring.dao;
+package com.serotonin.m2m2.reports;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,20 +20,20 @@ import org.springframework.stereotype.Repository;
 
 import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.infiniteautomation.mango.util.LazyInitSupplier;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.BaseDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLDao;
 import com.serotonin.m2m2.db.dao.nosql.NoSQLQueryCallback;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.reports.ReportAuditEvent;
-import com.serotonin.m2m2.reports.ReportPointValueTimeSerializer;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportUserComment;
@@ -65,21 +65,33 @@ import com.serotonin.web.taglib.Functions;
  *
  * @author Matthew Lohbihler
  */
-@Repository("reportDao")
+@Repository()
 public class ReportDao extends AbstractDao<ReportVO> {
 
     public static final String TABLE_NAME = "reports";
-    @Deprecated
-    public static ReportDao instance;
+
+    private static final LazyInitSupplier<ReportDao> springInstance = new LazyInitSupplier<>(() -> {
+        Object o = Common.getRuntimeContext().getBean(ReportDao.class);
+        if(o == null)
+            throw new ShouldNeverHappenException("DAO not initialized in Spring Runtime Context");
+        return (ReportDao)o;
+    });
 
     private ReportDao(){
         super(ReportAuditEvent.TYPE_NAME, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
         this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner);
         this.instanceCountMonitor.setValue(this.countInstances());
         Common.MONITORED_VALUES.addIfMissingStatMonitor(this.instanceCountMonitor);
-        instance = this;
     }
 
+    /**
+     * Get cached instance from Spring Context
+     * @return
+     */
+    public static ReportDao getInstance() {
+        return springInstance.get();
+    }
+    
     //
     //
     // Report Templates
@@ -602,7 +614,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
         final ExportDataValue edv = new ExportDataValue();
         for (final ExportPointInfo point : pointInfos) {
             if(point.getDataType() == DataTypes.IMAGE){
-                DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
+                DataPointVO vo = DataPointDao.getInstance().getByXid(point.getXid());
                 if(vo != null)
                     point.setDataPointId(vo.getId());
                 else
@@ -677,7 +689,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
         final ExportDataValue edv = new ExportDataValue();
         for (final ExportPointInfo point : pointInfos) {
             if(point.getDataType() == DataTypes.IMAGE){
-                DataPointVO vo = DataPointDao.instance.getByXid(point.getXid());
+                DataPointVO vo = DataPointDao.getInstance().getByXid(point.getXid());
                 if(vo != null)
                     point.setDataPointId(vo.getId());
                 else

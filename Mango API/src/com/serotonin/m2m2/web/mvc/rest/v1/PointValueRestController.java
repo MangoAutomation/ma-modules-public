@@ -39,10 +39,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -143,7 +143,7 @@ public class PointValueRestController extends MangoRestController {
         User user = this.checkUser(request, result);
         if (result.isOk()) {
 
-            DataPointVO vo = DataPointDao.instance.getByXid(xid);
+            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -334,7 +334,7 @@ public class PointValueRestController extends MangoRestController {
                 new RestProcessResult<QueryArrayStream<PointValueTimeModel>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            DataSourceVO<?> ds = DataSourceDao.instance.getByXid(dataSourceXid);
+            DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
             if (ds == null)
                 throw new NotFoundRestException();
 
@@ -359,7 +359,7 @@ public class PointValueRestController extends MangoRestController {
             }
             
             List<DataPointVO> points =
-                    DataPointDao.instance.getDataPointsForDataSourceStart(ds.getId());
+                    DataPointDao.getInstance().getDataPointsForDataSourceStart(ds.getId());
 
             Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(points.size());
             for (DataPointVO vo : points) {
@@ -439,7 +439,7 @@ public class PointValueRestController extends MangoRestController {
                         HttpStatus.OK);
         User user = this.checkUser(request, result);
         if (result.isOk()) {
-            DataSourceVO<?> ds = DataSourceDao.instance.getByXid(dataSourceXid);
+            DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
             if (ds == null)
                 throw new NotFoundRestException();
 
@@ -464,7 +464,7 @@ public class PointValueRestController extends MangoRestController {
             }
             
             List<DataPointVO> points =
-                    DataPointDao.instance.getDataPointsForDataSourceStart(ds.getId());
+                    DataPointDao.getInstance().getDataPointsForDataSourceStart(ds.getId());
             Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(points.size());
 
             for (DataPointVO vo : points) {
@@ -594,7 +594,7 @@ public class PointValueRestController extends MangoRestController {
             Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
             DataPointVO vo;
             for (String xid : xids) {
-                vo = DataPointDao.instance.getByXid(xid);
+                vo = DataPointDao.getInstance().getByXid(xid);
                 if (vo != null) {
                     if (Permissions.hasDataPointReadPermission(user, vo))
                         pointIdMap.put(vo.getId(), vo);
@@ -723,7 +723,7 @@ public class PointValueRestController extends MangoRestController {
             Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
             DataPointVO vo;
             for (String xid : xids) {
-                vo = DataPointDao.instance.getByXid(xid);
+                vo = DataPointDao.getInstance().getByXid(xid);
                 if (vo != null) {
                     if (Permissions.hasDataPointReadPermission(user, vo))
                         pointIdMap.put(vo.getId(), vo);
@@ -799,7 +799,7 @@ public class PointValueRestController extends MangoRestController {
                 }
             }
             
-            DataPointVO vo = DataPointDao.instance.getByXid(xid);
+            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -989,7 +989,7 @@ public class PointValueRestController extends MangoRestController {
             Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
             DataPointVO vo;
             for (String xid : xids) {
-                vo = DataPointDao.instance.getByXid(xid);
+                vo = DataPointDao.getInstance().getByXid(xid);
                 if (vo != null) {
                     if (Permissions.hasDataPointReadPermission(user, vo))
                         pointIdMap.put(vo.getId(), vo);
@@ -1168,7 +1168,7 @@ public class PointValueRestController extends MangoRestController {
             Map<Integer, DataPointVO> pointIdMap = new HashMap<Integer, DataPointVO>(xids.length);
             DataPointVO vo;
             for (String xid : xids) {
-                vo = DataPointDao.instance.getByXid(xid);
+                vo = DataPointDao.getInstance().getByXid(xid);
                 if (vo != null) {
                     if (Permissions.hasDataPointReadPermission(user, vo))
                         pointIdMap.put(vo.getId(), vo);
@@ -1310,7 +1310,7 @@ public class PointValueRestController extends MangoRestController {
                     throw new ValidationFailedRestException(vr);
                 }
             }
-            DataPointVO vo = DataPointDao.instance.getByXid(xid);
+            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -1417,7 +1417,7 @@ public class PointValueRestController extends MangoRestController {
                     throw new ValidationFailedRestException(vr);
                 }
             }
-            DataPointVO vo = DataPointDao.instance.getByXid(xid);
+            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -1527,7 +1527,7 @@ public class PointValueRestController extends MangoRestController {
                     throw new ValidationFailedRestException(vr);
                 }
             }
-            DataPointVO vo = DataPointDao.instance.getByXid(xid);
+            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -1654,7 +1654,7 @@ public class PointValueRestController extends MangoRestController {
         RestProcessResult<PointValueTimeModel> result =
                 new RestProcessResult<PointValueTimeModel>(HttpStatus.OK);
 
-        DataPointVO existingDp = DataPointDao.instance.getByXid(xid);
+        DataPointVO existingDp = DataPointDao.getInstance().getByXid(xid);
         if (existingDp == null) {
             result.addRestMessage(getDoesNotExistMessage());
             return result;

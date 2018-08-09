@@ -106,7 +106,7 @@ public class ScheduledEventType extends EventType {
         String xid = jsonObject.getString("XID");
         if (xid == null)
             throw new TranslatableJsonException("emport.error.eventType.missing.reference", "XID");
-        ScheduledEventVO se = ScheduledEventDao.instance.getScheduledEvent(xid);
+        ScheduledEventVO se = ScheduledEventDao.getInstance().getScheduledEvent(xid);
         if (se == null)
             throw new TranslatableJsonException("emport.error.eventType.invalid.reference", "XID", xid);
         scheduleId = se.getId();
@@ -115,7 +115,7 @@ public class ScheduledEventType extends EventType {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-        writer.writeEntry("XID", ScheduledEventDao.instance.getScheduledEvent(scheduleId).getXid());
+        writer.writeEntry("XID", ScheduledEventDao.getInstance().getScheduledEvent(scheduleId).getXid());
     }
 
     /* (non-Javadoc)

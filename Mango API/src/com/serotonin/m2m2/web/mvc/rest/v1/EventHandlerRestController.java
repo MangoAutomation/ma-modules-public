@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
-import com.infiniteautomation.mango.spring.dao.EventHandlerDao;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.db.dao.EventHandlerDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.definitions.permissions.SuperadminPermissionDefinition;
 import com.serotonin.m2m2.vo.User;
@@ -55,7 +55,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	 * @param dao
 	 */
 	public EventHandlerRestController() {
-		super(EventHandlerDao.instance);
+		super(EventHandlerDao.getInstance());
 	}
 
 	@ApiOperation(
@@ -70,7 +70,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 
 		User user = this.checkUser(request, result);
         if(result.isOk()){
-	        AbstractEventHandlerVO<?> vo = EventHandlerDao.instance.getByXid(xid);
+	        AbstractEventHandlerVO<?> vo = EventHandlerDao.getInstance().getByXid(xid);
 	        if (vo == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -102,7 +102,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 				ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 				EventHandlerStreamCallback callback = new EventHandlerStreamCallback(this, user);
 				FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao> stream = 
-						new FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>(EventHandlerDao.instance, this, node, callback);
+						new FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>(EventHandlerDao.getInstance(), this, node, callback);
 				stream.setupQuery();
 				return result.createResponseEntity(stream);
     		}catch(InvalidRQLRestException e){
@@ -132,7 +132,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
         if(result.isOk()){
         	
 			AbstractEventHandlerVO<?> vo = model.getData();
-			AbstractEventHandlerVO<?> existing = EventHandlerDao.instance.getByXid(xid);
+			AbstractEventHandlerVO<?> existing = EventHandlerDao.getInstance().getByXid(xid);
 	        if (existing == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -152,7 +152,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        	return result.createResponseEntity(model); 
 	        }else{
 	        	String initiatorId = request.getHeader("initiatorId");
-	        	EventHandlerDao.instance.saveFull(vo, initiatorId);
+	        	EventHandlerDao.getInstance().saveFull(vo, initiatorId);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -187,7 +187,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        
 	        //Set XID if required
 	        if(StringUtils.isEmpty(model.getXid())){
-	        	model.setXid(EventHandlerDao.instance.generateUniqueXid());
+	        	model.setXid(EventHandlerDao.getInstance().generateUniqueXid());
 	        }
 	        
 	        if(!model.validate()){
@@ -196,7 +196,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }else{
 				AbstractEventHandlerVO<?> vo = model.getData();
 	        	String initiatorId = request.getHeader("initiatorId");
-	        	EventHandlerDao.instance.saveFull(vo, initiatorId);
+	        	EventHandlerDao.getInstance().saveFull(vo, initiatorId);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -218,7 +218,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 		RestProcessResult<AbstractEventHandlerModel<?>> result = new RestProcessResult<AbstractEventHandlerModel<?>>(HttpStatus.OK);
 		User user = this.checkUser(request, result);
 		if(result.isOk()) {
-			AbstractEventHandlerVO<?> existing = EventHandlerDao.instance.getByXid(xid);
+			AbstractEventHandlerVO<?> existing = EventHandlerDao.getInstance().getByXid(xid);
 			if(existing == null) {
 				result.addRestMessage(this.getDoesNotExistMessage());
 				return result.createResponseEntity();
@@ -230,7 +230,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 		        }
 		        //All Good Delete It
 		        String initiatorId = request.getHeader("initiatorId");
-		        EventHandlerDao.instance.delete(existing.getId(), initiatorId);
+		        EventHandlerDao.getInstance().delete(existing.getId(), initiatorId);
 				return result.createResponseEntity(existing.asModel());
 			}
 		}

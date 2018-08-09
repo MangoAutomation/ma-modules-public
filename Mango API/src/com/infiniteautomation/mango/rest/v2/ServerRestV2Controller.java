@@ -35,10 +35,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -196,7 +196,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
     @RequestMapping(method = {RequestMethod.GET}, value = "/point-history-counts")
     public ResponseEntity<List<PointHistoryCount>> getPointHistoryCounts() {
-        return ResponseEntity.ok(DataPointDao.instance.getTopPointHistoryCounts());
+        return ResponseEntity.ok(DataPointDao.getInstance().getTopPointHistoryCounts());
     }
 
     @ApiOperation(value = "Get general Mango installation info",

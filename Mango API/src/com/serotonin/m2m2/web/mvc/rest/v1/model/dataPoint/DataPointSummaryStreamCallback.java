@@ -6,7 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint;
 
 import java.io.IOException;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;

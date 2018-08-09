@@ -41,13 +41,13 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataPointTagsDao;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mangoApi.websocket.TemporaryResourceWebSocketDefinition;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -117,14 +117,14 @@ public class DataPointTagsRestController {
     //            @AuthenticationPrincipal User user) {
     //
     //        ASTNode rql = parseRQLtoAST(request.getQueryString());
-    //        ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
+    //        ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
     //
     //        if (!user.isAdmin()) {
-    //            conditions.addCondition(DataPointDao.instance.userHasPermission(user));
+    //            conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
     //        }
     //
-    //        return new StreamedVOQueryWithTotal<>(DataPointDao.instance, conditions, item -> true, dataPoint -> {
-    //            Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+    //        return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), conditions, item -> true, dataPoint -> {
+    //            Map<String, String> tags = DataPointTagsDao.getInstance().getTagsForDataPointId(dataPoint.getId());
     //
     //            // we set the tags on the data point then retrieve them so that the device and name tags are removed
     //            dataPoint.setTags(tags);
@@ -145,14 +145,14 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
+        ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
 
         if (!user.isAdmin()) {
-            conditions.addCondition(DataPointDao.instance.userHasPermission(user));
+            conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
         }
 
-        return new StreamedVOQueryWithTotal<>(DataPointDao.instance, conditions, item -> true, dataPoint -> {
-            Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+        return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), conditions, item -> true, dataPoint -> {
+            Map<String, String> tags = DataPointTagsDao.getInstance().getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
             dataPoint.setTags(tags);
@@ -174,13 +174,13 @@ public class DataPointTagsRestController {
 
             @AuthenticationPrincipal User user) {
 
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
         Permissions.ensureDataPointReadPermission(user, dataPoint);
 
-        Map<String, String> tags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+        Map<String, String> tags = DataPointTagsDao.getInstance().getTagsForDataPointId(dataPoint.getId());
         dataPoint.setTags(tags);
 
         // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -199,15 +199,15 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal
             User user) {
 
-        return DataPointTagsDao.instance.doInTransaction(txStatus -> {
-            DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        return DataPointTagsDao.getInstance().doInTransaction(txStatus -> {
+            DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
             if (dataPoint == null) {
                 throw new NotFoundRestException();
             }
             Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
             dataPoint.setTags(tags);
-            DataPointTagsDao.instance.saveDataPointTags(dataPoint);
+            DataPointTagsDao.getInstance().saveDataPointTags(dataPoint);
 
             return dataPoint.getTags();
         });
@@ -226,14 +226,14 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal
             User user) {
 
-        return DataPointTagsDao.instance.doInTransaction(txStatus -> {
-            DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        return DataPointTagsDao.getInstance().doInTransaction(txStatus -> {
+            DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
             if (dataPoint == null) {
                 throw new NotFoundRestException();
             }
             Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
-            Map<String, String> existingTags = DataPointTagsDao.instance.getTagsForDataPointId(dataPoint.getId());
+            Map<String, String> existingTags = DataPointTagsDao.getInstance().getTagsForDataPointId(dataPoint.getId());
 
             Map<String, String> newTags = new HashMap<>(existingTags);
             for (Entry<String, String> entry : tags.entrySet()) {
@@ -248,7 +248,7 @@ public class DataPointTagsRestController {
             }
 
             dataPoint.setTags(newTags);
-            DataPointTagsDao.instance.saveDataPointTags(dataPoint);
+            DataPointTagsDao.getInstance().saveDataPointTags(dataPoint);
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
             return dataPoint.getTags();
@@ -515,7 +515,7 @@ public class DataPointTagsRestController {
     @ApiOperation(value = "Gets all available tags keys", notes = "Only returns tag keys which are present on data points the user has access to")
     @RequestMapping(method = RequestMethod.GET, value="/keys")
     public Set<String> getTagKeys(@AuthenticationPrincipal User user) {
-        return DataPointTagsDao.instance.getTagKeys(user);
+        return DataPointTagsDao.getInstance().getTagKeys(user);
     }
 
     /**
@@ -537,10 +537,10 @@ public class DataPointTagsRestController {
         String queryString = request.getQueryString();
 
         if (queryString == null || queryString.isEmpty()) {
-            return DataPointTagsDao.instance.getTagValuesForKey(tagKey, user);
+            return DataPointTagsDao.getInstance().getTagValuesForKey(tagKey, user);
         }
 
         ASTNode rql = RQLUtils.parseRQLtoAST(queryString);
-        return DataPointTagsDao.instance.getTagValuesForKey(tagKey, rql, user);
+        return DataPointTagsDao.getInstance().getTagValuesForKey(tagKey, rql, user);
     }
 }

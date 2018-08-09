@@ -9,8 +9,8 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.Test;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
-import com.infiniteautomation.mango.spring.dao.EventInstanceDao;
 import com.serotonin.m2m2.db.dao.EventDao;
+import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
@@ -37,14 +37,14 @@ public class EventInstanceDaoTest extends MangoTestBase {
         for(int i=0; i<100; i++) {
             EventInstance evt = new EventInstance(type, timestamp, false,
                     AlarmLevels.CRITICAL, new TranslatableMessage("common.default", "testing"), null);
-            EventDao.instance.saveEvent(evt);
+            EventDao.getInstance().saveEvent(evt);
             timestamp++;
         }
         
         ASTNode rql = new RQLParser().parse("lt(activeTs, " + timestamp + ")&limit(100");
-        ConditionSortLimit conditions = EventInstanceDao.instance.rqlToCondition(rql);
+        ConditionSortLimit conditions = EventInstanceDao.getInstance().rqlToCondition(rql);
         MutableInt count = new MutableInt();
-        EventInstanceDao.instance.customizedQuery(conditions, (EventInstanceVO item, int index) -> {
+        EventInstanceDao.getInstance().customizedQuery(conditions, (EventInstanceVO item, int index) -> {
             count.increment();
         });
         

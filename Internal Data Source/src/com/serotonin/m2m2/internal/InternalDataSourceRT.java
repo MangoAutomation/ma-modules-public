@@ -17,12 +17,12 @@ import com.infiniteautomation.mango.monitor.DoubleMonitor;
 import com.infiniteautomation.mango.monitor.IntegerMonitor;
 import com.infiniteautomation.mango.monitor.LongMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.Rollups;
 import com.serotonin.m2m2.Common.TimePeriods;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -51,7 +51,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
             try {
                 createPointsPattern = Pattern.compile(vo.getCreatePointsPattern());
                 monitorMap = new HashMap<String, Boolean>();
-                for(DataPointVO dpvo : DataPointDao.instance.getDataPoints(vo.getId(), null)) {
+                for(DataPointVO dpvo : DataPointDao.getInstance().getDataPoints(vo.getId(), null)) {
                     InternalPointLocatorVO plvo = dpvo.getPointLocator();
                     monitorMap.put(plvo.getMonitorId(), true);
                 }
@@ -222,7 +222,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
     }
     
     private void defaultNewPointToDataSource(DataPointVO dpvo, String dsXid) {
-        DataSourceVO<?> dsvo = DataSourceDao.instance.getDataSource(dsXid);
+        DataSourceVO<?> dsvo = DataSourceDao.getInstance().getDataSource(dsXid);
         if(dsvo == null)
             throw new ShouldNeverHappenException("Error creating point, unknown data source: "+dsXid);
         dpvo.setDeviceName(dsvo.getName());

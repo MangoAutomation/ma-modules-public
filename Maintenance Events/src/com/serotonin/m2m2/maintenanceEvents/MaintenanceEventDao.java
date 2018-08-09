@@ -2,7 +2,7 @@
     Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
     @author Matthew Lohbihler
  */
-package com.infiniteautomation.mango.spring.dao;
+package com.serotonin.m2m2.maintenanceEvents;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,18 +21,19 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import com.infiniteautomation.mango.util.LazyInitSupplier;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.db.pair.IntStringPair;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.maintenanceEvents.AuditEvent;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.maintenanceEvents.SchemaDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
-@Repository("maintenanceEventDao")
+@Repository()
 public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     
     private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
@@ -47,10 +48,13 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     private DataPointDao dataPointDao;
     private DataSourceDao<DataSourceVO<?>> dataSourceDao;
     
-//    private static volatile MaintenanceEventDao instance = null;
-//    private static Object lock = new Object();
-    @Deprecated
-    public static MaintenanceEventDao instance;
+    private static final LazyInitSupplier<MaintenanceEventDao> springInstance = new LazyInitSupplier<>(() -> {
+        Object o = Common.getRuntimeContext().getBean(MaintenanceEventDao.class);
+        if(o == null)
+            throw new ShouldNeverHappenException("DAO not initialized in Spring Runtime Context");
+        return (MaintenanceEventDao)o;
+    });
+
     private MaintenanceEventDao(@Autowired DataPointDao dataPointDao, @Autowired DataSourceDao<DataSourceVO<?>> dataSourceDao) {
         super(AuditEvent.TYPE_NAME, "m",
                 new String[] {},
@@ -59,25 +63,15 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         this.dataSourceDao = dataSourceDao;
         SELECT_POINTS = dataPointDao.getSelectAllSql() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
         SELECT_DATA_SOURCES = dataSourceDao.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
-        instance = this;
     }
-    
-//Optional Thread Safe access to singleton, TBD
-//    public static MaintenanceEventDao instance() {
-//        MaintenanceEventDao result = instance;
-//        if(result == null) {
-//            synchronized(lock) {
-//                result = instance;
-//                if(result == null) {
-//                    Object o = Common.getRuntimeContext().getBean("maintenanceEventDao");
-//                    if(o == null)
-//                        throw new ShouldNeverHappenException("DAO not initialized in Spring Runtime Context");
-//                    instance = result = (MaintenanceEventDao)o;
-//                }
-//            }
-//        }
-//        return result;
-//    }
+
+    /**
+     * Get cached instance from Spring Context
+     * @return
+     */
+    public static MaintenanceEventDao getInstance() {
+        return springInstance.get();
+    }
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#delete(int, java.lang.String)

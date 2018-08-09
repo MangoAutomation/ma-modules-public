@@ -63,6 +63,6 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
 	public void postDatabase(boolean install, boolean upgrade) {
 		//Ensure the Count Monitor is registered so we can access 
 		// it when the Internal Metrics DS module starts
-		PointLinkDao.instance.countMonitor.getValue();
+		PointLinkDao.getInstance().countMonitor.getValue();
 	}
 }

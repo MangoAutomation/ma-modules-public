@@ -33,15 +33,15 @@ import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -70,7 +70,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
     private static Log LOG = LogFactory.getLog(WatchListRestController.class);
 
     public WatchListRestController(){
-        super(WatchListDao.instance);
+        super(WatchListDao.getInstance());
     }
 
     @ApiOperation(
@@ -96,7 +96,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
                     //We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
                     WatchListStreamCallback callback = new WatchListStreamCallback(this, user);
                     FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao> stream  =
-                            new FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao>(WatchListDao.instance,
+                            new FilteredPageQueryStream<WatchListVO, WatchListSummaryModel, WatchListDao>(WatchListDao.getInstance(),
                                     this, query, callback);
                     stream.setupQuery();
                     return result.createResponseEntity(stream);
@@ -412,12 +412,12 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
         @Override
         public StreamedArray getItems() {
             return (JSONStreamedArray) (jgen) -> {
-                WatchListDao.instance.getPoints(watchlistId, new MappedRowCallback<DataPointVO>(){
+                WatchListDao.getInstance().getPoints(watchlistId, new MappedRowCallback<DataPointVO>(){
 
                     @Override
                     public void row(DataPointVO dp, int index) {
                         if(Permissions.hasDataPointReadPermission(user, dp)){
-                            DataPointDao.instance.loadPartialRelationalData(dp);
+                            DataPointDao.getInstance().loadPartialRelationalData(dp);
 
                             Object model = mapToModel.apply(dp);
 

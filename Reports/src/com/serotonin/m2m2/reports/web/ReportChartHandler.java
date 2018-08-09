@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 
-import com.infiniteautomation.mango.spring.dao.ReportDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.servlet.ReportChartServlet;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.vo.User;
@@ -26,14 +26,14 @@ public class ReportChartHandler implements UrlHandler {
     public View handleRequest(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model)
             throws Exception {
         int instanceId = Integer.parseInt(request.getParameter("instanceId"));
-        ReportInstance instance = ReportDao.instance.getReportInstance(instanceId);
+        ReportInstance instance = ReportDao.getInstance().getReportInstance(instanceId);
 
         User user = Common.getUser(request);
         ReportCommon.ensureReportInstancePermission(user, instance);
 
         ReportChartCreator creator = new ReportChartCreator(ControllerUtils.getTranslations(request),
                 user.getTimeZoneInstance());
-        creator.createContent(request.getServerName(), request.getLocalPort(), instance, ReportDao.instance, null, false);
+        creator.createContent(request.getServerName(), request.getLocalPort(), instance, ReportDao.getInstance(), null, false);
 
         Map<String, byte[]> imageData = new HashMap<String, byte[]>();
         imageData.put(creator.getChartName(), creator.getImageData());

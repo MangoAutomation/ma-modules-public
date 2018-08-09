@@ -28,7 +28,7 @@ public class ScheduledEventEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return ScheduledEventDao.instance.getScheduledEvents();
+        return ScheduledEventDao.getInstance().getScheduledEvents();
     }
 
     @Override
@@ -37,9 +37,9 @@ public class ScheduledEventEmportDefinition extends EmportDefinition {
 
         String xid = scheduledEvent.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = ScheduledEventDao.instance.generateUniqueXid();
+            xid = ScheduledEventDao.getInstance().generateUniqueXid();
 
-        ScheduledEventVO vo = ScheduledEventDao.instance.getScheduledEvent(xid);
+        ScheduledEventVO vo = ScheduledEventDao.getInstance().getScheduledEvent(xid);
         if (vo == null) {
             vo = new ScheduledEventVO();
             vo.setXid(xid);

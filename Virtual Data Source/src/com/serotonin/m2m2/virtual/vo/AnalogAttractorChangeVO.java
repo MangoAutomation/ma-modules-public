@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.virtual.rt.AnalogAttractorChangeRT;
@@ -96,7 +96,7 @@ public class AnalogAttractorChangeVO extends ChangeTypeVO {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-        DataPointVO dp = DataPointDao.instance.getDataPoint(attractionPointId, false);
+        DataPointVO dp = DataPointDao.getInstance().getDataPoint(attractionPointId, false);
         if (dp == null)
             writer.writeEntry("attractionPointId", null);
         else
@@ -108,7 +108,7 @@ public class AnalogAttractorChangeVO extends ChangeTypeVO {
         super.jsonRead(reader, jsonObject);
         String text = jsonObject.getString("attractionPointId");
         if (text != null) {
-            DataPointVO dp = DataPointDao.instance.getDataPoint(text);
+            DataPointVO dp = DataPointDao.getInstance().getDataPoint(text);
             if (dp == null)
                 throw new TranslatableJsonException("virtual.error.attractor.missingPoint", "attractionPointId", text);
             attractionPointId = dp.getId();

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.module.definitions.permissions.SuperadminPermissionDefinition;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -33,7 +33,7 @@ public class DataPointFilter {
 		this.userPermissions = user.getPermissionsSet();
 		
 		this.dsIdMap = new HashMap<Integer, DataSourceSummary>();
-		for(DataSourceVO<?> ds : DataSourceDao.instance.getAll()){
+		for(DataSourceVO<?> ds : DataSourceDao.getInstance().getAll()){
 			dsIdMap.put(ds.getId(), new DataSourceSummary(ds.getId(), ds.getXid(), Permissions.explodePermissionGroups(ds.getEditPermission())));
 		}
 	}

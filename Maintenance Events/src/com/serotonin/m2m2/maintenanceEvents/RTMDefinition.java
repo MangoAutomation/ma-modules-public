@@ -7,7 +7,6 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.infiniteautomation.mango.spring.dao.MaintenanceEventDao;
 import com.serotonin.m2m2.module.RuntimeManagerDefinition;
 
 public class RTMDefinition extends RuntimeManagerDefinition {
@@ -26,11 +25,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        for (MaintenanceEventVO vo : MaintenanceEventDao.instance.getAllFull()) {
+        for (MaintenanceEventVO vo : MaintenanceEventDao.getInstance().getAllFull()) {
             if (!vo.isDisabled()) {
                 if (safe) {
                     vo.setDisabled(true);
-                    MaintenanceEventDao.instance.save(vo);
+                    MaintenanceEventDao.getInstance().save(vo);
                 }
                 else
                     startMaintenanceEvent(vo);
@@ -80,14 +79,14 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     public void deleteMaintenanceEvent(int id) {
         stopMaintenanceEvent(id);
-        MaintenanceEventDao.instance.delete(id);
+        MaintenanceEventDao.getInstance().delete(id);
     }
 
     public void saveMaintenanceEvent(MaintenanceEventVO vo) {
         // If the maintenance event is running, stop it.
         stopMaintenanceEvent(vo.getId());
 
-        MaintenanceEventDao.instance.saveFull(vo);
+        MaintenanceEventDao.getInstance().saveFull(vo);
 
         // If the maintenance event is enabled, start it.
         if (!vo.isDisabled())

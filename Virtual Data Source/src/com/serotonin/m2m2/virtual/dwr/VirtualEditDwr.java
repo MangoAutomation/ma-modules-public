@@ -6,10 +6,10 @@ package com.serotonin.m2m2.virtual.dwr;
 
 import java.util.ArrayList;
 
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
@@ -58,7 +58,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 		DataSourceDefinition def = ModuleRegistry.getDataSourceDefinition("VIRTUAL");
         ds = (VirtualDataSourceVO) def.baseCreateDataSourceVO();
         ds.setId(Common.NEW_ID);
-        ds.setXid(DataSourceDao.instance.generateUniqueXid());
+        ds.setXid(DataSourceDao.getInstance().generateUniqueXid());
 		ds.setName("Test Virtual");
 		ds.setEnabled(true);
 		ds.setUpdatePeriods(5);
@@ -73,7 +73,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 			throw new RuntimeException("Invalid data!");
 		
 		
-		DataPointDao dpDao = DataPointDao.instance;
+		DataPointDao dpDao = DataPointDao.getInstance();
 		//Create Test Points
 		for(int i=0; i<10; i++){
 			VirtualPointLocatorVO pointLocator = ds.createPointLocator();

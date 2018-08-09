@@ -48,11 +48,11 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
-import com.infiniteautomation.mango.spring.dao.TemplateDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -107,11 +107,11 @@ public class DataPointRestController {
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
 
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
-        DataPointDao.instance.loadPartialRelationalData(dataPoint);
+        DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
 
         Permissions.ensureDataPointReadPermission(user, dataPoint);
         return new DataPointModel(dataPoint);
@@ -127,11 +127,11 @@ public class DataPointRestController {
             @PathVariable int id,
             @AuthenticationPrincipal User user) {
 
-        DataPointVO dataPoint = DataPointDao.instance.get(id);
+        DataPointVO dataPoint = DataPointDao.getInstance().get(id);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
-        DataPointDao.instance.loadPartialRelationalData(dataPoint);
+        DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
 
         Permissions.ensureDataPointReadPermission(user, dataPoint);
         return new DataPointModel(dataPoint);
@@ -150,7 +150,7 @@ public class DataPointRestController {
             @ApiParam(value = "Restart the data point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart) {
 
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
@@ -234,7 +234,7 @@ public class DataPointRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
@@ -250,16 +250,16 @@ public class DataPointRestController {
         DataPointPropertiesTemplateVO template = null;
         if (model.isTemplateXidWasSet()) {
             if (model.getTemplateXid() != null) {
-                template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+                template = (DataPointPropertiesTemplateVO) TemplateDao.getInstance().getByXid(model.getTemplateXid());
                 if (template == null) {
                     throw new BadRequestException(new TranslatableMessage("invalidTemplateXid"));
                 }
             }
         } else if (dataPoint.getTemplateId() != null) {
-            template = (DataPointPropertiesTemplateVO) TemplateDao.instance.get(dataPoint.getTemplateId());
+            template = (DataPointPropertiesTemplateVO) TemplateDao.getInstance().get(dataPoint.getTemplateId());
         }
 
-        DataPointDao.instance.loadPartialRelationalData(dataPoint);
+        DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
         model.copyPropertiesTo(dataPoint);
 
         // load the template after copying the properties, template properties override the ones in the data point
@@ -270,7 +270,7 @@ public class DataPointRestController {
         dataPoint.ensureValid();
 
         // have to load any existing event detectors for the data point as we are about to replace the VO in the runtime manager
-        DataPointDao.instance.setEventDetectors(dataPoint);
+        DataPointDao.getInstance().setEventDetectors(dataPoint);
         Common.runtimeManager.saveDataPoint(dataPoint);
 
         URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
@@ -289,7 +289,7 @@ public class DataPointRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        DataSourceVO<?> dataSource = DataSourceDao.instance.getByXid(model.getDataSourceXid());
+        DataSourceVO<?> dataSource = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
         if (dataSource == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidDataSourceXid"));
         }
@@ -300,7 +300,7 @@ public class DataPointRestController {
         model.copyPropertiesTo(dataPoint);
 
         if (model.getTemplateXid() != null) {
-            DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.instance.getByXid(model.getTemplateXid());
+            DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.getInstance().getByXid(model.getTemplateXid());
             if (template == null) {
                 throw new BadRequestException(new TranslatableMessage("rest.error.invalidTemplateXid"));
             }
@@ -324,7 +324,7 @@ public class DataPointRestController {
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
 
-        DataPointVO dataPoint = DataPointDao.instance.getByXid(xid);
+        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
         if (dataPoint == null) {
             throw new NotFoundRestException();
         }
@@ -564,7 +564,7 @@ public class DataPointRestController {
 
     private static StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
         final Function<DataPointVO, Object> transformPoint = item -> {
-            DataPointDao.instance.loadPartialRelationalData(item);
+            DataPointDao.getInstance().loadPartialRelationalData(item);
             DataPointModel pointModel = new DataPointModel(item);
 
             // option to apply a further transformation
@@ -576,15 +576,15 @@ public class DataPointRestController {
         };
 
         if (user.isAdmin()) {
-            return new StreamedVOQueryWithTotal<>(DataPointDao.instance, rql, transformPoint);
+            return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), rql, transformPoint);
         } else {
             // Add some conditions to restrict based on user permissions
-            ConditionSortLimitWithTagKeys conditions = DataPointDao.instance.rqlToCondition(rql);
-            conditions.addCondition(DataPointDao.instance.userHasPermission(user));
+            ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
+            conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
 
             DataPointFilter dataPointFilter = new DataPointFilter(user);
 
-            return new StreamedVOQueryWithTotal<>(DataPointDao.instance, conditions, item -> {
+            return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), conditions, item -> {
                 boolean oldFilterMatches = dataPointFilter.hasDataPointReadPermission(item);
 
                 // this is just a double check, permissions should be accounted for via SQL restrictions added by DataPointDao.userHasPermission()

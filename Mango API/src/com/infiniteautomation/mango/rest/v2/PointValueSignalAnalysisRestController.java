@@ -24,9 +24,9 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.quantize2.FftGenerator;
@@ -91,7 +91,7 @@ public class PointValueSignalAnalysisRestController {
             @AuthenticationPrincipal User user
             ) {
         
-        DataPointVO vo = DataPointDao.instance.getByXid(xid);
+        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
@@ -153,7 +153,7 @@ public class PointValueSignalAnalysisRestController {
             @AuthenticationPrincipal User user
             ) {
         
-        DataPointVO vo = DataPointDao.instance.getByXid(xid);
+        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
         if (vo == null) {
             throw new NotFoundRestException();
         }else {

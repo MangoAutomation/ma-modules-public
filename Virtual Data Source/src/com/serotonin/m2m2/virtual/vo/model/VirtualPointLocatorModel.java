@@ -7,8 +7,8 @@ package com.serotonin.m2m2.virtual.vo.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.infiniteautomation.mango.spring.dao.DataPointDao;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.ChangeTypeVO.Types;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
@@ -114,7 +114,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnGetter(order=21, header="attractionPointXid")
 	public String getAttractionPointXid() {
-		DataPointVO dpvo = DataPointDao.instance.get(this.data.getAnalogAttractorChange().getAttractionPointId());
+		DataPointVO dpvo = DataPointDao.getInstance().get(this.data.getAnalogAttractorChange().getAttractionPointId());
 		if(dpvo != null)
 			return dpvo.getXid();
 		return "";
@@ -122,7 +122,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 
 	@CSVColumnSetter(order=21, header="attractionPointXid")
 	public void setAttractionPointXid(String attractionPointXid) {
-		DataPointVO dpvo = DataPointDao.instance.getByXid(attractionPointXid);
+		DataPointVO dpvo = DataPointDao.getInstance().getByXid(attractionPointXid);
 		if(dpvo != null)
 			this.data.getAnalogAttractorChange().setAttractionPointId(dpvo.getId());
 	}

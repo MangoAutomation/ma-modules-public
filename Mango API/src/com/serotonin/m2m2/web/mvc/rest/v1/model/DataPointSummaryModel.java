@@ -6,8 +6,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.infiniteautomation.mango.spring.dao.DataSourceDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -55,7 +55,7 @@ public class DataPointSummaryModel extends AbstractRestModel<DataPointSummary>{
 	public String getDataSourceXid(){
 		if(this.dataSourceXid != null)
 			return this.dataSourceXid;
-		DataSourceVO<?> ds = DataSourceDao.instance.getDataSource(this.data.getDataSourceId());
+		DataSourceVO<?> ds = DataSourceDao.getInstance().getDataSource(this.data.getDataSourceId());
 		if(ds != null){
 			return ds.getXid();
 		}else{
@@ -64,7 +64,7 @@ public class DataPointSummaryModel extends AbstractRestModel<DataPointSummary>{
 	}
 	@JsonSetter("dataSourceXid")
 	public void setDataSourceXid(String dataSouceXid){
-		DataSourceVO<?> ds = DataSourceDao.instance.getDataSource(this.data.getDataSourceId());
+		DataSourceVO<?> ds = DataSourceDao.getInstance().getDataSource(this.data.getDataSourceId());
 		if(ds != null){
 			this.data.setDataSourceId(ds.getId());
 		}else{

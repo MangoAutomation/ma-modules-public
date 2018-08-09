@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
@@ -108,12 +107,12 @@ public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDef
         args.add("typeRef1");
         
         //Find all watchlists that match the RQL
-        WatchListDao.instance.rqlQuery(rqlAstNode, new MappedRowCallback<WatchListVO>() {
+        WatchListDao.getInstance().rqlQuery(rqlAstNode, new MappedRowCallback<WatchListVO>() {
             @Override
             public void row(WatchListVO vo, int index) {
                 
                 if(WatchListRestController.hasReadPermission(user, vo)) {
-                    WatchListDao.instance.getPoints(vo.getId(), new MappedRowCallback<DataPointVO>(){
+                    WatchListDao.getInstance().getPoints(vo.getId(), new MappedRowCallback<DataPointVO>(){
                         @Override
                         public void row(DataPointVO dp, int index) {
                             if(Permissions.hasDataPointReadPermission(user, dp)){
