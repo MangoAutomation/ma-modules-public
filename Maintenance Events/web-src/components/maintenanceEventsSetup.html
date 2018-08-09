@@ -1,0 +1,148 @@
+<md-card flex>
+    <md-card-title flex="nogrow">
+        <md-card-title-text>
+            <div flex layout>
+                <div flex>
+                    <span class="md-headline">
+                        <span ma-tr="maintenanceEvents.setup"></span>
+                    </span>
+                </div>
+
+                <div flex layout layout-align="end center" class="ma-margin-bottom">
+                    <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
+                        <md-icon>save</md-icon> <span ma-tr="common.save"></span>
+                    </md-button>
+                    <md-button class="md-raised md-warn" ng-click="$ctrl.delete($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
+                        <md-icon>delete</md-icon> <span ma-tr="common.delete"></span>
+                    </md-button>
+                </div>
+            </div>
+        </md-card-title-text>
+    </md-card-title>
+    <md-card-content ng-form="$ctrl.form">
+        <div layout layout-align="space-between top" layout-wrap>
+            <md-input-container flex="100" flex-gt-md="45" flex-order-gt-md="1" class="ma-input-space-between">
+                <label ma-tr="common.xid"></label>
+                <input name="xid" ng-model="$ctrl.selectedEvent.xid" required>
+                <div ng-messages="$ctrl.form.xid.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="45" flex-order-gt-md="2" class="ma-input-space-between">
+                <label ma-tr="common.name"></label>
+                <input name="name" ng-model="$ctrl.selectedEvent.name" required>
+                <div ng-messages="$ctrl.form.name.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-sm="45" flex-order-gt-md="3">
+                <label ma-tr="common.alarmLevel"></label>
+                <md-select name="alarmLevel" ng-model="$ctrl.selectedEvent.alarmLevel" required>
+                    <md-option value="NONE" ma-tr="common.alarmLevel.none"></md-option>
+                    <md-option value="INFORMATION" ma-tr="common.alarmLevel.info"></md-option>
+                    <md-option value="IMPORTANT" ma-tr="common.alarmLevel.important"></md-option>
+                    <md-option value="WARNING" ma-tr="common.alarmLevel.warning"></md-option>
+                    <md-option value="URGENT" ma-tr="common.alarmLevel.urgent"></md-option>
+                    <md-option value="CRITICAL" ma-tr="common.alarmLevel.critical"></md-option>
+                    <md-option value="SAFETY" ma-tr="common.alarmLevel.lifeSafety"></md-option>
+                    <md-option value="DO_NOT_LOG" ma-tr="common.alarmLevel.doNotLog"></md-option>
+                    <md-option value="IGNORE" ma-tr="common.alarmLevel.ignore"></md-option>
+                </md-select>
+                <div ng-messages="$ctrl.form.alarmLevel.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-sm="45" flex-order-gt-md="4">
+                <label ma-tr="maintenanceEvents.type"></label>
+                <md-select name="scheduleType" ng-model="$ctrl.selectedEvent.scheduleType" required>
+                    <md-option value="MANUAL" ma-tr="maintenanceEvents.type.manual"></md-option>
+                    <md-option value="HOURLY" ma-tr="maintenanceEvents.type.hour"></md-option>
+                    <md-option value="DAILY" ma-tr="maintenanceEvents.type.day"></md-option>
+                    <md-option value="WEEKLY" ma-tr="maintenanceEvents.type.week"></md-option>
+                    <md-option value="MONTHLY" ma-tr="maintenanceEvents.type.month"></md-option>
+                    <md-option value="YEARLY" ma-tr="maintenanceEvents.type.year"></md-option>
+                    <md-option value="ONCE" ma-tr="maintenanceEvents.type.once"></md-option>
+                    <md-option value="CRON" ma-tr="maintenanceEvents.type.cron"></md-option>
+                </md-select>
+                <div ng-messages="$ctrl.form.scheculeType.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-order-gt-md="5" class="ma-input-space-between">
+                <ma-filtering-data-source-list ng-model="$ctrl.selectedDataSource" label-text="'Select data sources'"
+                ng-change="$ctrl.addDataSource()"></ma-filtering-data-source-list>
+                <md-chips ng-model="$ctrl.dataSources" name="name" readonly="true" md-max-chips="10">
+                    <md-chip-template ng-click="$ctrl.dataSources.splice($$replacedScope.$index,1)">
+                        <strong>{{$chip.name}}</strong>
+                        <em>({{$chip.xid}})</em>
+                        <md-icon>close</md-icon>
+                    </md-chip-template>
+                </md-chips>
+                <span ng-if="$ctrl.checkError('dataSources')" style="color: rgb(221,44,0);">{{ $ctrl.checkError('dataSources').message }}</span>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-order-gt-md="5" class="ma-input-space-between">
+                <ma-filtering-point-list ng-model="$ctrl.selectedDataPoint" label-text="'Select data points'"
+                ng-change="$ctrl.addDataPoint()"></ma-filtering-point-list>
+                <md-chips ng-model="$ctrl.dataPoints" name="name" readonly="true" md-max-chips="10">
+                    <md-chip-template ng-click="$ctrl.dataPoints.splice($$replacedScope.$index,1)">
+                        <strong>{{$chip.name}}</strong>
+                        <em>({{$chip.deviceName}})</em>
+                        <md-icon>close</md-icon>
+                    </md-chip-template>
+                </md-chips>
+                <span ng-if="$ctrl.checkError('dataPoints')" style="color: rgb(221,44,0);">{{ $ctrl.checkError('dataPoints').message }}</span>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-sm="20" flex-gt-sm="20" flex-order-gt-md="6">
+                <label ma-tr="maintenanceEvents.timeoutPeriods"></label>
+                <input name="timeoutPeriods" type="number" min="1" ng-model="$ctrl.selectedEvent.timeoutPeriods" required>
+                <div ng-messages="$ctrl.form.timeoutPeriods.$error">
+                   <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+        
+            <md-input-container flex="100" flex-sm="20" flex-gt-sm="25" flex-order-gt-md="7">
+                <label ma-tr="maintenanceEvents.timeoutPeriodType"></label>
+                <md-select name="timeoutPeriodType" ng-model="$ctrl.selectedEvent.timeoutPeriodType" required>
+                    <md-option value="SECONDS" ma-tr="dateAndTime.seconds"></md-option>
+                    <md-option value="MINUTES" ma-tr="dateAndTime.minutes"></md-option>
+                    <md-option value="HOURS" ma-tr="dateAndTime.hours"></md-option>
+                    <md-option value="DAYS" ma-tr="dateAndTime.days"></md-option>
+                    <md-option value="WEEKS" ma-tr="dateAndTime.weeks"></md-option>
+                    <md-option value="MONTHS" ma-tr="dateAndTime.months"></md-option>
+                    <md-option value="YEARS" ma-tr="dateAndTime.years"></md-option>
+                </md-select>
+                <div ng-messages="$ctrl.form.timeoutPeriodType.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                </div>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="45" flex-order-gt-md="8" class="ma-input-space-between">
+                <label ma-tr="maintenanceEvents.togglePermission"></label>
+                <input name="togglePermission" ng-model="$ctrl.selectedEvent.togglePermission" pattern="^\s*[\w-]+?\s*(,\s*[\w-]+?\s*)*$">
+                <div ng-messages="$ctrl.form.togglePermission.$error">
+                    <div ng-message="pattern" ma-tr="ui.app.invalidPermissions"></div>
+                </div>
+                <ma-permissions-menu ng-model="$ctrl.selectedEvent.togglePermission"></ma-permissions-menu>
+            </md-input-container>
+
+            <md-input-container flex="50" flex-gt-md="45" flex-order-gt-md="9" class="ma-input-space-between md-block">
+                <md-checkbox ng-model="$ctrl.selectedEvent.disabled"><span ma-tr="maintenanceEvents.disabled"></span></md-checkbox>
+            </md-input-container>
+        </div>
+
+        <div flex layout layout-align="end center" class="ma-margin-bottom">
+            <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
+                <md-icon>save</md-icon> <span ma-tr="common.save"></span>
+            </md-button>
+            <md-button class="md-raised md-warn" ng-click="$ctrl.delete($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
+                <md-icon>delete</md-icon> <span ma-tr="common.delete"></span>
+            </md-button>
+        </div>
+    </md-card-content>
+</md-card>
