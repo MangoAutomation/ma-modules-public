@@ -62,8 +62,11 @@ public class StatisticsStream implements ObjectStream<PointValueTime>{
 	public void streamData(JsonGenerator jgen) throws IOException {
 		
 		PointValueFacade point = new PointValueFacade(vo.getId());
-        PointValueTime start = point.getPointValueBefore(from);
-        List<PointValueTime> values = point.getPointValuesBetween(from, to);
+        PointValueTime start = point.getPointValueBefore(from + 1);
+        List<PointValueTime> values = point.getPointValuesBetween(from + 1, to);
+        if(start != null && start.getTime() == from)
+            values.add(0, start);
+        
 		StatisticsCalculator calculator = new StatisticsCalculator(jgen, vo, useRendered, unitConversion, this.from, this.to, start, values, dateTimeFormat, timezone);
 		calculator.done();
 	}

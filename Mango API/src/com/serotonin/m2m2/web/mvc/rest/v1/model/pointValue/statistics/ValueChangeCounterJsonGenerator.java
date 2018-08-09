@@ -41,8 +41,6 @@ public class ValueChangeCounterJsonGenerator extends StatisticsJsonGenerator{
 	 */
 	@Override
 	public void done() throws IOException {
-		this.generator.done();
-		
 		//Do we have any data
 		if(this.statistics.getCount() > 0){
 			this.jgen.writeBooleanField("hasData", true);
