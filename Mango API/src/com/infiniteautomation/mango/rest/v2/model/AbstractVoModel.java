@@ -35,7 +35,9 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String name;
     
-    protected AbstractVoModel() { }
+    protected AbstractVoModel() {
+        fromVO(newVO());
+    }
     protected AbstractVoModel(VO vo) {
         fromVO(vo);
     }

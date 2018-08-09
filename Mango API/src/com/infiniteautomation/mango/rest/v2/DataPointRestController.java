@@ -70,7 +70,7 @@ import net.jazdw.rql.parser.ASTNode;
 /**
  * @author Jared Wiltshire
  */
-@Api(value="Data Points", description="Data points")
+@Api(value="Data Points")
 @RestController(value="DataPointRestControllerV2")
 @RequestMapping("/v2/data-points")
 public class DataPointRestController {
