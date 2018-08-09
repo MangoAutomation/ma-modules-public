@@ -42,8 +42,6 @@ public class StartsAndRuntimeListJsonGenerator extends StatisticsJsonGenerator{
 	 */
 	@Override
 	public void done() throws IOException {
-		this.generator.done();
-		
 		//Do we have any data
 		if(this.statistics.getData().size() > 0){
 			this.jgen.writeBooleanField("hasData", true);

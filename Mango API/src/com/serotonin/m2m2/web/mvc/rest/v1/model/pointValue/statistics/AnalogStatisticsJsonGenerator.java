@@ -39,8 +39,6 @@ public class AnalogStatisticsJsonGenerator extends StatisticsJsonGenerator{
 	 */
 	@Override
 	public void done() throws IOException {
-		this.generator.done();
-
 		if(this.statistics.getFirstValue() != null || this.statistics.getStartValue() != null){
 			this.jgen.writeBooleanField("hasData", true);
 			
