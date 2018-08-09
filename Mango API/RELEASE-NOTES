@@ -1,3 +1,6 @@
+*Version 3.4.6*
+* Fix bug in /v1/point-values/{xid}/statistics endpoint where time based statistics were being calculated twice, resulting in wrong values
+
 *Version 3.4.5*
 * Change /v1/point-values/{xid}/statistics endpoint to use cached values for data points that are running during the time of the request
 
