@@ -4,8 +4,8 @@
 package com.infiniteautomation.mango.rest.v2.model;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.serotonin.m2m2.vo.AbstractVO;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -21,9 +22,9 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
     
-    //Used to track if the incoming model specifically chose to set to null
+    //Used to track if the incoming model specifically chose to set to a value 
     @JsonIgnore
-    protected Set<String> nullSettersCalled = new HashSet<>();
+    protected Map<String, Object> settersCalled = new HashMap<>();
     
     @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -89,7 +90,7 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
     }
     
     /**
-     * Used to update this model with any non-null values from the update, using all Fields,
+     * Used to update this model with any values from an update, using all Fields,
      *   to disable a Field use the @PatchableField(enabled=false) annotation
      *   to allow null values that were set into the model use  @PatchableField(allowNull=true)
      * @param update
@@ -106,12 +107,14 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
                     continue;
                 f.setAccessible(true);
                 try {
-                    Object value = f.get(update);
-                    if(value != null)
-                        f.set(this, value);
-                    else if(i != null && i.allowNull() && update.wasSetToNull(f.getName()))
-                        f.set(this, value);
-
+                    
+                    if(update.wasSet(f.getName())) {
+                        Object value = f.get(update);
+                        if(value != null)
+                            f.set(this, value);
+                        else if(i != null && i.allowNull() && update.wasSetToNull(f.getName()))
+                            f.set(this, value);
+                    }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     throw new ServerErrorException(e);
                 }
@@ -120,12 +123,17 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
         }
     }
     
-    public void setNullSettersCalled(Set<String> setters) {
-        this.nullSettersCalled = setters;
+    public void setSettersCalled(Map<String, Object> setters) {
+        this.settersCalled = setters;
+    }
+    
+    protected boolean wasSet(String fieldName) {
+        return this.settersCalled.containsKey(fieldName.toLowerCase());
     }
     
     protected boolean wasSetToNull(String fieldName) {
-        if(this.nullSettersCalled.contains(fieldName.toLowerCase()))
+        String key = fieldName.toLowerCase();
+        if(this.settersCalled.containsKey(key) && this.settersCalled.get(key) == null)
             return true;
         else
             return false;
@@ -136,4 +144,5 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
      * @return
      */
     protected abstract VO newVO();
+    
 }

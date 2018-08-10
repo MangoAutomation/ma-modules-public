@@ -130,11 +130,11 @@ public class MaintenanceEventsService {
         return activated;
     }
     
-    public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVisit) {
+    public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
         
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission() || Permissions.hasDataSourcePermission(user)) {
-            return new StreamedVOQueryWithTotal<>(dao, rql, transformVisit);
+            return new StreamedVOQueryWithTotal<>(dao, rql, transformVO);
         } else {
             return new StreamedVOQueryWithTotal<>(dao, rql, item -> {
                 if(item.getDataPoints().size() > 0) {
@@ -150,7 +150,7 @@ public class MaintenanceEventsService {
                         return false;
                 }
                 return true;
-            }, transformVisit);
+            },  transformVO);
         }
     }
     

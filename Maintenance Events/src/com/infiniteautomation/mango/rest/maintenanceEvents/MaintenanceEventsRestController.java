@@ -85,7 +85,7 @@ public class MaintenanceEventsRestController {
         MaintenanceEventModel existingModel = new MaintenanceEventModel(existing);
         existingModel.patch(model);
         MaintenanceEventVO vo = existingModel.toVO();
-        service.update(existing, vo, user);
+        vo = service.update(existing, vo, user);
 
         URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -116,11 +116,11 @@ public class MaintenanceEventsRestController {
     public ResponseEntity<MaintenanceEventModel> create(
             @ApiParam(value = "Updated maintenance event", required = true)
             @RequestBody(required=true) MaintenanceEventModel model,
-
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
         MaintenanceEventVO vo = service.insert(model.toVO(), user);
+        
         URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -141,7 +141,6 @@ public class MaintenanceEventsRestController {
     @RequestMapping(method = RequestMethod.PUT, value = "/toggle/{xid}")
     public ResponseEntity<Boolean> toggle(
             @PathVariable String xid,
-
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         boolean activated = service.toggle(xid, user);

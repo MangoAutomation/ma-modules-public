@@ -6,8 +6,8 @@ package com.infiniteautomation.mango.rest.v2.converter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -75,7 +75,7 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
             Constructor<?> c = javaType.getRawClass().getConstructor();
             Object o = c.newInstance();
             ProxyFactory f = new ProxyFactory(o);
-            Set<String> nullSettersCalled = new HashSet<>();
+            Map<String, Object> settersCalled = new HashMap<>();
             //Track any calls to setters with null values
             f.addAdvice(new MethodInterceptor() {
 
@@ -83,8 +83,9 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
                 public Object invoke(MethodInvocation invocation) throws Throwable {
                     if(invocation.getMethod().getName().startsWith("set")) {
                         Object[] args = invocation.getArguments();
-                        if(args.length == 1 && args[0] == null)
-                            nullSettersCalled.add(invocation.getMethod().getName().substring(3, invocation.getMethod().getName().length()).toLowerCase());
+                        if(args.length == 1) {
+                            settersCalled.put(invocation.getMethod().getName().substring(3, invocation.getMethod().getName().length()).toLowerCase(), args[0]);
+                        }
                     }
                     return invocation.proceed();
                 }
@@ -94,7 +95,7 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
             //TODO this does not support views (see superclass)
             model = this.objectMapper.readerForUpdating(model).readValue(inputMessage.getBody());
             AbstractVoModel<?> unproxy = (AbstractVoModel<?>)((Advised)model).getTargetSource().getTarget();
-            unproxy.setNullSettersCalled(nullSettersCalled);
+            unproxy.setSettersCalled(settersCalled);
             return unproxy;
         } catch (Exception e) {
             throw new ServerErrorException(e);

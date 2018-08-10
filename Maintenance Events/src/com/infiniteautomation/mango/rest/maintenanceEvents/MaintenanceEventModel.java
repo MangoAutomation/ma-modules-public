@@ -52,7 +52,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     private String togglePermission;
     
     public MaintenanceEventModel() {
-        super(new MaintenanceEventVO());
+        super();
     }
     
     public MaintenanceEventModel(MaintenanceEventVO vo) {
@@ -123,7 +123,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         
         if(vo.getDataPoints().size() > 0) {
             dataPoints = new ArrayList<>();
-            for(int id : vo.getDataSources()) {
+            for(int id : vo.getDataPoints()) {
                 String xid = DataPointDao.getInstance().getXidById(id);
                 if(xid != null)
                     dataPoints.add(xid);
