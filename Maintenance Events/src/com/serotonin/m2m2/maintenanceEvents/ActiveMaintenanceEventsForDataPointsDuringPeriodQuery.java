@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
@@ -68,7 +69,7 @@ public class ActiveMaintenanceEventsForDataPointsDuringPeriodQuery extends Modul
         else {
             try {
                 JsonNode rqlNode = parameters.get("rql");
-                ObjectReader reader = Common.objectMapper.getObjectReader(String.class);
+                ObjectReader reader = Common.getBean(ObjectMapper.class).readerFor(String.class);
                 String rql = reader.readValue(rqlNode);
                 if (rql != null && !rql.isEmpty()) {
                     RQLParser parser = new RQLParser();
@@ -96,7 +97,7 @@ public class ActiveMaintenanceEventsForDataPointsDuringPeriodQuery extends Modul
     @Override
     public ASTNode createQuery(User user, JsonNode parameters) throws IOException {
         JsonNode rqlNode = parameters.get("rql");
-        ObjectReader reader = Common.objectMapper.getObjectReader(String.class);
+        ObjectReader reader = Common.getBean(ObjectMapper.class).readerFor(String.class);
         String rql = reader.readValue(rqlNode);
         
         ASTNode rqlAstNode;
