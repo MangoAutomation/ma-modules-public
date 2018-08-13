@@ -24,7 +24,7 @@ import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 
 /**
- * 
+ *
  * Create proxies for incoming models
  *
  * @author Terry Packer
@@ -34,12 +34,7 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
     public ProxyMappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         super(objectMapper);
     }
-    
-    
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
-     */
+
     @Override
     public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
         //TODO Better than this.
@@ -48,10 +43,12 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
 
         return type instanceof Class && AbstractVoModel.class.isAssignableFrom((Class<?>) type);
     }
-    
-    /* (non-Javadoc)
-     * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#readInternal(java.lang.Class, org.springframework.http.HttpInputMessage)
-     */
+
+    @Override
+    public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+        return false;
+    }
+
     @Override
     protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
             throws IOException, HttpMessageNotReadableException {
@@ -59,17 +56,13 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
         return readJavaType(javaType, inputMessage);
     }
 
-    
-    /* (non-Javadoc)
-     * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#read(java.lang.reflect.Type, java.lang.Class, org.springframework.http.HttpInputMessage)
-     */
     @Override
     public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage)
             throws IOException, HttpMessageNotReadableException {
         JavaType javaType = getJavaType(type, contextClass);
         return readJavaType(javaType, inputMessage);
     }
-    
+
     private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) throws IOException{
         try {
             Constructor<?> c = javaType.getRawClass().getConstructor();
@@ -89,7 +82,7 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
                     }
                     return invocation.proceed();
                 }
-                
+
             });
             AbstractVoModel<?> model = (AbstractVoModel<?>)f.getProxy();
             //TODO this does not support views (see superclass)
