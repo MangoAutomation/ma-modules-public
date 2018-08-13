@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -33,15 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -478,33 +478,23 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
 
-        MediaType mediaType = null;
-
         Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_OCTET_STREAM);
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
 
-        // ResourceHttpMessageConverter uses ActivationMediaTypeFactory.getMediaType(resource) but this is not visible
-        String mimeType = request.getServletContext().getMimeType(file.getName());
-        if (StringUtils.hasText(mimeType)) {
-            try {
-                mediaType = MediaType.parseMediaType(mimeType);
-            } catch (InvalidMediaTypeException e) {
-                // Shouldn't happen - ServletContext.getMimeType() should return valid mime types
-            }
-        }
-
         // always set the content type header or AbstractHttpMessageConverter.addDefaultHeaders() will set the Content-Type
         // to whatever the Accept header was
-        if (mediaType == null) {
+        Optional<MediaType> fileMediaType = MediaTypeFactory.getMediaType(file.getName());
+        if (fileMediaType.isPresent()) {
+            mediaTypes.add(fileMediaType.get());
+            responseHeaders.setContentType(fileMediaType.get());
+        } else {
             mediaTypes.add(MediaType.ALL);
             responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        } else {
-            mediaTypes.add(mediaType);
-            responseHeaders.setContentType(mediaType);
         }
 
-        // this doesn't work as a header from ResponseEntity wont be set if it is already set in the response
+        // this doesn't work as a header from ResponseEntity won't be set if it is already set in the response
         //responseHeaders.setCacheControl(cacheControlHeader);
+        // set header directly on response instead
         response.setHeader(HttpHeaders.CACHE_CONTROL, cacheControlHeader);
 
         return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
