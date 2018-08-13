@@ -481,14 +481,14 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_OCTET_STREAM);
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
 
-        // always set the content type header or AbstractHttpMessageConverter.addDefaultHeaders() will set the Content-Type
-        // to whatever the Accept header was
+        // dynamically set the producible media types to whatever the detected file type is
         Optional<MediaType> fileMediaType = MediaTypeFactory.getMediaType(file.getName());
         if (fileMediaType.isPresent()) {
             mediaTypes.add(fileMediaType.get());
-            responseHeaders.setContentType(fileMediaType.get());
         } else {
             mediaTypes.add(MediaType.ALL);
+
+            // force the content type to application/octet for unknown file types
             responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         }
 
