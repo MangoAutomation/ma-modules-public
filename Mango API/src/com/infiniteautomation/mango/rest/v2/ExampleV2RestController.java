@@ -52,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
 public class ExampleV2RestController extends AbstractMangoRestV2Controller{
 
     private static final Log LOG = LogFactory.getLog(ExampleV2RestController.class);
-    
+
     @Autowired
     MangoSessionRegistry sessionRegistry;
 
@@ -194,7 +194,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
 
         return node;
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Log ERROR Level Message", notes = "Must be admin")
     @RequestMapping(method = RequestMethod.POST, value = {"/log-error-message"})
@@ -222,5 +222,12 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     public void logDebugMessage(
             @RequestBody String message) {
         LOG.debug(message);
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Get upload limit")
+    @RequestMapping(method = RequestMethod.GET, value = {"/upload-limit"})
+    public long getUploadLimit() {
+        return Common.envProps.getLong("web.fileUpload.maxSize", 50000000);
     }
 }
