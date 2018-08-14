@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.pointLinks;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -234,7 +235,7 @@ public class PointLinksDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public String getLogPath(int pointId) {
-        return Common.getLogsDir().getAbsolutePath() + PointLinkRT.LOG_FILE_PREFIX + pointId;
+        return Common.getLogsDir().getAbsolutePath() + File.separator + PointLinkRT.LOG_FILE_PREFIX + pointId + ".log";
     }
 
 }
