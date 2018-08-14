@@ -46,7 +46,7 @@ import com.serotonin.m2m2.web.taglib.Functions;
 public class PointLinksDwr extends ModuleDwr {
     @DwrPermission(user = true)
     public Map<String, Object> init() {
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
         Map<String, Object> data = new HashMap<String, Object>();
 
         // Get the points that this user can access.
@@ -178,62 +178,63 @@ public class PointLinksDwr extends ModuleDwr {
 
         final StringWriter scriptOut = new StringWriter();
         final PrintWriter scriptWriter = new PrintWriter(scriptOut);
-        ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
-
-        final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
-        ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
-            @Override
-            public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
-                DataPointRT dprt = (DataPointRT) point;
-                if(!dprt.getVO().getPointLocator().isSettable()) {
-                    scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
-                    return;
+        if(logLevel == ScriptLog.LogLevel.NONE)
+            logLevel = ScriptLog.LogLevel.FATAL;
+        try(ScriptLog scriptLog = new ScriptLog("pointLinkTest", logLevel, scriptWriter)){
+            final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
+            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
+                @Override
+                public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+                    DataPointRT dprt = (DataPointRT) point;
+                    if(!dprt.getVO().getPointLocator().isSettable()) {
+                        scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
+                        return;
+                    }
+    
+                    if(!Permissions.hasDataPointSetPermission(permissions, dprt.getVO())) {
+                        scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
+                        return;
+                    }
+    
+                    scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
                 }
-
-                if(!Permissions.hasDataPointSetPermission(permissions, dprt.getVO())) {
-                    scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
-                    return;
+    
+                @Override
+                protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+                    // not really setting
                 }
-
-                scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
+            };
+    
+            try {
+                CompiledScript compiledScript = CompiledScriptExecutor.compile(script);
+                PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, System.currentTimeMillis(),
+                        targetDataType, -1, permissions , scriptLog, loggingSetter, null, true);
+                if (pvt.getValue() == null)
+                    message = new TranslatableMessage("event.pointLink.nullResult");
+                else if(pvt.getValue() == CompiledScriptExecutor.UNCHANGED)
+                    message = new TranslatableMessage("pointLinks.validate.successNoValue");
+                else if (pvt.getTime() == -1)
+                    message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
+                else
+                    message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
+                            Functions.getTime(pvt.getTime()));
+                //Add the script logging output
+                response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
             }
-
-            @Override
-            protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
-                // not really setting
+            catch (ScriptException e) {
+                message = new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage());
             }
-        };
-
-        try {
-            CompiledScript compiledScript = CompiledScriptExecutor.compile(script);
-            PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, System.currentTimeMillis(),
-                    targetDataType, -1, permissions ,scriptWriter, scriptLog, loggingSetter, null, true);
-            if (pvt.getValue() == null)
-                message = new TranslatableMessage("event.pointLink.nullResult");
-            else if(pvt.getValue() == CompiledScriptExecutor.UNCHANGED)
-                message = new TranslatableMessage("pointLinks.validate.successNoValue");
-            else if (pvt.getTime() == -1)
-                message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
-            else
-                message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
-                        Functions.getTime(pvt.getTime()));
-            //Add the script logging output
-            response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
+            catch (ResultTypeException e) {
+                message = e.getTranslatableMessage();
+            }
         }
-        catch (ScriptException e) {
-            message = new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage());
-        }
-        catch (ResultTypeException e) {
-            message = e.getTranslatableMessage();
-        }
-
         response.addMessage("script", message);
         return response;
     }
 
     @DwrPermission(user = true)
     public String getLogPath(int pointId) {
-        return PointLinkRT.getLogFile(pointId).getAbsolutePath();
+        return Common.getLogsDir().getAbsolutePath() + PointLinkRT.LOG_FILE_PREFIX + pointId;
     }
 
 }

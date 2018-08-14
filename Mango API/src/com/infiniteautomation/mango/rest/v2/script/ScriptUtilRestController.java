@@ -83,40 +83,43 @@ public class ScriptUtilRestController {
                 else
                     logLevel = levelId;
             }
-            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
-            final ScriptPermissions permissions = scriptModel.getPermissions().toPermissions();
-            final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
-
-            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
-                @Override
-                public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
-                    DataPointRT dprt = (DataPointRT) point;
-                    if(!dprt.getVO().getPointLocator().isSettable()) {
-                        scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
-                        return;
+            if(logLevel == ScriptLog.LogLevel.NONE)
+                logLevel = ScriptLog.LogLevel.FATAL;
+            try(ScriptLog scriptLog = new ScriptLog("scriptTest-" + user.getUsername(), logLevel, scriptWriter);){
+                final ScriptPermissions permissions = scriptModel.getPermissions().toPermissions();
+                final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
+    
+                ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
+                    @Override
+                    public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+                        DataPointRT dprt = (DataPointRT) point;
+                        if(!dprt.getVO().getPointLocator().isSettable()) {
+                            scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
+                            return;
+                        }
+    
+                        if (!Permissions.hasDataPointSetPermission(permissions, dprt.getVO())) {
+                            scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
+                            return;
+                        }
+    
+                        scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
                     }
-
-                    if (!Permissions.hasDataPointSetPermission(permissions, dprt.getVO())) {
-                        scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
-                        return;
+    
+                    @Override
+                    protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
+                        // not really setting
                     }
-
-                    scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
+                };
+    
+                try {
+                    PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(),
+                            DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptLog, loggingSetter, null, true);
+                    if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
+                    return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
+                } catch(ResultTypeException e) {
+                    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                 }
-
-                @Override
-                protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
-                    // not really setting
-                }
-            };
-
-            try {
-                PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(),
-                        DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, loggingSetter, null, true);
-                if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
-                return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
-            } catch(ResultTypeException e) {
-                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
 
         } catch(ScriptException e) {
@@ -147,16 +150,18 @@ public class ScriptUtilRestController {
                 else
                     logLevel = levelId;
             }
-            ScriptLog scriptLog = new ScriptLog(scriptWriter, logLevel);
-            ScriptPermissions permissions = scriptModel.getPermissions().toPermissions();
-
-            try {
-                PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(),
-                        DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptWriter, scriptLog, new SetCallback(permissions, user), null, false);
-                if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
-                return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
-            } catch(ResultTypeException|ScriptPermissionsException e) {
-                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+            if(logLevel == ScriptLog.LogLevel.NONE)
+                logLevel = ScriptLog.LogLevel.FATAL;
+            try(ScriptLog scriptLog = new ScriptLog("runScript-" + user.getUsername(), logLevel, scriptWriter);){
+                ScriptPermissions permissions = scriptModel.getPermissions().toPermissions();
+                try {
+                    PointValueTime pvt = CompiledScriptExecutor.execute(script, context, new HashMap<String, Object>(), Common.timer.currentTimeMillis(),
+                            DataTypes.ALPHANUMERIC, Common.timer.currentTimeMillis(), permissions, scriptLog, new SetCallback(permissions, user), null, false);
+                    if(LOG.isDebugEnabled()) LOG.debug("Script output: " + scriptOut.toString());
+                    return new ResponseEntity<>(new ScriptRestResult(scriptOut.toString(), new PointValueTimeModel(pvt)), HttpStatus.OK);
+                } catch(ResultTypeException|ScriptPermissionsException e) {
+                    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+                }
             }
 
         } catch(ScriptException e) {

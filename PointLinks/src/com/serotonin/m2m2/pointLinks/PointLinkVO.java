@@ -144,6 +144,14 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 		this.scriptPermissions = scriptPermissions;
 	}
 
+    public float getLogSize() {
+        return 1.0f;
+    }
+
+    public int getLogCount() {
+        return 5;
+    }
+	
 	@Override
     public String getTypeKey() {
         return "event.audit.pointLink";
