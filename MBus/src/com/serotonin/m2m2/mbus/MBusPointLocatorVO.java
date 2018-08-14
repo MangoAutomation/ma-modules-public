@@ -31,7 +31,9 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.util.SerializationHelper;
 
 import net.sf.mbus4j.MBusAddressing;
@@ -129,8 +131,18 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
         return new MBusPointLocatorRT(this);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.
+     * ProcessResult, com.serotonin.m2m2.vo.DataPointVO,
+     * com.serotonin.m2m2.vo.dataSource.DataSourceVO)
+     */
     @Override
-    public void validate(ProcessResult response) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+        if (!(dsvo instanceof MBusDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
+
         switch (getAddressing()) {
             case PRIMARY:
                 if ((address & 0xFF) > (MBusUtils.LAST_REGULAR_PRIMARY_ADDRESS & 0xFF)) {

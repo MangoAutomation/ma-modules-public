@@ -18,7 +18,9 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 /**
  * @author Matthew Lohbihler
@@ -97,8 +99,13 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO<VMStatPointLoca
         this.attributeId = attributeId;
     }
 
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.ProcessResult, com.serotonin.m2m2.vo.DataPointVO, com.serotonin.m2m2.vo.dataSource.DataSourceVO)
+     */
     @Override
-    public void validate(ProcessResult response) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+        if (!(dsvo instanceof VMStatDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");     
         if (!ATTRIBUTE_CODES.isValidId(attributeId))
             response.addContextualMessage("attributeId", "validate.invalidValue");
     }

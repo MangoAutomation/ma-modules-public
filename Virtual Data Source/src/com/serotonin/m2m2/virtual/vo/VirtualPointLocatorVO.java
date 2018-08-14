@@ -34,7 +34,9 @@ import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.VirtualPointLocatorRT;
 import com.serotonin.m2m2.virtual.vo.model.VirtualPointLocatorModel;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
 public class VirtualPointLocatorVO extends AbstractPointLocatorVO<VirtualPointLocatorVO> implements
@@ -104,8 +106,13 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO<VirtualPointLo
 		return new VirtualPointLocatorRT(this, changeType, startObject, isSettable());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.ProcessResult, com.serotonin.m2m2.vo.DataPointVO, com.serotonin.m2m2.vo.dataSource.DataSourceVO)
+	 */
 	@Override
-	public void validate(ProcessResult response) {
+	public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+	    if (!(dsvo instanceof VirtualDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");     
 		if (!DataTypes.CODES.isValidId(dataTypeId))
 			response.addContextualMessage("dataTypeId", "validate.invalidValue");
 

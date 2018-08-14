@@ -24,7 +24,9 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.util.SerializationHelper;
 
 /**
@@ -115,10 +117,14 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
 		this.monitorId = monitorId;
 	}
 
-    @Override
-    public void validate(ProcessResult response) {
-        //Not validating the Monitor ID as the dynamic origin may be disabled currently.
-    }
+	/* (non-Javadoc)
+	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.ProcessResult, com.serotonin.m2m2.vo.DataPointVO, com.serotonin.m2m2.vo.dataSource.DataSourceVO)
+	 */
+	@Override
+	public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+        if (!(dsvo instanceof InternalDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
+	}
 
     //
     //

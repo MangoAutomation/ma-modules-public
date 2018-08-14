@@ -15,7 +15,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 public class EnvCanEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public ProcessResult saveEnvCanDataSource(BasicDataSourceVO basic, int stationId, Date dataStartTime) {
-        EnvCanDataSourceVO ds = (EnvCanDataSourceVO) Common.getUser().getEditDataSource();
+        EnvCanDataSourceVO ds = (EnvCanDataSourceVO) Common.getHttpUser().getEditDataSource();
 
         setBasicProps(ds, basic);
         ds.setStationId(stationId);
