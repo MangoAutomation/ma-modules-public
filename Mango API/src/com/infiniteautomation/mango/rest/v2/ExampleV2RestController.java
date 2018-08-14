@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.rest.v2;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
@@ -229,5 +230,13 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @RequestMapping(method = RequestMethod.GET, value = {"/upload-limit"})
     public long getUploadLimit() {
         return Common.envProps.getLong("web.fileUpload.maxSize", 50000000);
+    }
+    
+    @PreAuthorize("hasRole('ROLE_TEST SPACE')")
+    @RolesAllowed("ROLE_TEST SPACE")
+    @ApiOperation(value = "User must have a permission named 'TEST SPACE'")
+    @RequestMapping(method = RequestMethod.GET, value = {"/role-with-space"})
+    public String canGetWithSpaceInPermission() {
+        return "OK";
     }
 }
