@@ -76,7 +76,7 @@ public class ScriptUtilRestController {
             final StringWriter scriptOut = new StringWriter();
             final PrintWriter scriptWriter = new PrintWriter(scriptOut);
             int logLevel = ScriptLog.LogLevel.FATAL;
-            if(StringUtils.isEmpty(scriptModel.getLogLevel())) {
+            if(!StringUtils.isEmpty(scriptModel.getLogLevel())) {
                 int levelId = ScriptLog.LOG_LEVEL_CODES.getId(scriptModel.getLogLevel());
                 if(levelId == -1)
                     throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.script.error.unknownLogLevel", scriptModel.getLogLevel()));
@@ -143,7 +143,7 @@ public class ScriptUtilRestController {
             final StringWriter scriptOut = new StringWriter();
             final PrintWriter scriptWriter = new PrintWriter(scriptOut);
             int logLevel = ScriptLog.LogLevel.FATAL;
-            if(StringUtils.isEmpty(scriptModel.getLogLevel())) {
+            if(!StringUtils.isEmpty(scriptModel.getLogLevel())) {
                 int levelId = ScriptLog.LOG_LEVEL_CODES.getId(scriptModel.getLogLevel());
                 if(levelId == -1)
                     throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("rest.script.error.unknownLogLevel", scriptModel.getLogLevel()));
