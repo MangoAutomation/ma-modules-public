@@ -76,6 +76,7 @@ public class Upgrade2 extends DBUpgrade {
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
             
+            "ALTER TABLE maintenanceEvents DROP FOREIGN KEY maintenanceEventsFk1;",
             "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission VARCHAR(255);"
 
     };
@@ -88,6 +89,7 @@ public class Upgrade2 extends DBUpgrade {
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
             
+            "ALTER TABLE maintenanceEvents DROP CONSTRAINT maintenanceEventsFk1;",
             "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission VARCHAR(255);"
 
     };
@@ -100,6 +102,7 @@ public class Upgrade2 extends DBUpgrade {
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
             
+            "ALTER TABLE maintenanceEvents DROP CONSTRAINT maintenanceEventsFk1;",
             "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission NVARCHAR(255);"
 
     };
@@ -112,11 +115,12 @@ public class Upgrade2 extends DBUpgrade {
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;",
             "ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;",
             
+            "ALTER TABLE maintenanceEvents DROP CONSTRAINT maintenanceEventsFk1;",
             "ALTER TABLE maintenanceEvents ADD COLUMN togglePermission VARCHAR(255);"
     };
     
     private final String[] dropDataSourceId = new String[] {
-            "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;",
+            "ALTER TABLE maintenanceEvents DROP COLUMN dataSourceId;"
     };
     private final String[] addTimeoutColumns = new String[] {
             "ALTER TABLE maintenanceEvents ADD COLUMN timeoutPeriods INT;",
