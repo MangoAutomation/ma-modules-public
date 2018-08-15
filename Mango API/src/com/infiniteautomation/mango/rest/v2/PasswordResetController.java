@@ -26,14 +26,10 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
+import com.infiniteautomation.mango.spring.components.PasswordResetService;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestController;
-import com.serotonin.m2m2.web.mvc.spring.components.PasswordResetService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -42,21 +38,24 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * Password reset REST endpoints
  *
  * WARNING! This REST controller is PUBLIC by default. Add @PreAuthorize annotations to restrict individual end-points.
- * 
+ *
  * @author Jared Wiltshire
  */
 @Api(value = "Password reset", description = "Endpoints for resetting user passwords")
 @RestController
 @RequestMapping("/v2/password-reset")
-public class PasswordResetController extends MangoRestController {
+public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;
-    
+
     @Autowired
     public PasswordResetController(PasswordResetService passwordResetService) {
         this.passwordResetService = passwordResetService;
@@ -68,27 +67,27 @@ public class PasswordResetController extends MangoRestController {
             @RequestBody
             SendEmailRequestBody body
             ) throws AddressException, TemplateException, IOException {
-        
+
         User user = UserDao.getInstance().getUser(body.getUsername());
         if (user == null) {
             throw new NotFoundRestException();
         }
-        
+
         String email = body.getEmail();
         if (email == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.emailRequired"));
         }
-        
+
         String providedEmail = email.toLowerCase(Locale.ROOT);
         String userEmail = user.getEmail().toLowerCase(Locale.ROOT);
         if (!providedEmail.equals(userEmail)) {
             throw new BadRequestException(new TranslatableMessage("rest.error.incorrectEmail"));
         }
-        
+
         if (user.isDisabled()) {
             throw new BadRequestException(new TranslatableMessage("rest.error.userIsDisabled"));
         }
-        
+
         passwordResetService.sendEmail(user);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -105,7 +104,7 @@ public class PasswordResetController extends MangoRestController {
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    
+
     @ApiOperation(value = "Gets the public key for verifying password reset tokens")
     @RequestMapping(path="/public-key", method = RequestMethod.GET)
     public String getPublicKey() {
@@ -119,7 +118,7 @@ public class PasswordResetController extends MangoRestController {
             @RequestParam(required=true) String token) {
         return new HeaderClaimsModel(this.passwordResetService.parse(token));
     }
-    
+
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all password reset tokens")
     @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
@@ -127,55 +126,55 @@ public class PasswordResetController extends MangoRestController {
         passwordResetService.resetKeys();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    
+
     @ApiOperation(value = "Creates a password reset token and link for the given user")
     @RequestMapping(method = RequestMethod.POST, value = "/create")
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public CreateTokenResponse createTokenForUser(
             @RequestBody
             CreateTokenRequest requestBody,
-            
+
             @AuthenticationPrincipal User currentUser) throws AddressException, TemplateException, IOException {
-        
+
         String username = requestBody.getUsername();
         boolean lockPassword = requestBody.isLockPassword();
         boolean sendEmail = requestBody.isSendEmail();
         Date expiry = requestBody.getExpiry();
-        
+
         User user = UserDao.getInstance().getUser(username);
         if (user == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
         }
-        
+
         if (user.getId() == currentUser.getId()) {
             throw new AccessDeniedException(new TranslatableMessage("rest.error.cantResetOwnUser"));
         }
-        
+
         if (lockPassword) {
             UserDao.getInstance().lockPassword(user);
         }
-        
+
         CreateTokenResponse response = new CreateTokenResponse();
-        
+
         String token = passwordResetService.generateToken(user, expiry);
         response.setToken(token);
         response.setFullUrl(passwordResetService.generateResetUrl(token));
         response.setRelativeUrl(passwordResetService.generateRelativeResetUrl(token));
-        
+
         if (sendEmail) {
             passwordResetService.sendEmail(user, token);
         }
-        
+
         return response;
     }
-    
+
 
     public static class CreateTokenRequest {
         String username;
         boolean lockPassword = true;
         boolean sendEmail = false;
         Date expiry;
-        
+
         public String getUsername() {
             return username;
         }
@@ -200,20 +199,20 @@ public class PasswordResetController extends MangoRestController {
         public void setExpiry(Date expiry) {
             this.expiry = expiry;
         }
-        
+
         @Override
         public String toString() {
             return "CreateTokenRequest [username=" + username + ", lockPassword=" + lockPassword
                     + ", sendEmail=" + sendEmail + ", expiry=" + expiry + "]";
         }
-        
+
     }
 
     public static class CreateTokenResponse {
         private String token;
         private URI fullUrl;
         private URI relativeUrl;
-        
+
         public String getToken() {
             return token;
         }
@@ -232,14 +231,14 @@ public class PasswordResetController extends MangoRestController {
         public void setRelativeUrl(URI relativeUrl) {
             this.relativeUrl = relativeUrl;
         }
-        
+
         @Override
         public String toString() {
             return "CreateTokenResponse [token=" + JwtSignerVerifier.printToken(token) + ", fullUrl=" + fullUrl + ", relativeUrl="
                     + relativeUrl + "]";
         }
     }
-    
+
     public static class SendEmailRequestBody {
         private String username;
         private String email;
@@ -260,11 +259,11 @@ public class PasswordResetController extends MangoRestController {
             this.username = username;
         }
     }
-    
+
     public static class PasswordResetRequestBody {
         private String token;
         private String newPassword;
-        
+
         public String getToken() {
             return token;
         }
