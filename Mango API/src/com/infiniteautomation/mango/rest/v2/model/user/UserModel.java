@@ -189,7 +189,7 @@ public class UserModel extends AbstractVoModel<User> {
         if(!StringUtils.isEmpty(hashAlgorithm)) {
             String password = this.password != null ? this.password : "";
             user.setPasswordHash(this.hashAlgorithm, password);
-        }else {
+        }else if(!StringUtils.isEmpty(password)){
             user.setPlainTextPassword(password);
         }
         return user;
