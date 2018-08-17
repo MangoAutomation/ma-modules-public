@@ -6,11 +6,11 @@ package com.infiniteautomation.mango.maintenanceEvents;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.infiniteautomation.mango.util.script.ScriptUtility;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.vo.exception.NotFoundException;
-import com.serotonin.m2m2.vo.exception.ValidationException;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 
 /**

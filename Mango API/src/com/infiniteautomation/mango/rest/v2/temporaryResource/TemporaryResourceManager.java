@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.infiniteautomation.mango.rest.v2.util.ExceptionMapper;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.exception.NotFoundException;
 
 /**
  * @author Jared Wiltshire

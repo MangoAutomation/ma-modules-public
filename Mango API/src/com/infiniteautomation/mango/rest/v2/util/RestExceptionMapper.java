@@ -9,8 +9,8 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.serotonin.m2m2.vo.exception.NotFoundException;
-import com.serotonin.m2m2.vo.exception.ValidationException;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 
 /**
