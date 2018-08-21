@@ -3,21 +3,14 @@ package com.serotonin.m2m2.reports.upgrade;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
-import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
 import com.serotonin.m2m2.reports.ReportDao;
-import com.serotonin.m2m2.reports.vo.ReportInstance;
-import com.serotonin.m2m2.reports.vo.ReportVO;
-import com.serotonin.m2m2.vo.User;
 
 /**
  * Upgrade Schema 2 to 3
