@@ -42,7 +42,7 @@ public class Upgrade2 extends DBUpgrade {
                     @Override
                     public void processRow(ResultSet instanceRs) throws SQLException {
                         //Get all reports with this name and update the instance with the report id
-                        ejt.query("SELECT id FROM " + ReportDao.TABLE_NAME + " WHERE name='" + instanceRs.getString(2), new RowCallbackHandler() {
+                        ejt.query("SELECT id FROM " + ReportDao.TABLE_NAME + " WHERE name='" + instanceRs.getString(2) + "'", new RowCallbackHandler() {
                             @Override
                             public void processRow(ResultSet reportRs) throws SQLException {
                                 //Update the instances reportId with the reportId
