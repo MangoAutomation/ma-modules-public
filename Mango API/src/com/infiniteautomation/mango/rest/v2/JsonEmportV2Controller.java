@@ -54,7 +54,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStateEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.publisher.config.JsonConfigImportWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.config.JsonConfigImportWebSocketHandler;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.ProgressiveTaskListener;
 

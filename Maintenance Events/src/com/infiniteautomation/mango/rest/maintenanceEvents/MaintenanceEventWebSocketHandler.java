@@ -9,26 +9,20 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
  *
  * @author Terry Packer
  */
-@Component("maintenanceEventWebSocketHandler")
+@Component
+@WebSocketMapping("/v2/websocket/maintenance-events")
 public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHandler<MaintenanceEventVO> {
 
     @Autowired
     private  MaintenanceEventsService service;
-    
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler#getDaoBeanName()
-     */
-    @Override
-    public String getDaoBeanName() {
-        return "maintenanceEventDao";
-    }
-    
+
     @Override
     protected boolean hasPermission(User user, MaintenanceEventVO vo) {
         try{
@@ -43,5 +37,10 @@ public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHa
     protected Object createModel(MaintenanceEventVO vo) {
         return new MaintenanceEventModel(vo);
     }
-    
+
+    @Override
+    protected Class<MaintenanceEventVO> supportedClass() {
+        return MaintenanceEventVO.class;
+    }
+
 }

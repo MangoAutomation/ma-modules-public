@@ -45,11 +45,9 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceM
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.infiniteautomation.mangoApi.websocket.TemporaryResourceWebSocketDefinition;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -119,7 +117,7 @@ public class DataPointTagsRestController {
     //        ASTNode rql = parseRQLtoAST(request.getQueryString());
     //        ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
     //
-    //        if (!user.isAdmin()) {
+    //        if (!user.hasAdminPermission()) {
     //            conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
     //        }
     //
@@ -147,7 +145,7 @@ public class DataPointTagsRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
 
-        if (!user.isAdmin()) {
+        if (!user.hasAdminPermission()) {
             conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
         }
 
@@ -429,7 +427,7 @@ public class DataPointTagsRestController {
             HttpServletRequest request) {
 
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
+                .filter((tr) -> user.hasAdminPermission() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> results = preFiltered;
@@ -461,7 +459,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -485,7 +483,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -505,7 +503,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 

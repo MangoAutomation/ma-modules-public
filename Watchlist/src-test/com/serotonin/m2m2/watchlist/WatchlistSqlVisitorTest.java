@@ -46,7 +46,6 @@ public class WatchlistSqlVisitorTest extends MangoTestBase{
     public static void setupModule() {
         List<ModuleElementDefinition> definitions = new ArrayList<>();
         definitions.add(new WatchListSchemaDefinition());
-        definitions.add(new WatchListWebSocketDefinition());
         definitions.add(new AuditEvent());
         addModule("watchlist", definitions);
     }
