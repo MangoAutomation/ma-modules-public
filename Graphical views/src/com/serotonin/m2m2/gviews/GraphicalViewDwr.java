@@ -295,8 +295,8 @@ public class GraphicalViewDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public void setViewComponentLocation(String viewComponentId, int x, int y) {
-        getViewComponent(viewComponentId).setLocation(x, y);
+    public void setViewComponentLocation(String viewComponentId, float x, float y) {
+        getViewComponent(viewComponentId).setLocation((int)x, (int)y);
     }
 
     @DwrPermission(user = true)
