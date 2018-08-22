@@ -39,9 +39,9 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
     public static ExportCodes EVENT_CODES = new ExportCodes();
     static {
-        EVENT_CODES.addElement(EVENT_UPDATE, "UPDATE", "pointLinks.event.update");
-        EVENT_CODES.addElement(EVENT_CHANGE, "CHANGE", "pointLinks.event.change");
-        EVENT_CODES.addElement(EVENT_LOGGED, "LOGGED", "pointLinks.event.logged");
+        EVENT_CODES.addElement(EVENT_UPDATE, "UPDATE", "dsEdit.pointEvent.update");
+        EVENT_CODES.addElement(EVENT_CHANGE, "CHANGE", "dsEdit.pointEvent.change");
+        EVENT_CODES.addElement(EVENT_LOGGED, "LOGGED", "dsEdit.pointEvent.logged");
     }
 
     private int id = Common.NEW_ID;
