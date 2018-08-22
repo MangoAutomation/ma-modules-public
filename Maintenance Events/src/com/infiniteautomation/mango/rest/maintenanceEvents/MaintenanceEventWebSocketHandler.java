@@ -4,9 +4,11 @@
 package com.infiniteautomation.mango.rest.maintenanceEvents;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
+import com.serotonin.m2m2.db.dao.DaoEvent;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
@@ -39,8 +41,9 @@ public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHa
     }
 
     @Override
-    protected Class<MaintenanceEventVO> supportedClass() {
-        return MaintenanceEventVO.class;
+    @EventListener
+    protected void handleDaoEvent(DaoEvent<MaintenanceEventVO> event) {
+        this.notify(event);
     }
 
 }

@@ -4,8 +4,10 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.serotonin.m2m2.db.dao.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
@@ -33,10 +35,10 @@ public class EventHandlerWebSocketHandler extends DaoNotificationWebSocketHandle
         return vo.asModel();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected Class<? extends AbstractEventHandlerVO<?>> supportedClass() {
-        return (Class<? extends AbstractEventHandlerVO<?>>) AbstractEventHandlerVO.class;
+    @EventListener
+    protected void handleDaoEvent(DaoEvent<AbstractEventHandlerVO<?>> event) {
+        this.notify(event);
     }
 
 }

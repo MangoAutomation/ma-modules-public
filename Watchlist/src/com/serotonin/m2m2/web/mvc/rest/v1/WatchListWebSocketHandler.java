@@ -7,8 +7,10 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.serotonin.m2m2.db.dao.DaoEvent;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListVO;
@@ -41,7 +43,8 @@ public class WatchListWebSocketHandler extends DaoNotificationWebSocketHandler<W
     }
 
     @Override
-    protected Class<WatchListVO> supportedClass() {
-        return WatchListVO.class;
+    @EventListener
+    protected void handleDaoEvent(DaoEvent<WatchListVO> event) {
+        this.notify(event);
     }
 }

@@ -4,8 +4,10 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.serotonin.m2m2.db.dao.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -32,8 +34,9 @@ public class JsonDataWebSocketHandler extends DaoNotificationWebSocketHandler<Js
     }
 
     @Override
-    protected Class<JsonDataVO> supportedClass() {
-        return JsonDataVO.class;
+    @EventListener
+    protected void handleDaoEvent(DaoEvent<JsonDataVO> event) {
+        this.notify(event);
     }
 
 }

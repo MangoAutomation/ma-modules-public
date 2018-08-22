@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.websockets.datapoint;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.serotonin.m2m2.db.dao.DaoEvent;
 import com.serotonin.m2m2.db.dao.DataPointTagsUpdatedEvent;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -35,13 +36,14 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
         return new DataPointModel(vo);
     }
 
-    @Override
-    protected Class<DataPointVO> supportedClass() {
-        return DataPointVO.class;
-    }
-
     @EventListener
     private void handleDataPointTagsUpdatedEvent(DataPointTagsUpdatedEvent event) {
         this.notify(TAGS_UPDATED, event.getVo(), null, null);
+    }
+
+    @Override
+    @EventListener
+    protected void handleDaoEvent(DaoEvent<DataPointVO> event) {
+        this.notify(event);
     }
 }

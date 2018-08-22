@@ -4,8 +4,10 @@
  */
 package com.infiniteautomation.mango.rest.v1.reports;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.serotonin.m2m2.db.dao.DaoEvent;
 import com.serotonin.m2m2.reports.vo.ReportModel;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportCommon;
@@ -36,7 +38,9 @@ public class ReportWebSocketHandler extends DaoNotificationWebSocketHandler<Repo
     }
 
     @Override
-    protected Class<ReportVO> supportedClass() {
-        return ReportVO.class;
+    @EventListener
+    protected void handleDaoEvent(DaoEvent<ReportVO> event) {
+        this.notify(event);
     }
+
 }
