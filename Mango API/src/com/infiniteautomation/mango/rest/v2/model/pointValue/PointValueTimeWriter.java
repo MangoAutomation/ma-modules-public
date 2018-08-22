@@ -187,6 +187,8 @@ public abstract class PointValueTimeWriter {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
             if(stats.getStartValue() != null) {
+                //TODO There is a known bug here where images returned with a virtual time stamp i.e. period start will generate URLS that 404
+                // when accessed because the ImageValueServlet requires a time stamp to match a value in the database.
                 writeStartObject(RollupEnum.START.name());
                 writeTimestamp(stats.getPeriodStartTime());
                 writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);

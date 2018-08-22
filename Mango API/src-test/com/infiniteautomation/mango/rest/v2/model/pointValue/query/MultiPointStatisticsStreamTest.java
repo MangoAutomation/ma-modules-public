@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
@@ -18,9 +19,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import javax.imageio.ImageIO;
+
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -38,12 +44,12 @@ import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.MangoTestBase;
 import com.serotonin.m2m2.MockMangoLifecycle;
 import com.serotonin.m2m2.MockRuntimeManager;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
@@ -51,6 +57,8 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
+import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -58,6 +66,7 @@ import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataPoint.MockPointLocatorVO;
 import com.serotonin.m2m2.vo.dataSource.mock.MockDataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+import com.serotonin.m2m2.web.servlet.ImageValueServlet;
 
 /**
  *
@@ -67,16 +76,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     protected ZoneId zoneId;
     protected static final TestRuntimeManager runtimeManager = new TestRuntimeManager();
+    protected final ImageValueServlet imageServlet = new ImageValueServlet();
     
     public MultiPointStatisticsStreamTest() {
         this.zoneId = ZoneId.systemDefault();
     }
-    
-    //TODO Test multiple points
+
     //TODO Test initial values and no initial values
-    //TODO Test cache of BOTH
-    //TODO Test incrementing Multistate
-    //TODO Test Images
  
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.MangoTestBase#after()
@@ -85,6 +91,170 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     public void after() {
         super.after();
         runtimeManager.points.clear();
+    }
+    
+    @Test
+    public void testSingleImagePointNoCacheNoChangeInitialValue() throws IOException {
+        
+        //Setup the data to run once daily for 30 days
+        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+
+        MockDataSourceVO ds = createDataSource();
+        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.IMAGE, 1);
+        
+        ImageValue v = new ImageValue(createImageBytes(10), ImageValue.TYPE_JPG);
+        PointValueTime initialValue = new PointValueTime(v, 0);
+        
+        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp, 
+                initialValue, 
+                (value) -> {
+                    //No change
+                    return value;
+                },
+                (info, w) ->{
+                    return new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
+                },
+                (w, gen, root) -> {
+                    JsonNode stats = root.get(w.vo.getXid());
+                    if(stats == null)
+                        fail("Missing stats for point " + w.vo.getXid());
+                    
+                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.START.name() + " entry");
+                    
+                    assertNotNull(stat.get(PointValueTimeWriter.TIMESTAMP));
+                    PointValueTime value = w.rt.getPointValueAfter(0);
+                    assertEquals(gen.getStartValue(), value.getValue());
+                    assertEquals(0l, value.getTime());
+
+                    stat = stats.get(RollupEnum.FIRST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                    //Test the access via the servlet
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
+                    assertEquals((long)gen.getFirstTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.LAST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
+                    assertEquals((long)gen.getLastTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.COUNT.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                    assertEquals(gen.getCount(), stat.asInt());
+                });
+
+        //Insert the data skipping first day so we get the initial value
+        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        timer.setStartTime(time.toInstant().toEpochMilli());
+
+        while(time.toInstant().isBefore(to.toInstant())) {
+            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+        }
+        
+        //Perform the query
+        String dateTimeFormat = null;
+        String timezone = zoneId.getId();
+        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
+        PointValueField[] fields = getFields();
+        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
+
+        test(info, point);
+    }
+    
+    @Test
+    public void testSingleImagePointOnlyCacheChange() throws IOException {
+        
+        //Setup the data to run once daily for 30 days
+        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+
+        int cacheSize = 10;
+        MockDataSourceVO ds = createDataSource();
+        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.IMAGE, cacheSize);
+        
+        AtomicInteger imageSize = new AtomicInteger(1);
+        ImageValue v = new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
+        PointValueTime initialValue = new PointValueTime(v, 0);
+        
+        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp, 
+                initialValue, 
+                (value) -> {
+                    return new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
+                },
+                (info, w) ->{
+                    return new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), null, w.values);
+                },
+                (w, gen, root) -> {
+                    JsonNode stats = root.get(w.vo.getXid());
+                    if(stats == null)
+                        fail("Missing stats for point " + w.vo.getXid());
+                    
+                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.START.name() + " entry");
+                    assertNull(gen.getStartValue());
+                    assertTrue(stat.isNull());
+
+                    stat = stats.get(RollupEnum.FIRST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getFirstValue(), value.getValue());
+                    assertEquals((long)gen.getFirstTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.LAST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getLastValue(), value.getValue() );
+                    assertEquals((long)gen.getLastTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.COUNT.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                    assertEquals(gen.getCount(), stat.asInt());                 
+                });
+
+        //Insert the data skipping first day so we get the initial value
+        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        timer.setStartTime(time.toInstant().toEpochMilli());
+
+        while(time.toInstant().isBefore(to.toInstant())) {
+            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+        }
+        
+        //Insert some values directly into the cache
+        point.values.clear();
+        for(int i=0; i<cacheSize; i++) {
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+            point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
+        }
+        
+        //Ensure we get all the data
+        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
+        to = ZonedDateTime.ofInstant(now, zoneId);
+        //Perform the query
+        String dateTimeFormat = null;
+        String timezone = zoneId.getId();
+        PointValueTimeCacheControl cache = PointValueTimeCacheControl.CACHE_ONLY;
+        PointValueField[] fields =  getFields();
+        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
+
+        test(info, point);
     }
     
     @Test
@@ -445,6 +615,380 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         test(info, point);
     }
     
+    @Test
+    public void testSingleNumericPointBothChange() throws IOException {
+        
+        //Setup the data to run once daily for 30 days
+        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+
+        int cacheSize = 10;
+        MockDataSourceVO ds = createDataSource();
+        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
+        
+        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp, 
+                new PointValueTime(1.0, 0), 
+                (value) -> {
+                    return new NumericValue(value.getDoubleValue() + 1.0);
+                },
+                (info, w) ->{
+                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), new PointValueTime(1.0, 0), w.values);
+                },
+                (w, gen, root) -> {
+                    JsonNode stats = root.get(w.vo.getXid());
+                    if(stats == null)
+                        fail("Missing stats for point " + w.vo.getXid());
+                    
+                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.START.name() + " entry");
+  
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getPeriodStartTime(), value.getTime());
+
+                    stat = stats.get(RollupEnum.FIRST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getFirstTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.LAST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getLastTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.COUNT.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                    assertEquals(gen.getCount(), stat.asInt());
+                    
+                    stat = stats.get(RollupEnum.ACCUMULATOR.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.ACCUMULATOR.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    Double accumulatorValue = gen.getLastValue();
+                    if(accumulatorValue == null)
+                        accumulatorValue = gen.getMaximumValue();
+                    assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
+                    
+                    stat = stats.get(RollupEnum.AVERAGE.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.AVERAGE.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
+
+                    stat = stats.get(RollupEnum.DELTA.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.DELTA.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
+                    
+                    stat = stats.get(RollupEnum.MINIMUM.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.MINIMUM.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getMinimumTime(), value.getTime());
+
+                    stat = stats.get(RollupEnum.MAXIMUM.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.MAXIMUM.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getMaximumTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.SUM.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.SUM.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
+                    
+                    stat = stats.get(RollupEnum.INTEGRAL.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.INTEGRAL.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
+                });
+
+        //Insert the data skipping first day so we get the initial value
+        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        timer.setStartTime(time.toInstant().toEpochMilli());
+
+        while(time.toInstant().isBefore(to.toInstant())) {
+            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+        }
+        
+        //Insert some values directly into the cache
+        for(int i=0; i<cacheSize; i++) {
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+            point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
+        }
+        
+        //Ensure we get all the data
+        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
+        to = ZonedDateTime.ofInstant(now, zoneId);
+        //Perform the query
+        String dateTimeFormat = null;
+        String timezone = zoneId.getId();
+        PointValueTimeCacheControl cache = PointValueTimeCacheControl.BOTH;
+        PointValueField[] fields =  getFields();
+        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
+
+        test(info, point);
+    }
+    
+    @Test
+    public void testMultiplePointsNoCacheChangeInitialValue() throws IOException {
+        
+        //Setup the data to run once daily for 30 days
+        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+
+        MockDataSourceVO ds = createDataSource();
+        DataPointVO numericDp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
+        
+        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp, 
+                new PointValueTime(1.0, 0), 
+                (value) -> {
+                    return new NumericValue(value.getDoubleValue() + 1.0);
+                },
+                (info, w) ->{
+                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
+                },
+                new AnalogStatisticsVerifier());
+
+        DataPointVO multistateDp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, 1);
+        
+        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp, 
+                new PointValueTime(1, 0), 
+                (value) -> {
+                    //No change
+                    return new MultistateValue(value.getIntegerValue() + 1);
+                },
+                (info, w) ->{
+                    return new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
+                },
+                new StartsAndRuntimeListVerifier());
+
+        
+        //Insert the data skipping first day so we get the initial value
+        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        timer.setStartTime(time.toInstant().toEpochMilli());
+
+        while(time.toInstant().isBefore(to.toInstant())) {
+            numericPoint.updatePointValue(new IdPointValueTime(numericPoint.vo.getId(), numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
+            multistatePoint.updatePointValue(new IdPointValueTime(multistatePoint.vo.getId(), multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+        }
+        
+        //Perform the query
+        String dateTimeFormat = null;
+        String timezone = zoneId.getId();
+        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
+        PointValueField[] fields = getFields();
+        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
+
+        test(info, numericPoint, multistatePoint);
+    }
+    
+    @Test
+    public void testMultiplePointsOnlyCacheChange() throws IOException {
+        
+        //Setup the data to run once daily for 30 days
+        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+
+        int cacheSize = 10;
+        MockDataSourceVO ds = createDataSource();
+        DataPointVO numericDp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
+        
+        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp, 
+                new PointValueTime(1.0, 0), 
+                (value) -> {
+                    return new NumericValue(value.getDoubleValue() + 1.0);
+                },
+                (info, w) ->{
+                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), null, w.values);
+                },
+                (w, gen, root) -> {
+                    JsonNode stats = root.get(w.vo.getXid());
+                    if(stats == null)
+                        fail("Missing stats for point " + w.vo.getXid());
+                    
+                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.START.name() + " entry");
+                    
+                    assertNull(gen.getStartValue());
+                    assertTrue(stat.isNull());
+
+                    stat = stats.get(RollupEnum.FIRST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getFirstTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.LAST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getLastTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.COUNT.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                    assertEquals(gen.getCount(), stat.asInt());
+                    
+                    stat = stats.get(RollupEnum.ACCUMULATOR.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.ACCUMULATOR.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    Double accumulatorValue = gen.getLastValue();
+                    if(accumulatorValue == null)
+                        accumulatorValue = gen.getMaximumValue();
+                    assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
+                    
+                    stat = stats.get(RollupEnum.AVERAGE.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.AVERAGE.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
+
+                    stat = stats.get(RollupEnum.DELTA.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.DELTA.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
+                    
+                    stat = stats.get(RollupEnum.MINIMUM.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.MINIMUM.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getMinimumTime(), value.getTime());
+
+                    stat = stats.get(RollupEnum.MAXIMUM.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.MAXIMUM.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
+                    assertEquals((long)gen.getMaximumTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.SUM.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.SUM.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
+                    
+                    stat = stats.get(RollupEnum.INTEGRAL.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.INTEGRAL.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
+                });
+
+        DataPointVO multistateDp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, cacheSize);
+        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp, 
+                new PointValueTime(1, 0), 
+                (value) -> {
+                    return new MultistateValue(value.getIntegerValue() + 1);
+                },
+                (info, w) ->{
+                    return new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), null, w.values);
+                },
+                (w, gen, root) -> {
+                    JsonNode stats = root.get(w.vo.getXid());
+                    if(stats == null)
+                        fail("Missing stats for point " + w.vo.getXid());
+                    
+                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.START.name() + " entry");
+                    
+                    assertNull(gen.getStartValue());
+                    assertTrue(stat.isNull());
+
+                    stat = stats.get(RollupEnum.FIRST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getFirstValue(), value.getValue());
+                    assertEquals((long)gen.getFirstTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.LAST.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    assertEquals(gen.getLastValue(), value.getValue());
+                    assertEquals((long)gen.getLastTime(), value.getTime());
+                    
+                    stat = stats.get(RollupEnum.COUNT.name());
+                    if(stat == null)
+                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                    assertEquals(gen.getCount(), stat.asInt());
+                    
+                    //Test data
+                    stat = stats.get("data");
+                    if(stat == null)
+                        fail("Missing data entry");
+                    
+                    for(int i=0; i<gen.getData().size(); i++) {
+                        StartsAndRuntime expected = gen.getData().get(i);
+                        JsonNode actual = stat.get(i);
+                        assertEquals((int)expected.getValue(), actual.get("value").intValue());
+                        assertEquals(expected.getStarts(), actual.get("starts").intValue());
+                        assertEquals(expected.getRuntime(), actual.get("runtime").asLong());
+                        assertEquals(expected.getProportion(), actual.get("proportion").doubleValue(), 0.000001);
+                    }
+                });
+        
+        //Insert the data skipping first day so we get the initial value
+        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        timer.setStartTime(time.toInstant().toEpochMilli());
+
+        while(time.toInstant().isBefore(to.toInstant())) {
+            numericPoint.updatePointValue(new IdPointValueTime(numericPoint.vo.getId(), numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
+            multistatePoint.updatePointValue(new IdPointValueTime(multistatePoint.vo.getId(), multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+        }
+        
+        //Insert some values directly into the cache
+        numericPoint.values.clear();
+        multistatePoint.values.clear();
+        for(int i=0; i<cacheSize; i++) {
+            time = (ZonedDateTime) adjuster.adjustInto(time);
+            timer.fastForwardTo(time.toInstant().toEpochMilli());
+            numericPoint.saveOnlyToCache(new PointValueTime(numericPoint.getNextValue(), timer.currentTimeMillis()));
+            multistatePoint.saveOnlyToCache(new PointValueTime(multistatePoint.getNextValue(), timer.currentTimeMillis()));
+        }
+        
+        //Ensure we get all the data
+        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
+        to = ZonedDateTime.ofInstant(now, zoneId);
+        //Perform the query
+        String dateTimeFormat = null;
+        String timezone = zoneId.getId();
+        PointValueTimeCacheControl cache = PointValueTimeCacheControl.CACHE_ONLY;
+        PointValueField[] fields =  getFields();
+        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
+
+        test(info, numericPoint, multistatePoint);
+    }
+    
     /**
      * @param info
      * @param voMap
@@ -474,10 +1018,27 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             case DataTypes.MULTISTATE:
                 return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asInt(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
             case DataTypes.NUMERIC:
-                return new PointValueTime(stat.get("value").asDouble(), stat.get("timestamp").asLong());
+                return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asDouble(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
             case DataTypes.ALPHANUMERIC:
-                return new PointValueTime(stat.get("value").asText(), stat.get("timestamp").asLong());
+                return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asText(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
             case DataTypes.IMAGE:
+                try {
+                    //Use image value servlet to get the image out, first create a mock request
+                    // to simulate the normal request
+                    String url = stat.get(PointValueTimeWriter.VALUE).asText();
+                    String[] paths = url.split("/");
+                    MockHttpServletRequest request = new MockHttpServletRequest();
+                    request.setMethod("GET");
+                    request.setRequestURI(url);
+                    request.setPathInfo("/" + paths[2]);
+                    MockHttpServletResponse response = new MockHttpServletResponse();
+                    imageServlet.service(request, response);
+                    assertEquals(200, response.getStatus());
+                    byte[] imgData = response.getContentAsByteArray();
+                    return new PointValueTime(new ImageValue(imgData, ImageValue.TYPE_JPG), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
+                } catch (Exception e) {
+                    throw new ShouldNeverHappenException(e);
+                }
             default:
                 throw new ShouldNeverHappenException("Unsupported data type: " + dataTypeId);
         }
@@ -772,6 +1333,36 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         
     }
     
+    /**
+     * Create a random square image with w=h=size
+     * @param size
+     * @return
+     */
+    private byte[] createImageBytes(int size) {
+        int width = size;
+        int height = size;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // create random image pixel by pixel
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int a = (int) (Math.random() * 256); // alpha
+                int r = (int) (Math.random() * 256); // red
+                int g = (int) (Math.random() * 256); // green
+                int b = (int) (Math.random() * 256); // blue
+
+                int p = (a << 24) | (r << 16) | (g << 8) | b; // pixel
+
+                image.setRGB(x, y, p);
+            }
+        }
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+            ImageIO.write(image, "jpg", baos);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
+        return null;
+    }
     
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.MangoTestBase#getLifecycle()
@@ -794,6 +1385,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         }
  
     }
+    
     static class TestRuntimeManager extends MockRuntimeManager {
         
         List<DataPointRT> points = new ArrayList<>();
