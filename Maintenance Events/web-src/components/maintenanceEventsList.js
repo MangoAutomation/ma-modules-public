@@ -33,7 +33,14 @@ class MaintenanceEventsListController {
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
-        this.getEvents();
+        this.getEvents().then(() => {
+            if (this.events.length == 0) {
+                this.newMaintenanceEvent();
+            } else {
+                this.selectedEvent = this.events[0];
+                this.setViewValue();
+            }
+        });
     }
 
     setViewValue() {
@@ -45,7 +52,7 @@ class MaintenanceEventsListController {
     }
 
     getEvents() {
-        this.maMaintenanceEvent.list().then(events => {
+        return this.maMaintenanceEvent.list().then(events => {
             this.events = events;
         });
     }
