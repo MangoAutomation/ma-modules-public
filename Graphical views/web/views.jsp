@@ -47,7 +47,7 @@
   <table width="100%" cellspacing="0" cellpadding="0">
     <tr>
       <td>
-        <views:displayView view='${sst:quotEncode(currentView)}' emptyMessageKey="views.noViews"/>
+        <views:displayView view='${currentView}' emptyMessageKey="views.noViews"/>
       </td>
     </tr>
   </table>
