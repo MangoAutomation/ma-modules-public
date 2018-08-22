@@ -34,7 +34,7 @@ public class TemplateWebSocketHandler extends DaoNotificationWebSocketHandler<Ba
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<BaseTemplateVO<?>> event) {
+    protected void handleDaoEvent(DaoEvent<? extends BaseTemplateVO<?>> event) {
         this.notify(event);
     }
 

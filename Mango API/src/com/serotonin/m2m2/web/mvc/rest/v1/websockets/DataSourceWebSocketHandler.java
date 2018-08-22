@@ -37,7 +37,7 @@ public class DataSourceWebSocketHandler extends DaoNotificationWebSocketHandler<
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<DataSourceVO<?>> event) {
+    protected void handleDaoEvent(DaoEvent<? extends DataSourceVO<?>> event) {
         this.notify(event);
     }
 

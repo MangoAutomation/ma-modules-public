@@ -44,7 +44,7 @@ public class WatchListWebSocketHandler extends DaoNotificationWebSocketHandler<W
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<WatchListVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends WatchListVO> event) {
         this.notify(event);
     }
 }

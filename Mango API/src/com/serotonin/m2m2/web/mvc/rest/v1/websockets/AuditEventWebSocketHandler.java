@@ -37,7 +37,7 @@ public class AuditEventWebSocketHandler extends DaoNotificationWebSocketHandler<
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<AuditEventInstanceVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends AuditEventInstanceVO> event) {
         this.notify(event);
     }
 

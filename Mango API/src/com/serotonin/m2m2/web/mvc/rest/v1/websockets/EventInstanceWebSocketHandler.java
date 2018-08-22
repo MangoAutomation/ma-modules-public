@@ -37,7 +37,7 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<EventInstanceVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends EventInstanceVO> event) {
         this.notify(event);
     }
 

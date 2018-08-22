@@ -36,7 +36,7 @@ public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<P
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<PublisherVO<?>> event) {
+    protected void handleDaoEvent(DaoEvent<? extends PublisherVO<?>> event) {
         this.notify(event);
     }
 }

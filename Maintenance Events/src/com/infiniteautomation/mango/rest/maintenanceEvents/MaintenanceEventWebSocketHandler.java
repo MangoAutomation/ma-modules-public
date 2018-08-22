@@ -42,7 +42,7 @@ public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHa
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<MaintenanceEventVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends MaintenanceEventVO> event) {
         this.notify(event);
     }
 

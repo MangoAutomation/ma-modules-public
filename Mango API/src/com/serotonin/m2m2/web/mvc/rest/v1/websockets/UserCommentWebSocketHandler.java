@@ -37,7 +37,7 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<UserCommentVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends UserCommentVO> event) {
         this.notify(event);
     }
 

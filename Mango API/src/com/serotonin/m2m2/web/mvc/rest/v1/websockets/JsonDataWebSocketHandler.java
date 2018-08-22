@@ -35,7 +35,7 @@ public class JsonDataWebSocketHandler extends DaoNotificationWebSocketHandler<Js
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<JsonDataVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends JsonDataVO> event) {
         this.notify(event);
     }
 

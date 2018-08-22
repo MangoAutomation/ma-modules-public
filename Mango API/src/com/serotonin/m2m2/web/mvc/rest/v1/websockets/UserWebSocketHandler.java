@@ -35,7 +35,7 @@ public class UserWebSocketHandler extends DaoNotificationWebSocketHandler<User>{
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<User> event) {
+    protected void handleDaoEvent(DaoEvent<? extends User> event) {
         this.notify(event);
     }
 

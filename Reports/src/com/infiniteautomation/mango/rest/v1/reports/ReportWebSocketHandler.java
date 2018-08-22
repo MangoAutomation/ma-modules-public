@@ -39,7 +39,7 @@ public class ReportWebSocketHandler extends DaoNotificationWebSocketHandler<Repo
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<ReportVO> event) {
+    protected void handleDaoEvent(DaoEvent<? extends ReportVO> event) {
         this.notify(event);
     }
 
