@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.serotonin.m2m2.db.dao.DaoEvent;
+import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListVO;

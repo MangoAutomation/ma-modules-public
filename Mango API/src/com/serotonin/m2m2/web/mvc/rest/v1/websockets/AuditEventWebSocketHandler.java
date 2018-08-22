@@ -7,7 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.serotonin.m2m2.db.dao.DaoEvent;
+import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.audit.AuditEventInstanceModel;

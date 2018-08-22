@@ -7,8 +7,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1.websockets.datapoint;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.serotonin.m2m2.db.dao.DaoEvent;
-import com.serotonin.m2m2.db.dao.DataPointTagsUpdatedEvent;
+import com.infiniteautomation.mango.spring.events.DaoEvent;
+import com.infiniteautomation.mango.spring.events.DataPointTagsUpdatedEvent;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
