@@ -1,4 +1,5 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.websockets.config;
+import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
@@ -7,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
+import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
@@ -23,8 +24,12 @@ import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
 public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandler {
 
     // For our reference to cancel the tasks
-    // TODO Mango 3.5 Autowired
-    private JsonEmportV2Controller controller;
+    private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
+
+    @Autowired
+    public JsonConfigImportWebSocketHandler(MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources) {
+        this.importStatusResources = importStatusResources;
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -57,9 +62,10 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
 
             JsonEmportControlModel model = this.jacksonMapper.readValue(message.getPayload(),
                     JsonEmportControlModel.class);
+
             if (model != null && model.isCancel()) {
                 // Cancel the task if it is running
-                this.controller.cancelImport(model.getResourceId());
+                this.importStatusResources.get(model.getResourceId()).cancel();
             }
         } catch (Exception e) {
             try {
@@ -93,9 +99,5 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
                 log.error(e1.getMessage(), e1);
             }
         }
-    }
-
-    public void setController(JsonEmportV2Controller controller) {
-        this.controller = controller;
     }
 }

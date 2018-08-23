@@ -13,10 +13,12 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.converter.ProxyMappingJackson2HttpMessageConverter;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
 
 /**
@@ -49,5 +51,10 @@ public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
         converters.add(new PointValueTimeStreamCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
+    }
+
+    @Bean
+    public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
+        return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
     }
 }

@@ -73,14 +73,13 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
 
     private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
     private final JsonConfigImportWebSocketHandler websocket;
-    
-    
-    public JsonEmportV2Controller(@Autowired JsonConfigImportWebSocketHandler websocket){
+
+    @Autowired
+    public JsonEmportV2Controller(JsonConfigImportWebSocketHandler websocket, MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources) {
         this.websocket = websocket;
-        this.websocket.setController(this);
-        this.importStatusResources = new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
+        this.importStatusResources = importStatusResources;
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(
             value = "Get Status For Import",
@@ -90,9 +89,9 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
     @RequestMapping(method = RequestMethod.GET, value = "/import/{id}")
     public ResponseEntity<ImportStatusProvider> getImportStatus(
             @ApiParam(value = "Valid Resource ID", required = true,
-                    allowMultiple = false) @PathVariable String id,
+            allowMultiple = false) @PathVariable String id,
             HttpServletRequest request) {
- 
+
         ImportStatusProvider provider = this.importStatusResources.get(id);
         if (provider == null) {
             throw new NotFoundRestException();
@@ -100,7 +99,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             return new ResponseEntity<>(provider, HttpStatus.OK);
         }
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(
             value = "Update an Import in Progress",
@@ -108,8 +107,8 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             )
     @RequestMapping(method = RequestMethod.PUT, value = "/import/{resourceId}")
     public ResponseEntity<Void> updateImport(
-            HttpServletRequest request, 
-            @RequestBody(required=true) JsonEmportControlModel model, 
+            HttpServletRequest request,
+            @RequestBody(required=true) JsonEmportControlModel model,
             @ApiParam(value="Resource id", required=true, allowMultiple=false)
             @PathVariable String resourceId,
             UriComponentsBuilder builder) throws RestValidationFailedException {
@@ -140,17 +139,17 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         Map<String, MultipartFile> map = multipartRequest.getFileMap();
         if(map.size() != 1)
             throw new BadRequestException(new TranslatableMessage("rest.error.oneFileOnly"));
-        
+
         Iterator<String> itr =  multipartRequest.getFileNames();
         MultipartFile file = multipartRequest.getFile(itr.next());
-        
+
         if (!file.isEmpty()) {
             JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
             JsonObject jo = jr.read(JsonObject.class);
-            
+
             String resourceId = importStatusResources.generateResourceId();
             ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, jo, user);
-            
+
             //Setup the Temporary Resource
             this.importStatusResources.put(resourceId, statusProvider);
             URI location = builder.path("/v2/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
@@ -159,7 +158,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             throw new BadRequestException(new TranslatableMessage("rest.error.noFileProvided"));
         }
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Import Configuration", notes="Submit the request and get a URL for the results")
     @RequestMapping(method = {RequestMethod.POST})
@@ -170,7 +169,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             @RequestParam(value="timeout", required=false) Long timeout,
             @RequestBody(required=true) JsonValue config,
             @AuthenticationPrincipal User user){
-        
+
         if (config instanceof JsonObject) {
             //Setup the Temporary Resource
             String resourceId = importStatusResources.generateResourceId();
@@ -195,7 +194,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
     public ResponseEntity<List<StringStringPair>> listExportElements(HttpServletRequest request) {
         return new ResponseEntity<>(ConfigurationExportData.getAllExportDescriptions(), HttpStatus.OK);
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(
             value = "Export Configuration",
@@ -213,10 +212,10 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         JsonTypeWriter writer = new JsonTypeWriter(Common.JSON_CONTEXT);
         return new ResponseEntity<>(writer.writeObject(data), HttpStatus.OK);
     }
-    
+
     /**
      * Status Provider for Imports
-     * 
+     *
      * @author Terry Packer
      */
     public class ImportStatusProvider extends MangoRestTemporaryResource<ImportStatusProvider> implements ProgressiveTaskListener{
@@ -224,14 +223,14 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         private final ImportTask task;
         private final JsonConfigImportWebSocketHandler websocket;
         private final long expirationMs;
-        
+
         //Our Status Parameters for the Model
         private final String username;
         private final Date start;
         private Date finish;
         private JsonConfigImportStateEnum state;
         private float progress;
-        
+
         public ImportStatusProvider(MangoRestTemporaryResourceContainer<ImportStatusProvider> container, String resourceId, JsonConfigImportWebSocketHandler websocket, Long expirationMs, JsonObject root,  User user){
             super(resourceId, container);
             this.websocket = websocket;
@@ -245,7 +244,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             this.progress = 0.0f;
             this.task = new ImportTask(root, Common.getTranslations(), user, this);
         }
-        
+
         @JsonGetter
         public List<RestValidationMessage> getValidationMessages() {
             List<ProcessMessage> messages = this.task.getResponse().getMessages();
@@ -271,7 +270,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             }
             return validation;
         }
-        
+
         @JsonGetter
         public List<String> getGenericMessages() {
             List<ProcessMessage> messages = this.task.getResponse().getMessages();
@@ -286,17 +285,17 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             }
             return generic;
         }
-        
+
         @JsonGetter
         public Date getStart() {
             return start;
         }
-        
+
         @JsonGetter
         public Date getFinish() {
             return finish;
         }
-        
+
         @JsonGetter
         public JsonConfigImportStateEnum getState() {
             return state;
@@ -309,11 +308,11 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         public String getOwner() {
             return username;
         }
-        
+
         public void cancel(){
             this.task.cancel();
         }
-        
+
         @Override
         public void progressUpdate(float progress) {
             this.progress = progress;
@@ -347,17 +346,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             this.state = JsonConfigImportStateEnum.REJECTED;
             this.websocket.notify(this);
             schedule(new Date(Common.timer.currentTimeMillis() + expirationMs));
-        }       
+        }
     }
-    
-    /**
-     * Cancel a given task if it exists
-     * 
-     * @param resourceId
-     */
-    public void cancelImport(String resourceId) {
-        ImportStatusProvider provider = this.importStatusResources.get(resourceId);
-        if(provider != null)
-            provider.cancel();
-    }
+
 }
