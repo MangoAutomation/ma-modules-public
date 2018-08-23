@@ -13,8 +13,8 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
-import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 

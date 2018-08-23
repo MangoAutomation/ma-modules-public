@@ -37,7 +37,6 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
@@ -59,6 +58,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 
@@ -423,7 +423,7 @@ public class DataPointRestController {
 
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> preFiltered =
                 this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.isAdmin() || user.getId() == tr.getUserId())
+                .filter((tr) -> user.hasAdminPermission() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> results = preFiltered;
@@ -456,7 +456,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -480,7 +480,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -500,7 +500,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.isAdmin() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -575,7 +575,7 @@ public class DataPointRestController {
             return pointModel;
         };
 
-        if (user.isAdmin()) {
+        if (user.hasAdminPermission()) {
             return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), rql, transformPoint);
         } else {
             // Add some conditions to restrict based on user permissions

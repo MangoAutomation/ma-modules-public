@@ -46,8 +46,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 

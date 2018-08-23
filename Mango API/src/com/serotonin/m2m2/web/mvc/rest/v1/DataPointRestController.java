@@ -28,7 +28,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.mapping.MediaTypes;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
@@ -45,6 +44,7 @@ import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;

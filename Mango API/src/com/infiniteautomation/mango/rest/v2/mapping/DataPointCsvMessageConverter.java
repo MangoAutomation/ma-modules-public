@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.serotonin.m2m2.web.MediaTypes;
 
 /**
  *

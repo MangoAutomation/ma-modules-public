@@ -37,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryIn
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
