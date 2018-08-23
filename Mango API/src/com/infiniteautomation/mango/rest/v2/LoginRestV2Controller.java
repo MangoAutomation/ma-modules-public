@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -42,29 +43,23 @@ public class LoginRestV2Controller {
     public static final String LOGIN_DEFAULT_URI_HEADER = "X-Mango-Default-URI";
 
     /**
-     * The actual authentication for the login occurs in the core, by the time this
-     * end point is actually reached the user is either already authenticated or not
-     * The Spring Security authentication success handler forwards the request here
+     * <p>The actual authentication for the login occurs in the core, by the time this
+     * end point is actually reached the user is either already authenticated or not.
+     * The Spring Security authentication success handler forwards the request here.</p>
      *
-     * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
+     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.serotonin.m2m2.web.mvc.spring.exception.MangoSpringExceptionHandler MangoSpringExceptionHandler}</p>
      *
-     * @throws IOException
+     * <p>Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value</p>
      */
     @ApiOperation(value = "Login", notes = "Used to login using POST and JSON credentials")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserModel> loginPost(
             @AuthenticationPrincipal User user,
-            HttpServletRequest request, HttpServletResponse response) throws IOException {
+            HttpServletRequest request, HttpServletResponse response) {
 
         AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-
-        // TODO Mango 3.5 check exception type and return TOO_MANY_REQUESTS and localized
-        // message for rate limited attempts
-
         if (ex != null) {
-            //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-            return null;
+            throw ex;
         }
 
         if (user == null) {
