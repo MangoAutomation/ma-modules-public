@@ -34,7 +34,6 @@ class MaintenanceEventsSetupController {
         this.ngModelCtrl.$render = () => this.render();
         // TODO: update datasources and datapoints from ids
         this.$scope.$watch('$ctrl.selectedEvent', (newValues) => {
-            console.log(this.selectedEvent);
             if (this.selectedEvent) {
                 this.getDataSourcesByIds(this.selectedEvent.dataSources);
                 this.getDataPointsByIds(this.selectedEvent.dataPoints);
@@ -45,7 +44,6 @@ class MaintenanceEventsSetupController {
 
     getDataSourcesByIds(ids) {
         if (!ids || ids.length == 0) return;
-        console.log(ids);
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
