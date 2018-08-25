@@ -161,18 +161,22 @@ public class TranslationsController extends MangoRestController {
 	private Map<String, Map<String,String>> getTranslationMap(String[] namespaces, Locale locale){
         Translations translations = Translations.getTranslations(locale);
         Map<String, Map<String,String>> resultMap = new HashMap<String, Map<String,String>>();
-        for(String namespace : namespaces){
-        	Map<String, Map<String,String>> tranMap = translations.asMap(namespace);
-        	Iterator<String> it = tranMap.keySet().iterator();
-        	while(it.hasNext()){
-        		String key = it.next();
-        		Map<String,String> submap = resultMap.get(key);
-        		if(submap == null){
-        			submap = new HashMap<String,String>();
-        			resultMap.put(key, submap);
-        		}
-        		submap.putAll(tranMap.get(key));
-        	}
+        if(namespaces == null) {
+            resultMap.putAll(translations.asMap());
+        }else {
+            for(String namespace : namespaces){
+            	Map<String, Map<String,String>> tranMap = translations.asMap(namespace);
+            	Iterator<String> it = tranMap.keySet().iterator();
+            	while(it.hasNext()){
+            		String key = it.next();
+            		Map<String,String> submap = resultMap.get(key);
+            		if(submap == null){
+            			submap = new HashMap<String,String>();
+            			resultMap.put(key, submap);
+            		}
+            		submap.putAll(tranMap.get(key));
+            	}
+            }
         }
         return resultMap;
 	}
