@@ -13,6 +13,7 @@
 * Add admin only endpoints in v2 demo rest controller to generate exceptions for testing
 * Restrict json-data POST endpoint to only let users with the global Create JSON Data permission to create new entries
 * Bugfix for /v2/script endpoints to properly return script log/print output
+* Fix bug so GET /v1/translations does not fail and returns all translations
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state
