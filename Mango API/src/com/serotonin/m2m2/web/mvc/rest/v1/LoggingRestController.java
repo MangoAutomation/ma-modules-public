@@ -12,8 +12,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.TableModel;
 import com.infiniteautomation.mango.rest.v2.FileStoreRestV2Controller;
-import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -39,25 +36,23 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.logging.LogQueryArrayStream;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
  *
  */
-@Api(value="Logging", description="Logging")
+@Api(value="Logging")
 @RestController
 @RequestMapping("/v1/logging")
 public class LoggingRestController extends MangoRestController{
 
-	private static Log LOG = LogFactory.getLog(LoggingRestController.class);
-	
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(value = "List Log Files", notes = "Returns a list of logfile metadata")
 	@RequestMapping(method = RequestMethod.GET, value = "/files")
@@ -94,27 +89,19 @@ public class LoggingRestController extends MangoRestController{
     		@PathVariable String filename, 
     		HttpServletRequest request) {
 		RestProcessResult<QueryArrayStream<?>> result = new RestProcessResult<QueryArrayStream<?>>(HttpStatus.OK);
-    		try{
-    	    		ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-    	    		File file = new File(Common.getLogsDir(), filename);
-    	    		if(file.exists()){
-    	    		    //Pattern pattern = new 
-    	    			if(filename.matches(LogQueryArrayStream.LOGFILE_REGEX)){
-    	    				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
-    	    				return result.createResponseEntity(stream);
-    	    			}else{
-    	    			    throw new AccessDeniedException("Non ma.log files are not accessible on this endpoint.");
-    	    			}
-    	    		}else{
-    	    			result.addRestMessage(getDoesNotExistMessage());
-    	    		}
-    		}catch(InvalidRQLRestException e){
-    			LOG.error(e.getMessage(), e);
-    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-			return result.createResponseEntity();
+    		ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+    		File file = new File(Common.getLogsDir(), filename);
+    		if(file.exists()){
+    		    //Pattern pattern = new 
+    			if(filename.matches(LogQueryArrayStream.LOGFILE_REGEX)){
+    				LogQueryArrayStream stream = new LogQueryArrayStream(filename, query);
+    				return result.createResponseEntity(stream);
+    			}else{
+    			    throw new AccessDeniedException("Non ma.log files are not accessible on this endpoint.");
+    			}
+    		}else{
+    			throw new NotFoundRestException();
     		}
-
-    	    return result.createResponseEntity();
     }
 	
 	@PreAuthorize("isAdmin()")
@@ -145,25 +132,18 @@ public class LoggingRestController extends MangoRestController{
 	@ApiResponse(code = 403, message = "User does not have access")
 	})
 	@RequestMapping(method = RequestMethod.GET, value = "/explain-query")
-    public ResponseEntity<TableModel> getTableModel(HttpServletRequest request) {
+    public ResponseEntity<TableModel> getTableModel(
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
         
-        RestProcessResult<TableModel> result = new RestProcessResult<TableModel>(HttpStatus.OK);
-        
-        this.checkUser(request, result);
-        if(result.isOk()){
-            	TableModel model = new TableModel();
-            	List<QueryAttribute> attributes = new ArrayList<QueryAttribute>();
-            	attributes.add(new QueryAttribute("level", null, Types.VARCHAR));
-            	attributes.add(new QueryAttribute("classname", null, Types.VARCHAR));
-            	attributes.add(new QueryAttribute("method", null, Types.VARCHAR));
-            	attributes.add(new QueryAttribute("time", null, Types.INTEGER));
-            	attributes.add(new QueryAttribute("message", null, Types.VARCHAR));
-        	
-        	    model.setAttributes(attributes);
- 	        result.addRestMessage(getSuccessMessage());
-	        return result.createResponseEntity();
-        }
-        
-        return result.createResponseEntity();
+    	TableModel model = new TableModel();
+    	List<QueryAttribute> attributes = new ArrayList<QueryAttribute>();
+    	attributes.add(new QueryAttribute("level", null, Types.VARCHAR));
+    	attributes.add(new QueryAttribute("classname", null, Types.VARCHAR));
+    	attributes.add(new QueryAttribute("method", null, Types.VARCHAR));
+    	attributes.add(new QueryAttribute("time", null, Types.INTEGER));
+    	attributes.add(new QueryAttribute("message", null, Types.VARCHAR));
+	    model.setAttributes(attributes);
+	    return ResponseEntity.ok(model);
     }
 }

@@ -121,10 +121,10 @@ public class MangoLogFilePatternReceiver {
         if (levelComparison != null) {
             switch (levelComparison.getComparison()) {
                 case GREATER_THAN:
-                    if (event.getLevel().intLevel() <= thresholdLevel.intLevel())
+                    if (event.getLevel().isLessSpecificThan(thresholdLevel)  || event.getLevel().equals(thresholdLevel))
                         return;
                 case GREATER_THAN_EQUAL_TO:
-                    if (event.getLevel().intLevel() < thresholdLevel.intLevel())
+                    if (event.getLevel().isLessSpecificThan(thresholdLevel) && !event.getLevel().equals(thresholdLevel))
                         return;
                     break;
                 case EQUAL_TO:
@@ -136,10 +136,10 @@ public class MangoLogFilePatternReceiver {
                         return;
                     break;
                 case LESS_THAN:
-                    if (event.getLevel().intLevel() >= thresholdLevel.intLevel())
+                    if (event.getLevel().isMoreSpecificThan(thresholdLevel)  || event.getLevel().equals(thresholdLevel))
                         return;
                 case LESS_THAN_EQUAL_TO:
-                    if (event.getLevel().intLevel() > thresholdLevel.intLevel())
+                    if (event.getLevel().isMoreSpecificThan(thresholdLevel) && !event.getLevel().equals(thresholdLevel))
                         return;
                     break;
                 default:
