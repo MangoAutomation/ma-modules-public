@@ -80,6 +80,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleUpgradesModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpdateLicensePayloadModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.UpgradeStatusModel;
 import com.serotonin.provider.Providers;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -93,19 +94,13 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/v1/modules")
 public class ModulesRestController extends MangoRestController {
 
-    private final String WEB = "/web";
-    private final String MODULES_WEB_DIR = Constants.DIR_WEB + "/" + Constants.DIR_MODULES;
-    private final String WEB_MODULE_PREFIX = MODULES_WEB_DIR + "/" + ModuleUtils.Constants.MODULE_PREFIX;
-    private final File coreDir = new File(Common.MA_HOME);
-    private final File moduleDir = new File(coreDir, MODULES_WEB_DIR);
+    private static final String WEB = "/web";
+    private static final String MODULES_WEB_DIR = Constants.DIR_WEB + "/" + Constants.DIR_MODULES;
+    private static final String WEB_MODULE_PREFIX = MODULES_WEB_DIR + "/" + ModuleUtils.Constants.MODULE_PREFIX;
+    private static final File coreDir = new File(Common.MA_HOME);
+    private static final File moduleDir = new File(coreDir, MODULES_WEB_DIR);
 
-    @ApiOperation(value = "AngularJS Modules", notes = "Publicly Available Angular JS Modules")
-    @RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/public")
-    public ResponseEntity<AngularJSModuleDefinitionGroupModel> getPublicAngularJSModules(HttpServletRequest request) {
-
-        RestProcessResult<AngularJSModuleDefinitionGroupModel> result = new RestProcessResult<AngularJSModuleDefinitionGroupModel>(
-                HttpStatus.OK);
-
+    public static AngularJSModuleDefinitionGroupModel getAngularJSModules() {
         List<AngularJSModuleDefinition> definitions = ModuleRegistry.getAngularJSDefinitions();
         List<String> urls = new ArrayList<String>();
         for (AngularJSModuleDefinition def : definitions) {
@@ -122,6 +117,15 @@ public class ModulesRestController extends MangoRestController {
         AngularJSModuleDefinitionGroupModel model = new AngularJSModuleDefinitionGroupModel();
         model.setUrls(urls);
 
+        return model;
+    }
+
+    @ApiOperation(value = "AngularJS Modules", notes = "Publicly Available Angular JS Modules")
+    @RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/public")
+    public ResponseEntity<AngularJSModuleDefinitionGroupModel> getPublicAngularJSModules(HttpServletRequest request) {
+
+        RestProcessResult<AngularJSModuleDefinitionGroupModel> result = new RestProcessResult<>(HttpStatus.OK);
+        AngularJSModuleDefinitionGroupModel model = getAngularJSModules();
         return result.createResponseEntity(model);
     }
 
@@ -481,14 +485,14 @@ public class ModulesRestController extends MangoRestController {
     notes = "The bundle can be downloaded from the Mango Store")
     @RequestMapping(method = RequestMethod.POST, value = "/upload-upgrades")
     public void uploadUpgrades(
-            @ApiParam(value = "Perform Backup first", required = false, defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
+            @ApiParam(value = "Perform Backup first", required = false, defaultValue = "false", allowMultiple = false)
+            @RequestParam(required = false, defaultValue = "false")
             boolean backup,
 
-            @ApiParam(value = "Restart after upload completes", required = false, defaultValue = "false", allowMultiple = false) 
-            @RequestParam(required = false, defaultValue = "false") 
+            @ApiParam(value = "Restart after upload completes", required = false, defaultValue = "false", allowMultiple = false)
+            @RequestParam(required = false, defaultValue = "false")
             boolean restart,
-            
+
             MultipartHttpServletRequest multipartRequest) throws IOException {
 
         synchronized (UPLOAD_UPGRADE_LOCK){
@@ -500,7 +504,7 @@ public class ModulesRestController extends MangoRestController {
         }
 
         try {
-            
+
             if (backup) {
                 // Do the backups. They run async, so this returns immediately. The shutdown will
                 // wait for the
@@ -510,7 +514,7 @@ public class ModulesRestController extends MangoRestController {
                 DatabaseBackupWorkItem.queueBackup(SystemSettingsDao
                         .instance.getValue(SystemSettingsDao.DATABASE_BACKUP_FILE_LOCATION));
             }
-            
+
             List<MultipartFile> files = new ArrayList<>();
             MultiValueMap<String, MultipartFile> filemap = multipartRequest.getMultiFileMap();
             for (String nameField : filemap.keySet()) {

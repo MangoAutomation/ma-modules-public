@@ -27,6 +27,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -38,29 +39,29 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping("/v1/translations")
 public class TranslationsController extends MangoRestController {
-    
-	//Namespaces available for public endpoint
-	private final List<String> publicNamespaces;
-	
-	public TranslationsController(){
-		this.publicNamespaces = new ArrayList<String>();
-		this.publicNamespaces.add("public");
-		this.publicNamespaces.add("login");
-		this.publicNamespaces.add("header");
-	}
-	
-	@ApiOperation(value = "Get all translations", notes = "Kitchen sink of translations")
+
+    //Namespaces available for public endpoint
+    private final List<String> publicNamespaces;
+
+    public TranslationsController(){
+        this.publicNamespaces = new ArrayList<String>();
+        this.publicNamespaces.add("public");
+        this.publicNamespaces.add("login");
+        this.publicNamespaces.add("header");
+    }
+
+    @ApiOperation(value = "Get all translations", notes = "Kitchen sink of translations")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Map<String, ?>> translations(
-    		@ApiParam(value = "Language for translations", allowMultiple = false)
+            @ApiParam(value = "Language for translations", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
         return namespacedTranslations(null, language, server, browser, request);
     }
-    
-	@ApiOperation(value = "Get translations based on namespaces", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public")
+
+    @ApiOperation(value = "Get translations based on namespaces", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public")
     @RequestMapping(method = RequestMethod.GET, value = "/{namespaces}")
     public ResponseEntity<Map<String, ?>> namespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
@@ -71,25 +72,25 @@ public class TranslationsController extends MangoRestController {
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
-        
+
         RestProcessResult<Map<String, ?>> result =
                 new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
-        
+
         if (result.isOk()) {
-           
-        	Map<String, Object> resultMap = new HashMap<String, Object>();
+
+            Map<String, Object> resultMap = new HashMap<String, Object>();
             Locale locale = this.getLocale(language, server, browser, request, user);
             resultMap.put("locale", locale.toLanguageTag());
-        	resultMap.put("translations", getTranslationMap(namespaces, locale));
-            
+            resultMap.put("translations", getTranslationMap(namespaces, locale));
+
             return result.createResponseEntity(resultMap);
         }
-        
+
         return result.createResponseEntity();
     }
-	
-	@ApiOperation(value = "Get translations for public namespaces", notes = "Namespace must be base , ie public not public.messages. Returns sub-namespaces too. For > 1 use comma common,public")
+
+    @ApiOperation(value = "Get translations for public namespaces", notes = "Namespace must be base , ie public not public.messages. Returns sub-namespaces too. For > 1 use comma common,public")
     @RequestMapping(method = RequestMethod.GET, value = "/public/{namespaces}")
     public ResponseEntity<Map<String, ?>> publicNamespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
@@ -100,43 +101,43 @@ public class TranslationsController extends MangoRestController {
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
-        
+
         RestProcessResult<Map<String, ?>> result = new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
-        
+
         //Confirm the requested namespace is indeed public
         for(String namespace : namespaces){
-	        if(!this.publicNamespaces.contains(namespace)){
-	        	result.addRestMessage(getUnauthorizedMessage());
-	        	return result.createResponseEntity();
-	        }
+            if(!this.publicNamespaces.contains(namespace)){
+                result.addRestMessage(getUnauthorizedMessage());
+                return result.createResponseEntity();
+            }
         }
-        
+
         if (result.isOk()) {
-        	Map<String, Object> resultMap = new HashMap<String, Object>();
+            Map<String, Object> resultMap = new HashMap<String, Object>();
             Locale locale = this.getLocale(language, server, browser, request, Common.getHttpUser());
             resultMap.put("locale", locale.toLanguageTag());
-        	resultMap.put("translations", getTranslationMap(namespaces, locale));
-            
+            resultMap.put("translations", getTranslationMap(namespaces, locale));
+
             return result.createResponseEntity(resultMap);
         }
-        
+
         return result.createResponseEntity();
     }
 
-	/**
-	 * Get the locale for the request
-	 * @param language
-	 * @param request
-	 * @return
-	 */
-	private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request, User user) {
-	    if (!StringUtils.isBlank(language)) {
-	        return Locale.forLanguageTag(language.replace('_', '-'));
-	    }
-	    
-	    if (browser) {
+    /**
+     * Get the locale for the request
+     * @param language
+     * @param request
+     * @return
+     */
+    private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request, User user) {
+        if (!StringUtils.isBlank(language)) {
+            return Locale.forLanguageTag(language.replace('_', '-'));
+        }
+
+        if (browser) {
             return RequestContextUtils.getLocale(request);
-	    } else if (server) {
+        } else if (server) {
             return Common.getLocale();
         }
 
@@ -144,41 +145,41 @@ public class TranslationsController extends MangoRestController {
         if (user != null) {
             userLocale = user.getLocale();
         }
-        
-	    if (user == null || StringUtils.isBlank(userLocale)) {
+
+        if (user == null || StringUtils.isBlank(userLocale)) {
             return Common.getLocale();
-	    } else {
+        } else {
             return Locale.forLanguageTag(userLocale.replace('_', '-'));
         }
-	}
+    }
 
-	/**
-	 * Get a set of translations for many namespaces
-	 * @param namespaces
-	 * @param locale
-	 * @return
-	 */
-	private Map<String, Map<String,String>> getTranslationMap(String[] namespaces, Locale locale){
+    /**
+     * Get a set of translations for many namespaces
+     * @param namespaces
+     * @param locale
+     * @return
+     */
+    public static Map<String, Map<String,String>> getTranslationMap(String[] namespaces, Locale locale){
         Translations translations = Translations.getTranslations(locale);
         Map<String, Map<String,String>> resultMap = new HashMap<String, Map<String,String>>();
         if(namespaces == null) {
             resultMap.putAll(translations.asMap());
         }else {
             for(String namespace : namespaces){
-            	Map<String, Map<String,String>> tranMap = translations.asMap(namespace);
-            	Iterator<String> it = tranMap.keySet().iterator();
-            	while(it.hasNext()){
-            		String key = it.next();
-            		Map<String,String> submap = resultMap.get(key);
-            		if(submap == null){
-            			submap = new HashMap<String,String>();
-            			resultMap.put(key, submap);
-            		}
-            		submap.putAll(tranMap.get(key));
-            	}
+                Map<String, Map<String,String>> tranMap = translations.asMap(namespace);
+                Iterator<String> it = tranMap.keySet().iterator();
+                while(it.hasNext()){
+                    String key = it.next();
+                    Map<String,String> submap = resultMap.get(key);
+                    if(submap == null){
+                        submap = new HashMap<String,String>();
+                        resultMap.put(key, submap);
+                    }
+                    submap.putAll(tranMap.get(key));
+                }
             }
         }
         return resultMap;
-	}
-	
+    }
+
 }
