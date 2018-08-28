@@ -95,7 +95,7 @@ class MaintenanceEventsSetupController {
 
         if (!this.form.$valid) {
             this.maDialogHelper.toastOptions({
-                textTr: 'maintenanceEvents.invalidForm.invalidForm',
+                textTr: 'maintenanceEvents.invalidForm',
                 classes: 'md-warn',
                 hideDelay: 3000
             });
