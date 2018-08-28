@@ -119,13 +119,12 @@ public class PointValueImportResult {
             long timestamp = model.getTimestamp();
             if(timestamp == 0)
                 timestamp = Common.timer.currentTimeMillis();
-            int dataTypeId = DataTypeEnum.convertFrom(model.getType());
-            if (dataTypeId != vo.getPointLocator().getDataTypeId()) {
+            if ((model.getType() == null ) || (DataTypeEnum.convertFrom(model.getType()) != vo.getPointLocator().getDataTypeId())) {
                 result.addContextualMessage("dataType", "event.ds.dataType");
                 return;
             }
+            
             DataValue value;
-
             switch(model.getType()) {
                 case ALPHANUMERIC:
                     value = new AlphanumericValue((String) model.getValue());
@@ -136,6 +135,7 @@ public class PointValueImportResult {
                 case MULTISTATE:
                     if(model.getValue() instanceof String) {
                         try {
+                            int dataTypeId = DataTypeEnum.convertFrom(model.getType());
                             value = vo.getTextRenderer().parseText((String) model.getValue(), dataTypeId);
                         } catch (Exception e) {
                             // Lots can go wrong here so let the user know
