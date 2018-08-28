@@ -940,17 +940,17 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     assertEquals(gen.getCount(), stat.asInt());
                     
                     //Test data
-                    stat = stats.get("data");
+                    stat = stats.get(PointValueTimeWriter.STARTS_AND_RUNTIMES);
                     if(stat == null)
                         fail("Missing data entry");
                     
                     for(int i=0; i<gen.getData().size(); i++) {
                         StartsAndRuntime expected = gen.getData().get(i);
                         JsonNode actual = stat.get(i);
-                        assertEquals((int)expected.getValue(), actual.get("value").intValue());
-                        assertEquals(expected.getStarts(), actual.get("starts").intValue());
-                        assertEquals(expected.getRuntime(), actual.get("runtime").asLong());
-                        assertEquals(expected.getProportion(), actual.get("proportion").doubleValue(), 0.000001);
+                        assertEquals((int)expected.getValue(), actual.get(PointValueTimeWriter.VALUE).intValue());
+                        assertEquals(expected.getStarts(), actual.get(PointValueTimeWriter.STARTS).intValue());
+                        assertEquals(expected.getRuntime(), actual.get(PointValueTimeWriter.RUNTIME).asLong());
+                        assertEquals(expected.getProportion(), actual.get(PointValueTimeWriter.PROPORTION).doubleValue(), 0.000001);
                     }
                 });
         
@@ -1226,17 +1226,17 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             assertEquals(gen.getCount(), stat.asInt());
             
             //Test data
-            stat = stats.get("data");
+            stat = stats.get(PointValueTimeWriter.STARTS_AND_RUNTIMES);
             if(stat == null)
                 fail("Missing data entry");
             
             for(int i=0; i<gen.getData().size(); i++) {
                 StartsAndRuntime expected = gen.getData().get(i);
                 JsonNode actual = stat.get(i);
-                assertEquals((int)expected.getValue(), actual.get("value").intValue());
-                assertEquals(expected.getStarts(), actual.get("starts").intValue());
-                assertEquals(expected.getRuntime(), actual.get("runtime").asLong());
-                assertEquals(expected.getProportion(), actual.get("proportion").doubleValue(), 0.000001);
+                assertEquals((int)expected.getValue(), actual.get(PointValueTimeWriter.VALUE).intValue());
+                assertEquals(expected.getStarts(), actual.get(PointValueTimeWriter.STARTS).intValue());
+                assertEquals(expected.getRuntime(), actual.get(PointValueTimeWriter.RUNTIME).asLong());
+                assertEquals(expected.getProportion(), actual.get(PointValueTimeWriter.PROPORTION).doubleValue(), 0.000001);
             }
             
         }

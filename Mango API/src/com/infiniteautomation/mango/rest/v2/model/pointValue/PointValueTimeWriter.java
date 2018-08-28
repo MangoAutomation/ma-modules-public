@@ -72,7 +72,7 @@ public abstract class PointValueTimeWriter {
     public static final String STARTS = "starts";
     public static final String RUNTIME = "runtime";
     public static final String PROPORTION = "proportion";
-    public static final String DATA = "data";
+    public static final String STARTS_AND_RUNTIMES = "startsAndRuntimes";
     
     public static final String XID = "xid";
     
@@ -276,7 +276,7 @@ public abstract class PointValueTimeWriter {
             }
             writeIntegerField(COUNT, stats.getCount());
             if(stats.getData().size() > 0) {
-                writeStartArray(DATA);
+                writeStartArray(STARTS_AND_RUNTIMES);
                 for(StartsAndRuntime item : stats.getData()) {
                     writeStartObject();
                     writeDataValue(VALUE, vo, item.getDataValue(), stats.getPeriodStartTime(), false);
@@ -289,7 +289,7 @@ public abstract class PointValueTimeWriter {
                 }
                 writeEndArray();
             }else {
-                writeNullField(DATA);
+                writeNullField(STARTS_AND_RUNTIMES);
             }
         } else if (statisticsGenerator instanceof AnalogStatistics) {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
