@@ -65,7 +65,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataPoint.MockPointLocatorVO;
 import com.serotonin.m2m2.vo.dataSource.mock.MockDataSourceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.servlet.ImageValueServlet;
 
 /**
@@ -121,33 +120,33 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
                     
-                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.START.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.START + " entry");
                     
                     assertNotNull(stat.get(PointValueTimeWriter.TIMESTAMP));
                     PointValueTime value = w.rt.getPointValueAfter(0);
                     assertEquals(gen.getStartValue(), value.getValue());
                     assertEquals(0l, value.getTime());
 
-                    stat = stats.get(RollupEnum.FIRST.name());
+                    stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     //Test the access via the servlet
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
                     assertEquals((long)gen.getFirstTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.LAST.name());
+                    stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
                     assertEquals((long)gen.getLastTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.COUNT.name());
+                    stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
                 });
 
@@ -200,29 +199,29 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
                     
-                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.START.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.START + " entry");
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
-                    stat = stats.get(RollupEnum.FIRST.name());
+                    stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue());
                     assertEquals((long)gen.getFirstTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.LAST.name());
+                    stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue() );
                     assertEquals((long)gen.getLastTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.COUNT.name());
+                    stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());                 
                 });
 
@@ -455,76 +454,76 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
                     
-                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.START.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.START + " entry");
                     
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
-                    stat = stats.get(RollupEnum.FIRST.name());
+                    stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.LAST.name());
+                    stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.COUNT.name());
+                    stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
                     
-                    stat = stats.get(RollupEnum.ACCUMULATOR.name());
+                    stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.ACCUMULATOR.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     Double accumulatorValue = gen.getLastValue();
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
                     assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.AVERAGE.name());
+                    stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.AVERAGE.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
-                    stat = stats.get(RollupEnum.DELTA.name());
+                    stat = stats.get(PointValueTimeWriter.DELTA);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.DELTA.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.DELTA + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.MINIMUM.name());
+                    stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.MINIMUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMinimumTime(), value.getTime());
 
-                    stat = stats.get(RollupEnum.MAXIMUM.name());
+                    stat = stats.get(PointValueTimeWriter.MAXIMUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.MAXIMUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.SUM.name());
+                    stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.SUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.SUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.INTEGRAL.name());
+                    stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.INTEGRAL.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
@@ -640,77 +639,77 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
                     
-                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.START.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.START + " entry");
   
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getPeriodStartTime(), value.getTime());
 
-                    stat = stats.get(RollupEnum.FIRST.name());
+                    stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.LAST.name());
+                    stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.COUNT.name());
+                    stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
                     
-                    stat = stats.get(RollupEnum.ACCUMULATOR.name());
+                    stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.ACCUMULATOR.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     Double accumulatorValue = gen.getLastValue();
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
                     assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.AVERAGE.name());
+                    stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.AVERAGE.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
-                    stat = stats.get(RollupEnum.DELTA.name());
+                    stat = stats.get(PointValueTimeWriter.DELTA);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.DELTA.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.DELTA + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.MINIMUM.name());
+                    stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.MINIMUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMinimumTime(), value.getTime());
 
-                    stat = stats.get(RollupEnum.MAXIMUM.name());
+                    stat = stats.get(PointValueTimeWriter.MAXIMUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.MAXIMUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.SUM.name());
+                    stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.SUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.SUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.INTEGRAL.name());
+                    stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.INTEGRAL.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
@@ -826,76 +825,76 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
                     
-                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.START.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.START + " entry");
                     
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
-                    stat = stats.get(RollupEnum.FIRST.name());
+                    stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.LAST.name());
+                    stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.COUNT.name());
+                    stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
                     
-                    stat = stats.get(RollupEnum.ACCUMULATOR.name());
+                    stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.ACCUMULATOR.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     Double accumulatorValue = gen.getLastValue();
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
                     assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.AVERAGE.name());
+                    stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.AVERAGE.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
-                    stat = stats.get(RollupEnum.DELTA.name());
+                    stat = stats.get(PointValueTimeWriter.DELTA);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.DELTA.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.DELTA + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.MINIMUM.name());
+                    stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.MINIMUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMinimumTime(), value.getTime());
 
-                    stat = stats.get(RollupEnum.MAXIMUM.name());
+                    stat = stats.get(PointValueTimeWriter.MAXIMUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.MAXIMUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.SUM.name());
+                    stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.SUM.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.SUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
                     
-                    stat = stats.get(RollupEnum.INTEGRAL.name());
+                    stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.INTEGRAL.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
@@ -914,30 +913,30 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
                     
-                    JsonNode stat = stats.get(RollupEnum.START.name());
+                    JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.START.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.START + " entry");
                     
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
-                    stat = stats.get(RollupEnum.FIRST.name());
+                    stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue());
                     assertEquals((long)gen.getFirstTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.LAST.name());
+                    stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.LAST.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue());
                     assertEquals((long)gen.getLastTime(), value.getTime());
                     
-                    stat = stats.get(RollupEnum.COUNT.name());
+                    stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
-                        fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
                     
                     //Test data
@@ -999,7 +998,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         for(DataPointWrapper<?> wrapper : points)
             voMap.put(wrapper.vo.getId(), wrapper.vo);
         JsonNode root = generateOutput(info, voMap);
-        System.out.println(root.toString());
         for(DataPointWrapper<?> wrapper : points)
             wrapper.verify(info, root);
     }
@@ -1161,30 +1159,30 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             if(stats == null)
                 fail("Missing stats for point " + w.vo.getXid());
             
-            JsonNode stat = stats.get(RollupEnum.START.name());
+            JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
-                fail("Missing " + RollupEnum.START.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.START + " entry");
             PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getStartValue(), value.getValue());
             assertEquals((long)gen.getPeriodStartTime(), value.getTime());
 
-            stat = stats.get(RollupEnum.FIRST.name());
+            stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
-                fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.FIRST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getFirstValue(), value.getValue());
             assertEquals((long)gen.getFirstTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.LAST.name());
+            stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
-                fail("Missing " + RollupEnum.LAST.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.LAST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getLastValue(), value.getValue() );
             assertEquals((long)gen.getLastTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.COUNT.name());
+            stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
-                fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.COUNT + " entry");
             assertEquals(gen.getCount(), stat.asInt());
         }
     }
@@ -1201,30 +1199,30 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             if(stats == null)
                 fail("Missing stats for point " + w.vo.getXid());
             
-            JsonNode stat = stats.get(RollupEnum.START.name());
+            JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
-                fail("Missing " + RollupEnum.START.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.START + " entry");
             PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getStartValue(), value.getValue());
             assertEquals((long)gen.getPeriodStartTime(), value.getTime());
 
-            stat = stats.get(RollupEnum.FIRST.name());
+            stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
-                fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.FIRST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getFirstValue(), value.getValue());
             assertEquals((long)gen.getFirstTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.LAST.name());
+            stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
-                fail("Missing " + RollupEnum.LAST.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.LAST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getLastValue(), value.getValue() );
             assertEquals((long)gen.getLastTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.COUNT.name());
+            stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
-                fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.COUNT + " entry");
             assertEquals(gen.getCount(), stat.asInt());
             
             //Test data
@@ -1256,77 +1254,77 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             if(stats == null)
                 fail("Missing stats for point " + w.vo.getXid());
             
-            JsonNode stat = stats.get(RollupEnum.START.name());
+            JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
-                fail("Missing " + RollupEnum.START.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.START + " entry");
             PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
             assertEquals((long)gen.getPeriodStartTime(), value.getTime());
 
-            stat = stats.get(RollupEnum.FIRST.name());
+            stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
-                fail("Missing " + RollupEnum.FIRST.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.FIRST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getFirstTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.LAST.name());
+            stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
-                fail("Missing " + RollupEnum.LAST.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.LAST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getLastTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.COUNT.name());
+            stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
-                fail("Missing " + RollupEnum.COUNT.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.COUNT + " entry");
             assertEquals(gen.getCount(), stat.asInt());
             
-            stat = stats.get(RollupEnum.ACCUMULATOR.name());
+            stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
             if(stat == null)
-                fail("Missing " + RollupEnum.ACCUMULATOR.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             Double accumulatorValue = gen.getLastValue();
             if(accumulatorValue == null)
                 accumulatorValue = gen.getMaximumValue();
             assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
             
-            stat = stats.get(RollupEnum.AVERAGE.name());
+            stat = stats.get(PointValueTimeWriter.AVERAGE);
             if(stat == null)
-                fail("Missing " + RollupEnum.AVERAGE.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
-            stat = stats.get(RollupEnum.DELTA.name());
+            stat = stats.get(PointValueTimeWriter.DELTA);
             if(stat == null)
-                fail("Missing " + RollupEnum.DELTA.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.DELTA + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
             
             
-            stat = stats.get(RollupEnum.MINIMUM.name());
+            stat = stats.get(PointValueTimeWriter.MINIMUM);
             if(stat == null)
-                fail("Missing " + RollupEnum.MINIMUM.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getMinimumTime(), value.getTime());
 
-            stat = stats.get(RollupEnum.MAXIMUM.name());
+            stat = stats.get(PointValueTimeWriter.MAXIMUM);
             if(stat == null)
-                fail("Missing " + RollupEnum.MAXIMUM.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getMaximumTime(), value.getTime());
             
-            stat = stats.get(RollupEnum.SUM.name());
+            stat = stats.get(PointValueTimeWriter.SUM);
             if(stat == null)
-                fail("Missing " + RollupEnum.SUM.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.SUM + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
             
-            stat = stats.get(RollupEnum.INTEGRAL.name());
+            stat = stats.get(PointValueTimeWriter.INTEGRAL);
             if(stat == null)
-                fail("Missing " + RollupEnum.INTEGRAL.name() + " entry");
+                fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
         }

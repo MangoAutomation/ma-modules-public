@@ -56,6 +56,24 @@ public abstract class PointValueTimeWriter {
     public static final String DOT_DATA_SOURCE_NAME = DOT + DATA_SOURCE_NAME;
     public static final String DOT_VALUE = DOT + VALUE;
     
+    public static final String FIRST = "first";
+    public static final String LAST = "last";
+    public static final String START = "start";
+    public static final String COUNT = "count";
+    
+    public static final String ACCUMULATOR = "accumulator";
+    public static final String DELTA = "delta";
+    public static final String AVERAGE = "average";
+    public static final String MAXIMUM = "maximum";
+    public static final String MINIMUM = "minimum";
+    public static final String SUM = "sum";
+    
+    
+    public static final String STARTS = "starts";
+    public static final String RUNTIME = "runtime";
+    public static final String PROPORTION = "proportion";
+    public static final String DATA = "data";
+    
     public static final String XID = "xid";
     
 	protected final LatestQueryInfo info;
@@ -189,18 +207,18 @@ public abstract class PointValueTimeWriter {
             if(stats.getStartValue() != null) {
                 //TODO There is a known bug here where images returned with a virtual time stamp i.e. period start will generate URLS that 404
                 // when accessed because the ImageValueServlet requires a time stamp to match a value in the database.
-                writeStartObject(RollupEnum.START.name());
+                writeStartObject(START);
                 writeTimestamp(stats.getPeriodStartTime());
                 writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);
                 if(rendered)
                     writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.START.name());
+                writeNullField(START);
             }
             
             if(stats.getFirstValue() != null) {
-                writeStartObject(RollupEnum.FIRST.name());
+                writeStartObject(FIRST);
                 writeTimestamp(stats.getFirstTime());
                 if(rendered)
                 writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false);
@@ -208,69 +226,70 @@ public abstract class PointValueTimeWriter {
                     writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.FIRST.name());
+                writeNullField(FIRST);
             }
 
             if(stats.getLastValue() != null) {
-                writeStartObject(RollupEnum.LAST.name());
+                writeStartObject(LAST);
                 writeTimestamp(stats.getLastTime());
                 writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false);
                 if(rendered)
                     writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.LAST.name());
-            }            writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+                writeNullField(LAST);
+            }            
+            writeIntegerField(COUNT, stats.getCount());
         } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
             StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
             if(stats.getStartValue() != null) {
-                writeStartObject(RollupEnum.START.name());
+                writeStartObject(START);
                 writeTimestamp(stats.getPeriodStartTime());
                 writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);
                 if(rendered)
                     writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.START.name());
+                writeNullField(START);
             }
             
             if(stats.getFirstValue() != null) {
-                writeStartObject(RollupEnum.FIRST.name());
+                writeStartObject(FIRST);
                 writeTimestamp(stats.getFirstTime());
                 writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false);
                 if(rendered)
                     writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.FIRST.name());
+                writeNullField(FIRST);
             }
 
             if(stats.getLastValue() != null) {
-                writeStartObject(RollupEnum.LAST.name());
+                writeStartObject(LAST);
                 writeTimestamp(stats.getLastTime());
                 writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false);
                 if(rendered)
                     writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.LAST.name());
+                writeNullField(LAST);
             }
-            writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            writeIntegerField(COUNT, stats.getCount());
             if(stats.getData().size() > 0) {
-                writeStartArray("data");
+                writeStartArray(DATA);
                 for(StartsAndRuntime item : stats.getData()) {
                     writeStartObject();
                     writeDataValue(VALUE, vo, item.getDataValue(), stats.getPeriodStartTime(), false);
                     if(rendered)
                         writeDataValue(RENDERED, vo, item.getDataValue(), stats.getPeriodStartTime(), true);
-                    writeIntegerField("starts", item.getStarts());
-                    writeLongField("runtime", item.getRuntime());
-                    writeDoubleField("proportion", item.getProportion());
+                    writeIntegerField(STARTS, item.getStarts());
+                    writeLongField(RUNTIME, item.getRuntime());
+                    writeDoubleField(PROPORTION, item.getProportion());
                     writeEndObject();
                 }
                 writeEndArray();
             }else {
-                writeNullField("data");
+                writeNullField(DATA);
             }
         } else if (statisticsGenerator instanceof AnalogStatistics) {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
@@ -280,28 +299,28 @@ public abstract class PointValueTimeWriter {
             }
             
             if(accumulatorValue != null) {
-                writeStartObject(RollupEnum.ACCUMULATOR.name());
+                writeStartObject(ACCUMULATOR);
                 writeTimestamp(stats.getPeriodStartTime());
                 writeAnalogStatistic(VALUE, vo, accumulatorValue, false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, accumulatorValue, true);
                 writeEndObject();
             }else {
-                writeNullField(RollupEnum.ACCUMULATOR.name());
+                writeNullField(ACCUMULATOR);
             }
             
             if(stats.getAverage() != null) {
-                writeStartObject(RollupEnum.AVERAGE.name());
+                writeStartObject(AVERAGE);
                 writeTimestamp(stats.getPeriodStartTime());
                 writeAnalogStatistic(VALUE, vo, stats.getAverage(), false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, stats.getAverage(), true);
                 writeEndObject();
             }else {
-                writeNullField(RollupEnum.AVERAGE.name()); 
+                writeNullField(AVERAGE); 
             }
             
-            writeStartObject(RollupEnum.DELTA.name());
+            writeStartObject(DELTA);
             writeTimestamp(stats.getPeriodStartTime());
             writeAnalogStatistic(VALUE, vo, stats.getDelta(), false);
             if(rendered)
@@ -309,27 +328,27 @@ public abstract class PointValueTimeWriter {
             writeEndObject();
             
             if(stats.getMinimumValue() != null) {
-                writeStartObject(RollupEnum.MINIMUM.name());
+                writeStartObject(MINIMUM);
                 writeTimestamp(stats.getMinimumTime());
                 writeAnalogStatistic(VALUE, vo, stats.getMinimumValue(), false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, stats.getMinimumValue(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.MINIMUM.name());
+                writeNullField(MINIMUM);
             }
             if(stats.getMaximumValue() != null) {
-                writeStartObject(RollupEnum.MAXIMUM.name());
+                writeStartObject(MAXIMUM);
                 writeTimestamp(stats.getMaximumTime());
                 writeAnalogStatistic(VALUE, vo, stats.getMaximumValue(), false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, stats.getMaximumValue(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.MAXIMUM.name());
+                writeNullField(MAXIMUM);
             }
             
-            writeStartObject(RollupEnum.SUM.name());
+            writeStartObject(SUM);
             writeTimestamp(stats.getPeriodStartTime());
             writeAnalogStatistic(VALUE, vo, stats.getSum(), false);
             if(rendered)
@@ -337,49 +356,49 @@ public abstract class PointValueTimeWriter {
             writeEndObject();
             
             if(stats.getStartValue() != null) {
-                writeStartObject(RollupEnum.START.name());
+                writeStartObject(START);
                 writeTimestamp(stats.getPeriodStartTime());
                 writeAnalogStatistic(VALUE, vo, stats.getStartValue(), false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, stats.getStartValue(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.START.name());
+                writeNullField(START);
             }
             
             if(stats.getFirstValue() != null) {
-                writeStartObject(RollupEnum.FIRST.name());
+                writeStartObject(FIRST);
                 writeTimestamp(stats.getFirstTime());
                 writeAnalogStatistic(VALUE, vo, stats.getFirstValue(), false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, stats.getFirstValue(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.FIRST.name());
+                writeNullField(FIRST);
             }
 
             if(stats.getLastValue() != null) {
-                writeStartObject(RollupEnum.LAST.name());
+                writeStartObject(LAST);
                 writeTimestamp(stats.getLastTime());
                 writeAnalogStatistic(VALUE, vo, stats.getLastValue(), false);
                 if(rendered)
                     writeAnalogStatistic(RENDERED, vo, stats.getLastValue(), true);
                 writeEndObject();                
             }else {
-                writeNullField(RollupEnum.LAST.name());
+                writeNullField(LAST);
             }
             
             if(stats.getIntegral() != null) {
-                writeStartObject(RollupEnum.INTEGRAL.name());
+                writeStartObject(INTEGRAL);
                 writeTimestamp(stats.getPeriodStartTime());
                 writeAnalogStatistic(VALUE, vo, stats.getIntegral(), false);
                 if(rendered)
                     writeStringField(RENDERED, info.getIntegralString(vo, stats.getIntegral()));
                 writeEndObject();
             }else {
-                writeNullField(RollupEnum.INTEGRAL.name());
+                writeNullField(INTEGRAL);
             }
-            writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+            writeIntegerField(COUNT, stats.getCount());
         }
     }
     
