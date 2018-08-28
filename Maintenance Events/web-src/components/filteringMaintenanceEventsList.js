@@ -36,7 +36,9 @@ class FilteringMaintenanceEventsListController {
     }
 
     setViewValue() {
-        this.ngModelCtrl.$setViewValue(this.selectedEvent);
+        if (this.selectedEvent) {
+            this.ngModelCtrl.$setViewValue(this.selectedEvent);
+        }
     }
 
     render() {
@@ -44,9 +46,9 @@ class FilteringMaintenanceEventsListController {
     }
     
     searchTextChange(searchText) {
-        this.getEvents().then(events => {
+        return this.getEvents().then(events => {
             
-            this.events = events.filter(event => {
+            return this.events = events.filter(event => {
                 return event.name.includes(searchText);
             });
 

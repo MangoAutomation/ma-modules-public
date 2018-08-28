@@ -32,12 +32,17 @@ class MaintenanceEventsSetupController {
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
-        // TODO: update datasources and datapoints from ids
+
         this.$scope.$watch('$ctrl.selectedEvent', (newValues) => {
             if (this.selectedEvent) {
                 this.getDataSourcesByIds(this.selectedEvent.dataSources);
                 this.getDataPointsByIds(this.selectedEvent.dataPoints);
             }
+        });
+
+        this.$scope.$on('meNew', (event) => {
+            this.dataSources = [];
+            this.dataPoints = [];
         });
 
     }
@@ -90,7 +95,7 @@ class MaintenanceEventsSetupController {
 
         if (!this.form.$valid) {
             this.maDialogHelper.toastOptions({
-                textTr: 'maintenanceEvents.invalidForm.invalidForm',
+                textTr: 'maintenanceEvents.invalidForm',
                 classes: 'md-warn',
                 hideDelay: 3000
             });
@@ -99,6 +104,8 @@ class MaintenanceEventsSetupController {
 
         this.selectedEvent.save().then(() => {
             
+            this.dataSources = [];
+            this.dataPoints = [];
             this.selectedEvent = null;
             this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meSaved']});
             this.$rootScope.$broadcast('meUpdated', true);
@@ -123,6 +130,8 @@ class MaintenanceEventsSetupController {
         this.maDialogHelper.confirm(event, ['maintenanceEvents.confirmDelete']).then(() => {
             this.selectedEvent.delete().then(() => {
                 
+                this.dataSources = [];
+                this.dataPoints = [];
                 this.selectedEvent = null;
                 this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meDeleted']});
                 this.$rootScope.$broadcast('meUpdated', true);

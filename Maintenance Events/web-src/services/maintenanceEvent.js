@@ -30,7 +30,7 @@ function maintenanceEventsFactory(RestResource, $http) {
         inactiveMinute: 0,
         inactiveSecond: 0,
         inactiveCron: '',
-        timeoutPeriods: 0,
+        timeoutPeriods: 1,
         timeoutPeriodType: 'HOURS',
         togglePermission: null,
         dataPoints: [],

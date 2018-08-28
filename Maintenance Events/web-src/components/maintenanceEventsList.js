@@ -12,35 +12,44 @@ import componentTemplate from './maintenanceEventsList.html';
  * @description Displays a list of maintenance events
  */
 
-const $inject = Object.freeze(['$scope', 'maMaintenanceEvent']);
+const $inject = Object.freeze(['$rootScope', '$scope', 'maMaintenanceEvent']);
 class MaintenanceEventsListController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($scope, maMaintenanceEvent) {
+    constructor($rootScope, $scope, maMaintenanceEvent) {
+        this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.maMaintenanceEvent = maMaintenanceEvent;
 
         this.$scope.$on('meUpdated', (event) => {
             this.new = false;
-            this.getEvents();
+            this.getEvents().then(() => {
+                this.selectDefaultEvent();
+            });
         });
 
         this.$scope.$on('meDeleted', (event) => {
-            this.getEvents();
+            this.getEvents().then(() => {
+                this.selectDefaultEvent();
+            });
         });
     }
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
         this.getEvents().then(() => {
-            if (this.events.length == 0) {
-                this.newMaintenanceEvent();
-            } else {
-                this.selectedEvent = this.events[0];
-                this.setViewValue();
-            }
+            this.selectDefaultEvent();
         });
+    }
+
+    selectDefaultEvent() {
+        if (this.events.length == 0) {
+            this.newMaintenanceEvent();
+        } else {
+            this.selectedEvent = this.events[0];
+            this.setViewValue();
+        }
     }
 
     setViewValue() {
@@ -61,6 +70,7 @@ class MaintenanceEventsListController {
         this.new = true;
         this.selectedEvent = new this.maMaintenanceEvent();
         this.setViewValue();
+        this.$rootScope.$broadcast('meNew', true);
     }
 
     selectMaintenanceEvent(event) {
