@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.session.SessionInformation;
@@ -234,6 +235,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     
     @PreAuthorize("hasRole('ROLE_TEST SPACE')")
     @RolesAllowed("ROLE_TEST SPACE")
+    @Secured("ROLE_TEST SPACE")
     @ApiOperation(value = "User must have a permission named 'TEST SPACE'")
     @RequestMapping(method = RequestMethod.GET, value = {"/role-with-space"})
     public String canGetWithSpaceInPermission() {
