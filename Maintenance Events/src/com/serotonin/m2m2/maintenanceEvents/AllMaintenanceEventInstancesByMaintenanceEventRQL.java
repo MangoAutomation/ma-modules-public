@@ -29,9 +29,9 @@ import net.jazdw.rql.parser.RQLParserException;
  *
  * @author Terry Packer
  */
-public class ActiveMaintenanceEventsForDataPointsDuringPeriodQuery extends ModuleQueryDefinition {
+public class AllMaintenanceEventInstancesByMaintenanceEventRQL extends ModuleQueryDefinition {
 
-    public static final String QUERY_TYPE_NAME = "MAINTENANCE_EVENTS_BY_DATA_POINT_RQL";
+    public static final String QUERY_TYPE_NAME = "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL";
 
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.module.ModuleQueryDefinition#getQueryTypeName()
@@ -85,7 +85,7 @@ public class ActiveMaintenanceEventsForDataPointsDuringPeriodQuery extends Modul
     @Override
     public JsonNode getExplainInfo() {
         Map<String, Object> info = new HashMap<>();
-        info.put("rql", new ParameterInfo("String", true, null, new TranslatableMessage("common.default", "RQL query for data points to return Maintenance events for")));
+        info.put("rql", new ParameterInfo("String", true, null, new TranslatableMessage("common.default", "RQL query against maintenance events table")));
         return JsonNodeFactory.instance.pojoNode(info);
     }
 

@@ -28,7 +28,6 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.User;
@@ -47,8 +46,6 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/maintenance-events")
 public class MaintenanceEventsRestController {
 
-    @Autowired
-    private DataPointDao dataPointDao;
     @Autowired
     private MaintenanceEventDao dao;
     
@@ -167,7 +164,7 @@ public class MaintenanceEventsRestController {
     
     @ApiOperation(
             value = "Find Maintenance Events linked to data points by point IDs",
-            notes = "Returns a map of point ids to a list of events",
+            notes = "Returns a map of point ids to a list of events that have this data point in their list OR the its data source in the list",
             response=Map.class,
             responseContainer="List"
             )
@@ -198,7 +195,7 @@ public class MaintenanceEventsRestController {
     
     @ApiOperation(
             value = "Find Maintenance Events linked to data points by point XIDs",
-            notes = "Returns a map of point ids to a list of events",
+            notes = "Returns a map of point xids to a list of events that have this data point in their list OR the its data source in the list",
             response=Map.class,
             responseContainer="List"
             )
@@ -212,9 +209,70 @@ public class MaintenanceEventsRestController {
         for(String xid: pointXids) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(xid, models);
-            Integer id = dataPointDao.getIdByXid(xid);
-            if(id != null) {
-               dao.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
+           dao.getForDataPoint(xid, new MappedRowCallback<MaintenanceEventVO>() {
+
+                @Override
+                public void row(MaintenanceEventVO vo, int index) {
+                    MaintenanceEventModel model = new MaintenanceEventModel(vo);
+                    fillDataPoints(model);
+                    fillDataSources(model);
+                    models.add(model);
+                }
+                
+            });
+        }
+        return map;
+    }
+    
+    @ApiOperation(
+            value = "Find Maintenance Events linked to data sources by source IDs",
+            notes = "Returns a map of source ids to a list of events that have this data source in thier list",
+            response=Map.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/query/get-for-sources-by-ids/{sourceIds}")
+    public Map<Integer, List<MaintenanceEventModel>> getForSourcesByIds(
+            @PathVariable(required = true) List<Integer> sourceIds,
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        Map<Integer, List<MaintenanceEventModel>> map = new HashMap<>();
+        for(Integer id: sourceIds) {
+            List<MaintenanceEventModel> models = new ArrayList<>();
+            map.put(id, models);
+            dao.getForDataSource(id, new MappedRowCallback<MaintenanceEventVO>() {
+
+                @Override
+                public void row(MaintenanceEventVO vo, int index) {
+                    MaintenanceEventModel model = new MaintenanceEventModel(vo);
+                    fillDataPoints(model);
+                    fillDataSources(model);
+                    models.add(model);
+                }
+                
+            });
+        }
+        return map;
+    }
+    
+    @ApiOperation(
+            value = "Find Maintenance Events linked to data sources by source XIDs",
+            notes = "Returns a map of source xids to a list of events that have this data source in thier list",
+            response=Map.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/query/get-for-sources-by-xids/{sourceXids}")
+    public Map<String, List<MaintenanceEventModel>> getForSourcesByXid(
+            @PathVariable(required = true) List<String> sourceXids,
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        Map<String, List<MaintenanceEventModel>> map = new HashMap<>();
+        for(String xid: sourceXids) {
+            List<MaintenanceEventModel> models = new ArrayList<>();
+            map.put(xid, models);
+            if(xid != null) {
+               dao.getForDataSource(xid, new MappedRowCallback<MaintenanceEventVO>() {
     
                     @Override
                     public void row(MaintenanceEventVO vo, int index) {

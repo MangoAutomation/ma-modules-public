@@ -175,14 +175,32 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     
     private static final String SELECT_BY_DATA_POINT = "SELECT maintenanceEventId FROM maintenanceEventDataPoints WHERE dataPointId=?";
     private static final String SELECT_BY_DATA_SOURCE = "SELECT maintenanceEventId FROM maintenanceEventDataSources WHERE dataSourceId=?";
+    /**
+     * Get all maintenance events that have this data point in their list OR the its data source in the list
+     * @param dataPointId
+     * @param callback
+     */
     public void getForDataPoint(int dataPointId, MappedRowCallback<MaintenanceEventVO> callback) {
-
         DataPointVO vo = dataPointDao.getDataPoint(dataPointId);
         if(vo == null)
             return;
+        getForDataPoint(vo, callback);
+    }
+    /**
+     * Get all maintenance events that have this data point in their list OR the its data source in the list
+     * @param dataPointXid
+     * @param callback
+     */
+    public void getForDataPoint(String dataPointXid, MappedRowCallback<MaintenanceEventVO> callback) {
+        DataPointVO vo = dataPointDao.getDataPoint(dataPointXid);
+        if(vo == null)
+            return;
+        getForDataPoint(vo, callback);
+    }
+    protected void getForDataPoint(DataPointVO vo, MappedRowCallback<MaintenanceEventVO> callback) {
         
         //Get the events that are listed for this point
-        List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {dataPointId}, Integer.class);
+        List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {vo.getId()}, Integer.class);
         if(ids.size() == 0)
             return;
         StringBuilder b = new StringBuilder();
@@ -205,6 +223,38 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         b.append(")");
         query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
 
+    }
+
+    /**
+     * Get all Maintenance events that have this data source in their list
+     * @param dataSourceXid
+     * @param callback
+     */
+    public void getForDataSource(String dataSourceXid, MappedRowCallback<MaintenanceEventVO> callback) {
+        Integer id = dataPointDao.getIdByXid(dataSourceXid);
+        if(id == null)
+            return;
+        getForDataSource(id, callback);
+    }
+    
+    
+    /**
+     * Get all Maintenance events that have this data source in their list
+     * @param dataSourceId
+     * @param callback
+     */
+    public void getForDataSource(int dataSourceId, MappedRowCallback<MaintenanceEventVO> callback) {
+        //Get the events that are listed for the point's data source
+        List<Integer> ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {dataSourceId}, Integer.class);
+        if(ids.size() == 0)
+            return;
+        StringBuilder b = new StringBuilder();
+        b.append(SELECT_ALL);
+        b.append(" WHERE id IN(?");
+        for(int i=0; i<ids.size() - 1; i++)
+            b.append(",?");
+        b.append(")");
+        query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
     }
     
     private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources (maintenanceEventId, dataSourceId) VALUES (?,?)";
