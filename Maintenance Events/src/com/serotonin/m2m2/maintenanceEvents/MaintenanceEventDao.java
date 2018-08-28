@@ -218,24 +218,15 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      */
     @Override
     public void saveRelationalData(MaintenanceEventVO vo, boolean insert) {
-        if(vo.getDataSources().size() > 0) {
-            if(insert) {
-                ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
-            }else {
-                //Delete and insert
-                ejt.update(DELETE_DATA_SOURCE_IDS, new Object[] {vo.getId()});
-                ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
-            }
-        }
-        
-        if(vo.getDataPoints().size() > 0) {
-            if(insert) {
-                ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
-            }else {
-                //Delete and insert
-                ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
-                ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
-            }
+        if(insert) {
+            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
+            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
+        }else {
+            //Delete and insert
+            ejt.update(DELETE_DATA_SOURCE_IDS, new Object[] {vo.getId()});
+            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
+            ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
+            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
         }
     }
     
