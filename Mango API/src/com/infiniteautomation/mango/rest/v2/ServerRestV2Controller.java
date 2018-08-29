@@ -223,7 +223,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         log.warn("Client error\n" + body.formatString(user));
     }
 
-    static class ClientError {
+    public static class ClientError {
         String message;
         String cause;
         List<StackFrame> stackTrace;
@@ -293,7 +293,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         }
     }
 
-    static class StackFrame {
+    public static class StackFrame {
         String functionName;
         String fileName;
         int lineNumber;
