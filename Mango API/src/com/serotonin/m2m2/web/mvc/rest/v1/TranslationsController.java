@@ -50,9 +50,34 @@ public class TranslationsController extends MangoRestController {
         this.publicNamespaces.add("header");
     }
 
+    public static class TranslationsModel {
+        private String locale;
+        private Map<String, Map<String,String>> translations;
+        private String[] namespaces;
+
+        public String getLocale() {
+            return locale;
+        }
+        public void setLocale(String locale) {
+            this.locale = locale;
+        }
+        public Map<String, Map<String, String>> getTranslations() {
+            return translations;
+        }
+        public void setTranslations(Map<String, Map<String, String>> translations) {
+            this.translations = translations;
+        }
+        public String[] getNamespaces() {
+            return namespaces;
+        }
+        public void setNamespaces(String[] namespaces) {
+            this.namespaces = namespaces;
+        }
+    }
+
     @ApiOperation(value = "Get all translations", notes = "Kitchen sink of translations")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Map<String, ?>> translations(
+    public ResponseEntity<TranslationsModel> translations(
             @ApiParam(value = "Language for translations", allowMultiple = false)
             @RequestParam(value = "language", required = false) String language,
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
@@ -63,7 +88,7 @@ public class TranslationsController extends MangoRestController {
 
     @ApiOperation(value = "Get translations based on namespaces", notes = "Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public")
     @RequestMapping(method = RequestMethod.GET, value = "/{namespaces}")
-    public ResponseEntity<Map<String, ?>> namespacedTranslations(
+    public ResponseEntity<TranslationsModel> namespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
             @PathVariable String[] namespaces,
             @ApiParam(value = "Language for translation (must have language pack installed)", allowMultiple = false)
@@ -73,16 +98,16 @@ public class TranslationsController extends MangoRestController {
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
 
-        RestProcessResult<Map<String, ?>> result =
-                new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
+        RestProcessResult<TranslationsModel> result = new RestProcessResult<>(HttpStatus.OK);
         User user = this.checkUser(request, result);
 
         if (result.isOk()) {
-
-            Map<String, Object> resultMap = new HashMap<String, Object>();
+            TranslationsModel resultMap = new TranslationsModel();
             Locale locale = this.getLocale(language, server, browser, request, user);
-            resultMap.put("locale", locale.toLanguageTag());
-            resultMap.put("translations", getTranslationMap(namespaces, locale));
+
+            resultMap.setLocale(locale.toLanguageTag());
+            resultMap.setTranslations(getTranslationMap(namespaces, locale));
+            resultMap.setNamespaces(namespaces);
 
             return result.createResponseEntity(resultMap);
         }
@@ -92,7 +117,7 @@ public class TranslationsController extends MangoRestController {
 
     @ApiOperation(value = "Get translations for public namespaces", notes = "Namespace must be base , ie public not public.messages. Returns sub-namespaces too. For > 1 use comma common,public")
     @RequestMapping(method = RequestMethod.GET, value = "/public/{namespaces}")
-    public ResponseEntity<Map<String, ?>> publicNamespacedTranslations(
+    public ResponseEntity<TranslationsModel> publicNamespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
             @PathVariable String[] namespaces,
             @ApiParam(value = "Language for translation (must have language pack installed)", allowMultiple = false)
@@ -102,7 +127,7 @@ public class TranslationsController extends MangoRestController {
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
             HttpServletRequest request) {
 
-        RestProcessResult<Map<String, ?>> result = new RestProcessResult<Map<String, ?>>(HttpStatus.OK);
+        RestProcessResult<TranslationsModel> result = new RestProcessResult<>(HttpStatus.OK);
 
         //Confirm the requested namespace is indeed public
         for(String namespace : namespaces){
@@ -113,10 +138,12 @@ public class TranslationsController extends MangoRestController {
         }
 
         if (result.isOk()) {
-            Map<String, Object> resultMap = new HashMap<String, Object>();
+            TranslationsModel resultMap = new TranslationsModel();
             Locale locale = this.getLocale(language, server, browser, request, Common.getHttpUser());
-            resultMap.put("locale", locale.toLanguageTag());
-            resultMap.put("translations", getTranslationMap(namespaces, locale));
+
+            resultMap.setLocale(locale.toLanguageTag());
+            resultMap.setTranslations(getTranslationMap(namespaces, locale));
+            resultMap.setNamespaces(namespaces);
 
             return result.createResponseEntity(resultMap);
         }
@@ -159,7 +186,7 @@ public class TranslationsController extends MangoRestController {
      * @param locale
      * @return
      */
-    public static Map<String, Map<String,String>> getTranslationMap(String[] namespaces, Locale locale){
+    public static Map<String, Map<String,String>> getTranslationMap(String[] namespaces, Locale locale) {
         Translations translations = Translations.getTranslations(locale);
         Map<String, Map<String,String>> resultMap = new HashMap<String, Map<String,String>>();
         if(namespaces == null) {
@@ -182,4 +209,11 @@ public class TranslationsController extends MangoRestController {
         return resultMap;
     }
 
+    public static TranslationsModel getTranslations(String[] namespaces, Locale locale) {
+        TranslationsModel resultMap = new TranslationsModel();
+        resultMap.setLocale(locale.toLanguageTag());
+        resultMap.setTranslations(getTranslationMap(namespaces, locale));
+        resultMap.setNamespaces(namespaces);
+        return resultMap;
+    }
 }
