@@ -144,6 +144,7 @@ public class MaintenanceEventInstancesByDataPointXidsOrDataSourceXids extends Mo
             ASTNode query = new ASTNode("in", args);
             query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
             query = addAndRestriction(query, new ASTNode("eq", "typeName", MaintenanceEventType.TYPE_NAME));
+            
             if(parameters.has("active")) {
                 query = addAndRestriction(query, new ASTNode("eq", "active", parameters.get("active").asBoolean()));
             }

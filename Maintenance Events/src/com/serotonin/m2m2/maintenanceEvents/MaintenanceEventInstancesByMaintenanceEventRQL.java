@@ -29,7 +29,7 @@ import net.jazdw.rql.parser.RQLParserException;
  *
  * @author Terry Packer
  */
-public class AllMaintenanceEventInstancesByMaintenanceEventRQL extends ModuleQueryDefinition {
+public class MaintenanceEventInstancesByMaintenanceEventRQL extends ModuleQueryDefinition {
 
     public static final String QUERY_TYPE_NAME = "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL";
 
@@ -77,6 +77,19 @@ public class AllMaintenanceEventInstancesByMaintenanceEventRQL extends ModuleQue
                 result.addInvalidValueError("rql");
             }
         }
+        if(parameters.has("limit")) {
+            if(!parameters.get("limit").canConvertToInt())
+                result.addInvalidValueError("limit");
+        }
+        if(parameters.has("order")) {
+            String order = parameters.get("order").asText();
+            if(!"asc".equals(order) && !"desc".equals(order))
+                result.addInvalidValueError("order");
+        }
+        if(parameters.has("active")) {
+            if(!parameters.get("active").isBoolean())
+                result.addInvalidValueError("active");
+        }
     }
 
     /* (non-Javadoc)
@@ -86,6 +99,9 @@ public class AllMaintenanceEventInstancesByMaintenanceEventRQL extends ModuleQue
     public JsonNode getExplainInfo() {
         Map<String, Object> info = new HashMap<>();
         info.put("rql", new ParameterInfo("String", true, null, new TranslatableMessage("common.default", "RQL query against maintenance events table")));
+        info.put("limit", new ParameterInfo("Integer", false, AbstractBasicDao.DEFAULT_LIMIT, new TranslatableMessage("common.default", "limit number of events returned")));
+        info.put("order", new ParameterInfo("String", false, "desc", new TranslatableMessage("common.default", "time order of returned events (asc,desc)")));
+        info.put("active", new ParameterInfo("Boolean", false, null, new TranslatableMessage("common.default", "should active, inactive or all events be returned")));
         return JsonNodeFactory.instance.pojoNode(info);
     }
 
@@ -125,6 +141,21 @@ public class AllMaintenanceEventInstancesByMaintenanceEventRQL extends ModuleQue
             ASTNode query = new ASTNode("in", args);
             query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
             query = addAndRestriction(query, new ASTNode("eq", "typeName", MaintenanceEventType.TYPE_NAME));
+
+            if(parameters.has("active")) {
+                query = addAndRestriction(query, new ASTNode("eq", "active", parameters.get("active").asBoolean()));
+            }
+            if(parameters.has("order")) {
+                String order = parameters.get("order").asText();
+                if("asc".equals(order))
+                    query = addAndRestriction(query, new ASTNode("sort","+activeTs"));
+                else
+                    query = addAndRestriction(query, new ASTNode("sort","-activeTs"));
+            }
+            if (parameters.has("limit"))
+                query = addAndRestriction(query, new ASTNode("limit", parameters.get("limit").asInt()));
+            else
+                query = addAndRestriction(query, new ASTNode("limit", AbstractBasicDao.DEFAULT_LIMIT));
 
             return query;
         }else {
