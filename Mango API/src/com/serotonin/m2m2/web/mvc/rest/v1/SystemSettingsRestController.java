@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.systemSettings.SystemSettingTypeEnum;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -130,6 +132,7 @@ public class SystemSettingsRestController extends MangoRestController{
     		@RequestBody(required=true) Object model, 
     		@ApiParam(value = "Setting Type", required = false, defaultValue="false", allowMultiple = false)
     		@RequestParam(required=false, defaultValue="STRING") SystemSettingTypeEnum type,
+    		@AuthenticationPrincipal User user,
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
         RestProcessResult<Object> result = new RestProcessResult<Object>(HttpStatus.OK);
@@ -139,7 +142,7 @@ public class SystemSettingsRestController extends MangoRestController{
             Map<String, Object> settings = new HashMap<String, Object>();
             settings.put(key, model);
             ProcessResult response = new ProcessResult();
-            this.dao.validate(settings, response);
+            this.dao.validate(settings, response, user);
             if (response.getHasMessages()) {
                 throw new ValidationException(response);
             }
@@ -190,6 +193,7 @@ public class SystemSettingsRestController extends MangoRestController{
     public ResponseEntity<Map<String,Object>> updateMany(
     		@ApiParam(value = "Updated settings", required = true)
     		@RequestBody(required=true) Map<String,Object> settings,
+    		@AuthenticationPrincipal User user,
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<Map<String,Object>> result = new RestProcessResult<Map<String,Object>>(HttpStatus.OK);
@@ -199,7 +203,7 @@ public class SystemSettingsRestController extends MangoRestController{
             ProcessResult response = new ProcessResult();
             // Convert incoming ExportCodes to int values
             settings = this.dao.convertCodesToValues(settings);
-            this.dao.validate(settings, response);
+            this.dao.validate(settings, response, user);
             if (response.getHasMessages()) {
                 throw new ValidationException(response);
             }
