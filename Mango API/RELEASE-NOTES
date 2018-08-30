@@ -15,6 +15,7 @@
 * Bugfix for /v2/script endpoints to properly return script log/print output
 * Fix bug so GET /v1/translations does not fail and returns all translations
 * Add validation to require a data type when posting values to /v2/point-values endpoint
+* Fixing bug where Importing invalid system settings wouldn't return the propert validation failed message
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state

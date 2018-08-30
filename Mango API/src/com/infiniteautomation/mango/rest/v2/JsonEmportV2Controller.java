@@ -251,21 +251,28 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             List<RestValidationMessage> validation = new ArrayList<RestValidationMessage>();
 
             for (ProcessMessage message : messages) {
-                if (!StringUtils.isEmpty(message.getContextKey())) {
-                    switch (message.getLevel()) {
-                        case info:
-                            validation.add(new RestValidationMessage(message.getContextualMessage(),
-                                    RestMessageLevel.INFORMATION, message.getContextKey()));
-                            break;
-                        case warning:
-                            validation.add(new RestValidationMessage(message.getContextualMessage(),
-                                    RestMessageLevel.WARNING, message.getContextKey()));
-                            break;
-                        case error:
-                            validation.add(new RestValidationMessage(message.getContextualMessage(),
-                                    RestMessageLevel.ERROR, message.getContextKey()));
-                            break;
-                    }
+                switch (message.getLevel()) {
+                    case info:
+                        //Used for generic messages
+                        break;
+                    case warning:
+                        TranslatableMessage warn;
+                        if (StringUtils.isEmpty(message.getContextKey()))
+                            warn = message.getGenericMessage();
+                        else
+                            warn = message.getContextualMessage();
+                        validation.add(new RestValidationMessage(warn,
+                                RestMessageLevel.WARNING, message.getContextKey()));
+                        break;
+                    case error:
+                        TranslatableMessage error;
+                        if (StringUtils.isEmpty(message.getContextKey()))
+                            error = message.getGenericMessage();
+                        else
+                            error = message.getContextualMessage();
+                        validation.add(new RestValidationMessage(error,
+                                RestMessageLevel.ERROR, message.getContextKey()));
+                        break;
                 }
             }
             return validation;
@@ -279,8 +286,15 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
 
             for (ProcessMessage message : messages) {
                 if (StringUtils.isEmpty(message.getContextKey())) {
-                    // Generic Message
-                    generic.add(message.getGenericMessage().translate(translations));
+                    switch (message.getLevel()) {
+                        case info:
+                            // Generic Message
+                            generic.add(message.getGenericMessage().translate(translations));
+                            break;
+                        case warning:
+                        case error:
+                            break;
+                    }
                 }
             }
             return generic;
