@@ -14,17 +14,18 @@ import angular from 'angular';
  */
 
 
- const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint']);
+ const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', '$http']);
 class MaintenanceEventsSetupController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint) {
+    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint, $http) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.maDialogHelper = maDialogHelper;
         this.maDataSource = maDataSource;
         this.maPoint = maPoint;
+        this.$http = $http;
 
         this.dataSources = [];
         this.dataPoints = [];
@@ -37,6 +38,10 @@ class MaintenanceEventsSetupController {
             if (this.selectedEvent) {
                 this.getDataSourcesByIds(this.selectedEvent.dataSources);
                 this.getDataPointsByIds(this.selectedEvent.dataPoints);
+
+                this.getMaintenanceEventsByXid(this.selectedEvent.xid).then(response => {
+                    this.activeEvent = response.data.items[response.data.total - 1].active;
+                });
             }
         });
 
@@ -44,7 +49,15 @@ class MaintenanceEventsSetupController {
             this.dataSources = [];
             this.dataPoints = [];
         });
+    }
 
+    getMaintenanceEventsByXid(xid) {
+        return this.$http.post('/rest/v1/events/module-defined-query', {
+            queryType: "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL",
+            parameters: {
+                rql: "xid=" + xid
+            }
+        })
     }
 
     getDataSourcesByIds(ids) {
@@ -73,6 +86,12 @@ class MaintenanceEventsSetupController {
 
     render() {
         this.selectedEvent = this.ngModelCtrl.$viewValue;
+    }
+
+    toggleEvent() {
+        this.selectedEvent.toggle().then(response => {
+            this.activeEvent = response.data;
+        });
     }
 
     addDataSource() {

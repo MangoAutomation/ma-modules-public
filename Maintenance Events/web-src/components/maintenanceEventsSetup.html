@@ -9,6 +9,7 @@
                 </div>
 
                 <div flex layout layout-align="end center" class="ma-margin-bottom">
+                    <md-switch ng-model="$ctrl.activeEvent" ng-disabled="$ctrl.selectedEvent.disabled" ng-change="$ctrl.toggleEvent()" md-invert aria-label="Toggle Event">Toggle event</md-switch>
                     <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
                         <md-icon>save</md-icon> <span ma-tr="common.save"></span>
                     </md-button>

@@ -53,6 +53,10 @@ function maintenanceEventsFactory(RestResource, $http) {
             return maintenanceEventXidPrefix;
         }
 
+        toggle() {
+            return $http.put(maintenanceEventBaseUrl + '/toggle/' + this.xid)
+        }
+
         initialize() {}
     }
     
