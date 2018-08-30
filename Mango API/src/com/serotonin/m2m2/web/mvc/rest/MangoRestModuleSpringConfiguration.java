@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -19,6 +20,7 @@ import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
 
 /**
@@ -33,6 +35,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
 public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
 
     @Autowired
+    @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
     ObjectMapper mapper;
 
     @Bean("csvObjectMapper")
