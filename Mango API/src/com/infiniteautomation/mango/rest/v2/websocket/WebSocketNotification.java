@@ -13,10 +13,15 @@ public class WebSocketNotification<T> implements WebSocketMessage {
     String notificationType;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     T payload;
-    
+
     public WebSocketNotification() {
     }
-    
+
+    public WebSocketNotification(String notificationType, T payload) {
+        this.notificationType = notificationType;
+        this.payload = payload;
+    }
+
     public WebSocketNotification(CrudNotificationType notificationType, T payload) {
         this.notificationType = notificationType.getNotificationType();
         this.payload = payload;
