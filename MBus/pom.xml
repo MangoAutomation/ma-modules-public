@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.5.0-SNAPSHOT</version>
+        <version>3.5.0-beta.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>mbus-ds</artifactId>
     <name>mbus</name>
     <description>Data source for MBus</description>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>3.5.0-beta.2</version>
     <build>
         <plugins>
             <plugin>
