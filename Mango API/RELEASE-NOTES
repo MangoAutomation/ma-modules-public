@@ -16,6 +16,7 @@
 * Fix bug so GET /v1/translations does not fail and returns all translations
 * Add validation to require a data type when posting values to /v2/point-values endpoint
 * Fixing bug where Importing invalid system settings wouldn't return the propert validation failed message
+* Add /v2/point-values/{xid}/attributes PUT endpoint to modify runtime attributes of a data point
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,6 +53,7 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -61,6 +63,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeMode
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -878,6 +881,30 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         return ResponseEntity.ok(Common.runtimeManager.purgeDataPointValuesBetween(vo.getId(), from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli()));
     }
 
+    @ApiOperation(
+            value = "Update point attributes, return all attributes after change",
+            notes = "Data Point must be running and user must have write access"
+            )
+    @RequestMapping(method = RequestMethod.PUT, value = "/{xid}/attributes")
+    public ResponseEntity<Map<String,Object>> updatePointAttributes(
+            @ApiParam(value = "Point xids", required = true)
+            @PathVariable String xid,
+            @RequestBody(required = true) Map<String, Object> attributes,
+            @AuthenticationPrincipal User user
+            ) {
+        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+        if(vo == null)
+            throw new NotFoundRestException();
+        Permissions.ensureDataPointSetPermission(user, vo);
+        DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
+        if(rt == null)
+            throw new NotFoundRestException();
+        for(Entry<String,Object> entry : attributes.entrySet()){
+            rt.setAttribute(entry.getKey(), entry.getValue());
+        }
+        return ResponseEntity.ok(rt.getAttributes());
+    }
+    
     /**
      * The Hard Working Value Generation Logic for Latest Value Queries
      * 
