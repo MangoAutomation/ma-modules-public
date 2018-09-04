@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -134,7 +135,7 @@ public class MaintenanceEventsRestController {
         return new MaintenanceEventModel(service.delete(xid, user));
     }
     
-    @ApiOperation(value = "Toggle the state of a maintenance event", notes="returns boolean state of event")
+    @ApiOperation(value = "Toggle the state of a maintenance event", notes="must have toggle permission, returns boolean state of event")
     @RequestMapping(method = RequestMethod.PUT, value = "/toggle/{xid}")
     public ResponseEntity<Boolean> toggle(
             @PathVariable String xid,
@@ -146,6 +147,23 @@ public class MaintenanceEventsRestController {
         headers.setLocation(location);
         return new ResponseEntity<>(activated, headers, HttpStatus.OK);
     }
+    
+    @ApiOperation(value = "Set the state of a maintenance event, only change state if necessary ignore if no change and just return current state", notes="must have toggle permission, returns new boolean state of event")
+    @RequestMapping(method = RequestMethod.PUT, value = "/active/{xid}")
+    public ResponseEntity<Boolean> setState(
+            @PathVariable String xid,
+            @ApiParam(value = "State to set event to", required=true)
+            @RequestParam(value="active", required=true, defaultValue="false") boolean active,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        
+        boolean activated = service.setState(xid, user, active);
+        URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(xid).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(activated, headers, HttpStatus.OK);
+    }
+    
     
     @ApiOperation(
             value = "Query Maintenance Events",

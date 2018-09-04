@@ -130,6 +130,36 @@ public class MaintenanceEventsService {
         return activated;
     }
     
+    /**
+     * Set the state of a Maintenance event, if state does not change do nothing.
+     * @param xid
+     * @param user
+     * @param active
+     * @return - state of event, should match active unless event is disabled
+     */
+    public boolean setState(String xid, PermissionHolder user, boolean active) {
+        MaintenanceEventVO existing = dao.getByXid(xid);
+        if(existing == null)
+            throw new NotFoundException();
+        ensureTogglePermission(existing, user);
+        MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(existing.getId());
+        if (rt == null)
+            throw new TranslatableIllegalStateException(new TranslatableMessage("maintenanceEvents.toggle.disabled"));
+        else {
+            if(active) {
+                //Ensure active
+                if(!rt.isEventActive())
+                    rt.toggle();
+                return true;
+            }else {
+                if(rt.isEventActive())
+                    rt.toggle();
+                return false;
+            }
+        }
+        
+    }
+    
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
         
         //If we are admin or have overall data source permission we can view all
