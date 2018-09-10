@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -210,5 +211,8 @@ public class UserRestController {
             return;
         if(toRead.getId() != reader.getId())
             throw new PermissionException(new TranslatableMessage("permission.exception.doesNotHaveRequiredPermission", reader.getUsername()), reader);
+        if(!StringUtils.equals(toRead.getPermissions(), reader.getPermissions()))
+            throw new PermissionException(new TranslatableMessage("users.validate.cannotChangePermissions"), reader);
+        //TODO permissions check against something like user view permissions?
     }
 }
