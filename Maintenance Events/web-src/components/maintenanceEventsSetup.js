@@ -40,7 +40,10 @@ class MaintenanceEventsSetupController {
                 this.getDataPointsByIds(this.selectedEvent.dataPoints);
 
                 this.getMaintenanceEventsByXid(this.selectedEvent.xid).then(response => {
-                    this.activeEvent = response.data.items[response.data.total - 1].active;
+                    const items = response.data.items;
+                    if (items.length) {
+                        return this.activeEvent = items[items.length - 1].active;
+                    }
                 });
             }
         });
@@ -54,10 +57,10 @@ class MaintenanceEventsSetupController {
     getMaintenanceEventsByXid(xid) {
         return this.$http.post('/rest/v1/events/module-defined-query', {
             queryType: "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL",
-            parameters: {
+            params: {
                 xid
             }
-        })
+        });
     }
 
     getDataSourcesByIds(ids) {
