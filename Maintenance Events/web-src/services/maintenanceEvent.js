@@ -5,11 +5,11 @@
 
 import angular from 'angular';
 
-maintenanceEventsFactory.$inject = ['maRestResource', '$http'];
-function maintenanceEventsFactory(RestResource, $http) {
+maintenanceEventsFactory.$inject = ['maRestResource'];
+function maintenanceEventsFactory(RestResource) {
     
     const maintenanceEventBaseUrl = '/rest/v2/maintenance-events';
-
+    const maintenanceEventWebSocketUrl = '/v2/websocket/maintenance-events';
     const maintenanceEventXidPrefix = 'ME_';
     
     const defaultProperties = {
@@ -49,15 +49,49 @@ function maintenanceEventsFactory(RestResource, $http) {
             return maintenanceEventBaseUrl;
         }
         
+        static get webSocketUrl() {
+            return maintenanceEventsWebSocketUrl;
+        }
+        
         static get xidPrefix() {
             return maintenanceEventXidPrefix;
         }
 
-        toggle() {
-            return $http.put(maintenanceEventBaseUrl + '/toggle/' + this.xid)
+        toggleActive(opts = {}) {
+            return this.constructor.http({
+                url: `${this.constructor.baseUrl}/toggle/${this.getEncodedId()}`,
+                method: 'PUT',
+                params: opts.params
+            }, opts).then(response => {
+                return response.data;
+            });
+        }
+        
+        setActive(value, opts = {}) {
+            if (!opts.params) {
+                opts.params = {};
+            }
+            
+            opts.params.active = value;
+            
+            return this.constructor.http({
+                url: `${this.constructor.baseUrl}/active/${this.getEncodedId()}`,
+                method: 'PUT',
+                params: opts.params
+            }, opts).then(response => {
+                return response.data;
+            });
+        }
+        
+        static toggleActive(xid) {
+            const me = new this.constructor({xid});
+            return me.toggleActive();
         }
 
-        initialize() {}
+        static setActive(xid, value) {
+            const me = new this.constructor({xid});
+            return me.setActive(value);
+        }
     }
     
     return maintenanceEventsResource;

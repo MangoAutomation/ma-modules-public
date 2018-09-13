@@ -89,7 +89,7 @@ class MaintenanceEventsSetupController {
     }
 
     toggleEvent() {
-        this.selectedEvent.toggle().then(response => {
+        this.selectedEvent.toggleActive().then(response => {
             this.activeEvent = response.data;
         });
     }
