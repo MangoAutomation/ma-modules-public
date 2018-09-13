@@ -55,7 +55,7 @@ class MaintenanceEventsSetupController {
         return this.$http.post('/rest/v1/events/module-defined-query', {
             queryType: "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL",
             parameters: {
-                rql: "xid=" + xid
+                xid
             }
         })
     }

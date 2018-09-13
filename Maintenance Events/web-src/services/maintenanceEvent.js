@@ -15,7 +15,7 @@ function maintenanceEventsFactory(RestResource) {
     const defaultProperties = {
         alarmLevel: 'INFORMATION',
         scheduleType: 'MANUAL',
-        disabled: true,
+        disabled: false,
         activeYear: 2018,
         activeMonth: 7,
         activeDay: 0,
@@ -35,8 +35,6 @@ function maintenanceEventsFactory(RestResource) {
         togglePermission: null,
         dataPoints: [],
         dataSources: [],
-        id: 1,
-        xid: '',
         name: 'New maintenance event'
       };
 
@@ -50,7 +48,7 @@ function maintenanceEventsFactory(RestResource) {
         }
         
         static get webSocketUrl() {
-            return maintenanceEventsWebSocketUrl;
+            return maintenanceEventWebSocketUrl;
         }
         
         static get xidPrefix() {
