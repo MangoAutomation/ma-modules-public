@@ -10,6 +10,7 @@
 * Adding maintenanceEventsUtility to javascript context to allow manipulation of Maintenance Events
 * Adding custom query for events endpoint to return events based on linked data point or data source xids
 * Adding endpoint to set the state of the event /v2/maintenance-events/active/{xid}?active=[true|false]
+* Provide validation feedback when trying to save a maintenance event with a data point or data source XID that doesn't exist
 
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x

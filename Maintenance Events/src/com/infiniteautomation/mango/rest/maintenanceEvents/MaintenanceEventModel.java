@@ -11,9 +11,11 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.PatchableField;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 
@@ -65,12 +67,15 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     @Override
     public MaintenanceEventVO toVO() {
         MaintenanceEventVO vo = super.toVO();
+        ProcessResult result = new ProcessResult();
         if(dataSources != null) {
             Set<Integer> ids = new HashSet<>();
             for(String xid : dataSources) {
                 Integer id = DataSourceDao.getInstance().getIdByXid(xid);
                 if(id != null)
                     ids.add(id);
+                else
+                    result.addContextualMessage("dataSources", "maintenanceEvents.validate.missingDataSource", xid);
             }
             vo.setDataSources(new ArrayList<>(ids));
         }
@@ -80,9 +85,14 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
                 Integer id = DataPointDao.getInstance().getIdByXid(xid);
                 if(id != null)
                     ids.add(id);
+                else
+                    result.addContextualMessage("dataPoints", "maintenanceEvents.validate.missingDataPoint", xid);
             }
             vo.setDataPoints(new ArrayList<>(ids));
         }
+        if(result.getHasMessages())
+            throw new ValidationException(result);
+        
         vo.setAlarmLevel(AlarmLevels.CODES.getId(alarmLevel));
         vo.setScheduleType(MaintenanceEventVO.TYPE_CODES.getId(scheduleType));
         vo.setDisabled(disabled);
