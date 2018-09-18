@@ -329,7 +329,7 @@ public class DataPointRestController {
             throw new NotFoundRestException();
         }
 
-        Permissions.ensureDataPointReadPermission(user, dataPoint);
+        Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
         Common.runtimeManager.deleteDataPoint(dataPoint);
         return new DataPointModel(dataPoint);
