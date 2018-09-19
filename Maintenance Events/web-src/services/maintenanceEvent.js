@@ -82,12 +82,12 @@ function maintenanceEventsFactory(RestResource) {
         }
         
         static toggleActive(xid) {
-            const me = new this.constructor({xid});
+            const me = new this({xid});
             return me.toggleActive();
         }
 
         static setActive(xid, value) {
-            const me = new this.constructor({xid});
+            const me = new this({xid});
             return me.setActive(value);
         }
     }
