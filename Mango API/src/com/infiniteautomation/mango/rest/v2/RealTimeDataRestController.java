@@ -67,7 +67,7 @@ public class RealTimeDataRestController {
             }
         }
 
-        RealTimePagedQuery filter = new RealTimePagedQuery(models.size());
+        RealTimePagedQuery filter = new RealTimePagedQuery();
         models = query.accept(filter, models);
         
         return new RealTimeQueryWithTotal(filter.getUnlimitedSize(), models);
@@ -75,8 +75,8 @@ public class RealTimeDataRestController {
     
     private class RealTimePagedQuery extends RQLToPagedObjectListQuery<RealTimeDataPointValueModel> {
 
-        public RealTimePagedQuery(int originalSize) {
-            super(originalSize);
+        public RealTimePagedQuery() {
+            super();
         }
         
         @Override
