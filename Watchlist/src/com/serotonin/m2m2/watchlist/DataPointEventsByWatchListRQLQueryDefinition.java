@@ -123,7 +123,7 @@ public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDef
             }
         });
 
-        if(args.size() != 0) {
+        if(args.size() > 1) {
             //Create Event Query for these Points
             ASTNode query = new ASTNode("in", args);
             query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
@@ -131,7 +131,7 @@ public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDef
 
             return query;
         }else {
-            return new ASTNode("limit", 0, 0);
+            return null;
         }
     }
 

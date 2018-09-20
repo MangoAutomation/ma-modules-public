@@ -140,7 +140,7 @@ public class MaintenanceEventInstancesByDataPointXidsOrDataSourceXids extends Mo
             args.add(Integer.toString(id));
         
         //Create Event Query for these Points
-        if(args.size() > 0) {
+        if(args.size() > 1) {
             ASTNode query = new ASTNode("in", args);
             query = addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
             query = addAndRestriction(query, new ASTNode("eq", "typeName", MaintenanceEventType.TYPE_NAME));
@@ -162,7 +162,7 @@ public class MaintenanceEventInstancesByDataPointXidsOrDataSourceXids extends Mo
 
             return query;
         }else {
-            return new ASTNode("limit", 0, 0);
+            return null;
         }
     }
 

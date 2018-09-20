@@ -44,6 +44,7 @@ import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVPojoWriter;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ModuleQueryExplainModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ModuleQueryModel;
@@ -504,7 +505,28 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             HttpServletRequest request) throws IOException {
         model.ensureValid(user, this.dao.tableName);
         ASTNode query = model.createQuery(user);
-        return ResponseEntity.ok(getPageStream(query));
+        if(query == null)
+            return ResponseEntity.ok(new QueryDataPageStream<EventInstanceVO>() {
+
+                @Override
+                public void streamData(JsonGenerator jgen) throws IOException { }
+
+                @Override
+                public void streamData(CSVPojoWriter<EventInstanceVO> writer) throws IOException { }
+
+                @Override
+                public void streamCount(JsonGenerator jgen) throws IOException {
+                    jgen.writeNumber(0);
+                }
+
+                @Override
+                public void streamCount(CSVPojoWriter<Long> writer) throws IOException {
+                    writer.writeNext(0);
+                }
+                
+            });
+        else
+            return ResponseEntity.ok(getPageStream(query));
     }
 
     @ApiOperation(
