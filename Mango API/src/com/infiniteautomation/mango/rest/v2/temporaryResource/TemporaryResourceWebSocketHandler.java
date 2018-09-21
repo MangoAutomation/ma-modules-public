@@ -31,7 +31,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 @WebSocketMapping("/v2/websocket/temporary-resources")
 public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHandler {
     private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
-    public static final String MESSAGE_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
+    public static final String REQUEST_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -115,9 +115,9 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
         }
     }
 
-    @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="messageType")
+    @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="requestType")
     @JsonSubTypes({
-        @JsonSubTypes.Type(name = MESSAGE_TYPE_SUBSCRIPTION, value = TemporaryResourceSubscription.class)
+        @JsonSubTypes.Type(name = REQUEST_TYPE_SUBSCRIPTION, value = TemporaryResourceSubscription.class)
     })
     public static class TemporaryResourceRequest extends WebSocketRequest {
     }
