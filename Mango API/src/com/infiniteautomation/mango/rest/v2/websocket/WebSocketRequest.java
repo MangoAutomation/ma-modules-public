@@ -3,7 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
-public abstract class WebSocketRequest {
+public abstract class WebSocketRequest implements WebSocketMessage {
     int sequenceNumber;
 
     public int getSequenceNumber() {
@@ -12,5 +12,10 @@ public abstract class WebSocketRequest {
 
     public void setSequenceNumber(int sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
+    }
+
+    @Override
+    public WebSocketMessageType getMessageType() {
+        return WebSocketMessageType.REQUEST;
     }
 }

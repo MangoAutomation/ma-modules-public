@@ -4,5 +4,5 @@
 package com.infiniteautomation.mango.rest.v2.websocket;
 
 public enum WebSocketMessageType {
-    RESPONSE, NOTIFICATION
+    REQUEST, RESPONSE, NOTIFICATION
 }
