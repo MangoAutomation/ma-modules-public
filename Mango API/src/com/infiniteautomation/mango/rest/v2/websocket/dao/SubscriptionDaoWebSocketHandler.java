@@ -3,7 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket.dao;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.web.socket.TextMessage;
@@ -13,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMessageType;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketNotification;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
@@ -114,7 +117,10 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     @Override
     protected Object createNotification(WebSocketSession session, String type, T vo, String initiatorId, String originalXid) {
         if (session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE) != null) {
-            return new DaoNotificationModelV2(type, createModel(vo), originalXid, initiatorId);
+            Map<String, Object> attributes = new HashMap<>(2);
+            attributes.put("originalXid", originalXid);
+            attributes.put("initiatorId", initiatorId);
+            return new WebSocketNotification<Object>(type, createModel(vo), attributes);
         } else {
             // return legacy model
             DaoNotificationModel payload = new DaoNotificationModel("create".equals(type) ? "add" : type, createModel(vo), initiatorId, originalXid);

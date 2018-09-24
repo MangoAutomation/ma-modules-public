@@ -3,28 +3,49 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 
-public class WebSocketNotification<T> implements WebSocketMessage {
+public final class WebSocketNotification<T> implements WebSocketMessage {
     /**
-     * Use CrudNotificationType where possible
+     * Use CrudNotificationType (create/update/delete) where possible
      */
     String notificationType;
+
+    /**
+     * Typically a VO model
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     T payload;
+
+    /**
+     * For DAO notifications will contain originalXid and initiatorId
+     */
+    Map<String, Object> attributes;
 
     public WebSocketNotification() {
     }
 
-    public WebSocketNotification(String notificationType, T payload) {
-        this.notificationType = notificationType;
-        this.payload = payload;
+    public WebSocketNotification(CrudNotificationType notificationType, T payload) {
+        this(notificationType.getNotificationType(), payload, Collections.emptyMap());
     }
 
-    public WebSocketNotification(CrudNotificationType notificationType, T payload) {
-        this.notificationType = notificationType.getNotificationType();
+    public WebSocketNotification(String notificationType, T payload) {
+        this(notificationType, payload, Collections.emptyMap());
+    }
+
+    public WebSocketNotification(CrudNotificationType notificationType, T payload, Map<String, Object> attributes) {
+        this(notificationType.getNotificationType(), payload, attributes);
+    }
+
+    public WebSocketNotification(String notificationType, T payload, Map<String, Object> attributes) {
+        this.notificationType = notificationType;
         this.payload = payload;
+        this.attributes = Objects.requireNonNull(attributes);
     }
 
     @Override
@@ -46,5 +67,13 @@ public class WebSocketNotification<T> implements WebSocketMessage {
 
     public void setNotificationType(String notificationType) {
         this.notificationType = notificationType;
+    }
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = Objects.requireNonNull(attributes);
     }
 }
