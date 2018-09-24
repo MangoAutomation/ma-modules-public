@@ -20,10 +20,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
 import com.serotonin.m2m2.vo.AbstractVO;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationModel;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketResponseModel;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketResponseStatus;
 
 /**
  * @author Jared Wiltshire
@@ -90,7 +87,7 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     protected boolean isSubscribed(WebSocketSession session, String type, T vo, String originalXid) {
         DaoSubscription subscription = (DaoSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
         if (subscription == null) {
-            return true;
+            return false;
         }
 
         Set<String> notificationTypes = subscription.getNotificationTypes();
@@ -115,17 +112,11 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     }
 
     @Override
-    protected Object createNotification(WebSocketSession session, String type, T vo, String initiatorId, String originalXid) {
-        if (session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE) != null) {
-            Map<String, Object> attributes = new HashMap<>(2);
-            attributes.put("originalXid", originalXid);
-            attributes.put("initiatorId", initiatorId);
-            return new WebSocketNotification<Object>(type, createModel(vo), attributes);
-        } else {
-            // return legacy model
-            DaoNotificationModel payload = new DaoNotificationModel("create".equals(type) ? "add" : type, createModel(vo), initiatorId, originalXid);
-            return new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
-        }
+    protected Object createNotification(String type, T vo, String initiatorId, String originalXid) {
+        Map<String, Object> attributes = new HashMap<>(2);
+        attributes.put("originalXid", originalXid);
+        attributes.put("initiatorId", initiatorId);
+        return new WebSocketNotification<Object>(type, createModel(vo), attributes);
     }
 
     protected String getXid(T vo) {
