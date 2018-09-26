@@ -351,14 +351,15 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) {
+        if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(UserFileStoreCreatePermissionDefinition.TYPE_NAME)))
+            throw new PermissionException(new TranslatableMessage("filestore.user.createPermissionDenied", user.getUsername()), user);
+        
         if(storeName == null || fileStore == null)
             throw new NotFoundRestException();
         fileStore.setStoreName(storeName);
         FileStoreDefinition fsd = this.fileStoreDao.getFileStoreDefinition(storeName);
         if(fsd != null)
             throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileStoreExists", fileStore.getStoreName()));
-        if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(UserFileStoreCreatePermissionDefinition.TYPE_NAME)))
-            throw new PermissionException(new TranslatableMessage("filestore.user.createPermissionDenied", user.getUsername()), user);
         fileStore.setId(Common.NEW_ID);
         this.fileStoreDao.saveFileStore(fileStore);
         return new ResponseEntity<>(fileStore, HttpStatus.OK);
