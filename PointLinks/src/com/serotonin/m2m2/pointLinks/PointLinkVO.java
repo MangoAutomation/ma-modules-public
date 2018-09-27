@@ -140,14 +140,6 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         this.logLevel = logLevel;
     }
     
-    public ScriptPermissions getScriptPermissions() {
-		return scriptPermissions;
-	}
-
-	public void setScriptPermissions(ScriptPermissions scriptPermissions) {
-		this.scriptPermissions = scriptPermissions;
-	}
-
     public float getLogSize() {
         return logSize;
     }
@@ -163,6 +155,14 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     public void setLogCount(int logCount) {
         this.logCount = logCount;
     }
+    
+    public ScriptPermissions getScriptPermissions() {
+		return scriptPermissions;
+	}
+
+	public void setScriptPermissions(ScriptPermissions scriptPermissions) {
+		this.scriptPermissions = scriptPermissions;
+	}
 	
 	@Override
     public String getTypeKey() {
@@ -177,6 +177,12 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         if (sourcePointId == targetPointId)
             response.addContextualMessage("targetPointId", "pointLinks.validate.samePoint");
         this.scriptPermissions.validate(response, Common.getUser());
+        if (!ScriptLog.LOG_LEVEL_CODES.isValidId(logLevel))
+            response.addContextualMessage("logLevel", "validate.invalidValue");
+        if (logSize <= 0)
+            response.addContextualMessage("logSize", "validate.greaterThanZero");
+        if (logCount <= 0)
+            response.addContextualMessage("logCount", "validate.greaterThanZero");
     }
 
     //
