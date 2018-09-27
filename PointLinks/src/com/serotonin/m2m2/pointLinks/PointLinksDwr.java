@@ -100,7 +100,7 @@ public class PointLinksDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult savePointLink(int id, String xid, int sourcePointId, int targetPointId, String script,
-            int event, boolean writeAnnotation, boolean disabled, ScriptPermissions permissions, int logLevel) {
+            int event, boolean writeAnnotation, boolean disabled, ScriptPermissions permissions, int logLevel, float logSize, int logCount) {
         // Validate the given information. If there is a problem, return an appropriate error message.
         PointLinkVO vo = new PointLinkVO();
         vo.setId(id);
@@ -113,6 +113,8 @@ public class PointLinksDwr extends ModuleDwr {
         vo.setDisabled(disabled);
         vo.setScriptPermissions(permissions);
         vo.setLogLevel(logLevel);
+        vo.setLogSize(logSize);
+        vo.setLogCount(logCount);
 
         ProcessResult response = new ProcessResult();
         PointLinkDao pointLinkDao = PointLinkDao.getInstance();

@@ -1,6 +1,6 @@
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
-* Script log rollover at 1MB keep maximum of 5 old files
+* Script log has settings for rollover size and count
 
 *Version 3.4.0*
 * Upgraded to work with core version 3.4.x

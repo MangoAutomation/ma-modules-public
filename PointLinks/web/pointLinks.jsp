@@ -85,6 +85,8 @@
             
             setScriptPermissions(pl.scriptPermissions);
             $set("logLevel", pl.logLevel);
+            $set("logSize", pl.logSize);
+            $set("logCount", pl.logCount);
             
             startImageFader($("pl"+ plId +"Img"));
             display("deletePointLinkImg", plId != ${NEW_ID});
@@ -111,6 +113,8 @@
         		editor.getValue(), $get("event"), $get("writeAnnotation"), $get("disabled"),
                 getScriptPermissions(),
                 $get("logLevel"),
+                $get("logSize"),
+                $get("logCount"),
                 function(response) {
             if (response.hasMessages)
                 showDwrMessages(response.messages);
@@ -201,10 +205,15 @@
           var logLevelPath = dojo.byId("logPathMsg");
           logLevelPath.innerHTML = response;
     
-          if ($get("logLevel") == ${NONE_LOG})
+          if ($get("logLevel") == ${NONE_LOG}) {
               hide("logPathMsg");
-          else
-              show("logPathMsg")			  
+              hide("logSizeRow");
+              hide("logCountRow");
+          } else {
+              show("logPathMsg");
+              show("logSizeRow");
+              show("logCountRow");
+          }			  
       });
       
     
@@ -287,6 +296,14 @@
                 </div>
               </td>
             </tr> 
+            <tr id="logSizeRow">
+              <td class="formLabelRequired"><fmt:message key="dsEdit.logFileSizeMB"/></td>
+              <td class="formField"><input type="number" id="logSize"/></td>
+            </tr>
+            <tr id="logCountRow">
+              <td class="formLabelRequired"><fmt:message key="dsEdit.logFileCount"/></td>
+              <td class="formField"><input type="number" id="logCount"/></td>
+            </tr>
             <tr>
               <td class="formLabelRequired"><fmt:message key="pointLinks.event"/></td>
               <td class="formField">

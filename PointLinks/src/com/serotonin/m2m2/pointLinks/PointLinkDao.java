@@ -58,7 +58,7 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
     	return ejt.queryForInt(POINT_LINK_COUNT, new Object[0], 0);
     }
     
-    private static final String POINT_LINK_SELECT = "select id, xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission from pointLinks ";
+    private static final String POINT_LINK_SELECT = "select id, xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, logSize, logCount, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission from pointLinks ";
 
     public List<PointLinkVO> getPointLinks() {
         return query(POINT_LINK_SELECT, new PointLinkRowMapper());
@@ -91,6 +91,8 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
             pl.setWriteAnnotation(charToBool(rs.getString(++i)));
             pl.setDisabled(charToBool(rs.getString(++i)));
             pl.setLogLevel(rs.getInt(++i));
+            pl.setLogSize(rs.getFloat(++i));
+            pl.setLogCount(rs.getInt(++i));
             ScriptPermissions permissions = new ScriptPermissions();
             permissions.setDataSourcePermissions(rs.getString(++i));
             permissions.setDataPointSetPermissions(rs.getString(++i));
@@ -108,13 +110,13 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
     }
 
     private static final String POINT_LINK_INSERT = //
-    "insert into pointLinks (xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission) "
-            + "values (?,?,?,?,?,?,?,?,?,?,?)";
+    "insert into pointLinks (xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, logSize, logCount, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission) "
+            + "values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     private void insertPointLink(PointLinkVO pl) {
         int id = doInsert(POINT_LINK_INSERT, new Object[] { pl.getXid(), pl.getSourcePointId(), pl.getTargetPointId(),
                 pl.getScript(), pl.getEvent(), boolToChar(pl.isWriteAnnotation()), 
-                boolToChar(pl.isDisabled()), pl.getLogLevel(),
+                boolToChar(pl.isDisabled()), pl.getLogLevel(), pl.getLogSize(), pl.getLogCount(),
                 pl.getScriptPermissions().getDataSourcePermissions(),
                 pl.getScriptPermissions().getDataPointSetPermissions(),
                 pl.getScriptPermissions().getDataPointReadPermissions()});
@@ -124,7 +126,7 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
     }
 
     private static final String POINT_LINK_UPDATE = //
-    "update pointLinks set xid=?, sourcePointId=?, targetPointId=?, script=?, eventType=?, writeAnnotation=?, disabled=?, logLevel=?, scriptDataSourcePermission=?, scriptDataPointSetPermission=?, scriptDataPointReadPermission=?"
+    "update pointLinks set xid=?, sourcePointId=?, targetPointId=?, script=?, eventType=?, writeAnnotation=?, disabled=?, logLevel=?, logSize=?, logCount=?, scriptDataSourcePermission=?, scriptDataPointSetPermission=?, scriptDataPointReadPermission=? "
             + "where id=?";
 
     private void updatePointLink(PointLinkVO pl) {
@@ -133,7 +135,7 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
         ejt.update(POINT_LINK_UPDATE,
                 new Object[] { pl.getXid(), pl.getSourcePointId(), pl.getTargetPointId(), pl.getScript(),
                         pl.getEvent(), boolToChar(pl.isWriteAnnotation()), 
-                        boolToChar(pl.isDisabled()), pl.getLogLevel(),
+                        boolToChar(pl.isDisabled()), pl.getLogLevel(), pl.getLogSize(), pl.getLogCount(),
                         pl.getScriptPermissions().getDataSourcePermissions(),
                         pl.getScriptPermissions().getDataPointSetPermissions(),
                         pl.getScriptPermissions().getDataPointReadPermissions(),

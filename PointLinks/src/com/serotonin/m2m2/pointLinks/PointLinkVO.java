@@ -58,6 +58,10 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     private int logLevel = ScriptLog.LogLevel.NONE;
     @JsonProperty
     private ScriptPermissions scriptPermissions = new ScriptPermissions(Common.getUser());
+    @JsonProperty
+    private float logSize = 1.0f;
+    @JsonProperty
+    private int logCount = 5;
 
     public boolean isNew() {
         return id == Common.NEW_ID;
@@ -145,11 +149,19 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 	}
 
     public float getLogSize() {
-        return 1.0f;
+        return logSize;
+    }
+    
+    public void setLogSize(float logSize) {
+        this.logSize = logSize;
     }
 
     public int getLogCount() {
-        return 5;
+        return logCount;
+    }
+    
+    public void setLogCount(int logCount) {
+        this.logCount = logCount;
     }
 	
 	@Override
