@@ -111,7 +111,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         if(user.hasAdminPermission()){
             //admin users don't need to filter the results
             for(FileStoreDefinition def : defs.values()){
-                def.ensureStoreReadPermission(user);
                 accessible.add(def.getStoreName());
             }
         }else{
