@@ -17,10 +17,10 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
  *
  * @author Terry Packer
  */
-public class MaintenanceEventsJavascriptUtility extends ScriptUtility{
+public class MaintenanceEventsJavascriptUtility extends ScriptUtility {
     
     @Autowired
-    private MaintenanceEventsService service;
+    protected MaintenanceEventsService service;
 
     public MaintenanceEventVO get(String xid) throws NotFoundException, PermissionException {
         return service.getFullByXid(xid, permissions);
