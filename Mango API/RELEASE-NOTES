@@ -3,7 +3,6 @@
 * Adding ExportCode and ExportCodes models for use in REST api to provide code/id/i18n key and translated description
 * Adding PATCH framework to simplify partial update logic for V2 models, used in new PATCH endpoints
 * Expose tags in realtime endpoint results
-* Adding lastName to user model
 * Fix bug where PUT endpoints were returning the old XID in the location header if the xid was changed (v2/data-points, v2/publishers, v1/data-sources)
 * Allowing null values to be returned in ValueMonitor model
 * Added endpoints for user filestore CRUD
@@ -18,6 +17,18 @@
 * Fixing bug where Importing invalid system settings wouldn't return the propert validation failed message
 * Add /v2/point-values/{xid}/attributes PUT endpoint to modify runtime attributes of a data point
 * Add /v2/realtime endpoint for enhanced querying on real time data point information
+* Fix file store APIs to create files in correct directories
+* Fixes for using Spring v5
+* Register WebSockets as Spring beans
+* DAO notification WebSockets listen for DAO events
+* Use MediaTypes from Core, remove class in API module
+* Provide temporary resource container of ImportStatusProvider as Spring bean
+* Better login error response codes and messages
+* Give translations returned from translations controller a model class
+* Add last upgrade time header (X-Mango-Last-Upgrade) to login controller (/rest/v2/login)
+* Add set and merge tag functions using RQL query (POST and PUT on /rest/v2/data-point-tags/points)
+* Add an easy way to delete all event detectors for a point (DELETE /rest/v2/event-detectors/data-point/{xid})
+* Add v2 JSON data WebSocket with ability to subscribe to specific XIDs
 
 *Version 3.4.4*
 * Fixed cast exception for upgrade state
