@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.5.0-SNAPSHOT</version>
+        <version>3.5.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>point-links</artifactId>
     <name>pointLinks</name>
     <description>Page for creating and editing links between points with optional scripted conversion</description>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>3.5.0</version>
     <build>
         <plugins>
             <plugin>
