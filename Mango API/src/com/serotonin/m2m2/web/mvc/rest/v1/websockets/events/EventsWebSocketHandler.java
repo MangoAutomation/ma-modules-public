@@ -168,6 +168,7 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
                     log.debug("Terminating listener for session " + session.getId());
                 }
                 this.terminate();
+                return;
             }
 
             if(!this.events.contains(EventEventTypeEnum.RAISED))
@@ -196,6 +197,7 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
                     log.debug("Terminating listener for session " + session.getId());
                 }
                 this.terminate();
+                return;
             }
 
             if(!this.events.contains(EventEventTypeEnum.RETURN_TO_NORMAL))
@@ -224,6 +226,7 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
                     log.debug("Terminating listener for session " + session.getId());
                 }
                 this.terminate();
+                return;
             }
 
             if(!this.events.contains(EventEventTypeEnum.DEACTIVATED))
@@ -252,6 +255,7 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
                     log.debug("Terminating listener for session " + session.getId());
                 }
                 this.terminate();
+                return;
             }
 
             if(!this.events.contains(EventEventTypeEnum.ACKNOWLEDGED))
