@@ -42,12 +42,20 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("Connection established, session ID " + session.getId());
+        }
+
         super.afterConnectionEstablished(session);
         this.session = session;
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("Connection closed, session ID " + session.getId());
+        }
+
         super.afterConnectionClosed(session, status);
 
         synchronized(this.lock) {
@@ -64,6 +72,10 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Received message from session " + session.getId() + ", " + message.getPayload());
+            }
+
             User user = this.getUser(session);
             if (user == null) {
                 return;
@@ -103,8 +115,6 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
                 log.error(e.getMessage(), e);
             }
         }
-        if(log.isDebugEnabled())
-            log.debug(message.getPayload());
     }
 
     protected void sendMessage(Object payload) throws JsonProcessingException, Exception {
@@ -153,14 +163,22 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
 
         @Override
         public void raised(EventInstance evt) {
-            if(!session.isOpen() || getUser(session) == null)
+            if (!session.isOpen() || getUser(session) == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Terminating listener for session " + session.getId());
+                }
                 this.terminate();
+            }
 
             if(!this.events.contains(EventEventTypeEnum.RAISED))
                 return;
 
             if(!this.levels.contains(evt.getAlarmLevel()))
                 return;
+
+            if (log.isDebugEnabled()) {
+                log.debug("Event raised, notifying session " + session.getId() + ": " + evt.toString());
+            }
 
             try{
                 sendMessage(new EventEventModel(EventEventTypeEnum.RAISED, evt));
@@ -173,14 +191,22 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
 
         @Override
         public void returnToNormal(EventInstance evt) {
-            if(!session.isOpen() || getUser(session) == null)
+            if (!session.isOpen() || getUser(session) == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Terminating listener for session " + session.getId());
+                }
                 this.terminate();
+            }
 
             if(!this.events.contains(EventEventTypeEnum.RETURN_TO_NORMAL))
                 return;
 
             if(!this.levels.contains(evt.getAlarmLevel()))
                 return;
+
+            if (log.isDebugEnabled()) {
+                log.debug("Event return to normal, notifying session " + session.getId() + ": " + evt.toString());
+            }
 
             try{
                 sendMessage(new EventEventModel(EventEventTypeEnum.RETURN_TO_NORMAL, evt));
@@ -193,14 +219,22 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
 
         @Override
         public void deactivated(EventInstance evt) {
-            if(!session.isOpen() || getUser(session) == null)
+            if (!session.isOpen() || getUser(session) == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Terminating listener for session " + session.getId());
+                }
                 this.terminate();
+            }
 
             if(!this.events.contains(EventEventTypeEnum.DEACTIVATED))
                 return;
 
             if(!this.levels.contains(evt.getAlarmLevel()))
                 return;
+
+            if (log.isDebugEnabled()) {
+                log.debug("Event deactivated, notifying session " + session.getId() + ": " + evt.toString());
+            }
 
             try{
                 sendMessage(new EventEventModel(EventEventTypeEnum.DEACTIVATED, evt));
@@ -213,14 +247,22 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
 
         @Override
         public void acknowledged(EventInstance evt) {
-            if(!session.isOpen() || getUser(session) == null)
+            if (!session.isOpen() || getUser(session) == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Terminating listener for session " + session.getId());
+                }
                 this.terminate();
+            }
 
             if(!this.events.contains(EventEventTypeEnum.ACKNOWLEDGED))
                 return;
 
             if(!this.levels.contains(evt.getAlarmLevel()))
                 return;
+
+            if (log.isDebugEnabled()) {
+                log.debug("Event acknowledged, notifying session " + session.getId() + ": " + evt.toString());
+            }
 
             try{
                 sendMessage(new EventEventModel(EventEventTypeEnum.ACKNOWLEDGED, evt));
