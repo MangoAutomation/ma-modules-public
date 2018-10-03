@@ -4,21 +4,22 @@
  */
 
 import angular from 'angular';
+import maSqlConsole from './components/sqlConsole';
 
-const sqlConsoleModule = angular.module('maSqlConsole', []);
-
-//.config(['MenuProvider', function(MenuProvider) {
-//    var menuItem = {
-//        url: '/sql-console',
-//        name: 'ui.settings.sqlConsole',
-//        template: '<iframe-view src="/sqlConsole.shtm"></iframe-view>',
-//        menuTr: 'header.sql',
-//        menuIcon: 'storage',
-//        permission: 'superadmin',
-//        weight: 2000
-//    };
-//    
-//    MenuProvider.registerMenuItems([menuItem]);
-//}]);
+const sqlConsoleModule = angular.module('maSqlConsole', [])
+.component('maSqlConsole', maSqlConsole)
+.config(['maUiMenuProvider', function(maUiMenuProvider) {
+    maUiMenuProvider.registerMenuItems([
+        {
+            name: 'ui.settings.sqlConsole',
+            url: '/sql-console',
+            template: '<ma-sql-console></ma-sql-console>',
+            menuTr: 'header.sql',
+            menuIcon: 'storage',
+            permission: 'superadmin',
+            weight: 2000
+        },
+    ]);
+}]);
 
 export default sqlConsoleModule;

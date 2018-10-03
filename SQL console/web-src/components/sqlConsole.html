@@ -1,0 +1,21 @@
+<div layout="row">
+    <md-card flex="30">
+        <md-card-content>
+            <ma-ace-editor mode="sql" ng-model="$ctrl.query"></ma-ace-editor>
+            <div layout="row" layout-align="center center">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
+                    <span ma-tr="sql.tableList"></span>
+                </md-button>
+                <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
+                    <span ma-tr="sql.query"></span>
+                </md-button>
+                <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
+                    <span ma-tr="sql.update"></span>
+                </md-button>
+            </div>
+        </md-card-content>
+    </md-card>
+    <md-card flex>
+
+    </md-card>
+</div>
