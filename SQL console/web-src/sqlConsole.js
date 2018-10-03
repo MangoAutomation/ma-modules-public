@@ -1,12 +1,12 @@
 /**
- * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
+ * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Jared Wiltshire
  */
 
-define(['angular', 'require'], function(angular, require) {
-'use strict';
+import angular from 'angular';
 
-return angular.module('maSqlConsole', []);
+const sqlConsoleModule = angular.module('maSqlConsole', []);
+
 //.config(['MenuProvider', function(MenuProvider) {
 //    var menuItem = {
 //        url: '/sql-console',
@@ -21,4 +21,4 @@ return angular.module('maSqlConsole', []);
 //    MenuProvider.registerMenuItems([menuItem]);
 //}]);
 
-}); // require
+export default sqlConsoleModule;
