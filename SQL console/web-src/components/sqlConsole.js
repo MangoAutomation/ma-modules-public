@@ -24,13 +24,27 @@ class SqlConsoleController {
         this.maSqlConsole = maSqlConsole;
     }
     
-    $onInit() {}
+    $onInit() {
+        //this.getTables();
+        //this.query();
+    }
 
     getTables() {
-        this.maSqlConsole.getTables().then(response => {
-            this.tableHeaders = response.headers
-            this.tables = response.data;
-        });
+        this.maSqlConsole.getTables().then(
+            response => {
+                this.tableHeaders = response.headers
+                this.rows = response.data;
+            }
+        );
+    }
+
+    query() {
+        this.maSqlConsole.query('SELECT * FROM USERS;').then(
+            response => {
+                this.tableHeaders = response.headers
+                this.rows = response.data;
+            }
+        );
     }
 }
 

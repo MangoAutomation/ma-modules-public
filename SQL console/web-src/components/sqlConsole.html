@@ -9,12 +9,12 @@
 <div layout="row">
     <md-card flex="30">
         <md-card-content>
-            <ma-ace-editor mode="sql" ng-model="$ctrl.query"></ma-ace-editor>
+            <ma-ace-editor mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
             <div layout="row" layout-align="center center">
                 <md-button class="md-raised md-primary" ng-click="$ctrl.getTables($event)">
                     <span ma-tr="sql.tableList"></span>
                 </md-button>
-                <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.query($ctrl.queryString)">
                     <span ma-tr="sql.query"></span>
                 </md-button>
                 <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
@@ -25,10 +25,10 @@
     </md-card>
     <md-card flex>
         <md-card-content flex>
-            <div style="height: 100%" layout="row" layout-align="center center" ng-if="!$ctrl.tables">
+            <div style="height: 100%" layout="row" layout-align="center center" ng-if="!$ctrl.rows">
                 <h2 ma-tr="sql.makeQuery"></h2>
             </div>
-            <md-table-container ng-if="$ctrl.tables">
+            <md-table-container ng-if="$ctrl.rows">
                 <table md-table>
                     <thead md-head md-order="query.order">
                         <tr md-row>
@@ -36,8 +36,8 @@
                         </tr>
                     </thead>
                     <tbody md-body>
-                        <tr md-row ng-repeat="table in $ctrl.tables">
-                            <td md-cell ng-repeat="header in $ctrl.tableHeaders">{{ table[0] }}</td>
+                        <tr md-row ng-repeat="row in $ctrl.rows">
+                            <td md-cell ng-repeat="cell in row track by $index">{{ cell }}</td>
                         </tr>
                     </tbody>
                 </table>

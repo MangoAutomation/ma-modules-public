@@ -25,9 +25,24 @@ function sqlConsoleFactory(RestResource) {
             });
         }
 
+        query(queryString) {
+            return this.constructor.http({
+                url: `${this.constructor.baseUrl}`,
+                method: 'GET',
+                params: {query: queryString}
+            }).then(response => {
+                return response.data
+            });
+        }
+
         static getTables() {
             const sql = new this({});
             return sql.getTables();
+        }
+
+        static query(queryString) {
+            const sql = new this({});
+            return sql.query(queryString);
         }
     }
     
