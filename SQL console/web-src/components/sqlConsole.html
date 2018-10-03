@@ -1,9 +1,17 @@
 <div layout="row">
+    <md-card flex>
+        <md-card-content>
+            <div ma-tr="sql.warning"></div>
+        </md-card-content>
+    </md-card>
+</div>
+
+<div layout="row">
     <md-card flex="30">
         <md-card-content>
             <ma-ace-editor mode="sql" ng-model="$ctrl.query"></ma-ace-editor>
             <div layout="row" layout-align="center center">
-                <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.getTables($event)">
                     <span ma-tr="sql.tableList"></span>
                 </md-button>
                 <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
@@ -16,6 +24,24 @@
         </md-card-content>
     </md-card>
     <md-card flex>
-
+        <md-card-content flex>
+            <div style="height: 100%" layout="row" layout-align="center center" ng-if="!$ctrl.tables">
+                <h2 ma-tr="sql.makeQuery"></h2>
+            </div>
+            <md-table-container ng-if="$ctrl.tables">
+                <table md-table>
+                    <thead md-head md-order="query.order">
+                        <tr md-row>
+                            <th md-column ng-repeat="header in $ctrl.tableHeaders">{{header}}</th>
+                        </tr>
+                    </thead>
+                    <tbody md-body>
+                        <tr md-row ng-repeat="table in $ctrl.tables">
+                            <td md-cell ng-repeat="header in $ctrl.tableHeaders">{{ table[0] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </md-table-container>
+        </md-card-content>
     </md-card>
 </div>

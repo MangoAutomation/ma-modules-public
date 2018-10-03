@@ -12,22 +12,26 @@ import componentTemplate from './sqlConsole.html';
  * @description Displays a list of maintenance events
  */
 
-const $inject = Object.freeze(['$rootScope', '$scope']);
+const $inject = Object.freeze(['$rootScope', '$scope', '$http', 'maSqlConsole']);
 class SqlConsoleController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope) {
+    constructor($rootScope, $scope, $http, maSqlConsole) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
-
+        this.$http = $http;
+        this.maSqlConsole = maSqlConsole;
     }
     
-    $onInit() {
-        
-    }
+    $onInit() {}
 
-    
+    getTables() {
+        this.maSqlConsole.getTables().then(response => {
+            this.tableHeaders = response.headers
+            this.tables = response.data;
+        });
+    }
 }
 
 export default {

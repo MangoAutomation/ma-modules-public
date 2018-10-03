@@ -5,9 +5,11 @@
 
 import angular from 'angular';
 import maSqlConsole from './components/sqlConsole';
+import maSqlConsoleFactory from './services/sqlConsole';
 
 const sqlConsoleModule = angular.module('maSqlConsole', [])
 .component('maSqlConsole', maSqlConsole)
+.factory('maSqlConsole', maSqlConsoleFactory)
 .config(['maUiMenuProvider', function(maUiMenuProvider) {
     maUiMenuProvider.registerMenuItems([
         {
