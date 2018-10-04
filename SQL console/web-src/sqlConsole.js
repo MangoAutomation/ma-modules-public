@@ -19,8 +19,23 @@ const sqlConsoleModule = angular.module('maSqlConsole', [])
             menuTr: 'header.sql',
             menuIcon: 'storage',
             permission: 'superadmin',
-            weight: 2000
+            weight: 2000,
+            params: {
+                noPadding: false,
+                hideFooter: false,
+                helpPage: 'ui.help.sqlConsole'
+            },
         },
+        {
+            name: 'ui.help.sqlConsole',
+            url: '/sql-console/help',
+            resolve: {
+                viewTemplate: function() {
+                    return import('./help/helpPage.html');
+                }
+            },
+            menuTr: 'header.sql'
+        }
     ]);
 }]);
 
