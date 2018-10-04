@@ -1,3 +1,6 @@
+*Version 3.5.1*
+* New AngularJS UI
+
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
 * Adding list-tables, query and update REST endpoints for admin at /v2/sql-console
