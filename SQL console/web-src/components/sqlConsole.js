@@ -41,6 +41,12 @@ class SqlConsoleController {
             response => {
                 this.tableHeaders = response.headers
                 this.rows = response.data;
+            }, error => {
+                this.maDialogHelper.toastOptions({
+                    text: error.data.cause,
+                    classes: 'md-warn',
+                    hideDelay: 5000
+                });
             }
         );
     }
@@ -51,6 +57,12 @@ class SqlConsoleController {
                 this.maDialogHelper.toastOptions({
                     textTr: ['sql.rowsUpdated', response],
                     hideDelay: 3000
+                });
+            }, error => {
+                this.maDialogHelper.toastOptions({
+                    text: error.data.cause,
+                    classes: 'md-warn',
+                    hideDelay: 5000
                 });
             }
         );
