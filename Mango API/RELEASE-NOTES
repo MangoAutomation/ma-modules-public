@@ -1,3 +1,6 @@
+*Version 3.5.1*
+* Fix bug in failing to download json thread dump as file from /v1/threads
+
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
 * Adding ExportCode and ExportCodes models for use in REST api to provide code/id/i18n key and translated description

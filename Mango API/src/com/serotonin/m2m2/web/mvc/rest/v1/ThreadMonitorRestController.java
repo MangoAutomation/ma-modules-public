@@ -127,13 +127,11 @@ public class ThreadMonitorRestController extends MangoRestController {
 			}
 			
 			if(asFile){
-				
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss_'threads.json'");
 				String filename = sdf.format(new Date());
-				result.addHeader("Content-Disposition", "inline;filename=" + filename);
-				return result.createResponseEntity(models, MediaType.APPLICATION_OCTET_STREAM);
-			}else
-				return result.createResponseEntity(models);
+				result.addHeader("Content-Disposition", "attachment;filename=" + filename);
+			}
+			return result.createResponseEntity(models);
     	}
     	return result.createResponseEntity();
 	}
