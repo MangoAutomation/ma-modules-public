@@ -8,15 +8,18 @@
 <div layout="column">
     <md-card flex="100">
         <md-card-content>
-            <ma-ace-editor style="height: 100px" mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
+            <ma-ace-editor style="height: 100px" selection-changed="$ctrl.selection = $text" mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
             <div layout="column" layout-gt-xs="row" layout-align="center center">
                 <md-button class="md-raised" ng-click="$ctrl.getTables($event)">
                     <span ma-tr="sql.tableList"></span>
                 </md-button>
-                <md-button class="md-raised md-primary" ng-click="$ctrl.query($event)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.query($ctrl.queryString)">
                     <span ma-tr="sql.query"></span>
                 </md-button>
-                <md-button class="md-raised md-warn" ng-click="$ctrl.update($event)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.runSelectedQuery($ctrl.selection)">
+                    <span ma-tr="sql.runSelectedSql"></span>
+                </md-button>
+                <md-button class="md-raised md-warn" ng-click="$ctrl.update($ctrl.queryString)">
                     <span ma-tr="sql.update"></span>
                 </md-button>
             </div>

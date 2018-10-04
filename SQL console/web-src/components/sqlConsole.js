@@ -39,8 +39,8 @@ class SqlConsoleController {
         );
     }
 
-    query() {
-        this.maSqlConsole.query(this.queryString).then(
+    query(queryString) {
+        this.maSqlConsole.query(queryString).then(
             response => {
                 this.tableHeaders = response.headers
                 this.rows = response.data;
@@ -54,8 +54,8 @@ class SqlConsoleController {
         );
     }
 
-    update() {
-        this.maSqlConsole.update(this.queryString).then(
+    update(queryString) {
+        this.maSqlConsole.update(queryString).then(
             response => {
                 this.maDialogHelper.toastOptions({
                     textTr: ['sql.rowsUpdated', response],
@@ -69,6 +69,22 @@ class SqlConsoleController {
                 });
             }
         );
+    }
+
+    runSelectedQuery(queryString) {
+        if (this.selection.trim() === "") {
+            this.maDialogHelper.toastOptions({
+                textTr: 'sql.emptySelection',
+                classes: 'md-warn',
+                hideDelay: 3000
+            });
+        }
+
+        if (this.selection.includes("SELECT")) {
+            this.query(queryString);
+        } else {
+            this.update(queryString);
+        }
     }
 }
 
