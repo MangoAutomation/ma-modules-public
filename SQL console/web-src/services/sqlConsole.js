@@ -35,6 +35,19 @@ function sqlConsoleFactory(RestResource) {
             });
         }
 
+        update(queryString) {
+            return this.constructor.http({
+                url: `${this.constructor.baseUrl}`,
+                method: 'POST',
+                data: queryString,
+                headers: {
+                    'Content-Type': 'application/sql'
+                }
+            }).then(response => {
+                return response.data
+            });
+        }
+
         static getTables() {
             const sql = new this({});
             return sql.getTables();
@@ -43,6 +56,11 @@ function sqlConsoleFactory(RestResource) {
         static query(queryString) {
             const sql = new this({});
             return sql.query(queryString);
+        }
+
+        static update(queryString) {
+            const sql = new this({});
+            return sql.update(queryString);
         }
     }
     

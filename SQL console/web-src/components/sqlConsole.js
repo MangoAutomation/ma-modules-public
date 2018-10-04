@@ -12,22 +12,20 @@ import componentTemplate from './sqlConsole.html';
  * @description Displays a list of maintenance events
  */
 
-const $inject = Object.freeze(['$rootScope', '$scope', '$http', 'maSqlConsole']);
+const $inject = Object.freeze(['$rootScope', '$scope', '$http', 'maSqlConsole', 'maDialogHelper']);
 class SqlConsoleController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope, $http, maSqlConsole) {
+    constructor($rootScope, $scope, $http, maSqlConsole, maDialogHelper) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.$http = $http;
         this.maSqlConsole = maSqlConsole;
+        this.maDialogHelper = maDialogHelper;
     }
     
-    $onInit() {
-        //this.getTables();
-        //this.query();
-    }
+    $onInit() {}
 
     getTables() {
         this.maSqlConsole.getTables().then(
@@ -39,10 +37,21 @@ class SqlConsoleController {
     }
 
     query() {
-        this.maSqlConsole.query('SELECT * FROM USERS;').then(
+        this.maSqlConsole.query(this.queryString).then(
             response => {
                 this.tableHeaders = response.headers
                 this.rows = response.data;
+            }
+        );
+    }
+
+    update() {
+        this.maSqlConsole.update(this.queryString).then(
+            response => {
+                this.maDialogHelper.toastOptions({
+                    textTr: ['sql.rowsUpdated', response],
+                    hideDelay: 3000
+                });
             }
         );
     }
