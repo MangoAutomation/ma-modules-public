@@ -23,6 +23,9 @@ class SqlConsoleController {
         this.$http = $http;
         this.maSqlConsole = maSqlConsole;
         this.maDialogHelper = maDialogHelper;
+
+        this.query.limit = 5;
+        this.query.page = 1;
     }
     
     $onInit() {}

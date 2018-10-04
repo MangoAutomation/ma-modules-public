@@ -1,34 +1,29 @@
-<div layout="row">
-    <md-card flex>
-        <md-card-content layout-align="start center">
-            <md-icon ng-style="{color: '#FFEE58'}">warning</md-icon>
-            <span ma-tr="sql.warning"></span>
-        </md-card-content>
-    </md-card>
+<div layout="row" style="padding: 10px">
+    <div flex>
+        <md-icon class="md-warn">warning</md-icon>
+        <span ma-tr="sql.warning"></span>
+    </div>
 </div>
 
-<div layout="column" layout-gt-md="row">
-    <md-card flex="100" flex-gt-md="40">
+<div layout="column">
+    <md-card flex="100">
         <md-card-content>
-            <ma-ace-editor mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
+            <ma-ace-editor style="height: 100px" mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
             <div layout="column" layout-gt-xs="row" layout-align="center center">
-                <md-button class="md-raised md-primary" ng-click="$ctrl.getTables($event)">
+                <md-button class="md-raised" ng-click="$ctrl.getTables($event)">
                     <span ma-tr="sql.tableList"></span>
                 </md-button>
                 <md-button class="md-raised md-primary" ng-click="$ctrl.query($event)">
                     <span ma-tr="sql.query"></span>
                 </md-button>
-                <md-button class="md-raised md-primary" ng-click="$ctrl.update($event)">
+                <md-button class="md-raised md-warn" ng-click="$ctrl.update($event)">
                     <span ma-tr="sql.update"></span>
                 </md-button>
             </div>
         </md-card-content>
     </md-card>
-    <md-card flex="100" flex-gt-md="60">
+    <md-card flex="100" ng-if="$ctrl.rows">
         <md-card-content flex>
-            <div style="height: 100%" layout="row" layout-align="center center" ng-if="!$ctrl.rows">
-                <h2 ma-tr="sql.makeQuery"></h2>
-            </div>
             <md-table-container ng-if="$ctrl.rows">
                 <table md-table>
                     <thead md-head md-order="query.order">
@@ -37,12 +32,14 @@
                         </tr>
                     </thead>
                     <tbody md-body>
-                        <tr md-row ng-repeat="row in $ctrl.rows">
+                        <tr md-row ng-repeat="row in $ctrl.rows | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
                             <td md-cell ng-repeat="cell in row track by $index">{{ cell }}</td>
                         </tr>
                     </tbody>
                 </table>
             </md-table-container>
+
+            <md-table-pagination ng-if="$ctrl.rows" md-limit="$ctrl.query.limit" md-limit-options="[5, 10, 20]" md-page="$ctrl.query.page" md-total="{{$ctrl.rows.length}}" md-page-select></md-table-pagination>
         </md-card-content>
     </md-card>
 </div>
