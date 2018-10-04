@@ -12,6 +12,8 @@ create table pointLinks (
   writeAnnotation char(1) not null,
   disabled char(1) not null,
   logLevel int not null,  
+  logSize double not null,
+  logCount int not null,
   scriptDataSourcePermission nvarchar(255) not null,
   scriptDataPointSetPermission nvarchar(255) not null,
   scriptDataPointReadPermission nvarchar(255) not null,
