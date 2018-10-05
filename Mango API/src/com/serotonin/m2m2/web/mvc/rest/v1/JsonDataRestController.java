@@ -97,7 +97,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
             List<String> available = new ArrayList<String>();
             for(JsonDataVO vo : all){
                 //Check existing permissions
-                if(Permissions.hasPermission(user, vo.getReadPermission())){
+                if(Permissions.hasPermission(user, vo.getReadPermission()) || Permissions.hasPermission(user, vo.getEditPermission())){
                     available.add(vo.getXid());
                 }
             }
@@ -173,7 +173,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
                 result.addRestMessage(getDoesNotExistMessage());
             } else {
                 //Check existing permissions
-                if(!Permissions.hasPermission(user, vo.getReadPermission())){
+                if(!(Permissions.hasPermission(user, vo.getReadPermission()) || Permissions.hasPermission(user, vo.getEditPermission()))) {
                     result.addRestMessage(getUnauthorizedMessage());
                     return result.createResponseEntity();
                 }
