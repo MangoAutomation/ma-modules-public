@@ -231,7 +231,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
     }
 
     @ApiOperation(
-            value = "Update JSON Data",
+            value = "Append JSON Data to existing",
             notes = "{path} is the path to data with dots data.member.submember",
             response=JsonDataModel.class
             )
@@ -273,7 +273,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
 
 
     @ApiOperation(
-            value = "Create JSON Data",
+            value = "Create/replace JSON Data",
             response=JsonDataModel.class
             )
     @ApiResponses({
@@ -304,9 +304,6 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) throws RestValidationFailedException {
-
-        if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(JsonDataCreatePermissionDefinition.TYPE_NAME)))
-            throw new PermissionException(new TranslatableMessage("jsonData.createPermissionDenied", user.getUsername()), user);
 
         RestProcessResult<JsonDataModel> result = new RestProcessResult<JsonDataModel>(HttpStatus.CREATED);
         return modifyJsonData(MapOperation.REPLACE, result, xid, new String[] {}, readPermission, editPermission, name, publicData, data, builder, request);
@@ -503,6 +500,10 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
                 dataToReturn = mergeNode(existingData, pathParts, data);
             }
         } else {
+            if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(JsonDataCreatePermissionDefinition.TYPE_NAME))) {
+                throw new PermissionException(new TranslatableMessage("jsonData.createPermissionDenied", user.getUsername()), user);
+            }
+
             // can't append/merge to a non-existing object or replace data at a path of a non existing object
             if (operation == MapOperation.APPEND || pathParts.length > 0) {
                 result.addRestMessage(getDoesNotExistMessage());
