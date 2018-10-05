@@ -1,6 +1,7 @@
 *Version 3.5.1*
 * Fix bug in failing to download json thread dump as file from /v1/threads
 * Users that have edit permission for a JSON store item now have access to read
+* Fix permission check for creating new JSON store items
 
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
