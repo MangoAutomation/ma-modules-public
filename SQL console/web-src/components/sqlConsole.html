@@ -1,0 +1,48 @@
+<div layout="row" style="padding: 10px">
+    <div flex>
+        <md-icon class="md-warn">warning</md-icon>
+        <span ma-tr="sql.warning"></span>
+    </div>
+</div>
+
+<div layout="column">
+    <md-card flex="100">
+        <md-card-content>
+            <ma-ace-editor style="height: 100px" selection-changed="$ctrl.selection = $text" mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
+            <div layout="column" layout-gt-xs="row" layout-align="center center">
+                <md-button class="md-raised" ng-click="$ctrl.getTables($event)">
+                    <span ma-tr="sql.tableList"></span>
+                </md-button>
+                <md-button class="md-raised md-primary" ng-click="$ctrl.query($ctrl.queryString)">
+                    <span ma-tr="sql.query"></span>
+                </md-button>
+                <md-button class="md-raised md-primary" ng-click="$ctrl.runSelectedQuery($ctrl.selection)">
+                    <span ma-tr="sql.runSelectedSql"></span>
+                </md-button>
+                <md-button class="md-raised md-warn" ng-click="$ctrl.update($ctrl.queryString)">
+                    <span ma-tr="sql.update"></span>
+                </md-button>
+            </div>
+        </md-card-content>
+    </md-card>
+    <md-card flex="100" ng-if="$ctrl.rows">
+        <md-card-content flex>
+            <md-table-container ng-if="$ctrl.rows">
+                <table md-table>
+                    <thead md-head md-order="query.order">
+                        <tr md-row>
+                            <th md-column ng-repeat="header in $ctrl.tableHeaders">{{header}}</th>
+                        </tr>
+                    </thead>
+                    <tbody md-body>
+                        <tr md-row ng-repeat="row in $ctrl.rows | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
+                            <td md-cell ng-repeat="cell in row track by $index">{{ cell }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </md-table-container>
+
+            <md-table-pagination ng-if="$ctrl.rows" md-limit="$ctrl.query.limit" md-limit-options="[5, 10, 20]" md-page="$ctrl.query.page" md-total="{{$ctrl.rows.length}}" md-page-select></md-table-pagination>
+        </md-card-content>
+    </md-card>
+</div>
