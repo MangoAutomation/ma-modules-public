@@ -1,12 +1,12 @@
 {
   "private": true,
   "name": "@infinite-automation/maintenanceEvents",
-  "version": "3.5.0",
+  "version": "3.5.1-SNAPSHOT",
   "description": "Page for creating and editing maintenance schedules that raise events at appropriate times.",
   "main": "web/maintenaceEvents.js",
   "dependencies": {},
   "devDependencies": {
-    "@infinite-automation/mango-module-tools": "^1.0.0",
+    "@infinite-automation/mango-module-tools": "~1.1.0",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.1",
     "css-loader": "^0.28.10",
