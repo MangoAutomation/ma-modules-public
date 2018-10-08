@@ -43,7 +43,10 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 	private static final long serialVersionUID = 1L;
 
 	public static final String XID_PREFIX = "WL_";
-    public static final String DEFAULT_TYPE = "static";
+    public static final String STATIC_TYPE = "static"; //current types also include hierarchy, query, and tags
+    public static final String QUERY_TYPE = "query";
+    public static final String HIERARCHY_TYPE = "hierarchy";
+    public static final String TAGS_TYPE = "tags";
 
     private int userId;
     //TODO When we remove the legacy code reduce these objects to summaries only
@@ -66,7 +69,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     private String username;
     
     public WatchListVO() {
-        type = DEFAULT_TYPE;
+        type = STATIC_TYPE;
     }
 
     public boolean isOwner(User user) {

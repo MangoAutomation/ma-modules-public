@@ -1,5 +1,6 @@
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
+* /rest/v1/watch-lists/{xid}/data-points handles more watch list types, fails explicitly
 
 *Version 3.4.2*
 * Escape HTML in point, folder, and watchlist names

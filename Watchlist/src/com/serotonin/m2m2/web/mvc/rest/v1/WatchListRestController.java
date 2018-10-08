@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Function;
@@ -26,6 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
+import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
@@ -37,8 +39,11 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.hierarchy.PointFolder;
+import com.serotonin.m2m2.vo.hierarchy.PointHierarchy;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.watchlist.WatchListDao;
@@ -411,26 +416,81 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 
         @Override
         public StreamedArray getItems() {
-            return (JSONStreamedArray) (jgen) -> {
-                WatchListDao.getInstance().getPoints(watchlistId, new MappedRowCallback<DataPointVO>(){
-
-                    @Override
-                    public void row(DataPointVO dp, int index) {
-                        if(Permissions.hasDataPointReadPermission(user, dp)){
-                            DataPointDao.getInstance().loadPartialRelationalData(dp);
-
-                            Object model = mapToModel.apply(dp);
-
-                            try {
-                                jgen.writeObject(model);
-                                pointCount++;
-                            } catch (IOException e) {
-                                LOG.error(e.getMessage(), e);
+            WatchListVO wlvo = WatchListDao.getInstance().getWatchList(WatchListDao.getInstance().getXidById(watchlistId));
+            if(WatchListVO.STATIC_TYPE.equals(wlvo.getType())) {
+                return (JSONStreamedArray) (jgen) -> {
+                    WatchListDao.getInstance().getPoints(watchlistId, new MappedRowCallback<DataPointVO>(){
+    
+                        @Override
+                        public void row(DataPointVO dp, int index) {
+                            if(Permissions.hasDataPointReadPermission(user, dp)){
+                                DataPointDao.getInstance().loadPartialRelationalData(dp);
+    
+                                Object model = mapToModel.apply(dp);
+    
+                                try {
+                                    jgen.writeObject(model);
+                                    pointCount++;
+                                } catch (IOException e) {
+                                    LOG.error(e.getMessage(), e);
+                                }
                             }
                         }
+                    });
+                };
+            } else if(WatchListVO.QUERY_TYPE.equals(wlvo.getType())) {
+                if(wlvo.getParams().size() > 0)
+                    throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", "parameters in query not supported at endpoint yet"));
+                return (JSONStreamedArray) (jgen) -> {
+                    ASTNode node = RQLUtils.parseRQLtoAST(wlvo.getQuery());
+                    DataPointDao.getInstance().rqlQuery(node, new MappedRowCallback<DataPointVO>(){
+    
+                        @Override
+                        public void row(DataPointVO dp, int index) {
+                            if(Permissions.hasDataPointReadPermission(user, dp)){
+                                DataPointDao.getInstance().loadPartialRelationalData(dp);    
+                                Object model = mapToModel.apply(dp);
+    
+                                try {
+                                    jgen.writeObject(model);
+                                    pointCount++;
+                                } catch (IOException e) {
+                                    LOG.error(e.getMessage(), e);
+                                }
+                            }
+                        }
+                    });
+                };
+            } else if(WatchListVO.HIERARCHY_TYPE.equals(wlvo.getType())) {
+                PointHierarchy ph = DataPointDao.getInstance().getPointHierarchy(true);
+                List<PointFolder> folders = getFolders(ph, wlvo.getFolderIds());
+                List<DataPointVO> result = new ArrayList<>();
+                for(PointFolder pf : folders) {
+                    for(DataPointSummary dps : pf.getPoints()) {
+                        DataPointVO dp = DataPointDao.getInstance().get(dps.getId());
+                        if(Permissions.hasDataPointReadPermission(user, dp))
+                            result.add(dp);
                     }
-                });
-            };
+                }
+                
+                return (JSONStreamedArray)(jgen) -> {
+                    for(DataPointVO dp : result) {
+                        DataPointDao.getInstance().loadPartialRelationalData(dp);    
+                        Object model = mapToModel.apply(dp);
+
+                        try {
+                            jgen.writeObject(model);
+                            pointCount++;
+                        } catch (IOException e) {
+                            LOG.error(e.getMessage(), e);
+                        }
+                    }
+                };
+            } else if(WatchListVO.TAGS_TYPE.equals(wlvo.getType())) {
+                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", "parameters in query not supported at endpoint yet"));
+            } else {
+                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("common.default", "unknown watchlist type: " + wlvo.getType()));
+            }
         }
 
         @Override
@@ -438,5 +498,25 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
             return pointCount;
         }
 
+    }
+    
+    private List<PointFolder> getFolders(PointHierarchy ph, List<Integer> folderIds) {
+        List<PointFolder> result = new ArrayList<>();
+        getFoldersRecursive(ph.getRoot(), folderIds, result);
+        return result;
+    }
+    
+    private void getFoldersRecursive(PointFolder root, List<Integer> folderIds, List<PointFolder> result) {
+        if(folderIds.contains(root.getId())) {
+            addAllFoldersRecursive(root, result);
+        } else
+            for(PointFolder pf : root.getSubfolders())
+                getFoldersRecursive(pf, folderIds, result);
+    }
+    
+    private void addAllFoldersRecursive(PointFolder root, List<PointFolder> result) {
+        for(PointFolder pf : root.getSubfolders())
+            addAllFoldersRecursive(pf, result);
+        result.add(root);
     }
 }
