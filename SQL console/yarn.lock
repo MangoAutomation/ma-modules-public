@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@infinite-automation/mango-module-tools@^1.0.0":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-module-tools/-/mango-module-tools-1.0.5.tgz#acb10dcad3f462c5ba92cd8429bc59a8927f123c"
+"@infinite-automation/mango-module-tools@~1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-module-tools/-/mango-module-tools-1.1.0.tgz#2086a95bfccbf0afb607910e228d4a44ca7c45ac"
   dependencies:
     clean-webpack-plugin "^0.1.19"
     copy-webpack-plugin "^4.5.1"
