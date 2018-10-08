@@ -3,5 +3,5 @@
 *~
 /maven-target
 /node_modules/
-/web/
+/web/angular/
 /node/
