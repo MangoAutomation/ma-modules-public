@@ -29,11 +29,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
     public void initialize(boolean safe) {
         // Set up point links.
         PointLinkDao pointLinkDao = PointLinkDao.getInstance();
-        for (PointLinkVO vo : pointLinkDao.getPointLinks()) {
+        for (PointLinkVO vo : pointLinkDao.getAll()) {
             if (!vo.isDisabled()) {
                 if (safe) {
                     vo.setDisabled(true);
-                    pointLinkDao.savePointLink(vo);
+                    pointLinkDao.save(vo);
                 }
                 else
                     startPointLink(vo);
@@ -65,14 +65,14 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     public void deletePointLink(int pointLinkId) {
         stopPointLink(pointLinkId);
-        PointLinkDao.getInstance().deletePointLink(pointLinkId);
+        PointLinkDao.getInstance().delete(pointLinkId);
     }
 
     public void savePointLink(PointLinkVO vo) {
         // If the point link is running, stop it.
         stopPointLink(vo.getId());
 
-        PointLinkDao.getInstance().savePointLink(vo);
+        PointLinkDao.getInstance().save(vo);
 
         // If the point link is enabled, start it.
         if (!vo.isDisabled())

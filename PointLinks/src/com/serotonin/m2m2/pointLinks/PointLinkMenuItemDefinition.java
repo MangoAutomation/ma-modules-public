@@ -56,13 +56,4 @@ public class PointLinkMenuItemDefinition extends MenuItemDefinition{
 			HttpServletResponse response) {
 		return "web/link.png";
 	}
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.ModuleElementDefinition#postDatabase()
-	 */
-	@Override
-	public void postDatabase(boolean install, boolean upgrade) {
-		//Ensure the Count Monitor is registered so we can access 
-		// it when the Internal Metrics DS module starts
-		PointLinkDao.getInstance().countMonitor.getValue();
-	}
 }
