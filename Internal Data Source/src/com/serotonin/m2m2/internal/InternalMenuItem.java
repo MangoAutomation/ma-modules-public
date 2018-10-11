@@ -137,7 +137,7 @@ public class InternalMenuItem extends MenuItemDefinition {
     	monitors.put(EVENT_HANDLER_COUNT_POINT_XID, EventHandlerDao.getInstance().getCountMonitor());
 
     	//Mailing Lists Count
-    	monitors.put(MAILING_LIST_COUNT_POINT_XID, MailingListDao.getInstance().getMonitor());
+    	monitors.put(MAILING_LIST_COUNT_POINT_XID, MailingListDao.getInstance().getCountMonitor());
 
     	//Module Updates Available
     	monitors.put(AVAILABLE_UPDATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(UpgradeCheck.UPGRADES_AVAILABLE_MONITOR_ID));
