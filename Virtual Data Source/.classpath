@@ -16,7 +16,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="maven-target/test-classes" path="src-test">
+	<classpathentry including="**/*.java" kind="src" output="maven-target/test-classes" path="src-test">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
