@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.reports.web;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
@@ -59,7 +61,14 @@ public class ReportsDwr extends ModuleDwr {
 
         response.addData("points", getReadablePoints());
 
-        response.addData("mailingLists", MailingListDao.getInstance().getMailingLists());
+        //Filter on permissions
+        List<MailingList> lists = MailingListDao.getInstance().getAllFull();
+        Iterator<MailingList> it = lists.iterator();
+        while(it.hasNext())
+            if(!Permissions.hasAnyPermission(user, it.next().getReadPermissions()))
+                it.remove();
+        
+        response.addData("mailingLists", lists);
 
         if(Permissions.hasAdminPermission(user)) {
             response.addData("users", UserDao.getInstance().getUsers());
