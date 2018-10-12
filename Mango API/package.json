@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "name": "@infinite-automation/mangoApi",
+  "version": "3.5.2-SNAPSHOT",
+  "description": "REST API Expansion for Mango Automation",
+  "main": "web/angular/mangoApi.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@infinite-automation/mango-client": "^0.6.0",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "tmp": "^0.0.33"
+  },
+  "scripts": {
+  },
+  "author": "Jared Wiltshire <jared@infiniteautomation.com>",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infiniteautomation/ma-modules-proprietary.git"
+  },
+  "com_infiniteautomation": {
+    "moduleName": "mangoApi"
+  }
+}

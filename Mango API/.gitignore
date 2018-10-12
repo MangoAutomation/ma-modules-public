@@ -1,3 +1,4 @@
 /bin
 /maven-target
 /target
+/node_modules/
