@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 
@@ -13,6 +14,7 @@ import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
  * @author Terry Packer
  *
  */
+@JsonTypeName("ADDRESS")
 public class AddressEntryModel extends EmailRecipientModel {
 
     private String address;

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
@@ -17,6 +18,7 @@ import com.serotonin.m2m2.vo.mailingList.UserEntry;
  * @author Terry Packer
  *
  */
+@JsonTypeName("USER")
 public class UserEntryModel extends EmailRecipientModel {
 
     private String username;
