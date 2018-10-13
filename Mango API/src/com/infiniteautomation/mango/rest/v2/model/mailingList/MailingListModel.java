@@ -136,6 +136,8 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     public MailingList toVO() {
         MailingList vo = super.toVO();
         vo.setReceiveAlarmEmails(AlarmLevels.CODES.getId(receiveAlarmEmails));
+        if(vo.getEntries() == null)
+            vo.setEntries(new ArrayList<>());
         for(EmailRecipientModel entry : entries) {
             vo.getEntries().add(entry.fromModel());
         }

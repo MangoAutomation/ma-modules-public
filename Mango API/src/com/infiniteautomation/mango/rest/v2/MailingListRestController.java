@@ -22,11 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModel;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -47,9 +46,6 @@ public class MailingListRestController {
 
     @Autowired
     private MailingListService service;
-    //TODO Remove when we move doQuery
-    @Autowired
-    private MailingListDao dao;
     
     @ApiOperation(
             value = "Query Mailing Lists",
@@ -66,31 +62,6 @@ public class MailingListRestController {
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user, transform);
-    }
-    
-    /**
-     * 
-     * TODO Move to Service
-     * @param rql
-     * @param user
-     * @param transform2
-     * @return
-     */
-    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user,
-            Function<MailingList, Object> transformVO) {
-        //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminPermission()) {
-            return new StreamedVOQueryWithTotal<>(dao, rql, transformVO);
-        } else {
-            return new StreamedVOQueryWithTotal<>(dao, rql, 
-                    (item) -> {
-                        if(service.hasReadPermission(user, item))
-                            return true;
-                        else
-                            return false;
-                        },
-                    transformVO);
-        }
     }
 
     @ApiOperation(
@@ -149,6 +120,29 @@ public class MailingListRestController {
         return new ResponseEntity<>(new MailingListModel(vo), headers, HttpStatus.OK);
     }
     
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
+    public ResponseEntity<MailingListModel> partialUpdate(
+            @PathVariable String xid,
+
+            @ApiParam(value = "Updated maintenance event", required = true)
+            @RequestBody(required=true) MailingListModel model,
+
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+
+        MailingList existing = service.get(xid, user);
+        MailingListModel existingModel = new MailingListModel(existing);
+        existingModel.patch(model);
+        MailingList vo = existingModel.toVO();
+        vo = service.update(existing, vo, user);
+
+        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+
+        return new ResponseEntity<>(new MailingListModel(vo), headers, HttpStatus.OK);
+    }
+    
     @ApiOperation(
             value = "Delete a Mailing List",
             notes = "",
@@ -178,6 +172,24 @@ public class MailingListRestController {
             UriComponentsBuilder builder) {
         
         service.ensureValid(script.toVO(), user);
+    }
+    
+    /**
+     * 
+     * TODO Move to Service
+     * @param rql
+     * @param user
+     * @param transform2
+     * @return
+     */
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user,
+            Function<MailingList, Object> transformVO) {
+        //If we are admin or have overall data source permission we can view all
+        if (user.hasAdminPermission()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, transformVO);
+        } else {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, transformVO);
+        }
     }
     
     final Function<MailingList, Object> transform = item -> {

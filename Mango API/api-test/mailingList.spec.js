@@ -28,7 +28,7 @@ describe('Mailing lists', function() {
           recipientType: 'USER',
           username: 'admin'
         }],
-        recieveAlarmEmails: 'URGENT',
+        receiveAlarmEmails: 'URGENT',
         readPermissions: ['user'],
         setPermissions: ['superadmin'],
         inactiveSchedule: [
@@ -47,9 +47,11 @@ describe('Mailing lists', function() {
           method: 'POST',
           data: global.addressMailingList
       }).then(response => {
+          console.log(response.data);
+          
           assert.equal(response.data.xid, global.addressMailingList.xid);
           assert.equal(response.data.name, global.addressMailingList.name);
-          assert.equal(response.data.recieveAlarmEmails, global.addressMailingList.recieveAlarmEmails);
+          assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
           global.addressMailingList = response.data;
       });
     });
