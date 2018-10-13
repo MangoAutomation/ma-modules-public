@@ -15,11 +15,16 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJacksonInputMessage;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 
@@ -64,7 +69,20 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
     }
 
     private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) throws IOException{
+        
         try {
+            ObjectReader reader = null;
+            if (inputMessage instanceof MappingJacksonInputMessage) {
+                Class<?> deserializationView = ((MappingJacksonInputMessage) inputMessage).getDeserializationView();
+                if (deserializationView != null) {
+                    reader = this.objectMapper.readerWithView(deserializationView).forType(javaType);
+                }else {
+                    reader = this.objectMapper.readerFor(javaType);
+                }
+            }else {
+                reader = this.objectMapper.readerFor(javaType);
+            }
+            
             Constructor<?> c = javaType.getRawClass().getConstructor();
             Object o = c.newInstance();
             ProxyFactory f = new ProxyFactory(o);
@@ -84,12 +102,20 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
                 }
 
             });
+            //Create a proxy, track the setter calls so we can handle Partial Updates gracefully
             AbstractVoModel<?> model = (AbstractVoModel<?>)f.getProxy();
-            //TODO this does not support views (see superclass)
-            model = this.objectMapper.readerForUpdating(model).readValue(inputMessage.getBody());
-            AbstractVoModel<?> unproxy = (AbstractVoModel<?>)((Advised)model).getTargetSource().getTarget();
+            reader = reader.withValueToUpdate(model);
+            model = reader.readValue(inputMessage.getBody());
+            AbstractVoModel<?> unproxy =
+                    (AbstractVoModel<?>) ((Advised) model).getTargetSource().getTarget();
             unproxy.setSettersCalled(settersCalled);
             return unproxy;
+        }
+        catch (InvalidDefinitionException ex) {
+            throw new HttpMessageConversionException("Type definition error: " + ex.getType(), ex);
+        }
+        catch (JsonProcessingException ex) {
+            throw new HttpMessageNotReadableException("JSON parse error: " + ex.getOriginalMessage(), ex);
         } catch (Exception e) {
             throw new ServerErrorException(e);
         }
