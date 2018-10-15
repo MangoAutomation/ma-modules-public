@@ -27,7 +27,7 @@
     </md-card>
     <md-card flex="100" ng-if="$ctrl.rows">
         <md-card-content flex>
-            <md-table-container ng-if="$ctrl.rows">
+            <md-table-container>
                 <table md-table>
                     <thead md-head md-order="query.order">
                         <tr md-row>
@@ -35,14 +35,14 @@
                         </tr>
                     </thead>
                     <tbody md-body>
-                        <tr md-row ng-repeat="row in $ctrl.rows | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
+                        <tr md-row ng-repeat="row in $ctrl.rows | limitTo: $ctrl.queryOpts.limit: ($ctrl.queryOpts.page - 1) * $ctrl.queryOpts.limit">
                             <td md-cell ng-repeat="cell in row track by $index">{{ cell }}</td>
                         </tr>
                     </tbody>
                 </table>
             </md-table-container>
 
-            <md-table-pagination ng-if="$ctrl.rows" md-limit="$ctrl.query.limit" md-limit-options="[5, 10, 20]" md-page="$ctrl.query.page" md-total="{{$ctrl.rows.length}}" md-page-select></md-table-pagination>
+            <md-table-pagination ng-if="$ctrl.rows" md-limit="$ctrl.queryOpts.limit" md-limit-options="[10, 20, 50, 100]" md-page="$ctrl.queryOpts.page" md-total="{{$ctrl.rows.length}}" md-page-select></md-table-pagination>
         </md-card-content>
     </md-card>
 </div>

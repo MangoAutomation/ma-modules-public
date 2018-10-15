@@ -4,6 +4,7 @@
  */
 
 import componentTemplate from './sqlConsole.html';
+import './sqlConsole.css';
 
 /**
  * @ngdoc directive
@@ -24,8 +25,10 @@ class SqlConsoleController {
         this.maSqlConsole = maSqlConsole;
         this.maDialogHelper = maDialogHelper;
 
-        this.query.limit = 5;
-        this.query.page = 1;
+        this.queryOpts = {
+            limit: 10,
+            page: 1
+        };
     }
     
     $onInit() {}
