@@ -148,6 +148,12 @@ public class MaintenanceEventsRestController {
         return new ResponseEntity<>(activated, headers, HttpStatus.OK);
     }
     
+    @ApiOperation(value = "Get the current active state of a maintenance event", notes="must have toggle permission, returns new boolean state of event")
+    @RequestMapping(method = RequestMethod.GET, value = "/active/{xid}")
+    public ResponseEntity<Boolean> getState(@PathVariable String xid, @AuthenticationPrincipal User user) {
+        return new ResponseEntity<>(service.isEventActive(xid, user), HttpStatus.OK);
+    }
+    
     @ApiOperation(value = "Set the state of a maintenance event, only change state if necessary ignore if no change and just return current state", notes="must have toggle permission, returns new boolean state of event")
     @RequestMapping(method = RequestMethod.PUT, value = "/active/{xid}")
     public ResponseEntity<Boolean> setState(

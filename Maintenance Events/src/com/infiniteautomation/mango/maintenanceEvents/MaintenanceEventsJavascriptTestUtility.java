@@ -26,16 +26,14 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public boolean toggle(String xid)
             throws NotFoundException, PermissionException, TranslatableIllegalStateException {
-        MaintenanceEventVO existing = MaintenanceEventDao.getInstance().getByXid(xid);
-        if(existing == null)
-            throw new NotFoundException();
-        service.ensureTogglePermission(existing, permissions);
-        MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(existing.getId());
-        if (rt == null)
-            throw new TranslatableIllegalStateException(new TranslatableMessage("maintenanceEvents.toggle.disabled"));
-        else {
-            return !rt.isEventActive();
-        }
+        MaintenanceEventRT rt = service.getEventRT(xid, permissions);
+        return !rt.isEventActive();
+    }
+    
+    @Override
+    public boolean setState(String xid, boolean state) {
+        service.getEventRT(xid, permissions); //check that it's enabled, we have toggle permissions
+        return state;
     }
     
     @Override

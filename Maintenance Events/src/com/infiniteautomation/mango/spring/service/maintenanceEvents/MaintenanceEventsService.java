@@ -111,23 +111,28 @@ public class MaintenanceEventsService {
      * Toggle a running maintenance event
      * @param xid
      * @param user
-     * @return
+     * @return - state of event after toggle
      * @throws NotFoundException - if DNE
      * @throws PermissionException - if no toggle permission
      * @throws TranslatableIllegalStateException - if disabled
      */
     public boolean toggle(String xid, PermissionHolder user) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
-        MaintenanceEventVO existing = dao.getByXid(xid);
-        if(existing == null)
-            throw new NotFoundException();
-        ensureTogglePermission(existing, user);
-        MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(existing.getId());
-        boolean activated = false;
-        if (rt == null)
-            throw new TranslatableIllegalStateException(new TranslatableMessage("maintenanceEvents.toggle.disabled"));
-        else
-            activated = rt.toggle();
-        return activated;
+        MaintenanceEventRT rt = getEventRT(xid, user);
+        return rt.toggle();
+    }
+    
+    /**
+     * Check if a maintenance event is active
+     * @param xid
+     * @param user
+     * @return - state of event
+     * @throws NotFoundException - if DNE
+     * @throws PermissionException - if no toggle permission
+     * @throws TranslatableIllegalStateException - if disabled
+     */
+    public boolean isEventActive(String xid, PermissionHolder user) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
+        MaintenanceEventRT rt = getEventRT(xid, user);
+        return rt.isEventActive();
     }
     
     /**
@@ -136,28 +141,34 @@ public class MaintenanceEventsService {
      * @param user
      * @param active
      * @return - state of event, should match active unless event is disabled
+     * @throws NotFoundException - if DNE
+     * @throws PermissionException - if no toggle permission
+     * @throws TranslatableIllegalStateException - if disabled
      */
-    public boolean setState(String xid, PermissionHolder user, boolean active) {
+    public boolean setState(String xid, PermissionHolder user, boolean active) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
+        MaintenanceEventRT rt = getEventRT(xid, user);
+        if(active) {
+            //Ensure active
+            if(!rt.isEventActive())
+                rt.toggle();
+            return true;
+        }else {
+            if(rt.isEventActive())
+                rt.toggle();
+            return false;
+        }
+    }
+    
+    public MaintenanceEventRT getEventRT(String xid, PermissionHolder user) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
         MaintenanceEventVO existing = dao.getByXid(xid);
         if(existing == null)
             throw new NotFoundException();
         ensureTogglePermission(existing, user);
         MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(existing.getId());
+        boolean activated = false;
         if (rt == null)
             throw new TranslatableIllegalStateException(new TranslatableMessage("maintenanceEvents.toggle.disabled"));
-        else {
-            if(active) {
-                //Ensure active
-                if(!rt.isEventActive())
-                    rt.toggle();
-                return true;
-            }else {
-                if(rt.isEventActive())
-                    rt.toggle();
-                return false;
-            }
-        }
-        
+        return rt;
     }
     
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {

@@ -30,6 +30,14 @@ public class MaintenanceEventsJavascriptUtility extends ScriptUtility {
         return service.toggle(xid, permissions);
     }
     
+    public boolean isEventActive(String xid) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
+        return service.isEventActive(xid, permissions);
+    }
+    
+    public boolean setState(String xid, boolean active) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
+        return service.setState(xid, permissions, active);
+    }
+    
     public MaintenanceEventVO insert(MaintenanceEventVO vo) throws NotFoundException, PermissionException, ValidationException {
         return this.service.insert(vo, permissions);
     }
