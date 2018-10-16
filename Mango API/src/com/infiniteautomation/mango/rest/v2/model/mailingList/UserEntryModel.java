@@ -14,10 +14,13 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.UserEntry;
 
+import io.swagger.annotations.ApiModel;
+
 /**
  * @author Terry Packer
  *
  */
+@ApiModel(value="USER", parent=EmailRecipientModel.class)
 @JsonTypeName("USER")
 public class UserEntryModel extends EmailRecipientModel {
 

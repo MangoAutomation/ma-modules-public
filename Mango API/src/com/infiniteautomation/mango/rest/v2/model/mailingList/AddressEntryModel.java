@@ -10,10 +10,13 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 
+import io.swagger.annotations.ApiModel;
+
 /**
  * @author Terry Packer
  *
  */
+@ApiModel(value="ADDRESS", parent=EmailRecipientModel.class)
 @JsonTypeName("ADDRESS")
 public class AddressEntryModel extends EmailRecipientModel {
 

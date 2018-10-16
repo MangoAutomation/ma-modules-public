@@ -30,15 +30,15 @@ describe('Mailing lists', function() {
         }],
         receiveAlarmEmails: 'URGENT',
         readPermissions: ['user'],
-        setPermissions: ['superadmin'],
+        editPermissions: ['superadmin'],
         inactiveSchedule: [
-          ['08:00','10:00'],
+          ['08:00','10:00','13:00'],
+          ['09:00','12:00'],
           [],
           [],
+          ['07:00', '14:00', '15:00'],
           [],
-          [],
-          [],
-          []
+          ['08:00', '17:00']
         ]
       };
 
@@ -47,15 +47,35 @@ describe('Mailing lists', function() {
           method: 'POST',
           data: global.addressMailingList
       }).then(response => {
+          global.addressMailingList.id = response.data.id;
           console.log(response.data);
-          
           assert.equal(response.data.xid, global.addressMailingList.xid);
           assert.equal(response.data.name, global.addressMailingList.name);
           assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
+          
+          assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
+          for(var i=0; i<response.data.readPermissions.length; i++)
+              assert.include(global.addressMailingList.readPermissions, response.data.readPermissions[i]);
+          
+          assert.lengthOf(response.data.editPermissions, global.addressMailingList.editPermissions.length);
+          for(var i=0; i<response.data.editPermissions.length; i++)
+              assert.include(global.addressMailingList.editPermissions, response.data.editPermissions[i]);
+          
+          assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length)
+          for(var i=0; i<response.data.inactiveSchedule.length; i++){
+              var responseSched = response.data.inactiveSchedule[i];
+              var globalSched = global.addressMailingList.inactiveSchedule[i];
+              assert.lengthOf(responseSched, globalSched.length);
+              for(var j=0; j<responseSched.length; j++)
+                  assert.equal(responseSched[j], globalSched[j]);
+          }
+          
           global.addressMailingList = response.data;
       });
     });
 
+    //TODO Update valid
+    //TODO Update invalid
 
     it('Deletes a mailing list of type address', () => {
         return client.restRequest({

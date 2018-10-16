@@ -13,7 +13,9 @@ import com.infiniteautomation.mango.scheduling.util.DailySchedule;
 import com.infiniteautomation.mango.scheduling.util.ScheduleUtils;
 import com.infiniteautomation.mango.scheduling.util.TimeValue;
 import com.infiniteautomation.mango.scheduling.util.WeeklySchedule;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
@@ -144,18 +146,24 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         vo.setReceiveAlarmEmails(AlarmLevels.CODES.getId(receiveAlarmEmails));
         vo.setReadPermissions(readPermissions);
         vo.setEditPermissions(editPermissions);
+        //Validate the schedule here as we can only validate offsets in the service
+        ProcessResult result = new ProcessResult();
+        inactiveSchedule.validate(result);
+        if(!result.isValid())
+            throw new ValidationException(result);
         vo.setInactiveIntervals(createInactiveSchedule(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());
-        for(EmailRecipientModel entry : entries) {
-            vo.getEntries().add(entry.fromModel());
-        }
+        if(entries != null)
+            for(EmailRecipientModel entry : entries) {
+                vo.getEntries().add(entry.fromModel());
+            }
         
         return vo;
     }
     
     /**
-     * @param inactiveSchedule2
+     * @param inactiveSchedule
      * @return
      */
     private Set<Integer> createInactiveSchedule(WeeklySchedule inactiveSchedule) {
@@ -172,19 +180,31 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                 int day = 0;
                 Integer lastInterval = null;
                 boolean inactive = false;
+                boolean lastDailyChange = false;
                 for(DailySchedule schedule : copy) {
-                    for(String change : schedule.getChanges()) {
-                        TimeValue time = ScheduleUtils.parseTimeValue(change);
+                    if(day == 1)
+                        System.out.print("Stuff");
+                    lastDailyChange = false;
+                    for(int i=0; i<schedule.getChanges().size(); i++) {
+                        //Last change of day will require a fill
+                        if(i == schedule.getChanges().size() - 1)
+                            lastDailyChange = true;
+                        TimeValue time = ScheduleUtils.parseTimeValue(schedule.getChanges().get(i));
                         //Compute the interval
                         int interval = (day * 96) + (time.getHour() * 4) + (time.getMinute() / 15);
-                        if(lastInterval == null || interval - lastInterval == 1) {
+                        if(lastDailyChange && !inactive) {
+                            //Fill to end of day
+                            int endOfDayInterval = (day * 96) + 96;
+                            for(int j=interval; j<endOfDayInterval; j++)
+                                intervals.add(j);
+                        }else if(lastInterval == null || interval - lastInterval == 1) {
                             intervals.add(interval);
                             inactive = true;
                         }else if(interval - lastInterval > 1) {
                             if(inactive) {
                                 //Fill offsets
-                                for(int i=lastInterval + 1; i<interval; i++) {
-                                    intervals.add(i);
+                                for(int j=lastInterval + 1; j<interval; j++) {
+                                    intervals.add(j);
                                 }
                                 inactive = false;
                             }else {
@@ -225,22 +245,54 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                 schedule.addDay(new DailySchedule());
             
             Integer lastInterval = null;
+            Integer currentDay = null;
+            boolean newDay = false;
+            boolean inactive = false;
             for(Integer interval : inactiveIntervals) {
                 int day = interval/96;
+                if(currentDay == null || currentDay != day) {
+                    currentDay = day;
+                    newDay = true;
+                }else{
+                   newDay = false;
+                }
+                if(day == 1)
+                    System.out.println("Test");
+
                 int dailyOffset = interval - (day * 96);
-                int startHr = (dailyOffset * 15)/60;
+                int startHr = (dailyOffset * 15) / 60;
                 int startMin = (dailyOffset * 15) % 60;
                 
-                if(lastInterval == null)
+                if(newDay) {
+                    //Always insert the first offset on a new day
                     schedule.getDailySchedules().get(day).addChange(String.format("%02d:%02d", startHr, + startMin));
-                else if(interval-lastInterval > 1) {
-                    //Close last and add next
-                    int lastDay = (lastInterval + 1)/96;
-                    int lastDailyOffset = (lastInterval + 1) - (lastDay * 96);
-                    int lastStartHr = (lastDailyOffset * 15)/60;
-                    int lastStartMin = (lastDailyOffset * 15) % 60;
-                    schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
+                    if(inactive && lastInterval != null) {
+                        //Close the last inserted interval 
+                        int lastDay = lastInterval/96;
+                        int lastDailyOffset = (lastInterval + 1) - (lastDay * 96);
+                        int lastStartHr = (lastDailyOffset * 15)/60;
+                        int lastStartMin = (lastDailyOffset * 15) % 60;
+                        //Don't insert offsets at midnight, the schedule resets automatically without the change
+                        if(lastStartHr != 24)
+                            schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
+                    }
+                    inactive = true;
+                    
+                }else if(interval - lastInterval > 1) {
+                    //A gap in intervals means there was an active state
+                    
+                    //Close the period only if within the same day as schedules reset at midnight
+                    int lastDay = lastInterval/96;
+                    if(inactive && lastDay == currentDay) {
+                        //Close last and add next
+                        int lastDailyOffset = (lastInterval + 1) - (lastDay * 96);
+                        int lastStartHr = (lastDailyOffset * 15)/60;
+                        int lastStartMin = (lastDailyOffset * 15) % 60;
+                        schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
+                    }
+                    //Always insert our change to inactive
                     schedule.getDailySchedules().get(day).addChange(String.format("%02d:%02d", startHr, startMin));
+                    inactive = true;
                 }
                 lastInterval = interval;
             }

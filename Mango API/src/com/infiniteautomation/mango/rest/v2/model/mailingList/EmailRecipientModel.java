@@ -7,10 +7,13 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 
+import io.swagger.annotations.ApiModel;
+
 /**
  * @author Terry Packer
  *
  */
+@ApiModel(subTypes= {UserEntryModel.class, AddressEntryModel.class}, discriminator="recipientType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="recipientType")
 @JsonSubTypes({
     //TODO Mailing list type?

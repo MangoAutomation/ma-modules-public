@@ -83,7 +83,7 @@ public class LoggingRestController extends MangoRestController{
 					"by-filename/ma.log/?level=gt=DEBUG\n" + 
 					"by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" + 
 					"by-filename/ma.log/?methodName=setPointValue\n" + 
-					"NOTE: Querying non ma.log files is not supported.")
+					"NOTE: Querying non ma.log files is not supported, nor is ordering")
 	@RequestMapping(method = RequestMethod.GET, value="/by-filename/{filename}")
     public ResponseEntity<QueryArrayStream<?>> query(
     		@PathVariable String filename, 
