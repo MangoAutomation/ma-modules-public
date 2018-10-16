@@ -534,7 +534,7 @@
 
             <md-input-container flex="100" flex-sm="20" flex-gt-sm="20">
                 <label ma-tr="maintenanceEvents.timeoutPeriods"></label>
-                <input name="timeoutPeriods" type="number" min="1" ng-model="$ctrl.selectedEvent.timeoutPeriods" required>
+                <input name="timeoutPeriods" type="number" min="0" ng-model="$ctrl.selectedEvent.timeoutPeriods" required>
                 <div ng-messages="$ctrl.form.timeoutPeriods.$error">
                    <div ng-message="required" ma-tr="ui.app.required"></div>
                 </div>
