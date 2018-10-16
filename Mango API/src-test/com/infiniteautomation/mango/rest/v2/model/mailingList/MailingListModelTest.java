@@ -167,11 +167,13 @@ public class MailingListModelTest {
      */
     @Test
     public void testAllIntervals() {
-        for(int length=2; length<672; length++) {
+        for(int length=0; length<672; length++) {
             for(int startPos=0; startPos<672; startPos++) {
                 TreeSet<Integer> inactive = new TreeSet<>();
-                for(int k=0; k<length; k++)
-                    inactive.add(startPos + k);
+                for(int k=0; k<length; k++) {
+                    int actualLength = 671 - startPos;
+                    inactive.add(startPos + actualLength);
+                }
                 MailingList list = new MailingList();
                 list.setInactiveIntervals(inactive);
                 MailingListModel model = new MailingListModel(list);
