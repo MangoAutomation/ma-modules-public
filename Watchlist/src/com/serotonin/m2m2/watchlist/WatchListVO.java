@@ -194,17 +194,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 	}
 
 	public void validate(ProcessResult response) {
-        if (StringUtils.isBlank(name))
-            response.addMessage("name", new TranslatableMessage("validate.required"));
-        else if (StringValidation.isLengthGreaterThan(name, 50))
-            response.addMessage("name", new TranslatableMessage("validate.notLongerThan", 50));
-
-        if (!StringUtils.isBlank(xid)) {
-            if (StringValidation.isLengthGreaterThan(xid, 100))
-                response.addMessage("xid", new TranslatableMessage("validate.notLongerThan", 100));
-            else if (!WatchListDao.getInstance().isXidUnique(xid, id))
-                response.addMessage("xid", new TranslatableMessage("validate.xidUsed"));
-        }
+        super.validate(response);
 
         //Validate the points
         UserDao dao = UserDao.getInstance();

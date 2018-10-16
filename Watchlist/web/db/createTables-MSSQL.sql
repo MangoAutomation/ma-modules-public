@@ -4,7 +4,7 @@
 --
 create table watchLists (
   id int not null identity,
-  xid nvarchar(100) not null,
+  xid nvarchar(255) not null,
   userId int not null,
   name nvarchar(50),
   readPermission nvarchar(255),
