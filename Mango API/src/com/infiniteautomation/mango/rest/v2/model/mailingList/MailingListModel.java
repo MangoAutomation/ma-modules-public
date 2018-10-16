@@ -291,6 +291,19 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                 }
                 lastInterval = interval;
             }
+            
+            //Close the period if we are in the same day
+            if(lastInterval != null) {
+                int lastDay = lastInterval/96;
+                if(inactive && lastDay == currentDay) {
+                    //Close last and add next
+                    int lastDailyOffset = (lastInterval) - (lastDay * 96);
+                    int lastStartHr = (lastDailyOffset * 15)/60;
+                    int lastStartMin = (lastDailyOffset * 15) % 60;
+                    schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
+                }
+            }
+            
             //Sunday is last in the list, place it first
             DailySchedule sunday = schedule.getDailySchedules().remove(6);
             schedule.getDailySchedules().add(0, sunday);
