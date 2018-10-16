@@ -26,28 +26,30 @@ public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, SERVICE extend
     private final ASTNode conditions;
     private final Function<T, ?> toModel;
     private final Predicate<T> filter;
+    private final boolean loadRelational;
     
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql) {
-        this(service, rql, item -> true, Function.identity());
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, boolean loadRelational) {
+        this(service, rql, item -> true, Function.identity(), loadRelational);
     }
     
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder) {
-        this(service, rql, item -> service.hasReadPermission(holder, item), Function.identity());
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, boolean loadRelational) {
+        this(service, rql, item -> service.hasReadPermission(holder, item), Function.identity(), loadRelational);
     }
 
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel) {
-        this(service, rql, item -> true, toModel);
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel, boolean loadRelational) {
+        this(service, rql, item -> true, toModel, loadRelational);
     }
     
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel) {
-        this(service, rql, item -> service.hasReadPermission(holder, item), toModel);
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel, boolean loadRelational) {
+        this(service, rql, item -> service.hasReadPermission(holder, item), toModel, loadRelational);
     }
     
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel) {
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
         this.service = service;
         this.conditions = rql;
         this.toModel = toModel;
         this.filter = filter;
+        this.loadRelational = loadRelational;
     }
     
     @Override
@@ -63,15 +65,26 @@ public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, SERVICE extend
     private class StreamedVOArray implements JSONStreamedArray {
         @Override
         public void writeArrayValues(JsonGenerator jgen) throws IOException {
-            service.customizedQuery(conditions, (T item, int index) -> {
-                if (filter.test(item)) {
-                    try {
-                        jgen.writeObject(toModel.apply(item));
-                    } catch (IOException e) {
-                        throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+            if(loadRelational)
+                service.customizedQueryFull(conditions, (T item, int index) -> {
+                    if (filter.test(item)) {
+                        try {
+                            jgen.writeObject(toModel.apply(item));
+                        } catch (IOException e) {
+                            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+                        }
                     }
-                }
-            });
+                });
+            else
+                service.customizedQuery(conditions, (T item, int index) -> {
+                    if (filter.test(item)) {
+                        try {
+                            jgen.writeObject(toModel.apply(item));
+                        } catch (IOException e) {
+                            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+                        }
+                    }
+                });
         }
     }
 }

@@ -182,8 +182,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                 boolean inactive = false;
                 boolean lastDailyChange = false;
                 for(DailySchedule schedule : copy) {
-                    if(day == 1)
-                        System.out.print("Stuff");
                     lastDailyChange = false;
                     for(int i=0; i<schedule.getChanges().size(); i++) {
                         //Last change of day will require a fill
@@ -216,7 +214,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                         }
                         lastInterval = interval;
                     }
-                    //TODO Should we reset each day?
                     lastInterval = null;
                     inactive = false;
                     day++;
@@ -256,8 +253,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                 }else{
                    newDay = false;
                 }
-                if(day == 1)
-                    System.out.println("Test");
 
                 int dailyOffset = interval - (day * 96);
                 int startHr = (dailyOffset * 15) / 60;

@@ -77,7 +77,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(new MailingListModel(service.get(xid, user)));
+        return ResponseEntity.ok(new MailingListModel(service.getFull(xid, user)));
     }
     
     @ApiOperation(
@@ -92,7 +92,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MailingList vo = service.insert(model.toVO(), user);
+        MailingList vo = service.insertFull(model.toVO(), user);
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -113,7 +113,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MailingList vo = service.update(xid, model.toVO(), user);
+        MailingList vo = service.updateFull(xid, model.toVO(), user);
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -130,11 +130,11 @@ public class MailingListRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        MailingList existing = service.get(xid, user);
+        MailingList existing = service.getFull(xid, user);
         MailingListModel existingModel = new MailingListModel(existing);
         existingModel.patch(model);
         MailingList vo = existingModel.toVO();
-        vo = service.update(existing, vo, user);
+        vo = service.updateFull(existing, vo, user);
 
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -186,9 +186,9 @@ public class MailingListRestController {
             Function<MailingList, Object> transformVO) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, transformVO);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, transformVO, true);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, transformVO);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, transformVO, true);
         }
     }
     
