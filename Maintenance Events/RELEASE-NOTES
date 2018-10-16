@@ -3,6 +3,7 @@
 * Add isEventActive(xid) to maintenanceEventsUtility
 * Fix script utility setState actually sets state during validate
 * Fix new UI timeout periods wrong minimum of 1, as 0 means manual disable required
+* Change script variable name to MaintenanceEventsUtility from maintenanceEventsUtility
 
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
