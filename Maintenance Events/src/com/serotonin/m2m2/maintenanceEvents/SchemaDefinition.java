@@ -26,6 +26,8 @@ public class SchemaDefinition extends DatabaseSchemaDefinition {
     @Override
     public void addConversionTableNames(List<String> tableNames) {
         tableNames.add(TABLE_NAME);
+        tableNames.add("maintenanceEventDataPoints");
+        tableNames.add("maintenanceEventDataSources");
     }
 
     @Override
