@@ -5,11 +5,14 @@
 
 import angular from 'angular';
 import reportsSettings from './components/reportsSettings/reportsSettings';
-import reportEventHandlerEditorTemplate from './reportEventHandler.html';
+import reportEventHandlerEditor from './components/reportEventHandlerEditor/reportEventHandlerEditor';
+import reportSelect from './components/reportSelect/reportSelect';
 import reportService from './services/reportService';
 
 const reportsModule = angular.module('maReports', ['maUiApp'])
 .component('maReportsSettings', reportsSettings)
+.component('maReportSelect', reportSelect)
+.component('maReportEventHandlerEditor', reportEventHandlerEditor)
 .factory('maReport', reportService)
 .config(['maSystemSettingsProvider', 'maUiMenuProvider', '$injector', function(SystemSettingsProvider, maUiMenuProvider, $injector) {
     maUiMenuProvider.registerMenuItems([{
@@ -34,7 +37,7 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
             maEventHandlerProvider.registerEventHandlerType({
                 type: 'REPORT',
                 description: 'reports.handler',
-                editorTemplate: reportEventHandlerEditorTemplate
+                editorTemplate: `<ma-report-event-handler-editor event-handler="$ctrl.eventHandler"></ma-report-event-handler-editor>`
             });
         }
     }
