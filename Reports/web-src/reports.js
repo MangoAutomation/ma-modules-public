@@ -6,9 +6,11 @@
 import angular from 'angular';
 import reportsSettings from './components/reportsSettings/reportsSettings';
 import reportEventHandlerEditorTemplate from './reportEventHandler.html';
+import reportService from './services/reportService';
 
 const reportsModule = angular.module('maReports', ['maUiApp'])
 .component('maReportsSettings', reportsSettings)
+.factory('maReport', reportService)
 .config(['maSystemSettingsProvider', 'maUiMenuProvider', '$injector', function(SystemSettingsProvider, maUiMenuProvider, $injector) {
     maUiMenuProvider.registerMenuItems([{
         name: 'ui.settings.system.reports',
