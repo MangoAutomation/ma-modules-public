@@ -31,7 +31,7 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
         if (typeof maEventHandlerProvider.registerEventHandlerType === 'function') {
             maEventHandlerProvider.registerEventHandlerType({
                 type: 'REPORT',
-                description: 'report.handler',
+                description: 'reports.handler',
                 editorTemplate: reportEventHandlerEditorTemplate
             });
         }

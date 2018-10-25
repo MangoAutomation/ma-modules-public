@@ -9,41 +9,41 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.handlers.AbstractEventHan
 
 /**
  * Definition to allow reports to run off of an Event
- * 
+ *
  * @author Terry Packer
  */
 public class ReportEventHandlerDefinition extends EventHandlerDefinition<ReportEventHandlerVO>{
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.EventHandlerDefinition#getEventHandlerTypeName()
-	 */
-	@Override
-	public String getEventHandlerTypeName() {
-		return "REPORT";
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.EventHandlerDefinition#getEventHandlerTypeName()
+     */
+    @Override
+    public String getEventHandlerTypeName() {
+        return "REPORT";
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.EventHandlerDefinition#getDescriptionKey()
-	 */
-	@Override
-	public String getDescriptionKey() {
-		return "report.handler";
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.EventHandlerDefinition#getDescriptionKey()
+     */
+    @Override
+    public String getDescriptionKey() {
+        return "reports.handler";
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.EventHandlerDefinition#createEventHandlerVO()
-	 */
-	@Override
-	protected ReportEventHandlerVO createEventHandlerVO() {
-		return new ReportEventHandlerVO();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.EventHandlerDefinition#createEventHandlerVO()
+     */
+    @Override
+    protected ReportEventHandlerVO createEventHandlerVO() {
+        return new ReportEventHandlerVO();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.EventHandlerDefinition#getModelClass()
-	 */
-	@Override
-	public Class<? extends AbstractEventHandlerModel<?>> getModelClass() {
-		return ReportEventHandlerModel.class;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.module.EventHandlerDefinition#getModelClass()
+     */
+    @Override
+    public Class<? extends AbstractEventHandlerModel<?>> getModelClass() {
+        return ReportEventHandlerModel.class;
+    }
 
 }
