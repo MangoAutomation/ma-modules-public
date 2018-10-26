@@ -19,12 +19,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.spring.service.reports.ReportsService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.reports.ReportDao;
-import com.serotonin.m2m2.reports.vo.ReportModel;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.vo.User;
 
@@ -35,6 +34,7 @@ import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Jared Wiltshire
+ * @author Terry Packer
  */
 @Api(value="Reports")
 @RestController
@@ -42,9 +42,11 @@ import net.jazdw.rql.parser.ASTNode;
 public class ReportsRestController {
 
     private final ReportDao dao;
+    private final ReportsService service;
 
     @Autowired
-    private ReportsRestController(ReportDao dao) {
+    private ReportsRestController(ReportsService service, ReportDao dao) {
+        this.service = service;
         this.dao = dao;
     }
 
@@ -53,16 +55,7 @@ public class ReportsRestController {
     public ReportModel getByXid(
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-
-        ReportVO item = this.dao.getByXid(xid);
-        if (item == null) {
-            throw new NotFoundRestException();
-        }
-
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
-
-        return new ReportModel(item);
+        return new ReportModel(service.get(xid, user));
     }
 
     @ApiOperation("Get by ID")
@@ -70,16 +63,7 @@ public class ReportsRestController {
     public ReportModel getById(
             @PathVariable int id,
             @AuthenticationPrincipal User user) {
-
-        ReportVO item = this.dao.get(id);
-        if (item == null) {
-            throw new NotFoundRestException();
-        }
-
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
-
-        return new ReportModel(item);
+        return new ReportModel(service.get(id, user));
     }
 
     @ApiOperation(
@@ -91,12 +75,7 @@ public class ReportsRestController {
     public StreamedArrayWithTotal query(
             @RequestBody ASTNode rqlQuery,
             @AuthenticationPrincipal User user) {
-
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
-
-        // TODO check permission
-        return new StreamedVOQueryWithTotal<>(this.dao, rqlQuery, item -> user.hasAdminPermission(), item -> new ReportModel(item));
+        return new StreamedVOQueryWithTotal<>(this.dao, rqlQuery, item -> service.hasReadPermission(user, item), item -> new ReportModel(item));
     }
 
     @ApiOperation(
@@ -108,14 +87,8 @@ public class ReportsRestController {
     public StreamedArrayWithTotal queryRQL(
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
-
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
-
         ASTNode rqlQuery = RQLUtils.parseRQLtoAST(request.getQueryString());
-
-        // TODO check permission
-        return new StreamedVOQueryWithTotal<>(this.dao, rqlQuery, item -> user.hasAdminPermission(), item -> new ReportModel(item));
+        return new StreamedVOQueryWithTotal<>(this.dao, rqlQuery, item -> service.hasReadPermission(user, item), item -> new ReportModel(item));
     }
 
     @ApiOperation(value = "Update an existing item")
@@ -130,19 +103,31 @@ public class ReportsRestController {
 
             UriComponentsBuilder builder) {
 
-        ReportVO existing = this.dao.getByXid(xid);
-        if (existing == null) {
-            throw new NotFoundRestException();
-        }
+        ReportVO item = service.update(xid, model.toVO(), user);
 
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
+        URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
 
-        ReportVO item = model.getData();
-        item.setId(existing.getId());
-        item.ensureValid();
+        return new ResponseEntity<>(new ReportModel(item), headers, HttpStatus.OK);
+    }
+    
+    @ApiOperation(value = "Patch an existing item")
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
+    public ResponseEntity<ReportModel> patchItem(
+            @PathVariable String xid,
 
-        this.dao.save(item);
+            @ApiParam(value = "Updated item model", required = true)
+            @RequestBody ReportModel model,
+
+            @AuthenticationPrincipal User user,
+
+            UriComponentsBuilder builder) {
+
+        ReportVO existing = service.get(xid, user);
+        ReportModel existingModel = new ReportModel(existing);
+        existingModel.patch(model);
+        ReportVO item = service.update(xid, existingModel.toVO(), user);
 
         URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -160,15 +145,8 @@ public class ReportsRestController {
             @AuthenticationPrincipal User user,
 
             UriComponentsBuilder builder) {
-
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
-
-        ReportVO item = model.getData();
-        item.ensureValid();
-
-        this.dao.save(item);
-
+        ReportVO item = service.insert(model.toVO(), user);
+        
         URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -181,17 +159,6 @@ public class ReportsRestController {
     public ReportModel deleteItem(
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-
-        ReportVO item = this.dao.getByXid(xid);
-        if (item == null) {
-            throw new NotFoundRestException();
-        }
-
-        // TODO ensure permission
-        user.ensureHasAdminPermission();
-
-        this.dao.delete(item.getId());
-
-        return new ReportModel(item);
+        return new ReportModel(service.delete(xid, user));
     }
 }

@@ -1014,10 +1014,10 @@ public class ReportDao extends AbstractDao<ReportVO> {
     @Override
     protected Object[] voToObjectArray(ReportVO vo) {
         return new Object[] {
+                SerializationHelper.writeObject(vo),
                 vo.getXid(),
                 vo.getUserId(),
-                vo.getName(),
-                SerializationHelper.writeObject(vo) };
+                vo.getName()};
     }
 
     /* (non-Javadoc)
@@ -1026,8 +1026,8 @@ public class ReportDao extends AbstractDao<ReportVO> {
     @Override
     protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
         LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
-        map.put("data", Types.BINARY);
         map.put("id", Types.INTEGER);
+        map.put("data", Types.BINARY);
         map.put("xid", Types.VARCHAR);
         map.put("userId", Types.INTEGER);
         map.put("name", Types.VARCHAR);
@@ -1047,8 +1047,21 @@ public class ReportDao extends AbstractDao<ReportVO> {
      */
     @Override
     public RowMapper<ReportVO> getRowMapper() {
-        return new ReportRowMapper();
+        return new ReportMapper();
     }
 
-
+    class ReportMapper implements RowMapper<ReportVO> {
+        @Override
+        public ReportVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+            int i = 0;
+            int id = (rs.getInt(++i));
+            ReportVO report = (ReportVO) SerializationHelper.readObjectInContext(rs.getBlob(++i).getBinaryStream());
+            report.setId(id);
+            report.setXid(rs.getString(++i));
+            report.setUserId(rs.getInt(++i));
+            report.setName(rs.getString(++i));
+            return report;
+        }
+    }
+    
 }
