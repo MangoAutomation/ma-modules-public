@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.spring.service.AbstractVOMangoService;
+import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -21,7 +21,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, SERVICE extends AbstractVOMangoService<T>> implements StreamedArrayWithTotal {
+public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, SERVICE extends AbstractVOService<T>> implements StreamedArrayWithTotal {
     private final SERVICE service;
     private final ASTNode conditions;
     private final Function<T, ?> toModel;
