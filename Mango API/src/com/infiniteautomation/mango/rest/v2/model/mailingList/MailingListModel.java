@@ -13,9 +13,7 @@ import com.infiniteautomation.mango.scheduling.util.DailySchedule;
 import com.infiniteautomation.mango.scheduling.util.ScheduleUtils;
 import com.infiniteautomation.mango.scheduling.util.TimeValue;
 import com.infiniteautomation.mango.scheduling.util.WeeklySchedule;
-import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
@@ -146,11 +144,11 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         vo.setReceiveAlarmEmails(AlarmLevels.CODES.getId(receiveAlarmEmails));
         vo.setReadPermissions(readPermissions);
         vo.setEditPermissions(editPermissions);
-        //Validate the schedule here as we can only validate offsets in the service
-        ProcessResult result = new ProcessResult();
-        inactiveSchedule.validate(result);
-        if(!result.isValid())
-            throw new ValidationException(result);
+        //TODO Do we want to validate the schedule here as we can only validate offsets in the service?
+//        ProcessResult result = new ProcessResult();
+//        inactiveSchedule.validate(result);
+//        if(!result.isValid())
+//            throw new ValidationException(result);
         vo.setInactiveIntervals(createInactiveSchedule(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());

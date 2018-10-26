@@ -159,19 +159,23 @@ public class MailingListModelTest {
         assertSchedules(inactiveSchedule, result.getInactiveSchedule());
     }
 
-    
     /**
      * Test to create a schedule of all sizes and slide it through 
      * the week.  This is not a comprehensive test of all possible 
      * combinations of intervals.
      */
     @Test
-    public void testAllIntervals() {
+    public void testSomeIntervals() {
         for(int length=0; length<672; length++) {
-            for(int startPos=0; startPos<672; startPos++) {
+            for(int startPos=671; startPos>=0; startPos--) {
                 TreeSet<Integer> inactive = new TreeSet<>();
                 for(int k=0; k<length; k++) {
-                    int actualLength = 671 - startPos;
+                    int actualLength;
+                    if(startPos + k > 671) {
+                        actualLength = 671-startPos;
+                    }else {
+                        actualLength = k;
+                    }
                     inactive.add(startPos + actualLength);
                 }
                 MailingList list = new MailingList();
@@ -181,7 +185,7 @@ public class MailingListModelTest {
                 assertIntervals(inactive, actual.getInactiveIntervals() == null ? new TreeSet<>() : actual.getInactiveIntervals());
             }
         }
-    }
+    }  
     
     /**
      * @param inactive
