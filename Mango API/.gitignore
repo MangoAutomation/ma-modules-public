@@ -2,3 +2,4 @@
 /maven-target
 /target
 /node_modules/
+/config.json
