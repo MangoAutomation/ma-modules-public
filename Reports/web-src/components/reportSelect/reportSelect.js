@@ -36,10 +36,12 @@ export default {
     bindings: {
         selectedText: '<?',
         noFloat: '<?',
-        showClearOption: '<?'
+        showClearOption: '<?',
+        inputName: '@?name'
     },
     require: {
-        ngModelCtrl: 'ngModel'
+        ngModelCtrl: 'ngModel',
+        ngFormCtrl: '^?form'
     },
     transclude: {
         label: '?maLabel'
