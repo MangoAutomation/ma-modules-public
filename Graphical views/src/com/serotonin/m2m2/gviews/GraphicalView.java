@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -282,7 +283,7 @@ public class GraphicalView implements Serializable, JsonSerializable {
      * @return
      */
     private String trimPermission(String permissions) {
-        Set<String> set = Permissions.explodePermissionGroups(permissions);
+        Set<String> set = new HashSet<>(Permissions.explodePermissionGroups(permissions));
         return Permissions.implodePermissionGroups(set);
     }
 
