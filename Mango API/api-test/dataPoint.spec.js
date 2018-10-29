@@ -245,6 +245,35 @@ describe('Data point service', () => {
         });
     });
 
+    it('Can update data point read permissions', function () {
+        this.timeout(50000000);
+        return client.restRequest({
+            path: `/rest/v1/data-points/bulk-apply-read-permissions?xid=dp_mango_client_test`,
+            method: 'POST',
+            data: 'permission1,permission2'
+        }).then(response => {
+            assert.equal(response.data, 1);
+            return DataPoint.get('dp_mango_client_test').then(point => {
+                assert.strictEqual(point.readPermission, 'permission1,permission2,read');
+            });
+        });
+    });
+    it('Can update data point set permissions', function () {
+        this.timeout(50000000);
+        return client.restRequest({
+            path: `/rest/v1/data-points/bulk-apply-set-permissions?xid=dp_mango_client_test`,
+            method: 'POST',
+            data: 'permission1,permission2'
+        }).then(response => {
+            assert.equal(response.data, 1);
+            return DataPoint.get('dp_mango_client_test').then(point => {
+                assert.strictEqual(point.setPermission, 'permission1,permission2,write');
+            });
+        });
+    });
+    
+    
+    
     it('Deletes the new virtual data source and its points', () => {
         return DataSource.delete('mango_client_test');
     });
