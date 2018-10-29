@@ -1,10 +1,10 @@
 <h3 ma-tr="reports.handler.selectReports"></h3>
 
 <div layout layout-wrap layout-align="start center">
-    <ma-report-select flex="100" flex-gt-md="50" ng-model="$ctrl.activeReport" ng-change="$ctrl.updateIds()" show-clear-option="true">
+    <ma-report-select flex="100" flex-gt-md="50" ng-model="$ctrl.activeReport" ng-change="$ctrl.updateIds()" show-clear-option="true" name="activeReportId">
         <ma-label ma-tr="reports.handler.activeReport"></ma-label>
     </ma-report-select>
-    <ma-report-select flex="100" flex-gt-md="50" ng-model="$ctrl.inactiveReport" ng-change="$ctrl.updateIds()" show-clear-option="true">
+    <ma-report-select flex="100" flex-gt-md="50" ng-model="$ctrl.inactiveReport" ng-change="$ctrl.updateIds()" show-clear-option="true" name="inactiveReportId">
         <ma-label ma-tr="reports.handler.inactiveReport"></ma-label>
     </ma-report-select>
 </div>

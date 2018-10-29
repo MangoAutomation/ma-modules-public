@@ -81,7 +81,6 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
 
         if((inactiveReportId == Common.NEW_ID)&&(activeReportId == Common.NEW_ID)){
             response.addContextualMessage("activeReportId", "validate.atLeast1");
-            response.addContextualMessage("inactiveReportId", "validate.atLeast1");
         }
     }
 
