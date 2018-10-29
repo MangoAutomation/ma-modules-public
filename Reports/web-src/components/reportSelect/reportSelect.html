@@ -2,6 +2,7 @@
     <label ng-if="!$ctrl.noFloat" ng-transclude="label"><span ma-tr="reports.components.selectAReport"></span></label>
     <md-select ng-attr-md-selected-text="{{$ctrl.selectedText && '$ctrl.selectedText'}}"
             ng-model="$ctrl.selected" ng-change="$ctrl.inputChanged()" md-on-open="$ctrl.queryPromise" ng-model-options="{trackBy: '$value.id'}">
+        <md-option ng-if="$ctrl.showClearOption" ng-value="null" md-option-empty><em ma-tr="common.none"></em></md-option>
         <md-option ng-repeat="item in $ctrl.items track by item.id" ng-value="item">
             <span ng-bind="item.name"></span>
         </md-option>

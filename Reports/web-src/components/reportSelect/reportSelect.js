@@ -4,6 +4,7 @@
  */
 
 import reportSelectTemplate from './reportSelect.html';
+import './reportSelect.css';
 
 class ReportSelectController {
     static get $$ngIsClass() { return true; }
@@ -34,7 +35,8 @@ class ReportSelectController {
 export default {
     bindings: {
         selectedText: '<?',
-        noFloat: '<?'
+        noFloat: '<?',
+        showClearOption: '<?'
     },
     require: {
         ngModelCtrl: 'ngModel'
