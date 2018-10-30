@@ -14,12 +14,8 @@ import com.infiniteautomation.mango.scheduling.util.DailySchedule;
 import com.infiniteautomation.mango.scheduling.util.ScheduleUtils;
 import com.infiniteautomation.mango.scheduling.util.TimeValue;
 import com.infiniteautomation.mango.scheduling.util.WeeklySchedule;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.vo.mailingList.AddressEntry;
-import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.vo.mailingList.UserEntry;
 
 /**
  * @author Terry Packer
@@ -27,7 +23,6 @@ import com.serotonin.m2m2.vo.mailingList.UserEntry;
  */
 public class MailingListModel extends AbstractVoModel<MailingList> {
 
-    private List<EmailRecipientModel> recipients;
     private String receiveAlarmEmails;
     private Set<String> readPermissions;
     private Set<String> editPermissions;
@@ -39,20 +34,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     
     public MailingListModel(MailingList vo) {
         super(vo);
-    }
-    
-    /**
-     * @return the recipients
-     */
-    public List<EmailRecipientModel> getRecipients() {
-        return recipients;
-    }
-
-    /**
-     * @param recipients the recipients to set
-     */
-    public void setRecipients(List<EmailRecipientModel> recipients) {
-        this.recipients = recipients;
     }
 
     /**
@@ -118,25 +99,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         this.readPermissions = vo.getReadPermissions();
         this.editPermissions = vo.getEditPermissions();
         this.inactiveSchedule = getInactiveIntervalsAsWeeklySchedule(vo.getInactiveIntervals());
-        if(vo.getEntries() != null && vo.getEntries().size() > 0) {
-            this.recipients = new ArrayList<>();
-            for(EmailRecipient entry : vo.getEntries()) {
-                EmailRecipientModel e;
-                switch(entry.getRecipientType()) {
-                    case EmailRecipient.TYPE_ADDRESS:
-                        e = new AddressEntryModel((AddressEntry) entry);
-                        break;
-                    case EmailRecipient.TYPE_USER:
-                        e = new UserEntryModel((UserEntry) entry);
-                        break;
-                    case EmailRecipient.TYPE_MAILING_LIST:
-                    default:
-                        throw new ShouldNeverHappenException("Unsupported recipient type: " + entry.getRecipientType());
-                            
-                }
-                this.recipients.add(e);
-            }
-        }
     }
 
     @Override
@@ -153,11 +115,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         vo.setInactiveIntervals(weeklyScheduleToInactiveIntervals(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());
-        if(recipients != null)
-            for(EmailRecipientModel entry : recipients) {
-                vo.getEntries().add(entry.fromModel());
-            }
-        
         return vo;
     }
     

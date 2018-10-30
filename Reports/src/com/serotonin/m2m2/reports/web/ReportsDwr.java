@@ -18,6 +18,7 @@ import org.directwebremoting.WebContext;
 import org.directwebremoting.WebContextFactory;
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.serotonin.InvalidArgumentException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -62,13 +63,19 @@ public class ReportsDwr extends ModuleDwr {
         response.addData("points", getReadablePoints());
 
         //Filter on permissions
+        MailingListService service = (MailingListService)Common.getBean(MailingListService.class);
         List<MailingList> lists = MailingListDao.getInstance().getAllFull();
         Iterator<MailingList> it = lists.iterator();
-        while(it.hasNext())
-            if(!Permissions.hasAnyPermission(user, it.next().getReadPermissions()))
-                it.remove();
+        List<MailingList> viewable = new ArrayList<>();
+        while(it.hasNext()) {
+            MailingList list = it.next();
+            if(service.hasReadPermission(user, list))
+                viewable.add(list);
+            if(!service.hasRecipientViewPermission(user, list))
+                list.setEntries(null);
+        }
         
-        response.addData("mailingLists", lists);
+        response.addData("mailingLists", viewable);
 
         if(Permissions.hasAdminPermission(user)) {
             response.addData("users", UserDao.getInstance().getUsers());

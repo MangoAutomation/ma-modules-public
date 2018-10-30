@@ -5,11 +5,11 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.email.MailingListModel;
 
@@ -37,10 +37,13 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/v1/mailing-lists")
 public class MailingListRestController extends MangoRestController{
 	
-	private MailingListDao dao;
+	private final MailingListDao dao;
+	private final MailingListService service;
 	
-	public MailingListRestController(){
-		this.dao = MailingListDao.getInstance();
+	@Autowired
+	public MailingListRestController(MailingListDao dao, MailingListService service){
+		this.dao = dao;
+		this.service = service;
 	}
 
 	
@@ -57,7 +60,7 @@ public class MailingListRestController extends MangoRestController{
     		MailingList list = this.dao.getFullByXid(xid);
     		
     		if(list != null){
-    		    Permissions.ensureHasAnyPermission(user, list.getReadPermissions());
+    		    service.ensureReadPermission(user, list);
     			MailingListModel model = new MailingListModel(list);
                 return result.createResponseEntity(model);
     		}else{
@@ -80,7 +83,7 @@ public class MailingListRestController extends MangoRestController{
     		if(lists != null){
     			List<MailingListModel> models = new ArrayList<MailingListModel>();
     			for(MailingList list : lists){
-                    if(Permissions.hasAnyPermission(user, list.getReadPermissions()))
+                    if(service.hasReadPermission(user, list))
                         models.add(new MailingListModel(list));
     			}
                 return result.createResponseEntity(models);

@@ -24,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModel;
+import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListWithRecipientsModel;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
@@ -44,16 +45,19 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/mailing-lists")
 public class MailingListRestController {
 
+    private final MailingListService service;
+    
     @Autowired
-    private MailingListService service;
+    public MailingListRestController(MailingListService service) {
+        this.service = service;
+    }
     
     @ApiOperation(
             value = "Query Mailing Lists",
             notes = "",
             responseContainer="List",
-            response=MailingListModel.class
+            response=MailingListWithRecipientsModel.class
             )
-    @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
@@ -61,15 +65,14 @@ public class MailingListRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user, transform);
+        return doQuery(rql, user);
     }
 
     @ApiOperation(
             value = "Get a Mailing List",
             notes = "Requires Read Permission to see the addresses",
-            response=MailingListModel.class
+            response=MailingListWithRecipientsModel.class
             )
-    @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public ResponseEntity<MailingListModel> get(
             @ApiParam(value = "XID of Mailing List to update", required = true, allowMultiple = false)
@@ -77,18 +80,17 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(new MailingListModel(service.getFull(xid, user)));
+        return ResponseEntity.ok(wrap(service.getFull(xid, user), user));
     }
     
     @ApiOperation(
             value = "Create a Mailing List",
             notes = "Requires global Create Mailing List privileges",
-            response=MailingListModel.class
+            response=MailingListWithRecipientsModel.class
             )
-    @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<MailingListModel> create(
-            @RequestBody MailingListModel model,
+            @RequestBody MailingListWithRecipientsModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
@@ -96,20 +98,20 @@ public class MailingListRestController {
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(new MailingListModel(vo), headers, HttpStatus.OK);
+        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
     
     @ApiOperation(
             value = "Update a Mailing List",
             notes = "Requires edit permission",
-            response=MailingListModel.class
+            response=MailingListWithRecipientsModel.class
             )
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
     public ResponseEntity<MailingListModel> update(
             @ApiParam(value = "XID of MailingList to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value = "Mailing List of update", required = true, allowMultiple = false)
-            @RequestBody MailingListModel model,
+            @RequestBody MailingListWithRecipientsModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
@@ -117,21 +119,26 @@ public class MailingListRestController {
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(new MailingListModel(vo), headers, HttpStatus.OK);
+        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
     
+    @ApiOperation(
+            value = "Partially update a Mailing List",
+            notes = "Requires edit permission",
+            response=MailingListWithRecipientsModel.class
+            )
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
     public ResponseEntity<MailingListModel> partialUpdate(
             @PathVariable String xid,
 
             @ApiParam(value = "Updated maintenance event", required = true)
-            @RequestBody(required=true) MailingListModel model,
+            @RequestBody(required=true) MailingListWithRecipientsModel model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
         MailingList existing = service.getFull(xid, user);
-        MailingListModel existingModel = new MailingListModel(existing);
+        MailingListWithRecipientsModel existingModel = new MailingListWithRecipientsModel(existing);
         existingModel.patch(model);
         MailingList vo = existingModel.toVO();
         vo = service.updateFull(existing, vo, user);
@@ -140,13 +147,13 @@ public class MailingListRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(new MailingListModel(vo), headers, HttpStatus.OK);
+        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
     
     @ApiOperation(
             value = "Delete a Mailing List",
             notes = "",
-            response=MailingListModel.class
+            response=MailingListWithRecipientsModel.class
             )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public ResponseEntity<MailingListModel> delete(
@@ -155,7 +162,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(new MailingListModel(service.delete(xid, user)));
+        return ResponseEntity.ok(wrap(service.delete(xid, user), user));
     }
     
     @ApiOperation(
@@ -166,7 +173,7 @@ public class MailingListRestController {
     @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.POST, value="/validate")
     public void validate(
-            @RequestBody MailingListModel script,
+            @RequestBody MailingListWithRecipientsModel script,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
@@ -182,17 +189,44 @@ public class MailingListRestController {
      * @param transform2
      * @return
      */
-    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user,
-            Function<MailingList, Object> transformVO) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, transformVO, true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, adminTransform, true);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, transformVO, true);
+            ViewWrapFunction transform = new ViewWrapFunction(user);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, transform, true);
         }
     }
     
-    final Function<MailingList, Object> transform = item -> {
-        return new MailingListModel(item);
+    final Function<MailingList, Object> adminTransform = item -> {
+        return new MailingListWithRecipientsModel(item); 
     };
+    
+    final class ViewWrapFunction implements Function<MailingList, Object> {
+
+        private final PermissionHolder holder;
+        public ViewWrapFunction(PermissionHolder holder) {
+            this.holder = holder;
+        }
+        
+        @Override
+        public MailingListModel apply(MailingList t) {
+            return wrap(t, holder);
+        }
+        
+    }
+    
+    /**
+     * Helper to ensure proper view
+     * @param model
+     * @return
+     */
+    private MailingListModel wrap(MailingList list, PermissionHolder user) {
+        if(service.hasRecipientViewPermission(user, list))
+            return new MailingListWithRecipientsModel(list);
+        else
+            return new MailingListModel(list);
+
+    }
 }
