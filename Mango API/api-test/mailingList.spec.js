@@ -24,7 +24,7 @@ describe('Mailing lists', function() {
       global.addressMailingList = {
         xid: 'ML_TEST_ADDRESS',
         name: 'Test address mailing list',
-        entries: [{
+        recipients: [{
           recipientType: 'USER',
           username: 'admin'
         }],
@@ -50,6 +50,11 @@ describe('Mailing lists', function() {
           global.addressMailingList.id = response.data.id;
           assert.equal(response.data.xid, global.addressMailingList.xid);
           assert.equal(response.data.name, global.addressMailingList.name);
+          
+          assert.equal(response.data.recipients.length, global.addressMailingList.recipients.length);
+          assert.strictEqual(response.data.recipients[0].recipientType, global.addressMailingList.recipients[0].recipientType);
+          assert.strictEqual(response.data.recipients[0].username, global.addressMailingList.recipients[0].username);
+          
           assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
           
           assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
@@ -105,7 +110,7 @@ describe('Mailing lists', function() {
         global.addressMailingList = {
           xid: 'ML_TEST_ADDRESS',
           name: 'Test address mailing list updated',
-          entries: [{
+          recipients: [{
             recipientType: 'USER',
             username: 'admin'
           },{
@@ -134,6 +139,11 @@ describe('Mailing lists', function() {
             global.addressMailingList.id = response.data.id;
             assert.equal(response.data.xid, global.addressMailingList.xid);
             assert.equal(response.data.name, global.addressMailingList.name);
+            
+            assert.equal(response.data.recipients.length, global.addressMailingList.recipients.length);
+            assert.strictEqual(response.data.recipients[0].recipientType, global.addressMailingList.recipients[0].recipientType);
+            assert.strictEqual(response.data.recipients[0].username, global.addressMailingList.recipients[0].username);
+            
             assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
             
             assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
@@ -168,6 +178,11 @@ describe('Mailing lists', function() {
             global.addressMailingList.id = response.data.id;
             assert.equal(response.data.xid, global.addressMailingList.xid);
             assert.equal(response.data.name, global.addressMailingList.name);
+            
+            assert.equal(response.data.recipients.length, global.addressMailingList.recipients.length);
+            assert.strictEqual(response.data.recipients[0].recipientType, global.addressMailingList.recipients[0].recipientType);
+            assert.strictEqual(response.data.recipients[0].username, global.addressMailingList.recipients[0].username);
+            
             assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
             
             assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
@@ -200,6 +215,11 @@ describe('Mailing lists', function() {
             assert.equal(response.data.total, 1);
             assert.equal(response.data.items[0].xid, global.addressMailingList.xid);
             assert.equal(response.data.items[0].name, global.addressMailingList.name);
+            
+            assert.equal(response.data.items[0].recipients.length, global.addressMailingList.recipients.length);
+            assert.strictEqual(response.data.items[0].recipients[0].recipientType, global.addressMailingList.recipients[0].recipientType);
+            assert.strictEqual(response.data.items[0].recipients[0].username, global.addressMailingList.recipients[0].username);
+            
             assert.equal(response.data.items[0].receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
             
             assert.lengthOf(response.data.items[0].readPermissions, global.addressMailingList.readPermissions.length);
