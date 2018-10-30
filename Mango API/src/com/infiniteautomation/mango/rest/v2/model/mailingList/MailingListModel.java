@@ -27,7 +27,7 @@ import com.serotonin.m2m2.vo.mailingList.UserEntry;
  */
 public class MailingListModel extends AbstractVoModel<MailingList> {
 
-    private List<EmailRecipientModel> entries;
+    private List<EmailRecipientModel> recipients;
     private String receiveAlarmEmails;
     private Set<String> readPermissions;
     private Set<String> editPermissions;
@@ -42,17 +42,17 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     }
     
     /**
-     * @return the entries
+     * @return the recipients
      */
-    public List<EmailRecipientModel> getEntries() {
-        return entries;
+    public List<EmailRecipientModel> getRecipients() {
+        return recipients;
     }
 
     /**
-     * @param entries the entries to set
+     * @param recipients the recipients to set
      */
-    public void setEntries(List<EmailRecipientModel> entries) {
-        this.entries = entries;
+    public void setRecipients(List<EmailRecipientModel> recipients) {
+        this.recipients = recipients;
     }
 
     /**
@@ -119,7 +119,7 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         this.editPermissions = vo.getEditPermissions();
         this.inactiveSchedule = getInactiveIntervalsAsWeeklySchedule(vo.getInactiveIntervals());
         if(vo.getEntries() != null && vo.getEntries().size() > 0) {
-            this.entries = new ArrayList<>();
+            this.recipients = new ArrayList<>();
             for(EmailRecipient entry : vo.getEntries()) {
                 EmailRecipientModel e;
                 switch(entry.getRecipientType()) {
@@ -134,7 +134,7 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + entry.getRecipientType());
                             
                 }
-                this.entries.add(e);
+                this.recipients.add(e);
             }
         }
     }
@@ -153,8 +153,8 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         vo.setInactiveIntervals(weeklyScheduleToInactiveIntervals(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());
-        if(entries != null)
-            for(EmailRecipientModel entry : entries) {
+        if(recipients != null)
+            for(EmailRecipientModel entry : recipients) {
                 vo.getEntries().add(entry.fromModel());
             }
         
