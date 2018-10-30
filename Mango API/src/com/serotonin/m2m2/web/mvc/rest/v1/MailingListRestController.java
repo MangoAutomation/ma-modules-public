@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,9 +18,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.serotonin.m2m2.db.dao.MailingListDao;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.email.MailingListModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -47,12 +51,13 @@ public class MailingListRestController extends MangoRestController{
     		@PathVariable String xid, HttpServletRequest request) {
 		
 		RestProcessResult<MailingListModel> result = new RestProcessResult<MailingListModel>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		MailingList list = this.dao.getMailingList(xid);
+    		MailingList list = this.dao.getFullByXid(xid);
     		
     		if(list != null){
+    		    Permissions.ensureHasAnyPermission(user, list.getReadPermissions());
     			MailingListModel model = new MailingListModel(list);
                 return result.createResponseEntity(model);
     		}else{
@@ -68,15 +73,15 @@ public class MailingListRestController extends MangoRestController{
     public ResponseEntity<List<MailingListModel>> getAll(HttpServletRequest request) {
 		
 		RestProcessResult<List<MailingListModel>> result = new RestProcessResult<List<MailingListModel>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		
-    		List<MailingList> lists = this.dao.getMailingLists();
-    		
+    		List<MailingList> lists = this.dao.getAllFull();
     		if(lists != null){
     			List<MailingListModel> models = new ArrayList<MailingListModel>();
     			for(MailingList list : lists){
-    				models.add(new MailingListModel(list));
+                    if(Permissions.hasAnyPermission(user, list.getReadPermissions()))
+                        models.add(new MailingListModel(list));
     			}
                 return result.createResponseEntity(models);
     		}else{

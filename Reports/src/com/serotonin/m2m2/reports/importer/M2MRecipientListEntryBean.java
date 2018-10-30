@@ -82,7 +82,7 @@ public class M2MRecipientListEntryBean implements Serializable, JsonSerializable
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         writer.writeEntry("recipientType", EmailRecipient.TYPE_CODES.getCode(recipientType));
         if (recipientType == EmailRecipient.TYPE_MAILING_LIST)
-            writer.writeEntry("mailingList", MailingListDao.getInstance().getMailingList(referenceId).getXid());
+            writer.writeEntry("mailingList", MailingListDao.getInstance().getFull(referenceId).getXid());
         else if (recipientType == EmailRecipient.TYPE_USER)
             writer.writeEntry("username", UserDao.getInstance().getUser(referenceId).getUsername());
         else if (recipientType == EmailRecipient.TYPE_ADDRESS)
@@ -106,7 +106,7 @@ public class M2MRecipientListEntryBean implements Serializable, JsonSerializable
             if (text == null)
                 throw new TranslatableJsonException("emport.error.recipient.missing.reference", "mailingList");
 
-            MailingList ml = MailingListDao.getInstance().getMailingList(text);
+            MailingList ml = MailingListDao.getInstance().getFullByXid(text);
             if (ml == null)
                 throw new TranslatableJsonException("emport.error.recipient.invalid.reference", "mailingList", text);
 
@@ -152,7 +152,7 @@ public class M2MRecipientListEntryBean implements Serializable, JsonSerializable
 				break;
 			case EmailRecipient.TYPE_MAILING_LIST:
 				String listXid = legacyDao.getMailingListXid(referenceId);
-				MailingList list = MailingListDao.getInstance().getMailingList(listXid);
+				MailingList list = MailingListDao.getInstance().getFullByXid(listXid);
 				if(list != null)
 					bean.setReferenceId(list.getId());
 				else
