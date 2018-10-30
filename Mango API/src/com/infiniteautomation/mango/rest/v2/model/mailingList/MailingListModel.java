@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -116,7 +117,7 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         this.receiveAlarmEmails = AlarmLevels.CODES.getCode(vo.getReceiveAlarmEmails());
         this.readPermissions = vo.getReadPermissions();
         this.editPermissions = vo.getEditPermissions();
-        this.inactiveSchedule = createWeeklySchedule(vo.getInactiveIntervals());
+        this.inactiveSchedule = getInactiveIntervalsAsWeeklySchedule(vo.getInactiveIntervals());
         if(vo.getEntries() != null && vo.getEntries().size() > 0) {
             this.entries = new ArrayList<>();
             for(EmailRecipient entry : vo.getEntries()) {
@@ -149,7 +150,7 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
 //        inactiveSchedule.validate(result);
 //        if(!result.isValid())
 //            throw new ValidationException(result);
-        vo.setInactiveIntervals(createInactiveSchedule(inactiveSchedule));
+        vo.setInactiveIntervals(weeklyScheduleToInactiveIntervals(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());
         if(entries != null)
@@ -161,153 +162,131 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     }
     
     /**
-     * @param inactiveSchedule
-     * @return
-     */
-    private Set<Integer> createInactiveSchedule(WeeklySchedule inactiveSchedule) {
-        if(inactiveSchedule == null)
-            return null;
-        else {
-            Set<Integer> intervals = null;
-            if(inactiveSchedule.getOffsetCount() > 0) {
-                intervals = new TreeSet<>();
-                //Modify a copy of the weekly schedule to put Monday first
-                List<DailySchedule> copy = new ArrayList<>(inactiveSchedule.getDailySchedules());
-                DailySchedule sunday = copy.remove(0);
-                copy.add(copy.size(), sunday);
-                int day = 0;
-                Integer lastInterval = null;
-                boolean inactive = false;
-                boolean lastDailyChange = false;
-                for(DailySchedule schedule : copy) {
-                    lastDailyChange = false;
-                    for(int i=0; i<schedule.getChanges().size(); i++) {
-                        //Last change of day will require a fill
-                        if(i == schedule.getChanges().size() - 1)
-                            lastDailyChange = true;
-                        TimeValue time = ScheduleUtils.parseTimeValue(schedule.getChanges().get(i));
-                        //Compute the interval
-                        int interval = (day * 96) + (time.getHour() * 4) + (time.getMinute() / 15);
-                        if(lastDailyChange && !inactive) {
-                            //Fill to end of day
-                            int endOfDayInterval = (day * 96) + 96;
-                            for(int j=interval; j<endOfDayInterval; j++)
-                                intervals.add(j);
-                        }else if(lastInterval == null || interval - lastInterval == 1) {
-                            intervals.add(interval);
-                            inactive = true;
-                        }else if(interval - lastInterval > 1) {
-                            if(inactive) {
-                                //Fill offsets
-                                for(int j=lastInterval + 1; j<interval; j++) {
-                                    intervals.add(j);
-                                }
-                                inactive = false;
-                            }else {
-                                //Just skipped a block and now are inactive
-                                intervals.add(interval);
-                                inactive = true;
-                            }
-                            
-                        }
-                        lastInterval = interval;
-                    }
-                    lastInterval = null;
-                    inactive = false;
-                    day++;
-                }
-            }
-            return intervals;
-        }
-    }
-    
-    /**
-     * Convert inactive intervals into a schedule
-     * 
+     * Convert a set of inactive intervals into a weekly schedule
      * @param inactiveIntervals
      * @return
      */
-    private WeeklySchedule createWeeklySchedule(Set<Integer> inactiveIntervals) {
+    private WeeklySchedule getInactiveIntervalsAsWeeklySchedule(Set<Integer> inactiveIntervals) {
+        
         if(inactiveIntervals == null)
             return null;
-        else {
-            //NOTE: Weekly schedules start on Sunday, Mailing List intervals start on Monday.
-            //0 = midnight - 00:15 Monday
-            //671=11:45-00:00 Sunday
-            //96 in a day
-            WeeklySchedule schedule = new WeeklySchedule();
-            for(int i=0; i<7; i++)
-                schedule.addDay(new DailySchedule());
-            
-            Integer lastInterval = null;
-            Integer currentDay = null;
-            boolean newDay = false;
-            boolean inactive = false;
-            for(Integer interval : inactiveIntervals) {
-                int day = interval/96;
-                if(currentDay == null || currentDay != day) {
-                    currentDay = day;
-                    newDay = true;
-                }else{
-                   newDay = false;
-                }
-
-                int dailyOffset = interval - (day * 96);
-                int startHr = (dailyOffset * 15) / 60;
-                int startMin = (dailyOffset * 15) % 60;
-                
-                if(newDay) {
-                    //Always insert the first offset on a new day
-                    schedule.getDailySchedules().get(day).addChange(String.format("%02d:%02d", startHr, + startMin));
-                    if(inactive && lastInterval != null) {
-                        //Close the last inserted interval 
-                        int lastDay = lastInterval/96;
-                        int lastDailyOffset = (lastInterval + 1) - (lastDay * 96);
-                        int lastStartHr = (lastDailyOffset * 15)/60;
-                        int lastStartMin = (lastDailyOffset * 15) % 60;
-                        //Don't insert offsets at midnight, the schedule resets automatically without the change
-                        if(lastStartHr != 24)
-                            schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
-                    }
-                    inactive = true;
-                    
-                }else if(interval - lastInterval > 1) {
-                    //A gap in intervals means there was an active state
-                    
-                    //Close the period only if within the same day as schedules reset at midnight
-                    int lastDay = lastInterval/96;
-                    if(inactive && lastDay == currentDay) {
-                        //Close last and add next
-                        int lastDailyOffset = (lastInterval + 1) - (lastDay * 96);
-                        int lastStartHr = (lastDailyOffset * 15)/60;
-                        int lastStartMin = (lastDailyOffset * 15) % 60;
-                        schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
-                    }
-                    //Always insert our change to inactive
-                    schedule.getDailySchedules().get(day).addChange(String.format("%02d:%02d", startHr, startMin));
-                    inactive = true;
-                }
-                lastInterval = interval;
-            }
-            
-            //Close the period if we are in the same day
-            if(lastInterval != null) {
-                int lastDay = lastInterval/96;
-                if(inactive && lastDay == currentDay) {
-                    //Close last and add next
-                    int lastDailyOffset = (lastInterval) - (lastDay * 96);
-                    int lastStartHr = (lastDailyOffset * 15)/60;
-                    int lastStartMin = (lastDailyOffset * 15) % 60;
-                    schedule.getDailySchedules().get(lastDay).addChange(String.format("%02d:%02d", lastStartHr, lastStartMin));
-                }
-            }
-            
-            //Sunday is last in the list, place it first
-            DailySchedule sunday = schedule.getDailySchedules().remove(6);
-            schedule.getDailySchedules().add(0, sunday);
-            
-            return schedule;
+        
+        WeeklySchedule weeklySchedule = new WeeklySchedule();
+        for(int k = 0; k < 7; k+=1) {
+            weeklySchedule.addDay(new DailySchedule());
         }
+        
+        Integer[] inactive = new Integer[inactiveIntervals.size()];
+        inactiveIntervals.toArray(inactive);
+        Arrays.sort(inactive);
+        
+        int last = -2;
+        for(Integer i : inactive) {
+            if(i == null)
+                continue;
+            
+            int dayIndex = i.intValue() / (4*24);
+            int lastDayIndex;
+            if(last != -2)
+                lastDayIndex = last / (4*24);
+            else
+                lastDayIndex = dayIndex;
+            
+            if(last == i.intValue() - 1 && dayIndex == lastDayIndex) { //Still inactive
+                last = i.intValue();
+                continue;
+            } else if (dayIndex != lastDayIndex) {
+                if((last+1) % (4*24) != 0) {
+                    int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
+                    int hr = (minute15 * 15) / 60;
+                    int min = (minute15 * 15) % 60;
+                    weeklySchedule.getDailySchedules().get(lastDayIndex).addChange(String.format("%02d:%02d", hr, min));
+                }
+                last = -2;
+            }
+            
+            if(last != -2) {
+                int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
+                int hr = (minute15 * 15) / 60;
+                int min = (minute15 * 15) % 60;
+                weeklySchedule.getDailySchedules().get(lastDayIndex).addChange(String.format("%02d:%02d", hr, min));
+            }
+            
+            last = i.intValue();
+            int minute15 = i.intValue() % (4*24);
+            int hr = (minute15 * 15) / 60;
+            int min = (minute15 * 15) % 60;
+            weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
+        }
+        
+        if(last != -2 && last % (4*24) != 95) {
+            int dayIndex = (last+1) / (4*24);
+            int minute15 = (last+1) % (4*24);
+            int hr = (minute15 * 15) / 60;
+            int min = (minute15 * 15) % 60;
+            weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
+        }
+        
+        //Re-Order putting Sunday first
+        //Sunday is last in the list, place it first
+        DailySchedule sunday = weeklySchedule.getDailySchedules().remove(6);
+        weeklySchedule.getDailySchedules().add(0, sunday);
+        
+        return weeklySchedule;
+    }
+    
+    /**
+     * Convert a weekly schedule into a set of offsets.
+     * 
+     * Offsets Monday - Sunday
+     * Schedule Sunday - Saturday
+     * @param weeklySchedule
+     * @return
+     */
+    private Set<Integer> weeklyScheduleToInactiveIntervals(WeeklySchedule weeklySchedule) {
+        if(weeklySchedule == null)
+            return null;
+        
+        //Modify a copy of the weekly schedule to put Monday first
+        //TODO assert we have 7 days in the schedule
+        List<DailySchedule> copy = new ArrayList<>(weeklySchedule.getDailySchedules());
+        DailySchedule sunday = copy.remove(0);
+        copy.add(copy.size(), sunday);
+        
+        Set<Integer> inactiveIntervals = new TreeSet<>();
+        for(int k = 0; k < copy.size(); k+=1) {
+            int baseInterval = k * 96 ; //milliseconds per day
+            boolean deactivated = false;
+            int lastInterval = -2;
+            List<String> wsTimes = copy.get(k).getChanges();
+            Integer[] times = new Integer[wsTimes.size()];
+            int index = 0;
+            for(String time : wsTimes) {
+                TimeValue value = ScheduleUtils.parseTimeValue(time);
+                //Compute offset from midnight
+                times[index++] = (value.getHour() * 60 * 60 * 1000) + (value.getMinute() * 60 * 1000);
+            }
+
+            for(Integer i : times) {
+                int thisInterval = i / 900000; //millis in 15m
+                if(deactivated) {
+                    while(lastInterval < thisInterval) {
+                        inactiveIntervals.add(baseInterval+lastInterval++);
+                    }
+                    deactivated = false;
+                } else {
+                    lastInterval = thisInterval;
+                    deactivated = true;
+                }
+            }
+            
+            if(deactivated) {
+                while(lastInterval < 96) {
+                    inactiveIntervals.add(baseInterval+lastInterval++);
+                }
+            }
+        }
+        return inactiveIntervals;
     }
     
     

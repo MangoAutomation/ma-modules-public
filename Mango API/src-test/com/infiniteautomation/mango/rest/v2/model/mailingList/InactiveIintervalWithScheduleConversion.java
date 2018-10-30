@@ -30,7 +30,7 @@ public class InactiveIintervalWithScheduleConversion {
      * the week.  This is not a comprehensive test of all possible
      * combinations of intervals.
      */
-
+    @Test
     public void testSomeIntervals() {
         for(int length=0; length<672; length++) {
             for(int startPos=671; startPos>=0; startPos--) {
@@ -55,13 +55,17 @@ public class InactiveIintervalWithScheduleConversion {
         }
     }
     
-    @Test
+    /**
+     * Very long running test so it doesn't run automatically
+     */
     public void testGappedIntervals() {
-        for(int length=0; length<672; length++) {
+        int maxBlockLength = 671;
+        int maxGapLength = 671;
+        for(int length=0; length<maxBlockLength; length++) {
             for(int startPos=671; startPos>=0; startPos--) {
                 TreeSet<Integer> inactive = new TreeSet<>();
                 for(int gapStart=0; gapStart < 672; gapStart++) {
-                    for(int gapLength = 0; gapLength < 672; gapLength++) {
+                    for(int gapLength = 0; gapLength < maxGapLength; gapLength++) {
                         for(int k=0; k<length; k++) {
                             int actualLength;
                             if(startPos + k > 671) {
@@ -88,6 +92,7 @@ public class InactiveIintervalWithScheduleConversion {
     }
     
     public WeeklySchedule getInactiveIntervalsAsWeeklySchedule(Set<Integer> inactiveIntervals) {
+        
         if(inactiveIntervals == null)
             return null;
         
@@ -116,17 +121,17 @@ public class InactiveIintervalWithScheduleConversion {
                 last = i.intValue();
                 continue;
             } else if (dayIndex != lastDayIndex) {
-                int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
-                int millisecondsInPeriod = minute15 * 15 * 60 * 1000;
-                int hr = (minute15 * 15) / 60;
-                int min = (minute15 * 15) % 60;
-                weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
+                if((last+1) % (4*24) != 0) {
+                    int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
+                    int hr = (minute15 * 15) / 60;
+                    int min = (minute15 * 15) % 60;
+                    weeklySchedule.getDailySchedules().get(lastDayIndex).addChange(String.format("%02d:%02d", hr, min));
+                }
                 last = -2;
             }
             
             if(last != -2) {
                 int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
-                int millisecondsInPeriod = minute15 * 15 * 60 * 1000;
                 int hr = (minute15 * 15) / 60;
                 int min = (minute15 * 15) % 60;
                 weeklySchedule.getDailySchedules().get(lastDayIndex).addChange(String.format("%02d:%02d", hr, min));
@@ -134,7 +139,6 @@ public class InactiveIintervalWithScheduleConversion {
             
             last = i.intValue();
             int minute15 = i.intValue() % (4*24);
-            int millisecondsInPeriod = minute15 * 15 * 60 * 1000;
             int hr = (minute15 * 15) / 60;
             int min = (minute15 * 15) % 60;
             weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
@@ -143,7 +147,6 @@ public class InactiveIintervalWithScheduleConversion {
         if(last != -2 && last % (4*24) != 95) {
             int dayIndex = (last+1) / (4*24);
             int minute15 = (last+1) % (4*24);
-            int millisecondsInPeriod = minute15 * 15 * 60 * 1000;
             int hr = (minute15 * 15) / 60;
             int min = (minute15 * 15) % 60;
             weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
@@ -180,8 +183,7 @@ public class InactiveIintervalWithScheduleConversion {
                 //Compute offset from midnight
                 times[index++] = (value.getHour() * 60 * 60 * 1000) + (value.getMinute() * 60 * 1000);
             }
-            
-            Arrays.sort(times);
+
             for(Integer i : times) {
                 int thisInterval = i / 900000; //millis in 15m
                 if(deactivated) {
@@ -203,6 +205,7 @@ public class InactiveIintervalWithScheduleConversion {
         }
         return inactiveIntervals;
     }
+
     
     /**
      * @param inactive

@@ -14,8 +14,6 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import com.infiniteautomation.mango.scheduling.util.WeeklySchedule;
-
 /**
  * @author Terry Packer
  *
@@ -41,9 +39,6 @@ public class InactiveIntervalConversionTest {
                     }
                     inactive.add(startPos + actualLength);
                 }
-                if(startPos == 575 && length == 2)
-                    System.out.println("found it");
-                System.out.println("Testing from " + startPos + " to " + length);
                 //Convert to Weekly schedule
                 List<Set<String>> schedule = getInactiveIntervalsAsWeeklySchedule(inactive);
                 Set<Integer> actual = weeklyScheduleToInactiveIntervals(schedule);
@@ -52,14 +47,18 @@ public class InactiveIntervalConversionTest {
         }
     }
     
-    
-    @Test
+
+    /**
+     * Very long running test so it doesn't run automatically
+     */
     public void testGappedIntervals() {
-        for(int length=0; length<672; length++) {
+        int maxBlockLength = 671;
+        int maxGapLength = 671;
+        for(int length=0; length<=maxGapLength; length++) {
             for(int startPos=671; startPos>=0; startPos--) {
                 TreeSet<Integer> inactive = new TreeSet<>();
                 for(int gapStart=0; gapStart < 672; gapStart++) {
-                    for(int gapLength = 0; gapLength < 672; gapLength++) {
+                    for(int gapLength = 0; gapLength <= maxBlockLength; gapLength++) {
                         for(int k=0; k<length; k++) {
                             int actualLength;
                             if(startPos + k > 671) {
@@ -72,9 +71,6 @@ public class InactiveIntervalConversionTest {
                                 continue;
                             inactive.add(interval);
                         }
-                        if(startPos == 575 && length == 10 && gapLength == 2)
-                            System.out.println("found it");
-                        //System.out.println("Testing " + startPos + " to " + length + " with gap size " + gapLength + " starting at " + gapStart);
                         //Convert to Weekly schedule
                         List<Set<String>> schedule = getInactiveIntervalsAsWeeklySchedule(inactive);
                         Set<Integer> actual = weeklyScheduleToInactiveIntervals(schedule);
@@ -111,9 +107,11 @@ public class InactiveIntervalConversionTest {
                 last = i.intValue();
                 continue;
             } else if (dayIndex != lastDayIndex) {
-                int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
-                int millisecondsInPeriod = minute15 * 15 * 60 * 1000;
-                weeklySchedule.get(lastDayIndex).add(String.valueOf(millisecondsInPeriod));
+                if((last+1) % (4*24) != 0) {
+                    int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
+                    int millisecondsInPeriod = minute15 * 15 * 60 * 1000;
+                    weeklySchedule.get(lastDayIndex).add(String.valueOf(millisecondsInPeriod));
+                }
                 last = -2;
             }
             
