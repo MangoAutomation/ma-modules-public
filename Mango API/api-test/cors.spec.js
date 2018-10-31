@@ -25,7 +25,9 @@ describe('Cross Origin Resource Sharing (CORS)', function() {
 
     before('Login', function() {
         if (!allowedOrigin) {
+            // skip all the cors tests
             this.skip();
+            return;
         }
         
         return config.login.call(this).then((...args) => {
