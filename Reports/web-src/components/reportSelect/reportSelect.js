@@ -8,10 +8,11 @@ import './reportSelect.css';
 
 class ReportSelectController {
     static get $$ngIsClass() { return true; }
-    static get $inject() { return ['maReport']; }
+    static get $inject() { return ['maReport', '$attrs']; }
     
-    constructor(maReport) {
+    constructor(maReport, attrs) {
         this.maReport = maReport;
+        this.attrs = attrs;
     }
     
     $onInit() {
@@ -37,7 +38,8 @@ export default {
         selectedText: '<?',
         noFloat: '<?',
         showClearOption: '<?',
-        inputName: '@?name'
+        required: '@?', // there's some funky handling going on in Angular where this comes back as a boolean
+        name: '@?'
     },
     require: {
         ngModelCtrl: 'ngModel',
