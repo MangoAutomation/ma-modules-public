@@ -20,6 +20,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
 import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
@@ -112,11 +113,16 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     }
 
     @Override
-    protected Object createNotification(String type, T vo, String initiatorId, String originalXid) {
+    protected Object createNotification(String type, T vo, String initiatorId, String originalXid, User user) {
+        Object model = createModel(vo, user);
+        if (model == null) {
+            return null;
+        }
+
         Map<String, Object> attributes = new HashMap<>(2);
         attributes.put("originalXid", originalXid);
         attributes.put("initiatorId", initiatorId);
-        return new WebSocketNotification<Object>(type, createModel(vo), attributes);
+        return new WebSocketNotification<Object>(type, model, attributes);
     }
 
     protected String getXid(T vo) {

@@ -46,12 +46,12 @@ import net.jazdw.rql.parser.ASTNode;
 public class MailingListRestController {
 
     private final MailingListService service;
-    
+
     @Autowired
     public MailingListRestController(MailingListService service) {
         this.service = service;
     }
-    
+
     @ApiOperation(
             value = "Query Mailing Lists",
             notes = "",
@@ -82,7 +82,7 @@ public class MailingListRestController {
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(wrap(service.getFull(xid, user), user));
     }
-    
+
     @ApiOperation(
             value = "Create a Mailing List",
             notes = "Requires global Create Mailing List privileges",
@@ -100,7 +100,7 @@ public class MailingListRestController {
         headers.setLocation(location);
         return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Update a Mailing List",
             notes = "Requires edit permission",
@@ -121,7 +121,7 @@ public class MailingListRestController {
         headers.setLocation(location);
         return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Partially update a Mailing List",
             notes = "Requires edit permission",
@@ -149,7 +149,7 @@ public class MailingListRestController {
 
         return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Delete a Mailing List",
             notes = "",
@@ -164,7 +164,7 @@ public class MailingListRestController {
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(wrap(service.delete(xid, user), user));
     }
-    
+
     @ApiOperation(
             value = "Validate a Mailing List without saving it",
             notes = "Admin Only",
@@ -177,12 +177,12 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        
+
         service.ensureValid(script.toVO(), user);
     }
-    
+
     /**
-     * 
+     *
      * TODO Move to Service
      * @param rql
      * @param user
@@ -198,25 +198,25 @@ public class MailingListRestController {
             return new StreamedVORqlQueryWithTotal<>(service, rql, user, transform, true);
         }
     }
-    
+
     final Function<MailingList, Object> adminTransform = item -> {
-        return new MailingListWithRecipientsModel(item); 
+        return new MailingListWithRecipientsModel(item);
     };
-    
+
     final class ViewWrapFunction implements Function<MailingList, Object> {
 
         private final PermissionHolder holder;
         public ViewWrapFunction(PermissionHolder holder) {
             this.holder = holder;
         }
-        
+
         @Override
         public MailingListModel apply(MailingList t) {
             return wrap(t, holder);
         }
-        
+
     }
-    
+
     /**
      * Helper to ensure proper view
      * @param model
