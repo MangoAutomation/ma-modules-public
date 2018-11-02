@@ -404,6 +404,8 @@ public class DataPointRestController {
 
                         resource.progressOrSuccess(bulkResponse, i++, requests.size());
                     }
+
+                    return null;
                 });
 
         HttpHeaders headers = new HttpHeaders();

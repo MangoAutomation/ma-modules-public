@@ -5,11 +5,13 @@ package com.infiniteautomation.mango.rest.v2.temporaryResource;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager.ResourceTask;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Jared Wiltshire
@@ -20,11 +22,11 @@ public final class TemporaryResource<T, E> {
     public static enum TemporaryResourceStatus {
         VIRGIN, SCHEDULED, RUNNING, TIMED_OUT, CANCELLED, SUCCESS, ERROR;
     }
-    
+
     public static class StatusUpdateException extends RuntimeException {
         private static final long serialVersionUID = 1L;
     }
-    
+
     private final String resourceType;
     private final String id;
     private final int userId;
@@ -45,6 +47,8 @@ public final class TemporaryResource<T, E> {
     private Date completionTime;
     private Integer position;
     private Integer maximum;
+    private Consumer<TemporaryResource<T, E>> cancelCallback;
+
     /**
      * Holds runtime data for the resource manager to use
      */
@@ -74,7 +78,7 @@ public final class TemporaryResource<T, E> {
 
     protected synchronized final void schedule() {
         if (this.status != TemporaryResourceStatus.VIRGIN) throw new StatusUpdateException();
-        
+
         this.status = TemporaryResourceStatus.SCHEDULED;
         this.resourceVersion++;
         this.startTime = new Date(Common.timer.currentTimeMillis());
@@ -83,7 +87,7 @@ public final class TemporaryResource<T, E> {
 
     public synchronized final void progress(T result, Integer position, Integer maximum) {
         if (this.isComplete()) throw new StatusUpdateException();
-        
+
         this.status = TemporaryResourceStatus.RUNNING;
         this.resourceVersion++;
         this.result = result;
@@ -91,7 +95,7 @@ public final class TemporaryResource<T, E> {
         this.maximum = maximum;
         this.manager.resourceUpdated(this);
     }
-    
+
     public synchronized final void progressOrSuccess(T result, Integer position, Integer maximum) {
         if (this.isComplete()) throw new StatusUpdateException();
 
@@ -99,7 +103,7 @@ public final class TemporaryResource<T, E> {
         this.result = result;
         this.position = position;
         this.maximum = maximum;
-        
+
         if (position != null && position.equals(maximum)) {
             this.status = TemporaryResourceStatus.SUCCESS;
             this.completionTime = new Date(Common.timer.currentTimeMillis());
@@ -112,7 +116,7 @@ public final class TemporaryResource<T, E> {
 
     protected synchronized final void timeOut() {
         if (this.isComplete()) throw new StatusUpdateException();
-        
+
         this.status = TemporaryResourceStatus.TIMED_OUT;
         this.resourceVersion++;
         this.completionTime = new Date(Common.timer.currentTimeMillis());
@@ -121,16 +125,20 @@ public final class TemporaryResource<T, E> {
 
     public synchronized final void cancel() {
         if (this.isComplete()) throw new StatusUpdateException();
-        
+
         this.status = TemporaryResourceStatus.CANCELLED;
         this.resourceVersion++;
         this.completionTime = new Date(Common.timer.currentTimeMillis());
         this.manager.resourceCompleted(this);
+
+        if (this.cancelCallback != null) {
+            this.cancelCallback.accept(this);
+        }
     }
 
     public synchronized final void success(T result) {
         if (this.isComplete()) throw new StatusUpdateException();
-        
+
         this.status = TemporaryResourceStatus.SUCCESS;
         this.resourceVersion++;
         this.completionTime = new Date(Common.timer.currentTimeMillis());
@@ -139,7 +147,7 @@ public final class TemporaryResource<T, E> {
 
     public synchronized final void error(E error) {
         if (this.isComplete()) throw new StatusUpdateException();
-        
+
         this.status = TemporaryResourceStatus.ERROR;
         this.resourceVersion++;
         this.completionTime = new Date(Common.timer.currentTimeMillis());
@@ -162,8 +170,8 @@ public final class TemporaryResource<T, E> {
     }
 
     @JsonIgnore
-    protected final ResourceTask<T, E> getTask() {
-        return task;
+    protected final void runTask(User user) throws Exception {
+        this.cancelCallback = task.run(this, user);
     }
 
     @JsonIgnore

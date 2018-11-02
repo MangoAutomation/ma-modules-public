@@ -493,6 +493,8 @@ public class DataPointTagsRestController {
 
                         resource.progressOrSuccess(bulkResponse, i++, requests.size());
                     }
+
+                    return null;
                 });
 
         HttpHeaders headers = new HttpHeaders();

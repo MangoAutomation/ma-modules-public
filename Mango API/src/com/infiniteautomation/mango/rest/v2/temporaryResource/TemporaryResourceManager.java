@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 
 import com.infiniteautomation.mango.rest.v2.util.ExceptionMapper;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
@@ -30,7 +31,7 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
 
     @FunctionalInterface
     public static interface ResourceTask<T, E> {
-        void run(TemporaryResource<T, E> resource, User user) throws Exception;
+        public Consumer<TemporaryResource<T, E>> run(TemporaryResource<T, E> resource, User user) throws Exception;
     }
 
     private final ConcurrentMap<String, TemporaryResource<T, E>> resources;

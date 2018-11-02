@@ -108,7 +108,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             public void run(long runtime) {
                 try {
                     BackgroundContext.set(user);
-                    resource.getTask().run(resource, user);
+                    resource.runTask(user);
                 } catch (Exception e) {
                     AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
                     resource.safeError(error);
