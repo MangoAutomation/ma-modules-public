@@ -32,7 +32,7 @@ public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     protected boolean hasPermission(User user, MailingList vo) {
-        return true;
+        return service.hasReadPermission(user, vo);
     }
 
     @Override
