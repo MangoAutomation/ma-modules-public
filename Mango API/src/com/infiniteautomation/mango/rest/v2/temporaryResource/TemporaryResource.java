@@ -170,7 +170,7 @@ public final class TemporaryResource<T, E> {
     }
 
     @JsonIgnore
-    protected final void runTask(User user) throws Exception {
+    protected synchronized final void runTask(User user) throws Exception {
         this.cancelCallback = task.run(this, user);
     }
 
