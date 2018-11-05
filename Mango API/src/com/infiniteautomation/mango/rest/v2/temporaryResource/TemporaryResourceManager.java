@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.infiniteautomation.mango.rest.v2.util.ExceptionMapper;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.vo.User;
@@ -19,6 +22,9 @@ import com.serotonin.m2m2.vo.User;
  * @param <E> error type
  */
 public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<E> {
+
+    protected Log log = LogFactory.getLog(TemporaryResourceManager.class);
+
     /**
      * Default time before the resource is removed after completion
      */

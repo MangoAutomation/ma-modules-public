@@ -8,6 +8,7 @@ import java.util.Date;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.StatusUpdateException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
@@ -154,7 +155,13 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         tasks.timeoutTask = new TimeoutTask(timeoutDate, new TimeoutClient() {
             @Override
             public void scheduleTimeout(long fireTime) {
-                resource.timeOut();
+                try {
+                    resource.timeOut();
+                } catch (StatusUpdateException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tried to time out resource but it was already complete", e);
+                    }
+                }
             }
 
             @Override
