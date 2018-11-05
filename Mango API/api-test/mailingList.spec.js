@@ -16,6 +16,7 @@
  */
 
 const config = require('@infinite-automation/mango-client/test/setup');
+const uuidV4 = require('uuid/v4');
 
 describe('Mailing lists', function() {
     before('Login', config.login);
@@ -241,14 +242,155 @@ describe('Mailing lists', function() {
         });
       });
     
-    it('Deletes a mailing list of type address', () => {
-        return client.restRequest({
-            path: `/rest/v2/mailing-lists/${global.addressMailingList.xid}`,
-            method: 'DELETE',
-            data: {}
-        }).then(response => {
-            assert.equal(response.data.id, global.addressMailingList.id);
+    it('Gets websocket notifications for update', function() {
+        this.timeout(5000);
+        
+        let ws;
+        const subscription = {
+            eventTypes: ['add', 'delete', 'update']
+        };
+        
+        const socketOpenDeferred = config.defer();
+        const listUpdatedDeferred = config.defer();
+        
+        const testId = uuidV4();
+
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/mailing-lists'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                try{
+                    assert.isString(msgStr);
+                    const msg = JSON.parse(msgStr);
+                    assert.strictEqual(msg.status, 'OK');
+                    assert.strictEqual(msg.payload.action, 'update');
+                    assert.strictEqual(msg.payload.object.xid, global.addressMailingList.xid);
+                    listUpdatedDeferred.resolve();   
+                }catch(e){
+                    listUpdatedDeferred.reject(e);
+                }
+            });
+
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const send = config.defer();
+            ws.send(JSON.stringify(subscription), error => {
+                if (error != null) {
+                    send.reject(error);
+                } else {
+                    send.resolve();
+                }
+            });
+            return send.promise;
+            
+        }).then(() => {
+            return client.restRequest({
+                path: '/rest/v2/mailing-lists/ML_TEST_ADDRESS',
+                method: 'PUT',
+                data: global.addressMailingList
+            });
+        }).then(() => listUpdatedDeferred.promise).then((r)=>{
+            ws.close();
+            return r;
+        },e => {
+            ws.close();
+            return Promise.reject(e);
         });
     });
-    //TODO Get them to ensure they are 404
+ 
+    it('Gets websocket notifications for delete', function() {
+        this.timeout(5000);
+        
+        let ws;
+        const subscription = {
+            eventTypes: ['add', 'delete', 'update']
+        };
+        
+        const socketOpenDeferred = config.defer();
+        const listUpdatedDeferred = config.defer();
+        
+        const testId = uuidV4();
+
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/mailing-lists'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                try{
+                    assert.isString(msgStr);
+                    const msg = JSON.parse(msgStr);
+                    assert.strictEqual(msg.status, 'OK');
+                    assert.strictEqual(msg.payload.action, 'delete');
+                    assert.strictEqual(msg.payload.object.xid, global.addressMailingList.xid);
+                    listUpdatedDeferred.resolve();   
+                }catch(e){
+                    listUpdatedDeferred.reject(e);
+                }
+            });
+
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const send = config.defer();
+            ws.send(JSON.stringify(subscription), error => {
+                if (error != null) {
+                    send.reject(error);
+                } else {
+                    send.resolve();
+                }
+            });
+            return send.promise;
+            
+        }).then(() => {
+            return client.restRequest({
+                path: `/rest/v2/mailing-lists/${global.addressMailingList.xid}`,
+                method: 'DELETE',
+                data: {}
+            }).then(response => {
+                assert.equal(response.data.id, global.addressMailingList.id);
+            });
+        }).then(() => listUpdatedDeferred.promise).then((r)=>{
+            ws.close();
+            return r;
+        },e => {
+            ws.close();
+            return Promise.reject(e);
+        });
+    });
+    
+    
 });
