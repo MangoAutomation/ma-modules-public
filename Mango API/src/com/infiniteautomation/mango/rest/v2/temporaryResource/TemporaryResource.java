@@ -47,7 +47,7 @@ public final class TemporaryResource<T, E> {
     private Date completionTime;
     private Integer position;
     private Integer maximum;
-    private Consumer<TemporaryResource<T, E>> cancelCallback;
+    private volatile Consumer<TemporaryResource<T, E>> cancelCallback;
 
     /**
      * Holds runtime data for the resource manager to use
@@ -170,11 +170,7 @@ public final class TemporaryResource<T, E> {
     }
 
     protected final void runTask(User user) throws Exception {
-        Consumer<TemporaryResource<T, E>> callback = task.run(this, user);
-
-        synchronized(this) {
-            this.cancelCallback = callback;
-        }
+        this.cancelCallback = task.run(this, user);
     }
 
     @JsonIgnore
