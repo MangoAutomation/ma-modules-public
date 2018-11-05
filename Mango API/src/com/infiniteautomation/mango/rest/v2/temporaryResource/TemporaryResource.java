@@ -169,9 +169,12 @@ public final class TemporaryResource<T, E> {
         return !(this.status == TemporaryResourceStatus.VIRGIN || this.status == TemporaryResourceStatus.SCHEDULED || this.status == TemporaryResourceStatus.RUNNING);
     }
 
-    @JsonIgnore
-    protected synchronized final void runTask(User user) throws Exception {
-        this.cancelCallback = task.run(this, user);
+    protected final void runTask(User user) throws Exception {
+        Consumer<TemporaryResource<T, E>> callback = task.run(this, user);
+
+        synchronized(this) {
+            this.cancelCallback = callback;
+        }
     }
 
     @JsonIgnore
