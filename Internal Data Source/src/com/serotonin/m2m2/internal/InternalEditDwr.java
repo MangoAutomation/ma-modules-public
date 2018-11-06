@@ -31,7 +31,7 @@ public class InternalEditDwr extends DataSourceEditDwr {
 	
     @DwrPermission(user = true)
     public ProcessResult saveInternalDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, String createPointsPattern) {
-        InternalDataSourceVO ds = (InternalDataSourceVO) Common.getUser().getEditDataSource();
+        InternalDataSourceVO ds = (InternalDataSourceVO) Common.getHttpUser().getEditDataSource();
 
         setBasicProps(ds, basic);
         ds.setUpdatePeriods(updatePeriods);
@@ -43,6 +43,6 @@ public class InternalEditDwr extends DataSourceEditDwr {
 
     @DwrPermission(user = true)
     public ProcessResult saveInternalPointLocator(int id, String xid, String name, InternalPointLocatorVO locator) {
-        return validatePoint(id, xid, name, locator, null);
+        return validatePoint(id, xid, name, locator);
     }
 }

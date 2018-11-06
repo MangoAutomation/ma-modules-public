@@ -57,7 +57,7 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 
 	@DwrPermission(user = true)
 	public ProcessResult savePointLocator(int id, String xid, String name, AsciiFilePointLocatorVO locator) {
-		return validatePoint(id, xid, name, locator, null);
+		return validatePoint(id, xid, name, locator);
 	}
 
 	@DwrPermission(user = true)

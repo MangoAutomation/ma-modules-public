@@ -24,6 +24,6 @@ public class VMStatEditDwr extends DataSourceEditDwr {
 
     @DwrPermission(user = true)
     public ProcessResult saveVMStatPointLocator(int id, String xid, String name, VMStatPointLocatorVO locator) {
-        return validatePoint(id, xid, name, locator, null);
+        return validatePoint(id, xid, name, locator);
     }
 }

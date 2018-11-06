@@ -26,6 +26,6 @@ public class EnvCanEditDwr extends DataSourceEditDwr {
 
     @DwrPermission(user = true)
     public ProcessResult saveEnvCanPointLocator(int id, String xid, String name, EnvCanPointLocatorVO locator) {
-        return validatePoint(id, xid, name, locator, null);
+        return validatePoint(id, xid, name, locator);
     }
 }

@@ -41,7 +41,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public ProcessResult saveMBusDataSource(String name, String xid,
             Connection connection, int updatePeriodType, int updatePeriods, boolean quantize) {
-        MBusDataSourceVO ds = (MBusDataSourceVO) Common.getUser()
+        MBusDataSourceVO ds = (MBusDataSourceVO) Common.getHttpUser()
                 .getEditDataSource();
         ds.setXid(xid);
         ds.setName(name);
@@ -55,21 +55,14 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public ProcessResult saveMBusPointLocator(int id, String xid,
             String name, MBusPointLocatorVO locator) {
-        return validatePoint(id, xid, name, locator, null);
+        return validatePoint(id, xid, name, locator);
     }
 
-    /* 	public Connection getMBusConn() {
-		          TcpIpConnection conn = new TcpIpConnection();
-		conn.setHost("localhost");
-		conn.setPort(2000);
-		return conn;
-	}
-     */
     @DwrPermission(user = true)
     public ProcessResult searchMBus(int dataSourceId, Connection conn, MBusSearchByAddressing addressing) {
         LOG.fatal("searchMBus");
         ProcessResult result = new ProcessResult();
-        User user = Common.getUser();
+        User user = Common.getHttpUser();
 
         Permissions.ensureDataSourcePermission(user);
         if (!Common.runtimeManager.isDataSourceRunning(dataSourceId)) {
@@ -88,7 +81,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public Map<String, Object> mBusSearchUpdate() {
         Map<String, Object> result = new HashMap<>();
-        MBusDiscovery test = Common.getUser().getTestingUtility(MBusDiscovery.class);
+        MBusDiscovery test = Common.getHttpUser().getTestingUtility(MBusDiscovery.class);
         if (test == null) {
             return null;
         }
@@ -100,7 +93,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public Map<String, Object> getMBusResponseFrames(int deviceIndex) {
         Map<String, Object> result = new HashMap<>();
-        MBusDiscovery test = Common.getUser().getTestingUtility(MBusDiscovery.class);
+        MBusDiscovery test = Common.getHttpUser().getTestingUtility(MBusDiscovery.class);
         if (test == null) {
             return null;
         }
@@ -113,7 +106,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
     public Map<String, Object> changeMBusAddress(int deviceIndex, String newAddress) {
         Map<String, Object> result = new HashMap<>();
         result.put("deviceIndex", deviceIndex);
-        MBusDiscovery test = Common.getUser().getTestingUtility(MBusDiscovery.class);
+        MBusDiscovery test = Common.getHttpUser().getTestingUtility(MBusDiscovery.class);
         if (test == null) {
             return null;
         }
@@ -127,7 +120,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
             }
             if (test.changeAddress(deviceIndex, address, result)) {
                 //if address was changed, then change existing datapoints enabled disabled
-                final DataSourceVO<?> ds = Common.getUser().getEditDataSource();
+                final DataSourceVO<?> ds = Common.getHttpUser().getEditDataSource();
                 List<DataPointVO> dpVos = DataPointDao.getInstance().getDataPoints(ds.getId(), null);
                 for (DataPointVO dpVo : dpVos) {
                     final MBusPointLocatorVO pl = dpVo.getPointLocator();
@@ -148,10 +141,10 @@ public class MBusEditDwr extends DataSourceEditDwr {
     @DwrPermission(user = true)
     public DataPointVO addMBusPoint(int deviceIndex,
             int rsIndex, int dbIndex) {
-        DataPointVO dp = getPoint(Common.NEW_ID, null);
+        DataPointVO dp = getPoint(Common.NEW_ID);
         MBusPointLocatorVO locator = (MBusPointLocatorVO) dp.getPointLocator();
 
-        MBusDiscovery test = Common.getUser().getTestingUtility(
+        MBusDiscovery test = Common.getHttpUser().getTestingUtility(
                 MBusDiscovery.class);
         if (test == null) {
             return null;

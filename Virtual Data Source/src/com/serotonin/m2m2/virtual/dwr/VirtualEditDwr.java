@@ -45,7 +45,7 @@ public class VirtualEditDwr extends DataSourceEditDwr {
 
     @DwrPermission(user = true)
     public ProcessResult saveVirtualPointLocator(int id, String xid, String name, VirtualPointLocatorVO locator) {
-        return validatePoint(id, xid, name, locator, null);
+        return validatePoint(id, xid, name, locator);
     }
     
     /**

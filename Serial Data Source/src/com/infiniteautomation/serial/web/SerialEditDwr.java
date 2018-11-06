@@ -60,7 +60,7 @@ public class SerialEditDwr extends DataSourceEditDwr{
     public ProcessResult savePointLocator(int id, String xid, String name,SerialPointLocatorVO locator) {
     	if(locator.getPointIdentifier() == null)
     		locator.setPointIdentifier(new String()); //Sometimes we want to match an empty string
-        return validatePoint(id, xid, name, locator, null);
+        return validatePoint(id, xid, name, locator);
     }
     
     @DwrPermission(user = true)
