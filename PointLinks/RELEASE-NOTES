@@ -1,3 +1,6 @@
+*Version 3.6.0*
+* Upgraded to work with core version 3.6.x
+
 *Version 3.5.1*
 * Fix create tables for non-H2 database types to create logSize and logCount columns
 

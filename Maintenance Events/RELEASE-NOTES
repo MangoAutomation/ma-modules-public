@@ -1,3 +1,6 @@
+*Version 3.6.0*
+* Upgraded to work with core version 3.6.x
+
 *Version 3.5.1*
 * Add GET /v2/maintenance-events/active/{xid} to get the current state
 * Add isEventActive(xid) to maintenanceEventsUtility
@@ -9,7 +12,7 @@
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
 * Allowing multiple data points to link to an event
-* Allowing multiple data sources to link to an event 
+* Allowing multiple data sources to link to an event
 * Adding timeout for Manual type events
 * Adding toggle permission to allow toggling the event if not admin
 * Adding REST endpoints and websockets to manage events
