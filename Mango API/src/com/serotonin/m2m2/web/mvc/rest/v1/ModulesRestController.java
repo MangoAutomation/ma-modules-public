@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +47,7 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.io.StreamUtils;
 import com.serotonin.json.type.JsonArray;
@@ -345,40 +347,43 @@ public class ModulesRestController extends MangoRestController {
     }
 
     @ApiOperation(value = "Set Marked For Deletion state of Module", notes = "Marking a module for deletion will un-install it upon restart")
+    @RequestMapping(method = RequestMethod.PUT, value = "/deletion-state")
+    public ResponseEntity<ModuleModel> markModuleForDeletion(
+            @ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false)
+            @RequestParam(name="delete", required = true) boolean delete,
+            @ApiParam(value = "Module model")
+            @RequestBody() ModuleModel model,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
+        user.ensureHasAdminPermission();
+        Module module = ModuleRegistry.getModule(model.getName());
+        if(module == null)
+            throw new NotFoundException();
+        module.setMarkedForDeletion(delete);
+        if(module.isMarkedForDeletion() != delete)
+            throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
+        
+        return ResponseEntity.ok(new ModuleModel(module));
+    }
+    
+    @ApiOperation(value = "Set Marked For Deletion state of Module", notes = "Marking a module for deletion will un-install it upon restart")
     @RequestMapping(method = RequestMethod.PUT, value = "/deletion-state/{moduleName}")
     public ResponseEntity<ModuleModel> markForDeletion(
-            @ApiParam(value = "Module name", required = false, allowMultiple = false)
-            @PathVariable(required = false)
-            String moduleName,
+            @PathVariable String moduleName,
 
             @ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false)
-            @RequestParam(required = true)
-            boolean delete,
-
-            @ApiParam(value = "Module model", required = false)
-            @RequestBody(required = false)
-            ModuleModel model,
-
+            @RequestParam(name="delete", required = true) boolean delete,
+            @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        RestProcessResult<ModuleModel> result = new RestProcessResult<ModuleModel>(HttpStatus.OK);
-        User user = this.checkUser(request, result);
-        if (result.isOk()) {
-            if (user.isAdmin()) {
-                Module module = ModuleRegistry.getModule(moduleName == null ? model.getName() : moduleName);
-                if (module != null) {
-                    module.setMarkedForDeletion(delete);
-                    if(module.isMarkedForDeletion() != delete)
-                        throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
-                    return result.createResponseEntity(new ModuleModel(module));
-                } else {
-                    result.addRestMessage(getDoesNotExistMessage());
-                }
-            } else {
-                result.addRestMessage(this.getUnauthorizedMessage());
-            }
-        }
-        return result.createResponseEntity(model);
+        Module module = ModuleRegistry.getModule(moduleName);
+        if(module == null)
+            throw new NotFoundException();
+        module.setMarkedForDeletion(delete);
+        if(module.isMarkedForDeletion() != delete)
+            throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
+        
+       return ResponseEntity.ok(new ModuleModel(module));
     }
 
     @PreAuthorize("isAdmin()")
