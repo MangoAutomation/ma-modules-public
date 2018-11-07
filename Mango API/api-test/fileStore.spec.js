@@ -935,4 +935,72 @@ describe('Test File Store endpoints', function() {
         	assert.strictEqual(error.response.statusCode, 403);
         });
     });
+    
+    describe('with partial range requests', function() {
+        beforeEach('upload a random .mp3 file', function() {
+            const uploadFile = tmp.fileSync({postfix: '.mp3'});
+            this.randomBytes = crypto.randomBytes(1024);
+            fs.writeFileSync(uploadFile.name, this.randomBytes);
+            
+            this.fileName = path.basename(uploadFile.name);
+            this.encodedFileName = encodeURI(this.fileName);
+            this.path = `/rest/v2/file-stores/default/node-client-test/debug/${this.encodedFileName}`;
+            
+            return client.restRequest({
+                path: '/rest/v2/file-stores/default/node-client-test/debug',
+                method: 'POST',
+                uploadFiles: [uploadFile.name]
+            }).then(response => {
+                uploadFile.removeCallback();
+                assert.strictEqual(response.data[0].filename, this.fileName);
+            });
+        });
+        
+        afterEach('cleanup file', function() {
+            return client.restRequest({
+                path: this.path,
+                method: 'DELETE'
+            }).then(null, error => null);
+        });
+        
+        it('for bytes=0-', function() {
+            return client.restRequest({
+                path: this.path,
+                method: 'GET',
+                dataType: 'buffer',
+                headers: {
+                    'Accept': '*/*',
+                    'Range': 'bytes=0-'
+                }
+            }).then(response => {
+                assert.strictEqual(response.status, 206); // partial
+                assert.strictEqual(response.headers['content-type'], 'audio/mpeg;charset=utf-8');
+                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                assert.strictEqual(response.headers['content-range'], 'bytes 0-1023/1024');
+                assert.strictEqual(response.headers['content-length'], '1024');
+                assert.strictEqual(Buffer.compare(this.randomBytes, response.data), 0,
+                    'downloaded file does not match the uploaded file');
+            });
+        });
+
+        it('for bytes=0-100', function() {
+            return client.restRequest({
+                path: this.path,
+                method: 'GET',
+                dataType: 'buffer',
+                headers: {
+                    'Accept': '*/*',
+                    'Range': 'bytes=0-99'
+                }
+            }).then(response => {
+                assert.strictEqual(response.status, 206); // partial
+                assert.strictEqual(response.headers['content-type'], 'audio/mpeg;charset=utf-8');
+                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                assert.strictEqual(response.headers['content-range'], 'bytes 0-99/1024');
+                assert.strictEqual(response.headers['content-length'], '100');
+                assert.strictEqual(Buffer.compare(this.randomBytes.slice(0, 100), response.data), 0,
+                    'downloaded file does not match the uploaded file');
+            });
+        });
+    });
 });
