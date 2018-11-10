@@ -20,7 +20,7 @@ const uuidV4 = require('uuid/v4');
 
 describe('Mailing lists', function() {
     before('Login', config.login);
-    this.timeout(50000000);
+
     it('Creates a mailing list of type address', () => {
       global.addressMailingList = {
         xid: 'ML_TEST_ADDRESS',
@@ -375,7 +375,7 @@ describe('Mailing lists', function() {
             });
             return send.promise;
             
-        }).then(() => {
+        }).then(() => config.delay(1000)).then(() => {
             return client.restRequest({
                 path: `/rest/v2/mailing-lists/${global.addressMailingList.xid}`,
                 method: 'DELETE',
