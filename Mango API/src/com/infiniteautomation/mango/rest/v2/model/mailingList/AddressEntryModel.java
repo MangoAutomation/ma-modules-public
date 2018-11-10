@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
+import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 
 import io.swagger.annotations.ApiModel;
 
@@ -42,6 +43,14 @@ public class AddressEntryModel extends EmailRecipientModel {
 	    AddressEntry entry = new AddressEntry();
 	    entry.setAddress(address);
 	    return entry;
+	}
+	
+	@Override
+	public RecipientListEntryBean toBean() {
+	    RecipientListEntryBean bean = new RecipientListEntryBean();
+	    bean.setRecipientType(EmailRecipient.TYPE_ADDRESS);
+	    bean.setReferenceAddress(address);
+	    return bean;
 	}
 	
 }

@@ -21,7 +21,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, SERVICE extends AbstractVOService<T>> implements StreamedArrayWithTotal {
+public class StreamedVORqlQueryWithTotal<T extends AbstractVO<?>, SERVICE extends AbstractVOService<T>> implements StreamedArrayWithTotal {
     private final SERVICE service;
     private final ASTNode conditions;
     private final Function<T, ?> toModel;

@@ -23,12 +23,18 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModel;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListWithRecipientsModel;
-import com.infiniteautomation.mango.spring.service.MailingListService;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
+import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.mailingList.MailingList;
+import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
+import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
+import com.serotonin.m2m2.vo.event.ProcessEventHandlerVO;
+import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
@@ -40,23 +46,23 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Terry Packer
  *
  */
-@Api(value="Mailing List Rest Controller")
-@RestController("MailingListRestControllerV2")
-@RequestMapping("/v2/mailing-lists")
-public class MailingListRestController {
+@Api(value="Event Handlers Rest Controller")
+@RestController("EventHandlersRestControllerV2")
+@RequestMapping("/v2/event-handlers")
+public class EventHandlersRestController {
 
-    private final MailingListService service;
-
+    private final EventHandlerService service;
+    
     @Autowired
-    public MailingListRestController(MailingListService service) {
+    public EventHandlersRestController(EventHandlerService service) {
         this.service = service;
     }
-
+    
     @ApiOperation(
-            value = "Query Mailing Lists",
+            value = "Query Event Handlers",
             notes = "",
             responseContainer="List",
-            response=MailingListWithRecipientsModel.class
+            response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal query(
@@ -69,12 +75,12 @@ public class MailingListRestController {
     }
 
     @ApiOperation(
-            value = "Get a Mailing List",
-            notes = "Requires Read Permission to see the addresses",
-            response=MailingListWithRecipientsModel.class
+            value = "Get an Event Handler",
+            notes = "",
+            response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
-    public ResponseEntity<MailingListModel> get(
+    public ResponseEntity<AbstractEventHandlerModel> get(
             @ApiParam(value = "XID of Mailing List to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
@@ -84,17 +90,17 @@ public class MailingListRestController {
     }
 
     @ApiOperation(
-            value = "Create a Mailing List",
-            notes = "Requires global Create Mailing List privileges",
-            response=MailingListWithRecipientsModel.class
+            value = "Create an Event Handler",
+            notes = "Requires global Event Handler privileges",
+            response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<MailingListModel> create(
-            @RequestBody MailingListWithRecipientsModel model,
+    public ResponseEntity<AbstractEventHandlerModel> create(
+            @RequestBody AbstractEventHandlerModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MailingList vo = service.insertFull(model.toVO(), user);
+        AbstractEventHandlerVO<?> vo = service.insertFull(model.toVO(), user);
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -102,48 +108,48 @@ public class MailingListRestController {
     }
 
     @ApiOperation(
-            value = "Update a Mailing List",
+            value = "Update an Event Handler",
             notes = "Requires edit permission",
-            response=MailingListWithRecipientsModel.class
+            response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
-    public ResponseEntity<MailingListModel> update(
-            @ApiParam(value = "XID of MailingList to update", required = true, allowMultiple = false)
+    public ResponseEntity<AbstractEventHandlerModel> update(
+            @ApiParam(value = "XID of Event Handler to update", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @ApiParam(value = "Mailing List of update", required = true, allowMultiple = false)
-            @RequestBody MailingListWithRecipientsModel model,
+            @ApiParam(value = "Event Handler of update", required = true, allowMultiple = false)
+            @RequestBody AbstractEventHandlerModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MailingList vo = service.updateFull(xid, model.toVO(), user);
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        AbstractEventHandlerVO<?> vo = service.updateFull(xid, model.toVO(), user);
+        URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
-            value = "Partially update a Mailing List",
+            value = "Partially update an Event Handler",
             notes = "Requires edit permission",
-            response=MailingListWithRecipientsModel.class
+            response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
-    public ResponseEntity<MailingListModel> partialUpdate(
+    public ResponseEntity<AbstractEventHandlerModel> partialUpdate(
             @PathVariable String xid,
 
-            @ApiParam(value = "Updated mailing list", required = true)
-            @RequestBody(required=true) MailingListWithRecipientsModel model,
+            @ApiParam(value = "Updated maintenance event", required = true)
+            @RequestBody(required=true) AbstractEventHandlerModel model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        MailingList existing = service.getFull(xid, user);
-        MailingListWithRecipientsModel existingModel = new MailingListWithRecipientsModel(existing);
+        AbstractEventHandlerVO<?> existing = service.getFull(xid, user);
+        AbstractEventHandlerModel existingModel = wrap(existing, user);
         existingModel.patch(model);
-        MailingList vo = existingModel.toVO();
+        AbstractEventHandlerVO<?> vo = existingModel.toVO();
         vo = service.updateFull(existing, vo, user);
 
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -151,13 +157,13 @@ public class MailingListRestController {
     }
 
     @ApiOperation(
-            value = "Delete a Mailing List",
+            value = "Delete an EventHandler",
             notes = "",
-            response=MailingListWithRecipientsModel.class
+            response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
-    public ResponseEntity<MailingListModel> delete(
-            @ApiParam(value = "XID of Mailing List to delete", required = true, allowMultiple = false)
+    public ResponseEntity<AbstractEventHandlerModel> delete(
+            @ApiParam(value = "XID of EventHandler to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
@@ -166,29 +172,21 @@ public class MailingListRestController {
     }
 
     @ApiOperation(
-            value = "Validate a Mailing List without saving it",
+            value = "Validate an Event Handler without saving it",
             notes = "Admin Only",
             response=Void.class
             )
     @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.POST, value="/validate")
     public void validate(
-            @RequestBody MailingListWithRecipientsModel script,
+            @RequestBody AbstractEventHandlerModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        service.ensureValid(script.toVO(), user);
+        service.ensureValid(model.toVO(), user);
     }
-
-    /**
-     *
-     * TODO Move to Service
-     * @param rql
-     * @param user
-     * @param transform2
-     * @return
-     */
+    
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
@@ -198,12 +196,20 @@ public class MailingListRestController {
             return new StreamedVORqlQueryWithTotal<>(service, rql, user, transform, true);
         }
     }
-
-    final Function<MailingList, Object> adminTransform = item -> {
-        return new MailingListWithRecipientsModel(item);
+    
+    final Function<AbstractEventHandlerVO<?>, Object> adminTransform = vo -> {
+        if(vo instanceof EmailEventHandlerVO) {
+            return new EmailEventHandlerModel((EmailEventHandlerVO) vo);
+        }else if(vo instanceof ProcessEventHandlerVO) {
+            return new ProcessEventHandlerModel((ProcessEventHandlerVO)vo);
+        }else if(vo instanceof SetPointEventHandlerVO) {
+            return new SetPointEventHandlerModel((SetPointEventHandlerVO)vo);
+        }else {
+            throw new ShouldNeverHappenException("Un-implemented model for " + vo.getClass().getName());
+        }    
     };
-
-    final class ViewWrapFunction implements Function<MailingList, Object> {
+    
+    final class ViewWrapFunction implements Function<AbstractEventHandlerVO<?>, Object> {
 
         private final PermissionHolder holder;
         public ViewWrapFunction(PermissionHolder holder) {
@@ -211,22 +217,27 @@ public class MailingListRestController {
         }
 
         @Override
-        public MailingListModel apply(MailingList t) {
+        public AbstractEventHandlerModel apply(AbstractEventHandlerVO<?> t) {
             return wrap(t, holder);
         }
 
     }
 
     /**
-     * Helper to ensure proper view
-     * @param model
+     * Convert a vo to a model
+     * @param vo
+     * @param user
      * @return
      */
-    private MailingListModel wrap(MailingList list, PermissionHolder user) {
-        if(service.hasRecipientViewPermission(user, list))
-            return new MailingListWithRecipientsModel(list);
-        else
-            return new MailingListModel(list);
-
+    private AbstractEventHandlerModel wrap(AbstractEventHandlerVO<?> vo, PermissionHolder user){
+        if(vo instanceof EmailEventHandlerVO) {
+            return new EmailEventHandlerModel((EmailEventHandlerVO) vo);
+        }else if(vo instanceof ProcessEventHandlerVO) {
+            return new ProcessEventHandlerModel((ProcessEventHandlerVO)vo);
+        }else if(vo instanceof SetPointEventHandlerVO) {
+            return new SetPointEventHandlerModel((SetPointEventHandlerVO)vo);
+        }else {
+            throw new ShouldNeverHappenException("Un-implemented model for " + vo.getClass().getName());
+        }
     }
 }
