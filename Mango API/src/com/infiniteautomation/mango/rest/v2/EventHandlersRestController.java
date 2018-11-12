@@ -229,7 +229,7 @@ public class EventHandlersRestController {
      * @param user
      * @return
      */
-    private AbstractEventHandlerModel wrap(AbstractEventHandlerVO<?> vo, PermissionHolder user){
+    public static AbstractEventHandlerModel wrap(AbstractEventHandlerVO<?> vo, PermissionHolder user){
         if(vo instanceof EmailEventHandlerVO) {
             return new EmailEventHandlerModel((EmailEventHandlerVO) vo);
         }else if(vo instanceof ProcessEventHandlerVO) {

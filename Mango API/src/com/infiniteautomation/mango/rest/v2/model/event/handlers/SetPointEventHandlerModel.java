@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
 import com.serotonin.db.pair.IntStringPair;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.SetPointEventHandlerDefinition;
@@ -217,19 +218,27 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     @Override
     public AbstractEventHandlerVO<?> toVO() {
         SetPointEventHandlerVO vo = (SetPointEventHandlerVO)super.toVO();
-        vo.setTargetPointId(DataPointDao.getInstance().getIdByXid(targetPointXid));
+        Integer targetId = DataPointDao.getInstance().getIdByXid(targetPointXid);
+        if(targetId != null)
+            vo.setTargetPointId(targetId);
         vo.setActiveAction(SetPointEventHandlerVO.SET_ACTION_CODES.getId(activeAction));
         if(activeValueToSet != null)
             vo.setActiveValueToSet(activeValueToSet.toString());
-        if(activePointXid != null)
-            vo.setActivePointId(DataPointDao.getInstance().getIdByXid(activePointXid));
+        if(activePointXid != null) {
+            Integer activePointId = DataPointDao.getInstance().getIdByXid(activePointXid);
+            if(activePointId != null)
+                vo.setActivePointId(activePointId);
+        }
         vo.setActiveScript(activeScript);
         
         vo.setInactiveAction(SetPointEventHandlerVO.SET_ACTION_CODES.getId(inactiveAction));
         if(inactiveValueToSet != null)
             vo.setInactiveValueToSet(inactiveValueToSet.toString());
-        if(inactivePointXid != null)
-            vo.setInactivePointId(DataPointDao.getInstance().getIdByXid(inactivePointXid));
+        if(inactivePointXid != null) {
+            Integer inactivePointId = DataPointDao.getInstance().getIdByXid(inactivePointXid);
+            if(inactivePointId != null)
+                vo.setInactivePointId(inactivePointId);
+        }
         vo.setInactiveScript(inactiveScript);
         
         if(scriptPermissions != null) {
@@ -247,6 +256,8 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
                 Integer id = DataPointDao.getInstance().getIdByXid(var.getXid());
                 if(id != null) {
                     additionalContext.add(new IntStringPair(id, var.getVariableName()));
+                }else {
+                    additionalContext.add(new IntStringPair(Common.NEW_ID, var.getVariableName()));
                 }
             }
             vo.setAdditionalContext(additionalContext);

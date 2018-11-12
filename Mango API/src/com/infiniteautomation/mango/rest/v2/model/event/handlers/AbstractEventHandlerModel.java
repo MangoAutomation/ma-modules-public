@@ -23,9 +23,37 @@ import io.swagger.annotations.ApiModel;
 })
 public abstract class AbstractEventHandlerModel extends AbstractVoModel<AbstractEventHandlerVO<?>>{
 
+    private boolean disabled;
+    
     public AbstractEventHandlerModel() { }
     public AbstractEventHandlerModel(AbstractEventHandlerVO<?> vo) {
         super(vo);
     }
     
+    /**
+     * @return the disabled
+     */
+    public boolean isDisabled() {
+        return disabled;
+    }
+    
+    /**
+     * @param disabled the disabled to set
+     */
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+    
+    @Override
+    public void fromVO(AbstractEventHandlerVO<?> vo) {
+        super.fromVO(vo);
+        this.disabled = vo.isDisabled();
+    }
+    
+    @Override
+    public AbstractEventHandlerVO<?> toVO() {
+        AbstractEventHandlerVO<?> vo = super.toVO();
+        vo.setDisabled(disabled);
+        return vo;
+    }
 }

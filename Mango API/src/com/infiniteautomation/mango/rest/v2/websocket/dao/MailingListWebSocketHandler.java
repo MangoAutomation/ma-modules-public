@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
+package com.infiniteautomation.mango.rest.v2.websocket.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;

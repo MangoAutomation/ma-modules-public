@@ -69,6 +69,230 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
         super(vo);
     }
     
+    /**
+     * @return the activeRecipients
+     */
+    public List<EmailRecipientModel> getActiveRecipients() {
+        return activeRecipients;
+    }
+
+    /**
+     * @param activeRecipients the activeRecipients to set
+     */
+    public void setActiveRecipients(List<EmailRecipientModel> activeRecipients) {
+        this.activeRecipients = activeRecipients;
+    }
+
+    /**
+     * @return the sendEscalation
+     */
+    public boolean isSendEscalation() {
+        return sendEscalation;
+    }
+
+    /**
+     * @param sendEscalation the sendEscalation to set
+     */
+    public void setSendEscalation(boolean sendEscalation) {
+        this.sendEscalation = sendEscalation;
+    }
+
+    /**
+     * @return the repeatEscalations
+     */
+    public boolean isRepeatEscalations() {
+        return repeatEscalations;
+    }
+
+    /**
+     * @param repeatEscalations the repeatEscalations to set
+     */
+    public void setRepeatEscalations(boolean repeatEscalations) {
+        this.repeatEscalations = repeatEscalations;
+    }
+
+    /**
+     * @return the escalationDelayType
+     */
+    public String getEscalationDelayType() {
+        return escalationDelayType;
+    }
+
+    /**
+     * @param escalationDelayType the escalationDelayType to set
+     */
+    public void setEscalationDelayType(String escalationDelayType) {
+        this.escalationDelayType = escalationDelayType;
+    }
+
+    /**
+     * @return the escalationDelay
+     */
+    public int getEscalationDelay() {
+        return escalationDelay;
+    }
+
+    /**
+     * @param escalationDelay the escalationDelay to set
+     */
+    public void setEscalationDelay(int escalationDelay) {
+        this.escalationDelay = escalationDelay;
+    }
+
+    /**
+     * @return the escalationRecipients
+     */
+    public List<EmailRecipientModel> getEscalationRecipients() {
+        return escalationRecipients;
+    }
+
+    /**
+     * @param escalationRecipients the escalationRecipients to set
+     */
+    public void setEscalationRecipients(List<EmailRecipientModel> escalationRecipients) {
+        this.escalationRecipients = escalationRecipients;
+    }
+
+    /**
+     * @return the sendInactive
+     */
+    public boolean isSendInactive() {
+        return sendInactive;
+    }
+
+    /**
+     * @param sendInactive the sendInactive to set
+     */
+    public void setSendInactive(boolean sendInactive) {
+        this.sendInactive = sendInactive;
+    }
+
+    /**
+     * @return the inactiveOverride
+     */
+    public boolean isInactiveOverride() {
+        return inactiveOverride;
+    }
+
+    /**
+     * @param inactiveOverride the inactiveOverride to set
+     */
+    public void setInactiveOverride(boolean inactiveOverride) {
+        this.inactiveOverride = inactiveOverride;
+    }
+
+    /**
+     * @return the inactiveRecipients
+     */
+    public List<EmailRecipientModel> getInactiveRecipients() {
+        return inactiveRecipients;
+    }
+
+    /**
+     * @param inactiveRecipients the inactiveRecipients to set
+     */
+    public void setInactiveRecipients(List<EmailRecipientModel> inactiveRecipients) {
+        this.inactiveRecipients = inactiveRecipients;
+    }
+
+    /**
+     * @return the includeSystemInfo
+     */
+    public boolean isIncludeSystemInfo() {
+        return includeSystemInfo;
+    }
+
+    /**
+     * @param includeSystemInfo the includeSystemInfo to set
+     */
+    public void setIncludeSystemInfo(boolean includeSystemInfo) {
+        this.includeSystemInfo = includeSystemInfo;
+    }
+
+    /**
+     * @return the includePointValueCount
+     */
+    public Integer getIncludePointValueCount() {
+        return includePointValueCount;
+    }
+
+    /**
+     * @param includePointValueCount the includePointValueCount to set
+     */
+    public void setIncludePointValueCount(Integer includePointValueCount) {
+        this.includePointValueCount = includePointValueCount;
+    }
+
+    /**
+     * @return the includeLogfile
+     */
+    public boolean isIncludeLogfile() {
+        return includeLogfile;
+    }
+
+    /**
+     * @param includeLogfile the includeLogfile to set
+     */
+    public void setIncludeLogfile(boolean includeLogfile) {
+        this.includeLogfile = includeLogfile;
+    }
+
+    /**
+     * @return the customTemplate
+     */
+    public String getCustomTemplate() {
+        return customTemplate;
+    }
+
+    /**
+     * @param customTemplate the customTemplate to set
+     */
+    public void setCustomTemplate(String customTemplate) {
+        this.customTemplate = customTemplate;
+    }
+
+    /**
+     * @return the scriptContext
+     */
+    public List<ScriptContextVariableModel> getScriptContext() {
+        return scriptContext;
+    }
+
+    /**
+     * @param scriptContext the scriptContext to set
+     */
+    public void setScriptContext(List<ScriptContextVariableModel> scriptContext) {
+        this.scriptContext = scriptContext;
+    }
+
+    /**
+     * @return the scriptPermissions
+     */
+    public Set<String> getScriptPermissions() {
+        return scriptPermissions;
+    }
+
+    /**
+     * @param scriptPermissions the scriptPermissions to set
+     */
+    public void setScriptPermissions(Set<String> scriptPermissions) {
+        this.scriptPermissions = scriptPermissions;
+    }
+
+    /**
+     * @return the script
+     */
+    public String getScript() {
+        return script;
+    }
+
+    /**
+     * @param script the script to set
+     */
+    public void setScript(String script) {
+        this.script = script;
+    }
+
     @Override
     public AbstractEventHandlerVO<?> toVO() {
         EmailEventHandlerVO vo = (EmailEventHandlerVO) super.toVO();
@@ -121,6 +345,8 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
                 Integer id = DataPointDao.getInstance().getIdByXid(var.getXid());
                 if(id != null) {
                     additionalContext.add(new IntStringPair(id, var.getVariableName()));
+                }else {
+                    additionalContext.add(new IntStringPair(Common.NEW_ID, var.getVariableName()));
                 }
             }
             vo.setAdditionalContext(additionalContext);
@@ -160,7 +386,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
         
         if(handler.getEscalationRecipients() != null) {
             this.escalationRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : handler.getActiveRecipients()) {
+            for(RecipientListEntryBean bean : handler.getEscalationRecipients()) {
                 switch(bean.getRecipientType()) {
                     case EmailRecipient.TYPE_ADDRESS:
                         escalationRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
@@ -182,7 +408,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
 
         if(handler.getInactiveRecipients() != null) {
             this.inactiveRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : handler.getActiveRecipients()) {
+            for(RecipientListEntryBean bean : handler.getInactiveRecipients()) {
                 switch(bean.getRecipientType()) {
                     case EmailRecipient.TYPE_ADDRESS:
                         inactiveRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
