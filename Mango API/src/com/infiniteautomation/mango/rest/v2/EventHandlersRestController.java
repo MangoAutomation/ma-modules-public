@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -96,6 +97,7 @@ public class EventHandlersRestController {
             )
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractEventHandlerModel> create(
+            @Valid
             @RequestBody AbstractEventHandlerModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,

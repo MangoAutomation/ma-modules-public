@@ -4,6 +4,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
+import javax.validation.constraints.Email;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -21,6 +23,7 @@ import io.swagger.annotations.ApiModel;
 @JsonTypeName("ADDRESS")
 public class AddressEntryModel extends EmailRecipientModel {
 
+    @Email
     private String address;
     
 	public AddressEntryModel() { }
