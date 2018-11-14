@@ -4,13 +4,14 @@
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
-import com.infiniteautomation.mango.validation.DataPointXidExists;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -33,7 +34,6 @@ import io.swagger.annotations.ApiModel;
 @JsonTypeName("SET_POINT")
 public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
 
-    @DataPointXidExists()
     private String targetPointXid;
     
     private String activeAction;
@@ -218,7 +218,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     }
 
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
+    public SetPointEventHandlerVO toVO() {
         SetPointEventHandlerVO vo = (SetPointEventHandlerVO)super.toVO();
         Integer targetId = DataPointDao.getInstance().getIdByXid(targetPointXid);
         if(targetId != null)
@@ -310,10 +310,17 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    protected AbstractEventHandlerVO<?> newVO() {
+    protected SetPointEventHandlerVO newVO() {
         SetPointEventHandlerVO handler = new SetPointEventHandlerVO();
         handler.setDefinition(ModuleRegistry.getEventHandlerDefinition(SetPointEventHandlerDefinition.TYPE_NAME));
         return handler;
     }
 
+    @Override
+    public Map<String, String> getPropertyMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("targetPointId", "targetPointXid");
+        map.put("activePointId", "activePointXid");
+        return map;
+    }
 }

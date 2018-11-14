@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -294,7 +295,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
     }
 
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
+    public EmailEventHandlerVO toVO() {
         EmailEventHandlerVO vo = (EmailEventHandlerVO) super.toVO();
         if(activeRecipients != null) {
             List<RecipientListEntryBean> beans = new ArrayList<>();
@@ -446,10 +447,16 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    protected AbstractEventHandlerVO<?> newVO() {
+    protected EmailEventHandlerVO newVO() {
         EmailEventHandlerVO handler = new EmailEventHandlerVO();
         handler.setDefinition(ModuleRegistry.getEventHandlerDefinition(EmailEventHandlerDefinition.TYPE_NAME));
         return handler;
+    }
+
+    @Override
+    public Map<String, String> getPropertyMap() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

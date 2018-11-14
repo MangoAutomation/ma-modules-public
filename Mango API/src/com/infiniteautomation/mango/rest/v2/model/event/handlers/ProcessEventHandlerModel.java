@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.ProcessEventHandlerDefinition;
@@ -113,5 +115,11 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel {
         ProcessEventHandlerVO handler = new ProcessEventHandlerVO();
         handler.setDefinition(ModuleRegistry.getEventHandlerDefinition(ProcessEventHandlerDefinition.TYPE_NAME));
         return handler;
+    }
+
+    @Override
+    public Map<String, String> getPropertyMap() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

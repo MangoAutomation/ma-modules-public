@@ -102,11 +102,16 @@ public class EventHandlersRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        AbstractEventHandlerVO<?> vo = service.insertFull(model.toVO(), user);
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(location);
-        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
+        try{
+            service.setValidationPropertyMap(model.getPropertyMap());
+            AbstractEventHandlerVO<?> vo = service.insertFull(model.toVO(), user);
+            URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(location);
+            return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
+        }finally {
+            service.removeValidationPropertyMap();
+        }
     }
 
     @ApiOperation(

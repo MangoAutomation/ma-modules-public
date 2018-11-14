@@ -173,12 +173,12 @@ public class MailingListRestController {
     @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.POST, value="/validate")
     public void validate(
-            @RequestBody MailingListWithRecipientsModel script,
+            @RequestBody MailingListWithRecipientsModel model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        service.ensureValid(script.toVO(), user);
+        service.ensureValid(model.toVO(), user);
     }
 
     /**

@@ -3,7 +3,10 @@
  */
 package com.infiniteautomation.mango.rest.v2.script;
 
+import com.infiniteautomation.mango.validation.ValidDataPoint;
+
 public class ScriptContextVariableModel {
+    @ValidDataPoint
 	private String xid;
 	private String variableName;
 	

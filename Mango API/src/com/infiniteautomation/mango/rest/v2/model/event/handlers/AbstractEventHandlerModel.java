@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
@@ -56,4 +58,7 @@ public abstract class AbstractEventHandlerModel extends AbstractVoModel<Abstract
         vo.setDisabled(disabled);
         return vo;
     }
+    
+    public abstract Map<String, String> getPropertyMap();
+
 }
