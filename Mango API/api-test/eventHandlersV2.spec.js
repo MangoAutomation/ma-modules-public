@@ -616,7 +616,7 @@ describe('Event handlers v2', function() {
             //Invalid FTL
             assert.strictEqual(error.data.result.messages[2].property, 'customTemplate');
             //Missing point
-            assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].xid');
+            assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].id');
         });
     });
     
