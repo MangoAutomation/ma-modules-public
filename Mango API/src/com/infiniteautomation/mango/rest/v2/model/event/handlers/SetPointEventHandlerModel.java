@@ -321,6 +321,11 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
         Map<String, String> map = new HashMap<>();
         map.put("targetPointId", "targetPointXid");
         map.put("activePointId", "activePointXid");
+        map.put("inactivePointId", "inactivePointXid");
+        map.put("additionalContext", "scriptContext");
         return map;
     }
+
+    
+    
 }
