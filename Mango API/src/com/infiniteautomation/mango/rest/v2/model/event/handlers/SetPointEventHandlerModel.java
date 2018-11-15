@@ -12,6 +12,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
+import com.infiniteautomation.mango.validation.ValidDataPoint;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -34,6 +35,7 @@ import io.swagger.annotations.ApiModel;
 @JsonTypeName("SET_POINT")
 public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
 
+    @ValidDataPoint(voProperty="targetPointId")
     private String targetPointXid;
     
     private String activeAction;
