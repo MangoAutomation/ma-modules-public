@@ -5,7 +5,9 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
@@ -35,6 +38,7 @@ import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -49,7 +53,60 @@ import io.swagger.annotations.ApiParam;
 public class EventTypeV2RestController {
 
     public EventTypeV2RestController() {}
-    
+
+    public static class EventTypeNameModel {
+        private final String typeName;
+        private final String descriptionKey;
+        private final TranslatableMessage description;
+
+        public EventTypeNameModel(String typeName, TranslatableMessage description) {
+            this.typeName = typeName;
+            this.description = description;
+            this.descriptionKey = description.getKey();
+        }
+
+        public EventTypeNameModel(EventTypeDefinition def) {
+            this.typeName = def.getTypeName();
+            this.description = new TranslatableMessage(def.getDescriptionKey());
+            this.descriptionKey = def.getDescriptionKey();
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public String getDescriptionKey() {
+            return descriptionKey;
+        }
+
+        public TranslatableMessage getDescription() {
+            return description;
+        }
+    }
+
+    @PreAuthorize("hasDataSourcePermission()")
+    @ApiOperation(
+            value = "Get current possible event types",
+            notes = "",
+            response=EventTypeModel.class,
+            responseContainer="Set")
+    @RequestMapping(method = RequestMethod.GET, value="/type-names")
+    public Set<EventTypeNameModel> getEventTypeNames(@AuthenticationPrincipal User user) {
+
+        Set<EventTypeNameModel> typeNames = new HashSet<>();
+        typeNames.add(new EventTypeNameModel(EventTypeNames.DATA_POINT, new TranslatableMessage("eventHandlers.pointEventDetector")));
+        typeNames.add(new EventTypeNameModel(EventTypeNames.DATA_SOURCE, new TranslatableMessage("eventHandlers.dataSourceEvents")));
+        typeNames.add(new EventTypeNameModel(EventTypeNames.PUBLISHER, new TranslatableMessage("eventHandlers.publisherEvents")));
+        typeNames.add(new EventTypeNameModel(EventTypeNames.SYSTEM, new TranslatableMessage("eventHandlers.systemEvents")));
+        typeNames.add(new EventTypeNameModel(EventTypeNames.AUDIT, new TranslatableMessage("eventHandlers.auditEvents")));
+
+        for (EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
+            typeNames.add(new EventTypeNameModel(def));
+        }
+
+        return typeNames;
+    }
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current possible event types",
@@ -63,9 +120,9 @@ public class EventTypeV2RestController {
             @RequestParam(value = "subtypeName", required = false) String subtypeName,
             @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
             @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
-        
+
         List<EventTypeModel> result = new ArrayList<EventTypeModel>();
-        
+
         if(typeName == null) {
             getAllDataPointEventTypes(result, user, typeRef1, typeRef2);
             getAllDataSourceEventTypes(result, user, typeRef1, typeRef2);
@@ -86,10 +143,10 @@ public class EventTypeV2RestController {
         } else {
             getAllModuleEventTypes(result, user, typeName, subtypeName, typeRef1, typeRef2, false);
         }
-        
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-    
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current data point event types",
@@ -97,17 +154,17 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, value="/data-point") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-point")
     public ResponseEntity<List<EventTypeModel>> getDataPointEventTypes(@AuthenticationPrincipal User user,
-            @ApiParam(value = "ID of the data point", required = false, allowMultiple = false) 
-            @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
-            @ApiParam(value = "ID of the event type", required = false, allowMultiple = false) 
-            @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
+            @ApiParam(value = "ID of the data point", required = false, allowMultiple = false)
+    @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
+    @ApiParam(value = "ID of the event type", required = false, allowMultiple = false)
+    @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
         List<EventTypeModel> result = new ArrayList<EventTypeModel>();
         getAllDataPointEventTypes(result, user, typeRef1, typeRef2);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-    
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current data point event types for a point",
@@ -115,17 +172,17 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, value="/data-point/{dpid}") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-point/{dpid}")
     public ResponseEntity<List<EventTypeModel>> getDataPointEventTypesByPoint(@AuthenticationPrincipal User user,
-            @ApiParam(value = "ID of the data point", required = false, allowMultiple = false) 
-            @PathVariable Integer dpid,
-            @ApiParam(value = "ID of the event type", required = false, allowMultiple = false) 
-            @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
+            @ApiParam(value = "ID of the data point", required = false, allowMultiple = false)
+    @PathVariable Integer dpid,
+    @ApiParam(value = "ID of the event type", required = false, allowMultiple = false)
+    @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
         List<EventTypeModel> result = new ArrayList<EventTypeModel>();
         getAllDataPointEventTypes(result, user, dpid, typeRef2);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-    
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current data source event types",
@@ -133,18 +190,18 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, value="/data-source") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-source")
     public ResponseEntity<List<EventTypeModel>> getDataSourceEventTypes(@AuthenticationPrincipal User user,
-            @ApiParam(value = "ID of the data source", required = false, allowMultiple = false) 
-            @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
-            
-            @ApiParam(value = "ID of the event type", required = false, allowMultiple = false) 
-            @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
+            @ApiParam(value = "ID of the data source", required = false, allowMultiple = false)
+    @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
+
+    @ApiParam(value = "ID of the event type", required = false, allowMultiple = false)
+    @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
         List<EventTypeModel> result = new ArrayList<EventTypeModel>();
         getAllDataSourceEventTypes(result, user, typeRef1, typeRef2);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-    
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current data source event types for a source",
@@ -152,17 +209,17 @@ public class EventTypeV2RestController {
             response=EventTypeModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.GET, value="/data-source/{dsid}") 
+    @RequestMapping(method = RequestMethod.GET, value="/data-source/{dsid}")
     public ResponseEntity<List<EventTypeModel>> getDataSourceEventTypesBySource(@AuthenticationPrincipal User user,
             @ApiParam(value = "ID of the data source", required = false, allowMultiple = false) @PathVariable Integer dsid,
-            
-            @ApiParam(value = "ID of the event type", required = false, allowMultiple = false) 
-            @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
+
+            @ApiParam(value = "ID of the event type", required = false, allowMultiple = false)
+    @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
         List<EventTypeModel> result = new ArrayList<EventTypeModel>();
         getAllDataSourceEventTypes(result, user, dsid, typeRef2);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-    
+
     private void getAllDataPointEventTypes(List<EventTypeModel> types, User user, Integer dataPointId, Integer detectorId) {
         List<DataPointVO> dataPoints = DataPointDao.getInstance().getDataPoints(DataPointExtendedNameComparator.instance, true);
         final boolean admin = Permissions.hasAdminPermission(user);
@@ -174,22 +231,22 @@ public class EventTypeV2RestController {
                         if(admin || Permissions.hasEventTypePermission(user, dpet))
                             types.add(dpet.asModel());
                     }
-                        
+
     }
-    
+
     private void getAllDataSourceEventTypes(List<EventTypeModel> types, User user, Integer dataSourceId, Integer dataSourceEventId) {
         List<DataSourceVO<?>> dataSources = DataSourceDao.getInstance().getAll();
         final boolean admin = Permissions.hasAdminPermission(user);
         for(DataSourceVO<?> dsvo : dataSources)
             if(dataSourceId == null || dataSourceId.intValue() == dsvo.getId())
-                for(EventTypeVO dset : (List<EventTypeVO>)dsvo.getEventTypes())
+                for(EventTypeVO dset : dsvo.getEventTypes())
                     if(dataSourceEventId == null || dataSourceEventId.intValue() == dset.getTypeRef2()) {
                         EventType et = dset.createEventType();
                         if(admin || Permissions.hasEventTypePermission(user, et))
                             types.add(et.asModel());
                     }
     }
-    
+
     private void getAllPublisherEventTypes(List<EventTypeModel> types, User user, Integer publisherId, Integer publisherEventId) {
         List<PublisherVO<?>> publishers = PublisherDao.getInstance().getAll();
         final boolean admin = Permissions.hasAdminPermission(user);
@@ -202,7 +259,7 @@ public class EventTypeV2RestController {
                             types.add(et.asModel());
                     }
     }
-    
+
     private void getAllSystemEventTypes(List<EventTypeModel> types, User user, String subtypeName) {
         final boolean admin = Permissions.hasAdminPermission(user);
         for(EventTypeVO sets : SystemEventType.EVENT_TYPES)
@@ -210,10 +267,10 @@ public class EventTypeV2RestController {
                 EventType set = sets.createEventType();
                 if(admin || Permissions.hasEventTypePermission(user, set))
                     types.add(set.asModel());
-                
+
             }
     }
-    
+
     public void getAllAuditEventTypes(List<EventTypeModel> types, User user, String subtypeName, Integer typeRef1) {
         final boolean admin = Permissions.hasAdminPermission(user);
         for(EventTypeVO aets : AuditEventType.EVENT_TYPES)
@@ -224,8 +281,8 @@ public class EventTypeV2RestController {
                         types.add(aet.asModel());
                 }
     }
-    
-    public void getAllModuleEventTypes(List<EventTypeModel> types, User user, String typeName, String subtypeName, 
+
+    public void getAllModuleEventTypes(List<EventTypeModel> types, User user, String typeName, String subtypeName,
             Integer typeRef1, Integer typeRef2, boolean adminOnly) {
         for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class))
             if(!adminOnly || def.getHandlersRequireAdmin())
