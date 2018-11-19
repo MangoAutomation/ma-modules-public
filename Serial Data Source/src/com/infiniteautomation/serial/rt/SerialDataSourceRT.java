@@ -225,21 +225,23 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 			//Try and reset the connection
 			Exception ex = e;
 			int retries = vo.getRetries();
-			while(retries > 0) {
-    			try{
-    			    retries -= 1;
-    				if(this.port != null)
-    					Common.serialPortManager.close(this.port);
-    				
-    				if(isTerminated())
-    				    break;
-    				else if(this.connect()) {
-    					setPointValueImplTransport(dataPoint, valueTime);
-    					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
-    					return;
-    				}
-    			}catch(Exception e2){
-    				ex = e2;
+			synchronized(this) {
+    			while(retries > 0) {
+        			try{
+        			    retries -= 1;
+        				if(this.port != null)
+        					Common.serialPortManager.close(this.port);
+        				
+        				if(isTerminated())
+        				    break;
+        				else if(this.connect()) {
+        					setPointValueImplTransport(dataPoint, valueTime);
+        					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
+        					return;
+        				}
+        			}catch(Exception e2){
+        				ex = e2;
+        			}
     			}
 			}
 			
@@ -417,7 +419,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 		            	if(LOG.isDebugEnabled())
                 			LOG.debug("Matching will use String: " + msg);
             			final AtomicBoolean matcherFailed = new AtomicBoolean(false);
-            			synchronized (pointListChangeLock) {
+            			pointListChangeLock.readLock().lock();
+            			try {
 	            			for(final DataPointRT dp: this.dataPoints){
 	                    		SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
 	                    		MatchCallback callback = new MatchCallback(){
@@ -460,6 +463,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 	                    			callback.matchGeneralFailure(e);
 	                    		}
 	            			}
+            			} finally {
+            			    pointListChangeLock.readLock().unlock();
             			}
             			
             			//Did we have a failure?
