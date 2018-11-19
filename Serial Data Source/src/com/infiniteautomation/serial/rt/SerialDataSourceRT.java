@@ -226,21 +226,23 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 			//Try and reset the connection
 			Exception ex = e;
 			int retries = vo.getRetries();
-			while(retries > 0) {
-    			try{
-    			    retries -= 1;
-    				if(this.port != null)
-    					Common.serialPortManager.close(this.port);
-    				
-    				if(isTerminated())
-    				    break;
-    				else if(this.connect()) {
-    					setPointValueImplTransport(dataPoint, valueTime);
-    					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
-    					return;
-    				}
-    			}catch(Exception e2){
-    				ex = e2;
+			synchronized(this) {
+    			while(retries > 0) {
+        			try{
+        			    retries -= 1;
+        				if(this.port != null)
+        					Common.serialPortManager.close(this.port);
+        				
+        				if(isTerminated())
+        				    break;
+        				else if(this.connect()) {
+        					setPointValueImplTransport(dataPoint, valueTime);
+        					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
+        					return;
+        				}
+        			}catch(Exception e2){
+        				ex = e2;
+        			}
     			}
 			}
 			
