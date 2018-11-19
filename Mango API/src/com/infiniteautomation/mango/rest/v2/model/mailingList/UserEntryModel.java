@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
+ * 
  * @author Terry Packer
  */
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
@@ -13,6 +14,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.UserEntry;
+import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 
 import io.swagger.annotations.ApiModel;
 
@@ -20,44 +22,54 @@ import io.swagger.annotations.ApiModel;
  * @author Terry Packer
  *
  */
-@ApiModel(value="USER", parent=EmailRecipientModel.class)
+@ApiModel(value = "USER", parent = EmailRecipientModel.class)
 @JsonTypeName("USER")
 public class UserEntryModel extends EmailRecipientModel {
 
     private String username;
-    
-	public UserEntryModel(){	}
-	
-	@JsonCreator
-	public UserEntryModel(@JsonProperty("username")String username) {
-	    this.username = username;
-	}
-	
-	public UserEntryModel(UserEntry data) {
-	    User u = UserDao.getInstance().get(data.getUserId());
-        if(u != null)
-            username = u.getUsername();
-	}
 
-	@JsonGetter("username")
-	public String getUsername(){
-		return username;
-	}
-	@JsonSetter("username")
-	public void setUsername(String username){
-	    this.username = username;
-	}
-	
-	@Override
-	public EmailRecipient fromModel() {
-	    
-	    UserEntry entry = new UserEntry();
-	    User user = UserDao.getInstance().getUser(username);
-	    if(user != null) {
-	        entry.setUser(user);
-	        entry.setUserId(user.getId());
-	    }
-	    return entry;
-	}
-	
+    public UserEntryModel() {}
+
+    @JsonCreator
+    public UserEntryModel(@JsonProperty("username") String username) {
+        this.username = username;
+    }
+
+    public UserEntryModel(UserEntry data) {
+        User u = UserDao.getInstance().get(data.getUserId());
+        if (u != null)
+            username = u.getUsername();
+    }
+
+    @JsonGetter("username")
+    public String getUsername() {
+        return username;
+    }
+
+    @JsonSetter("username")
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Override
+    public EmailRecipient fromModel() {
+
+        UserEntry entry = new UserEntry();
+        User user = UserDao.getInstance().getUser(username);
+        if (user != null) {
+            entry.setUser(user);
+            entry.setUserId(user.getId());
+        }
+        return entry;
+    }
+
+    @Override
+    public RecipientListEntryBean toBean() {
+        RecipientListEntryBean bean = new RecipientListEntryBean();
+        bean.setRecipientType(EmailRecipient.TYPE_USER);
+        User u = UserDao.getInstance().getUser(username);
+        if(u != null)
+            bean.setReferenceId(u.getId());
+        return bean;
+    }
 }

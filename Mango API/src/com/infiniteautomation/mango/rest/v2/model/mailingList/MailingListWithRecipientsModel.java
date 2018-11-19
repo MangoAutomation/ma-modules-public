@@ -59,6 +59,7 @@ public class MailingListWithRecipientsModel extends MailingListModel {
                         e = new UserEntryModel((UserEntry) entry);
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
+                        e = new MailingListEntryModel((MailingList)entry);
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + entry.getRecipientType());
                             

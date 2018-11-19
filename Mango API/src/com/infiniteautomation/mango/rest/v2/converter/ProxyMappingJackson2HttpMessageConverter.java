@@ -11,6 +11,8 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.http.HttpInputMessage;
@@ -36,6 +38,8 @@ import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
  */
 public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter{
 
+    private static final Log LOG = LogFactory.getLog(ProxyMappingJackson2HttpMessageConverter.class);
+    
     public ProxyMappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         super(objectMapper);
     }
@@ -82,7 +86,12 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
             }else {
                 reader = this.objectMapper.readerFor(javaType);
             }
-            
+            //TODO Mango 3.6 Support Polymorphic PATCHing
+            if(javaType.isAbstract()) {
+                AbstractVoModel<?> model = reader.readValue(inputMessage.getBody());
+                LOG.warn("Polymorphic PATCH for abstract base models not yet supported.  TODO Mango 3.6 (" + model == null ? "null" : model.getClass().getName() + ")");
+                return model;
+            }
             Constructor<?> c = javaType.getRawClass().getConstructor();
             Object o = c.newInstance();
             ProxyFactory f = new ProxyFactory(o);
