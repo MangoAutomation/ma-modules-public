@@ -85,6 +85,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                 return true;
               
             }catch(Exception e){
+                this.port = null;
     			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",vo.getCommPortId(),e.getLocalizedMessage()));
     			return false;
             }
@@ -207,7 +208,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     }
     
     @Override
-	public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime,
+	public synchronized void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime,
 			SetPointSource source) {
 
 		//Are we connected?
@@ -225,23 +226,21 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 			//Try and reset the connection
 			Exception ex = e;
 			int retries = vo.getRetries();
-			synchronized(this) {
-    			while(retries > 0) {
-        			try{
-        			    retries -= 1;
-        				if(this.port != null)
-        					Common.serialPortManager.close(this.port);
-        				
-        				if(isTerminated())
-        				    break;
-        				else if(this.connect()) {
-        					setPointValueImplTransport(dataPoint, valueTime);
-        					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
-        					return;
-        				}
-        			}catch(Exception e2){
-        				ex = e2;
-        			}
+			while(retries > 0) {
+    			try{
+    			    retries -= 1;
+    				if(this.port != null)
+    					Common.serialPortManager.close(this.port);
+    				
+    				if(isTerminated())
+    				    break;
+    				else if(this.connect()) {
+    					setPointValueImplTransport(dataPoint, valueTime);
+    					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
+    					return;
+    				}
+    			}catch(Exception e2){
+    				ex = e2;
     			}
 			}
 			
