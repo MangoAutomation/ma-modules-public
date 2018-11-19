@@ -68,7 +68,9 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
         if (Common.serialPortManager.portOwned(vo.getCommPortId())){
 			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
 			return false;
-        }else{
+        }else if(isTerminated())
+            return false;
+        else{
         	try{
                 this.port = Common.serialPortManager.open(
                 		"Mango Serial Data Source",
@@ -127,7 +129,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 			} catch (SerialPortException e) {
 	    		LOG.debug("Error while closing serial port", e);
 				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",this.port.getCommPortId(),e.getLocalizedMessage()));
-
 			}
 
         if(this.vo.isLogIO()){
@@ -229,7 +230,10 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     			    retries -= 1;
     				if(this.port != null)
     					Common.serialPortManager.close(this.port);
-    				if(this.connect()) {
+    				
+    				if(isTerminated())
+    				    break;
+    				else if(this.connect()) {
     					setPointValueImplTransport(dataPoint, valueTime);
     					returnToNormal(POINT_WRITE_EXCEPTION_EVENT, System.currentTimeMillis());
     					return;
