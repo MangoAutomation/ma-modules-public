@@ -12,6 +12,8 @@ import java.util.ListIterator;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -61,8 +63,12 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/event-detectors")
 public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>{
 
-    public EventDetectorRestV2Controller() {
-        super(EventDetectorDao.getInstance());
+    private final EventDetectorDao dao;
+
+    @Autowired
+    public EventDetectorRestV2Controller(EventDetectorDao dao) {
+        super(dao);
+        this.dao = dao;
     }
 
     @ApiOperation(
@@ -75,6 +81,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     public ResponseEntity<QueryDataPageStream<AbstractEventDetectorVO<?>>> queryRQL(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
+
         ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
         if(user.hasAdminPermission()){
             //admin users don't need to filter the results
@@ -99,6 +106,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
             @AuthenticationPrincipal User user,
             @ApiParam(value = "Valid Event Detector XID", required = true, allowMultiple = false)
             @PathVariable String xid, HttpServletRequest request) {
+
         AbstractEventDetectorVO<?> vo = this.dao.getByXid(xid);
         if(vo == null)
             throw new NotFoundRestException();
@@ -156,9 +164,11 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         //Save the data point
         Common.runtimeManager.saveDataPoint(dp);
 
-        //Put a link to the updated data in the header?
+        // Put a link to the newly created resource in the location header
         URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
-        return getResourceCreated(vo.asModel(), location);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(vo.asModel(), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -217,8 +227,11 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         //Save the data point
         Common.runtimeManager.saveDataPoint(dp);
 
+        // Put a link to the updated resource in the location header
         URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
-        return getResourceUpdated(vo.asModel(), location);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(vo.asModel(), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
@@ -280,6 +293,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
             @AuthenticationPrincipal User user,
             @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
             @PathVariable String xid, HttpServletRequest request) {
+
         DataPointVO dp = DataPointDao.getInstance().getByXid(xid);
         if(dp == null)
             throw new NotFoundRestException();
@@ -327,6 +341,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
             @AuthenticationPrincipal User user,
             @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
             @PathVariable String xid, HttpServletRequest request) {
+
         DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(xid);
         if(ds == null)
             throw new NotFoundRestException();
@@ -346,9 +361,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         return new ResponseEntity<>(models, HttpStatus.OK);
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.AbstractMangoVoRestV2Controller#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)
-     */
     @Override
     public AbstractEventDetectorModel<?> createModel(AbstractEventDetectorVO<?> vo) {
         return vo.asModel();
