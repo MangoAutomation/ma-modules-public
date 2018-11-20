@@ -230,7 +230,7 @@ describe('Event handlers v2', function() {
     
     it('Test invalid set point event handler', () => {
         global.invalidSetPointEventHandler = {
-                xid : "EVTH_SET_POINT_VALUE_TEST",
+                xid : "EVTH_INVALID_TEST",
                 name : "Testing setpoint",
                 disabled : false,
                 targetPointXid : 'missingTarget',
