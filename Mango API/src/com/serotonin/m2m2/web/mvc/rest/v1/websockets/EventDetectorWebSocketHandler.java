@@ -4,12 +4,17 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.spring.events.DaoEvent;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
+import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
@@ -21,13 +26,31 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 @WebSocketMapping("/v1/websocket/event-detectors")
 public class EventDetectorWebSocketHandler extends DaoNotificationWebSocketHandler<AbstractEventDetectorVO<?>>{
 
+    private final DataPointDao dataPointDao;
+
+    @Autowired
+    public EventDetectorWebSocketHandler(DataPointDao dataPointDao) {
+        this.dataPointDao = dataPointDao;
+    }
+
     @Override
     protected boolean hasPermission(User user, AbstractEventDetectorVO<?> vo) {
-        //TODO Check permissions on point or data source
-        if(user.hasAdminPermission())
+        if (user.hasAdminPermission()) {
             return true;
-        else
-            return false;
+        }
+
+        if (vo instanceof AbstractPointEventDetectorVO) {
+            AbstractPointEventDetectorVO<?> ped = (AbstractPointEventDetectorVO<?>) vo;
+            DataPointVO point = ped.njbGetDataPoint();
+            if (point == null) {
+                point = dataPointDao.get(vo.getSourceId());
+            }
+            if (point != null) {
+                return Permissions.hasDataSourcePermission(user, point.getDataSourceId());
+            }
+        }
+
+        return false;
     }
 
     @Override
