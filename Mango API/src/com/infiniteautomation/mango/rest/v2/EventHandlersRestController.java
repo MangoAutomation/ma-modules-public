@@ -52,12 +52,12 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventHandlersRestController {
 
     private final EventHandlerService service;
-    
+
     @Autowired
     public EventHandlersRestController(EventHandlerService service) {
         this.service = service;
     }
-    
+
     @ApiOperation(
             value = "Query Event Handlers",
             notes = "",
@@ -104,7 +104,7 @@ public class EventHandlersRestController {
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -186,7 +186,7 @@ public class EventHandlersRestController {
 
         service.ensureValid(model.toVO(), user);
     }
-    
+
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
@@ -196,7 +196,7 @@ public class EventHandlersRestController {
             return new StreamedVORqlQueryWithTotal<>(service, rql, user, transform, true);
         }
     }
-    
+
     final Function<AbstractEventHandlerVO<?>, Object> adminTransform = vo -> {
         if(vo instanceof EmailEventHandlerVO) {
             return new EmailEventHandlerModel((EmailEventHandlerVO) vo);
@@ -206,9 +206,9 @@ public class EventHandlersRestController {
             return new SetPointEventHandlerModel((SetPointEventHandlerVO)vo);
         }else {
             throw new ShouldNeverHappenException("Un-implemented model for " + vo.getClass().getName());
-        }    
+        }
     };
-    
+
     final class ViewWrapFunction implements Function<AbstractEventHandlerVO<?>, Object> {
 
         private final PermissionHolder holder;
