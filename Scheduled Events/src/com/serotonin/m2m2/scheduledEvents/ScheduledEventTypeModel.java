@@ -65,7 +65,7 @@ public class ScheduledEventTypeModel extends EventTypeModel{
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel#getEventTypeInstance()
 	 */
 	@Override
-	public EventType getEventTypeInstance() {
+	public EventType toEventType() {
 		return new ScheduledEventType(scheduleId, duplicateHandling);
 	}
 

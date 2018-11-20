@@ -184,7 +184,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
             @RequestBody(required=true) RaiseEventModel model){
         if(model == null)
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
-        Common.eventManager.raiseEvent(model.getEvent().getEventTypeInstance(), Common.timer.currentTimeMillis(), true, AlarmLevels.CODES.getId(model.getLevel()), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
+        Common.eventManager.raiseEvent(model.getEvent().toEventType(), Common.timer.currentTimeMillis(), true, AlarmLevels.CODES.getId(model.getLevel()), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
