@@ -85,7 +85,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                 return true;
               
             }catch(Exception e){
-                this.port = null;
     			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portError",vo.getCommPortId(),e.getLocalizedMessage()));
     			return false;
             }
