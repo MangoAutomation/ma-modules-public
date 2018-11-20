@@ -20,7 +20,7 @@ const uuidV4 = require('uuid/v4');
 
 describe('Event handlers v2', function() {
     before('Login', config.login);
-    this.timeout(100000);
+
     before('Create DS 1', function() {
         this.point = (name) => {
             return new DataPoint({
@@ -136,7 +136,7 @@ describe('Event handlers v2', function() {
         });
     });
     
-    it('Query mailing lists', () => {
+    it('Query event handlers lists', () => {
         return client.restRequest({
             path: `/rest/v2/event-handlers?xid=${global.staticValueSetPointEventHandler.xid}`,
             method: 'GET',
@@ -255,13 +255,13 @@ describe('Event handlers v2', function() {
             assert.strictEqual(error.data.result.messages.length, 4);
             
             //Missing user
-            assert.strictEqual(error.data.result.messages[0].property, 'targetPointXid');
+            assert.strictEqual(error.data.result.messages[0].property, 'targetPointId');
             //Missing user
-            assert.strictEqual(error.data.result.messages[1].property, 'activePointXid');
+            assert.strictEqual(error.data.result.messages[1].property, 'activePointId');
             //Invalid FTL
-            assert.strictEqual(error.data.result.messages[2].property, 'inactivePointXid');
+            assert.strictEqual(error.data.result.messages[2].property, 'inactivePointId');
             //Missing point
-            assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].xid');
+            assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].id');
         });
     });
     
