@@ -1,6 +1,9 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
+
+*Version 3.5.1*
 * Fix for port hanging open if values were being set with nonzero retries at data source shutdown
+* Ensure only one thread is setting values outward at a time
 
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
