@@ -4,21 +4,34 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
+import com.infiniteautomation.mango.rest.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.TypedResultWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
@@ -42,17 +55,23 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * Get possible events to handle.
  * @author Phillip Dunlap
  */
-@Api(value="Event Types", description="Get event types")
+@Api(value="Event Types")
 @RestController()
 @RequestMapping("/v2/event-types")
 public class EventTypeV2RestController {
 
-    public EventTypeV2RestController() {}
+    private final RestModelMapper modelMapper;
+    
+    @Autowired
+    public EventTypeV2RestController(RestModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
     public static class EventTypeNameModel {
         private final String typeName;
@@ -84,6 +103,61 @@ public class EventTypeV2RestController {
         }
     }
 
+    @ApiOperation(
+            value = "Query current possible event types",
+            notes = "Valid RQL ",
+            response=AbstractEventTypeModel.class,
+            responseContainer="List")
+    @RequestMapping(method = RequestMethod.GET)
+    public TypedResultWithTotal<AbstractEventTypeModel> queryEventTypes(
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
+        
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+        RQLToPagedObjectListQuery<AbstractEventTypeModel> filter = new RQLToPagedObjectListQuery<AbstractEventTypeModel>();
+        
+        //First prune the list based on permissions
+        List<EventType> types = getAllEventTypesForUser(user);
+        
+        //TODO do this above when EventType/EventTypeVO is sorted out
+        List<AbstractEventTypeModel> models = new ArrayList<>();
+        for(EventType type : types)
+            models.add(modelMapper.map(type, AbstractEventTypeModel.class));
+
+        List<AbstractEventTypeModel> results = query.accept(filter, models);
+        return new TypedResultWithTotal<AbstractEventTypeModel>() {
+
+            @Override
+            public List<AbstractEventTypeModel> getItems() {
+                return results;
+            }
+
+            @Override
+            public int getTotal() {
+                return filter.getUnlimitedSize();
+            }
+            
+        };
+    }
+    
+    //TODO Remove when done testing
+    @ApiOperation(
+            value = "Echo back an event type",
+            notes = "",
+            response=AbstractEventHandlerModel.class
+            )
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<AbstractEventTypeModel> create(
+            @RequestBody AbstractEventTypeModel model,
+            @ApiParam(value="User", required=true)
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        URI location = builder.path("/v2/event-types/{xid}").buildAndExpand("XID").toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(model, headers, HttpStatus.CREATED);
+    }
+    
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current possible event types",
@@ -105,46 +179,6 @@ public class EventTypeV2RestController {
         }
 
         return typeNames;
-    }
-
-    @PreAuthorize("hasDataSourcePermission()")
-    @ApiOperation(
-            value = "Get current possible event types",
-            notes = "",
-            response=EventTypeModel.class,
-            responseContainer="List"
-            )
-    @RequestMapping(method = RequestMethod.GET, value="")
-    public ResponseEntity<List<EventTypeModel>> getEventTypes(@AuthenticationPrincipal User user,
-            @RequestParam(value = "typeName", required = false) String typeName,
-            @RequestParam(value = "subtypeName", required = false) String subtypeName,
-            @RequestParam(value = "typeRef1", required = false) Integer typeRef1,
-            @RequestParam(value = "typeRef2", required = false) Integer typeRef2) {
-
-        List<EventTypeModel> result = new ArrayList<EventTypeModel>();
-
-        if(typeName == null) {
-            getAllDataPointEventTypes(result, user, typeRef1, typeRef2);
-            getAllDataSourceEventTypes(result, user, typeRef1, typeRef2);
-            getAllPublisherEventTypes(result, user, typeRef1, typeRef2);
-            getAllSystemEventTypes(result, user, subtypeName);
-            getAllAuditEventTypes(result, user, subtypeName, typeRef1);
-            getAllModuleEventTypes(result, user, null, subtypeName, typeRef1, typeRef2, false);
-        } else if(typeName.equals(EventTypeNames.DATA_POINT)) {
-            getAllDataPointEventTypes(result, user, typeRef1, typeRef2);
-        } else if(typeName.equals(EventTypeNames.DATA_SOURCE)) {
-            getAllDataSourceEventTypes(result, user, typeRef1, typeRef2);
-        } else if(typeName.equals(EventTypeNames.PUBLISHER)) {
-            getAllPublisherEventTypes(result, user, typeRef1, typeRef2);
-        } else if(typeName.equals(EventTypeNames.SYSTEM)) {
-            getAllSystemEventTypes(result, user, subtypeName);
-        } else if(typeName.equals(EventTypeNames.AUDIT)) {
-            getAllAuditEventTypes(result, user, subtypeName, typeRef1);
-        } else {
-            getAllModuleEventTypes(result, user, typeName, subtypeName, typeRef1, typeRef2, false);
-        }
-
-        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PreAuthorize("hasDataSourcePermission()")
@@ -220,6 +254,67 @@ public class EventTypeV2RestController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    private List<EventType> getAllEventTypesForUser(User user) {
+        List<EventType> types = new ArrayList<>();
+        
+        //Data Points
+        for(DataPointVO vo : DataPointDao.getInstance().getAllFull()) {
+            if(vo.getEventDetectors() != null) {
+                for(AbstractPointEventDetectorVO<?> ed : vo.getEventDetectors()) {
+                    EventType type = ed.getEventType().createEventType();
+                    if(Permissions.hasEventTypePermission(user, type))
+                        types.add(type);
+                }
+            }
+        }
+        
+        //Data Sources
+        for(DataSourceVO<?> vo : DataSourceDao.getInstance().getAll()) {
+            for(EventTypeVO typeVo : vo.getEventTypes()) {
+                EventType type = typeVo.createEventType();
+                if(Permissions.hasEventTypePermission(user, type))
+                    types.add(type);
+            }
+        }
+        //Publishers
+        for(PublisherVO<?> vo : PublisherDao.getInstance().getAll()) {
+            for(EventTypeVO typeVo : vo.getEventTypes()) {
+                EventType type = typeVo.createEventType();
+                if(Permissions.hasEventTypePermission(user, type))
+                    types.add(type);
+            }
+        }
+        //System
+        for(EventTypeVO typeVo : SystemEventType.EVENT_TYPES) {
+            EventType type = typeVo.createEventType();
+            if(Permissions.hasEventTypePermission(user, type))
+                types.add(type);
+        }
+        
+        // Audit
+        for(EventTypeVO typeVo : AuditEventType.EVENT_TYPES) {
+            EventType type = typeVo.createEventType();
+            if(Permissions.hasEventTypePermission(user, type))
+                types.add(type);
+        }
+        //Module defined
+        for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
+            if(def.getHandlersRequireAdmin() && user.hasAdminPermission()) {
+                for(EventTypeVO typeVo : def.getEventTypeVOs())
+                    types.add(typeVo.createEventType());
+            }else {
+                for(EventTypeVO typeVo : def.getEventTypeVOs()) {
+                    EventType type = typeVo.createEventType();
+                    if(Permissions.hasEventTypePermission(user, type))
+                        types.add(type);
+                }
+            }
+                
+        }
+        return types;
+    }
+    
+    
     private void getAllDataPointEventTypes(List<EventTypeModel> types, User user, Integer dataPointId, Integer detectorId) {
         List<DataPointVO> dataPoints = DataPointDao.getInstance().getDataPoints(DataPointExtendedNameComparator.instance, true);
         final boolean admin = Permissions.hasAdminPermission(user);
