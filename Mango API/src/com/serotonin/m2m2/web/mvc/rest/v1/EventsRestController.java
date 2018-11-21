@@ -55,10 +55,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.TranslatableMessageModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventLevelSummaryModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -96,12 +96,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
                     List<Object> selectArgs, List<Object> columnArgs,
                     ComparisonEnum comparison) {
 
-                if(columnArgs.size() == 0)
+                if (columnArgs.size() == 0 || !(columnArgs.get(0) instanceof Boolean)) {
+                    super.appendSQL(column, selectSql, countSql, selectArgs, columnArgs, comparison);
                     return;
-
-                //Hack to allow still querying on rtnTs as number
-                if(!(columnArgs.get(0) instanceof Boolean))
-                    return;
+                }
 
                 Boolean condition = (Boolean)columnArgs.get(0);
                 if(condition){
@@ -126,12 +124,10 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
                     List<Object> selectArgs, List<Object> columnArgs,
                     ComparisonEnum comparison) {
 
-                if(columnArgs.size() == 0)
+                if (columnArgs.size() == 0 || !(columnArgs.get(0) instanceof Boolean)) {
+                    super.appendSQL(column, selectSql, countSql, selectArgs, columnArgs, comparison);
                     return;
-
-                //Hack to allow querying on ackTs as number
-                if(!(columnArgs.get(0) instanceof Boolean))
-                    return;
+                }
 
                 Boolean condition = (Boolean)columnArgs.get(0);
                 if(condition){
@@ -523,7 +519,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
                 public void streamCount(CSVPojoWriter<Long> writer) throws IOException {
                     writer.writeNext(0);
                 }
-                
+
             });
         else
             return ResponseEntity.ok(getPageStream(query));
