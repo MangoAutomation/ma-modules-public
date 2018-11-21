@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
-import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 
 /**
@@ -14,7 +13,7 @@ import com.serotonin.m2m2.rt.event.type.SystemEventType;
  *
  */
 @Component
-public class SystemEventTypeModelMapping implements RestModelMapping<SystemEventTypeModel, SystemEventType> {
+public class SystemEventTypeModelMapping implements RestModelMapping<SystemEventType, SystemEventTypeModel> {
 
     @Override
     public Class<SystemEventType> fromClass() {
@@ -29,11 +28,6 @@ public class SystemEventTypeModelMapping implements RestModelMapping<SystemEvent
     @Override
     public SystemEventTypeModel map(Object from) {
         return new SystemEventTypeModel((SystemEventType) from);
-    }
-
-    @Override
-    public String getTypeId() {
-        return EventType.EventTypeNames.SYSTEM;
     }
     
     @Override

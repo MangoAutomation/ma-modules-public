@@ -24,10 +24,11 @@ describe('Event types v2', function() {
     it('Query event types', () => {
         
         return client.restRequest({
-            path: `/rest/v2/event-types?type.eventType=DATA_SOURCE`,
+            path: `/rest/v2/event-types?type.eventType=AUDIT`,
             method: 'GET',
             data: global.addressMailingList
         }).then(response => {
+            assert
             for(var i=0; i<response.data.items.length; i++){
                 console.log('Level: ' + response.data.items[i].alarmLevel);
                 console.log('Description: ' + response.data.items[i].description);

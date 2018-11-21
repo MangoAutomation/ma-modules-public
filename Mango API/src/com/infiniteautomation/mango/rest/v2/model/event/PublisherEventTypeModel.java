@@ -10,7 +10,7 @@ import com.serotonin.m2m2.rt.event.type.PublisherEventType;
  *
  */
 
-public class PublisherEventTypeModel extends AbstractEventTypeModel {
+public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEventType> {
     
     public PublisherEventTypeModel() {
         super(new PublisherEventType());

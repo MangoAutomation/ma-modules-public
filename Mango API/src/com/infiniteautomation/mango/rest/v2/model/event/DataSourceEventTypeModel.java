@@ -10,7 +10,7 @@ import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
  *
  */
 
-public class DataSourceEventTypeModel extends AbstractEventTypeModel {
+public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceEventType> {
     
     public DataSourceEventTypeModel() {
         super(new DataSourceEventType());

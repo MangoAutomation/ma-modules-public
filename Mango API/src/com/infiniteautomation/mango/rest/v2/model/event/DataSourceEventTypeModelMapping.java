@@ -7,14 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
-import com.serotonin.m2m2.rt.event.type.EventType;
 
 /**
  * @author Terry Packer
  *
  */
 @Component
-public class DataSourceEventTypeModelMapping implements RestModelMapping<DataSourceEventTypeModel, DataSourceEventType> {
+public class DataSourceEventTypeModelMapping implements RestModelMapping<DataSourceEventType, DataSourceEventTypeModel> {
 
     @Override
     public Class<DataSourceEventType> fromClass() {
@@ -29,11 +28,6 @@ public class DataSourceEventTypeModelMapping implements RestModelMapping<DataSou
     @Override
     public DataSourceEventTypeModel map(Object from) {
         return new DataSourceEventTypeModel((DataSourceEventType) from);
-    }
-
-    @Override
-    public String getTypeId() {
-        return EventType.EventTypeNames.DATA_SOURCE;
     }
     
     @Override

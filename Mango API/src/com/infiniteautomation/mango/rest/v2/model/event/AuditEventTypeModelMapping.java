@@ -7,14 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
-import com.serotonin.m2m2.rt.event.type.EventType;
 
 /**
  * @author Terry Packer
  *
  */
 @Component
-public class AuditEventTypeModelMapping implements RestModelMapping<AuditEventTypeModel, AuditEventType> {
+public class AuditEventTypeModelMapping implements RestModelMapping<AuditEventType, AuditEventTypeModel> {
 
     @Override
     public Class<AuditEventType> fromClass() {
@@ -29,11 +28,6 @@ public class AuditEventTypeModelMapping implements RestModelMapping<AuditEventTy
     @Override
     public AuditEventTypeModel map(Object from) {
         return new AuditEventTypeModel((AuditEventType) from);
-    }
-
-    @Override
-    public String getTypeId() {
-        return EventType.EventTypeNames.AUDIT;
     }
     
     @Override

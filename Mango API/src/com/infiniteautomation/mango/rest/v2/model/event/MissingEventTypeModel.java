@@ -10,7 +10,7 @@ import com.serotonin.m2m2.rt.event.type.MissingEventType;
  *
  */
 
-public class MissingEventTypeModel extends AbstractEventTypeModel {
+public class MissingEventTypeModel extends AbstractEventTypeModel<MissingEventType> {
     
     public MissingEventTypeModel() {
         super(new MissingEventType());

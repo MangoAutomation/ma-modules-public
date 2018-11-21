@@ -4,7 +4,6 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
-import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,21 +20,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
-import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
-import com.serotonin.m2m2.vo.event.ProcessEventHandlerVO;
-import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,10 +44,12 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventHandlersRestController {
 
     private final EventHandlerService service;
-
+    private final RestModelMapper modelMapper;
+    
     @Autowired
-    public EventHandlersRestController(EventHandlerService service) {
+    public EventHandlersRestController(EventHandlerService service, RestModelMapper modelMapper) {
         this.service = service;
+        this.modelMapper = modelMapper;
     }
 
     @ApiOperation(
@@ -86,7 +80,7 @@ public class EventHandlersRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(wrap(service.getFull(xid, user), user));
+        return ResponseEntity.ok(modelMapper.map(service.getFull(xid, user), AbstractEventHandlerModel.class, user));
     }
 
     @ApiOperation(
@@ -104,7 +98,7 @@ public class EventHandlersRestController {
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -125,7 +119,7 @@ public class EventHandlersRestController {
         URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
@@ -144,7 +138,7 @@ public class EventHandlersRestController {
             UriComponentsBuilder builder) {
 
         AbstractEventHandlerVO<?> existing = service.getFull(xid, user);
-        AbstractEventHandlerModel existingModel = wrap(existing, user);
+        AbstractEventHandlerModel existingModel = modelMapper.map(existing, AbstractEventHandlerModel.class, user);
         existingModel.patch(model);
         AbstractEventHandlerVO<?> vo = existingModel.toVO();
         vo = service.updateFull(existing, vo, user);
@@ -153,7 +147,7 @@ public class EventHandlersRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
@@ -168,7 +162,7 @@ public class EventHandlersRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(wrap(service.delete(xid, user), user));
+        return ResponseEntity.ok(modelMapper.map(service.delete(xid, user), AbstractEventHandlerModel.class, user));
     }
 
     @ApiOperation(
@@ -187,57 +181,12 @@ public class EventHandlersRestController {
         service.ensureValid(model.toVO(), user);
     }
 
-    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, adminTransform, true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> modelMapper.map(vo, AbstractEventHandlerModel.class, user), true);
         } else {
-            ViewWrapFunction transform = new ViewWrapFunction(user);
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, transform, true);
-        }
-    }
-
-    final Function<AbstractEventHandlerVO<?>, Object> adminTransform = vo -> {
-        if(vo instanceof EmailEventHandlerVO) {
-            return new EmailEventHandlerModel((EmailEventHandlerVO) vo);
-        }else if(vo instanceof ProcessEventHandlerVO) {
-            return new ProcessEventHandlerModel((ProcessEventHandlerVO)vo);
-        }else if(vo instanceof SetPointEventHandlerVO) {
-            return new SetPointEventHandlerModel((SetPointEventHandlerVO)vo);
-        }else {
-            throw new ShouldNeverHappenException("Un-implemented model for " + vo.getClass().getName());
-        }
-    };
-
-    final class ViewWrapFunction implements Function<AbstractEventHandlerVO<?>, Object> {
-
-        private final PermissionHolder holder;
-        public ViewWrapFunction(PermissionHolder holder) {
-            this.holder = holder;
-        }
-
-        @Override
-        public AbstractEventHandlerModel apply(AbstractEventHandlerVO<?> t) {
-            return wrap(t, holder);
-        }
-
-    }
-
-    /**
-     * Convert a vo to a model
-     * @param vo
-     * @param user
-     * @return
-     */
-    public static AbstractEventHandlerModel wrap(AbstractEventHandlerVO<?> vo, PermissionHolder user){
-        if(vo instanceof EmailEventHandlerVO) {
-            return new EmailEventHandlerModel((EmailEventHandlerVO) vo);
-        }else if(vo instanceof ProcessEventHandlerVO) {
-            return new ProcessEventHandlerModel((ProcessEventHandlerVO)vo);
-        }else if(vo instanceof SetPointEventHandlerVO) {
-            return new SetPointEventHandlerModel((SetPointEventHandlerVO)vo);
-        }else {
-            throw new ShouldNeverHappenException("Un-implemented model for " + vo.getClass().getName());
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> modelMapper.map(vo, AbstractEventHandlerModel.class, user), true);
         }
     }
 }

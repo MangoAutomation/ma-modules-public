@@ -10,7 +10,7 @@ import com.serotonin.m2m2.rt.event.type.DataPointEventType;
  *
  */
 
-public class DataPointEventTypeModel extends AbstractEventTypeModel {
+public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEventType> {
 
     private Integer dataSourceId;
     

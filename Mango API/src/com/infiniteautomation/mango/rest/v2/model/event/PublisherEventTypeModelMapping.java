@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
-import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.PublisherEventType;
 
 /**
@@ -14,7 +13,7 @@ import com.serotonin.m2m2.rt.event.type.PublisherEventType;
  *
  */
 @Component
-public class PublisherEventTypeModelMapping implements RestModelMapping<PublisherEventTypeModel, PublisherEventType> {
+public class PublisherEventTypeModelMapping implements RestModelMapping<PublisherEventType, PublisherEventTypeModel> {
 
     @Override
     public Class<PublisherEventType> fromClass() {
@@ -31,11 +30,6 @@ public class PublisherEventTypeModelMapping implements RestModelMapping<Publishe
         return new PublisherEventTypeModel((PublisherEventType) from);
     }
 
-    @Override
-    public String getTypeId() {
-        return EventType.EventTypeNames.PUBLISHER;
-    }
-    
     @Override
     public boolean supportsFrom(Object from, Class<?> toClass) {
         return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));

@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
-import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.MissingEventType;
 
 /**
@@ -14,7 +13,7 @@ import com.serotonin.m2m2.rt.event.type.MissingEventType;
  *
  */
 @Component
-public class MissingEventTypeModelMapping implements RestModelMapping<MissingEventTypeModel, MissingEventType> {
+public class MissingEventTypeModelMapping implements RestModelMapping<MissingEventType, MissingEventTypeModel> {
 
     @Override
     public Class<MissingEventType> fromClass() {
@@ -31,11 +30,6 @@ public class MissingEventTypeModelMapping implements RestModelMapping<MissingEve
         return new MissingEventTypeModel((MissingEventType) from);
     }
 
-    @Override
-    public String getTypeId() {
-        return EventType.EventTypeNames.MISSING;
-    }
-    
     @Override
     public boolean supportsFrom(Object from, Class<?> toClass) {
         return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));
