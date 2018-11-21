@@ -141,6 +141,7 @@ public final class TemporaryResource<T, E> {
 
         this.status = TemporaryResourceStatus.SUCCESS;
         this.resourceVersion++;
+        this.result = result;
         this.completionTime = new Date(Common.timer.currentTimeMillis());
         this.manager.resourceCompleted(this);
     }
@@ -150,6 +151,7 @@ public final class TemporaryResource<T, E> {
 
         this.status = TemporaryResourceStatus.ERROR;
         this.resourceVersion++;
+        this.error = error;
         this.completionTime = new Date(Common.timer.currentTimeMillis());
         this.manager.resourceCompleted(this);
     }
