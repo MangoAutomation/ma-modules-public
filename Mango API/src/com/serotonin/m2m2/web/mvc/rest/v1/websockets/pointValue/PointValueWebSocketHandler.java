@@ -168,12 +168,13 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             Map<String,Object> attributes = null;
             Double convertedValue = null;
             String renderedValue = null;
-            if (rt != null) {
+            DataPointRT dprt = rt;
+            if (dprt != null) {
                 enabled = true; //We are enabled
                 if (pvt == null) {
-                    pvt = rt.getPointValue(); //Get the value
+                    pvt = dprt.getPointValue(); //Get the value
                 }
-                attributes = new HashMap<>(rt.getAttributes());
+                attributes = new HashMap<>(dprt.getAttributes());
                 renderedValue = Functions.getRenderedText(vo, pvt);
                 if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC && (pvt != null)) {
                     convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
@@ -286,7 +287,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 }
 
                 if (this.eventTypes.contains(PointValueEventType.BACKDATE)) {
-                    sendNotification(PointValueEventType.SET, value);
+                    sendNotification(PointValueEventType.BACKDATE, value);
                 }
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
@@ -349,7 +350,19 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
 
         @Override
         public void pointLogged(PointValueTime value) {
-            //Do nothing for now
+            try {
+                if (!session.isOpen() || getUser(session) == null) {
+                    this.terminate();
+                }
+
+                if (this.eventTypes.contains(PointValueEventType.LOGGED)) {
+                    sendNotification(PointValueEventType.LOGGED, value);
+                }
+            } catch (WebSocketSendException e) {
+                log.warn("Error sending websocket message", e);
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
 
         @Override
