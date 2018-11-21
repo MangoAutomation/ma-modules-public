@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,17 +13,23 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
 import com.infiniteautomation.mango.rest.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.TypedResultWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -44,6 +51,7 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -123,6 +131,25 @@ public class EventTypeV2RestController {
             
         };
     }
+    
+    //TODO REmove when done testing
+    @ApiOperation(
+            value = "Echo back an event type",
+            notes = "",
+            response=AbstractEventHandlerModel.class
+            )
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<AbstractEventTypeModel<?>> create(
+            @RequestBody AbstractEventTypeModel<?> model,
+            @ApiParam(value="User", required=true)
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        URI location = builder.path("/v2/event-types/{xid}").buildAndExpand("XID").toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(model, headers, HttpStatus.CREATED);
+    }
+    
     
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(

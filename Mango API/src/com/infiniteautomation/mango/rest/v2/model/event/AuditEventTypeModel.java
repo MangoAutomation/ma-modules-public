@@ -14,6 +14,10 @@ public class AuditEventTypeModel extends AbstractEventTypeModel<AuditEventType> 
 
     private String changeType;
     
+    public AuditEventTypeModel() {
+        super(new AuditEventType());
+    }
+    
     public AuditEventTypeModel(AuditEventType type) {
         super(type);
         this.changeType = AuditEventInstanceVO.CHANGE_TYPE_CODES.getCode(type.getChangeType());

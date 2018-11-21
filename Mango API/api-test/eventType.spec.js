@@ -24,7 +24,7 @@ describe('Event types v2', function() {
     it('Query event types', () => {
         
         return client.restRequest({
-            path: `/rest/v2/event-types?type.eventType=AUDIT`,
+            path: `/rest/v2/event-types?type.eventType=ADVANCED_SCHEDULE`,
             method: 'GET',
             data: global.addressMailingList
         }).then(response => {
@@ -34,6 +34,25 @@ describe('Event types v2', function() {
                 console.log('Description: ' + response.data.items[i].description);
                 console.log(response.data.items[i].type);
             }           
+        });
+    });
+    
+    it('POST Event Type', () => {
+        global.eventType =  { 
+                eventType: 'ADVANCED_SCHEDULE',
+                subType: 'SCHEDULE_ACTIVE',
+                description: null,
+                duplicateHandling: "NONE",
+                referenceId1: 1,
+                referenceId2: 0,
+                rateLimited: true 
+         };
+        return client.restRequest({
+            path: '/rest/v2/event-types',
+            method: 'POST',
+            data: global.eventType
+        }).then(response => {
+            console.log(response.data);
         });
     });
 });

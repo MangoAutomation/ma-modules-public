@@ -14,7 +14,6 @@ public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEve
 
     private Integer dataSourceId;
     
-    
     public DataPointEventTypeModel() {
         super(new DataPointEventType());
     }

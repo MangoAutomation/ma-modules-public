@@ -3,7 +3,10 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.serotonin.m2m2.rt.event.type.EventType;
+
+import io.swagger.annotations.ApiModel;
 
 /**
  * 
@@ -13,6 +16,8 @@ import com.serotonin.m2m2.rt.event.type.EventType;
  * @author Terry Packer
  *
  */
+@ApiModel(discriminator="eventType")
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="eventType")
 public abstract class AbstractEventTypeModel<T extends EventType> {
     
     private String eventType;
