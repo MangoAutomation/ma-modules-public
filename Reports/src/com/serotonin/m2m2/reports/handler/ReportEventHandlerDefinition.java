@@ -14,12 +14,14 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.handlers.AbstractEventHan
  */
 public class ReportEventHandlerDefinition extends EventHandlerDefinition<ReportEventHandlerVO>{
 
+    public static final String TYPE_NAME = "REPORT";
+    
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.module.EventHandlerDefinition#getEventHandlerTypeName()
      */
     @Override
     public String getEventHandlerTypeName() {
-        return "REPORT";
+        return TYPE_NAME;
     }
 
     /* (non-Javadoc)

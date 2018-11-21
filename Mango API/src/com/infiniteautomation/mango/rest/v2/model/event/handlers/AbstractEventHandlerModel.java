@@ -14,9 +14,11 @@ import io.swagger.annotations.ApiModel;
  *
  */
 @ApiModel(subTypes= {EmailEventHandlerModel.class, SetPointEventHandlerModel.class, ProcessEventHandlerModel.class}, discriminator="handlerType")
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="handlerType")
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractEventHandlerModel.HANDLER_TYPE)
 public abstract class AbstractEventHandlerModel extends AbstractVoModel<AbstractEventHandlerVO<?>>{
 
+    public static final String HANDLER_TYPE = "handlerType";
+    
     private boolean disabled;
     
     public AbstractEventHandlerModel() { }
