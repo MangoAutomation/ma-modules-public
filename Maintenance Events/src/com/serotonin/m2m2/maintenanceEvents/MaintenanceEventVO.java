@@ -306,7 +306,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     }
 
     public EventTypeVO getEventType() {
-        return new EventTypeVO(MaintenanceEventType.TYPE_NAME, null, id, 0, getDescription(), alarmLevel);
+        return new EventTypeVO(new MaintenanceEventType(id), getDescription(), alarmLevel);
     }
 
     public TranslatableMessage getDescription() {

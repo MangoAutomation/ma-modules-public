@@ -20,36 +20,19 @@ const uuidV4 = require('uuid/v4');
 
 describe('Event types v2', function() {
     before('Login', config.login);
-
     
     it('Query event types', () => {
         
         return client.restRequest({
-            path: `/rest/v2/event-types?referenceId1=1&eventType=DATA_SOURCE`,
+            path: `/rest/v2/event-types?type.eventType=DATA_SOURCE`,
             method: 'GET',
             data: global.addressMailingList
         }).then(response => {
-            console.log(response.data);
-        });
-    });
-    
-    
-    it.skip('POST Event Type', () => {
-        global.eventType =  { 
-                eventType: 'AUDIT',
-                subType: 'REPORT',
-                description: null,
-                duplicateHandling: "NONE",
-                referenceId1: 1,
-                referenceId2: 2,
-                rateLimited: true 
-         };
-        return client.restRequest({
-            path: '/rest/v2/event-types',
-            method: 'POST',
-            data: global.eventType
-        }).then(response => {
-            console.log(response.data);
+            for(var i=0; i<response.data.items.length; i++){
+                console.log('Level: ' + response.data.items[i].alarmLevel);
+                console.log('Description: ' + response.data.items[i].description);
+                console.log(response.data.items[i].type);
+            }           
         });
     });
 });

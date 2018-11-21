@@ -101,7 +101,7 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
     private String inactiveCron;
 
     public EventTypeVO getEventType() {
-        return new EventTypeVO(ScheduledEventType.TYPE_NAME, null, id, 0, getDescription(), alarmLevel);
+        return new EventTypeVO(new ScheduledEventType(id), getDescription(), alarmLevel);
     }
 
     public ScheduledEventRT createRuntime() {
