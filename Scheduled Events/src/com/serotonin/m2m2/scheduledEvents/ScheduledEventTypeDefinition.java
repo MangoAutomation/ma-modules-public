@@ -48,7 +48,7 @@ public class ScheduledEventTypeDefinition extends EventTypeDefinition {
 
     @Override
     public String getIconPath() {
-        return getModule().getWebPath() + "/web/clock.png";
+        return getModule().webPath() + "web/clock.png";
     }
 
     @Override
