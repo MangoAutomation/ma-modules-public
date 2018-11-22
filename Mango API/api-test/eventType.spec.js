@@ -24,7 +24,7 @@ describe('Event types v2', function() {
     it('Query event types', () => {
         
         return client.restRequest({
-            path: `/rest/v2/event-types?type.eventType=ADVANCED_SCHEDULE`,
+            path: `/rest/v2/event-types?type.eventType=AUDIT`,
             method: 'GET',
             data: global.addressMailingList
         }).then(response => {
