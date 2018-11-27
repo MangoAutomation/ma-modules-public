@@ -22,7 +22,7 @@ import com.serotonin.timer.TimerTrigger;
 
 /**
  * @author Matthew Lohbihler
- * 
+ *
  */
 public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
     private final ScheduledEventVO vo;
@@ -45,7 +45,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
     }
 
     private void returnToNormal(long time) {
-        Common.eventManager.returnToNormal(eventType, time, vo.getAlarmLevel());
+        Common.eventManager.returnToNormal(eventType, time);
         eventActive = false;
     }
 
@@ -74,7 +74,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
     //
     /**
      * Since the events are not returning to normal at shutdown anymore
-     * we will ensure that if they returned to normal while Mango was off 
+     * we will ensure that if they returned to normal while Mango was off
      * we will return them to normal at startup.
      */
     public void initialize() {
@@ -93,7 +93,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
             if (vo.getScheduleType() != ScheduledEventVO.TYPE_ONCE) {
                 // Check if we are currently active.
                 if (inactiveTrigger.getNextExecutionTime() >= activeTrigger.getNextExecutionTime())
-                	returnToNormal(System.currentTimeMillis());
+                    returnToNormal(System.currentTimeMillis());
                 else
                     raiseEvent(System.currentTimeMillis());
             }
@@ -191,28 +191,28 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
         return cronTrigger;
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getThreadName()
-	 */
-	@Override
-	public String getThreadName() {
-		return "Scheduled Event " + this.vo.getXid();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getThreadName()
+     */
+    @Override
+    public String getThreadName() {
+        return "Scheduled Event " + this.vo.getXid();
+    }
 
-	final String PREFIX = "SCHED_EVT_";
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
-	 */
-	@Override
-	public String getTaskId() {
-		return PREFIX + this.vo.getXid();
-	}
+    final String PREFIX = "SCHED_EVT_";
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
+     */
+    @Override
+    public String getTaskId() {
+        return PREFIX + this.vo.getXid();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getQueueSize()
-	 */
-	@Override
-	public int getQueueSize() {
-		return 0;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getQueueSize()
+     */
+    @Override
+    public int getQueueSize() {
+        return 0;
+    }
 }

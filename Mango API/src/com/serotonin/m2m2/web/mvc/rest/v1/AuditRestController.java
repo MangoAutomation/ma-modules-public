@@ -4,8 +4,8 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,7 +25,6 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
@@ -38,92 +37,90 @@ import net.jazdw.rql.parser.ASTNode;
 
 /**
  * Access to Audit Tracking.  Currently View Only.
- * 
+ *
  * TODO Implement restoration, See Restorer and TemplateRestorer
- * 
+ *
  * @author Terry Packer
  */
 @Api(value="Audit System", description="Restore/Read Configuration From History")
 @RestController
 @RequestMapping("/v1/audit")
 public class AuditRestController extends MangoVoRestController<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> {
-	
-	public AuditRestController() {
-		super(AuditEventDao.getInstance());
-		this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
-		this.appenders.put("changeType", new ExportCodeColumnQueryAppender(AuditEventInstanceVO.CHANGE_TYPE_CODES));
-	}
 
-	@ApiOperation(
-			value = "Query Audit Events",
-			notes = "Admin access only",
-			response=AuditEventInstanceModel.class,
-			responseContainer="Array"
-			)
-	@RequestMapping(method = RequestMethod.GET)
+    public AuditRestController() {
+        super(AuditEventDao.getInstance());
+        this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
+        this.appenders.put("changeType", new ExportCodeColumnQueryAppender(AuditEventInstanceVO.CHANGE_TYPE_CODES));
+    }
+
+    @ApiOperation(
+            value = "Query Audit Events",
+            notes = "Admin access only",
+            response=AuditEventInstanceModel.class,
+            responseContainer="Array"
+            )
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>> queryRQL(HttpServletRequest request) {
-		
-		RestProcessResult<PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>> result = new RestProcessResult<PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>>(HttpStatus.OK);
-    	User user = this.checkUser(request, result);
-    	if(result.isOk()){
-    		try{
-    			if(!user.isAdmin()){
-    				result.addRestMessage(getUnauthorizedMessage());
-    				return result.createResponseEntity();
-    			}else{
-    				//Limit our results based on the fact that our permissions should be in the permissions strings
-        			ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
-	    			return result.createResponseEntity(getPageStream(root));
-    			}
-    		}catch(InvalidRQLRestException e){
-    			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
-				return result.createResponseEntity();
-    		}
-    	}
-    	
-    	return result.createResponseEntity();
-	}
 
-	@ApiOperation(
+        RestProcessResult<PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>> result = new RestProcessResult<PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>>(HttpStatus.OK);
+        User user = this.checkUser(request, result);
+        if(result.isOk()){
+            try{
+                if(!user.isAdmin()){
+                    result.addRestMessage(getUnauthorizedMessage());
+                    return result.createResponseEntity();
+                }else{
+                    //Limit our results based on the fact that our permissions should be in the permissions strings
+                    ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
+                    return result.createResponseEntity(getPageStream(root));
+                }
+            }catch(InvalidRQLRestException e){
+                result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
+                return result.createResponseEntity();
+            }
+        }
+
+        return result.createResponseEntity();
+    }
+
+    @ApiOperation(
             value = "List all Audit Event Types in the system",
             notes = "Admin access only",
             response=String.class,
             responseContainer="Array"
             )
     @RequestMapping(method = RequestMethod.GET, value = "list-event-types")
-    public ResponseEntity<List<EventTypeInfo>> listEventTypes(
+    public List<EventTypeInfo> listEventTypes(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
- 
-	    if(!user.isAdmin())
-	        throw new AccessDeniedException(user.getUsername() + " not admin, permission denied.");
-	    List<EventTypeInfo> types = new ArrayList<>(AuditEventType.EVENT_TYPES.size());
-	    for(EventTypeVO vo : AuditEventType.EVENT_TYPES) {
-	        EventTypeInfo info = new EventTypeInfo();
-	        info.type = vo.getType();
-	        info.subtype = vo.getSubtype();
-	        info.description = vo.getDescription();
-	        info.alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
-	        types.add(info);
-	    }
-	    
-        return ResponseEntity.ok(types);
+
+        if(!user.isAdmin())
+            throw new AccessDeniedException(user.getUsername() + " not admin, permission denied.");
+
+        return AuditEventType.getRegisteredEventTypes().stream().map(vo -> {
+            EventTypeInfo info = new EventTypeInfo();
+            info.type = vo.getEventType().getEventType();
+            info.subtype = vo.getEventType().getEventSubtype();
+            info.description = vo.getDescription();
+            info.alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
+            return info;
+        }).collect(Collectors.toList());
     }
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)
-	 */
-	@Override
-	public AuditEventInstanceModel createModel(AuditEventInstanceVO vo) {
-		return new AuditEventInstanceModel(vo);
-	}
-	
-	class EventTypeInfo {
-	    
-	    String type;
-	    String subtype;
-	    TranslatableMessage description;
-	    String alarmLevel;
+
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)
+     */
+    @Override
+    public AuditEventInstanceModel createModel(AuditEventInstanceVO vo) {
+        return new AuditEventInstanceModel(vo);
+    }
+
+    class EventTypeInfo {
+
+        String type;
+        String subtype;
+        TranslatableMessage description;
+        String alarmLevel;
         /**
          * @return the type
          */
@@ -172,6 +169,6 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
         public void setAlarmLevel(String alarmLevel) {
             this.alarmLevel = alarmLevel;
         }
-	}
+    }
 
 }

@@ -64,7 +64,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventTypeV2RestController {
 
     private final RestModelMapper modelMapper;
-    
+
     @Autowired
     public EventTypeV2RestController(RestModelMapper modelMapper) {
         this.modelMapper = modelMapper;
@@ -109,10 +109,10 @@ public class EventTypeV2RestController {
     public TypedResultWithTotal<EventTypeVOModel<?>> queryEventTypes(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
-        
+
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         RQLToPagedObjectListQuery<EventTypeVOModel<?>> filter = new RQLToPagedObjectListQuery<>();
-        
+
         //First prune the list based on permissions
         List<EventTypeVOModel<?>> models = getAllEventTypesForUser(user);
 
@@ -128,10 +128,10 @@ public class EventTypeV2RestController {
             public int getTotal() {
                 return filter.getUnlimitedSize();
             }
-            
+
         };
     }
-    
+
     //TODO REmove when done testing
     @ApiOperation(
             value = "Echo back an event type",
@@ -149,8 +149,8 @@ public class EventTypeV2RestController {
         headers.setLocation(location);
         return new ResponseEntity<>(model, headers, HttpStatus.CREATED);
     }
-    
-    
+
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(
             value = "Get current possible event types",
@@ -215,14 +215,14 @@ public class EventTypeV2RestController {
             }
         }
         //System
-        for(EventTypeVO type : SystemEventType.EVENT_TYPES) {
+        for(EventTypeVO type : SystemEventType.getRegisteredEventTypes()) {
             if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                 AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
                 types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
             }
         }
         // Audit
-        for(EventTypeVO type : AuditEventType.EVENT_TYPES) {
+        for(EventTypeVO type : AuditEventType.getRegisteredEventTypes()) {
             if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                 AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
                 types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));

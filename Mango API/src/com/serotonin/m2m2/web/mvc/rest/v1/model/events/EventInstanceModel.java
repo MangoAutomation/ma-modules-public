@@ -16,7 +16,7 @@ import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
-import com.serotonin.m2m2.rt.event.EventInstance.RtnCauses;
+import com.serotonin.m2m2.rt.event.ReturnCause;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
@@ -133,9 +133,9 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
         TranslatableMessage rtnKey = null;
         if(this.data.isRtnApplicable()){
             if (!this.data.isActive()) {
-                if (this.data.getRtnCause() == RtnCauses.RETURN_TO_NORMAL)
+                if (this.data.getRtnCause() == ReturnCause.RETURN_TO_NORMAL)
                     rtnKey = new TranslatableMessage("event.rtn.rtn");
-                else if (this.data.getRtnCause() == RtnCauses.SOURCE_DISABLED) {
+                else if (this.data.getRtnCause() == ReturnCause.SOURCE_DISABLED) {
                     if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.DATA_POINT))
                         rtnKey = new TranslatableMessage("event.rtn.pointDisabled");
                     else if (this.data.getEventType().getEventType().equals(EventType.EventTypeNames.DATA_SOURCE))

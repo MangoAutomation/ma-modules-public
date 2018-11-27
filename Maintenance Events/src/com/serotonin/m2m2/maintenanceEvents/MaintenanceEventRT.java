@@ -16,7 +16,7 @@ import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.ReturnCause;
 import com.serotonin.m2m2.util.timeout.ModelTimeoutClient;
 import com.serotonin.m2m2.util.timeout.ModelTimeoutTask;
 import com.serotonin.timer.CronTimerTrigger;
@@ -48,7 +48,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
 
     private void returnToNormal(long time) {
         if (eventActive) {
-            Common.eventManager.returnToNormal(eventType, time, vo.getAlarmLevel());
+            Common.eventManager.returnToNormal(eventType, time);
             eventActive = false;
         }
     }
@@ -118,7 +118,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
 
         if (eventActive)
             Common.eventManager.returnToNormal(eventType, System.currentTimeMillis(),
-                    EventInstance.RtnCauses.SOURCE_DISABLED);
+                    ReturnCause.SOURCE_DISABLED);
     }
 
     public void joinTermination() {
@@ -204,28 +204,28 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
         return cronTrigger;
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getThreadName()
-	 */
-	@Override
-	public String getThreadName() {
-		return "Maintenence Event " + this.vo.getXid();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getThreadName()
+     */
+    @Override
+    public String getThreadName() {
+        return "Maintenence Event " + this.vo.getXid();
+    }
 
-	final String PREFIX = "MAINT_";
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
-	 */
-	@Override
-	public String getTaskId() {
-		return PREFIX + this.vo.getXid();
-	}
+    final String PREFIX = "MAINT_";
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getTaskId()
+     */
+    @Override
+    public String getTaskId() {
+        return PREFIX + this.vo.getXid();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getQueueSize()
-	 */
-	@Override
-	public int getQueueSize() {
-		return 0;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.util.timeout.ModelTimeoutClient#getQueueSize()
+     */
+    @Override
+    public int getQueueSize() {
+        return 0;
+    }
 }
