@@ -11,8 +11,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +31,7 @@ import com.serotonin.db.spring.ConnectionCallbackVoid;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.util.SerializationHelper;
 
 import io.swagger.annotations.Api;
@@ -35,7 +39,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /**
- * TODO Convert some binary data to JSON? 
+ * TODO Convert some binary data to JSON?
  *
  * @author Terry Packer
  */
@@ -58,7 +62,6 @@ public class SqlConsoleRestController {
         return ResponseEntity.ok(query(Common.databaseProxy.getTableListQuery(), getSerializedDataMessage(user)));
     }
 
-    
     @ApiOperation(
             value = "Query",
             notes = "Submit a query to the Mango database, Admin Only",
@@ -72,6 +75,34 @@ public class SqlConsoleRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(query(query, getSerializedDataMessage(user)));
+    }
+
+    @ApiOperation(
+            value = "Query",
+            notes = "Submit a query to the Mango database, Admin Only",
+            response=SqlQueryResult.class
+            )
+    @PreAuthorize("isAdmin()")
+    @RequestMapping(method = RequestMethod.GET, produces = MediaTypes.CSV_VALUE)
+    public List<Map<String, Object>> queryCsv(
+            @RequestParam(value="query", required=true) String query,
+            @ApiParam(value="User", required=true)
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+
+        SqlQueryResult result = query(query, getSerializedDataMessage(user));
+        List<String> headers = result.getHeaders();
+        List<List<Object>> rows = result.getData();
+
+        return rows.stream().map(row -> {
+            Map<String, Object> resultRow = new LinkedHashMap<>(row.size());
+            for (int i = 0; i < row.size(); i++) {
+                Object value = row.get(i);
+                String header = headers.get(i);
+                resultRow.put(header, value);
+            }
+            return resultRow;
+        }).collect(Collectors.toList());
     }
 
     @ApiOperation(
@@ -90,7 +121,7 @@ public class SqlConsoleRestController {
         ejt.setDataSource(Common.databaseProxy.getDataSource());
         return ResponseEntity.ok(ejt.update(update));
     }
-    
+
     /**
      * Get a translated message about serialized data
      * @param user
@@ -99,15 +130,15 @@ public class SqlConsoleRestController {
     private String getSerializedDataMessage(User user) {
         return user.getTranslations().translate("sql.serializedData");
     }
-    
+
     /**
-     * 
+     *
      * @param sqlString
      * @param serializedDataMsg
      * @param model
      */
     private SqlQueryResult query(final String sqlString, final String serializedDataMsg) {
-        
+
         SqlQueryResult result = new SqlQueryResult();
         Common.databaseProxy.doInConnection(new ConnectionCallbackVoid() {
             @Override

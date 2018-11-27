@@ -15,52 +15,42 @@ function sqlConsoleFactory(RestResource) {
         static get baseUrl() {
             return sqlConsoleBaseUrl;
         }
-        
-        getTables() {
-            return this.constructor.http({
-                url: `${this.constructor.baseUrl}/list-tables`,
+
+        static getTables() {
+            return this.http({
+                url: `${this.baseUrl}/list-tables`,
                 method: 'GET'
             }).then(response => {
-                return response.data
+                return response.data;
             });
         }
 
-        query(queryString) {
-            return this.constructor.http({
-                url: `${this.constructor.baseUrl}`,
+        static query(query) {
+            return this.http({
+                url: `${this.baseUrl}`,
                 method: 'GET',
-                params: {query: queryString}
+                params: {query}
             }).then(response => {
-                return response.data
+                return response.data;
             });
         }
 
-        update(queryString) {
-            return this.constructor.http({
-                url: `${this.constructor.baseUrl}`,
+        static update(query) {
+            return this.http({
+                url: `${this.baseUrl}`,
                 method: 'POST',
-                data: queryString,
+                data: query,
                 headers: {
                     'Content-Type': 'application/sql'
                 }
             }).then(response => {
-                return response.data
+                return response.data;
             });
         }
-
-        static getTables() {
-            const sql = new this({});
-            return sql.getTables();
-        }
-
-        static query(queryString) {
-            const sql = new this({});
-            return sql.query(queryString);
-        }
-
-        static update(queryString) {
-            const sql = new this({});
-            return sql.update(queryString);
+        
+        static queryCsvUrl(query) {
+            const encodedQuery = angular.$$encodeUriSegment(query);
+            return `${this.baseUrl}?format=csv2&query=${encodedQuery}`;
         }
     }
     

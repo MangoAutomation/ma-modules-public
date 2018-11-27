@@ -3,3 +3,7 @@ ma-sql-console td {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+ma-sql-console .ma-sql-console-controls .md-table-pagination {
+	border-top: none;
+}

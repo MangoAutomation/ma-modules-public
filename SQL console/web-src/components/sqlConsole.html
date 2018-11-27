@@ -25,8 +25,17 @@
             </div>
         </md-card-content>
     </md-card>
+    
     <md-card flex="100" ng-if="$ctrl.rows">
         <md-card-content flex>
+            <div layout layout-align="start center" class="ma-sql-console-controls">
+                <md-button class="md-icon-button" ng-if="$ctrl.csvUrl" ng-href="{{$ctrl.csvUrl}}" download="query.csv">
+                    <md-icon>file_download</md-icon>
+                    <md-tooltip><span ma-tr="ui.app.downloadCSV"></span></md-tooltip>
+                </md-button>
+                <md-table-pagination flex md-limit="$ctrl.queryOpts.limit" md-limit-options="[10, 15, 20, 50, 100]" md-page="$ctrl.queryOpts.page" md-total="{{$ctrl.rows.length}}" md-page-select></md-table-pagination>
+            </div>
+            
             <md-table-container>
                 <table md-table>
                     <thead md-head md-order="query.order">
@@ -41,8 +50,6 @@
                     </tbody>
                 </table>
             </md-table-container>
-
-            <md-table-pagination ng-if="$ctrl.rows" md-limit="$ctrl.queryOpts.limit" md-limit-options="[10, 20, 50, 100]" md-page="$ctrl.queryOpts.page" md-total="{{$ctrl.rows.length}}" md-page-select></md-table-pagination>
         </md-card-content>
     </md-card>
 </div>
