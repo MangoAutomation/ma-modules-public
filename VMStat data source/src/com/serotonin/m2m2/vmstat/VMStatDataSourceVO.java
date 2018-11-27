@@ -18,7 +18,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
@@ -30,7 +30,7 @@ public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
     @Override
     protected void addEventTypes(List<EventTypeVO> ets) {
         ets.add(createEventType(VMStatDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(
-                "event.ds.dataSource"), EventType.DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
+                "event.ds.dataSource"), DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(VMStatDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));
     }
 
@@ -150,11 +150,11 @@ public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
         }
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
-	 */
-	@Override
-	public VMStatDataSourceModel asModel() {
-		return new VMStatDataSourceModel(this);
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
+     */
+    @Override
+    public VMStatDataSourceModel asModel() {
+        return new VMStatDataSourceModel(this);
+    }
 }

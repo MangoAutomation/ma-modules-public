@@ -25,7 +25,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
-import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
 import com.serotonin.m2m2.rt.script.JsonImportExclusion;
@@ -61,9 +61,9 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     public PointLinkRT(PointLinkVO vo) {
         this.vo = vo;
         eventType = new SystemEventType(SystemEvent.TYPE_NAME, vo.getId(),
-                EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
+                DuplicateHandling.IGNORE_SAME_MESSAGE);
         alreadyRunningEvent = new SystemEventType(PointLinkAlreadyRunningEvent.TYPE_NAME, vo.getId(),
-                EventType.DuplicateHandling.IGNORE_SAME_MESSAGE);
+                DuplicateHandling.IGNORE_SAME_MESSAGE);
         compiledScript = null;
         compiled = false;
         ready = true;

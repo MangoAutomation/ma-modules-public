@@ -13,7 +13,7 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
@@ -25,11 +25,11 @@ public class EnvCanDataSourceVO extends DataSourceVO<EnvCanDataSourceVO> {
     @Override
     protected void addEventTypes(List<EventTypeVO> ets) {
         ets.add(createEventType(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, new TranslatableMessage(
-                "event.ds.dataSource"), EventType.DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
+                "event.ds.dataSource"), DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));
         ets.add(createPollAbortedEventType(EnvCanDataSourceRT.POLL_ABORTED_EVENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("envcands.event.noTemperatureData"),
-        		EventType.DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.INFORMATION));
+        		DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.INFORMATION));
     }
 	/*
 	 * (non-Javadoc)

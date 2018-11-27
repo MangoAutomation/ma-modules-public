@@ -11,6 +11,7 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
+import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -24,7 +25,7 @@ public class ScheduledEventType extends EventType {
     public static final String TYPE_NAME = "SCHEDULED";
 
     private int scheduleId;
-    private int duplicateHandling = EventType.DuplicateHandling.IGNORE;
+    private DuplicateHandling duplicateHandling = DuplicateHandling.IGNORE;
 
     public ScheduledEventType() {
         // Required for reflection.
@@ -34,7 +35,7 @@ public class ScheduledEventType extends EventType {
         this.scheduleId = scheduleId;
     }
 
-    public ScheduledEventType(int scheduleId, int duplicateHandling) {
+    public ScheduledEventType(int scheduleId, DuplicateHandling duplicateHandling) {
         this.scheduleId = scheduleId;
         this.duplicateHandling = duplicateHandling;
     }
@@ -55,11 +56,11 @@ public class ScheduledEventType extends EventType {
     }
 
     @Override
-    public int getDuplicateHandling() {
+    public DuplicateHandling getDuplicateHandling() {
         return duplicateHandling;
     }
 
-    public void setDuplicateHandling(int duplicateHandling) {
+    public void setDuplicateHandling(DuplicateHandling duplicateHandling) {
         this.duplicateHandling = duplicateHandling;
     }
 

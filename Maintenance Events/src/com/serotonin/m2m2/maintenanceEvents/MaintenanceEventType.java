@@ -11,6 +11,7 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
+import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -46,8 +47,8 @@ public class MaintenanceEventType extends EventType {
     }
 
     @Override
-    public int getDuplicateHandling() {
-        return EventType.DuplicateHandling.IGNORE;
+    public DuplicateHandling getDuplicateHandling() {
+        return DuplicateHandling.IGNORE;
     }
 
     @Override

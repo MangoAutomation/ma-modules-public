@@ -12,7 +12,7 @@ import org.joda.time.DateTime;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.util.timeout.ModelTimeoutClient;
 import com.serotonin.m2m2.util.timeout.ModelTimeoutTask;
 import com.serotonin.timer.CronTimerTrigger;
@@ -80,7 +80,7 @@ public class ScheduledEventRT implements ModelTimeoutClient<Boolean> {
     public void initialize() {
         eventType = new ScheduledEventType(vo.getId());
         if (!vo.isReturnToNormal())
-            eventType.setDuplicateHandling(EventType.DuplicateHandling.ALLOW);
+            eventType.setDuplicateHandling(DuplicateHandling.ALLOW);
 
         // Schedule the active event.
         TimerTrigger activeTrigger = createTrigger(true);
