@@ -5,7 +5,6 @@ package com.serotonin.m2m2.web.mvc.rest.v1.websockets.events;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.web.socket.CloseStatus;
@@ -82,7 +81,7 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
             }
 
             EventRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), EventRegistrationModel.class);
-            Set<String> levels = model.getLevels();
+            Set<AlarmLevels> levels = model.getLevels();
             if (levels == null) {
                 levels = Collections.emptySet();
             }
@@ -127,10 +126,10 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
 
     public class EventsWebSocketListener implements UserEventListener {
         private final User user;
-        private volatile Set<Integer> levels;
+        private volatile Set<AlarmLevels> levels;
         private volatile EnumSet<EventEventTypeEnum> events;
 
-        public EventsWebSocketListener(User user, Set<String> levels, Set<EventEventTypeEnum> events) {
+        public EventsWebSocketListener(User user, Set<AlarmLevels> levels, Set<EventEventTypeEnum> events) {
             this.user = user;
             this.changeLevels(levels);
             this.changeEvents(events);
@@ -144,11 +143,7 @@ class EventsWebSocketHandler extends MangoWebSocketHandler {
             Common.eventManager.removeUserEventListener(this);
         }
 
-        public void changeLevels(Set<String> strLevels) {
-            Set<Integer> levels = new HashSet<>();
-            for (String level : strLevels){
-                levels.add(AlarmLevels.CODES.getId(level));
-            }
+        public void changeLevels(Set<AlarmLevels> levels) {
             this.levels = levels;
         }
 

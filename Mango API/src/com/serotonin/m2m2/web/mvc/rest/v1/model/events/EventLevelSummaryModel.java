@@ -13,54 +13,54 @@ import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
  */
 public class EventLevelSummaryModel {
 
-	private String level;
-	private int unsilencedCount;
-	private EventInstanceModel mostRecentUnsilenced;
+    private AlarmLevels level;
+    private int unsilencedCount;
+    private EventInstanceModel mostRecentUnsilenced;
 
-	public EventLevelSummaryModel(){ }
+    public EventLevelSummaryModel(){ }
 
-	public EventLevelSummaryModel(UserEventLevelSummary summary) {
-	    this.level = AlarmLevels.CODES.getCode(summary.getAlarmLevel());
-	    this.unsilencedCount = summary.getUnsilencedCount();
-	    if(summary.getLatest() != null)
-	        this.mostRecentUnsilenced = new EventInstanceModel(summary.getLatest());
-	}
-	
-	/**
-	 * @param level
-	 * @param count
-	 * @param mostRecentActive
-	 */
-	public EventLevelSummaryModel(String level, int unsilencedCount,
-			EventInstanceModel mostRecentUnsilenced) {
-		super();
-		this.level = level;
-		this.unsilencedCount = unsilencedCount;
-		this.mostRecentUnsilenced = mostRecentUnsilenced;
-	}
+    public EventLevelSummaryModel(UserEventLevelSummary summary) {
+        this.level = summary.getAlarmLevel();
+        this.unsilencedCount = summary.getUnsilencedCount();
+        if(summary.getLatest() != null)
+            this.mostRecentUnsilenced = new EventInstanceModel(summary.getLatest());
+    }
 
-	public String getLevel() {
-		return level;
-	}
+    /**
+     * @param level
+     * @param count
+     * @param mostRecentActive
+     */
+    public EventLevelSummaryModel(AlarmLevels level, int unsilencedCount,
+            EventInstanceModel mostRecentUnsilenced) {
+        super();
+        this.level = level;
+        this.unsilencedCount = unsilencedCount;
+        this.mostRecentUnsilenced = mostRecentUnsilenced;
+    }
 
-	public void setLevel(String level) {
-		this.level = level;
-	}
+    public AlarmLevels getLevel() {
+        return level;
+    }
 
-	public int getUnsilencedCount() {
-		return unsilencedCount;
-	}
+    public void setLevel(AlarmLevels level) {
+        this.level = level;
+    }
 
-	public void setUnsilencedCount(int unsilencedCount) {
-		this.unsilencedCount = unsilencedCount;
-	}
+    public int getUnsilencedCount() {
+        return unsilencedCount;
+    }
 
-	public EventInstanceModel getMostRecentUnsilenced() {
-		return mostRecentUnsilenced;
-	}
+    public void setUnsilencedCount(int unsilencedCount) {
+        this.unsilencedCount = unsilencedCount;
+    }
 
-	public void setMostRecentUnsilenced(EventInstanceModel mostRecentUnsilenced) {
-		this.mostRecentUnsilenced = mostRecentUnsilenced;
-	}
-	
+    public EventInstanceModel getMostRecentUnsilenced() {
+        return mostRecentUnsilenced;
+    }
+
+    public void setMostRecentUnsilenced(EventInstanceModel mostRecentUnsilenced) {
+        this.mostRecentUnsilenced = mostRecentUnsilenced;
+    }
+
 }

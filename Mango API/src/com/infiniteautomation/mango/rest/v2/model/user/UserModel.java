@@ -25,7 +25,7 @@ public class UserModel extends AbstractVoModel<User> {
     private boolean disabled;
     private String homeUrl;
     private long lastLogin;
-    private String receiveAlarmEmails;
+    private AlarmLevels receiveAlarmEmails;
     private boolean receiveOwnAuditEvents;
     private String timezone;
     private boolean muted;
@@ -33,14 +33,14 @@ public class UserModel extends AbstractVoModel<User> {
     private String locale;
     private boolean passwordLocked;
     private String hashAlgorithm;
-    
+
     public UserModel() {
         super();
     }
     public UserModel(User vo) {
         super(vo);
     }
-    
+
     public String getUsername() {
         return username;
     }
@@ -81,10 +81,10 @@ public class UserModel extends AbstractVoModel<User> {
     public long getLastLogin() {
         return lastLogin;
     }
-    public String getReceiveAlarmEmails() {
+    public AlarmLevels getReceiveAlarmEmails() {
         return receiveAlarmEmails;
     }
-    public void setReceiveAlarmEmails(String receiveAlarmEmails) {
+    public void setReceiveAlarmEmails(AlarmLevels receiveAlarmEmails) {
         this.receiveAlarmEmails = receiveAlarmEmails;
     }
     public boolean isReceiveOwnAuditEvents() {
@@ -159,7 +159,7 @@ public class UserModel extends AbstractVoModel<User> {
         this.disabled = vo.isDisabled();
         this.homeUrl = vo.getHomeUrl();
         this.lastLogin = vo.getLastLogin();
-        this.receiveAlarmEmails = AlarmLevels.CODES.getCode(vo.getReceiveAlarmEmails());
+        this.receiveAlarmEmails = vo.getReceiveAlarmEmails();
         this.timezone = vo.getTimezone();
         this.muted = vo.isMuted();
         this.receiveOwnAuditEvents = vo.isReceiveOwnAuditEvents();
@@ -167,7 +167,7 @@ public class UserModel extends AbstractVoModel<User> {
         this.locale = vo.getLocale();
         this.passwordLocked = vo.isPasswordLocked();
     }
-    
+
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#toVO()
      */
@@ -180,7 +180,7 @@ public class UserModel extends AbstractVoModel<User> {
         user.setPhone(phone);
         user.setDisabled(disabled);
         user.setHomeUrl(homeUrl);
-        user.setReceiveAlarmEmails(AlarmLevels.CODES.getId(receiveAlarmEmails));
+        user.setReceiveAlarmEmails(receiveAlarmEmails);
         user.setTimezone(timezone);
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);

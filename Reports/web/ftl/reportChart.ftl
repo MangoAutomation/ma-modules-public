@@ -245,11 +245,11 @@
           <tr class="row<#if row == 1>Alt</#if>">
             <td align="center">${event.id?c}</td>
             <td align="center">
-              <#if event.alarmLevel == 0><img src="${inline}<@img src="flag_grey.png"/>" alt="<@fmt key="common.alarmLevel.none"/>"/>
-              <#elseif event.alarmLevel == 1><img src="${inline}<@img src="flag_blue.png"/>" alt="<@fmt key="common.alarmLevel.info"/>"/>
-              <#elseif event.alarmLevel == 2><img src="${inline}<@img src="flag_yellow.png"/>" alt="<@fmt key="common.alarmLevel.urgent"/>"/>
-              <#elseif event.alarmLevel == 3><img src="${inline}<@img src="flag_orange.png"/>" alt="<@fmt key="common.alarmLevel.critical"/>"/>
-              <#elseif event.alarmLevel == 4><img src="${inline}<@img src="flag_red.png"/>" alt="<@fmt key="common.alarmLevel.lifeSafety"/>"/>
+              <#if event.alarmLevel.value() == 0><img src="${inline}<@img src="flag_grey.png"/>" alt="<@fmt key="common.alarmLevel.none"/>"/>
+              <#elseif event.alarmLevel.value() == 1><img src="${inline}<@img src="flag_blue.png"/>" alt="<@fmt key="common.alarmLevel.info"/>"/>
+              <#elseif event.alarmLevel.value() == 2><img src="${inline}<@img src="flag_yellow.png"/>" alt="<@fmt key="common.alarmLevel.urgent"/>"/>
+              <#elseif event.alarmLevel.value() == 3><img src="${inline}<@img src="flag_orange.png"/>" alt="<@fmt key="common.alarmLevel.critical"/>"/>
+              <#elseif event.alarmLevel.value() == 4><img src="${inline}<@img src="flag_red.png"/>" alt="<@fmt key="common.alarmLevel.lifeSafety"/>"/>
               <#else>(<@fmt key="common.alarmLevel.unknown"/>  ${event.alarmLevel})
               </#if>
             </td>

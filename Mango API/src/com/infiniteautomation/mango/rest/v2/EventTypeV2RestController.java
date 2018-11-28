@@ -37,7 +37,6 @@ import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
-import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
@@ -191,7 +190,7 @@ public class EventTypeV2RestController {
                     EventTypeVO type = ed.getEventType();
                     if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                         AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                        types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                        types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
                     }
                 }
             }
@@ -201,7 +200,7 @@ public class EventTypeV2RestController {
             for(EventTypeVO type : vo.getEventTypes()) {
                 if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                     AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                    types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                    types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
                 }
             }
         }
@@ -210,7 +209,7 @@ public class EventTypeV2RestController {
             for(EventTypeVO type : vo.getEventTypes()) {
                 if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                     AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                    types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                    types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
                 }
             }
         }
@@ -218,14 +217,14 @@ public class EventTypeV2RestController {
         for(EventTypeVO type : SystemEventType.getRegisteredEventTypes()) {
             if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                 AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
             }
         }
         // Audit
         for(EventTypeVO type : AuditEventType.getRegisteredEventTypes()) {
             if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                 AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
             }
         }
         //Module defined
@@ -233,13 +232,13 @@ public class EventTypeV2RestController {
             if(def.getHandlersRequireAdmin() && user.hasAdminPermission()) {
                 for(EventTypeVO type : def.getEventTypeVOs()) {
                     AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                    types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                    types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
                 }
             }else {
                 for(EventTypeVO type : def.getEventTypeVOs()) {
                     if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                         AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                        types.add(new EventTypeVOModel(model, type.getDescription(), AlarmLevels.CODES.getCode(type.getAlarmLevel())));
+                        types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
                     }
                 }
             }

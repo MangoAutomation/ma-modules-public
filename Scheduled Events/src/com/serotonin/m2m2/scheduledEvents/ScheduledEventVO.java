@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.scheduledEvents;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -30,13 +31,13 @@ import com.serotonin.validation.StringValidation;
 
 /**
  * @author Matthew Lohbihler
- * 
+ *
  */
 public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String XID_PREFIX = "SE_";
+    public static final String XID_PREFIX = "SE_";
 
     public static final int TYPE_HOURLY = 1;
     public static final int TYPE_DAILY = 2;
@@ -57,6 +58,7 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
         TYPE_CODES.addElement(TYPE_CRON, "CRON", "scheduledEvents.type.cron");
     }
 
+    @Override
     public boolean isNew() {
         return id == Common.NEW_ID;
     }
@@ -65,7 +67,7 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
     private String xid;
     @JsonProperty
     private String alias;
-    private int alarmLevel = AlarmLevels.NONE;
+    private AlarmLevels alarmLevel = AlarmLevels.NONE;
     private int scheduleType = TYPE_DAILY;
     @JsonProperty
     private boolean returnToNormal = true;
@@ -231,6 +233,7 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
         return "event.audit.scheduledEvent";
     }
 
+    @Override
     public void validate(ProcessResult response) {
         if (StringValidation.isLengthGreaterThan(alias, 50))
             response.addContextualMessage("alias", "scheduledEvents.validate.aliasTooLong");
@@ -289,14 +292,17 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
         return id;
     }
 
+    @Override
     public void setId(int id) {
         this.id = id;
     }
 
+    @Override
     public String getXid() {
         return xid;
     }
 
+    @Override
     public void setXid(String xid) {
         this.xid = xid;
     }
@@ -357,11 +363,11 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
         this.activeYear = activeYear;
     }
 
-    public int getAlarmLevel() {
+    public AlarmLevels getAlarmLevel() {
         return alarmLevel;
     }
 
-    public void setAlarmLevel(int alarmLevel) {
+    public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
 
@@ -460,7 +466,7 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         writer.writeEntry("xid", xid);
-        writer.writeEntry("alarmLevel", AlarmLevels.CODES.getCode(alarmLevel));
+        writer.writeEntry("alarmLevel", alarmLevel.name());
         writer.writeEntry("scheduleType", TYPE_CODES.getCode(scheduleType));
     }
 
@@ -468,10 +474,12 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         String text = jsonObject.getString("alarmLevel");
         if (text != null) {
-            alarmLevel = AlarmLevels.CODES.getId(text);
-            if (!AlarmLevels.CODES.isValidId(alarmLevel))
+            try {
+                alarmLevel = AlarmLevels.fromName(text);
+            } catch (IllegalArgumentException | NullPointerException e) {
                 throw new TranslatableJsonException("emport.error.scheduledEvent.invalid", "alarmLevel", text,
-                        AlarmLevels.CODES.getCodeList());
+                        Arrays.asList(AlarmLevels.values()));
+            }
         }
 
         text = jsonObject.getString("scheduleType");
@@ -483,12 +491,12 @@ public class ScheduledEventVO extends AbstractVO<ScheduledEventVO> {
         }
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
-	 */
-	@Override
-	protected AbstractDao<ScheduledEventVO> getDao() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
+     */
+    @Override
+    protected AbstractDao<ScheduledEventVO> getDao() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

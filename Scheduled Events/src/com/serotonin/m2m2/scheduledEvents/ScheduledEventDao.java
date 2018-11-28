@@ -19,45 +19,46 @@ import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.BaseDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 
 /**
  * @author Matthew Lohbihler
- * 
+ *
  */
 public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
-	
-	//If you change this the Internal Metrics DS Should be updated
-	public static final String COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
+
+    //If you change this the Internal Metrics DS Should be updated
+    public static final String COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
 
     private static final LazyInitSupplier<ScheduledEventDao> instance = new LazyInitSupplier<>(() -> {
         return new ScheduledEventDao();
     });
-	
+
     //Monitor for count of table
     protected final AtomicIntegerMonitor countMonitor;
-    
-	private ScheduledEventDao(){
-		this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.SCHEDULED_EVENT_COUNT"), this);
+
+    private ScheduledEventDao(){
+        this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.SCHEDULED_EVENT_COUNT"), this);
         this.countMonitor.setValue(this.count());
-    	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
-	};
-	
+        Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
+    };
+
     public static ScheduledEventDao getInstance() {
         return instance.get();
     }
-    
+
     private static final String SCHEDULED_EVENT_SELECT = "select id, xid, alias, alarmLevel, scheduleType, "
             + "  returnToNormal, disabled, activeYear, activeMonth, activeDay, activeHour, activeMinute, activeSecond, "
             + "  activeCron, inactiveYear, inactiveMonth, inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, "
             + "inactiveCron from scheduledEvents ";
 
     private static final String SCHEDULED_EVENT_COUNT = "SELECT COUNT(DISTINCT id) FROM scheduledEvents";
-    
+
     public int count(){
-    	return ejt.queryForInt(SCHEDULED_EVENT_COUNT, new Object[0], 0);
+        return ejt.queryForInt(SCHEDULED_EVENT_COUNT, new Object[0], 0);
     }
-    
+
     public String generateUniqueXid() {
         return generateUniqueXid(ScheduledEventVO.XID_PREFIX, "scheduledEvents");
     }
@@ -89,7 +90,7 @@ public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
             se.setId(rs.getInt(++i));
             se.setXid(rs.getString(++i));
             se.setAlias(rs.getString(++i));
-            se.setAlarmLevel(rs.getInt(++i));
+            se.setAlarmLevel(AlarmLevels.fromValue(rs.getInt(++i)));
             se.setScheduleType(rs.getInt(++i));
             se.setReturnToNormal(charToBool(rs.getString(++i)));
             se.setDisabled(charToBool(rs.getString(++i)));
@@ -125,12 +126,12 @@ public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
                         + "  activeYear, activeMonth, activeDay, activeHour, activeMinute, activeSecond, activeCron, "
                         + "  inactiveYear, inactiveMonth, inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, inactiveCron "
                         + ") values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                new Object[] { se.getXid(), se.getAlarmLevel(), se.getAlias(), se.getScheduleType(),
-                        boolToChar(se.isReturnToNormal()), boolToChar(se.isDisabled()), se.getActiveYear(),
-                        se.getActiveMonth(), se.getActiveDay(), se.getActiveHour(), se.getActiveMinute(),
-                        se.getActiveSecond(), se.getActiveCron(), se.getInactiveYear(), se.getInactiveMonth(),
-                        se.getInactiveDay(), se.getInactiveHour(), se.getInactiveMinute(), se.getInactiveSecond(),
-                        se.getInactiveCron() }));
+                        new Object[] { se.getXid(), se.getAlarmLevel().value(), se.getAlias(), se.getScheduleType(),
+                                boolToChar(se.isReturnToNormal()), boolToChar(se.isDisabled()), se.getActiveYear(),
+                                se.getActiveMonth(), se.getActiveDay(), se.getActiveHour(), se.getActiveMinute(),
+                                se.getActiveSecond(), se.getActiveCron(), se.getInactiveYear(), se.getInactiveMonth(),
+                                se.getInactiveDay(), se.getInactiveHour(), se.getInactiveMinute(), se.getInactiveSecond(),
+                                se.getInactiveCron() }));
         AuditEventType.raiseAddedEvent(AuditEvent.TYPE_NAME, se);
         this.countMonitor.increment();
     }
@@ -143,12 +144,12 @@ public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
                         + "  activeYear=?, activeMonth=?, activeDay=?, activeHour=?, activeMinute=?, activeSecond=?, activeCron=?, "
                         + "  inactiveYear=?, inactiveMonth=?, inactiveDay=?, inactiveHour=?, inactiveMinute=?, inactiveSecond=?, "
                         + "  inactiveCron=? " + "where id=?",
-                new Object[] { se.getXid(), se.getAlarmLevel(), se.getAlias(), se.getScheduleType(),
-                        boolToChar(se.isReturnToNormal()), boolToChar(se.isDisabled()), se.getActiveYear(),
-                        se.getActiveMonth(), se.getActiveDay(), se.getActiveHour(), se.getActiveMinute(),
-                        se.getActiveSecond(), se.getActiveCron(), se.getInactiveYear(), se.getInactiveMonth(),
-                        se.getInactiveDay(), se.getInactiveHour(), se.getInactiveMinute(), se.getInactiveSecond(),
-                        se.getInactiveCron(), se.getId() });
+                        new Object[] { se.getXid(), se.getAlarmLevel().value(), se.getAlias(), se.getScheduleType(),
+                                boolToChar(se.isReturnToNormal()), boolToChar(se.isDisabled()), se.getActiveYear(),
+                                se.getActiveMonth(), se.getActiveDay(), se.getActiveHour(), se.getActiveMinute(),
+                                se.getActiveSecond(), se.getActiveCron(), se.getInactiveYear(), se.getInactiveMonth(),
+                                se.getInactiveDay(), se.getInactiveHour(), se.getInactiveMinute(), se.getInactiveSecond(),
+                                se.getInactiveCron(), se.getId() });
         AuditEventType.raiseChangedEvent(AuditEvent.TYPE_NAME, old, se);
     }
 
@@ -169,13 +170,13 @@ public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
             this.countMonitor.decrement();
         }
     }
-    
-	/* (non-Javadoc)
-	 * @see com.infiniteautomation.mango.monitor.ValueMonitorOwner#reset(java.lang.String)
-	 */
-	@Override
-	public void reset(String monitorId) {
-		//We only have one monitor so:
-		this.countMonitor.setValue(this.count());
-	}
+
+    /* (non-Javadoc)
+     * @see com.infiniteautomation.mango.monitor.ValueMonitorOwner#reset(java.lang.String)
+     */
+    @Override
+    public void reset(String monitorId) {
+        //We only have one monitor so:
+        this.countMonitor.setValue(this.count());
+    }
 }

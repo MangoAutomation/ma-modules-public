@@ -6,6 +6,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +39,9 @@ import com.serotonin.timer.CronTimerTrigger;
 
 public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String XID_PREFIX = "ME_";
+    public static final String XID_PREFIX = "ME_";
 
     public static final int TYPE_MANUAL = 1;
     public static final int TYPE_HOURLY = 2;
@@ -65,7 +66,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
     private List<Integer> dataSources = new ArrayList<>();
     private List<Integer> dataPoints = new ArrayList<>();
-    private int alarmLevel = AlarmLevels.NONE;
+    private AlarmLevels alarmLevel = AlarmLevels.NONE;
     private int scheduleType = TYPE_MANUAL;
     @JsonProperty
     private boolean disabled = false;
@@ -103,14 +104,17 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     @JsonProperty
     private String togglePermission;
 
+    @Override
     public boolean isNew() {
         return id == Common.NEW_ID;
     }
 
+    @Override
     public String getXid() {
         return xid;
     }
 
+    @Override
     public void setXid(String xid) {
         this.xid = xid;
     }
@@ -122,7 +126,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     public void setDataSources(List<Integer> dataSourceIds) {
         this.dataSources = dataSourceIds;
     }
-    
+
     public List<Integer> getDataPoints() {
         return dataPoints;
     }
@@ -145,11 +149,11 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         this.name = alias;
     }
 
-    public int getAlarmLevel() {
+    public AlarmLevels getAlarmLevel() {
         return alarmLevel;
     }
 
-    public void setAlarmLevel(int alarmLevel) {
+    public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
 
@@ -280,7 +284,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     public void setInactiveCron(String inactiveCron) {
         this.inactiveCron = inactiveCron;
     }
-    
+
     public int getTimeoutPeriods() {
         return timeoutPeriods;
     }
@@ -311,7 +315,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
     public TranslatableMessage getDescription() {
         TranslatableMessage message;
-        
+
         if (!StringUtils.isBlank(name)) {
             message = new TranslatableMessage("common.default", name);
         } else {
@@ -334,14 +338,14 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             }else {
                 eventName = "Multiple data points and sources"; //TODO Better name/translation?
             }
-            
+
             if (scheduleType == TYPE_MANUAL)
                 message = new TranslatableMessage("maintenanceEvents.schedule.manual", eventName);
             else if (scheduleType == TYPE_ONCE) {
                 message = new TranslatableMessage("maintenanceEvents.schedule.onceUntil", eventName,
                         Functions.getTime(new DateTime(activeYear, activeMonth, activeDay, activeHour, activeMinute,
                                 activeSecond, 0).getMillis()), Functions.getTime(new DateTime(inactiveYear, inactiveMonth,
-                                inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, 0).getMillis()));
+                                        inactiveDay, inactiveHour, inactiveMinute, inactiveSecond, 0).getMillis()));
             }
             else if (scheduleType == TYPE_HOURLY) {
                 String activeTime = StringUtils.leftPad(Integer.toString(activeMinute), 2, '0') + ":"
@@ -430,6 +434,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         return "event.audit.maintenanceEvent";
     }
 
+    @Override
     public void validate(ProcessResult response) {
         super.validate(response);
 
@@ -437,7 +442,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
             response.addContextualMessage("dataSources", "validate.invalidValue");
             response.addContextualMessage("dataPoints", "validate.invalidValue");
         }
-        
+
         //Validate that the ids are legit
         for(int i=0; i<dataSources.size(); i++) {
             DataSourceVO<?> vo = DataSourceDao.getInstance().get(dataSources.get(i));
@@ -452,7 +457,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                 response.addContextualMessage("dataPoints[" + i + "]", "validate.invalidValue");
             }
         }
-        
+
         // Check that cron patterns are ok.
         if (scheduleType == TYPE_CRON) {
             try {
@@ -508,19 +513,19 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         writer.writeEntry("xid", xid);
         writer.writeEntry("alias", name);
-        writer.writeEntry("alarmLevel", AlarmLevels.CODES.getCode(alarmLevel));
+        writer.writeEntry("alarmLevel", alarmLevel.name());
         writer.writeEntry("scheduleType", TYPE_CODES.getCode(scheduleType));
-        
+
         List<String> dataSourceXids = new ArrayList<>();
         //Validate that the ids are legit
         for(int i=0; i<dataSources.size(); i++) {
             String xid = DataSourceDao.getInstance().getXidById(dataSources.get(i));
-            if(xid != null) 
+            if(xid != null)
                 dataSourceXids.add(xid);
         }
         if(dataSourceXids.size() > 0)
             writer.writeEntry("dataSourceXids", dataSourceXids);
-        
+
         List<String> dataPointXids = new ArrayList<>();
         for(int i=0; i<dataPoints.size(); i++) {
             String xid = DataPointDao.getInstance().getXidById(dataPoints.get(i));
@@ -568,13 +573,15 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                 dataSources.add(id);
             }
         }
-        
+
         text = jsonObject.getString("alarmLevel");
         if (text != null) {
-            alarmLevel = AlarmLevels.CODES.getId(text);
-            if (!AlarmLevels.CODES.isValidId(alarmLevel))
+            try {
+                alarmLevel = AlarmLevels.fromName(text);
+            } catch (IllegalArgumentException | NullPointerException e) {
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "alarmLevel", text,
-                        AlarmLevels.CODES.getCodeList());
+                        Arrays.asList(AlarmLevels.values()));
+            }
         }
 
         text = jsonObject.getString("scheduleType");
@@ -594,11 +601,11 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         }
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
-	 */
-	@Override
-	protected AbstractDao<MaintenanceEventVO> getDao() {
-		return MaintenanceEventDao.getInstance();
-	}
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
+     */
+    @Override
+    protected AbstractDao<MaintenanceEventVO> getDao() {
+        return MaintenanceEventDao.getInstance();
+    }
 }

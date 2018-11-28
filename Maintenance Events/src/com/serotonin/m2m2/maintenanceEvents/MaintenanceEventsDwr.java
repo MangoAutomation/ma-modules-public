@@ -17,6 +17,7 @@ import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
@@ -78,7 +79,7 @@ public class MaintenanceEventsDwr extends ModuleDwr {
     }
 
     @DwrPermission(admin = true)
-    public ProcessResult saveMaintenanceEvent(int id, String xid, int dataSourceId, String alias, int alarmLevel,
+    public ProcessResult saveMaintenanceEvent(int id, String xid, int dataSourceId, String alias, AlarmLevels alarmLevel,
             int scheduleType, boolean disabled, int activeYear, int activeMonth, int activeDay, int activeHour,
             int activeMinute, int activeSecond, String activeCron, int inactiveYear, int inactiveMonth,
             int inactiveDay, int inactiveHour, int inactiveMinute, int inactiveSecond, String inactiveCron) {

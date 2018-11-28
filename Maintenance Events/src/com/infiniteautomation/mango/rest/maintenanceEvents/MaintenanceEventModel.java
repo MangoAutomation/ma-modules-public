@@ -27,11 +27,11 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> dataSources;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> dataPoints;
-    
-    private String alarmLevel;
+
+    private AlarmLevels alarmLevel;
     private String scheduleType;
     private Boolean disabled;
     private Integer activeYear;
@@ -52,11 +52,11 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     private String timeoutPeriodType;
     @PatchableField()
     private String togglePermission;
-    
+
     public MaintenanceEventModel() {
         super();
     }
-    
+
     public MaintenanceEventModel(MaintenanceEventVO vo) {
         super(vo);
     }
@@ -92,8 +92,8 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         }
         if(result.getHasMessages())
             throw new ValidationException(result);
-        
-        vo.setAlarmLevel(AlarmLevels.CODES.getId(alarmLevel));
+
+        vo.setAlarmLevel(alarmLevel);
         vo.setScheduleType(MaintenanceEventVO.TYPE_CODES.getId(scheduleType));
         vo.setDisabled(disabled);
         vo.setActiveYear(activeYear);
@@ -115,7 +115,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         vo.setTogglePermission(togglePermission);
         return vo;
     }
-    
+
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#fromVO(com.serotonin.m2m2.vo.AbstractVO)
      */
@@ -130,7 +130,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
                     dataSources.add(xid);
             }
         }
-        
+
         if(vo.getDataPoints().size() > 0) {
             dataPoints = new ArrayList<>();
             for(int id : vo.getDataPoints()) {
@@ -139,8 +139,8 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
                     dataPoints.add(xid);
             }
         }
-        
-        alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
+
+        alarmLevel = vo.getAlarmLevel();
         scheduleType = MaintenanceEventVO.TYPE_CODES.getCode(vo.getScheduleType());
         disabled = vo.isDisabled();
         activeYear = vo.getActiveYear();
@@ -161,7 +161,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         timeoutPeriodType = Common.TIME_PERIOD_CODES.getCode(vo.getTimeoutPeriodType());
         togglePermission = vo.getTogglePermission();
     }
-    
+
     /* (non-Javadoc)
      * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#newVO()
      */
@@ -186,11 +186,11 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         this.dataPoints = dataPoints;
     }
 
-    public String getAlarmLevel() {
+    public AlarmLevels getAlarmLevel() {
         return alarmLevel;
     }
 
-    public void setAlarmLevel(String alarmLevel) {
+    public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
 
@@ -345,5 +345,5 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     public void setTogglePermission(String togglePermission) {
         this.togglePermission = togglePermission;
     }
-    
+
 }

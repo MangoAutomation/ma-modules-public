@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.db.query.appender.ReverseEnumColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -49,7 +50,7 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
 
     public AuditRestController() {
         super(AuditEventDao.getInstance());
-        this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
+        this.appenders.put("alarmLevel", new ReverseEnumColumnQueryAppender<>(AlarmLevels.class));
         this.appenders.put("changeType", new ExportCodeColumnQueryAppender(AuditEventInstanceVO.CHANGE_TYPE_CODES));
     }
 
@@ -102,7 +103,7 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
             info.type = vo.getEventType().getEventType();
             info.subtype = vo.getEventType().getEventSubtype();
             info.description = vo.getDescription();
-            info.alarmLevel = AlarmLevels.CODES.getCode(vo.getAlarmLevel());
+            info.alarmLevel = vo.getAlarmLevel();
             return info;
         }).collect(Collectors.toList());
     }
@@ -120,7 +121,7 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
         String type;
         String subtype;
         TranslatableMessage description;
-        String alarmLevel;
+        AlarmLevels alarmLevel;
         /**
          * @return the type
          */
@@ -160,13 +161,13 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
         /**
          * @return the alarmLevel
          */
-        public String getAlarmLevel() {
+        public AlarmLevels getAlarmLevel() {
             return alarmLevel;
         }
         /**
          * @param alarmLevel the alarmLevel to set
          */
-        public void setAlarmLevel(String alarmLevel) {
+        public void setAlarmLevel(AlarmLevels alarmLevel) {
             this.alarmLevel = alarmLevel;
         }
     }

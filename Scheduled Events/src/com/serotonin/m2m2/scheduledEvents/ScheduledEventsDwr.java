@@ -11,13 +11,14 @@ import org.joda.time.DateTime;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 /**
  * @author Matthew Lohbihler
- * 
+ *
  */
 public class ScheduledEventsDwr extends ModuleDwr {
     @DwrPermission(user = true)
@@ -44,7 +45,7 @@ public class ScheduledEventsDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult saveScheduledEvent(int id, String xid, String alias, int alarmLevel, int scheduleType,
+    public ProcessResult saveScheduledEvent(int id, String xid, String alias, AlarmLevels alarmLevel, int scheduleType,
             boolean returnToNormal, boolean disabled, int activeYear, int activeMonth, int activeDay, int activeHour,
             int activeMinute, int activeSecond, String activeCron, int inactiveYear, int inactiveMonth,
             int inactiveDay, int inactiveHour, int inactiveMinute, int inactiveSecond, String inactiveCron) {

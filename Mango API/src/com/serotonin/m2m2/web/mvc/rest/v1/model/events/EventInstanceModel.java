@@ -85,12 +85,12 @@ public class EventInstanceModel  extends AbstractRestModel<EventInstanceVO>{
     }
 
     @JsonGetter
-    public String getAlarmLevel(){
-        return AlarmLevels.CODES.getCode(this.data.getAlarmLevel());
+    public AlarmLevels getAlarmLevel(){
+        return this.data.getAlarmLevel();
     }
     @JsonSetter
-    public void setAlarmLevel(String level){
-        this.data.setAlarmLevel(AlarmLevels.CODES.getId(level));
+    public void setAlarmLevel(AlarmLevels level){
+        this.data.setAlarmLevel(level);
     }
 
     @LongAsDate(useNullValue = true, nullValue = 0)

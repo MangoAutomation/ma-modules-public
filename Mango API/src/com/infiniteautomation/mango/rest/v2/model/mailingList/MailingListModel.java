@@ -23,15 +23,15 @@ import com.serotonin.m2m2.vo.mailingList.MailingList;
  */
 public class MailingListModel extends AbstractVoModel<MailingList> {
 
-    private String receiveAlarmEmails;
+    private AlarmLevels receiveAlarmEmails;
     private Set<String> readPermissions;
     private Set<String> editPermissions;
     private WeeklySchedule inactiveSchedule;
-    
+
     public MailingListModel() {
         super(new MailingList());
     }
-    
+
     public MailingListModel(MailingList vo) {
         super(vo);
     }
@@ -39,14 +39,14 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     /**
      * @return the receiveAlarmEmails
      */
-    public String getReceiveAlarmEmails() {
+    public AlarmLevels getReceiveAlarmEmails() {
         return receiveAlarmEmails;
     }
 
     /**
      * @param receiveAlarmEmails the receiveAlarmEmails to set
      */
-    public void setReceiveAlarmEmails(String receiveAlarmEmails) {
+    public void setReceiveAlarmEmails(AlarmLevels receiveAlarmEmails) {
         this.receiveAlarmEmails = receiveAlarmEmails;
     }
 
@@ -95,7 +95,7 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     @Override
     public void fromVO(MailingList vo) {
         super.fromVO(vo);
-        this.receiveAlarmEmails = AlarmLevels.CODES.getCode(vo.getReceiveAlarmEmails());
+        this.receiveAlarmEmails = vo.getReceiveAlarmEmails();
         this.readPermissions = vo.getReadPermissions();
         this.editPermissions = vo.getEditPermissions();
         this.inactiveSchedule = getInactiveIntervalsAsWeeklySchedule(vo.getInactiveIntervals());
@@ -104,51 +104,51 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     @Override
     public MailingList toVO() {
         MailingList vo = super.toVO();
-        vo.setReceiveAlarmEmails(AlarmLevels.CODES.getId(receiveAlarmEmails));
+        vo.setReceiveAlarmEmails(receiveAlarmEmails);
         vo.setReadPermissions(readPermissions);
         vo.setEditPermissions(editPermissions);
         //TODO Do we want to validate the schedule here as we can only validate offsets in the service?
-//        ProcessResult result = new ProcessResult();
-//        inactiveSchedule.validate(result);
-//        if(!result.isValid())
-//            throw new ValidationException(result);
+        //        ProcessResult result = new ProcessResult();
+        //        inactiveSchedule.validate(result);
+        //        if(!result.isValid())
+        //            throw new ValidationException(result);
         vo.setInactiveIntervals(weeklyScheduleToInactiveIntervals(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());
         return vo;
     }
-    
+
     /**
      * Convert a set of inactive intervals into a weekly schedule
      * @param inactiveIntervals
      * @return
      */
     private WeeklySchedule getInactiveIntervalsAsWeeklySchedule(Set<Integer> inactiveIntervals) {
-        
+
         if(inactiveIntervals == null)
             return null;
-        
+
         WeeklySchedule weeklySchedule = new WeeklySchedule();
         for(int k = 0; k < 7; k+=1) {
             weeklySchedule.addDay(new DailySchedule());
         }
-        
+
         Integer[] inactive = new Integer[inactiveIntervals.size()];
         inactiveIntervals.toArray(inactive);
         Arrays.sort(inactive);
-        
+
         int last = -2;
         for(Integer i : inactive) {
             if(i == null)
                 continue;
-            
+
             int dayIndex = i.intValue() / (4*24);
             int lastDayIndex;
             if(last != -2)
                 lastDayIndex = last / (4*24);
             else
                 lastDayIndex = dayIndex;
-            
+
             if(last == i.intValue() - 1 && dayIndex == lastDayIndex) { //Still inactive
                 last = i.intValue();
                 continue;
@@ -161,21 +161,21 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                 }
                 last = -2;
             }
-            
+
             if(last != -2) {
                 int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
                 int hr = (minute15 * 15) / 60;
                 int min = (minute15 * 15) % 60;
                 weeklySchedule.getDailySchedules().get(lastDayIndex).addChange(String.format("%02d:%02d", hr, min));
             }
-            
+
             last = i.intValue();
             int minute15 = i.intValue() % (4*24);
             int hr = (minute15 * 15) / 60;
             int min = (minute15 * 15) % 60;
             weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
         }
-        
+
         if(last != -2 && last % (4*24) != 95) {
             int dayIndex = (last+1) / (4*24);
             int minute15 = (last+1) % (4*24);
@@ -183,18 +183,18 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
             int min = (minute15 * 15) % 60;
             weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
         }
-        
+
         //Re-Order putting Sunday first
         //Sunday is last in the list, place it first
         DailySchedule sunday = weeklySchedule.getDailySchedules().remove(6);
         weeklySchedule.getDailySchedules().add(0, sunday);
-        
+
         return weeklySchedule;
     }
-    
+
     /**
      * Convert a weekly schedule into a set of offsets.
-     * 
+     *
      * Offsets Monday - Sunday
      * Schedule Sunday - Saturday
      * @param weeklySchedule
@@ -203,13 +203,13 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     private Set<Integer> weeklyScheduleToInactiveIntervals(WeeklySchedule weeklySchedule) {
         if(weeklySchedule == null)
             return null;
-        
+
         //Modify a copy of the weekly schedule to put Monday first
         //TODO assert we have 7 days in the schedule
         List<DailySchedule> copy = new ArrayList<>(weeklySchedule.getDailySchedules());
         DailySchedule sunday = copy.remove(0);
         copy.add(copy.size(), sunday);
-        
+
         Set<Integer> inactiveIntervals = new TreeSet<>();
         for(int k = 0; k < copy.size(); k+=1) {
             int baseInterval = k * 96 ; //milliseconds per day
@@ -236,7 +236,7 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
                     deactivated = true;
                 }
             }
-            
+
             if(deactivated) {
                 while(lastInterval < 96) {
                     inactiveIntervals.add(baseInterval+lastInterval++);
@@ -245,8 +245,8 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         }
         return inactiveIntervals;
     }
-    
-    
+
+
     @Override
     protected MailingList newVO() {
         return new MailingList();

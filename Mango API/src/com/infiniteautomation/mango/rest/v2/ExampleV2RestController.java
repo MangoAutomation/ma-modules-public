@@ -33,7 +33,6 @@ import com.infiniteautomation.mango.rest.v2.model.event.RaiseEventModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
@@ -184,7 +183,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
             @RequestBody(required=true) RaiseEventModel model){
         if(model == null)
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
-        Common.eventManager.raiseEvent(model.getEvent().toEventType(), Common.timer.currentTimeMillis(), true, AlarmLevels.CODES.getId(model.getLevel()), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
+        Common.eventManager.raiseEvent(model.getEvent().toEventType(), Common.timer.currentTimeMillis(), true, model.getLevel(), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
@@ -232,7 +231,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     public long getUploadLimit() {
         return Common.envProps.getLong("web.fileUpload.maxSize", 50000000);
     }
-    
+
     @PreAuthorize("hasRole('ROLE_TEST SPACE')")
     @RolesAllowed("ROLE_TEST SPACE")
     @Secured("ROLE_TEST SPACE")

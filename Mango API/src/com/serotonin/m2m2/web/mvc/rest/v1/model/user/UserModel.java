@@ -26,6 +26,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -170,14 +171,14 @@ public class UserModel extends AbstractRestModel<User> {
 
     @CSVColumnGetter(order=7, header="receiveAlarmEmails")
     @JsonGetter("receiveAlarmEmails")
-    public String getReceiveAlarmEmails() {
-        return AlarmLevels.CODES.getCode(this.data.getReceiveAlarmEmails());
+    public AlarmLevels getReceiveAlarmEmails() {
+        return this.data.getReceiveAlarmEmails();
     }
 
     @CSVColumnSetter(order=7, header="receiveAlarmEmails")
     @JsonSetter("receiveAlarmEmails")
-    public void setReceiveAlarmEmails(String level) {
-        data.setReceiveAlarmEmails(AlarmLevels.CODES.getId(level));
+    public void setReceiveAlarmEmails(AlarmLevels level) {
+        data.setReceiveAlarmEmails(level);
     }
 
     @CSVColumnGetter(order=8, header="timezone")
@@ -300,7 +301,7 @@ public class UserModel extends AbstractRestModel<User> {
         // just going to return empty for the CSV, field wont be visible in JSON
         return "";
     }
-    
+
     @CSVColumnSetter(order=18, header="hashAlgorithm")
     @JsonSetter("hashAlgorithm")
     public void setHashAlgorithm(String hashAlgorithm) {

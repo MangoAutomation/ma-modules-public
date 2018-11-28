@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.event;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.EventType;
 
 /**
@@ -11,16 +12,16 @@ import com.serotonin.m2m2.rt.event.type.EventType;
  *
  */
 public class EventTypeVOModel<T extends EventType> {
-    
+
     protected AbstractEventTypeModel<T> type;
     private TranslatableMessage description;
-    private String alarmLevel;
+    private AlarmLevels alarmLevel;
 
-    public EventTypeVOModel(AbstractEventTypeModel<T> type, TranslatableMessage description, String alarmLevel) {
+    public EventTypeVOModel(AbstractEventTypeModel<T> type, TranslatableMessage description, AlarmLevels alarmLevel) {
         this.type = type;
         this.description = description;
         this.alarmLevel = alarmLevel;
-        
+
     }
 
     /**
@@ -54,15 +55,15 @@ public class EventTypeVOModel<T extends EventType> {
     /**
      * @return the alarmLevel
      */
-    public String getAlarmLevel() {
+    public AlarmLevels getAlarmLevel() {
         return alarmLevel;
     }
 
     /**
      * @param alarmLevel the alarmLevel to set
      */
-    public void setAlarmLevel(String alarmLevel) {
+    public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
-    
+
 }

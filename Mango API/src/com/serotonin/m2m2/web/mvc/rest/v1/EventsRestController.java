@@ -28,8 +28,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ComparisonEnum;
 import com.infiniteautomation.mango.db.query.SQLQueryColumn;
-import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.GenericSQLColumnQueryAppender;
+import com.infiniteautomation.mango.db.query.appender.ReverseEnumColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
@@ -85,7 +85,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         this.modelMap.put("active", "rtnTs");
         this.modelMap.put("acknowledged", "ackTs");
 
-        this.appenders.put("alarmLevel", new ExportCodeColumnQueryAppender(AlarmLevels.CODES));
+        this.appenders.put("alarmLevel", new ReverseEnumColumnQueryAppender<>(AlarmLevels.class));
 
         //If we query on the member active
         this.appenders.put("active", new GenericSQLColumnQueryAppender(){
@@ -390,37 +390,41 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 
             for (EventInstance event : events) {
                 switch (event.getAlarmLevel()) {
-                    case AlarmLevels.LIFE_SAFETY:
+                    case LIFE_SAFETY:
                         lifeSafetyTotal++;
                         lifeSafetyEvent = event;
                         break;
-                    case AlarmLevels.CRITICAL:
+                    case CRITICAL:
                         criticalTotal++;
                         criticalEvent = event;
                         break;
-                    case AlarmLevels.URGENT:
+                    case URGENT:
                         urgentTotal++;
                         urgentEvent = event;
                         break;
-                    case AlarmLevels.WARNING:
+                    case WARNING:
                         warningTotal++;
                         warningEvent = event;
                         break;
-                    case AlarmLevels.IMPORTANT:
+                    case IMPORTANT:
                         importantTotal++;
                         importantEvent = event;
                         break;
-                    case AlarmLevels.INFORMATION:
+                    case INFORMATION:
                         informationTotal++;
                         informationEvent = event;
                         break;
-                    case AlarmLevels.NONE:
+                    case NONE:
                         noneTotal++;
                         noneEvent = event;
                         break;
-                    case AlarmLevels.DO_NOT_LOG:
+                    case DO_NOT_LOG:
                         doNotLogTotal++;
                         doNotLogEvent = event;
+                        break;
+                    case IGNORE:
+                        break;
+                    default:
                         break;
                 }
             }
@@ -430,56 +434,56 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
                 model = new EventInstanceModel(lifeSafetyEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.LIFE_SAFETY),
+            list.add(new EventLevelSummaryModel(AlarmLevels.LIFE_SAFETY,
                     lifeSafetyTotal, model));
             // Critical Events
             if (criticalEvent != null)
                 model = new EventInstanceModel(criticalEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.CRITICAL),
+            list.add(new EventLevelSummaryModel(AlarmLevels.CRITICAL,
                     criticalTotal, model));
             // Urgent Events
             if (urgentEvent != null)
                 model = new EventInstanceModel(urgentEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.URGENT),
+            list.add(new EventLevelSummaryModel(AlarmLevels.URGENT,
                     urgentTotal, model));
             // Warning Events
             if (warningEvent != null)
                 model = new EventInstanceModel(warningEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.WARNING),
+            list.add(new EventLevelSummaryModel(AlarmLevels.WARNING,
                     warningTotal, model));
             // Important Events
             if (importantEvent != null)
                 model = new EventInstanceModel(importantEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.IMPORTANT),
+            list.add(new EventLevelSummaryModel(AlarmLevels.IMPORTANT,
                     importantTotal, model));
             // Information Events
             if (informationEvent != null)
                 model = new EventInstanceModel(informationEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.INFORMATION),
+            list.add(new EventLevelSummaryModel(AlarmLevels.INFORMATION,
                     informationTotal, model));
             // None Events
             if (noneEvent != null)
                 model = new EventInstanceModel(noneEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.NONE),
+            list.add(new EventLevelSummaryModel(AlarmLevels.NONE,
                     noneTotal, model));
             // Do Not Log Events
             if (doNotLogEvent != null)
                 model = new EventInstanceModel(doNotLogEvent);
             else
                 model = null;
-            list.add(new EventLevelSummaryModel(AlarmLevels.CODES.getCode(AlarmLevels.DO_NOT_LOG),
+            list.add(new EventLevelSummaryModel(AlarmLevels.DO_NOT_LOG,
                     doNotLogTotal, model));
 
             return result.createResponseEntity(list);
