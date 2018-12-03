@@ -28,31 +28,12 @@ describe('Event types v2', function() {
             method: 'GET',
             data: global.addressMailingList
         }).then(response => {
-            assert
+            assert.isNumber(response.data.total);
             for(var i=0; i<response.data.items.length; i++){
-                console.log('Level: ' + response.data.items[i].alarmLevel);
-                console.log('Description: ' + response.data.items[i].description);
-                console.log(response.data.items[i].type);
+                assert.isString(response.data.items[i].alarmLevel);
+                assert.isString(response.data.items[i].type.eventType);
+                assert.strictEqual('AUDIT', response.data.items[i].type.eventType)
             }           
-        });
-    });
-    
-    it('POST Event Type', () => {
-        global.eventType =  { 
-                eventType: 'ADVANCED_SCHEDULE',
-                subType: 'SCHEDULE_ACTIVE',
-                description: null,
-                duplicateHandling: "NONE",
-                referenceId1: 1,
-                referenceId2: 0,
-                rateLimited: true 
-         };
-        return client.restRequest({
-            path: '/rest/v2/event-types',
-            method: 'POST',
-            data: global.eventType
-        }).then(response => {
-            console.log(response.data);
         });
     });
 });

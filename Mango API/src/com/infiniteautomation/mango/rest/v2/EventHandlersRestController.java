@@ -95,7 +95,7 @@ public class EventHandlersRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         AbstractEventHandlerVO<?> vo = service.insertFull(model.toVO(), user);
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.CREATED);

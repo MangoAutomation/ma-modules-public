@@ -150,7 +150,7 @@ describe('Test Report v2 Endpoints', function() {
             assert.equal(response.data.points.length, global.report1.points.length);
             assert.equal(response.data.points[0].pointXid, global.report1.points[0].pointXid);
             //TODO assert more
-          
+            global.report1.id = response.data.id;
         });
     });
     
@@ -170,6 +170,42 @@ describe('Test Report v2 Endpoints', function() {
         });
     });
     
+    it('Create Report event handler', () => {
+
+      return client.restRequest({
+          path: '/rest/v2/event-handlers',
+          method: 'POST',
+          data: {
+              xid : "EVTH_REPORT_TEST",
+              name : 'Testing reports',
+              disabled : false,
+              activeReportXid: global.report1.xid,
+              handlerType : "REPORT"
+            }
+      }).then(response => {
+        var savedHandler = response.data;
+        assert.strictEqual(savedHandler.xid, 'EVTH_REPORT_TEST');
+        assert.strictEqual(savedHandler.name, 'Testing reports');
+        assert.strictEqual(savedHandler.activeReportXid, global.report1.xid);
+        assert.strictEqual(savedHandler.inactiveReportXid, null);
+        assert.isNumber(savedHandler.id);
+      });
+    });
+
+    it('Delete Report event handler', () => {
+      return client.restRequest({
+          path: '/rest/v2/event-handlers/EVTH_REPORT_TEST',
+          method: 'DELETE',
+          data: {}
+      }).then(response => {
+          assert.equal(response.data.xid, 'EVTH_REPORT_TEST');
+          assert.equal(response.data.name, 'Testing reports');
+          assert.equal(response.data.activeReportXid, global.report1.xid);
+          assert.equal(response.data.inactiveReportId, null);
+          assert.isNumber(response.data.id);
+      });
+    });
+    
     it('Delete a report', () => {
         return client.restRequest({
             path: `/rest/v2/reports/${global.report1.xid}`,
@@ -182,56 +218,5 @@ describe('Test Report v2 Endpoints', function() {
             //TODO assert more
           
         });
-    });
-    
-    //TODO Create a Report first to get the XID to use
-    // then un-skip the test, we currently don't have a Reports REST controller
-    
-    it.skip('Create Report event handler', () => {
-
-      return client.restRequest({
-          path: '/rest/v1/event-handlers',
-          method: 'POST',
-          data: {
-              xid : "EVTH_REPORT_TEST",
-              name : null,
-              alias : "Testing reports",
-              disabled : false,
-              activeReportId: 1,
-              inactiveReportId: -1,
-              eventType : {
-                refId1 : 0,
-                duplicateHandling : "ALLOW",
-                typeName : "SYSTEM",
-                systemEventType : "USER_LOGIN",
-                rateLimited : false
-              },
-
-              handlerType : "REPORT"
-            }
-      }).then(response => {
-        var savedHandler = response.data;
-        assert.equal(savedHandler.xid, 'EVTH_REPORT_TEST');
-        assert.equal(savedHandler.alias, 'Testing reports');
-        assert.equal(savedHandler.activeReportId, 1);
-        assert.equal(savedHandler.inactiveReportId, -1);
-        assert.equal(savedHandler.eventType.duplicateHandling, "ALLOW");
-        assert.isNumber(savedHandler.id);
-      });
-    });
-
-    it.skip('Delete Report event handler', () => {
-      return client.restRequest({
-          path: '/rest/v1/event-handlers/EVTH_REPORT_TEST',
-          method: 'DELETE',
-          data: {}
-      }).then(response => {
-          assert.equal(response.data.xid, 'EVTH_REPORT_TEST');
-          assert.equal(response.data.alias, 'Testing reports');
-          assert.equal(response.data.activeReportId, 1);
-          assert.equal(response.data.inactiveReportId, -1);
-          assert.equal(response.data.eventType.duplicateHandling, "ALLOW");
-          assert.isNumber(response.data.id);
-      });
     });
 });

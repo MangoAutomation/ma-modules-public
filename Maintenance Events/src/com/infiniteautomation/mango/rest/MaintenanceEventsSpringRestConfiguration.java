@@ -9,22 +9,22 @@ import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.infiniteautomation.mango.rest.v2.model.ScheduledEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.MaintenanceEventTypeModel;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
-import com.serotonin.m2m2.scheduledEvents.ScheduledEventType;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 
 /**
  * @author Terry Packer
  *
  */
 @Configuration
-public class SpringRestConfiguration {
+public class MaintenanceEventsSpringRestConfiguration {
 
     @Autowired
-    public SpringRestConfiguration(
+    public MaintenanceEventsSpringRestConfiguration(
             @Autowired
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
             ObjectMapper mapper) {
-        mapper.registerSubtypes(new NamedType(ScheduledEventTypeModel.class, ScheduledEventType.TYPE_NAME));
+        mapper.registerSubtypes(new NamedType(MaintenanceEventTypeModel.class, MaintenanceEventType.TYPE_NAME));
     }
 }

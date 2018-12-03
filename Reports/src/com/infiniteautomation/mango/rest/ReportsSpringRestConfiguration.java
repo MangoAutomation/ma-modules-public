@@ -9,22 +9,21 @@ import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.infiniteautomation.mango.rest.v2.model.MaintenanceEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.reports.ReportEventHandlerModel;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
+import com.serotonin.m2m2.reports.handler.ReportEventHandlerDefinition;
 
 /**
  * @author Terry Packer
  *
  */
 @Configuration
-public class SpringRestConfiguration {
+public class ReportsSpringRestConfiguration {
 
     @Autowired
-    public SpringRestConfiguration(
-            @Autowired
+    public ReportsSpringRestConfiguration(
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
             ObjectMapper mapper) {
-        mapper.registerSubtypes(new NamedType(MaintenanceEventTypeModel.class, MaintenanceEventType.TYPE_NAME));
+        mapper.registerSubtypes(new NamedType(ReportEventHandlerModel.class, ReportEventHandlerDefinition.TYPE_NAME));
     }
 }
