@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -19,19 +20,14 @@ public class DataPointEventTypeModelMapping implements RestModelMapping<DataPoin
     public Class<DataPointEventType> fromClass() {
         return DataPointEventType.class;
     }
-    
+
     @Override
     public Class<DataPointEventTypeModel> toClass() {
         return DataPointEventTypeModel.class;
     }
 
     @Override
-    public DataPointEventTypeModel map(Object from) {
+    public DataPointEventTypeModel map(Object from, User user) {
         return new DataPointEventTypeModel((DataPointEventType) from);
-    }
-
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));
     }
 }

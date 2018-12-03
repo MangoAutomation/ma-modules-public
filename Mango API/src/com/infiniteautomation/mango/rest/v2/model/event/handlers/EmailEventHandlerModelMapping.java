@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
 
 /**
@@ -16,7 +17,7 @@ import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
 public class EmailEventHandlerModelMapping implements RestModelMapping<EmailEventHandlerVO, EmailEventHandlerModel> {
 
     @Override
-    public EmailEventHandlerModel map(Object o) {
+    public EmailEventHandlerModel map(Object o, User user) {
         return new EmailEventHandlerModel((EmailEventHandlerVO)o);
     }
 
@@ -29,9 +30,5 @@ public class EmailEventHandlerModelMapping implements RestModelMapping<EmailEven
     public Class<EmailEventHandlerVO> fromClass() {
         return EmailEventHandlerVO.class;
     }
-    
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventHandlerModel.class));
-    }
+
 }

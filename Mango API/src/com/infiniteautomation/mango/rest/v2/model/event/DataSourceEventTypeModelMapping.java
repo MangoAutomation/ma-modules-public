@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -19,19 +20,14 @@ public class DataSourceEventTypeModelMapping implements RestModelMapping<DataSou
     public Class<DataSourceEventType> fromClass() {
         return DataSourceEventType.class;
     }
-    
+
     @Override
     public Class<DataSourceEventTypeModel> toClass() {
         return DataSourceEventTypeModel.class;
     }
 
     @Override
-    public DataSourceEventTypeModel map(Object from) {
+    public DataSourceEventTypeModel map(Object from, User user) {
         return new DataSourceEventTypeModel((DataSourceEventType) from);
-    }
-    
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));
     }
 }

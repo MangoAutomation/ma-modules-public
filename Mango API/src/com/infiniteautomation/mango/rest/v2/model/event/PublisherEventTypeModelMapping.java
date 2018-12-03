@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.PublisherEventType;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -19,19 +20,14 @@ public class PublisherEventTypeModelMapping implements RestModelMapping<Publishe
     public Class<PublisherEventType> fromClass() {
         return PublisherEventType.class;
     }
-    
+
     @Override
     public Class<PublisherEventTypeModel> toClass() {
         return PublisherEventTypeModel.class;
     }
 
     @Override
-    public PublisherEventTypeModel map(Object from) {
+    public PublisherEventTypeModel map(Object from, User user) {
         return new PublisherEventTypeModel((PublisherEventType) from);
-    }
-
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));
     }
 }

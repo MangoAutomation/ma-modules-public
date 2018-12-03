@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -19,19 +20,15 @@ public class AuditEventTypeModelMapping implements RestModelMapping<AuditEventTy
     public Class<AuditEventType> fromClass() {
         return AuditEventType.class;
     }
-    
+
     @Override
     public Class<AuditEventTypeModel> toClass() {
         return AuditEventTypeModel.class;
     }
 
     @Override
-    public AuditEventTypeModel map(Object from) {
+    public AuditEventTypeModel map(Object from, User user) {
         return new AuditEventTypeModel((AuditEventType) from);
     }
-    
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));
-    }
+
 }

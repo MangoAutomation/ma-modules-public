@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -19,19 +20,14 @@ public class SystemEventTypeModelMapping implements RestModelMapping<SystemEvent
     public Class<SystemEventType> fromClass() {
         return SystemEventType.class;
     }
-    
+
     @Override
     public Class<SystemEventTypeModel> toClass() {
         return SystemEventTypeModel.class;
     }
 
     @Override
-    public SystemEventTypeModel map(Object from) {
+    public SystemEventTypeModel map(Object from, User user) {
         return new SystemEventTypeModel((SystemEventType) from);
-    }
-    
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventTypeModel.class));
     }
 }

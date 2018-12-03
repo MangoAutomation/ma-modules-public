@@ -6,8 +6,8 @@ package com.infiniteautomation.mango.rest.v2.reports;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
 import com.serotonin.m2m2.reports.handler.ReportEventHandlerVO;
+import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Terry Packer
@@ -17,7 +17,7 @@ import com.serotonin.m2m2.reports.handler.ReportEventHandlerVO;
 public class ReportEventHandlerModelMapping implements RestModelMapping<ReportEventHandlerVO, ReportEventHandlerModel> {
 
     @Override
-    public ReportEventHandlerModel map(Object o) {
+    public ReportEventHandlerModel map(Object o, User user) {
         return new ReportEventHandlerModel((ReportEventHandlerVO)o);
     }
 
@@ -29,10 +29,5 @@ public class ReportEventHandlerModelMapping implements RestModelMapping<ReportEv
     @Override
     public Class<ReportEventHandlerVO> fromClass() {
         return ReportEventHandlerVO.class;
-    }
-    
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventHandlerModel.class));
     }
 }

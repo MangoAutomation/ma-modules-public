@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.RestModelMapping;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
 
 /**
@@ -16,7 +17,7 @@ import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
 public class SetPointEventHandlerModelMapping implements RestModelMapping<SetPointEventHandlerVO, SetPointEventHandlerModel> {
 
     @Override
-    public SetPointEventHandlerModel map(Object o) {
+    public SetPointEventHandlerModel map(Object o, User user) {
         return new SetPointEventHandlerModel((SetPointEventHandlerVO)o);
     }
 
@@ -29,9 +30,5 @@ public class SetPointEventHandlerModelMapping implements RestModelMapping<SetPoi
     public Class<SetPointEventHandlerVO> fromClass() {
         return SetPointEventHandlerVO.class;
     }
-    
-    @Override
-    public boolean supportsFrom(Object from, Class<?> toClass) {
-        return (from.getClass() == fromClass() && (toClass == toClass() || toClass == AbstractEventHandlerModel.class));
-    }
+
 }
