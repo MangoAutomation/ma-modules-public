@@ -4,6 +4,9 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,6 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -44,12 +48,21 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventHandlersRestController {
 
     private final EventHandlerService service;
-    private final RestModelMapper modelMapper;
+    private final BiFunction<AbstractEventHandlerVO<?>, User, AbstractEventHandlerModel> map;
     
     @Autowired
     public EventHandlersRestController(EventHandlerService service, RestModelMapper modelMapper) {
         this.service = service;
-        this.modelMapper = modelMapper;
+
+        //Map the event types into the model
+        this.map = (vo, user) -> {
+            List<AbstractEventTypeModel<?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
+                return modelMapper.map(type, AbstractEventTypeModel.class, user);
+            }).collect(Collectors.toList());
+            AbstractEventHandlerModel model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
+            model.setEventTypes(eventTypes);
+            return model;
+        };
     }
 
     @ApiOperation(
@@ -74,13 +87,13 @@ public class EventHandlersRestController {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
-    public ResponseEntity<AbstractEventHandlerModel> get(
+    public AbstractEventHandlerModel get(
             @ApiParam(value = "XID of Mailing List to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(modelMapper.map(service.getFull(xid, user), AbstractEventHandlerModel.class, user));
+        return map.apply(service.getFull(xid, user), user);
     }
 
     @ApiOperation(
@@ -98,7 +111,7 @@ public class EventHandlersRestController {
         URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -119,7 +132,7 @@ public class EventHandlersRestController {
         URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
@@ -138,7 +151,7 @@ public class EventHandlersRestController {
             UriComponentsBuilder builder) {
 
         AbstractEventHandlerVO<?> existing = service.getFull(xid, user);
-        AbstractEventHandlerModel existingModel = modelMapper.map(existing, AbstractEventHandlerModel.class, user);
+        AbstractEventHandlerModel existingModel = map.apply(existing, user);
         existingModel.patch(model);
         AbstractEventHandlerVO<?> vo = existingModel.toVO();
         vo = service.updateFull(existing, vo, user);
@@ -147,7 +160,7 @@ public class EventHandlersRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(modelMapper.map(vo, AbstractEventHandlerModel.class, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
@@ -162,7 +175,7 @@ public class EventHandlersRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(modelMapper.map(service.delete(xid, user), AbstractEventHandlerModel.class, user));
+        return ResponseEntity.ok(map.apply(service.delete(xid, user), user));
     }
 
     @ApiOperation(
@@ -184,9 +197,9 @@ public class EventHandlersRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> modelMapper.map(vo, AbstractEventHandlerModel.class, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> modelMapper.map(vo, AbstractEventHandlerModel.class, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
         }
     }
 }

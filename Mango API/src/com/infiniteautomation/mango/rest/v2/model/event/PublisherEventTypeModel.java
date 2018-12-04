@@ -19,4 +19,9 @@ public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEve
     public PublisherEventTypeModel(PublisherEventType type) {
         super(type);
     }
+
+    @Override
+    public PublisherEventType toVO() {
+        return new PublisherEventType(referenceId1, referenceId2);
+    }
 }

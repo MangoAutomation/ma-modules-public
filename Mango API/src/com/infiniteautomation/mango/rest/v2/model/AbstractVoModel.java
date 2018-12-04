@@ -76,7 +76,7 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
         xid = vo.getXid();
         name = vo.getName();
     }
-    
+
     /**
      * Create a vo from our fields
      * @return

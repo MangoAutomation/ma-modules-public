@@ -3,8 +3,11 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 
 import io.swagger.annotations.ApiModel;
@@ -20,6 +23,7 @@ public abstract class AbstractEventHandlerModel extends AbstractVoModel<Abstract
     public static final String HANDLER_TYPE = "handlerType";
     
     private boolean disabled;
+    private List<AbstractEventTypeModel<?>> eventTypes;
     
     public AbstractEventHandlerModel() { }
     public AbstractEventHandlerModel(AbstractEventHandlerVO<?> vo) {
@@ -39,7 +43,21 @@ public abstract class AbstractEventHandlerModel extends AbstractVoModel<Abstract
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
+
+    /**
+     * @return the eventTypes
+     */
+    public List<AbstractEventTypeModel<?>> getEventTypes() {
+        return eventTypes;
+    }
+    /**
+     * @param eventTypes the eventTypes to set
+     */
+    public void setEventTypes(List<AbstractEventTypeModel<?>> eventTypes) {
+        this.eventTypes = eventTypes;
+    }
     
+
     @Override
     public void fromVO(AbstractEventHandlerVO<?> vo) {
         super.fromVO(vo);
@@ -50,6 +68,11 @@ public abstract class AbstractEventHandlerModel extends AbstractVoModel<Abstract
     public AbstractEventHandlerVO<?> toVO() {
         AbstractEventHandlerVO<?> vo = super.toVO();
         vo.setDisabled(disabled);
+        if(eventTypes != null) {
+            for(AbstractEventTypeModel<?> etm : eventTypes) {
+                vo.addAddedEventType(etm.toVO());
+            }
+        }
         return vo;
     }
 }

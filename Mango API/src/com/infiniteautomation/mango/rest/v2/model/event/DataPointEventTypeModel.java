@@ -37,5 +37,10 @@ public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEve
         this.dataSourceId = dataSourceId;
     }
 
+    @Override
+    public DataPointEventType toVO() {
+        return new DataPointEventType(dataSourceId, referenceId1, referenceId2, duplicateHandling);
+    }
+
     
 }

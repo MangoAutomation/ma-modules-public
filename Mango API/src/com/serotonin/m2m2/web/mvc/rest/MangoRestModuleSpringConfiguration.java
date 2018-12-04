@@ -20,6 +20,12 @@ import com.infiniteautomation.mango.rest.v2.converter.ProxyMappingJackson2HttpMe
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.MissingEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
@@ -45,9 +51,17 @@ public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
             ObjectMapper mapper) {
         this.mapper = mapper;
         mapper.registerSubtypes(
+                    //Event Handlers
                     new NamedType(EmailEventHandlerModel.class, "EMAIL"),
                     new NamedType(ProcessEventHandlerModel.class, "PROCESS"),
-                    new NamedType(SetPointEventHandlerModel.class, "SET_POINT")
+                    new NamedType(SetPointEventHandlerModel.class, "SET_POINT"),
+                    new NamedType(AuditEventTypeModel.class, "AUDIT"),
+                    //Event Types
+                    new NamedType(DataPointEventTypeModel.class, "DATA_POINT"),
+                    new NamedType(DataSourceEventTypeModel.class, "DATA_SOURCE"),
+                    new NamedType(MissingEventTypeModel.class, "MISSING"),
+                    new NamedType(PublisherEventTypeModel.class, "PUBLISHER"),
+                    new NamedType(SystemEventTypeModel.class, "SYSTEM")
                 );
     }
 

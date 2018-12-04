@@ -19,4 +19,9 @@ public class SystemEventTypeModel extends AbstractEventTypeModel<SystemEventType
     public SystemEventTypeModel(SystemEventType type) {
         super(type);
     }
+
+    @Override
+    public SystemEventType toVO() {
+        return new SystemEventType(subType, referenceId1, duplicateHandling);
+    }
 }

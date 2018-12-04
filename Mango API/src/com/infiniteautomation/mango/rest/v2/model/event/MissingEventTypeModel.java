@@ -19,4 +19,9 @@ public class MissingEventTypeModel extends AbstractEventTypeModel<MissingEventTy
     public MissingEventTypeModel(MissingEventType type) {
         super(type);
     }
+
+    @Override
+    public MissingEventType toVO() {
+        return new MissingEventType(eventType, subType, referenceId1, referenceId2);
+    }
 }

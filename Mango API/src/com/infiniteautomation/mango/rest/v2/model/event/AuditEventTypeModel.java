@@ -26,4 +26,9 @@ public class AuditEventTypeModel extends AbstractEventTypeModel<AuditEventType> 
     public String getChangeType() {
         return changeType;
     }
+
+    @Override
+    public AuditEventType toVO() {
+        return new AuditEventType(subType, AuditEventInstanceVO.CHANGE_TYPE_CODES.getId(changeType), referenceId1);
+    }
 }

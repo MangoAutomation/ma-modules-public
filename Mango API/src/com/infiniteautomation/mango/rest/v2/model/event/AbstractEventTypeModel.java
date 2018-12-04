@@ -21,23 +21,16 @@ import io.swagger.annotations.ApiModel;
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="eventType")
 public abstract class AbstractEventTypeModel<T extends EventType> {
 
-    private String eventType;
-    private String subType;
-    private DuplicateHandling duplicateHandling;
-    private Integer referenceId1;
-    private Integer referenceId2;
-    private Boolean rateLimited;
-
+    protected String eventType;
+    protected String subType;
+    protected DuplicateHandling duplicateHandling;
+    protected Integer referenceId1;
+    protected Integer referenceId2;
+    protected Boolean rateLimited;
 
     public AbstractEventTypeModel(T type) {
-        this.eventType = type.getEventType();
-        this.subType = type.getEventSubtype();
-        this.duplicateHandling = type.getDuplicateHandling();
-        this.referenceId1 = type.getReferenceId1();
-        this.referenceId2 = type.getReferenceId2();
-        this.rateLimited = type.isRateLimited();
+        fromVO(type);
     }
-
 
     /**
      * @return the eventType
@@ -61,14 +54,12 @@ public abstract class AbstractEventTypeModel<T extends EventType> {
         return duplicateHandling;
     }
 
-
     /**
      * @return the referenceId1
      */
     public Integer getReferenceId1() {
         return referenceId1;
     }
-
 
     /**
      * @return the referenceId2
@@ -77,7 +68,6 @@ public abstract class AbstractEventTypeModel<T extends EventType> {
         return referenceId2;
     }
 
-
     /**
      * @return the rateLimited
      */
@@ -85,4 +75,22 @@ public abstract class AbstractEventTypeModel<T extends EventType> {
         return rateLimited;
     }
 
+    /**
+     * EventType(s) are lacking setters 
+     *  so they must be created/filled in this method
+     *  implemented in the concrete model class
+     * @return
+     */
+    public abstract T toVO();
+    
+    public void fromVO(T type) {
+        this.eventType = type.getEventType();
+        this.subType = type.getEventSubtype();
+        this.duplicateHandling = type.getDuplicateHandling();
+        this.referenceId1 = type.getReferenceId1();
+        this.referenceId2 = type.getReferenceId2();
+        this.rateLimited = type.isRateLimited();
+    }
+
 }
+

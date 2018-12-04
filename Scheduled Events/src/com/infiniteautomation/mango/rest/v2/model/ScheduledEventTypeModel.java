@@ -20,4 +20,9 @@ public class ScheduledEventTypeModel extends AbstractEventTypeModel<ScheduledEve
         super(type);
     }
 
+    @Override
+    public ScheduledEventType toVO() {
+        return new ScheduledEventType(referenceId1, duplicateHandling);
+    }
+
 }

@@ -20,4 +20,9 @@ public class MaintenanceEventTypeModel extends AbstractEventTypeModel<Maintenanc
         super(type);
     }
 
+    @Override
+    public MaintenanceEventType toVO() {
+        return new MaintenanceEventType(referenceId1);
+    }
+
 }

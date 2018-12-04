@@ -89,7 +89,7 @@ public class ProxyMappingJackson2HttpMessageConverter extends MappingJackson2Htt
             //TODO Mango 3.6 Support Polymorphic PATCHing
             if(javaType.isAbstract()) {
                 AbstractVoModel<?> model = reader.readValue(inputMessage.getBody());
-                LOG.warn("Polymorphic PATCH for abstract base models not yet supported.  TODO Mango 3.6 (" + model == null ? "null" : model.getClass().getName() + ")");
+                LOG.warn("Polymorphic PATCH for abstract base models not yet supported.  TODO Mango 3.6 (" + (model == null ? "null" : model.getClass().getName()) + ")");
                 return model;
             }
             Constructor<?> c = javaType.getRawClass().getConstructor();
