@@ -49,7 +49,7 @@ public class EventHandlersRestController {
 
     private final EventHandlerService service;
     private final BiFunction<AbstractEventHandlerVO<?>, User, AbstractEventHandlerModel> map;
-    
+
     @Autowired
     public EventHandlersRestController(EventHandlerService service, RestModelMapper modelMapper) {
         this.service = service;
@@ -57,7 +57,7 @@ public class EventHandlersRestController {
         //Map the event types into the model
         this.map = (vo, user) -> {
             List<AbstractEventTypeModel<?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
-                return modelMapper.map(type, AbstractEventTypeModel.class, user);
+                return (AbstractEventTypeModel<?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
             }).collect(Collectors.toList());
             AbstractEventHandlerModel model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
             model.setEventTypes(eventTypes);
