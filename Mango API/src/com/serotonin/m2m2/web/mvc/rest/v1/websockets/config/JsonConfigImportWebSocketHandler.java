@@ -20,7 +20,7 @@ import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
 
 @Component
-@WebSocketMapping("/v1/websocket/json-import")
+@WebSocketMapping("/websocket/json-import")
 public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandler {
 
     // For our reference to cancel the tasks

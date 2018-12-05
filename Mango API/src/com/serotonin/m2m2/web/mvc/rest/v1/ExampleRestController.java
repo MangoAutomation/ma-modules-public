@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value="Example Controller", description="Useful for testing various responses")
 @RestController
-@RequestMapping("/v1/example")
+@RequestMapping("/example")
 public class ExampleRestController {
 
 	@ApiOperation(value = "Example Permission Exception Response", notes = "")

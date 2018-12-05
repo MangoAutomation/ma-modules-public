@@ -8,8 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.SystemActionDefinition;
 import com.serotonin.m2m2.util.timeout.SystemActionTask;
 import com.serotonin.timer.OneTimeTrigger;
@@ -58,12 +58,12 @@ public class Log4JResetActionDefinition extends SystemActionDefinition{
 	 * @see com.serotonin.m2m2.module.SystemActionDefinition#validate(com.fasterxml.jackson.databind.JsonNode)
 	 */
 	@Override
-	protected RestValidationResult validateImpl(JsonNode input) throws ValidationFailedRestException {
-		RestValidationResult result = new RestValidationResult();
+	protected void validate(JsonNode input) throws ValidationException {
+		ProcessResult result = new ProcessResult();
 		
 		JsonNode node = input.get("action");
 		if(node == null)
-			result.addRequiredError("action");
+			result.addContextualMessage("action", "validate.required");
 		else{
 			switch(node.asText()){
 			case "RESET":
@@ -74,10 +74,10 @@ public class Log4JResetActionDefinition extends SystemActionDefinition{
 			case "TEST_FATAL":
 				break;
 			default:
-				result.addInvalidValueError("action");
+				result.addContextualMessage("action", "validate.invalidValue");
 			}
 		}
-		return result;
+		result.ensureValid();;
 	}
 	
 	/**

@@ -22,13 +22,13 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
-import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.MultiSessionWebSocketHandler;
 
 /**
  * @author Jared Wiltshire
  */
 @Component
-@WebSocketMapping("/v2/websocket/temporary-resources")
+@WebSocketMapping("/websocket/temporary-resources")
 public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHandler {
     private static final String SUBSCRIPTION_ATTRIBUTE = "TemporaryResourceSubscription";
     public static final String REQUEST_TYPE_SUBSCRIPTION = "SUBSCRIPTION";

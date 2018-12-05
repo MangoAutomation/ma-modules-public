@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.util.SystemActionTemporaryResource;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemActionDefinition;
 import com.serotonin.m2m2.vo.User;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -45,7 +46,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value="System Actions", description="Ask Mango to perform a pre-defined action.  Admin Only.")
 @PreAuthorize("isAdmin()")
 @RestController
-@RequestMapping("/v2/actions")
+@RequestMapping("/actions")
 public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
 
 	private MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> resources;

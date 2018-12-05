@@ -34,7 +34,7 @@ import io.swagger.annotations.ApiOperation;
  */
 @Api(value="Device Names", description="Device Names")
 @RestController
-@RequestMapping("/v1/device-names")
+@RequestMapping("/device-names")
 public class DeviceNameController extends MangoRestController {
 
     @SuppressWarnings("unused")

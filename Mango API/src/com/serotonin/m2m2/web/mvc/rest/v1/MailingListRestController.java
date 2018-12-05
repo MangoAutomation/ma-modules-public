@@ -34,7 +34,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Mailing Lists", description="Mailing Lists")
 @RestController
-@RequestMapping("/v1/mailing-lists")
+@RequestMapping("/mailing-lists")
 public class MailingListRestController extends MangoRestController{
 	
 	private final MailingListDao dao;

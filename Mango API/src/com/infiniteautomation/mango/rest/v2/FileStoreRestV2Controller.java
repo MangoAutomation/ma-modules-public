@@ -84,7 +84,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="File Store", description="Allow read/write access to file storage areas")
 @RestController()
-@RequestMapping("/v2/file-stores")
+@RequestMapping("/file-stores")
 public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final FileStoreDao fileStoreDao;

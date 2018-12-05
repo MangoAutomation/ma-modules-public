@@ -43,7 +43,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Mailing List Rest Controller")
 @RestController("MailingListRestControllerV2")
-@RequestMapping("/v2/mailing-lists")
+@RequestMapping("/mailing-lists")
 public class MailingListRestController {
 
     private final MailingListService service;

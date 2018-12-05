@@ -35,7 +35,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="System Metrics", description="Access to the current value for any System Metric")
 @RestController
-@RequestMapping("/v1/system-metrics")
+@RequestMapping("/system-metrics")
 public class SystemMetricsRestController extends MangoRestController{
 
 	//Permissions Definition for Internal Metrics

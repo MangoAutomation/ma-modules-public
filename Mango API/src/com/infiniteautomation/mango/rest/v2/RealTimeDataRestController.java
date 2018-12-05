@@ -37,7 +37,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Access to current values combined with data point information.")
 @RestController(value="RealTimeDataRestControllerV2")
-@RequestMapping("/v2/realtime")
+@RequestMapping("/realtime")
 public class RealTimeDataRestController {
 
     

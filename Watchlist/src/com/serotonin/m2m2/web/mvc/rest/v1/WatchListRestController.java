@@ -69,7 +69,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Watch Lists", description="")
 @RestController
-@RequestMapping("/v1/watch-lists")
+@RequestMapping("/watch-lists")
 public class WatchListRestController extends MangoVoRestController<WatchListVO, WatchListSummaryModel, WatchListDao>{
 
     private static Log LOG = LogFactory.getLog(WatchListRestController.class);

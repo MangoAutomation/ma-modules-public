@@ -65,7 +65,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value="JSON Store")
 @RestController
-@RequestMapping("/v1/json-data")
+@RequestMapping("/json-data")
 public class JsonDataRestController extends MangoVoRestController<JsonDataVO, JsonDataModel, JsonDataDao>{
 
     private static Log LOG = LogFactory.getLog(JsonDataRestController.class);

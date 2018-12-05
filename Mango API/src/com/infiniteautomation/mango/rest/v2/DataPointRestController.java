@@ -70,7 +70,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Data Points")
 @RestController(value="DataPointRestControllerV2")
-@RequestMapping("/v2/data-points")
+@RequestMapping("/data-points")
 public class DataPointRestController {
 
     private static final String RESOURCE_TYPE_BULK_DATA_POINT = "BULK_DATA_POINT";

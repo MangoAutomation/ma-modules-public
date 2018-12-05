@@ -93,7 +93,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value = "Module Definitions", description = "Access Module Definitions")
 @RestController
-@RequestMapping("/v1/modules")
+@RequestMapping("/modules")
 public class ModulesRestController extends MangoRestController {
 
     private static final String WEB = "/web";

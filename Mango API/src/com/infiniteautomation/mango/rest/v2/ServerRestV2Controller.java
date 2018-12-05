@@ -79,7 +79,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value = "Server Information v2", description = "Server Information")
 @RestController
-@RequestMapping("/v2/server")
+@RequestMapping("/server")
 public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final Log log = LogFactory.getLog(ServerRestV2Controller.class);

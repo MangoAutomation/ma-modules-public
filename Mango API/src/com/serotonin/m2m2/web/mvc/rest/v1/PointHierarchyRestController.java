@@ -44,7 +44,7 @@ import io.swagger.annotations.ApiOperation;
  */
 @Api(value="Point Hierarchy", description="Point Hierarchy")
 @Controller
-@RequestMapping("/v1/hierarchy")
+@RequestMapping("/hierarchy")
 public class PointHierarchyRestController extends MangoRestController{
 
 	

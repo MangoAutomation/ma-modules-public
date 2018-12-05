@@ -33,7 +33,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Session Exception Information", description = "Endpoints to help with collection of server side errors")
 @RestController
-@RequestMapping("/v2/exception")
+@RequestMapping("/exception")
 public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Controller{
 
 	//Session Keys for all stored exceptions

@@ -47,7 +47,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Realtime Data", description="Realtime Data")
 @RestController
-@RequestMapping("/v1/realtime")
+@RequestMapping("/realtime")
 public class RealTimeDataRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(RealTimeDataRestController.class);

@@ -49,7 +49,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value="Example Controller", description="Test for new controller type")
 @RestController
-@RequestMapping("/v2/example")
+@RequestMapping("/example")
 public class ExampleV2RestController extends AbstractMangoRestV2Controller{
 
     private static final Log LOG = LogFactory.getLog(ExampleV2RestController.class);

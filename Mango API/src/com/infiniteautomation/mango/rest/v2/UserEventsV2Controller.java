@@ -48,7 +48,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="User Events", description="User events are all un-acknowledged events for a user")
 @RestController()
-@RequestMapping("/v2/user-events")
+@RequestMapping("/user-events")
 public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
 
     

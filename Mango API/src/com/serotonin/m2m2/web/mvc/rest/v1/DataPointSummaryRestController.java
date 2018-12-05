@@ -36,7 +36,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Data Point Summary", description="Data Point Summaries")
 @RestController(value="DataPointSummaryRestControllerV1")
-@RequestMapping("/v1/data-point-summaries")
+@RequestMapping("/data-point-summaries")
 public class DataPointSummaryRestController extends MangoVoRestController<DataPointVO, DataPointSummary, DataPointDao>{
 
 	private static Log LOG = LogFactory.getLog(DataPointSummaryRestController.class);

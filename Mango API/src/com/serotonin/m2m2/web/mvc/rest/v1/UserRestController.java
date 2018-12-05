@@ -59,7 +59,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Users", description="Users")
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/users")
 public class UserRestController extends MangoVoRestController<User, UserModel, UserDao>{
 
     private static Log LOG = LogFactory.getLog(UserRestController.class);

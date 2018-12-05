@@ -25,7 +25,7 @@ import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
  * @author Terry Packer
  */
 @Component
-@WebSocketMapping("/v1/websocket/modules")
+@WebSocketMapping("/websocket/modules")
 public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implements ModuleNotificationListener {
 
     public ModulesWebSocketHandler() {

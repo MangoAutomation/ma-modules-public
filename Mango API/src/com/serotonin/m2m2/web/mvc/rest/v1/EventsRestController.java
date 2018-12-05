@@ -69,7 +69,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Events", description="Events")
 @RestController()
-@RequestMapping("/v1/events")
+@RequestMapping("/events")
 public class EventsRestController extends MangoVoRestController<EventInstanceVO, EventInstanceModel, EventInstanceDao>{
 
     private static Log LOG = LogFactory.getLog(EventsRestController.class);

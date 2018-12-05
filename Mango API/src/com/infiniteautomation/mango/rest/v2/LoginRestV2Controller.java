@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value = "Login", description = "Login")
 @RestController
-@RequestMapping("/v2/login")
+@RequestMapping("/login")
 public class LoginRestV2Controller {
 
     //private static final Log LOG = LogFactory.getLog(LoginRestController.class);
@@ -49,7 +49,7 @@ public class LoginRestV2Controller {
      * end point is actually reached the user is either already authenticated or not.
      * The Spring Security authentication success handler forwards the request here.</p>
      *
-     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.serotonin.m2m2.web.mvc.spring.components.MangoSpringExceptionHandler MangoSpringExceptionHandler}</p>
+     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.infiniteautomation.mango.rest.v2.MangoSpringExceptionHandler MangoSpringExceptionHandler}</p>
      *
      * <p>Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value</p>
      */

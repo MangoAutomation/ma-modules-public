@@ -39,7 +39,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Reports")
 @RestController
-@RequestMapping("/v2/reports")
+@RequestMapping("/reports")
 public class ReportsRestController {
 
     private final ReportDao dao;

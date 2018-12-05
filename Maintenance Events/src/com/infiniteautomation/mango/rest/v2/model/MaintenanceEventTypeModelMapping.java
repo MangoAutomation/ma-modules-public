@@ -5,7 +5,6 @@ package com.infiniteautomation.mango.rest.v2.model;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.RestModelMapping;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.vo.User;
 

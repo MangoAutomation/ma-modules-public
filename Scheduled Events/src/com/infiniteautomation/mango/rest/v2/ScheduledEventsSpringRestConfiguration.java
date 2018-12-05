@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest;
+package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

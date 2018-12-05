@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Background Processing", description="Background Processing Settings")
 @RestController
-@RequestMapping("/v1/background-processing")
+@RequestMapping("/background-processing")
 public class BackgroundProcessingRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(BackgroundProcessingRestController.class);

@@ -60,7 +60,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Event Detectors", description="All edits will force a data point to restart")
 @RestController()
-@RequestMapping("/v2/event-detectors")
+@RequestMapping("/event-detectors")
 public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>{
 
     private final EventDetectorDao dao;

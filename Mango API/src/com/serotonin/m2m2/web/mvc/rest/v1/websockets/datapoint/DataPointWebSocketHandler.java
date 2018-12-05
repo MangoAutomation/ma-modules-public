@@ -21,7 +21,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  *
  */
 @Component
-@WebSocketMapping("/v1/websocket/data-points")
+@WebSocketMapping("/websocket/data-points")
 public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<DataPointVO> {
 
     public static final String TAGS_UPDATED = "tagsUpdated";

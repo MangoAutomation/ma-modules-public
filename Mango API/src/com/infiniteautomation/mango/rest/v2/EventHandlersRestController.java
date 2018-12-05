@@ -4,9 +4,9 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
@@ -52,7 +52,7 @@ public class EventHandlersRestController {
     private final BiFunction<AbstractEventHandlerVO<?>, User, AbstractEventHandlerModel> map;
 
     @Autowired
-    public EventHandlersRestController(EventHandlerService service, RestModelMapper modelMapper) {
+    public EventHandlersRestController(EventHandlerService service, final RestModelMapper modelMapper) {
         this.service = service;
 
         //Map the event types into the model

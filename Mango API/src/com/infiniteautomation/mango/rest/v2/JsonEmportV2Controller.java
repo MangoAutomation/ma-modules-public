@@ -35,6 +35,7 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResource;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.rest.v2.websocket.JsonConfigImportWebSocketHandler;
 import com.infiniteautomation.mango.util.ConfigurationExportData;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
@@ -53,7 +54,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStateEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.websockets.config.JsonConfigImportWebSocketHandler;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.ProgressiveTaskListener;
 
@@ -65,9 +65,9 @@ import io.swagger.annotations.ApiParam;
  *
  * @author Terry Packer
  */
-@Api(value="JSON Emport", description="Import/Export JSON Configurations")
+@Api(value="JSON Emport")
 @RestController
-@RequestMapping("/v2/json-emport")
+@RequestMapping("/json-emport")
 public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
 
     private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;

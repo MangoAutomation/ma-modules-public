@@ -24,7 +24,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  *
  */
 @Component
-@WebSocketMapping("/v1/websocket/watch-lists")
+@WebSocketMapping("/websocket/watch-lists")
 public class WatchListWebSocketHandler extends DaoNotificationWebSocketHandler<WatchListVO> {
 
     @Override

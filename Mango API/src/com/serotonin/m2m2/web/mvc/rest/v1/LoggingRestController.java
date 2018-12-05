@@ -50,7 +50,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Logging")
 @RestController
-@RequestMapping("/v1/logging")
+@RequestMapping("/logging")
 public class LoggingRestController extends MangoRestController{
 
 	@PreAuthorize("isAdmin()")

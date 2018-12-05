@@ -45,7 +45,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Audit System", description="Restore/Read Configuration From History")
 @RestController
-@RequestMapping("/v1/audit")
+@RequestMapping("/audit")
 public class AuditRestController extends MangoVoRestController<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> {
 
     public AuditRestController() {

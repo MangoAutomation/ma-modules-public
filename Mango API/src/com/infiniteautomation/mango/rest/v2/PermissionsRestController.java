@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(value="Permissions", description="Lists permissions and their system setting keys")
 @PreAuthorize("isAdmin()")
 @RestController
-@RequestMapping("/v2/permissions")
+@RequestMapping("/permissions")
 public class PermissionsRestController {
 
     @ApiOperation(

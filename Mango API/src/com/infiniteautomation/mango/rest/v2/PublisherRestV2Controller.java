@@ -51,7 +51,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Publishers", description="Publishers endpoints")
 @RestController()
-@RequestMapping("/v2/publishers")
+@RequestMapping("/publishers")
 public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<PublisherVO<?>, AbstractPublisherModel<?, ?>, PublisherDao>{
 
 	public PublisherRestV2Controller(){

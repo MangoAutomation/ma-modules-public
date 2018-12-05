@@ -19,7 +19,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  * @author Terry Packer
  */
 @Component
-@WebSocketMapping("/v1/websocket/reports")
+@WebSocketMapping("/websocket/reports")
 public class ReportWebSocketHandler extends DaoNotificationWebSocketHandler<ReportVO> {
 
     @Override

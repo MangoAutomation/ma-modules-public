@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value = "Authentication tokens", description = "Creates and verifies JWT (JSON web token) authentication tokens")
 @RestController
-@RequestMapping("/v2/auth-tokens")
+@RequestMapping("/auth-tokens")
 public class AuthenticationTokenRestController {
 
     private final TokenAuthenticationService tokenAuthService;

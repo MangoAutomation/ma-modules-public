@@ -20,7 +20,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  *
  */
 @Component
-@WebSocketMapping("/v1/websocket/json-data")
+@WebSocketMapping("/websocket/json-data")
 public class JsonDataWebSocketHandler extends DaoNotificationWebSocketHandler<JsonDataVO> {
 
     @Override

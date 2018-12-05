@@ -42,7 +42,7 @@ import io.swagger.annotations.ApiOperation;
  */
 @Api(value="Help", description="Mango Help")
 @RestController
-@RequestMapping("/v1/help")
+@RequestMapping("/help")
 public class HelpRestController extends MangoRestController{
 	
 	public HelpRestController(){ }

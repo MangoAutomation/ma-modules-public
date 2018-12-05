@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="SQL Console Rest Controller")
 @RestController()
-@RequestMapping("/v2/sql-console")
+@RequestMapping("/sql-console")
 public class SqlConsoleRestController {
 
     @ApiOperation(

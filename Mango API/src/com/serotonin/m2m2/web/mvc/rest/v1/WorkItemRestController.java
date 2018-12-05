@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Work Items", description="Mango Work Items")
 @RestController
-@RequestMapping("/v1/work-items")
+@RequestMapping("/work-items")
 public class WorkItemRestController extends MangoRestController{
 
 	private static Log LOG = LogFactory.getLog(WorkItemRestController.class);

@@ -46,7 +46,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Event Handlers", description="REST access to Event Handlers")
 @RestController
-@RequestMapping("/v1/event-handlers")
+@RequestMapping("/event-handlers")
 public class EventHandlerRestController extends MangoVoRestController<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>{
 
 	private static Log LOG = LogFactory.getLog(EventHandlerRestController.class);

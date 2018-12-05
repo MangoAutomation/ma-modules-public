@@ -46,7 +46,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="User Comments", description="User Comments")
 @RestController()
-@RequestMapping("/v1/comments")
+@RequestMapping("/comments")
 public class UserCommentRestController extends MangoVoRestController<UserCommentVO, UserCommentModel, UserCommentDao>{
 	
 	private static Log LOG = LogFactory.getLog(UserCommentRestController.class);

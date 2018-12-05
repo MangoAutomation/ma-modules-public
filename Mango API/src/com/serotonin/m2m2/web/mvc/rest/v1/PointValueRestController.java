@@ -97,7 +97,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value = "Point Values", description = "Point Values")
 @RestController
-@RequestMapping("/v1/point-values")
+@RequestMapping("/point-values")
 public class PointValueRestController extends MangoRestController {
 
     private static Log LOG = LogFactory.getLog(PointValueRestController.class);

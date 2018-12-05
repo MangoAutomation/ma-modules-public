@@ -66,7 +66,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Data Points", description="Data points")
 @RestController(value="DataPointRestControllerV1")
-@RequestMapping("/v1/data-points")
+@RequestMapping("/data-points")
 public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel, DataPointDao>{
 
     private static Log LOG = LogFactory.getLog(DataPointRestController.class);

@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Point Value Signal Analysis", description="Signal processing tools for point data")
 @RestController
-@RequestMapping("/v2/point-value-analysis")
+@RequestMapping("/point-value-analysis")
 public class PointValueSignalAnalysisRestController {
 
     //TODO Cross Ambiguity Function for multiple points

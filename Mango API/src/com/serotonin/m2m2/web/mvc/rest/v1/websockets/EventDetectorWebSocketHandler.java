@@ -23,7 +23,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  *
  */
 @Component
-@WebSocketMapping("/v1/websocket/event-detectors")
+@WebSocketMapping("/websocket/event-detectors")
 public class EventDetectorWebSocketHandler extends DaoNotificationWebSocketHandler<AbstractEventDetectorVO<?>>{
 
     private final DataPointDao dataPointDao;

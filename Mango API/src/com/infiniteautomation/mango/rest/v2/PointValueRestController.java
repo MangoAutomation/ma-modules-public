@@ -74,7 +74,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value = "Point Values", description = "Point Values")
 @RestController("PointValueV2RestController")
-@RequestMapping("/v2/point-values")
+@RequestMapping("/point-values")
 public class PointValueRestController extends AbstractMangoRestV2Controller{
     
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();

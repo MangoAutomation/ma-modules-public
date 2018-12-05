@@ -19,7 +19,7 @@ import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
  *
  */
 @Component
-@WebSocketMapping("/v1/websocket/user-comments")
+@WebSocketMapping("/websocket/user-comments")
 public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler<UserCommentVO>{
 
     @Override

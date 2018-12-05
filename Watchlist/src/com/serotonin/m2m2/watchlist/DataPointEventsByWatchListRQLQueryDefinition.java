@@ -12,10 +12,10 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleQueryDefinition;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
@@ -63,9 +63,9 @@ public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDef
      * @see com.serotonin.m2m2.module.ModuleQueryDefinition#validateImpl(com.fasterxml.jackson.databind.JsonNode)
      */
     @Override
-    protected void validateImpl(final User user, final JsonNode parameters, final RestValidationResult result) {
+    protected void validateImpl(final User user, final JsonNode parameters, final ProcessResult result) {
         if(parameters.get("rql") == null)
-            result.addRequiredError("rql");
+            result.addContextualMessage("rql", "validate.required");
         else {
             try {
                 JsonNode rqlNode = parameters.get("rql");
@@ -76,7 +76,7 @@ public class DataPointEventsByWatchListRQLQueryDefinition extends ModuleQueryDef
                     parser.parse(rql);
                 }
             }catch(IOException | RQLParserException | IllegalArgumentException e) {
-                result.addInvalidValueError("rql");
+                result.addContextualMessage("rql", "validate.invalidValue");
             }
         }
     }

@@ -13,10 +13,10 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.db.dao.SchemaDefinition;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleQueryDefinition;
 import com.serotonin.m2m2.vo.User;
@@ -60,32 +60,32 @@ public class MaintenanceEventInstancesByDataPointXidsOrDataSourceXids extends Mo
      * @see com.serotonin.m2m2.module.ModuleQueryDefinition#validateImpl(com.serotonin.m2m2.vo.User, com.fasterxml.jackson.databind.JsonNode, com.infiniteautomation.mango.rest.v2.model.RestValidationResult)
      */
     @Override
-    protected void validateImpl(User user, JsonNode parameters, RestValidationResult result) {
+    protected void validateImpl(User user, JsonNode parameters, ProcessResult result) {
         
         if(parameters.get("dataPointXids") == null && parameters.get("dataSourceXids") == null) {
-            result.addRequiredError("dataPointXids");
-            result.addRequiredError("dataSourceXids");
+            result.addContextualMessage("dataPointXids", "validate.required");
+            result.addContextualMessage("dataSourceXids", "validate.required");
         }
         if(parameters.get("dataPointXids") != null) {
             if(!parameters.get("dataPointXids").isArray())
-                result.addInvalidValueError("dataPointXids");
+                result.addContextualMessage("dataPointXids", "validate.invalidValue");
         }
         if(parameters.get("dataSourceXids") != null) {
             if(!parameters.get("dataSourceXids").isArray())
-                result.addInvalidValueError("dataSourceXids");
+                result.addContextualMessage("dataSourceXids", "validate.invalidValue");
         }
         if(parameters.has("limit")) {
             if(!parameters.get("limit").canConvertToInt())
-                result.addInvalidValueError("limit");
+                result.addContextualMessage("limit", "validate.nvalidValue");
         }
         if(parameters.has("order")) {
             String order = parameters.get("order").asText();
             if(!"asc".equals(order) && !"desc".equals(order))
-                result.addInvalidValueError("order");
+                result.addContextualMessage("order", "validate.invalidValue");
         }
         if(parameters.has("active")) {
             if(!parameters.get("active").isBoolean())
-                result.addInvalidValueError("active");
+                result.addContextualMessage("active", "validate.invalidValue");
         }
     }
 

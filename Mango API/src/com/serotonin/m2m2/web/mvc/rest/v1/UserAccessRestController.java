@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="User Access", description="User Access")
 @RestController
-@RequestMapping("/v1/access")
+@RequestMapping("/access")
 public class UserAccessRestController extends MangoRestController{
 	
 	//private static Log LOG = LogFactory.getLog(UserAccessRestController.class);

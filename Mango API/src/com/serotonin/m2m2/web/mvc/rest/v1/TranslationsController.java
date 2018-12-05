@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Translations", description="Translations")
 @RestController
-@RequestMapping("/v1/translations")
+@RequestMapping("/translations")
 public class TranslationsController extends MangoRestController {
 
     //Namespaces available for public endpoint

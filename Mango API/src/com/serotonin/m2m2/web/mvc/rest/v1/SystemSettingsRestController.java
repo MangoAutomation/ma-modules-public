@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="System Settings", description="Configure/Read System Settings")
 @RestController
-@RequestMapping("/v1/system-settings")
+@RequestMapping("/system-settings")
 public class SystemSettingsRestController extends MangoRestController{
 
     @Autowired

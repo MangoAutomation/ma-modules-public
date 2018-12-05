@@ -12,7 +12,7 @@ import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
  * @author Jared Wiltshire
  */
 @Component
-@WebSocketMapping("/v1/websocket/point-value")
+@WebSocketMapping("/websocket/point-value")
 public class PerConnectionPointValueWebSocketHandler extends PerConnectionWebSocketHandler {
 
     public PerConnectionPointValueWebSocketHandler() {

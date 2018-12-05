@@ -21,7 +21,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 
 /**
  * @author Jared Wiltshire

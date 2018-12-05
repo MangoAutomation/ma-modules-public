@@ -12,7 +12,7 @@ import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
  * @author Jared Wiltshire
  */
 @Component
-@WebSocketMapping("/v1/websocket/events")
+@WebSocketMapping("/websocket/events")
 public class EventsPerConnectionWebSocketHandler extends PerConnectionWebSocketHandler {
 
     public EventsPerConnectionWebSocketHandler() {

@@ -56,7 +56,7 @@ import io.swagger.annotations.ApiResponses;
 
 @Api(value="Script Utils", description="Run or test a Mango JavaScript script")
 @RestController
-@RequestMapping("/v2/script")
+@RequestMapping("/script")
 public class ScriptUtilRestController {
     private static final Log LOG = LogFactory.getLog(ScriptUtilRestController.class);
 

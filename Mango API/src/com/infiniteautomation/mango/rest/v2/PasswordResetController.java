@@ -51,7 +51,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value = "Password reset", description = "Endpoints for resetting user passwords")
 @RestController
-@RequestMapping("/v2/password-reset")
+@RequestMapping("/password-reset")
 public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;

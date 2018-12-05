@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
-import com.infiniteautomation.mango.rest.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.TypedResultWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
@@ -51,7 +51,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Event Types")
 @RestController()
-@RequestMapping("/v2/event-types")
+@RequestMapping("/event-types")
 public class EventTypeV2RestController {
 
     private final RestModelMapper modelMapper;

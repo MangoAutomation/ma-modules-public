@@ -97,7 +97,7 @@ describe('Event handlers v2', function() {
                 disabled : false,
                 eventTypes: [
                     {
-                        eventType: 'SYSTEM',
+                        eventType: 'SYSTEM_FAIL',
                         subType: 'SYSTEM_STARTUP',
                         referenceId1: 0,
                         referenceId2: 0

@@ -41,7 +41,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Users V2 Controller")
 @RestController("UsersV2RestController")
-@RequestMapping("/v2/users")
+@RequestMapping("/users")
 public class UserRestController {
 
     private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};

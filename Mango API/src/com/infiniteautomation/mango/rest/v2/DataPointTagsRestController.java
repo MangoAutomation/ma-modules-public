@@ -64,7 +64,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Data point tags", description="Get and set data point tags")
 @RestController()
-@RequestMapping("/v2/data-point-tags")
+@RequestMapping("/data-point-tags")
 public class DataPointTagsRestController {
 
     private static final String RESOURCE_TYPE_BULK_DATA_POINT_TAGS = "BULK_DATA_POINT_TAGS";

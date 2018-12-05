@@ -36,7 +36,7 @@ import io.swagger.annotations.ApiParam;
  */
 @Api(value="Virtual Serial Ports", description="Admin only endpoints to manage Virtual ports")
 @RestController()
-@RequestMapping("/v2/virtual-serial-ports")
+@RequestMapping("/virtual-serial-ports")
 public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Controller{
 
 	@PreAuthorize("isAdmin()")
