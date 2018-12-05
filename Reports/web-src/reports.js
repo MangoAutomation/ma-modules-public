@@ -37,7 +37,7 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
             maEventHandlerProvider.registerEventHandlerType({
                 type: 'REPORT',
                 description: 'reports.handler',
-                editorTemplate: `<ma-report-event-handler-editor event-handler="$ctrl.eventHandler"></ma-report-event-handler-editor>`
+                template: `<ma-report-event-handler-editor event-handler="$ctrl.eventHandler"></ma-report-event-handler-editor>`
             });
         }
     }
