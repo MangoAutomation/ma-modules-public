@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "name": "@infinite-automation/virtualDS",
+  "version": "3.6.0-SNAPSHOT",
+  "description": "Data source that generates deterministic or random values",
+  "main": "web/angular/virtualDS.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@infinite-automation/mango-module-tools": "~1.2.0"
+  },
+  "scripts": {
+    "webpack": "webpack --config webpack.config.js"
+  },
+  "author": "Jared Wiltshire <jared@infiniteautomation.com>",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infiniteautomation/ma-modules-public.git"
+  },
+  "com_infiniteautomation": {
+    "moduleName": "virtualDS"
+  }
+}
