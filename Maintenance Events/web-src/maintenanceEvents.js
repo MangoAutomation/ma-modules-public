@@ -31,5 +31,15 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
             },
             permission: 'superadmin'
         },
+        {
+            name: 'ui.help.maintenanceEvents',
+            url: '/maintenance-events/help',
+            resolve: {
+                viewTemplate: function() {
+                    return import(/* webpackMode: "eager" */ './help/helpPage.html');
+                }
+            },
+            menuTr: 'header.maintenanceEvents'
+        }
     ]);
 }]);

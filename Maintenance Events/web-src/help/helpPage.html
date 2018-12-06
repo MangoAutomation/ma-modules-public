@@ -1,0 +1,73 @@
+<h2>Overview</h2>
+
+<p>
+    Maintenance events are used to schedule maintenance periods for data sources, such that 
+    events raised by the data source or its points during the period are "suppressed", meaning 
+    that the events' event handlers are not run and it is automatically acknowledged. When the 
+    maintenance event becomes active, a single event is raised. This event is deactived when the 
+    event returns to normal or is manually disabled. Note that maintenance events can also be 
+    manually activated and deactived as necessary.
+</p>
+
+<h2>Maintenance events list</h2>
+
+<p>
+    To add a new maintenance event, click the <b>Add Maintenance Events</b>. To edit an existing maintenance event, click the 
+    event's description in the "Maintenance events" list.
+</p>
+
+<h2>Editing maintenance event details</h2>
+
+<p>
+    The <b>XID</b> is a unique identifier for the event, which is used in the import/export function. 
+    It can have any value that is unique among maintenance events up to 50 characters long. It is 
+    defaulted to a value that is - at the time of generation - already unique.
+</p>
+
+<p>
+    The <b>Data source</b> is the data source to which the maintenance event applies.
+</p>
+
+<p>
+    The <b>Alias</b> is an optional value that will be used as the description for the event throughout the system if it is 
+    provided. Otherwise, the automatically generated description will be used.
+</p>
+
+<p>
+    The <b>Alarm level</b> determines whether the maintenance event raises an alarm when active, and if so the severity of the alarm.
+    See the general help page for information on Alarms.
+</p>
+
+<p>
+    The <b>Schedule type</b> determines the basis period of the event. These types include hourly, 
+    daily, etc. For example, a schedule type of hourly will run once every hour. If a schedule that 
+    runs, say, twice a day is needed, it is necessary to define two daily scheduled events, one for 
+    each time. It is however possible to define a cron pattern that runs multiple times within a period. 
+    (See the "cron pattern" documentation for more information.)
+</p>
+
+<p>
+    A maintenance event can be <b>Disabled</b> so that it does not run. This can be useful if you do 
+    not wish to delete the event, but also do not currently want it enabled.
+</p>
+
+<h2>Active/Inactive times</h2>
+
+<p>
+    The fields available for editing active and inactive times depend upon the schedule type chosen. 
+    Most fields should require no explanation beyond that they are exclusively based upon the Gregorian 
+    calendar. For more information on cron patterns, see the "Cron pattern" documentation.
+</p>
+
+<p>
+    Active/inactive times can straddle the given time period. For example, an hourly schedule can 
+    become active at 55:00 and inactive at 05:00 (thus active for 10 minutes). Note that it is possible, 
+    though not very useful, to define cron patterns that do not neatly activate and inactivate (i.e. they may 
+    activate multiple times before inactivating and vice versa).
+</p>
+
+<h2>Manual control</h2>
+
+<p>
+    To manually enable or disable a maintenance event, click the <b>Toggle Event</b> switch at the top right.
+</p>
