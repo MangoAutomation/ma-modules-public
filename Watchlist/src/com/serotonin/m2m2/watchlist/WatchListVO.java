@@ -219,8 +219,11 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         //Validate the permissions
  		Permissions.validateAddedPermissions(this.readPermission, currentUser, response, "readPermission");
 		Permissions.validateAddedPermissions(this.editPermission, currentUser, response, "editPermission");
-		if(!Permissions.hasPermission(currentUser, editPermission))
-		    response.addContextualMessage("editPermission", "validate.mustHaveEditPermission");
+		if(user !=null && currentUser!=null) {
+		      if(user.getId() != currentUser.getId() && !Permissions.hasPermission(currentUser, editPermission))
+		            response.addContextualMessage("editPermission", "validate.mustHaveEditPermission");
+		}
+
 		
 		//TODO Validate new members
     }
