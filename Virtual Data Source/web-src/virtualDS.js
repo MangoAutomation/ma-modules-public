@@ -5,21 +5,24 @@
 
 import angular from 'angular';
 import virtualDataSourceEditor from './components/virtualDataSourceEditor/virtualDataSourceEditor';
+import virtualDataPointEditor from './components/virtualDataPointEditor/virtualDataPointEditor';
 
 const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'])
 .component('maVirtualDataSourceEditor', virtualDataSourceEditor)
-.config(['$injector', function($injector) {
-    if ($injector.has('maDataSourceProvider')) {
-        const maDataSourceProvider = $injector.get('maDataSourceProvider');
-        if (typeof maDataSourceProvider.registerType === 'function') {
-            maDataSourceProvider.registerType({
-                type: 'VIRTUAL',
-                description: 'dsEdit.virtual',
-                template: `<ma-virtual-data-source-editor data-source="$ctrl.dataSource"></ma-virtual-data-source-editor>`,
-                polling: true
-            });
-        }
-    }
+.component('maVirtualDataPointEditor', virtualDataPointEditor)
+.config(['maDataSourceProvider', 'maPointProvider', function(maDataSourceProvider, maPointProvider) {
+    maDataSourceProvider.registerType({
+        type: 'VIRTUAL',
+        description: 'dsEdit.virtual',
+        template: `<ma-virtual-data-source-editor data-source="$ctrl.dataSource"></ma-virtual-data-source-editor>`,
+        polling: true
+    });
+    
+    maPointProvider.registerType({
+        type: 'VIRTUAL',
+        description: 'dsEdit.virtualPoint',
+        template: `<ma-virtual-data-point-editor data-point="$ctrl.dataPoint"></ma-virtual-data-point-editor>`
+    });
 }]);
 
 export default virtualDataSourceModule;
