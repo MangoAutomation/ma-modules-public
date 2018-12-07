@@ -1,8 +1,10 @@
 <h3 ma-tr="dsEdit.virtual"></h3>
 
-<pre ng-bind="$ctrl.dataSource"></pre>
+<md-switch ng-model="$ctrl.dataSource.polling">
+    <span>Polling</span>
+</md-switch>
 
-<md-tab>
+<md-tab ng-if="!$ctrl.dataSource.isNew()">
     <md-tab-label>
         <span>My tools</span>
     </md-tab-label>
