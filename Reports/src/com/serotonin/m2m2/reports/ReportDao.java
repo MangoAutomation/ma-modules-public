@@ -20,6 +20,8 @@ import org.springframework.stereotype.Repository;
 
 import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
+import com.infiniteautomation.mango.spring.events.DaoEvent;
+import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
@@ -47,6 +49,7 @@ import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.view.stats.ITime;
 import com.serotonin.m2m2.view.text.TextRenderer;
@@ -150,20 +153,28 @@ public class ReportDao extends AbstractDao<ReportVO> {
         report.setId(doInsert(REPORT_INSERT,
                 new Object[] { report.getXid(), report.getUserId(), report.getName(), SerializationHelper.writeObject(report) },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB }));
+        this.publishEvent(new DaoEvent<ReportVO>(this, DaoEventType.CREATE, report, null, null));
+        AuditEventType.raiseAddedEvent(ReportAuditEvent.TYPE_NAME, report);
         this.countMonitor.increment();
     }
 
     private static final String REPORT_UPDATE = "update reports set xid=?, userId=?, name=?, data=? where id=?";
 
     private void updateReport(final ReportVO report) {
+        ReportVO old = getReport(report.getId());
         ejt.update(
                 REPORT_UPDATE,
                 new Object[] { report.getXid(), report.getUserId(), report.getName(), SerializationHelper.writeObject(report),
                         report.getId() }, new int[] { Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.INTEGER });
+        this.publishEvent(new DaoEvent<ReportVO>(this, DaoEventType.UPDATE, report, null, null));
+        AuditEventType.raiseChangedEvent(ReportAuditEvent.TYPE_NAME, old, report);
     }
 
     public void deleteReport(int reportId) {
+        ReportVO report = getReport(reportId);
         ejt.update("delete from reports where id=?", new Object[] { reportId });
+        this.publishEvent(new DaoEvent<ReportVO>(this, DaoEventType.DELETE, report, null, null));
+        AuditEventType.raiseDeletedEvent(ReportAuditEvent.TYPE_NAME, report);
         this.countMonitor.decrement();
     }
 
