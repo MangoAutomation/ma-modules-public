@@ -11,6 +11,9 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
 
 public class PointLinkSchemaDefinition extends DatabaseSchemaDefinition {
+    
+    public static final String TABLE_NAME = "pointLinks";
+    
     @Override
     public void newInstallationCheck(ExtendedJdbcTemplate ejt) {
         if (!Common.databaseProxy.tableExists(ejt, "pointLinks")) {
@@ -22,7 +25,7 @@ public class PointLinkSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public void addConversionTableNames(List<String> tableNames) {
-        tableNames.add("pointLinks");
+        tableNames.add(TABLE_NAME);
     }
 
     @Override
@@ -32,7 +35,7 @@ public class PointLinkSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 4;
+        return 5;
     }
 
     @Override

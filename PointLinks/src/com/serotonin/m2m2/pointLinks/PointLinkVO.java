@@ -26,9 +26,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Matthew Lohbihler
  */
 public class PointLinkVO extends AbstractVO<PointLinkVO> {
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
 	public static final String XID_PREFIX = "PL_";
@@ -44,8 +42,6 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         EVENT_CODES.addElement(EVENT_LOGGED, "LOGGED", "dsEdit.pointEvent.logged");
     }
 
-    private int id = Common.NEW_ID;
-    private String xid;
     private int sourcePointId;
     private int targetPointId;
     @JsonProperty
@@ -62,27 +58,6 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     private float logSize = 1.0f;
     @JsonProperty
     private int logCount = 5;
-
-    public boolean isNew() {
-        return id == Common.NEW_ID;
-    }
-
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getXid() {
-        return xid;
-    }
-
-    public void setXid(String xid) {
-        this.xid = xid;
-    }
 
     public int getSourcePointId() {
         return sourcePointId;
@@ -170,6 +145,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     }
 
     public void validate(ProcessResult response) {
+        super.validate(response);
         if (sourcePointId == 0)
             response.addContextualMessage("sourcePointId", "pointLinks.validate.sourceRequired");
         if (targetPointId == 0)
@@ -252,8 +228,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 	 */
 	@Override
 	protected AbstractDao<PointLinkVO> getDao() {
-		//TODO Convert Dao to extend AbstractDao to capture this feature
-		return null;
+		return PointLinkDao.getInstance();
 	}
 }
 

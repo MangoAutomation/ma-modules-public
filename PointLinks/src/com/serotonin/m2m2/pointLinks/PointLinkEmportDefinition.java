@@ -29,7 +29,7 @@ public class PointLinkEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return PointLinkDao.getInstance().getPointLinks();
+        return PointLinkDao.getInstance().getAll();
     }
 
     @Override
@@ -41,7 +41,7 @@ public class PointLinkEmportDefinition extends EmportDefinition {
         if (StringUtils.isBlank(xid))
             xid = pointLinkDao.generateUniqueXid();
 
-        PointLinkVO vo = pointLinkDao.getPointLink(xid);
+        PointLinkVO vo = pointLinkDao.getByXid(xid);
         if (vo == null) {
             vo = new PointLinkVO();
             vo.setXid(xid);

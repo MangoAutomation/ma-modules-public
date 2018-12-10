@@ -5,6 +5,7 @@
 create table pointLinks (
   id int not null identity,
   xid nvarchar(100) not null,
+  name nvarchar(100) not null,
   sourcePointId int not null,
   targetPointId int not null,
   script ntext,

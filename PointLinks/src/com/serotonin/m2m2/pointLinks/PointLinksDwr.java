@@ -66,7 +66,7 @@ public class PointLinksDwr extends ModuleDwr {
 
         // Get the existing point links.
         List<PointLinkVO> pointLinks = new ArrayList<PointLinkVO>();
-        for (PointLinkVO pointLink : PointLinkDao.getInstance().getPointLinks()) {
+        for (PointLinkVO pointLink : PointLinkDao.getInstance().getAll()) {
             if (containsPoint(sourcePoints, pointLink.getSourcePointId())
                     && containsPoint(targetPoints, pointLink.getTargetPointId()))
                 pointLinks.add(pointLink);
@@ -94,7 +94,7 @@ public class PointLinksDwr extends ModuleDwr {
             vo.setXid(pointLinkDao.generateUniqueXid());
         }
         else
-            vo = pointLinkDao.getPointLink(id);
+            vo = pointLinkDao.get(id);
         return vo;
     }
 

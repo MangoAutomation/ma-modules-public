@@ -6,77 +6,131 @@ package com.serotonin.m2m2.pointLinks;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
-import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
-import com.infiniteautomation.mango.monitor.ValueMonitorOwner;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
+import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.BaseDao;
+import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
 
 /**
  * @author Matthew Lohbihler
  */
-public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
+@Repository
+public class PointLinkDao extends AbstractDao<PointLinkVO> {
 	
-	//If you change this the Internal Metrics DS Should be updated
-	public static final String COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
-	
-    private static final LazyInitSupplier<PointLinkDao> instance = new LazyInitSupplier<>(() -> {
-        return new PointLinkDao();
+    private static final LazyInitSupplier<PointLinkDao> springInstance = new LazyInitSupplier<>(() -> {
+        Object o = Common.getRuntimeContext().getBean(PointLinkDao.class);
+        if(o == null)
+            throw new ShouldNeverHappenException("DAO not initialized in Spring Runtime Context");
+        return (PointLinkDao)o;
     });
-	
-    //Monitor for count of table
-    protected final AtomicIntegerMonitor countMonitor;
-	
-	private PointLinkDao(){
-		this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.POINT_LINK_COUNT"), this);
-        this.countMonitor.setValue(this.count());
-    	Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
-	}
+    
+    private PointLinkDao() {
+        super(AuditEvent.TYPE_NAME, "pl", new String[] {}, false, new TranslatableMessage("header.pointLinks"));
+    }
 	
     public static PointLinkDao getInstance() {
-        return instance.get();
+        return springInstance.get();
     }
 	
-    public String generateUniqueXid() {
-        return generateUniqueXid(PointLinkVO.XID_PREFIX, "pointLinks");
-    }
-
-    public boolean isXidUnique(String xid, int excludeId) {
-        return isXidUnique(xid, excludeId, "pointLinks");
-    }
-
-    private static final String POINT_LINK_COUNT = "SELECT COUNT(DISTINCT id) FROM pointLinks";
-
-    public int count(){
-    	return ejt.queryForInt(POINT_LINK_COUNT, new Object[0], 0);
-    }
-    
-    private static final String POINT_LINK_SELECT = "select id, xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, logSize, logCount, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission from pointLinks ";
-
-    public List<PointLinkVO> getPointLinks() {
-        return query(POINT_LINK_SELECT, new PointLinkRowMapper());
-    }
 
     public List<PointLinkVO> getPointLinksForPoint(int dataPointId) {
-        return query(POINT_LINK_SELECT + "where sourcePointId=? or targetPointId=?", new Object[] { dataPointId,
+        return query(SELECT_ALL + " where sourcePointId=? or targetPointId=?", new Object[] { dataPointId,
                 dataPointId }, new PointLinkRowMapper());
     }
 
-    public PointLinkVO getPointLink(int id) {
-        return queryForObject(POINT_LINK_SELECT + "where id=?", new Object[] { id }, new PointLinkRowMapper(), null);
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
+     */
+    @Override
+    protected Map<String, IntStringPair> getPropertiesMap() {
+        HashMap<String, IntStringPair> map = new HashMap<String, IntStringPair>();
+        map.put("event", new IntStringPair(Types.INTEGER, "eventType"));
+        map.put("logLevel", new IntStringPair(Types.INTEGER, "logLevel"));
+        return map;
+    }
+    
+    @Override
+    protected Map<String, Function<Object, Object>> createValueConverterMap() {
+        // TODO Auto-generated method stub
+        return super.createValueConverterMap();
+    }
+    
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
+     */
+    @Override
+    protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+        map.put("id", Types.INTEGER);
+        map.put("xid", Types.VARCHAR);
+        map.put("name", Types.VARCHAR);
+        map.put("sourcePointId", Types.INTEGER);
+        map.put("targetPointId", Types.INTEGER);
+        map.put("script", Types.CLOB);
+        map.put("eventType", Types.INTEGER);
+        map.put("writeAnnotation", Types.CHAR);
+        map.put("disabled", Types.CHAR);
+        map.put("logLevel", Types.INTEGER);
+        map.put("logSize", Types.DOUBLE);
+        map.put("logCount", Types.INTEGER);
+        map.put("scriptDataSourcePermission", Types.VARCHAR);
+        map.put("scriptDataPointSetPermission", Types.VARCHAR);
+        map.put("scriptDataPointReadPermission", Types.VARCHAR);
+        return map;
     }
 
-    public PointLinkVO getPointLink(String xid) {
-        return queryForObject(POINT_LINK_SELECT + "where xid=?", new Object[] { xid }, new PointLinkRowMapper(), null);
+    @Override
+    protected String getXidPrefix() {
+        return PointLinkVO.XID_PREFIX;
     }
 
+    @Override
+    public PointLinkVO getNewVo() {
+        return new PointLinkVO();
+    }
+
+    @Override
+    protected String getTableName() {
+        return PointLinkSchemaDefinition.TABLE_NAME;
+    }
+
+    @Override
+    protected Object[] voToObjectArray(PointLinkVO vo) {
+        return new Object[] {
+                vo.getXid(),
+                vo.getName(),
+                vo.getSourcePointId(),
+                vo.getTargetPointId(),
+                vo.getScript(),
+                vo.getEvent(),
+                boolToChar(vo.isWriteAnnotation()),
+                boolToChar(vo.isDisabled()),
+                vo.getLogLevel(),
+                vo.getLogSize(),
+                vo.getLogCount(),
+                vo.getScriptPermissions().getDataSourcePermissions(),
+                vo.getScriptPermissions().getDataPointSetPermissions(),
+                vo.getScriptPermissions().getDataPointReadPermissions()
+        };
+    }
+    
+    @Override
+    public RowMapper<PointLinkVO> getRowMapper() {
+        return new PointLinkRowMapper();
+    }
     class PointLinkRowMapper implements RowMapper<PointLinkVO> {
         @Override
         public PointLinkVO mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -84,6 +138,7 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
             int i = 0;
             pl.setId(rs.getInt(++i));
             pl.setXid(rs.getString(++i));
+            pl.setName(rs.getString(++i));
             pl.setSourcePointId(rs.getInt(++i));
             pl.setTargetPointId(rs.getInt(++i));
             pl.setScript(rs.getString(++i));
@@ -102,63 +157,6 @@ public class PointLinkDao extends BaseDao implements ValueMonitorOwner {
         }
     }
 
-    public void savePointLink(final PointLinkVO pl) {
-        if (pl.getId() == Common.NEW_ID)
-            insertPointLink(pl);
-        else
-            updatePointLink(pl);
-    }
 
-    private static final String POINT_LINK_INSERT = //
-    "insert into pointLinks (xid, sourcePointId, targetPointId, script, eventType, writeAnnotation, disabled, logLevel, logSize, logCount, scriptDataSourcePermission, scriptDataPointSetPermission, scriptDataPointReadPermission) "
-            + "values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-    private void insertPointLink(PointLinkVO pl) {
-        int id = doInsert(POINT_LINK_INSERT, new Object[] { pl.getXid(), pl.getSourcePointId(), pl.getTargetPointId(),
-                pl.getScript(), pl.getEvent(), boolToChar(pl.isWriteAnnotation()), 
-                boolToChar(pl.isDisabled()), pl.getLogLevel(), pl.getLogSize(), pl.getLogCount(),
-                pl.getScriptPermissions().getDataSourcePermissions(),
-                pl.getScriptPermissions().getDataPointSetPermissions(),
-                pl.getScriptPermissions().getDataPointReadPermissions()});
-        pl.setId(id);
-        AuditEventType.raiseAddedEvent(AuditEvent.TYPE_NAME, pl);
-        this.countMonitor.increment();
-    }
-
-    private static final String POINT_LINK_UPDATE = //
-    "update pointLinks set xid=?, sourcePointId=?, targetPointId=?, script=?, eventType=?, writeAnnotation=?, disabled=?, logLevel=?, logSize=?, logCount=?, scriptDataSourcePermission=?, scriptDataPointSetPermission=?, scriptDataPointReadPermission=? "
-            + "where id=?";
-
-    private void updatePointLink(PointLinkVO pl) {
-        PointLinkVO old = getPointLink(pl.getId());
-
-        ejt.update(POINT_LINK_UPDATE,
-                new Object[] { pl.getXid(), pl.getSourcePointId(), pl.getTargetPointId(), pl.getScript(),
-                        pl.getEvent(), boolToChar(pl.isWriteAnnotation()), 
-                        boolToChar(pl.isDisabled()), pl.getLogLevel(), pl.getLogSize(), pl.getLogCount(),
-                        pl.getScriptPermissions().getDataSourcePermissions(),
-                        pl.getScriptPermissions().getDataPointSetPermissions(),
-                        pl.getScriptPermissions().getDataPointReadPermissions(),
-                        pl.getId() });
-
-        AuditEventType.raiseChangedEvent(AuditEvent.TYPE_NAME, old, pl);
-    }
-
-    public void deletePointLink(final int pointLinkId) {
-        PointLinkVO pl = getPointLink(pointLinkId);
-        if (pl != null) {
-            ejt.update("delete from pointLinks where id=?", new Object[] { pointLinkId });
-            AuditEventType.raiseDeletedEvent(AuditEvent.TYPE_NAME, pl);
-            this.countMonitor.decrement();
-        }
-    }
-
-	/* (non-Javadoc)
-	 * @see com.infiniteautomation.mango.monitor.ValueMonitorOwner#reset(java.lang.String)
-	 */
-	@Override
-	public void reset(String monitorId) {
-		//We only have one monitor so:
-		this.countMonitor.setValue(this.count());
-	}
 }
