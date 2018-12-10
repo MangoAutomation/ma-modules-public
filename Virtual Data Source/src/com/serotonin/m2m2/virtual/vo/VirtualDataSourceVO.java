@@ -20,11 +20,11 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.virtual.rt.VirtualDataSourceRT;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
-public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
+public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO> {
     
 
 	private static final ExportCodes EVENT_CODES = new ExportCodes();
@@ -67,28 +67,10 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
         return new VirtualPointLocatorVO();
     }
 
-    private int updatePeriodType = Common.TimePeriods.MINUTES;
-    @JsonProperty
-    private int updatePeriods = 5;
     @JsonProperty
     private boolean polling = true;
     private long delay;
 
-    public int getUpdatePeriods() {
-        return updatePeriods;
-    }
-
-    public void setUpdatePeriods(int updatePeriods) {
-        this.updatePeriods = updatePeriods;
-    }
-
-    public int getUpdatePeriodType() {
-        return updatePeriodType;
-    }
-
-    public void setUpdatePeriodType(int updatePeriodType) {
-        this.updatePeriodType = updatePeriodType;
-    }
     public boolean isPolling() {
     	return polling;
     }
@@ -107,10 +89,6 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     @Override
     public void validate(ProcessResult response) {
         super.validate(response);
-        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType))
-            response.addContextualMessage("updatePeriodType", "validate.invalidValue");
-        if (updatePeriods <= 0)
-            response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
     }
 
     //
@@ -118,12 +96,10 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 3;
+    private static final int version = 4;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
-        out.writeInt(updatePeriodType);
-        out.writeInt(updatePeriods);
         out.writeBoolean(polling);
     }
 
@@ -145,21 +121,19 @@ public class VirtualDataSourceVO extends DataSourceVO<VirtualDataSourceVO> {
         	updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
             polling = in.readBoolean();
+        }else if(ver == 4) {
+            polling = in.readBoolean();
         }
     }
 
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-        writeUpdatePeriodType(writer, updatePeriodType);
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
-        Integer value = readUpdatePeriodType(jsonObject);
-        if (value != null)
-            updatePeriodType = value;
 		//Hidden value to allow testing aborted polls by setting delay to longer than poll period
 		if(jsonObject.containsKey("delay"))
 			delay = jsonObject.getLong("delay");

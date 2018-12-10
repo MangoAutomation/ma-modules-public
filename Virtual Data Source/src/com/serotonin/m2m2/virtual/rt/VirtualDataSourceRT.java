@@ -17,7 +17,7 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
 	
     public VirtualDataSourceRT(VirtualDataSourceVO vo) {
         super(vo);
-        setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
+        setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), vo.isQuantize());
         delay = vo.getDelay();
     }
     
