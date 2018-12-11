@@ -50,6 +50,14 @@ describe('Server endpoint tests', function(){
         }).then(response => {
             assert.isNumber(response.data.length);
         });
-      });
-    
+    });
+
+    it('Gets cors settings', () => {
+        return client.restRequest({
+            path: '/rest/v2/server/cors-settings',
+            method: 'GET'
+        }).then(response => {
+            assert.isBoolean(response.data.enabled, true);
+        });
+    });
 });

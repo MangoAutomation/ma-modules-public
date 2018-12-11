@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,12 +59,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.provider.Providers;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -228,6 +229,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     
     @ApiOperation(value = "Get available serial ports, optionally refresh cached list.")
     @RequestMapping(method = {RequestMethod.GET}, value = "/serial-ports")
+    @PreAuthorize("hasDataSourcePermission()")
     public Set<String> refreshFreeSerialPorts(
             @RequestParam(value = "refresh", required = false, defaultValue = "false") boolean refresh
             ) throws Exception {
@@ -242,6 +244,70 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         return portNames;
     }
 
+    @ApiOperation(value = "Get the CORS headers as set in env.properties")
+    @RequestMapping(method = {RequestMethod.GET}, value = "/cors-settings")
+    @PreAuthorize("isAdmin()")
+    public CorsSettings getCorsHeaders() {
+        CorsSettings corsSettings = new CorsSettings();
+        Map<String,String> headers = new HashMap<>();
+        
+        String header = Common.envProps.getString("rest.cors.allowedOrigins", "");
+        if(!StringUtils.isEmpty(header))
+            headers.put("Access-Control-Allow-Origin", header);
+        
+        header = Common.envProps.getString("rest.cors.allowedMethods", "");
+        if(!StringUtils.isEmpty(header))
+            headers.put("Access-Control-Allow-Methods", header);
+        
+        header = Common.envProps.getString("rest.cors.allowedHeaders", "");
+        if(!StringUtils.isEmpty(header))
+            headers.put("Access-Control-Allow-Headers", header);
+
+        header = Common.envProps.getString("rest.cors.exposedHeaders", "");
+        if(!StringUtils.isEmpty(header))
+            headers.put("Access-Control-Expose-Headers", header);
+        
+        headers.put("Access-Control-Allow-Credentials", Boolean.toString(Common.envProps.getBoolean("rest.cors.allowCredentials", false)));
+        
+        header = Common.envProps.getString("rest.cors.maxAge", "");
+        if(!StringUtils.isEmpty(header))
+            headers.put("Access-Control-Max-Age", header);
+
+        corsSettings.setEnabled(Common.envProps.getBoolean("rest.cors.enabled", false));
+        corsSettings.setHeaders(headers);
+        
+        return corsSettings;
+    }
+    
+    public static class CorsSettings {
+        private Map<String, String> headers;
+        private boolean enabled;
+        /**
+         * @return the headers
+         */
+        public Map<String, String> getHeaders() {
+            return headers;
+        }
+        /**
+         * @param headers the headers to set
+         */
+        public void setHeaders(Map<String, String> headers) {
+            this.headers = headers;
+        }
+        /**
+         * @return the enabled
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+        /**
+         * @param enabled the enabled to set
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+    
     public static class ClientError {
         String message;
         String cause;
