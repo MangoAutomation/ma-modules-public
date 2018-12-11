@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
+import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -221,6 +224,22 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @RequestMapping(method = {RequestMethod.POST}, value = "/client-error")
     public void postClientError(@AuthenticationPrincipal User user, @RequestBody ClientError body) {
         log.warn("Client error\n" + body.formatString(user));
+    }
+    
+    @ApiOperation(value = "Get available serial ports, optionally refresh cached list.")
+    @RequestMapping(method = {RequestMethod.GET}, value = "/serial-ports")
+    public Set<String> refreshFreeSerialPorts(
+            @RequestParam(value = "refresh", required = false, defaultValue = "false") boolean refresh
+            ) throws Exception {
+        Set<String> portNames = new HashSet<String>();
+
+        if(refresh)
+            Common.serialPortManager.refreshFreeCommPorts();
+        List<SerialPortIdentifier> ports = Common.serialPortManager.getAllCommPorts();
+        for (SerialPortIdentifier proxy : ports)
+            portNames.add(proxy.getName());
+
+        return portNames;
     }
 
     public static class ClientError {

@@ -42,4 +42,14 @@ describe('Server endpoint tests', function(){
         assert.isAbove(response.data.length, 0);
       });
     });
+    
+    it('Gets all serial ports', () => {
+        return client.restRequest({
+            path: '/rest/v2/server/serial-ports?refresh=true',
+            method: 'GET'
+        }).then(response => {
+            assert.isNumber(response.data.length);
+        });
+      });
+    
 });
