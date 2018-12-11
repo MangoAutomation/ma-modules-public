@@ -6,7 +6,11 @@
   "main": "web/angular/virtualDS.js",
   "dependencies": {},
   "devDependencies": {
-    "@infinite-automation/mango-module-tools": "~1.2.0"
+    "@infinite-automation/mango-client": "^0.6.0",
+    "@infinite-automation/mango-module-tools": "~1.2.0",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "tmp": "^0.0.33"
   },
   "scripts": {
     "webpack": "webpack --config webpack.config.js"
