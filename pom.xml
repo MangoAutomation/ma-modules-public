@@ -1,50 +1,101 @@
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>modules-parent</artifactId>
-        <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.6.0-SNAPSHOT</version>
-        <relativePath>../ma-core-public/Modules/pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>ma-modules-public</artifactId>
-    <packaging>pom</packaging>
-    <name>Mango Public Modules</name>
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/infiniteautomation/ma-modules-public/issues</url>
-    </issueManagement>
-    <scm>
-        <connection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</connection>
-        <developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</developerConnection>
-        <url>https://github.com/infiniteautomation/ma-modules-public</url>
-      <tag>HEAD</tag>
-  </scm>
-    <modules>
-        <module>ASCII File Data Source</module>
-        <module>EnvCan Data Source</module>
-        <module>Graphical views</module>
-        <module>Internal Data Source</module>
-        <module>Language - de</module>
-        <module>Language - en</module>
-        <module>Language - fi</module>
-        <module>Language - nl</module>
-        <module>Language - pt</module>
-        <module>Language - zh</module>
-        <module>Log4J reset</module>
-        <module>Maintenance Events</module>
-        <module>Mango API</module>
-        <module>MBus</module>
-        <module>Point Data Import</module>
-        <module>PointLinks</module>
-        <module>Reports</module>
-        <module>Scheduled Events</module>
-        <module>Serial Data Source</module>
-        <module>SQL console</module>
-        <module>SST Graphics</module>
-        <module>SST Theme</module>
-        <module>Virtual Data Source</module>
-        <module>VMStat data source</module>
-        <module>Watchlist</module>
-    </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>modules-parent</artifactId>
+		<groupId>com.infiniteautomation.mango</groupId>
+		<version>3.6.0-SNAPSHOT</version>
+		<relativePath>../ma-core-public/Modules/pom.xml</relativePath>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>ma-modules-public</artifactId>
+	<packaging>pom</packaging>
+	<name>Mango Public Modules</name>
+	<issueManagement>
+		<system>github</system>
+		<url>https://github.com/infiniteautomation/ma-modules-public/issues</url>
+	</issueManagement>
+	<scm>
+		<connection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</connection>
+		<developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</developerConnection>
+		<url>https://github.com/infiniteautomation/ma-modules-public</url>
+		<tag>HEAD</tag>
+	</scm>
+	<modules>
+		<module>ASCII File Data Source</module>
+		<module>EnvCan Data Source</module>
+		<module>Graphical views</module>
+		<module>Internal Data Source</module>
+		<module>Language - de</module>
+		<module>Language - en</module>
+		<module>Language - fi</module>
+		<module>Language - nl</module>
+		<module>Language - pt</module>
+		<module>Language - zh</module>
+		<module>Log4J reset</module>
+		<module>Maintenance Events</module>
+		<module>Mango API</module>
+		<module>MBus</module>
+		<module>Point Data Import</module>
+		<module>PointLinks</module>
+		<module>Reports</module>
+		<module>Scheduled Events</module>
+		<module>Serial Data Source</module>
+		<module>SQL console</module>
+		<module>SST Graphics</module>
+		<module>SST Theme</module>
+		<module>Virtual Data Source</module>
+		<module>VMStat data source</module>
+		<module>Watchlist</module>
+	</modules>
+	<repositories>
+		<repository>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<id>ias-snapshots</id>
+			<name>Mango Dependencies</name>
+			<url>https://maven.mangoautomation.net/repository/ias-snapshot/</url>
+		</repository>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>ias-releases</id>
+			<name>Mango Dependencies</name>
+			<url>https://maven.mangoautomation.net/repository/ias-release/</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<id>ias-snapshots</id>
+			<name>Mango Dependencies</name>
+			<url>https://maven.mangoautomation.net/repository/ias-snapshot/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>ias-releases</id>
+			<name>Mango Dependencies</name>
+			<url>https://maven.mangoautomation.net/repository/ias-release/</url>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
