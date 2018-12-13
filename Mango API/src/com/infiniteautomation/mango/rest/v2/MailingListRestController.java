@@ -25,6 +25,7 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListWithRecipientsModel;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
@@ -132,16 +133,16 @@ public class MailingListRestController {
             @PathVariable String xid,
 
             @ApiParam(value = "Updated mailing list", required = true)
-            @RequestBody(required=true) MailingListWithRecipientsModel model,
+            @PatchVORequestBody(
+                    service=MailingListService.class,
+                    modelClass=MailingListWithRecipientsModel.class)
+            MailingListWithRecipientsModel model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        MailingList existing = service.getFull(xid, user);
-        MailingListWithRecipientsModel existingModel = new MailingListWithRecipientsModel(existing);
-        existingModel.patch(model);
-        MailingList vo = existingModel.toVO();
-        vo = service.updateFull(existing, vo, user);
+
+        MailingList vo = service.updateFull(xid, model.toVO(), user);
 
         URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();

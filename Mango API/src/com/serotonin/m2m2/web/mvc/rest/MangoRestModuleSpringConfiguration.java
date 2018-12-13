@@ -11,12 +11,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
-import com.infiniteautomation.mango.rest.v2.converter.ProxyMappingJackson2HttpMessageConverter;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
@@ -29,6 +29,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
@@ -45,11 +46,15 @@ import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
 public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
 
     final ObjectMapper mapper;
+    final PartialUpdateArgumentResolver resolver;
     
-    public MangoRestModuleSpringConfiguration(@Autowired
+    @Autowired
+    public MangoRestModuleSpringConfiguration(
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
-            ObjectMapper mapper) {
+            ObjectMapper mapper,
+            PartialUpdateArgumentResolver resolver) {
         this.mapper = mapper;
+        this.resolver = resolver;
         mapper.registerSubtypes(
                     //Event Handlers
                     new NamedType(EmailEventHandlerModel.class, "EMAIL"),
@@ -63,6 +68,7 @@ public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
                     new NamedType(PublisherEventTypeModel.class, "PUBLISHER"),
                     new NamedType(SystemEventTypeModel.class, "SYSTEM")
                 );
+        
     }
 
     @Bean("csvObjectMapper")
@@ -77,7 +83,6 @@ public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
      */
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.add(0, new ProxyMappingJackson2HttpMessageConverter(mapper));
         converters.add(new PointValueTimeStreamCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
@@ -86,5 +91,10 @@ public class MangoRestModuleSpringConfiguration implements WebMvcConfigurer {
     @Bean
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
         return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
+    }
+    
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(resolver);
     }
 }

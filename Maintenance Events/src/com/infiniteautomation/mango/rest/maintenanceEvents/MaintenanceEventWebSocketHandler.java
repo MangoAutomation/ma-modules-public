@@ -28,7 +28,7 @@ public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHa
     @Override
     protected boolean hasPermission(User user, MaintenanceEventVO vo) {
         try{
-            service.ensureReadPermission(vo, user);
+            service.ensureReadPermission(user, vo);
             return true;
         }catch(Exception e) {
             return false;

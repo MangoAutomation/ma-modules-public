@@ -8,11 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
@@ -53,7 +51,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        service.ensureEditPermission(existing, permissions);
+        service.ensureEditPermission(permissions, existing);
         //Don't change ID ever
         vo.setId(existing.getId());
         vo.ensureValid();
@@ -63,8 +61,8 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public MaintenanceEventVO update(String existingXid, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        MaintenanceEventVO existing = service.getFullByXid(existingXid, permissions);
-        service.ensureEditPermission(existing, permissions);
+        MaintenanceEventVO existing = service.getFull(existingXid, permissions);
+        service.ensureEditPermission(permissions, existing);
         //Don't change ID ever
         vo.setId(existing.getId());
         vo.ensureValid();
@@ -73,8 +71,8 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     
     @Override
     public MaintenanceEventVO delete(String xid) throws NotFoundException, PermissionException {
-        MaintenanceEventVO vo = service.getFullByXid(xid, permissions);
-        service.ensureEditPermission(vo, permissions);
+        MaintenanceEventVO vo = service.getFull(xid, permissions);
+        service.ensureEditPermission(permissions, vo);
         return vo;
     }
 }

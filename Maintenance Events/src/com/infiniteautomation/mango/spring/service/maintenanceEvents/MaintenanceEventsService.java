@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -37,60 +38,45 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Terry Packer
  */
 @Service
-public class MaintenanceEventsService {
+public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventDao>{
+
+    private final DataSourceDao<DataSourceVO<?>> dataSourceDao;
     
     @Autowired
-    private  MaintenanceEventDao dao;
-    @Autowired
-    private DataSourceDao<DataSourceVO<?>> dataSourceDao;
-    
-    /**
-     * Get the full VO if exists and has read permission else throw exception
-     * @param xid
-     * @return
-     * @throws NotFoundException
-     */
-    public MaintenanceEventVO getFullByXid(String xid, PermissionHolder user) throws NotFoundException, PermissionException {
-        MaintenanceEventVO vo = dao.getFullByXid(xid);
-        if(vo == null)
-            throw new NotFoundException();
-        ensureReadPermission(vo, user);
-        return vo;
+    public MaintenanceEventsService(MaintenanceEventDao dao, DataSourceDao<DataSourceVO<?>> dataSourceDao) {
+        super(dao);
+        this.dataSourceDao = dataSourceDao;
     }
-    
-    /**
-     * Insert an event, check permissions and validate.  Xid generated if not supplied.
-     * @param vo
-     * @param user
-     * @return
-     * @throws PermissionException
-     * @throws ValidationException
-     */
-    public MaintenanceEventVO insert(MaintenanceEventVO vo, PermissionHolder user) throws NotFoundException, PermissionException, ValidationException {
-        //Ensure they can create an event
-        Permissions.ensureDataSourcePermission(user);
+
+    @Override
+    public MaintenanceEventVO insert(MaintenanceEventVO vo, PermissionHolder user, boolean full)
+            throws PermissionException, ValidationException {
+        //Ensure they can create
+        ensureCreatePermission(user);
         
         //Generate an Xid if necessary
         if(StringUtils.isEmpty(vo.getXid()))
             vo.setXid(dao.generateUniqueXid());
         
-        vo.ensureValid();
+        ensureValid(vo, user);
         RTMDefinition.instance.saveMaintenanceEvent(vo);
         return vo;
     }
     
-    public MaintenanceEventVO update(String existingXid, MaintenanceEventVO vo, PermissionHolder user) throws NotFoundException, PermissionException, ValidationException {
-        return update(getFullByXid(existingXid, user), vo, user);
-    }
-    
-    public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo, PermissionHolder user) throws NotFoundException, PermissionException, ValidationException {
-        ensureEditPermission(existing, user);
-        //Don't change ID ever
+    @Override
+    protected MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo,
+            PermissionHolder user, boolean full) throws PermissionException, ValidationException {
+        ensureEditPermission(user, existing);
         vo.setId(existing.getId());
-        vo.ensureValid();
+        ensureValid(vo, user);
         RTMDefinition.instance.saveMaintenanceEvent(vo);
         return vo;
     }
+    
+    public MaintenanceEventVO update(String existingXid, MaintenanceEventVO vo, PermissionHolder user)
+            throws PermissionException, ValidationException {
+        return update(getFull(existingXid, user), vo, user);
+    } 
     
     /**
      * Delete an event
@@ -100,9 +86,10 @@ public class MaintenanceEventsService {
      * @throws NotFoundException
      * @throws PermissionException
      */
+    @Override
     public MaintenanceEventVO delete(String xid, PermissionHolder user) throws NotFoundException, PermissionException {
-        MaintenanceEventVO vo = getFullByXid(xid, user);
-        ensureEditPermission(vo, user);
+        MaintenanceEventVO vo = getFull(xid, user);
+        ensureEditPermission(user, vo);
         RTMDefinition.instance.deleteMaintenanceEvent(vo.getId());
         return vo;
     }
@@ -165,7 +152,6 @@ public class MaintenanceEventsService {
             throw new NotFoundException();
         ensureTogglePermission(existing, user);
         MaintenanceEventRT rt = RTMDefinition.instance.getRunningMaintenanceEvent(existing.getId());
-        boolean activated = false;
         if (rt == null)
             throw new TranslatableIllegalStateException(new TranslatableMessage("maintenanceEvents.toggle.disabled"));
         return rt;
@@ -194,35 +180,7 @@ public class MaintenanceEventsService {
             },  transformVO);
         }
     }
-    
-    /**
-     * Ensure the user can edit this VO
-     * @param user
-     * @param vo
-     */
-    public void ensureEditPermission(MaintenanceEventVO vo, PermissionHolder user) {
-        if(user.hasAdminPermission())
-            return;
-        else if(Permissions.hasDataSourcePermission(user))
-            //TODO Review how this permission works
-            return;
-        else {
-            if(vo.getDataPoints().size() > 0) {
-                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false);
-                dao.getPoints(vo.getId(), callback);
-                if(!callback.hasPermission.booleanValue())
-                    throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToReadPoints"), user);
-            }
-            
-            if(vo.getDataSources().size() > 0) {
-                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
-                dao.getDataSources(vo.getId(), callback);
-                if(!callback.hasPermission.booleanValue())
-                    throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToEditSources"), user);
-            }
-        }
-    }
-    
+
     /**
      * Ensure the user has permission to toggle this event
      * @param user
@@ -238,33 +196,6 @@ public class MaintenanceEventsService {
             throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
     }
     
-    /**
-     * Ensure the permission holder can read the event
-     * @param user
-     * @param vo
-     */
-    public void ensureReadPermission(MaintenanceEventVO vo, PermissionHolder user) {
-        if(user.hasAdminPermission())
-            return;
-        else if(Permissions.hasDataSourcePermission(user))
-            //TODO Review how this permission works
-            return;
-        else {
-            if(vo.getDataPoints().size() > 0) {
-                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true);
-                dao.getPoints(vo.getId(), callback);
-                if(!callback.hasPermission.booleanValue())
-                    throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToReadPoints"), user);
-            }
-            
-            if(vo.getDataSources().size() > 0) {
-                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
-                dao.getDataSources(vo.getId(), callback);
-                if(!callback.hasPermission.booleanValue())
-                    throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToEditSources"), user);
-            }
-        }
-    }
     
     /**
      * Check the permission on the data point and if the user does not have it
@@ -351,5 +282,60 @@ public class MaintenanceEventsService {
                     hasPermission.setFalse();
             }
         }
+    }
+
+    @Override
+    public boolean hasCreatePermission(PermissionHolder user) {
+        return Permissions.hasDataSourcePermission(user);
+    }
+
+    @Override
+    public boolean hasEditPermission(PermissionHolder user, MaintenanceEventVO vo) {
+        if(user.hasAdminPermission())
+            return true;
+        else if(Permissions.hasDataSourcePermission(user))
+            //TODO Review how this permission works
+            return true;
+        else {
+            if(vo.getDataPoints().size() > 0) {
+                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false);
+                dao.getPoints(vo.getId(), callback);
+                if(!callback.hasPermission.booleanValue())
+                    return false;
+            }
+            
+            if(vo.getDataSources().size() > 0) {
+                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
+                dao.getDataSources(vo.getId(), callback);
+                if(!callback.hasPermission.booleanValue())
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean hasReadPermission(PermissionHolder user, MaintenanceEventVO vo) {
+        if(user.hasAdminPermission())
+            return true;
+        else if(Permissions.hasDataSourcePermission(user))
+            //TODO Review how this permission works
+            return true;
+        else {
+            if(vo.getDataPoints().size() > 0) {
+                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true);
+                dao.getPoints(vo.getId(), callback);
+                if(!callback.hasPermission.booleanValue())
+                    return false;
+            }
+            
+            if(vo.getDataSources().size() > 0) {
+                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user);
+                dao.getDataSources(vo.getId(), callback);
+                if(!callback.hasPermission.booleanValue())
+                    return false;
+            }
+        }
+        return true;
     }
 }

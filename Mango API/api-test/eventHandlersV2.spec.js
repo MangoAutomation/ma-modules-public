@@ -497,6 +497,28 @@ describe('Event handlers v2', function() {
         });
     });
     
+    it('Patch process event handler', () => {
+        global.processEventHandler.disabled = false;
+        return client.restRequest({
+            path: '/rest/v2/event-handlers/EVTH_PROCESS_TEST',
+            method: 'PATCH',
+            data: {
+                disabled: false
+            }
+        }).then(response => {
+            assert.strictEqual(response.data.xid, global.processEventHandler.xid);
+            assert.strictEqual(response.data.name, global.processEventHandler.name);
+            assert.strictEqual(response.data.disabled, global.processEventHandler.disabled);
+            assert.strictEqual(response.data.activeProcessCommand, global.processEventHandler.activeProcessCommand);
+            assert.strictEqual(response.data.activeProcessTimeout, global.processEventHandler.activeProcessTimeout);
+            assert.strictEqual(response.data.inactiveProcessCommand, global.processEventHandler.inactiveProcessCommand);
+            assert.strictEqual(response.data.inactiveProcessTimeout, global.processEventHandler.inactiveProcessTimeout);
+            
+            assert.isNumber(response.data.id);
+            global.processEventHandler.id = response.data.id;
+        });
+    });
+    
     it('Delete process event handler', () => {
         return client.restRequest({
             path: `/rest/v2/event-handlers/${global.processEventHandler.xid}`,

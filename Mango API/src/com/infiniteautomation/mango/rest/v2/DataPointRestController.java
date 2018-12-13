@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -75,7 +73,6 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/data-points")
 public class DataPointRestController {
 
-    private static Log LOG = LogFactory.getLog(DataPointRestController.class);
     private static final String RESOURCE_TYPE_BULK_DATA_POINT = "BULK_DATA_POINT";
 
     public static class DataPointIndividualRequest extends VoIndividualRequest<DataPointModel> {
@@ -93,7 +90,6 @@ public class DataPointRestController {
     private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
 
     public DataPointRestController(@Autowired TemporaryResourceWebSocketHandler websocket) {
-        LOG.info("Creating Data Point v2 Rest Controller.");
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
     }
 

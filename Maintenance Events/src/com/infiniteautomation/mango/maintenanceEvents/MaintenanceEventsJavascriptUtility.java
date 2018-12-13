@@ -23,7 +23,7 @@ public class MaintenanceEventsJavascriptUtility extends ScriptUtility {
     protected MaintenanceEventsService service;
 
     public MaintenanceEventVO get(String xid) throws NotFoundException, PermissionException {
-        return service.getFullByXid(xid, permissions);
+        return service.getFull(xid, permissions);
     }
     
     public boolean toggle(String xid) throws NotFoundException, PermissionException, TranslatableIllegalStateException {

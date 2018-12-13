@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.reports.ReportsService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.reports.ReportDao;
@@ -118,16 +119,16 @@ public class ReportsRestController {
             @PathVariable String xid,
 
             @ApiParam(value = "Updated item model", required = true)
-            @RequestBody ReportModel model,
+            @PatchVORequestBody(
+                    service=ReportsService.class,
+                    modelClass=ReportModel.class)
+            ReportModel model,
 
             @AuthenticationPrincipal User user,
 
             UriComponentsBuilder builder) {
 
-        ReportVO existing = service.get(xid, user);
-        ReportModel existingModel = new ReportModel(existing);
-        existingModel.patch(model);
-        ReportVO item = service.update(xid, existingModel.toVO(), user);
+        ReportVO item = service.update(xid, model.toVO(), user);
 
         URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();

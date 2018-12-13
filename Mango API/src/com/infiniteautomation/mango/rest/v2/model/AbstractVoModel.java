@@ -3,15 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.serotonin.m2m2.vo.AbstractVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -22,17 +16,10 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
     
-    //Used to track if the incoming model specifically chose to set to a value 
-    @JsonIgnore
-    protected Map<String, Object> settersCalled = new HashMap<>();
-    
-    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer id;
-    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String xid;
-    @PatchableField
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String name;
     
@@ -87,56 +74,6 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
         vo.setXid(xid);
         vo.setName(name);
         return vo;
-    }
-    
-    /**
-     * Used to update this model with any values from an update, using all Fields,
-     *   to disable a Field use the @PatchableField(enabled=false) annotation
-     *   to allow null values that were set into the model use  @PatchableField(allowNull=true)
-     * @param update
-     */
-
-    public void patch(AbstractVoModel<VO> update) {
-        
-        //Search the update for non-null annotations up to and including this class
-        Class<?> c = update.getClass();
-        while(c != Object.class) {
-            for(Field f : c.getDeclaredFields()) {
-                PatchableField i = f.getAnnotation(PatchableField.class);
-                if(i != null && !i.enabled())
-                    continue;
-                f.setAccessible(true);
-                try {
-                    
-                    if(update.wasSet(f.getName())) {
-                        Object value = f.get(update);
-                        if(value != null)
-                            f.set(this, value);
-                        else if(i != null && i.allowNull() && update.wasSetToNull(f.getName()))
-                            f.set(this, value);
-                    }
-                } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new ServerErrorException(e);
-                }
-            }
-            c = c.getSuperclass();
-        }
-    }
-    
-    public void setSettersCalled(Map<String, Object> setters) {
-        this.settersCalled = setters;
-    }
-    
-    protected boolean wasSet(String fieldName) {
-        return this.settersCalled.containsKey(fieldName.toLowerCase());
-    }
-    
-    protected boolean wasSetToNull(String fieldName) {
-        String key = fieldName.toLowerCase();
-        if(this.settersCalled.containsKey(key) && this.settersCalled.get(key) == null)
-            return true;
-        else
-            return false;
     }
 
     /**

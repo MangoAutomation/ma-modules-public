@@ -5,11 +5,10 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,17 +21,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
+import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.infiniteautomation.mango.util.exception.NotFoundException;
-import com.serotonin.m2m2.db.dao.UserDao;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,9 +44,13 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/v2/users")
 public class UserRestController {
 
+    private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};
+    private final UsersService service;
+    
     @Autowired
-    private UserDao dao;
-    private final Function<User, Object> transform = user -> {return new UserModel(user);};
+    public UserRestController(UsersService service) {
+        this.service = service;
+    }
     
     @ApiOperation(
             value = "Query Users",
@@ -63,7 +63,7 @@ public class UserRestController {
             @ApiParam(value = "Valid username", required = true, allowMultiple = false)
             @PathVariable String username,
             @AuthenticationPrincipal User user) {
-        return new UserModel(get(username, user));
+        return new UserModel(service.get(username, user));
     }
     
     @ApiOperation(
@@ -77,7 +77,7 @@ public class UserRestController {
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user, transform);
+        return doQuery(rql, user);
     }
     
     @ApiOperation(
@@ -92,7 +92,7 @@ public class UserRestController {
             UserModel model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        User newUser = insert(model.toVO(), user);
+        User newUser = service.insert(model.toVO(), user);
         URI location = builder.path("/v2/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -114,8 +114,7 @@ public class UserRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         
-        
-        User newUser = update(username, model.toVO(), user);
+        User newUser = service.update(username, model.toVO(), user);
         URI location = builder.path("/v2/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -132,16 +131,16 @@ public class UserRestController {
     public ResponseEntity<UserModel> patchUser(
             @PathVariable String username,
             @ApiParam(value="User", required=true)
-            @RequestBody(required=true)
+            @PatchVORequestBody(
+                    service=UsersService.class,
+                    modelClass=UserModel.class,
+                    idType=PatchIdField.OTHER,
+                    urlPathVariableName="username")
             UserModel model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         
-        User existing = get(username, user);
-        UserModel existingModel = new UserModel(existing);
-        existingModel.patch(model);
-        User update = existingModel.toVO();
-        update = update(existing, update, user);
+        User update = service.update(username, model.toVO(), user);
         URI location = builder.path("/v2/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -154,65 +153,19 @@ public class UserRestController {
             @ApiParam(value = "Valid username", required = true, allowMultiple = false)
             @PathVariable String username,
             @AuthenticationPrincipal User user) {
-        return new UserModel(delete(username, user));
+        return new UserModel(service.delete(username, user));
     }
     
     //TODO Below here can be moved into a service class
     
-    public StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<User, Object> transformVO) {
+    public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+        
         if (user.hasAdminPermission()) {
-            return new StreamedVOQueryWithTotal<>(dao, rql, transformVO);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            ConditionSortLimit conditions = dao.rqlToCondition(rql);
-            return new StreamedVOQueryWithTotal<>(dao, conditions, item -> true, transformVO);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
         }
     } 
-    
-    public User get(String username, User reader) throws NotFoundException, PermissionException {
-        User u = dao.getUser(username);
-        if(u == null)
-            throw new NotFoundException();
-        ensurePermission(u, reader);
-        return u;
-    }
-    
-    public User insert(User toInsert, PermissionHolder inserter) throws PermissionException{
-        inserter.ensureHasAdminPermission();
-        toInsert.ensureValid();
-        dao.saveUser(toInsert);
-        return toInsert;
-    }
-    
-    public User update(String username, User update, User updater) {
-        return update(get(username, updater), update, updater);
-    }
-    
-    public User update(User existing, User update, User updater) throws PermissionException {
-        ensurePermission(existing, updater);
-        update.setId(existing.getId());
-        update.ensureValid();
-        dao.saveUser(update);
-        return update;
-    }
-    
-    public User delete(String username, PermissionHolder inserter) throws NotFoundException, PermissionException {
-        inserter.ensureHasAdminPermission();
-        User user = dao.getUser(username);
-        if(user == null)
-            throw new NotFoundException();
-        dao.deleteUser(user.getId());
-        return user;
-    }
-    
-    public void ensurePermission(User toRead, User reader) throws PermissionException {
-        if(reader.hasAdminPermission())
-            return;
-        if(toRead.getId() != reader.getId())
-            throw new PermissionException(new TranslatableMessage("permission.exception.doesNotHaveRequiredPermission", reader.getUsername()), reader);
-        if(!StringUtils.equals(toRead.getPermissions(), reader.getPermissions()))
-            throw new PermissionException(new TranslatableMessage("users.validate.cannotChangePermissions"), reader);
-        //TODO permissions check against something like user view permissions?
-    }
 }

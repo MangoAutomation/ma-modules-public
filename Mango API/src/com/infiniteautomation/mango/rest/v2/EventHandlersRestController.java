@@ -28,6 +28,7 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
@@ -145,17 +146,16 @@ public class EventHandlersRestController {
             @PathVariable String xid,
 
             @ApiParam(value = "Updated maintenance event", required = true)
-            @RequestBody(required=true) AbstractEventHandlerModel model,
+            @PatchVORequestBody(
+                    service=EventHandlerService.class,
+                    modelClass=AbstractEventHandlerModel.class)
+            AbstractEventHandlerModel model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        AbstractEventHandlerVO<?> existing = service.getFull(xid, user);
-        AbstractEventHandlerModel existingModel = map.apply(existing, user);
-        existingModel.patch(model);
-        AbstractEventHandlerVO<?> vo = existingModel.toVO();
-        vo = service.updateFull(existing, vo, user);
-
+        AbstractEventHandlerVO<?> vo = service.updateFull(xid, model.toVO(), user);
+        
         URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
