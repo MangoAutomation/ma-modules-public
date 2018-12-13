@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -129,19 +128,13 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
     @ApiOperation(value = "Upload 1 configuration json file", notes = "Files should only contain the json object to be imported")
     @RequestMapping(method = RequestMethod.POST, value = "/upload-file", consumes={"multipart/form-data", "multipart/form-data;boundary=-----SWAG_BOUND"})
     public ResponseEntity<ImportStatusProvider> uploadConfigurationFile(
-            MultipartHttpServletRequest multipartRequest,
+            @RequestPart(required = true)
+            MultipartFile file,
             UriComponentsBuilder builder,
             HttpServletRequest request,
             @ApiParam(value = "timeout for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
             @RequestParam(value="timeout", required=false) Long timeout,
             @AuthenticationPrincipal User user) throws RestValidationFailedException, IOException, JsonException {
-
-        Map<String, MultipartFile> map = multipartRequest.getFileMap();
-        if(map.size() != 1)
-            throw new BadRequestException(new TranslatableMessage("rest.error.oneFileOnly"));
-
-        Iterator<String> itr =  multipartRequest.getFileNames();
-        MultipartFile file = multipartRequest.getFile(itr.next());
 
         if (!file.isEmpty()) {
             JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
