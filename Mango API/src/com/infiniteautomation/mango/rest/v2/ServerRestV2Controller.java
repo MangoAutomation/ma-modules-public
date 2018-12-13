@@ -4,8 +4,11 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +18,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,7 +54,6 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemInfoDefinition;
-import com.serotonin.m2m2.rt.maint.work.EmailWorkItem;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
@@ -59,7 +62,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.provider.Providers;
+import com.serotonin.web.mail.EmailSender;
 
+import freemarker.template.TemplateException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -113,20 +118,39 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public ResponseEntity<String> sendTestEmail(
             @RequestParam(value = "email", required = true, defaultValue = "") String email,
             @RequestParam(value = "username", required = true, defaultValue = "") String username,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws TemplateException, IOException {
 
-        try {
             Translations translations = Common.getTranslations();
             Map<String, Object> model = new HashMap<>();
             model.put("message", new TranslatableMessage("ftl.userTestEmail", username));
-            MangoEmailContent cnt = new MangoEmailContent("testEmail", model, translations,
+            MangoEmailContent content = new MangoEmailContent("testEmail", model, translations,
                     translations.translate("ftl.testEmail"), Common.UTF8);
-            EmailWorkItem.queueEmail(email, cnt);
+            EmailSender emailSender = new EmailSender(
+                    SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
+                    SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
+                    SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_AUTHORIZATION),
+                    SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_USERNAME),
+                    SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_PASSWORD),
+                    SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_TLS),
+                    SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SEND_TIMEOUT));
+
+            String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
+            String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
+            InternetAddress fromAddress = new InternetAddress(addr, pretty);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (PrintStream ps = new PrintStream(baos, true, "UTF-8")) {
+                emailSender.setDebug(ps);
+                try{
+                    emailSender.send(fromAddress, email, content.getSubject(), content);
+                }catch(Exception e) {
+                    String debug = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+                    log.warn("Email Session DEBUG Output\n" + debug);
+                    throw e;
+                }
+            }
+            
             return new ResponseEntity<String>(new TranslatableMessage("common.testEmailSent", email)
                     .translate(Common.getTranslations()), HttpStatus.OK);
-        } catch (Exception e) {
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
     }
 
     @PreAuthorize("isAdmin()")
