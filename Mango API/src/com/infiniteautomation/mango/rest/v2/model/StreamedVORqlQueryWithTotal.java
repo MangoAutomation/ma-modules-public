@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.db.dao.AbstractDao;
@@ -24,30 +25,46 @@ import net.jazdw.rql.parser.ASTNode;
  */
 public class StreamedVORqlQueryWithTotal<T extends AbstractVO<?>, DAO extends AbstractDao<T>, SERVICE extends AbstractVOService<T, DAO>> implements StreamedArrayWithTotal {
     private final SERVICE service;
-    private final ASTNode conditions;
+    private final ConditionSortLimit conditions;
     private final Function<T, ?> toModel;
     private final Predicate<T> filter;
     private final boolean loadRelational;
     
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, boolean loadRelational) {
+        this(service, conditions, item -> true, Function.identity(), loadRelational);
+    }
+    
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, boolean loadRelational) {
+        this(service, conditions, item -> service.hasReadPermission(holder, item), Function.identity(), loadRelational);
+    }
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Function<T, ?> toModel, boolean loadRelational) {
+        this(service, conditions, item -> true, toModel, loadRelational);
+    }
+    
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, Function<T, ?> toModel, boolean loadRelational) {
+        this(service, conditions, item -> service.hasReadPermission(holder, item), toModel, loadRelational);
+    }
+    
     public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, boolean loadRelational) {
-        this(service, rql, item -> true, Function.identity(), loadRelational);
+        this(service, service.getDao().rqlToCondition(rql), item -> true, Function.identity(), loadRelational);
     }
     
     public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, boolean loadRelational) {
-        this(service, rql, item -> service.hasReadPermission(holder, item), Function.identity(), loadRelational);
+        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), Function.identity(), loadRelational);
     }
 
     public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, rql, item -> true, toModel, loadRelational);
+        this(service, service.getDao().rqlToCondition(rql), item -> true, toModel, loadRelational);
     }
     
     public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, rql, item -> service.hasReadPermission(holder, item), toModel, loadRelational);
+        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), toModel, loadRelational);
     }
     
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
         this.service = service;
-        this.conditions = rql;
+        this.conditions = conditions;
         this.toModel = toModel;
         this.filter = filter;
         this.loadRelational = loadRelational;
