@@ -17,6 +17,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.ResourceRegionHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -24,8 +25,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.converter.ExceptionCsvMessageConverter;
+import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.MissingEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
@@ -52,9 +64,31 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     
 
+    final ObjectMapper mapper;
+    final PartialUpdateArgumentResolver resolver;
+    
     @Autowired
-    @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
-    private ObjectMapper restObjectMapper;
+    public MangoRestDispatcherConfiguration(
+            @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
+            ObjectMapper mapper,
+            PartialUpdateArgumentResolver resolver) {
+        this.mapper = mapper;
+        this.resolver = resolver;
+        mapper.registerSubtypes(
+                    //Event Handlers
+                    new NamedType(EmailEventHandlerModel.class, "EMAIL"),
+                    new NamedType(ProcessEventHandlerModel.class, "PROCESS"),
+                    new NamedType(SetPointEventHandlerModel.class, "SET_POINT"),
+                    new NamedType(AuditEventTypeModel.class, "AUDIT"),
+                    //Event Types
+                    new NamedType(DataPointEventTypeModel.class, "DATA_POINT"),
+                    new NamedType(DataSourceEventTypeModel.class, "DATA_SOURCE"),
+                    new NamedType(MissingEventTypeModel.class, "MISSING"),
+                    new NamedType(PublisherEventTypeModel.class, "PUBLISHER"),
+                    new NamedType(SystemEventTypeModel.class, "SYSTEM")
+                );
+        
+    }
 
     /**
      * Create a Path helper that will not URL Decode
@@ -109,7 +143,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
         converters.add(new ResourceHttpMessageConverter());
         converters.add(new ResourceRegionHttpMessageConverter());
-        converters.add(new MappingJackson2HttpMessageConverter(restObjectMapper));
+        converters.add(new MappingJackson2HttpMessageConverter(mapper));
         converters.add(new CsvMessageConverter());
         converters.add(new CsvRowMessageConverter());
         converters.add(new CsvQueryArrayStreamMessageConverter());
@@ -131,5 +165,11 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     @Bean()
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
         return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
+    }
+    
+    
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(resolver);
     }
 }

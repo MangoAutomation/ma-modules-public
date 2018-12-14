@@ -7,19 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PointLinkService;
 import com.serotonin.m2m2.pointLinks.PointLinkVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
  * @author Terry Packer
  *
  */
 @Component
-@WebSocketMapping("/v2/websocket/point-links")
+@WebSocketMapping("/websocket/point-links")
 public class PointLinkWebSocketHandler extends DaoNotificationWebSocketHandler<PointLinkVO>{
 
     @Autowired

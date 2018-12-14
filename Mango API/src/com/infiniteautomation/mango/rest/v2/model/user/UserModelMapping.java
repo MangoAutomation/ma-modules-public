@@ -5,7 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.user;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.RestModelMapping;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.vo.User;
 
 /**

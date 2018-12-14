@@ -4,9 +4,9 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,7 +45,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Event Handlers Rest Controller")
 @RestController("EventHandlersRestControllerV2")
-@RequestMapping("/v2/event-handlers")
+@RequestMapping("/event-handlers")
 public class EventHandlersRestController {
 
     private final EventHandlerService service;
