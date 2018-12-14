@@ -179,7 +179,7 @@ public class SystemSettingsRestController extends MangoRestController{
             // J.W. WTF is this for?
             // Put a link to the updated data in the header
             URI location =
-                    builder.path("/v1/system-settings/{key}").buildAndExpand(key).toUri();
+                    builder.path("/system-settings/{key}").buildAndExpand(key).toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
 
             return result.createResponseEntity(model);
@@ -214,7 +214,7 @@ public class SystemSettingsRestController extends MangoRestController{
 
             // J.W. WTF is this for?
             // Put a link to the updated data in the header
-            URI location = builder.path("/v1/system-settings").buildAndExpand().toUri();
+            URI location = builder.path("/system-settings").buildAndExpand().toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
 
             return result.createResponseEntity(settings);

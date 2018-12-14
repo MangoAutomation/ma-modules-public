@@ -318,7 +318,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             //Put a link to the updated data in the header?
-            URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
+            URI location = builder.path("/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
 
             result.addRestMessage(getResourceUpdatedMessage(location));
             return result.createResponseEntity(model);
@@ -421,7 +421,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             //Put a link to the updated data in the header?
-            URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
+            URI location = builder.path("/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
 
             result.addRestMessage(getResourceUpdatedMessage(location));
             return result.createResponseEntity(model);
@@ -680,7 +680,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             }
 
             //Put a link to the updated data in the header?
-            URI location = builder.path("/v1/data-points/{xid}").buildAndExpand(copy.getXid()).toUri();
+            URI location = builder.path("/data-points/{xid}").buildAndExpand(copy.getXid()).toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
             return result.createResponseEntity(model);
         }

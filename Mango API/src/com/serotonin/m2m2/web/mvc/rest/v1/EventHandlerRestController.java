@@ -156,7 +156,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }
 	        
 	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
+	    	URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
 	    	
 	    	result.addRestMessage(getResourceUpdatedMessage(location));
 	        return result.createResponseEntity(model);
@@ -200,7 +200,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        }
 	        
 	        //Put a link to the updated data in the header?
-	    	URI location = builder.path("/v1/event-handlers/{xid}").buildAndExpand(model.getXid()).toUri();
+	    	URI location = builder.path("/event-handlers/{xid}").buildAndExpand(model.getXid()).toUri();
 	    	
 	    	result.addRestMessage(getResourceCreatedMessage(location));
 	        return result.createResponseEntity(model);

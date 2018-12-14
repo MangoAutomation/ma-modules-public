@@ -1775,7 +1775,7 @@ public class PointValueRestController extends MangoRestController {
                     Common.runtimeManager.setDataPointValue(existingDp.getId(), pvt, source);
                     // This URI may not always be accurate if the Data Source doesn't use the
                     // provided time...
-                    URI location = builder.path("/v1/point-values/{xid}/{time}")
+                    URI location = builder.path("/point-values/{xid}/{time}")
                             .buildAndExpand(xid, pvt.getTime()).toUri();
                     result.addRestMessage(getResourceCreatedMessage(location));
                     return result;

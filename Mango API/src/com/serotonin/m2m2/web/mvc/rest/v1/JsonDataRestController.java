@@ -552,7 +552,7 @@ public class JsonDataRestController extends MangoVoRestController<JsonDataVO, Js
             copied.setJsonData(dataToReturn);
             model = new JsonDataModel(copied);
 
-            URI location = builder.path("/v1/json-data/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+            URI location = builder.path("/json-data/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
             result.addRestMessage(this.getResourceCreatedMessage(location));
             return result.createResponseEntity(model);
         } catch (Exception e) {

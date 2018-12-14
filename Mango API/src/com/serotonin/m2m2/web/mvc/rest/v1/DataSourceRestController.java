@@ -237,7 +237,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }
 
             //Put a link to the updated data in the header?
-            URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
+            URI location = builder.path("/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
             return result.createResponseEntity(model);
         }
@@ -288,7 +288,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             else {
                 Common.runtimeManager.saveDataSource(vo);
                 DataSourceVO<?> created = DataSourceDao.getInstance().getByXid(model.getXid());
-                URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
+                URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
                 result.addRestMessage(this.getResourceCreatedMessage(location));
                 return result.createResponseEntity(created.asModel());
             }
@@ -404,7 +404,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }
 
             //Put a link to the updated data in the header?
-            URI location = builder.path("/v1/data-sources/{xid}").buildAndExpand(copy.getXid()).toUri();
+            URI location = builder.path("/data-sources/{xid}").buildAndExpand(copy.getXid()).toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
             return result.createResponseEntity(model);
         }

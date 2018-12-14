@@ -303,7 +303,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
             EventInstanceModel model = new EventInstanceModel(event);
 
             //Put a link to the updated data in the header?
-            URI location = builder.path("/v1/events/{id}").buildAndExpand(id).toUri();
+            URI location = builder.path("/events/{id}").buildAndExpand(id).toUri();
             result.addRestMessage(getResourceUpdatedMessage(location));
             return result.createResponseEntity(model);
         }
