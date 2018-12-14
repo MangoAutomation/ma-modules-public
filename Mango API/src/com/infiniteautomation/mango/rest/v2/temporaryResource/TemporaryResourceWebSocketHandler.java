@@ -17,12 +17,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
+import com.infiniteautomation.mango.rest.v2.websocket.MultiSessionWebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketNotification;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
-import com.infiniteautomation.mango.rest.v2.websocket.MultiSessionWebSocketHandler;
 
 /**
  * @author Jared Wiltshire
