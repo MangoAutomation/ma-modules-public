@@ -2,7 +2,7 @@
  * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.converter;
+package com.serotonin.m2m2.web.mvc.rest.v1.converter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
