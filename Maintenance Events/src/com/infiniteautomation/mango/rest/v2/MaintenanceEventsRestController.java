@@ -86,7 +86,7 @@ public class MaintenanceEventsRestController {
 
         MaintenanceEventVO vo = service.update(xid, model.toVO(), user);
 
-        URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -104,7 +104,7 @@ public class MaintenanceEventsRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         MaintenanceEventVO vo = service.update(xid, model.toVO(), user);
-        URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new MaintenanceEventModel(vo), headers, HttpStatus.OK);
@@ -120,7 +120,7 @@ public class MaintenanceEventsRestController {
 
         MaintenanceEventVO vo = service.insert(model.toVO(), user);
         
-        URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -143,7 +143,7 @@ public class MaintenanceEventsRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         boolean activated = service.toggle(xid, user);
-        URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(xid).toUri();
+        URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(xid).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(activated, headers, HttpStatus.OK);
@@ -165,7 +165,7 @@ public class MaintenanceEventsRestController {
             UriComponentsBuilder builder) {
         
         boolean activated = service.setState(xid, user, active);
-        URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(xid).toUri();
+        URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(xid).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(activated, headers, HttpStatus.OK);

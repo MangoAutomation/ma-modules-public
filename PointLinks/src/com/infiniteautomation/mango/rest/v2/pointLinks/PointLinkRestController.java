@@ -38,7 +38,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Point Links Rest Controller")
 @RestController()
-@RequestMapping("/v2/point-links")
+@RequestMapping("/point-links")
 public class PointLinkRestController {
 
     @Autowired
@@ -91,7 +91,7 @@ public class PointLinkRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         PointLinkVO vo = service.insert(model.toVO(), user);
-        URI location = builder.path("/v2/point-links/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/point-links/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new PointLinkModel(vo), headers, HttpStatus.OK);
@@ -113,7 +113,7 @@ public class PointLinkRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         PointLinkVO vo = service.update(xid, model.toVO(), user);
-        URI location = builder.path("/v2/point-links/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/point-links/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new PointLinkModel(vo), headers, HttpStatus.OK);

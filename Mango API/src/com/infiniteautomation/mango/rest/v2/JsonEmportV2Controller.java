@@ -145,7 +145,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
 
             //Setup the Temporary Resource
             this.importStatusResources.put(resourceId, statusProvider);
-            URI location = builder.path("/v2/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
+            URI location = builder.path("/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
             return getResourceCreated(statusProvider, location);
         } else {
             throw new BadRequestException(new TranslatableMessage("rest.error.noFileProvided"));
@@ -168,7 +168,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             String resourceId = importStatusResources.generateResourceId();
             ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, config.toJsonObject(), user);
             this.importStatusResources.put(resourceId, statusProvider);
-            URI location = builder.path("/v2/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
+            URI location = builder.path("/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
             return getResourceCreated(statusProvider, location);
         }
         else {

@@ -106,7 +106,7 @@ public class ReportsRestController {
 
         ReportVO item = service.update(xid, model.toVO(), user);
 
-        URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
+        URI location = builder.path("/reports/{xid}").buildAndExpand(item.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -130,7 +130,7 @@ public class ReportsRestController {
 
         ReportVO item = service.update(xid, model.toVO(), user);
 
-        URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
+        URI location = builder.path("/reports/{xid}").buildAndExpand(item.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -148,7 +148,7 @@ public class ReportsRestController {
             UriComponentsBuilder builder) {
         ReportVO item = service.insert(model.toVO(), user);
         
-        URI location = builder.path("/v2/reports/{xid}").buildAndExpand(item.getXid()).toUri();
+        URI location = builder.path("/reports/{xid}").buildAndExpand(item.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 

@@ -498,7 +498,7 @@ public class DataPointTagsRestController {
                 });
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(builder.path("/v2/data-point-tags/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
+        headers.setLocation(builder.path("/data-point-tags/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
 

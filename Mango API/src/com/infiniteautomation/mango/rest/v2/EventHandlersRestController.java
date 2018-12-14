@@ -109,7 +109,7 @@ public class EventHandlersRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         AbstractEventHandlerVO<?> vo = service.insertFull(model.toVO(), user);
-        URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
@@ -130,7 +130,7 @@ public class EventHandlersRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         AbstractEventHandlerVO<?> vo = service.updateFull(xid, model.toVO(), user);
-        URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
@@ -156,7 +156,7 @@ public class EventHandlersRestController {
 
         AbstractEventHandlerVO<?> vo = service.updateFull(xid, model.toVO(), user);
         
-        URI location = builder.path("/v2/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 

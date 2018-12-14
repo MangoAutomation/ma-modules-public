@@ -94,7 +94,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		VirtualSerialPortConfigDao.getInstance().save(model);
 		
         //Put a link to the updated data in the header?
-    	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
+    	URI location = builder.path("/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
     	return getResourceCreated(model, location);
     }
 	
@@ -124,7 +124,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 		VirtualSerialPortConfigDao.getInstance().save(model);
 		
         //Put a link to the updated data in the header
-    	URI location = builder.path("/v2/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
+    	URI location = builder.path("/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
 
     	return getResourceUpdated(model, location);
     }

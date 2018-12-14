@@ -165,7 +165,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         Common.runtimeManager.saveDataPoint(dp);
 
         // Put a link to the newly created resource in the location header
-        URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(vo.asModel(), headers, HttpStatus.CREATED);
@@ -228,7 +228,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
         Common.runtimeManager.saveDataPoint(dp);
 
         // Put a link to the updated resource in the location header
-        URI location = builder.path("/v2/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(vo.asModel(), headers, HttpStatus.OK);

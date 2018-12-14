@@ -93,7 +93,7 @@ public class UserRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         User newUser = service.insert(model.toVO(), user);
-        URI location = builder.path("/v2/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
+        URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new UserModel(newUser), headers, HttpStatus.OK);
@@ -115,7 +115,7 @@ public class UserRestController {
             UriComponentsBuilder builder) {
         
         User newUser = service.update(username, model.toVO(), user);
-        URI location = builder.path("/v2/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
+        URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new UserModel(newUser), headers, HttpStatus.OK);
@@ -141,7 +141,7 @@ public class UserRestController {
             UriComponentsBuilder builder) {
         
         User update = service.update(username, model.toVO(), user);
-        URI location = builder.path("/v2/users/{username}").buildAndExpand(update.getUsername()).toUri();
+        URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);

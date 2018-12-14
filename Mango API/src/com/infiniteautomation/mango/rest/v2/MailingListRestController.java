@@ -96,7 +96,7 @@ public class MailingListRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         MailingList vo = service.insertFull(model.toVO(), user);
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
@@ -117,7 +117,7 @@ public class MailingListRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         MailingList vo = service.updateFull(xid, model.toVO(), user);
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(wrap(vo, user), headers, HttpStatus.OK);
@@ -144,7 +144,7 @@ public class MailingListRestController {
 
         MailingList vo = service.updateFull(xid, model.toVO(), user);
 
-        URI location = builder.path("/v2/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 

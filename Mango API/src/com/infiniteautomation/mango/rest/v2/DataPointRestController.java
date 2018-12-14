@@ -269,7 +269,7 @@ public class DataPointRestController {
         DataPointDao.getInstance().setEventDetectors(dataPoint);
         Common.runtimeManager.saveDataPoint(dataPoint);
 
-        URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
+        URI location = builder.path("/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -306,7 +306,7 @@ public class DataPointRestController {
         dataPoint.ensureValid();
         Common.runtimeManager.saveDataPoint(dataPoint);
 
-        URI location = builder.path("/v2/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
+        URI location = builder.path("/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -405,7 +405,7 @@ public class DataPointRestController {
                 });
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(builder.path("/v2/data-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
+        headers.setLocation(builder.path("/data-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
 
