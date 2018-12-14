@@ -96,7 +96,7 @@ public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
         
         //Resource can live for up to 10 minutes (TODO Configurable?)
         resources.put(resourceId, resource);
-        URI location = builder.path("/v2/actions/status/{resourceId}").buildAndExpand(resourceId).toUri();
+        URI location = builder.path("/actions/status/{resourceId}").buildAndExpand(resourceId).toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
