@@ -10,7 +10,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.v2.model.PatchableField;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -50,7 +49,6 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     private String inactiveCron;
     private Integer timeoutPeriods;
     private String timeoutPeriodType;
-    @PatchableField()
     private String togglePermission;
 
     public MaintenanceEventModel() {
@@ -345,5 +343,4 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     public void setTogglePermission(String togglePermission) {
         this.togglePermission = togglePermission;
     }
-
 }

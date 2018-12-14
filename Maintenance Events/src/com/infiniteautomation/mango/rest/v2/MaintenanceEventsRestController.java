@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.model.MaintenanceEventModel;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
@@ -66,7 +66,7 @@ public class MaintenanceEventsRestController {
             @ApiParam(value = "Valid XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        return new MaintenanceEventModel(service.getFullByXid(xid, user));
+        return new MaintenanceEventModel(service.getFull(xid, user));
     }
     
     @ApiOperation(value = "Partially update an existing maintenance event")
@@ -75,16 +75,15 @@ public class MaintenanceEventsRestController {
             @PathVariable String xid,
 
             @ApiParam(value = "Updated maintenance event", required = true)
-            @RequestBody(required=true) MaintenanceEventModel model,
+            @PatchVORequestBody(
+                    service=MaintenanceEventsService.class,
+                    modelClass=MaintenanceEventModel.class)
+            MaintenanceEventModel model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        MaintenanceEventVO existing = service.getFullByXid(xid, user);
-        MaintenanceEventModel existingModel = new MaintenanceEventModel(existing);
-        existingModel.patch(model);
-        MaintenanceEventVO vo = existingModel.toVO();
-        vo = service.update(existing, vo, user);
+        MaintenanceEventVO vo = service.update(xid, model.toVO(), user);
 
         URI location = builder.path("/v2/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
