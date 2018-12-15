@@ -286,7 +286,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
                         UserDao.getInstance().saveUser(newUser);
                         sessionRegistry.userUpdated(request, newUser);
-                        URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
+                        URI location = builder.path("/users/{username}").buildAndExpand(model.getUsername()).toUri();
                         result.addRestMessage(getResourceCreatedMessage(location));
                     }
                     return result.createResponseEntity(model);
@@ -334,7 +334,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                             User newUser = model.getData();
                             UserDao.getInstance().saveUser(newUser);
 
-                            URI location = builder.path("v1/users/{username}").buildAndExpand(model.getUsername()).toUri();
+                            URI location = builder.path("/users/{username}").buildAndExpand(model.getUsername()).toUri();
                             result.addRestMessage(getResourceCreatedMessage(location));
                             return result.createResponseEntity(model);
                         }catch(Exception e){

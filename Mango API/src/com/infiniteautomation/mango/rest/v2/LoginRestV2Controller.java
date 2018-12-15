@@ -49,7 +49,7 @@ public class LoginRestV2Controller {
      * end point is actually reached the user is either already authenticated or not.
      * The Spring Security authentication success handler forwards the request here.</p>
      *
-     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.infiniteautomation.mango.rest.v2.MangoSpringExceptionHandler MangoSpringExceptionHandler}</p>
+     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.infiniteautomation.mango.rest.v2.exception.RestExceptionHandler MangoSpringExceptionHandler}</p>
      *
      * <p>Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value</p>
      */

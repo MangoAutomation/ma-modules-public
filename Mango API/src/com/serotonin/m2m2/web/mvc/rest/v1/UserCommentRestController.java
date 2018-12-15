@@ -174,7 +174,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     				String initiatorId = request.getHeader("initiatorId");
 	    			UserCommentDao.getInstance().save(model.getData(), initiatorId);
 	    			LOG.info("User with name/id: " + user.getUsername() + "/" + user.getId() + " created a User Comment for user: " + model.getData().getUserId());
-	    			URI location = builder.path("v1/comments/{xid}").buildAndExpand(model.getXid()).toUri();
+	    			URI location = builder.path("/comments/{xid}").buildAndExpand(model.getXid()).toUri();
     		    	result.addRestMessage(getResourceCreatedMessage(location));
 	    			return result.createResponseEntity(model); 
     			}catch(Exception e){
@@ -272,7 +272,7 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 	    	        	result.addRestMessage(this.getValidationFailedError());
 	    	        }else{
 	    	        	UserCommentDao.getInstance().save(model.getData());
-	    	        	URI location = builder.path("v1/comments/{xid}").buildAndExpand(model.getXid()).toUri();
+	    	        	URI location = builder.path("/comments/{xid}").buildAndExpand(model.getXid()).toUri();
 	    		    	result.addRestMessage(getResourceUpdatedMessage(location));
 	    	        }
 		        	return result.createResponseEntity(model);
