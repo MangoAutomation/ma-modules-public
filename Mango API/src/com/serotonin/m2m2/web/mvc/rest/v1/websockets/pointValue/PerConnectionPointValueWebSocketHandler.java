@@ -6,7 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.websockets.pointValue;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 
-import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
+import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
 
 /**
  * @author Jared Wiltshire

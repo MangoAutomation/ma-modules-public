@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
-import com.serotonin.m2m2.web.mvc.spring.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**

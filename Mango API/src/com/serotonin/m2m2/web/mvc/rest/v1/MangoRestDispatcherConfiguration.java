@@ -36,16 +36,15 @@ import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.AbstractRestModelConverter;
 import com.serotonin.m2m2.web.MediaTypes;
+import com.serotonin.m2m2.web.mvc.rest.v1.converter.CsvMessageConverter;
+import com.serotonin.m2m2.web.mvc.rest.v1.converter.CsvQueryArrayStreamMessageConverter;
+import com.serotonin.m2m2.web.mvc.rest.v1.converter.CsvRowMessageConverter;
 import com.serotonin.m2m2.web.mvc.rest.v1.converter.ExceptionCsvMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converters.CsvMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converters.CsvQueryArrayStreamMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converters.CsvRowMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converters.HtmlHttpMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converters.SerotoninJsonMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converters.SqlMessageConverter;
+import com.serotonin.m2m2.web.mvc.rest.v1.converter.HtmlHttpMessageConverter;
+import com.serotonin.m2m2.web.mvc.rest.v1.converter.SerotoninJsonMessageConverter;
+import com.serotonin.m2m2.web.mvc.rest.v1.converter.SqlMessageConverter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.spring.MangoCommonConfiguration;
-import com.serotonin.m2m2.web.mvc.spring.MangoWebSocketConfiguration;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
 
 /**

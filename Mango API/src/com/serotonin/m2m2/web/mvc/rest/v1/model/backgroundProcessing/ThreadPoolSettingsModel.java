@@ -7,9 +7,8 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.backgroundProcessing;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -20,7 +19,6 @@ public class ThreadPoolSettingsModel {
 
 	@ApiModelProperty(value = "Messages for validation of data", required = false)
 	@JsonProperty("validationMessages")
-	@JsonView(JsonViews.Validation.class) //Only show in validation views (NOT WORKING YET)
 	private List<RestValidationMessage> messages;
 	
 	@JsonProperty

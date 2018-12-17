@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -22,7 +21,6 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
-import com.serotonin.m2m2.web.mvc.rest.v1.mapping.JsonViews;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
@@ -39,10 +37,8 @@ import io.swagger.annotations.ApiModelProperty;
 @JsonPropertyOrder({ "username", "email" })
 public class UserModel extends AbstractRestModel<User> {
 
-    //TODO Make the JSON Views work, it currently does nothing
     @ApiModelProperty(value = "Messages for validation of data", required = false)
     @JsonProperty("validationMessages")
-    @JsonView(JsonViews.Validation.class) //Only show in validation views (NOT WORKING YET)
     private List<RestValidationMessage> messages;
 
     // By default, any passwords set via the REST API are just plain text
