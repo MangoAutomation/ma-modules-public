@@ -15,10 +15,6 @@ import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationTypeEnum;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
 
 /**
  *

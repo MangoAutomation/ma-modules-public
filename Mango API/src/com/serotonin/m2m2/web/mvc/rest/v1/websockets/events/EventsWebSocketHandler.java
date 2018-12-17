@@ -21,8 +21,8 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventEventTypeEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventRegistrationModel;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketErrorType;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketHandler;
 
 /**
  * @author Terry Packer

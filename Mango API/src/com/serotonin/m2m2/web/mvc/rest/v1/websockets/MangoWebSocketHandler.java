@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
 import java.io.IOException;
 
@@ -57,7 +57,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected ObjectMapper jacksonMapper;
 
     @Autowired
-    @Qualifier("mangoWebSocketSessionTrackerV2")
+    @Qualifier("mangoWebSocketSessionTracker")
     protected MangoWebSocketSessionTracker sessionTracker;
 
     public MangoWebSocketHandler() {

@@ -12,7 +12,6 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
  * @author Terry Packer

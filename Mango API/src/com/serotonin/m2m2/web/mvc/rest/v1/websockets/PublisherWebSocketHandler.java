@@ -11,7 +11,6 @@ import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
 
 /**
  * @author Terry Packer

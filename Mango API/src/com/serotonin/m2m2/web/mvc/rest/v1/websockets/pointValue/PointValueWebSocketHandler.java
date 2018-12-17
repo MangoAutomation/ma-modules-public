@@ -26,9 +26,9 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketErrorType;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.WebSocketSendException;
 import com.serotonin.m2m2.web.taglib.Functions;
 
 /**

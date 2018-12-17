@@ -13,7 +13,7 @@ import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportCommon;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.DaoNotificationWebSocketHandler;
 
 /**
  * @author Terry Packer

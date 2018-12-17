@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -36,7 +36,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.authentication.JwtAuthenticati
  *
  * @author Jared Wiltshire
  */
-@Service("mangoWebSocketSessionTrackerV2")
+@Service
 public final class MangoWebSocketSessionTracker {
 
     public final static CloseStatus SESSION_DESTROYED = new CloseStatus(4101, "Session destroyed");

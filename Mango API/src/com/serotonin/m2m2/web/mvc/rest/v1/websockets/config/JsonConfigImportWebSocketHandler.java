@@ -14,10 +14,10 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketErrorType;
-import com.serotonin.m2m2.web.mvc.websocket.MangoWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.MultiSessionWebSocketHandler;
-import com.serotonin.m2m2.web.mvc.websocket.WebSocketSendException;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketErrorType;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MultiSessionWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.WebSocketSendException;
 
 @Component
 @WebSocketMapping("/websocket/json-import")

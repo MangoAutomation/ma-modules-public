@@ -16,7 +16,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListModel;
-import com.serotonin.m2m2.web.mvc.websocket.DaoNotificationWebSocketHandler;
+import com.serotonin.m2m2.web.mvc.rest.v1.websockets.DaoNotificationWebSocketHandler;
 
 /**
  * @author Terry Packer
