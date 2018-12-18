@@ -26,8 +26,8 @@ public abstract class MultiSessionWebSocketHandler extends MangoWebSocketHandler
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        super.afterConnectionEstablished(session);
         sessions.add(session);
+        super.afterConnectionEstablished(session);
     }
 
     @Override

@@ -32,7 +32,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
  */
 @Configuration
 @EnableWebSocket
-@ComponentScan(basePackages = {"com.serotonin.m2m2.web.mvc.websocket"})
+@ComponentScan(basePackages = {"com.serotonin.m2m2.web.mvc.rest.v1.websockets"})
 public class MangoWebSocketConfiguration implements WebSocketConfigurer {
 
     @Autowired
