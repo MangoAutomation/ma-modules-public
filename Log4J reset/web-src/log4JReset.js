@@ -1,8 +1,33 @@
 import angular from 'angular';
+import log4JResetComponent from './components/log4JReset';
 
 const log4JReset = angular.module('maLog4JReset', [])
+    .component('maLog4jReset', log4JResetComponent)
     .config(['maUiMenuProvider', function(maUiMenuProvider) {
         maUiMenuProvider.registerMenuItems([
+            {
+                name: 'ui.settings.system.log4JReset',
+                url: '/log4j-reset',
+                template: '<ma-log4j-reset></ma-log4j-reset>',
+                menuTr: 'log4JReset.settings.header',
+                menuIcon: 'list',
+                permission: 'superadmin',
+                params: {
+                    noPadding: false,
+                    hideFooter: false,
+                    helpPage: 'ui.help.log4JReset'
+                },
+            },
+            {
+                name: 'ui.help.log4JReset',
+                url: '/log4j-reset/help',
+                resolve: {
+                    viewTemplate: function() {
+                        return import(/* webpackMode: "eager" */ './help/helpPage.html');
+                    }
+                },
+                menuTr: 'log4JReset.settings.header'
+            }
         ]);
     }]);
  
