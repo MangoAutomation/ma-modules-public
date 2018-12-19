@@ -1,9 +1,11 @@
 import angular from 'angular';
 import './log4JReset.css';
 import log4JResetComponent from './components/log4JReset';
+import log4JResetFactory from './services/log4JReset';
 
 const log4JReset = angular.module('maLog4JReset', [])
     .component('maLog4jReset', log4JResetComponent)
+    .factory('maLog4JReset', log4JResetFactory)
     .config(['maUiMenuProvider', function(maUiMenuProvider) {
         maUiMenuProvider.registerMenuItems([
             {
