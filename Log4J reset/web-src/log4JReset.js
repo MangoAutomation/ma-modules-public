@@ -1,4 +1,5 @@
 import angular from 'angular';
+import './log4JReset.css';
 import log4JResetComponent from './components/log4JReset';
 
 const log4JReset = angular.module('maLog4JReset', [])

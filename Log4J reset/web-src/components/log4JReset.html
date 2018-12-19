@@ -1,1 +1,30 @@
-<h1>Log4JReset</h1>
+<div layout="row" layout-align="center top" layout-wrap>
+    <md-input-container flex="100" flex-gt-sm="45" class="ma-input-space-between">
+        <label ma-tr="log4JReset.settings.test.select"></label>
+        <md-select name="portType" ng-model="$ctrl.log4JReset.action" required>
+            <md-option value="TEST_DEBUG" ma-tr="log4JReset.settings.test.debug"></md-option>
+            <md-option value="TEST_INFO" ma-tr="log4JReset.settings.test.info"></md-option>
+            <md-option value="TEST_WARN" ma-tr="log4JReset.settings.test.warn"></md-option>
+            <md-option value="TEST_ERROR" ma-tr="log4JReset.settings.test.error"></md-option>
+            <md-option value="TEST_FATAL" ma-tr="log4JReset.settings.test.fatal"></md-option>
+        </md-select>
+        <div ng-messages="$ctrl.log4JReset.action">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+        </div>
+    </md-input-container> 
+    <div class="py-10">
+        <md-button class="md-raised md-primary" ng-click="$ctrl.test($event)">
+            <md-icon>offline_pin</md-icon> <span ma-tr="common.test"></span>
+        </md-button>
+    </div>
+</div>
+
+
+<div layout="row" layout-align="center top" layout-wrap>
+    <md-button class="md-raised md-primary" ng-click="$ctrl.test($event)">
+        <md-icon>refresh</md-icon> <span ma-tr="log4JReset.settings.header"></span>
+    </md-button> 
+    <md-button class="md-raised md-primary" ng-click="$ctrl.test($event)">
+        <md-icon>list</md-icon> <span ma-tr="log4JReset.settings.checkLogs"></span>
+    </md-button>       
+</div>
