@@ -24,12 +24,12 @@ class log4JResetController {
     }
 
     test() {
-
         let actionData = angular.copy(this.log4JReset);
         
-        return actionData.start(this.$scope).then(
+        return actionData.start().then(
             resource => {
                 this.resource = resource;
+                console.log('resource: ', resource);
                 
                 if (this.resource.finished) {
                     this.maDialogHelper.toastOptions({
@@ -38,7 +38,6 @@ class log4JResetController {
                     }); 
                 }
             }, error => {
-               console.log(error); 
                 if (error.status === 422) {
                     this.validationMessages = error.data.result.messages;
                 }
@@ -49,10 +48,24 @@ class log4JResetController {
                     hideDelay: 5000
                 });
 
+            }, progress => {
+                
+                this.resource = progress;
+                this.warnings = this.resource.result.warnings;
+                console.log('Progress: ', progress);
+
             }).finally(() => {
                 delete this.resource;
             }
         );
+    }
+
+    reset() {
+        let actionData = angular.copy(this.log4JReset);
+
+        return actionData.reset().then(response => {
+            console.log(response);
+        });
     }
 
 }

@@ -3,8 +3,8 @@
  * @author Luis Güette
  */
 
-Log4JResetFactory.$inject = ['maRestResource'];
-function Log4JResetFactory(RestResource) {
+Log4JResetFactory.$inject = ['maTemporaryRestResource'];
+function Log4JResetFactory(TemporaryRestResource) {
     
     const baseUrl = '/rest/v2/actions';
     const xidPrefix = 'LOG4JRST_';
@@ -13,8 +13,7 @@ function Log4JResetFactory(RestResource) {
         action: 'TEST_DEBUG'
     };
 
-
-    class Log4JResetResource extends RestResource {
+    class Log4JResetResource extends TemporaryRestResource {
 
         constructor(properties) {
             super(constructor);
@@ -32,20 +31,6 @@ function Log4JResetFactory(RestResource) {
             return xidPrefix;
         }
 
-        start(opts = {}) {
-            let url, method;
-            url = `${baseUrl}/trigger/log4JUtil`;
-            method = 'PUT';
-            
-            return this.constructor.http({
-                url,
-                method,
-                data: this,
-            }, opts).then(response => {
-                return response.data;
-            });
-        }
-
         getStatus(resourceId) {
             let url, method;
             url = `${baseUrl}/status/${resourceId}`;
@@ -56,25 +41,22 @@ function Log4JResetFactory(RestResource) {
                 method,
                 data: this,
             }).then(response => {
-                console.log(response);
                 return this;
             });
         }
 
-        static getSubscription() {
-            const subscription = {
-                sequenceNumber: 0,
-                messageType: 'REQUEST',
-                requestType: 'SUBSCRIPTION',
-                showResultWhenIncomplete: true,
-                showResultWhenComplete: true,
-                anyStatus: true,
-                resourceTypes: []
-            };
-            if (this.resourceType) {
-                subscription.resourceTypes.push(this.resourceType);
-            }
-            return subscription;
+        save() {
+            let url, method;
+            url = `${baseUrl}/trigger/log4JUtil`;
+            method = 'PUT';
+            
+            return this.constructor.http({
+                url,
+                method,
+                data: this,
+            }).then(response => {
+                return this;
+            });
         }
 
         cancel(opts = {}) {
