@@ -77,7 +77,7 @@ public class Log4JResetActionDefinition extends SystemActionDefinition{
 				result.addContextualMessage("action", "validate.invalidValue");
 			}
 		}
-		result.ensureValid();;
+		result.ensureValid();
 	}
 	
 	/**
