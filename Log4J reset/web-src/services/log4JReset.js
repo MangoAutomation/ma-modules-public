@@ -59,6 +59,12 @@ function Log4JResetFactory(TemporaryRestResource) {
             });
         }
 
+        reset() {
+            this.action = 'RESET';
+
+            return this.start();
+        }
+
         cancel(opts = {}) {
             const originalId = this.getOriginalId();
             
