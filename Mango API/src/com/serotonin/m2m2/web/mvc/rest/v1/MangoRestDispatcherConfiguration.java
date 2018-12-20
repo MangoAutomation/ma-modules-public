@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -58,11 +57,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 @Import({MangoCommonConfiguration.class, MangoMethodSecurityConfiguration.class,
         MangoWebSocketConfiguration.class})
 @EnableWebMvc
-@ComponentScan(
-        basePackages = {"com.serotonin.m2m2.web.mvc.rest", "com.infiniteautomation.mango.rest.v1"},
-        excludeFilters = {@ComponentScan.Filter(
-                pattern = "com\\.serotonin\\.m2m2\\.web\\.mvc\\.rest\\.swagger.*",
-                type = FilterType.REGEX)})
+@ComponentScan(basePackages = {"com.serotonin.m2m2.web.mvc.rest", "com.infiniteautomation.mango.rest.v1"})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     @Autowired
