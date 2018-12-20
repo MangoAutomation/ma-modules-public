@@ -3,10 +3,10 @@
  * @author Luis Güette
  */
 
-Log4JResetFactory.$inject = ['maRestResource', '$http', 'maTemporaryRestResource'];
-function Log4JResetFactory(RestResource, $http, TemporaryRestResource) {
+Log4JResetFactory.$inject = ['maRestResource'];
+function Log4JResetFactory(RestResource) {
     
-    const baseUrl = '/rest/v2/actions/trigger/log4JUtil';
+    const baseUrl = '/rest/v2/actions';
     const xidPrefix = 'LOG4JRST_';
 
     const defaultProperties = {
@@ -14,7 +14,12 @@ function Log4JResetFactory(RestResource, $http, TemporaryRestResource) {
     };
 
 
-    class Log4JResetResource extends TemporaryRestResource {
+    class Log4JResetResource extends RestResource {
+
+        constructor(properties) {
+            super(constructor);
+        }
+
         static get defaultProperties() {
             return defaultProperties;
         }
@@ -27,6 +32,35 @@ function Log4JResetFactory(RestResource, $http, TemporaryRestResource) {
             return xidPrefix;
         }
 
+        start(opts = {}) {
+            let url, method;
+            url = `${baseUrl}/trigger/log4JUtil`;
+            method = 'PUT';
+            
+            return this.constructor.http({
+                url,
+                method,
+                data: this,
+            }, opts).then(response => {
+                return response.data;
+            });
+        }
+
+        getStatus(resourceId) {
+            let url, method;
+            url = `${baseUrl}/status/${resourceId}`;
+            method = 'GET';
+            
+            return this.constructor.http({
+                url,
+                method,
+                data: this,
+            }).then(response => {
+                console.log(response);
+                return this;
+            });
+        }
+
         static getSubscription() {
             const subscription = {
                 sequenceNumber: 0,
@@ -35,7 +69,7 @@ function Log4JResetFactory(RestResource, $http, TemporaryRestResource) {
                 showResultWhenIncomplete: true,
                 showResultWhenComplete: true,
                 anyStatus: true,
-                resourceTypes: ['NO_SQL_DATA_TRANSFER']
+                resourceTypes: []
             };
             if (this.resourceType) {
                 subscription.resourceTypes.push(this.resourceType);
