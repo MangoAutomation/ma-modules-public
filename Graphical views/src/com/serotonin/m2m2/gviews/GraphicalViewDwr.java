@@ -123,6 +123,7 @@ public class GraphicalViewDwr extends ModuleDwr {
                 CompoundComponent compoundComponent = (CompoundComponent) viewComponent;
 
                 boolean imageChart = compoundComponent instanceof ImageChartComponent;
+                model.put("sessionUser", user);
 
                 // Add states for each of the children
                 for (CompoundChild child : compoundComponent.getChildComponents())
@@ -134,6 +135,7 @@ public class GraphicalViewDwr extends ModuleDwr {
                 state.setId(compoundComponent.getId());
 
                 model.clear();
+                model.put("sessionUser", user);
                 model.put("compoundComponent", compoundComponent);
 
                 List<Map<String, Object>> childData = new ArrayList<Map<String, Object>>();
