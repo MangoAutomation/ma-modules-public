@@ -25,12 +25,12 @@ import io.swagger.annotations.ApiOperation;
  */
 @Api(value="System Actions Status")
 @RestController
-public class SystemActionRestController {
+public class SystemActionsRestController {
 
     private final SystemActionTemporaryResourceManager manager;
 
     @Autowired
-    public SystemActionRestController(SystemActionTemporaryResourceManager manager){
+    public SystemActionsRestController(SystemActionTemporaryResourceManager manager){
         this.manager = manager;
     }
     
