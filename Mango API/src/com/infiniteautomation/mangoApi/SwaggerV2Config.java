@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mangoApi;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.fasterxml.classmate.TypeResolver;
-import com.serotonin.m2m2.web.mvc.rest.swagger.MangoRestSwaggerResourceProvider;
+import com.infiniteautomation.mango.rest.swagger.MangoRestSwaggerResourceProvider;
 
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -41,13 +41,13 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 @Configuration
 @EnableSwagger2
-public class SwaggerConfig {
+public class SwaggerV2Config {
     private final String SECURITY_TOKEN_REFERENCE = "Mango Token";
     
     private final TypeResolver typeResolver;
     
     @Autowired
-    public SwaggerConfig(TypeResolver typeResolver, MangoRestSwaggerResourceProvider resourceProvider) {
+    public SwaggerV2Config(TypeResolver typeResolver, MangoRestSwaggerResourceProvider resourceProvider) {
         this.typeResolver = typeResolver;
         
         SwaggerResource v2 = new SwaggerResource();

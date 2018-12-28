@@ -12,7 +12,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ApplicationContextDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.MangoRestDispatcherConfiguration;
-import com.serotonin.m2m2.web.mvc.rest.v1.SwaggerConfig;
 
 
 /**
@@ -37,7 +36,7 @@ public class MangoApiV1ApplicationContextDefinition extends ApplicationContextDe
 
         boolean enableSwagger = Common.envProps.getBoolean("swagger.enabled", false);
         if(enableSwagger)
-            restDispatcherContext.register(SwaggerConfig.class);
+            restDispatcherContext.register(SwaggerV1Config.class);
         
     }
 

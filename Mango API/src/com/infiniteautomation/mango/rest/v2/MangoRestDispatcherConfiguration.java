@@ -63,7 +63,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 @Configuration("MangoV2RestDispatcherConfiguration")
 @Import({MangoCommonConfiguration.class, MangoMethodSecurityConfiguration.class, MangoWebSocketConfiguration.class})
 @EnableWebMvc
-@ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.v2" })
+@ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.v2" }, excludeFilters = {})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     
 

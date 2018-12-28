@@ -10,7 +10,6 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 
 import com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration;
-import com.infiniteautomation.mango.rest.v2.SwaggerConfig;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ApplicationContextDefinition;
 
@@ -37,7 +36,7 @@ public class MangoApiV2ApplicationContextDefinition extends ApplicationContextDe
         
         boolean enableSwagger = Common.envProps.getBoolean("swagger.enabled", false);
         if(enableSwagger)
-            restDispatcherContext.register(SwaggerConfig.class);
+            restDispatcherContext.register(SwaggerV2Config.class);
 
     }
 
