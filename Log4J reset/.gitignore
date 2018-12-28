@@ -2,3 +2,4 @@
 /bin
 *~
 /maven-target
+/config.json

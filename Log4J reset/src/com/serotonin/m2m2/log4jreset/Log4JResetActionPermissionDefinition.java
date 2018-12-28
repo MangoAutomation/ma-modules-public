@@ -12,7 +12,7 @@ import com.serotonin.m2m2.module.PermissionDefinition;
  * 
  * @author Terry Packer
  */
-public class Log4JResetActionPermissionDefinition extends PermissionDefinition{
+public class Log4JResetActionPermissionDefinition extends PermissionDefinition {
 
 	public static final String PERMISSION = "action.log4jUtil";
 
