@@ -43,6 +43,8 @@ import io.swagger.annotations.ApiResponses;
  * 
  * @author Terry Packer
  */
+/* See SystemActionsRestController */
+@Deprecated 
 @Api(value="System Actions", description="Ask Mango to perform a pre-defined action.  Admin Only.")
 @PreAuthorize("isAdmin()")
 @RestController

@@ -4,12 +4,15 @@
 package com.infiniteautomation.mangoApi;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -45,7 +48,8 @@ public class SwaggerV1Config {
     private final String SECURITY_TOKEN_REFERENCE = "Mango Token";
     
     private final TypeResolver typeResolver;
-    
+    private final Set<String> defaultMediaTypes = new HashSet<>(Arrays.asList(MediaType.APPLICATION_JSON_UTF8_VALUE));
+
     @Autowired
     public SwaggerV1Config(TypeResolver typeResolver, MangoRestSwaggerResourceProvider resourceProvider) {
         this.typeResolver = typeResolver;
@@ -66,9 +70,11 @@ public class SwaggerV1Config {
                 .securitySchemes(Arrays.asList(new ApiKey(SECURITY_TOKEN_REFERENCE,
                         HttpHeaders.AUTHORIZATION, In.HEADER.name())))
                 .securityContexts(Arrays.asList(securityContext()))
+                .produces(defaultMediaTypes)
+                .consumes(defaultMediaTypes)
                 //.pathProvider(new BasePathAwareRelativePathProvider("/rest"))
                 .genericModelSubstitutes(ResponseEntity.class);
-
+                
         docket.alternateTypeRules(
                 new AlternateTypeRule(
                         typeResolver.resolve(DeferredResult.class,
