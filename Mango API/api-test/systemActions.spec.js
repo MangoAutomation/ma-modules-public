@@ -154,25 +154,6 @@ describe('System Action Endpoints', function() {
       });
     });
 
-    it('Kick off log4J Reset action', () => {
-
-      return client.restRequest({
-          path: '/rest/v2/actions/trigger/log4JUtil',
-          method: 'PUT',
-          data: {action: 'RESET'}
-      }).then(response => {
-
-        return delay(3000).then(() => {
-          return client.restRequest({
-            path: response.headers.location,
-            method: 'GET'
-          }).then(response => {
-            assert.equal(response.data.results.finished, true);
-          });
-        });
-      });
-    });
-
     it('Kick off reportPurge action', () => {
 
       return client.restRequest({
