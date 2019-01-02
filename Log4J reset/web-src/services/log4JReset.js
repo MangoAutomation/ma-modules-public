@@ -6,7 +6,7 @@
 Log4JResetFactory.$inject = ['maTemporaryRestResource'];
 function Log4JResetFactory(TemporaryRestResource) {
     
-    const baseUrl = '/rest/v2/actions';
+    const baseUrl = '/rest/v2/system-actions/log4JUtil';
     const xidPrefix = 'LOG4JRST_';
 
     const defaultProperties = {
@@ -31,6 +31,21 @@ function Log4JResetFactory(TemporaryRestResource) {
             return xidPrefix;
         }
 
+        static getSubscription() {
+            const subscription = {
+                requestType: 'SUBSCRIPTION',
+                messageType: 'REQUEST',
+                showResultWhenIncomplete: true,
+                showResultWhenComplete: true,
+                anyStatus: true,
+                resourceTypes: ['log4JUtil']
+            };
+            if (this.resourceType) {
+                subscription.resourceTypes.push(this.resourceType);
+            }
+            return subscription;
+        }
+
         getStatus(resourceId) {
             let url, method;
             url = `${baseUrl}/status/${resourceId}`;
@@ -39,25 +54,40 @@ function Log4JResetFactory(TemporaryRestResource) {
             return this.constructor.http({
                 url,
                 method,
-                data: this,
             }).then(response => {
                 return this;
             });
         }
 
-        save() {
-            let url, method;
-            url = `${baseUrl}/trigger/log4JUtil`;
-            method = 'PUT';
-            
+        get() {
+            let url = `/rest/v2/system-actions/status/${this.id}`;
+            let method = 'GET';
+
             return this.constructor.http({
                 url,
-                method,
-                data: this,
+                method
             }).then(response => {
-                return this;
-            });
+                console.log(response);
+            }); 
         }
+
+        // save(opts = {}) {
+        //     let url, method;
+        //     url = `${baseUrl}/log4JUtil`;
+        //     method = 'POST';
+            
+        //     return this.constructor.http({
+        //         url,
+        //         method,
+        //         data: this,
+        //     }).then(response => {
+        //         console.log(response);
+        //         this.itemUpdated(response.data, opts.responseType);
+        //         this.initialize('create');
+        //         this.constructor.notify('create', this, this.xid);
+        //         return this;
+        //     });
+        // }
 
         reset() {
             this.action = 'RESET';
