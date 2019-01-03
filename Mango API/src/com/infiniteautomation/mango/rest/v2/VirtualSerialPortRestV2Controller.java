@@ -21,14 +21,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.TypedResultWithTotal;
+import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * 
@@ -41,14 +46,35 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(
-			value = "List all Virtual Serial Ports",
+			value = "Query all Virtual Serial Ports",
 			notes = "Admin Only"
 			)
 	@RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<VirtualSerialPortConfig>> list(HttpServletRequest request) {
-		return new ResponseEntity<>(VirtualSerialPortConfigDao.getInstance().getAll(), HttpStatus.OK);
-	}
+    public TypedResultWithTotal<VirtualSerialPortConfig> query(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
 	
+	    ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+        RQLToPagedObjectListQuery<VirtualSerialPortConfig> filter = new RQLToPagedObjectListQuery<>();
+	    List<VirtualSerialPortConfig> all = VirtualSerialPortConfigDao.getInstance().getAll();
+        
+	    List<VirtualSerialPortConfig> results = query.accept(filter, all);
+	    
+	    return new TypedResultWithTotal<VirtualSerialPortConfig>() {
+
+            @Override
+            public List<VirtualSerialPortConfig> getItems() {
+                return results;
+            }
+
+            @Override
+            public int getTotal() {
+                return filter.getUnlimitedSize();
+            }
+
+        };
+	}
+
 	@PreAuthorize("isAdmin()")
 	@ApiOperation(
 			value = "Get Virtual Serial Port by XID",
