@@ -3,8 +3,8 @@
  * @author Luis Güette
  */
 
-Log4JResetFactory.$inject = ['maTemporaryRestResource'];
-function Log4JResetFactory(TemporaryRestResource) {
+Log4JResetFactory.$inject = ['maTemporaryRestResource', '$http'];
+function Log4JResetFactory(TemporaryRestResource, $http) {
     
     const baseUrl = '/rest/v2/system-actions/log4JUtil';
     const xidPrefix = 'LOG4JRST_';
@@ -14,10 +14,6 @@ function Log4JResetFactory(TemporaryRestResource) {
     };
 
     class Log4JResetResource extends TemporaryRestResource {
-
-        constructor(properties) {
-            super(constructor);
-        }
 
         static get defaultProperties() {
             return defaultProperties;
@@ -33,6 +29,7 @@ function Log4JResetFactory(TemporaryRestResource) {
 
         static getSubscription() {
             const subscription = {
+                sequenceNumber: 0,
                 requestType: 'SUBSCRIPTION',
                 messageType: 'REQUEST',
                 showResultWhenIncomplete: true,
@@ -46,15 +43,20 @@ function Log4JResetFactory(TemporaryRestResource) {
             return subscription;
         }
 
-        getStatus(resourceId) {
+        test() {
             let url, method;
-            url = `${baseUrl}/status/${resourceId}`;
-            method = 'GET';
+            url = `${baseUrl}`;
+            method = 'POST';
             
-            return this.constructor.http({
+            return $http({
                 url,
                 method,
+                data: this
             }).then(response => {
+                this.itemUpdated(response.data, null);
+                if (this.constructor.notifyUpdateOnGet) {
+                    this.constructor.notify('update', this, this.originalId);
+                }
                 return this;
             });
         }
@@ -63,31 +65,17 @@ function Log4JResetFactory(TemporaryRestResource) {
             let url = `/rest/v2/system-actions/status/${this.id}`;
             let method = 'GET';
 
-            return this.constructor.http({
+            return $http({
                 url,
                 method
             }).then(response => {
-                console.log(response);
+                this.itemUpdated(response.data, null);
+                if (this.constructor.notifyUpdateOnGet) {
+                    this.constructor.notify('update', this, this.originalId);
+                }
+                return this;
             }); 
         }
-
-        // save(opts = {}) {
-        //     let url, method;
-        //     url = `${baseUrl}/log4JUtil`;
-        //     method = 'POST';
-            
-        //     return this.constructor.http({
-        //         url,
-        //         method,
-        //         data: this,
-        //     }).then(response => {
-        //         console.log(response);
-        //         this.itemUpdated(response.data, opts.responseType);
-        //         this.initialize('create');
-        //         this.constructor.notify('create', this, this.xid);
-        //         return this;
-        //     });
-        // }
 
         reset() {
             this.action = 'RESET';
@@ -98,7 +86,7 @@ function Log4JResetFactory(TemporaryRestResource) {
         cancel(opts = {}) {
             const originalId = this.getOriginalId();
             
-            return this.constructor.http({
+            return $http({
                 url: baseUrl + '/status/' + angular.$$encodeUriSegment(originalId),
                 method: 'DELETE',
                 data: {

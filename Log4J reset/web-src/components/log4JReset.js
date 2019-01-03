@@ -26,14 +26,35 @@ class log4JResetController {
     test() {
         let actionData = angular.copy(this.log4JReset);
         
-        return actionData.start().then(
+        return actionData.test().then(
+            resource => {
+                if (resource.status === 'SUCCESS') {
+                    this.maDialogHelper.toastOptions({
+                        text: resource.result.logOutput,
+                        hideDelay: 5000
+                    }); 
+                } else {
+                    actionData.get().then(resource => {
+                        this.maDialogHelper.toastOptions({
+                            text: resource.result.logOutput,
+                            hideDelay: 5000
+                        });
+                    });
+                }
+            }
+        );
+    }
+
+    reset() {
+        let actionData = angular.copy(this.log4JReset);
+
+        return actionData.reset().then(
             resource => {
                 this.resource = resource;
-                console.log('resource: ', resource);
                 
-                if (this.resource.finished) {
+                if (this.resource.status === 'SUCCESS') {
                     this.maDialogHelper.toastOptions({
-                        textTr: ['log4JReset.settings.testFinished'],
+                        text: this.resource.result.logOutput,
                         hideDelay: 5000
                     }); 
                 }
@@ -49,23 +70,15 @@ class log4JResetController {
                 });
 
             }, progress => {
-                
                 this.resource = progress;
-                this.warnings = this.resource.result.warnings;
-                console.log('Progress: ', progress);
-
+                this.maDialogHelper.toastOptions({
+                    text: this.resource.result.logOutput,
+                    hideDelay: 5000
+                }); 
             }).finally(() => {
                 delete this.resource;
             }
         );
-    }
-
-    reset() {
-        let actionData = angular.copy(this.log4JReset);
-
-        return actionData.reset().then(response => {
-            console.log(response);
-        });
     }
 
 }
