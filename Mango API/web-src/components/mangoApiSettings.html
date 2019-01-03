@@ -1,0 +1,22 @@
+<h2 ma-tr="rest.settings.corsHeaders"></h2>
+
+<div layout="row">
+    <div flex="50">
+        <md-table-container>
+            <table md-table>
+                <thead md-head>
+                    <tr md-row>
+                        <th md-column ma-tr="rest.settings.header"></th>
+                        <th md-column ma-tr="common.value"></th>
+                    </tr>
+                </thead>
+                <tbody md-body>
+                    <tr md-row ng-repeat="(header, value) in $ctrl.apiSettings.headers">
+                        <td md-cell>{{ header }}</td>
+                        <td md-cell>{{ value }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </md-table-container>
+    </div>
+</div>

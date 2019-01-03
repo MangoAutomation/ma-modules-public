@@ -4,40 +4,40 @@
  */
 
 import angular from 'angular';
-import mangoApi from './components/mangoApi';
+import mangoApiSettings from './components/mangoApiSettings';
+import mangoApiSettingsFactory from './services/mangoApiSettings';
 
 const mangoApiModule = angular.module('maApi', [])
-.component(mangoApi, 'maApi')
+.component('maApiSettings', mangoApiSettings)
+.factory('maApiSettings', mangoApiSettingsFactory)
 .config(['maUiMenuProvider', 'maSystemSettingsProvider', function(maUiMenuProvider, SystemSettingsProvider) {
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.settings.mangoApi',
-            url: '/mango-api',
-            template: '<ma-api></ma-api>',
-            menuTr: 'mangoNoSql.settings.header',
+            name: 'ui.settings.mangoApiSettings',
+            url: '/mango-api-settings',
+            template: '<ma-api-settings></ma-api-settings>',
+            menuTr: 'rest.settings.title',
             menuIcon: 'storage',
             permission: 'superadmin',
             weight: 2000,
             params: {
                 noPadding: false,
                 hideFooter: false,
-                helpPage: 'ui.help.mangoApi'
+                helpPage: 'ui.help.mangoApiSettings'
             },
         },
         {
-            name: 'ui.help.mangoApi',
-            url: '/mango-api/help',
+            name: 'ui.help.mangoApiSettings',
+            url: '/mango-api-settings/help',
             resolve: {
                 viewTemplate: function() {
                     return import(/* webpackMode: "eager" */ './help/helpPage.html');
                 }
             },
-            menuTr: 'mangoNoSql.settings.header'
+            menuTr: 'rest.settings.title'
         },
     ]);
 
 }]);
  
-
-
 export default mangoApiModule;
