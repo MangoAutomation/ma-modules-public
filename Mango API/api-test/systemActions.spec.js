@@ -33,7 +33,6 @@ describe('System Action Endpoints', function() {
           'backupConfiguration',
           'sqlBackup',
           'sqlRestore',
-          'log4JUtil',
           'reportPurge',
           'excelReportPurgeUsingSettings',
           'excelReportPurgeAll',

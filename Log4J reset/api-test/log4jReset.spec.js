@@ -16,8 +16,6 @@
  */
 
 const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
-const path = require('path');
 
 describe('Log4J Utilities', function() {
     before('Login', config.login);
@@ -35,12 +33,10 @@ describe('Log4J Utilities', function() {
             anyStatus: true,
             resourceTypes: ['log4JUtil']
         };
-        
+        const testData = {id: ''};
         const socketOpenDeferred = config.defer();
         const subscribeDeferred = config.defer();
-        const finishedBackupDeferred = config.defer();
-        
-        const testId = uuidV4();
+        const actionFinishedDeferred = config.defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -54,13 +50,13 @@ describe('Log4J Utilities', function() {
             ws.on('error', error => {
                 const msg = new Error(`WebSocket error, error: ${error}`);
                 socketOpenDeferred.reject(msg);
-                finishedBackupDeferred.reject(msg);
+                actionFinishedDeferred.reject(msg);
             });
             
             ws.on('close', (code, reason) => {
                 const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
                 socketOpenDeferred.reject(msg);
-                finishedBackupDeferred.reject(msg);
+                actionFinishedDeferred.reject(msg);
             });
 
             ws.on('message', msgStr => {
@@ -71,7 +67,7 @@ describe('Log4J Utilities', function() {
                     subscribeDeferred.resolve();
                 }else{
                     if(msg.payload.status === 'SUCCESS'){
-                        finishedBackupDeferred.resolve();
+                        actionFinishedDeferred.resolve();
                     }
                 }
             });
@@ -95,12 +91,53 @@ describe('Log4J Utilities', function() {
                 data: {
                     action: 'RESET'
                 }
+            }).then(response => {
+                //Keep this id to confirm it finished later
+                testData.id = response.data.id;
+                return client.restRequest({
+                    path: `/rest/v2/system-actions/status/${response.data.id}`,
+                    method: 'GET'
+                }).then(response => {
+                    assert.isNotNull(response.data.startTime);
+                })
             });
-        }).then(() => finishedBackupDeferred.promise).then(() => {
+        }).then(() => actionFinishedDeferred.promise).then(() => {
+            //Close websocket 
             ws.close();
+            //Make a request to get the status
+            return client.restRequest({
+                path: `/rest/v2/system-actions/status/${testData.id}`,
+                method: 'GET'
+            }).then(response => {
+                assert.strictEqual(response.data.status, 'SUCCESS');
+            });
         });
     });
     
-    //TODO Test failures
-    
+    it('Cancel RESET action', function() {
+        return client.restRequest({
+            path: '/rest/v2/system-actions/log4JUtil',
+            method: 'POST',
+            data: {
+                action: 'RESET'
+            }
+        }).then(response => {
+            return client.restRequest({
+                path: `/rest/v2/system-actions/status/${response.data.id}`,
+                method: 'DELETE'
+            }).then(response => {
+                assert.isNotNull(response.data.startTime);
+                assert.isNotNull(response.data.completionTime);
+                //Check its gone
+                return client.restRequest({
+                    path: `/rest/v2/system-actions/status/${response.data.id}`,
+                    method: 'GET'
+                }).then(response => {
+                   assert.fail('should not get result');
+                }, error => {
+                    assert.strictEqual(error.status, 404);
+                });
+            });
+        });
+    });
 });
