@@ -18,6 +18,7 @@ import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -28,6 +29,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
+import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.util.exception.InvalidRQLException;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
@@ -213,6 +215,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             if (body == null)
                 body = new GenericRestException(status, ex);
 
+            //Add admin view if necessary
+            User user = Common.getHttpUser();
+            MappingJacksonValue value = new MappingJacksonValue(body);
+            if(user != null && user.hasAdminPermission())
+                value.setSerializationView(AdminView.class);
+            else
+                value.setSerializationView(Object.class);
+            body = value;
             return new ResponseEntity<Object>(body, headers, status);
         }
     }

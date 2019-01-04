@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -76,6 +78,7 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
             return null;
     }
 
+    @JsonView(AdminView.class)
     @JsonProperty("cause")
     public String getCauseMessage() {
         Throwable cause = this.getCause();
