@@ -43,6 +43,7 @@ import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
@@ -144,8 +145,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
                     emailSender.send(fromAddress, email, content.getSubject(), content);
                 }catch(Exception e) {
                     String debug = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-                    log.warn("Email Session DEBUG Output\n" + debug);
-                    throw e;
+                    throw new SendEmailFailedRestException(e, debug);
                 }
             }
             
