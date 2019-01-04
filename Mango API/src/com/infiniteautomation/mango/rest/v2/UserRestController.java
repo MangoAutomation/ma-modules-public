@@ -5,6 +5,8 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdFiel
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionDetails;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,8 +56,8 @@ public class UserRestController {
     }
     
     @ApiOperation(
-            value = "Query Users",
-            notes = "Use RQL formatted query",
+            value = "Get User by username",
+            notes = "",
             response=UserModel.class,
             responseContainer="List"
             )
@@ -64,6 +67,15 @@ public class UserRestController {
             @PathVariable String username,
             @AuthenticationPrincipal User user) {
         return new UserModel(service.get(username, user));
+    }
+    
+    @ApiOperation(value = "Get current user", 
+            notes = "Returns the logged in user")
+    @RequestMapping(method = RequestMethod.GET, value = "/current")
+    public UserModel getCurrentUser(
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
+        return new UserModel(user);
     }
     
     @ApiOperation(
@@ -154,6 +166,51 @@ public class UserRestController {
             @PathVariable String username,
             @AuthenticationPrincipal User user) {
         return new UserModel(service.delete(username, user));
+    }
+    
+    @ApiOperation(value = "Locks a user's password", notes = "The user with a locked password cannot login using a username and password. " +
+            "However the user's auth tokens will still work and the user can still reset their password using a reset token or email link")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}/lock-password")
+    public void lockPassword(
+            @ApiParam(value = "Username", required = true, allowMultiple = false)
+            @PathVariable String username,
+            @AuthenticationPrincipal User currentUser) {
+
+        currentUser.ensureHasAdminPermission();
+        service.lockPassword(username, currentUser);
+    }
+    
+    @ApiOperation(value = "Get User Permissions Information for all users")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions")
+    public Set<PermissionDetails> getUserPermissions(
+            @AuthenticationPrincipal User user) {
+        return service.getPermissionDetails(null, user);
+    }
+
+    @ApiOperation(value = "Get User Permissions Information for all users, exclude provided groups in query")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions/{query}")
+    public Set<PermissionDetails> getUserPermissions(
+            @ApiParam(value = "Query of permissions to show as already added", required = true, allowMultiple = false)
+            @PathVariable String query,
+            @AuthenticationPrincipal User user) {
+
+        return service.getPermissionDetails(query, user);
+    }
+
+
+    @ApiOperation(value = "Get All User Groups that a user can 'see'")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups")
+    public Set<String> getAllUserGroups(@AuthenticationPrincipal User user) {
+        return service.getUserGroups(null, user);
+    }
+
+    @ApiOperation(value = "Get All User Groups that a user can 'see', Optionally excluding groups")
+    @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups/{exclude}")
+    public Set<String> getAllUserGroups(
+            @ApiParam(value = "Exclude Groups comma separated", required = false, allowMultiple = false, defaultValue="")
+            @PathVariable List<String> exclude,
+            @AuthenticationPrincipal User user) {
+        return service.getUserGroups(exclude, user);
     }
     
     //TODO Below here can be moved into a service class
