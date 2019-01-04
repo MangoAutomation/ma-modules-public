@@ -15,7 +15,20 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
         type: 'VIRTUAL',
         description: 'dsEdit.virtual',
         template: `<ma-virtual-data-source-editor data-source="$ctrl.dataSource"></ma-virtual-data-source-editor>`,
-        polling: true
+        polling: true,
+        defaultPoint: {
+            dataSourceType: 'VIRTUAL',
+            pointLocator: {
+                max: 100.0,
+                min: 0.0,
+                maxChange: 0.1,
+                startValue: '50',
+                modelType: 'PL.VIRTUAL',
+                dataType: 'NUMERIC',
+                settable: true,
+                changeType: 'BROWNIAN'
+            }
+        }
     });
     
     maPointProvider.registerType({
