@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.user;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +25,8 @@ public class UserModel extends AbstractVoModel<User> {
     private String phone;
     private boolean disabled;
     private String homeUrl;
-    private long lastLogin;
+    private Date lastLogin;
+    private Date lastPasswordChange;
     private AlarmLevels receiveAlarmEmails;
     private boolean receiveOwnAuditEvents;
     private String timezone;
@@ -78,9 +80,6 @@ public class UserModel extends AbstractVoModel<User> {
     public void setHomeUrl(String homeUrl) {
         this.homeUrl = homeUrl;
     }
-    public long getLastLogin() {
-        return lastLogin;
-    }
     public AlarmLevels getReceiveAlarmEmails() {
         return receiveAlarmEmails;
     }
@@ -123,6 +122,15 @@ public class UserModel extends AbstractVoModel<User> {
     public void setHashAlgorithm(String hashAlgorithm) {
         this.hashAlgorithm = hashAlgorithm;
     }
+
+    public Date getLastLogin() {
+        return this.lastLogin;
+    }
+
+    public Date getLastPasswordChange() {
+        return this.lastPasswordChange;
+    }
+
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -158,7 +166,8 @@ public class UserModel extends AbstractVoModel<User> {
         this.phone = vo.getPhone();
         this.disabled = vo.isDisabled();
         this.homeUrl = vo.getHomeUrl();
-        this.lastLogin = vo.getLastLogin();
+        this.lastLogin = vo.getLastLogin() == 0 ? null : new Date(vo.getLastLogin());
+        this.lastPasswordChange = new Date(vo.getPasswordChangeTimestamp());
         this.receiveAlarmEmails = vo.getReceiveAlarmEmails();
         this.timezone = vo.getTimezone();
         this.muted = vo.isMuted();

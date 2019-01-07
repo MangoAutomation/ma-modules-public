@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.user;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -307,6 +308,21 @@ public class UserModel extends AbstractRestModel<User> {
             String password = this.password != null ? this.password : "";
             data.setPasswordHash(this.hashAlgorithm, password);
         }
+    }
+
+    public Date getLastLogin() {
+        long lastLogin = data.getLastLogin();
+
+        // 0 means user has never logged in
+        if (lastLogin == 0) {
+            return null;
+        }
+
+        return new Date(lastLogin);
+    }
+
+    public Date getLastPasswordChange() {
+        return new Date(data.getPasswordChangeTimestamp());
     }
 
     public List<RestValidationMessage> getMessages() {
