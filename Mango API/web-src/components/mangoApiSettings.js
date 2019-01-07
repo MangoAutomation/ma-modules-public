@@ -26,7 +26,6 @@ class mangoApiController {
         this.maApiSettings.getCorsSettings()
             .then(corsSettings => {
                this.apiSettings = corsSettings; 
-               console.log(this.apiSettings);
             }
         );
     }
