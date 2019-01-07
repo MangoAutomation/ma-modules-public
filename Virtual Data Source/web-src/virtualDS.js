@@ -16,8 +16,19 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
         description: 'dsEdit.virtual',
         template: `<ma-virtual-data-source-editor data-source="$ctrl.dataSource"></ma-virtual-data-source-editor>`,
         polling: true,
-        defaultPoint: {
-            dataSourceType: 'VIRTUAL',
+        defaultDataSource: {
+            modelType: 'VIRTUAL',
+            polling: true,
+            pollPeriod: {
+                periods: 1,
+                type: 'MINUTES'
+            },
+            alarmLevels: {
+                POLL_ABORTED: 'INFORMATION'
+            }
+        },
+        defaultDataPoint: {
+            dataSourceTypeName: 'VIRTUAL',
             pointLocator: {
                 max: 100.0,
                 min: 0.0,
