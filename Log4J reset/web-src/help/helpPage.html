@@ -1,0 +1,33 @@
+<h1 ma-tr="log4JReset.settings.header"></h1>
+
+<h2></h2>
+<p>
+    The Log4J Reset utility lets administrators reload the log4j2.xml configuration file during runtime.  The general use case is to modify the file to collect 
+    debugging information and then reset the file to its original state to reduce log accumulation.
+</p>
+
+<h2>Log4J Configuration</h2>
+<p>
+    The log4j2.xml configuration file is located in MA_HOME/classes/log4j2.xml, this file is automatically loaded at startup.  However it is recommended to make changes 
+    to a copy of the file place at MA_HOME/overrides/classes/log4j2.xml.  
+    <br>
+    NOTE: If you are using any of the logging startup extension in the bin folder the file that will be reloaded is the file defined in the extension.
+</p>
+<p>
+    Log4J is a highly configurable logging implementation used throughout Mango Automation.  The best source for information about how to configure it is
+    <a href="https://logging.apache.org/log4j/2.x/manual/configuration.html">here</a>.
+</p>
+
+<h2>Examples</h2>
+<p>
+    To change Mango to output all DEBUG level messages:
+</p>
+<p>
+    <pre>
+    <Loggers>
+      ...
+        <AsyncLogger includeLocation="true" name="com.serotonin.m2m2" level="debug"/>
+		<AsyncLogger includeLocation="true" name="com.infiniteautomation" level="debug"/>
+    </Loggers>
+    </pre>
+</p>
