@@ -6,6 +6,7 @@
 import angular from 'angular';
 import mangoApiSettings from './components/mangoApiSettings';
 import mangoApiSettingsFactory from './services/mangoApiSettings';
+import './mangoApi.css';
 
 const mangoApiModule = angular.module('maApi', [])
 .component('maApiSettings', mangoApiSettings)
