@@ -9,11 +9,11 @@ const log4JReset = angular.module('maLog4JReset', [])
     .config(['maUiMenuProvider', function(maUiMenuProvider) {
         maUiMenuProvider.registerMenuItems([
             {
-                name: 'ui.settings.system.log4JReset',
+                name: 'ui.settings.log4JReset',
                 url: '/log4j-reset',
                 template: '<ma-log4j-reset></ma-log4j-reset>',
                 menuTr: 'log4JReset.settings.header',
-                menuIcon: 'list',
+                menuIcon: 'format_align_justify',
                 permission: 'superadmin',
                 params: {
                     noPadding: false,
