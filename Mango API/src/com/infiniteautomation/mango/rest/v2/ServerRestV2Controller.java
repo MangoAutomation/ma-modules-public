@@ -256,7 +256,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @RequestMapping(method = {RequestMethod.PUT}, value = "/accept-license-agreement")
     public ResponseEntity<Void> acceptLicenseAgreement(
             @ApiParam(value = "Agree or not", required = true, allowMultiple = false)
-            @PathVariable Boolean agree,
+            @RequestParam Boolean agree,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder){
         
