@@ -41,12 +41,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
+import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
@@ -243,6 +245,43 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         mangoInfo.put("timezone", TimeZone.getDefault().toZoneId().getId());
 
         return ResponseEntity.ok(mangoInfo);
+    }
+    
+    @ApiOperation(
+            value = "Accept the current license agreement.",
+            notes = "Only valid if the current license agreement has not been accepted.  If you do not accept, Mango will restart in 15 seconds, giving you a 2nd chance in case you change your mind.")
+    @ApiResponses({
+        @ApiResponse(code = 400, message = "License already accepted.")}
+    )
+    @RequestMapping(method = {RequestMethod.PUT}, value = "/accept-license-agreement")
+    public ResponseEntity<Void> acceptLicenseAgreement(
+            @ApiParam(value = "Agree or not", required = true, allowMultiple = false)
+            @PathVariable Boolean agree,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder){
+        
+        //Check to see if the versions match, if so this request is invalid as it has already been confirmed
+        if(Common.getLicenseAgreementVersion() == SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
+            throw new BadRequestException();
+            
+        if(agree) {
+            SystemSettingsDao.instance.setIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION, Common.getLicenseAgreementVersion());
+        }else {
+            //Start shutdown timer
+            log.fatal("Mango will restart in 15 seconds.");
+            Providers.get(IMangoLifecycle.class).scheduleShutdown(15000, true, user);
+        }
+        
+        //Potentially Allow redirection to another page via headers
+        URI location = builder.path("/server/license-agreement-version").buildAndExpand().toUri();
+        return ResponseEntity.created(location).build();
+    }
+    
+    @ApiOperation(value = "Get the current license agreement version.")
+    @RequestMapping(method = {RequestMethod.PUT}, value = "/license-agreement-version")
+    public Integer getLicenseAgreement(
+            @AuthenticationPrincipal User user){
+        return SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
     }
 
     @ApiOperation(value = "Send a client error / stack trace to the backend for logging")
