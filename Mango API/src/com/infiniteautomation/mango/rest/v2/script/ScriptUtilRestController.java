@@ -14,6 +14,7 @@ import javax.script.ScriptException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
+import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
+import com.infiniteautomation.mango.spring.service.JavaScriptService;
+import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -54,12 +59,33 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-@Api(value="Script Utils", description="Run or test a Mango JavaScript script")
+@Api(value="Script Utils to run or test a Mango JavaScript script")
 @RestController
 @RequestMapping("/script")
 public class ScriptUtilRestController {
+
     private static final Log LOG = LogFactory.getLog(ScriptUtilRestController.class);
 
+    private final JavaScriptService service;
+    
+    @Autowired
+    ScriptUtilRestController(JavaScriptService service) {
+        this.service = service;
+    }
+    
+    @ApiOperation(value = "Validate a script")
+    @RequestMapping(method = RequestMethod.POST, value = {"/validate"})
+    public ResponseEntity<MangoJavaScriptResultModel> validate(
+            @AuthenticationPrincipal User user, 
+            @RequestBody MangoJavaScriptModel model) {
+        if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
+        MangoJavaScriptResult result = service.testScript(model.toVO(true), user);
+        if(result.hasErrors())
+            return new ResponseEntity<>(new MangoJavaScriptResultModel(result), HttpStatus.UNPROCESSABLE_ENTITY);
+        else
+            return ResponseEntity.ok(new MangoJavaScriptResultModel(result));
+    }
+    
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Test a script")
     @ApiResponses({
