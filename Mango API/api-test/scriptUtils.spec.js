@@ -20,12 +20,12 @@ const config = require('@infinite-automation/mango-client/test/setup');
 describe('Test Script Utility Endpoints', function() {
     before('Login', config.login);
 
-    it('Validate compiled PointValueTime result script', () => {
+    it('Validate wrapped PointValueTime result script', () => {
       return client.restRequest({
           path: '/rest/v2/script/validate',
           method: 'POST',
           data: {
-              compile: true,
+              wrapInFunction: true,
               script: 'LOG.debug("test");\nreturn 1.0;',
               context: null,
               permissions: null,
@@ -39,13 +39,13 @@ describe('Test Script Utility Endpoints', function() {
       });
     });
     
-    it('Validate non compiled PointValueTime result script', () => {
+    it('Validate wrapped PointValueTime result script', () => {
         return client.restRequest({
             path: '/rest/v2/script/validate',
             method: 'POST',
             data: {
-                compile: false,
-                script: 'LOG.debug("test");\nreturn 1.0;',
+                wrapInFunction: true,
+                script: 'LOG.debug("test"); \nreturn 1.0;',
                 context: null,
                 permissions: null,
                 logLevel: 'DEBUG',
@@ -58,12 +58,12 @@ describe('Test Script Utility Endpoints', function() {
         });
       });
     
-    it('Validate compiled String result script', () => {
+    it('Validate wrapped String result script', () => {
         return client.restRequest({
             path: '/rest/v2/script/validate',
             method: 'POST',
             data: {
-                compile: true,
+                wrapInFunction: true,
                 script: 'LOG.debug("test");\nreturn "hello";',
                 context: null,
                 permissions: null,
@@ -74,12 +74,12 @@ describe('Test Script Utility Endpoints', function() {
         });
       });
       
-      it('Validate non compiled String result script', () => {
+      it('Validate wrapped String result script', () => {
           return client.restRequest({
               path: '/rest/v2/script/validate',
               method: 'POST',
               data: {
-                  compile: false,
+                  wrapInFunction: true,
                   script: 'LOG.debug("test");\nreturn "hello";',
                   context: null,
                   permissions: null,
@@ -90,18 +90,68 @@ describe('Test Script Utility Endpoints', function() {
           });
         });
     
-    it.only('Validate buggy script', () => {
+    it('Validate wrapped buggy script', () => {
         return client.restRequest({
             path: '/rest/v2/script/validate',
             method: 'POST',
             data: {
-                compile: false,
-                script: 'do stuff that is broken',
+                wrapInFunction: true,
+                script: 'for(var i=0; i<10; j++){ LOG.debug("test");}',
                 context: null,
                 permissions: null,
                 logLevel: 'DEBUG'
               }
         }).then(response => {
+            assert.strictEqual(response.data.errors.length, 1);
+            assert.strictEqual(response.data.errors[0].lineNumber, 1);
+        });
+      });
+    
+    it('Validate un-wrapped buggy script', () => {
+        return client.restRequest({
+            path: '/rest/v2/script/validate',
+            method: 'POST',
+            data: {
+                wrapInFunction: false,
+                script: 'for(var i=0; i<10; j++){ LOG.debug("test");}',
+                context: null,
+                permissions: null,
+                logLevel: 'DEBUG'
+              }
+        }).then(response => {
+            assert.strictEqual(response.data.errors.length, 1);
+            assert.strictEqual(response.data.errors[0].lineNumber, 1);
+        });
+      });
+    
+    it('Validate un-wrapped String result script', () => {
+        return client.restRequest({
+            path: '/rest/v2/script/validate',
+            method: 'POST',
+            data: {
+                wrapInFunction: false,
+                script: 'function test(){ return "hello";}\ntest();',
+                context: null,
+                permissions: null,
+                logLevel: 'DEBUG'
+              }
+        }).then(response => {
+            assert.strictEqual(response.data.result, 'hello');
+        });
+      });
+    it('Validate script null script', () => {
+        return client.restRequest({
+            path: '/rest/v2/script/validate',
+            method: 'POST',
+            data: {
+                wrapInFunction: false,
+                script: null,
+                context: null,
+                permissions: null,
+                logLevel: 'INFO'
+              }
+        }).then(response => {
+            console.log(response.data);
             throw new Error('Should not have returned a valid response.');
         }, error => {
             assert.strictEqual(error.status, 422);

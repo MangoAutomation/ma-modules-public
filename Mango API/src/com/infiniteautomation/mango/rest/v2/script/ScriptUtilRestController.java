@@ -27,8 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
-import com.infiniteautomation.mango.spring.service.JavaScriptService;
-import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
+import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -66,24 +65,20 @@ public class ScriptUtilRestController {
 
     private static final Log LOG = LogFactory.getLog(ScriptUtilRestController.class);
 
-    private final JavaScriptService service;
+    private final MangoJavaScriptService service;
     
     @Autowired
-    ScriptUtilRestController(JavaScriptService service) {
+    ScriptUtilRestController(MangoJavaScriptService service) {
         this.service = service;
     }
     
     @ApiOperation(value = "Validate a script")
     @RequestMapping(method = RequestMethod.POST, value = {"/validate"})
-    public ResponseEntity<MangoJavaScriptResultModel> validate(
+    public MangoJavaScriptResultModel validate(
             @AuthenticationPrincipal User user, 
             @RequestBody MangoJavaScriptModel model) {
         if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
-        MangoJavaScriptResult result = service.testScript(model.toVO(true), user);
-        if(result.hasErrors())
-            return new ResponseEntity<>(new MangoJavaScriptResultModel(result), HttpStatus.UNPROCESSABLE_ENTITY);
-        else
-            return ResponseEntity.ok(new MangoJavaScriptResultModel(result));
+        return new MangoJavaScriptResultModel(service.testScript(model.toVO(true), user));
     }
     
     @PreAuthorize("isAdmin()")

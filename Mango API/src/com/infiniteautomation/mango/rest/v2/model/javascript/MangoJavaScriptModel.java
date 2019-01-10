@@ -28,7 +28,8 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class MangoJavaScriptModel {
 
-    private boolean compile;  //Is this script to be compiled
+    @ApiModelProperty("Should we wrap the script in a function and call that function? Useful when script has a return method.")
+    private boolean wrapInFunction;
     private String script;
     private List<ScriptContextVariableModel> context;
     private String permissions;
@@ -41,17 +42,19 @@ public class MangoJavaScriptModel {
     }
     
     /**
-     * @return the compile
+     * @return the wrapInFunction
      */
-    public boolean isCompile() {
-        return compile;
+    public boolean isWrapInFunction() {
+        return wrapInFunction;
     }
+
     /**
-     * @param compile the compile to set
+     * @param wrapInFunction the wrapInFunction to set
      */
-    public void setCompile(boolean compile) {
-        this.compile = compile;
+    public void setWrapInFunction(boolean wrapInFunction) {
+        this.wrapInFunction = wrapInFunction;
     }
+
     /**
      * @return the script
      */
@@ -117,7 +120,7 @@ public class MangoJavaScriptModel {
     
     public MangoJavaScript toVO(boolean testRun) {
         MangoJavaScript vo = new MangoJavaScript();
-        vo.setCompile(compile);
+        vo.setWrapInFunction(wrapInFunction);
         vo.setContext(convertContext(testRun));
         vo.setLogLevel(logLevel);
         vo.setPermissions(permissions);
