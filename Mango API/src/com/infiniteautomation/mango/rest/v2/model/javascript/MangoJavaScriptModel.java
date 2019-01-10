@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.javascript;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
@@ -27,7 +28,7 @@ public class MangoJavaScriptModel {
     private boolean wrapInFunction;
     private String script;
     private List<ScriptContextVariableModel> context;
-    private String permissions;
+    private Set<String> permissions;
     private ScriptLogLevels logLevel;
     @ApiModelProperty("If non-null coerce the result into a PointValueTime with this data type")
     private String resultDataType; 
@@ -77,13 +78,13 @@ public class MangoJavaScriptModel {
     /**
      * @return the permissions
      */
-    public String getPermissions() {
+    public Set<String> getPermissions() {
         return permissions;
     }
     /**
      * @param permissions the permissions to set
      */
-    public void setPermissions(String permissions) {
+    public void setPermissions(Set<String> permissions) {
         this.permissions = permissions;
     }
     /**
