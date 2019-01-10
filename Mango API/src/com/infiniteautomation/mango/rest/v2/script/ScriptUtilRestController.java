@@ -78,7 +78,7 @@ public class ScriptUtilRestController {
             @AuthenticationPrincipal User user, 
             @RequestBody MangoJavaScriptModel model) {
         if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
-        return new MangoJavaScriptResultModel(service.testScript(model.toVO(true), user));
+        return new MangoJavaScriptResultModel(service.testScript(model.toVO(), user));
     }
     
     @PreAuthorize("isAdmin()")

@@ -3,21 +3,16 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.javascript;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.infiniteautomation.mango.util.script.ScriptLogLevels;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataImage.DataPointRT;
-import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
+import com.serotonin.m2m2.rt.script.ScriptContextVariable;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -118,10 +113,10 @@ public class MangoJavaScriptModel {
         this.resultDataType = resultDataTypeId;
     }
     
-    public MangoJavaScript toVO(boolean testRun) {
+    public MangoJavaScript toVO() {
         MangoJavaScript vo = new MangoJavaScript();
         vo.setWrapInFunction(wrapInFunction);
-        vo.setContext(convertContext(testRun));
+        vo.setContext(convertContext());
         vo.setLogLevel(logLevel);
         vo.setPermissions(permissions);
         if(resultDataType != null)
@@ -130,25 +125,18 @@ public class MangoJavaScriptModel {
         return vo;
     }
     
-    private Map<String, IDataPointValueSource> convertContext(boolean testRun) {
-        Map<String, IDataPointValueSource> result = new HashMap<>();
+    private List<ScriptContextVariable> convertContext() {
+        List<ScriptContextVariable> result = new ArrayList<>();
         if(context != null)
             for(ScriptContextVariableModel variable : context) {
+                ScriptContextVariable var = new ScriptContextVariable();
                 DataPointVO dpvo = DataPointDao.getInstance().getByXid(variable.getXid());
                 if(dpvo == null)
-                    throw new ServerErrorException(new TranslatableMessage("rest.error.pointNotFound", variable.getXid()));
-
-                DataPointRT dprt = Common.runtimeManager.getDataPoint(dpvo.getId());
-                if(dprt == null) {
-                    if(!testRun)
-                        throw new ServerErrorException(new TranslatableMessage("rest.error.pointNotEnabled", variable.getXid()));
-                    if(dpvo.getDefaultCacheSize() == 0)
-                        dpvo.setDefaultCacheSize(1);
-                    dprt = new DataPointRT(dpvo, dpvo.getPointLocator().createRuntime(), DataSourceDao.getInstance().getDataSource(dpvo.getDataSourceId()), null);
-                    dprt.resetValues();
-                }
-
-                result.put(variable.getVariableName(), dprt);
+                    var.setDataPointId(Common.NEW_ID);
+                else
+                    var.setDataPointId(dpvo.getId());
+                var.setVariableName(variable.getVariableName());
+                result.add(var);
             }
         return result;
     }
