@@ -157,7 +157,7 @@ describe('Test Script Utility Endpoints', function() {
         });
       });
     
-    it.only('Validate script with result type exception.', () => {
+    it('Validate script with result type exception.', () => {
         return client.restRequest({
             path: '/rest/v2/script/validate',
             method: 'POST',
