@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.script.CompiledScript;
-import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -27,15 +27,14 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
-import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
 import com.serotonin.m2m2.rt.script.JsonImportExclusion;
 import com.serotonin.m2m2.rt.script.OneTimePointAnnotation;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
+import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
-import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -54,7 +53,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private boolean compiled;
     private ScriptPointValueSetter setCallback;
     private final List<JsonImportExclusion> importExclusions;
-    
+    private final MangoJavaScriptService service;
     //Added to stop excessive point link calls
     private volatile Boolean ready;
 
@@ -75,15 +74,16 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 				return PointLinkEmportDefinition.POINT_LINKS;
 			}
         });
+        this.service = Common.getBean(MangoJavaScriptService.class);
     }
 
     public void initialize() {
         Common.runtimeManager.addDataPointListener(vo.getSourcePointId(), this);
         checkSource();
         try {
-        	compiledScript = CompiledScriptExecutor.compile(vo.getScript());
+        	compiledScript = service.compile(vo.getScript(), true);
         	compiled = true;
-        } catch (ScriptException e) {
+        } catch (ScriptError e) {
             raiseFailureEvent(Common.timer.currentTimeMillis(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
         }
 
@@ -158,30 +158,39 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         int targetDataType = targetPoint.getVO().getPointLocator().getDataTypeId();
 
         if (!StringUtils.isBlank(vo.getScript())) {
-            Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
-            context.put(CONTEXT_SOURCE_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getSourcePointId()));
-            context.put(CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getTargetPointId()));
-
             try {
             	if(!compiled) {
-            		compiledScript = CompiledScriptExecutor.compile(vo.getScript());
+            		compiledScript = service.compile(vo.getScript(), true);
             		compiled = true;
             	}
-            		
-                PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, newValue.getTime(),
-                        targetDataType, newValue.getTime(), vo.getScriptPermissions(), 
-                        scriptLog, setCallback, importExclusions, false);
-                if (pvt.getValue() == null) {
+                Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
+                context.put(CONTEXT_SOURCE_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getSourcePointId()));
+                context.put(CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getTargetPointId()));
+                
+                PointValueTime pvt = service.execute(
+                        compiledScript, newValue.getTime(), newValue.getTime(), targetDataType,
+                        context,
+                        null,
+                        vo.getScriptPermissions().getPermissionsSet(),
+                        scriptLog,
+                        setCallback,
+                        importExclusions,
+                        false); 
+                if (pvt == null) {
+                    raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
+                    ready = true;
+                    return; 
+                }else if(pvt.getValue() == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;
                     return;
-                } else if(pvt.getValue() == CompiledScriptExecutor.UNCHANGED) {
+                } else if(pvt.getValue() == MangoJavaScriptService.UNCHANGED) {
                     ready = true;
                     return;
                 }
                 newValue = pvt;
             }
-            catch (ScriptException e) {
+            catch (ScriptError e) {
                 raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
                 ready = true;
                 return;
@@ -318,7 +327,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 
             // We may, however, need to coerce the given value.
             try {
-                DataValue mangoValue = ScriptUtils.coerce(value, dprt.getDataTypeId());
+                DataValue mangoValue = service.coerce(value, dprt.getDataTypeId());
                 SetPointSource source;
                 PointValueTime newValue = new PointValueTime(mangoValue, timestamp);
                 if(StringUtils.isBlank(annotation))

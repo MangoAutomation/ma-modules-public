@@ -5,34 +5,29 @@
 package com.serotonin.m2m2.pointLinks;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
-import javax.script.CompiledScript;
-import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.util.script.MangoJavaScript;
+import com.infiniteautomation.mango.util.script.MangoJavaScriptAction;
+import com.infiniteautomation.mango.util.script.MangoJavaScriptError;
+import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
+import com.infiniteautomation.mango.util.script.ScriptLogLevels;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.dataImage.DataPointRT;
-import com.serotonin.m2m2.rt.dataImage.IDataPointValueSource;
+import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.rt.script.CompiledScriptExecutor;
-import com.serotonin.m2m2.rt.script.ResultTypeException;
-import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.rt.script.ScriptContextVariable;
 import com.serotonin.m2m2.rt.script.ScriptPermissions;
-import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.vo.DataPointExtendedNameComparator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -142,96 +137,78 @@ public class PointLinksDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, ScriptPermissions permissions, int logLevel) {
+        User user = Common.getHttpUser();
         ProcessResult response = new ProcessResult();
         TranslatableMessage message;
-
-        DataPointRT source = Common.runtimeManager.getDataPoint(sourcePointId);
-        if (source == null) {
-            DataPointVO sourceVo = DataPointDao.getInstance().getDataPoint(sourcePointId, false);
-            if(sourceVo == null) {
-                message = new TranslatableMessage("pointLinks.validate.sourceRequired");
-                response.addMessage("script", message);
-                return response;
-            }
-            if(sourceVo.getDefaultCacheSize() == 0)
-                sourceVo.setDefaultCacheSize(1);
-            source = new DataPointRT(sourceVo, sourceVo.getPointLocator().createRuntime(), DataSourceDao.getInstance().getDataSource(sourceVo.getDataSourceId()), null);
-            source.resetValues();
+        
+        MangoJavaScriptService service = Common.getBean(MangoJavaScriptService.class);
+        MangoJavaScript vo = new MangoJavaScript();
+        vo.setWrapInFunction(true);
+        vo.setLogLevel(ScriptLogLevels.fromValue(logLevel));
+        vo.setPermissions(permissions.getPermissionsSet());
+        vo.setScript(script);
+        List<ScriptContextVariable> context = new ArrayList<>();
+        vo.setContext(context);
+        ScriptContextVariable source = new ScriptContextVariable();
+        source.setVariableName(PointLinkRT.CONTEXT_SOURCE_VAR_NAME);
+        source.setDataPointId(sourcePointId);
+        context.add(source);
+        ScriptContextVariable target = new ScriptContextVariable();
+        target.setVariableName(PointLinkRT.CONTEXT_TARGET_VAR_NAME);
+        target.setDataPointId(targetPointId);
+        context.add(target);
+        
+        DataPointVO sourceVo = DataPointDao.getInstance().getDataPoint(sourcePointId, false);
+        if(sourceVo == null) {
+            message = new TranslatableMessage("pointLinks.validate.sourceRequired");
+            response.addMessage("script", message);
+            return response;
         }
-
-        DataPointRT target = Common.runtimeManager.getDataPoint(targetPointId);
-        if(target == null){
-            DataPointVO targetVo = DataPointDao.getInstance().getDataPoint(targetPointId, false);
-            if(targetVo == null) {
-                message = new TranslatableMessage("pointLinks.validate.targetRequired");
-                response.addMessage("script", message);
-                return response;
-            }
-
-            if(targetVo.getDefaultCacheSize() == 0)
-                targetVo.setDefaultCacheSize(1);
-            target = new DataPointRT(targetVo, targetVo.getPointLocator().createRuntime(), DataSourceDao.getInstance().getDataSource(targetVo.getDataSourceId()), null);
-            target.resetValues();
+        DataPointVO targetVo = DataPointDao.getInstance().getDataPoint(targetPointId, false);
+        if(targetVo == null) {
+            message = new TranslatableMessage("pointLinks.validate.targetRequired");
+            response.addMessage("script", message);
+            return response;
         }
-
-        Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
-        context.put(PointLinkRT.CONTEXT_SOURCE_VAR_NAME, source);
-        context.put(PointLinkRT.CONTEXT_TARGET_VAR_NAME, target);
-        int targetDataType = target.getDataTypeId();
-
-        final StringWriter scriptOut = new StringWriter();
-        final PrintWriter scriptWriter = new PrintWriter(scriptOut);
-        if(logLevel == ScriptLog.LogLevel.NONE)
-            logLevel = ScriptLog.LogLevel.FATAL;
-        try(ScriptLog scriptLog = new ScriptLog("pointLinkTest", logLevel, scriptWriter)){
-            final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYY HH:mm:ss");
-            ScriptPointValueSetter loggingSetter = new ScriptPointValueSetter(permissions) {
-                @Override
-                public void set(IDataPointValueSource point, Object value, long timestamp, String annotation) {
-                    DataPointRT dprt = (DataPointRT) point;
-                    if(!dprt.getVO().getPointLocator().isSettable()) {
-                        scriptOut.append("Point " + dprt.getVO().getExtendedName() + " not settable.");
-                        return;
-                    }
-    
-                    if(!Permissions.hasDataPointSetPermission(permissions, dprt.getVO())) {
-                        scriptOut.write(new TranslatableMessage("pointLinks.setTest.permissionDenied", dprt.getVO().getXid()).translate(Common.getTranslations()));
-                        return;
-                    }
-    
-                    scriptOut.append("Setting point " + dprt.getVO().getName() + " to " + value + " @" + sdf.format(new Date(timestamp)) + "\r\n");
-                }
-    
-                @Override
-                protected void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
-                    // not really setting
-                }
-            };
-    
-            try {
-                CompiledScript compiledScript = CompiledScriptExecutor.compile(script);
-                PointValueTime pvt = CompiledScriptExecutor.execute(compiledScript, context, null, System.currentTimeMillis(),
-                        targetDataType, -1, permissions , scriptLog, loggingSetter, null, true);
-                if (pvt.getValue() == null)
-                    message = new TranslatableMessage("event.pointLink.nullResult");
-                else if(pvt.getValue() == CompiledScriptExecutor.UNCHANGED)
-                    message = new TranslatableMessage("pointLinks.validate.successNoValue");
-                else if (pvt.getTime() == -1)
-                    message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
-                else
-                    message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
-                            Functions.getTime(pvt.getTime()));
-                //Add the script logging output
-                response.addData("out", scriptOut.toString().replaceAll("\n", "<br/>"));
-            }
-            catch (ScriptException e) {
-                message = new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage());
-            }
-            catch (ResultTypeException e) {
-                message = e.getTranslatableMessage();
-            }
-        }
+        
+        MangoJavaScriptResult result = service.testScript(vo, user);
+        PointValueTime pvt = (PointValueTime)result.getResult();
+        if (pvt == null || pvt.getValue() == null)
+            message = new TranslatableMessage("event.pointLink.nullResult");
+        else if(pvt.getValue() == MangoJavaScriptService.UNCHANGED)
+            message = new TranslatableMessage("pointLinks.validate.successNoValue");
+        else if (pvt.getTime() == -1)
+            message = new TranslatableMessage("pointLinks.validate.success", pvt.getValue());
+        else
+            message = new TranslatableMessage("pointLinks.validate.successTs", pvt.getValue(),
+                    Functions.getTime(pvt.getTime()));
         response.addMessage("script", message);
+        
+        if(result.hasErrors()) {
+            for(MangoJavaScriptError e : result.getErrors()) {
+                if(e.getLineNumber() == null) {
+                    response.addContextualMessage("script", "literal", e.getMessage());
+                } else {
+                    if (e.getColumnNumber() == null)
+                        response.addContextualMessage("script", "scripting.rhinoException", e.getMessage(), e.getLineNumber());
+                    else
+                        response.addContextualMessage("script", "scripting.rhinoExceptionCol", e.getMessage(), e.getLineNumber(), e.getColumnNumber());
+                }
+            }
+        }
+    
+        //Convert the actions into the script out
+        String output = result.getScriptOutput();
+        Locale locale = null;
+        if(user != null)
+            locale = Locale.forLanguageTag(user.getLocale());
+        if(locale == null)
+            locale = Common.getLocale();
+        if(result.getActions() != null) {
+            for(MangoJavaScriptAction action : result.getActions())
+                output += action.getMessage().translate(Translations.getTranslations(locale)) + "\n";
+        }
+        response.addData("out", com.serotonin.web.taglib.Functions.lfToBr(com.serotonin.web.taglib.Functions.crlfToBr(output)));
         return response;
     }
 
