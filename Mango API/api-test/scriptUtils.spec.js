@@ -151,10 +151,30 @@ describe('Test Script Utility Endpoints', function() {
                 logLevel: 'INFO'
               }
         }).then(response => {
-            console.log(response.data);
             throw new Error('Should not have returned a valid response.');
         }, error => {
             assert.strictEqual(error.status, 422);
+        });
+      });
+    
+    it.only('Validate script with result type exception.', () => {
+        return client.restRequest({
+            path: '/rest/v2/script/validate',
+            method: 'POST',
+            data: {
+                wrapInFunction: true,
+                script: 'return "testing";',
+                context: null,
+                permissions: ['superadmin'],
+                logLevel: 'INFO',
+                resultDataType: 'NUMERIC'
+              }
+        }).then(response => {
+            assert.strictEqual(response.data.errors.length, 1);
+            assert.isNull(response.data.errors[0].lineNumber);
+            assert.isNull(response.data.errors[0].columnNumber);
+            assert.strictEqual(response.data.errors[0].message, 'Could not convert result "testing" to Numeric');
+            assert.isNull(response.data.result);
         });
       });
 });
