@@ -80,7 +80,7 @@ function Log4JResetFactory(TemporaryRestResource, $http) {
         reset() {
             this.action = 'RESET';
 
-            return this.start();
+            return this.test();
         }
 
         cancel(opts = {}) {

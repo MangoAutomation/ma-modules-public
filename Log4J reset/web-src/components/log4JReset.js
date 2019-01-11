@@ -20,65 +20,26 @@ class log4JResetController {
    }
 
     $onInit() {
-       this.log4JReset = new this.maLog4JReset();
+        this.log4JReset = new this.maLog4JReset();
+
+        this.wsConnection = this.maLog4JReset.subscribe((event, item) => {
+            if (item.status === 'SUCCESS') {
+                this.maDialogHelper.toastOptions({
+                    text: item.result.logOutput,
+                    hideDelay: 5000
+                }); 
+            }
+        });
     }
 
     test() {
-        let actionData = angular.copy(this.log4JReset);
-        
-        return actionData.test().then(
-            resource => {
-                if (resource.status === 'SUCCESS') {
-                    this.maDialogHelper.toastOptions({
-                        text: resource.result.logOutput,
-                        hideDelay: 5000
-                    }); 
-                } else {
-                    actionData.get().then(resource => {
-                        this.maDialogHelper.toastOptions({
-                            text: resource.result.logOutput,
-                            hideDelay: 5000
-                        });
-                    });
-                }
-            }
-        );
+        const actionData = this.log4JReset.copy();
+        actionData.test();
     }
 
     reset() {
-        let actionData = angular.copy(this.log4JReset);
-
-        return actionData.reset().then(
-            resource => {
-                this.resource = resource;
-                
-                if (this.resource.status === 'SUCCESS') {
-                    this.maDialogHelper.toastOptions({
-                        text: this.resource.result.logOutput,
-                        hideDelay: 5000
-                    }); 
-                }
-            }, error => {
-                if (error.status === 422) {
-                    this.validationMessages = error.data.result.messages;
-                }
-
-                this.maDialogHelper.toastOptions({
-                    textTr: ['log4JReset.settings.testError', error.mangoStatusText],
-                    classes: 'md-warn',
-                    hideDelay: 5000
-                });
-
-            }, progress => {
-                this.resource = progress;
-                this.maDialogHelper.toastOptions({
-                    text: this.resource.result.logOutput,
-                    hideDelay: 5000
-                }); 
-            }).finally(() => {
-                delete this.resource;
-            }
-        );
+        const actionData = this.log4JReset.copy();
+        return actionData.reset();
     }
 
 }
