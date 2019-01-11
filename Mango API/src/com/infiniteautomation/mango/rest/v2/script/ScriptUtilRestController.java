@@ -46,7 +46,7 @@ public class ScriptUtilRestController {
         this.service = service;
     }
     
-    @ApiOperation(value = "Validate a script")
+    @ApiOperation(value = "Validate a script, supplied permissions must already be granted to submitting User.")
     @RequestMapping(method = RequestMethod.POST, value = {"/validate"})
     public MangoJavaScriptResultModel validate(
             @AuthenticationPrincipal User user, 
@@ -56,14 +56,13 @@ public class ScriptUtilRestController {
     }
 
     @PreAuthorize("isAdmin()")
-    @ApiOperation(value = "Run a script, always runs with permissions of submitting user. Admin only")
+    @ApiOperation(value = "Run a script, supplied permissions must already be granted to submitting User. Admin only")
     @RequestMapping(method = RequestMethod.POST, value = {"/run"})
     public MangoJavaScriptResultModel runScript(
             @AuthenticationPrincipal User user, 
             @RequestBody MangoJavaScriptModel scriptModel) {
         if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
-        scriptModel.setPermissions(user.getPermissionsSet());
-        return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(), new SetCallback(new ScriptPermissions(user.getPermissionsSet()), user), user));
+        return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(), new SetCallback(new ScriptPermissions(scriptModel.getPermissions()), user), user));
     }
 
     class SetCallback extends ScriptPointValueSetter {
@@ -74,6 +73,7 @@ public class ScriptUtilRestController {
             super(permissions);
             this.user = user;
         }
+        
         @Override
         public void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
             DataPointRT dprt = (DataPointRT) point;
