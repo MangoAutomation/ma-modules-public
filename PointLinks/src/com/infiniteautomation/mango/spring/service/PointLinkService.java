@@ -15,7 +15,6 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.pointLinks.PointLinkDao;
 import com.serotonin.m2m2.pointLinks.PointLinkVO;
-import com.serotonin.m2m2.rt.script.ScriptUtils;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -29,8 +28,15 @@ import net.jazdw.rql.parser.ASTNode;
 @Service
 public class PointLinkService {
 
-    @Autowired
-    private PointLinkDao dao;
+
+    private final PointLinkDao dao;
+    private final MangoJavaScriptService service;
+    
+    @Autowired    
+    public PointLinkService(PointLinkDao dao, MangoJavaScriptService service) {
+        this.dao = dao;
+        this.service = service;
+    }
     
     /**
      * Get the vo checking permissions and existence
@@ -67,7 +73,7 @@ public class PointLinkService {
         
         vo.ensureValid();
         dao.save(vo);
-        ScriptUtils.clearGlobalFunctions();
+        service.clearGlobalFunctions();
         return vo;
     }
     
@@ -101,7 +107,7 @@ public class PointLinkService {
         vo.setId(existing.getId());
         vo.ensureValid();
         dao.save(vo);
-        ScriptUtils.clearGlobalFunctions();
+        service.clearGlobalFunctions();
         return vo;
     }
     
@@ -117,7 +123,7 @@ public class PointLinkService {
         PointLinkVO vo = get(xid, user);
         ensureEditPermission(vo, user);
         dao.delete(vo.getId());
-        ScriptUtils.clearGlobalFunctions();
+        service.clearGlobalFunctions();
         return vo;
     }
     
