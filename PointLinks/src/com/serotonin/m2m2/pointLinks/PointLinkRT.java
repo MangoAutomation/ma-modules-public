@@ -171,7 +171,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                         compiledScript, newValue.getTime(), newValue.getTime(), targetDataType,
                         context,
                         null,
-                        vo.getScriptPermissions().getPermissionsSet(),
+                        vo.getScriptPermissions(),
                         scriptLog,
                         setCallback,
                         importExclusions,

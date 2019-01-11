@@ -145,7 +145,7 @@ public class PointLinksDwr extends ModuleDwr {
         MangoJavaScript vo = new MangoJavaScript();
         vo.setWrapInFunction(true);
         vo.setLogLevel(ScriptLogLevels.fromValue(logLevel));
-        vo.setPermissions(permissions.getPermissionsSet());
+        vo.setPermissions(permissions);
         vo.setScript(script);
         List<ScriptContextVariable> context = new ArrayList<>();
         vo.setContext(context);

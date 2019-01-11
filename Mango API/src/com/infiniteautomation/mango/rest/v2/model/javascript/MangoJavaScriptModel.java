@@ -14,6 +14,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.rt.script.ScriptContextVariable;
+import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -119,7 +120,7 @@ public class MangoJavaScriptModel {
         vo.setWrapInFunction(wrapInFunction);
         vo.setContext(convertContext());
         vo.setLogLevel(logLevel);
-        vo.setPermissions(permissions);
+        vo.setPermissions(new ScriptPermissions(permissions));
         if(resultDataType != null)
             vo.setResultDataTypeId(DataTypes.CODES.getId(resultDataType));
         vo.setScript(script);
