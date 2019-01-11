@@ -3,3 +3,6 @@
 /target
 /node_modules/
 /config.json
+/node/
+/web/
+/.vscode/
