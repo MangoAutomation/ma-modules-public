@@ -83,7 +83,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
     private ReportDao(){
         super(ReportAuditEvent.TYPE_NAME, "rpt", new String[0], false, new TranslatableMessage("internal.monitor.REPORT_COUNT"));
 
-        this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner);
+        this.instanceCountMonitor = new AtomicIntegerMonitor("com.serotonin.m2m2.reports.ReportInstanceDao.COUNT", new TranslatableMessage("internal.monitor.REPORT_INSTANCE_COUNT"), instanceCountMonitorOwner, true);
         this.instanceCountMonitor.setValue(this.countInstances());
         Common.MONITORED_VALUES.addIfMissingStatMonitor(this.instanceCountMonitor);
     }

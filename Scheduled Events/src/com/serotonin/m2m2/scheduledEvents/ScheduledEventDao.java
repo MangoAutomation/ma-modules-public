@@ -39,7 +39,7 @@ public class ScheduledEventDao extends BaseDao implements ValueMonitorOwner{
     protected final AtomicIntegerMonitor countMonitor;
 
     private ScheduledEventDao(){
-        this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.SCHEDULED_EVENT_COUNT"), this);
+        this.countMonitor = new AtomicIntegerMonitor(COUNT_MONITOR_ID, new TranslatableMessage("internal.monitor.SCHEDULED_EVENT_COUNT"), this, true);
         this.countMonitor.setValue(this.count());
         Common.MONITORED_VALUES.addIfMissingStatMonitor(this.countMonitor);
     };
