@@ -123,36 +123,36 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             @RequestParam(value = "username", required = true, defaultValue = "") String username,
             HttpServletRequest request) throws TemplateException, IOException {
 
-            Translations translations = Common.getTranslations();
-            Map<String, Object> model = new HashMap<>();
-            model.put("message", new TranslatableMessage("ftl.userTestEmail", username));
-            MangoEmailContent content = new MangoEmailContent("testEmail", model, translations,
-                    translations.translate("ftl.testEmail"), Common.UTF8);
-            EmailSender emailSender = new EmailSender(
-                    SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
-                    SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
-                    SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_AUTHORIZATION),
-                    SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_USERNAME),
-                    SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_PASSWORD),
-                    SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_TLS),
-                    SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SEND_TIMEOUT));
+        Translations translations = Common.getTranslations();
+        Map<String, Object> model = new HashMap<>();
+        model.put("message", new TranslatableMessage("ftl.userTestEmail", username));
+        MangoEmailContent content = new MangoEmailContent("testEmail", model, translations,
+                translations.translate("ftl.testEmail"), Common.UTF8);
+        EmailSender emailSender = new EmailSender(
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
+                SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
+                SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_AUTHORIZATION),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_USERNAME),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_PASSWORD),
+                SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_TLS),
+                SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SEND_TIMEOUT));
 
-            String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
-            String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
-            InternetAddress fromAddress = new InternetAddress(addr, pretty);
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (PrintStream ps = new PrintStream(baos, true, "UTF-8")) {
-                emailSender.setDebug(ps);
-                try{
-                    emailSender.send(fromAddress, email, content.getSubject(), content);
-                }catch(Exception e) {
-                    String debug = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-                    throw new SendEmailFailedRestException(e, debug);
-                }
+        String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
+        String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos, true, "UTF-8")) {
+            emailSender.setDebug(ps);
+            try{
+                emailSender.send(fromAddress, email, content.getSubject(), content);
+            }catch(Exception e) {
+                String debug = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+                throw new SendEmailFailedRestException(e, debug);
             }
-            
-            return new ResponseEntity<String>(new TranslatableMessage("common.testEmailSent", email)
-                    .translate(Common.getTranslations()), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<String>(new TranslatableMessage("common.testEmailSent", email)
+                .translate(Common.getTranslations()), HttpStatus.OK);
     }
 
     @PreAuthorize("isAdmin()")
@@ -246,39 +246,35 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         return ResponseEntity.ok(mangoInfo);
     }
-    
+
     @ApiOperation(
             value = "Accept the current license agreement.",
             notes = "Only valid if the current license agreement has not been accepted.  If you do not accept, Mango will restart in 15 seconds, giving you a 2nd chance in case you change your mind.")
     @ApiResponses({
         @ApiResponse(code = 400, message = "License already accepted.")}
-    )
-    @RequestMapping(method = {RequestMethod.PUT}, value = "/accept-license-agreement")
-    public ResponseEntity<Void> acceptLicenseAgreement(
+            )
+    @RequestMapping(method = {RequestMethod.POST}, value = "/accept-license-agreement")
+    public void acceptLicenseAgreement(
             @ApiParam(value = "Agree or not", required = true, allowMultiple = false)
             @RequestParam Boolean agree,
-            @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder){
-        
+            @AuthenticationPrincipal User user) {
+
         //Check to see if the versions match, if so this request is invalid as it has already been confirmed
-        if(Common.getLicenseAgreementVersion() == SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
-            throw new BadRequestException();
-            
-        if(agree) {
+
+        if (agree) {
             SystemSettingsDao.instance.setIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION, Common.getLicenseAgreementVersion());
-        }else {
+        } else {
+            if (Common.getLicenseAgreementVersion() == SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
+                throw new BadRequestException(new TranslatableMessage("systemSettings.licenseAlreadyAgreed"));
+
             //Start shutdown timer
             log.fatal("Mango will restart in 15 seconds.");
             Providers.get(IMangoLifecycle.class).scheduleShutdown(15000, true, user);
         }
-        
-        //Potentially Allow redirection to another page via headers
-        URI location = builder.path("/server/license-agreement-version").buildAndExpand().toUri();
-        return ResponseEntity.created(location).build();
     }
-    
+
     @ApiOperation(value = "Get the current license agreement version.")
-    @RequestMapping(method = {RequestMethod.PUT}, value = "/license-agreement-version")
+    @RequestMapping(method = {RequestMethod.GET}, value = "/license-agreement-version")
     public Integer getLicenseAgreement(
             @AuthenticationPrincipal User user){
         return SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
@@ -289,7 +285,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public void postClientError(@AuthenticationPrincipal User user, @RequestBody ClientError body) {
         log.warn("Client error\n" + body.formatString(user));
     }
-    
+
     @ApiOperation(value = "Get available serial ports, optionally refresh cached list.")
     @RequestMapping(method = {RequestMethod.GET}, value = "/serial-ports")
     @PreAuthorize("hasDataSourcePermission()")
@@ -313,15 +309,15 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public CorsSettings getCorsHeaders() {
         CorsSettings corsSettings = new CorsSettings();
         Map<String,String> headers = new HashMap<>();
-        
+
         String header = Common.envProps.getString("rest.cors.allowedOrigins", "");
         if(!StringUtils.isEmpty(header))
             headers.put("Access-Control-Allow-Origin", header);
-        
+
         header = Common.envProps.getString("rest.cors.allowedMethods", "");
         if(!StringUtils.isEmpty(header))
             headers.put("Access-Control-Allow-Methods", header);
-        
+
         header = Common.envProps.getString("rest.cors.allowedHeaders", "");
         if(!StringUtils.isEmpty(header))
             headers.put("Access-Control-Allow-Headers", header);
@@ -329,19 +325,19 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         header = Common.envProps.getString("rest.cors.exposedHeaders", "");
         if(!StringUtils.isEmpty(header))
             headers.put("Access-Control-Expose-Headers", header);
-        
+
         headers.put("Access-Control-Allow-Credentials", Boolean.toString(Common.envProps.getBoolean("rest.cors.allowCredentials", false)));
-        
+
         header = Common.envProps.getString("rest.cors.maxAge", "");
         if(!StringUtils.isEmpty(header))
             headers.put("Access-Control-Max-Age", header);
 
         corsSettings.setEnabled(Common.envProps.getBoolean("rest.cors.enabled", false));
         corsSettings.setHeaders(headers);
-        
+
         return corsSettings;
     }
-    
+
     public static class CorsSettings {
         private Map<String, String> headers;
         private boolean enabled;
@@ -370,7 +366,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             this.enabled = enabled;
         }
     }
-    
+
     public static class ClientError {
         String message;
         String cause;
