@@ -129,10 +129,7 @@ describe('Test Event Handlers Endpoints', function() {
               inactiveValueToSet : "true",
               eventType: [],
               additionalContext: [],
-              scriptPermissions: {
-              scriptDataSourcePermission: "",
-              scriptDataPointReadPermission: "",
-              scriptDataPointSetPermission: "" },
+              scriptPermissions: [""],
               handlerType : "SET_POINT"
             }
       }).then(response => {
