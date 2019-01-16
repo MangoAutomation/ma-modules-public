@@ -15,9 +15,7 @@ create table pointLinks (
   logLevel int not null,
   logSize double not null,
   logCount int not null,
-  scriptDataSourcePermission varchar(255) not null,
-  scriptDataPointSetPermission varchar(255) not null,
-  scriptDataPointReadPermission varchar(255) not null,
+  scriptPermissions varchar(255) not null,
   primary key (id)
 );
 alter table pointLinks add constraint pointLinksUn1 unique (xid);

@@ -5,7 +5,13 @@
 package com.serotonin.m2m2.pointLinks;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -16,11 +22,12 @@ import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
+import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.rt.script.ScriptLog;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Matthew Lohbihler
@@ -52,8 +59,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     @JsonProperty
     private boolean disabled;
     private int logLevel = ScriptLog.LogLevel.NONE;
-    @JsonProperty
-    private ScriptPermissions scriptPermissions = new ScriptPermissions(Common.getUser());
+    private ScriptPermissions scriptPermissions = new ScriptPermissions();
     @JsonProperty
     private float logSize = 1.0f;
     @JsonProperty
@@ -152,7 +158,15 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
             response.addContextualMessage("targetPointId", "pointLinks.validate.targetRequired");
         if (sourcePointId == targetPointId)
             response.addContextualMessage("targetPointId", "pointLinks.validate.samePoint");
-        this.scriptPermissions.validate(response, Common.getUser());
+        if(!StringUtils.isEmpty(script)) {
+            try {
+                
+                Common.getBean(MangoJavaScriptService.class).compile(script, true);
+            } catch(ScriptError e) {
+                response.addContextualMessage("script", "pointLinks.validate.scriptError", e.getMessage());
+            }
+        }
+        this.scriptPermissions.validate(response, Common.getHttpUser());
         if (!ScriptLog.LOG_LEVEL_CODES.isValidId(logLevel))
             response.addContextualMessage("logLevel", "validate.invalidValue");
         if (logSize <= 0)
@@ -181,7 +195,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
         writer.writeEntry("event", EVENT_CODES.getCode(event));
         writer.writeEntry("logLevel", ScriptLog.LOG_LEVEL_CODES.getCode(logLevel));
-
+        writer.writeEntry("scriptPermissions", scriptPermissions == null ? null : scriptPermissions.getPermissions());
     }
 
     @Override
@@ -220,7 +234,23 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         }else{
         	logLevel = ScriptLog.LogLevel.NONE;
         }
-
+        if(jsonObject.containsKey("scriptPermissions")) {
+            Set<String> permissions = null;
+            try{
+                JsonObject o = jsonObject.getJsonObject("scriptPermissions");
+                permissions = new HashSet<>();
+                permissions.addAll(Permissions.explodePermissionGroups(o.getString("dataSourcePermissions")));
+                permissions.addAll(Permissions.explodePermissionGroups(o.getString("dataPointSetPermissions")));
+                permissions.addAll(Permissions.explodePermissionGroups(o.getString("dataPointReadPermissions")));
+                permissions.addAll(Permissions.explodePermissionGroups(o.getString("customPermissions")));
+                this.scriptPermissions = new ScriptPermissions(permissions);
+            }catch(ClassCastException e) {
+               //Munchy munch, not a legacy script permissions object 
+            }
+            if(permissions == null) {
+                this.scriptPermissions = new ScriptPermissions(Permissions.explodePermissionGroups(jsonObject.getString("scriptPermissions")));
+            }
+        }
     }
 
 	/* (non-Javadoc)

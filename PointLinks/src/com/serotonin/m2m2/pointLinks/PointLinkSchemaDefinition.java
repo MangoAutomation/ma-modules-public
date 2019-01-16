@@ -35,7 +35,7 @@ public class PointLinkSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 5;
+        return 6;
     }
 
     @Override

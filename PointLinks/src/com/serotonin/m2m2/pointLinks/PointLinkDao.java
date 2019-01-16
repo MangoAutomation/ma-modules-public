@@ -17,12 +17,13 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.infiniteautomation.mango.util.LazyInitSupplier;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Matthew Lohbihler
@@ -64,8 +65,12 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
     
     @Override
     protected Map<String, Function<Object, Object>> createValueConverterMap() {
-        // TODO Auto-generated method stub
-        return super.createValueConverterMap();
+        Map<String, Function<Object, Object>> map = new HashMap<>();
+        map.put("eventType", (code) -> {
+            return PointLinkVO.EVENT_CODES.getId((String)code);
+        });
+        
+        return map;
     }
     
     /* (non-Javadoc)
@@ -86,9 +91,7 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
         map.put("logLevel", Types.INTEGER);
         map.put("logSize", Types.DOUBLE);
         map.put("logCount", Types.INTEGER);
-        map.put("scriptDataSourcePermission", Types.VARCHAR);
-        map.put("scriptDataPointSetPermission", Types.VARCHAR);
-        map.put("scriptDataPointReadPermission", Types.VARCHAR);
+        map.put("scriptPermissions", Types.VARCHAR);
         return map;
     }
 
@@ -121,9 +124,7 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
                 vo.getLogLevel(),
                 vo.getLogSize(),
                 vo.getLogCount(),
-                vo.getScriptPermissions().getDataSourcePermissions(),
-                vo.getScriptPermissions().getDataPointSetPermissions(),
-                vo.getScriptPermissions().getDataPointReadPermissions()
+                vo.getScriptPermissions().getPermissions()
         };
     }
     
@@ -148,11 +149,7 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
             pl.setLogLevel(rs.getInt(++i));
             pl.setLogSize(rs.getFloat(++i));
             pl.setLogCount(rs.getInt(++i));
-            ScriptPermissions permissions = new ScriptPermissions();
-            permissions.setDataSourcePermissions(rs.getString(++i));
-            permissions.setDataPointSetPermissions(rs.getString(++i));
-            permissions.setDataPointReadPermissions(rs.getString(++i));
-            pl.setScriptPermissions(permissions);
+            pl.setScriptPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(rs.getString(++i))));
             return pl;
         }
     }

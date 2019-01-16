@@ -14,6 +14,7 @@ import javax.script.CompiledScript;
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -32,7 +33,6 @@ import com.serotonin.m2m2.rt.script.OneTimePointAnnotation;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.rt.script.ScriptLog;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.vo.DataPointVO;

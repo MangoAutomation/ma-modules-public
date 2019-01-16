@@ -67,6 +67,7 @@
             editingPointLink = pl;
             
             $set("xid", pl.xid);
+            $set("name", pl.name);
             
             if(pl.sourcePointId > 0)
             	sourcePointSelector.set('value',pl.sourcePointId);
@@ -83,7 +84,7 @@
             $set("writeAnnotation", pl.writeAnnotation);
             $set("disabled", pl.disabled);
             
-            setScriptPermissions(pl.scriptPermissions);
+            setScriptPermissions(pl.scriptPermissions.permissions);
             $set("logLevel", pl.logLevel);
             $set("logSize", pl.logSize);
             $set("logCount", pl.logCount);
@@ -108,7 +109,8 @@
         if(sourcePointSelector.item != null){
         	sourcePointId = sourcePointSelector.item.key;
         }
-        PointLinksDwr.savePointLink(editingPointLink.id, $get("xid"), 
+        PointLinksDwr.savePointLink(editingPointLink.id, $get("xid"),
+                $get("name"),
         		sourcePointId, targetPointId,
         		editor.getValue(), $get("event"), $get("writeAnnotation"), $get("disabled"),
                 getScriptPermissions(),
@@ -265,6 +267,10 @@
             <tr>
               <td class="formLabelRequired"><fmt:message key="common.xid"/></td>
               <td class="formField"><input type="text" id="xid"/></td>
+            </tr>
+            <tr>
+              <td class="formLabelRequired"><fmt:message key="common.name"/></td>
+              <td class="formField"><input type="text" id="name"/></td>
             </tr>
             <tag:scriptPermissions></tag:scriptPermissions>
             <tr>

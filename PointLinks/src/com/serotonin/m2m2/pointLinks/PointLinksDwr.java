@@ -19,6 +19,7 @@ import com.infiniteautomation.mango.util.script.MangoJavaScriptAction;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptError;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
 import com.infiniteautomation.mango.util.script.ScriptLogLevels;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -27,7 +28,6 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.script.ScriptContextVariable;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.DataPointExtendedNameComparator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -94,19 +94,21 @@ public class PointLinksDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult savePointLink(int id, String xid, int sourcePointId, int targetPointId, String script,
-            int event, boolean writeAnnotation, boolean disabled, ScriptPermissions permissions, int logLevel, float logSize, int logCount) {
+    public ProcessResult savePointLink(int id, String xid, String name, int sourcePointId, int targetPointId, String script,
+            int event, boolean writeAnnotation, boolean disabled, String permissions, int logLevel, float logSize, int logCount) {
         // Validate the given information. If there is a problem, return an appropriate error message.
+        User user = Common.getHttpUser();
         PointLinkVO vo = new PointLinkVO();
         vo.setId(id);
         vo.setXid(xid);
+        vo.setName(name);
         vo.setSourcePointId(sourcePointId);
         vo.setTargetPointId(targetPointId);
         vo.setScript(script);
         vo.setEvent(event);
         vo.setWriteAnnotation(writeAnnotation);
         vo.setDisabled(disabled);
-        vo.setScriptPermissions(permissions);
+        vo.setScriptPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(permissions), user.getPermissionHolderName()));
         vo.setLogLevel(logLevel);
         vo.setLogSize(logSize);
         vo.setLogCount(logCount);
@@ -136,7 +138,7 @@ public class PointLinksDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, ScriptPermissions permissions, int logLevel) {
+    public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, String permissions, int logLevel) {
         User user = Common.getHttpUser();
         ProcessResult response = new ProcessResult();
         TranslatableMessage message;
@@ -145,7 +147,7 @@ public class PointLinksDwr extends ModuleDwr {
         MangoJavaScript vo = new MangoJavaScript();
         vo.setWrapInFunction(true);
         vo.setLogLevel(ScriptLogLevels.fromValue(logLevel));
-        vo.setPermissions(permissions);
+        vo.setPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(permissions), user.getPermissionHolderName()));
         vo.setScript(script);
         List<ScriptContextVariable> context = new ArrayList<>();
         vo.setContext(context);
@@ -170,6 +172,7 @@ public class PointLinksDwr extends ModuleDwr {
             response.addMessage("script", message);
             return response;
         }
+        vo.setResultDataTypeId(targetVo.getPointLocator().getDataTypeId());
         
         MangoJavaScriptResult result = service.testScript(vo, user);
         PointValueTime pvt = (PointValueTime)result.getResult();

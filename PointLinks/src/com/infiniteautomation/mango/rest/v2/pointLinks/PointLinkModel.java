@@ -3,11 +3,13 @@
  */
 package com.infiniteautomation.mango.rest.v2.pointLinks;
 
+import java.util.Set;
+
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.pointLinks.PointLinkVO;
 import com.serotonin.m2m2.rt.script.ScriptLog;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 
 /**
  * @author Terry Packer
@@ -30,7 +32,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
     private boolean writeAnnotation;
     private boolean disabled;
     private String logLevel;
-    private String scriptPermissions;
+    private Set<String> scriptPermissions;
     private float logSize;
     private int logCount;
     
@@ -121,13 +123,13 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
     /**
      * @return the scriptPermissions
      */
-    public String getScriptPermissions() {
+    public Set<String> getScriptPermissions() {
         return scriptPermissions;
     }
     /**
      * @param scriptPermissions the scriptPermissions to set
      */
-    public void setScriptPermissions(String scriptPermissions) {
+    public void setScriptPermissions(Set<String> scriptPermissions) {
         this.scriptPermissions = scriptPermissions;
     }
     /**
@@ -164,12 +166,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
         vo.setWriteAnnotation(writeAnnotation);
         vo.setDisabled(disabled);
         vo.setLogLevel(ScriptLog.LOG_LEVEL_CODES.getId(logLevel));
-        ScriptPermissions permissions = new ScriptPermissions();
-        permissions.setDataSourcePermissions(scriptPermissions);
-        permissions.setDataPointReadPermissions(scriptPermissions);
-        permissions.setDataPointSetPermissions(scriptPermissions);
-        permissions.setCustomPermissions(scriptPermissions);
-        vo.setScriptPermissions(permissions);
+        vo.setScriptPermissions(new ScriptPermissions(scriptPermissions));
         vo.setLogSize(logSize);
         vo.setLogCount(logCount);
         return vo;
@@ -187,7 +184,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
         this.logLevel = ScriptLog.LOG_LEVEL_CODES.getCode(vo.getLogLevel());
         ScriptPermissions permissions = vo.getScriptPermissions();
         if(permissions != null) {
-            this.scriptPermissions = permissions.getPermissions();
+            this.scriptPermissions = permissions.getPermissionsSet();
         }
         this.logSize = vo.getLogSize();
         this.logCount = vo.getLogCount();
