@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.infiniteautomation.mango.util.script.ScriptLogLevels;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.rt.script.ScriptContextVariable;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -141,5 +140,35 @@ public class MangoJavaScriptModel {
                 result.add(var);
             }
         return result;
+    }
+    
+    /**
+     * Holder for script context variable info
+     * @author Terry Packer
+     *
+     */
+    public static class ScriptContextVariableModel {
+        private String xid;
+        private String variableName;
+        
+        public ScriptContextVariableModel() { }
+        
+        public ScriptContextVariableModel(String xid, String variableName) {
+            this.xid = xid;
+            this.variableName = variableName;
+        }
+        
+        public String getXid() {
+            return xid;
+        }
+        public void setXid(String xid) {
+            this.xid = xid;
+        }
+        public String getVariableName() {
+            return variableName;
+        }
+        public void setVariableName(String variableName) {
+            this.variableName = variableName;
+        }
     }
 }

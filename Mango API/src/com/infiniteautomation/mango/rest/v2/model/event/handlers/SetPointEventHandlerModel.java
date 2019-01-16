@@ -9,18 +9,17 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
+import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel.ScriptContextVariableModel;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.SetPointEventHandlerDefinition;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.ApiModel;
 
@@ -240,15 +239,8 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
                 vo.setInactivePointId(inactivePointId);
         }
         vo.setInactiveScript(inactiveScript);
-        
-        if(scriptPermissions != null) {
-            ScriptPermissions permissions = new ScriptPermissions();
-            String permissionsString = Permissions.implodePermissionGroups(scriptPermissions);
-            permissions.setDataSourcePermissions(permissionsString);
-            permissions.setDataPointSetPermissions(permissionsString);
-            permissions.setDataPointReadPermissions(permissionsString);
-            vo.setScriptPermissions(permissions);
-        }
+        ScriptPermissions permissions = new ScriptPermissions(scriptPermissions);
+        vo.setScriptPermissions(permissions);
         
         if(scriptContext != null) {
             List<IntStringPair> additionalContext = new ArrayList<>();

@@ -9,25 +9,24 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel.ScriptContextVariableModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.AddressEntryModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.EmailRecipientModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListEntryModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.UserEntryModel;
-import com.infiniteautomation.mango.rest.v2.script.ScriptContextVariableModel;
+import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.EmailEventHandlerDefinition;
-import com.serotonin.m2m2.rt.script.ScriptPermissions;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.mailingList.UserEntry;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 
 import io.swagger.annotations.ApiModel;
@@ -330,14 +329,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
         vo.setCustomTemplate(customTemplate);
         
         vo.setScript(script);
-        if(scriptPermissions != null) {
-            ScriptPermissions permissions = new ScriptPermissions();
-            String permissionsString = Permissions.implodePermissionGroups(scriptPermissions);
-            permissions.setDataSourcePermissions(permissionsString);
-            permissions.setDataPointSetPermissions(permissionsString);
-            permissions.setDataPointReadPermissions(permissionsString);
-            vo.setScriptPermissions(permissions);
-        }
+        vo.setScriptPermissions(new ScriptPermissions(scriptPermissions));
         
         if(scriptContext != null) {
             List<IntStringPair> additionalContext = new ArrayList<>();
