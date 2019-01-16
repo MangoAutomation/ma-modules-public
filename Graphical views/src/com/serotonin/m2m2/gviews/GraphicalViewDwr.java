@@ -118,12 +118,10 @@ public class GraphicalViewDwr extends ModuleDwr {
         	
         	//Are we to update this component
             boolean update = System.currentTimeMillis() >= (viewComponent.getLastUpdated() + Common.getMillis(viewComponent.getUpdatePeriodType(), viewComponent.getUpdatePeriods()));
-            
             if (viewComponent.isCompoundComponent() && (edit || viewComponent.isVisible())) {
                 CompoundComponent compoundComponent = (CompoundComponent) viewComponent;
 
                 boolean imageChart = compoundComponent instanceof ImageChartComponent;
-                model.put("sessionUser", user);
 
                 // Add states for each of the children
                 for (CompoundChild child : compoundComponent.getChildComponents())
@@ -135,7 +133,6 @@ public class GraphicalViewDwr extends ModuleDwr {
                 state.setId(compoundComponent.getId());
 
                 model.clear();
-                model.put("sessionUser", user);
                 model.put("compoundComponent", compoundComponent);
 
                 List<Map<String, Object>> childData = new ArrayList<Map<String, Object>>();
@@ -157,7 +154,7 @@ public class GraphicalViewDwr extends ModuleDwr {
                 model.put("childData", childData);
 
                 if (compoundComponent.hasInfo())
-                    state.setInfo(generateViewContent(compoundComponent, update, request, "compoundInfoContent.jsp", model));
+                    state.setInfo(generateViewContent(compoundComponent, update, request, "compoundInfoContent.jsp", user, model));
 
                 //Check to see if we need to update it...
                 
@@ -238,11 +235,11 @@ public class GraphicalViewDwr extends ModuleDwr {
         else {
             // Add the rendered text as a convenience to the snippets.
             model.put("text", pointComponent.tgetDataPoint().getTextRenderer().getText(pointValue, TextRenderer.HINT_FULL));
-            state.setContent(generateViewContent(pointComponent, update, request, pointComponent.snippetName() + ".jsp", model));
+            state.setContent(generateViewContent(pointComponent, update, request, pointComponent.snippetName() + ".jsp", user, model));
             pointComponent.tgetDataPoint().updateLastValue(pointValue);
         }
 
-        state.setInfo(generateViewContent(pointComponent, update, request, "infoContent.jsp", model));
+        state.setInfo(generateViewContent(pointComponent, update, request, "infoContent.jsp", user, model));
         
         //TODO Cache this
         setMessages(state, request, getFullSnippetName("warningContent.jsp"), model);
@@ -719,8 +716,8 @@ public class GraphicalViewDwr extends ModuleDwr {
         new GraphicalViewDao().removeView(view.getId());
     }
 
-    private String generateViewContent(ViewComponent component, boolean update, HttpServletRequest request, String snippet, Map<String, Object> model) {
-        
+    private String generateViewContent(ViewComponent component, boolean update, HttpServletRequest request, String snippet, User user, Map<String, Object> model) {
+        model.put("sessionUser", user);
     	if(!update && component.getCachedContent(snippet) != null)
     		return (String)component.getCachedContent(snippet);
     	else{
