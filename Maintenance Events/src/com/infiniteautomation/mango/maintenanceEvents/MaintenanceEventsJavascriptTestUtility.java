@@ -4,7 +4,10 @@
 package com.infiniteautomation.mango.maintenanceEvents;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -20,17 +23,21 @@ import com.serotonin.m2m2.vo.permission.Permissions;
  */
 public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJavascriptUtility{
 
+    @Autowired
+    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, MaintenanceEventsService meService) {
+        super(service, meService);
+    }
     
     @Override
     public boolean toggle(String xid)
             throws NotFoundException, PermissionException, TranslatableIllegalStateException {
-        MaintenanceEventRT rt = service.getEventRT(xid, permissions);
+        MaintenanceEventRT rt = meService.getEventRT(xid, permissions);
         return !rt.isEventActive();
     }
     
     @Override
     public boolean setState(String xid, boolean state) {
-        service.getEventRT(xid, permissions); //check that it's enabled, we have toggle permissions
+        meService.getEventRT(xid, permissions); //check that it's enabled, we have toggle permissions
         return state;
     }
     
@@ -51,7 +58,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        service.ensureEditPermission(permissions, existing);
+        meService.ensureEditPermission(permissions, existing);
         //Don't change ID ever
         vo.setId(existing.getId());
         vo.ensureValid();
@@ -61,8 +68,8 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public MaintenanceEventVO update(String existingXid, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        MaintenanceEventVO existing = service.getFull(existingXid, permissions);
-        service.ensureEditPermission(permissions, existing);
+        MaintenanceEventVO existing = meService.getFull(existingXid, permissions);
+        meService.ensureEditPermission(permissions, existing);
         //Don't change ID ever
         vo.setId(existing.getId());
         vo.ensureValid();
@@ -71,8 +78,8 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     
     @Override
     public MaintenanceEventVO delete(String xid) throws NotFoundException, PermissionException {
-        MaintenanceEventVO vo = service.getFull(xid, permissions);
-        service.ensureEditPermission(permissions, vo);
+        MaintenanceEventVO vo = meService.getFull(xid, permissions);
+        meService.ensureEditPermission(permissions, vo);
         return vo;
     }
 }

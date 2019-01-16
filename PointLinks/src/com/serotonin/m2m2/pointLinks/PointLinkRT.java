@@ -14,6 +14,7 @@ import javax.script.CompiledScript;
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
@@ -166,16 +167,19 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                 Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
                 context.put(CONTEXT_SOURCE_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getSourcePointId()));
                 context.put(CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getTargetPointId()));
-                
-                PointValueTime pvt = service.execute(
+                MangoJavaScriptResult result = new MangoJavaScriptResult();
+                service.execute(
                         compiledScript, newValue.getTime(), newValue.getTime(), targetDataType,
                         context,
+                        null,
                         null,
                         vo.getScriptPermissions(),
                         scriptLog,
                         setCallback,
                         importExclusions,
+                        result,
                         false); 
+                PointValueTime pvt = (PointValueTime)result.getResult();
                 if (pvt == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
                     ready = true;

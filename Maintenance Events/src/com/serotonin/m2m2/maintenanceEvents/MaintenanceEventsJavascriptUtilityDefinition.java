@@ -14,16 +14,6 @@ import com.serotonin.m2m2.module.MangoJavascriptContextObjectDefinition;
  */
 public class MaintenanceEventsJavascriptUtilityDefinition extends MangoJavascriptContextObjectDefinition {
 
-    public static final String CONTEXT_KEY = "MaintenanceEventsUtility";
-    
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.MangoJavascriptContextObjectDefinition#getContextKey()
-     */
-    @Override
-    public String getContextKey() {
-        return CONTEXT_KEY;
-    }
-
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.module.MangoJavascriptContextObjectDefinition#getUtilityClass()
      */
