@@ -39,6 +39,7 @@ import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionDetails;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -509,6 +510,10 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
             throw new NotFoundRestException();
         }
 
+        //Can't lock your own password
+        if(currentUser.getId() == user.getId())
+            throw new PermissionException(new TranslatableMessage("users.validate.cannotLockOwnPassword"), currentUser);
+        
         UserDao.getInstance().lockPassword(user);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

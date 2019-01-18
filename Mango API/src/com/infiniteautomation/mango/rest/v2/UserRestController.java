@@ -15,14 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
@@ -30,8 +34,11 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionDetails;
+import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,10 +56,12 @@ public class UserRestController {
 
     private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};
     private final UsersService service;
+    private final MangoSessionRegistry sessionRegistry;
     
     @Autowired
-    public UserRestController(UsersService service) {
+    public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry) {
         this.service = service;
+        this.sessionRegistry = sessionRegistry;
     }
     
     @ApiOperation(
@@ -124,13 +133,19 @@ public class UserRestController {
             @RequestBody(required=true)
             UserModel model,
             @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder) {
+            HttpServletRequest request,
+            UriComponentsBuilder builder,
+            Authentication authentication) {
         
-        User newUser = service.update(username, model.toVO(), user);
-        URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
+        User update = service.update(username, model.toVO(), user);
+        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+
+        sessionRegistry.userUpdated(request, update);
+        URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(new UserModel(newUser), headers, HttpStatus.OK);
+        return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);
     }
 
     @ApiOperation(
@@ -150,9 +165,16 @@ public class UserRestController {
                     urlPathVariableName="username")
             UserModel model,
             @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder) {
+            HttpServletRequest request,
+            UriComponentsBuilder builder,
+            Authentication authentication) {
         
         User update = service.update(username, model.toVO(), user);
+        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+
+        
+        sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -168,6 +190,69 @@ public class UserRestController {
         return new UserModel(service.delete(username, user));
     }
     
+
+    @ApiOperation(value = "Update a user's home url")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}/homepage")
+    public ResponseEntity<UserModel> updateHomeUrl(
+            @ApiParam(value = "Username", required = true, allowMultiple = false)
+            @PathVariable String username,
+
+            @ApiParam(value = "Home Url", required = true, allowMultiple = false)
+            @RequestParam(required=true)
+            String url,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request,
+            UriComponentsBuilder builder,
+            Authentication authentication) throws RestValidationFailedException {
+
+        User update = service.get(username, user);
+        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+
+        update.setHomeUrl(url);
+        update = service.update(username, update, user);
+        sessionRegistry.userUpdated(request, update);
+        URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);
+    }
+    
+    @ApiOperation(
+            value = "Update a user's audio mute setting",
+            notes = "If you do not provide the mute parameter the current setting will be toggled"
+            )
+    @RequestMapping(method = RequestMethod.PUT, value = "/{username}/mute")
+    public ResponseEntity<UserModel> updateMuted(
+            @ApiParam(value = "Username", required = true, allowMultiple = false)
+            @PathVariable String username,
+
+            @ApiParam(value = "Mute", required = false, defaultValue="Toggle the current setting", allowMultiple = false)
+            @RequestParam(required=false)
+            Boolean mute,
+            HttpServletRequest request,
+            UriComponentsBuilder builder,
+            @AuthenticationPrincipal User user,
+            Authentication authentication) throws RestValidationFailedException {
+
+        User update = service.get(username, user);
+        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+
+        if(mute == null){
+            update.setMuted(!update.isMuted());
+        }else{
+            update.setMuted(mute);
+        }
+        update = service.update(username, update, user);
+        sessionRegistry.userUpdated(request, update);
+        URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);
+
+    }
+    
     @ApiOperation(value = "Locks a user's password", notes = "The user with a locked password cannot login using a username and password. " +
             "However the user's auth tokens will still work and the user can still reset their password using a reset token or email link")
     @RequestMapping(method = RequestMethod.PUT, value = "/{username}/lock-password")
@@ -175,8 +260,6 @@ public class UserRestController {
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,
             @AuthenticationPrincipal User currentUser) {
-
-        currentUser.ensureHasAdminPermission();
         service.lockPassword(username, currentUser);
     }
     
@@ -212,9 +295,7 @@ public class UserRestController {
             @AuthenticationPrincipal User user) {
         return service.getUserGroups(exclude, user);
     }
-    
-    //TODO Below here can be moved into a service class
-    
+
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         
         if (user.hasAdminPermission()) {
