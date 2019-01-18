@@ -195,6 +195,7 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		try{
 			this.data.setUnit(UnitUtil.parseLocal(unit));
 		}catch(IllegalArgumentException e){
+		    this.data.setUnitString(unit);
 			this.data.setUnit(null); //So we catch this on validation
 		}
 	}
@@ -226,7 +227,8 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		try{
 			this.data.setIntegralUnit(UnitUtil.parseLocal(unit));
 		}catch(Exception e){ 
-			this.data.setIntegralUnit(null);
+		    this.data.setIntegralUnitString(unit);
+            this.data.setIntegralUnit(null); //So we catch this on validation
 		}
 
 	}
@@ -257,7 +259,8 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		try{
 			this.data.setRenderedUnit(UnitUtil.parseLocal(unit));
 		}catch(Exception e){
-			this.data.setRenderedUnit(null);
+		    this.data.setRenderedUnitString(unit);
+            this.data.setRenderedUnit(null); //So we catch this on validation
 		}
 	}
 

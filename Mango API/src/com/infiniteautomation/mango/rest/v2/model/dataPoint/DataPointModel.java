@@ -168,6 +168,8 @@ public class DataPointModel {
             try {
                 point.setUnit(UnitUtil.parseLocal(unit));
             } catch(IllegalArgumentException e) {
+                point.setUnit(null); //Signal to use the unit string
+                point.setUnitString(unit);
             }
         }
         if (useIntegralUnit != null) {
@@ -177,6 +179,8 @@ public class DataPointModel {
             try {
                 point.setIntegralUnit(UnitUtil.parseLocal(integralUnit));
             } catch(IllegalArgumentException e) {
+                point.setIntegralUnit(null); //Signal to use the unit string
+                point.setIntegralUnitString(integralUnit);
             }
         }
         if (useRenderedUnit != null) {
@@ -186,6 +190,8 @@ public class DataPointModel {
             try {
                 point.setRenderedUnit(UnitUtil.parseLocal(renderedUnit));
             } catch(IllegalArgumentException e) {
+                point.setRenderedUnit(null); //Signal to use the unit string
+                point.setRenderedUnitString(renderedUnit);
             }
         }
         if (chartColour != null) {
