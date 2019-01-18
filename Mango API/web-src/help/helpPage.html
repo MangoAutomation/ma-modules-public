@@ -1,3 +1,20 @@
+<h2>Swagger UI</h2>
+<p>
+	Mango's REST uses Swagger to allow code auto-generation and includes an API exploration tool at /swagger-ui.html.  
+	Note that this is disabled by default.  To enable this feature set the env property swagger.enabled=true.  
+	The Swagger JSON api definition can be accessed at: /swagger/v2/api-docs Note that the versions of the REST api 
+	are separated and accessed by the drop down in the top right corner of the UI.
+</p>
+<p>	
+	It is possible to expose Swagger for public view to non logged in Users by setting swagger.apidocs.protected=false.
+	The REST api is still restricted but this allows users to explore the endpoints and test them via supplying a token.  
+</p>
+<p>
+	To use a token, first generate one in Mango and then click the 'Authorize' button in the Swagger UI.  In the 'value' field enter 
+	the text below.  Ensure you put a space between the word Bearer and the token value.
+</p>
+<pre>Bearer token-value</pre>
+
 <h2>CORS Support</h2>
 <p>
     The API is designed to work with Cross Origin Sharing but the filter must be enabled first.
