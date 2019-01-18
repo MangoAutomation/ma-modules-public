@@ -41,6 +41,7 @@ import com.serotonin.m2m2.reports.vo.ReportInstance;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.script.DataPointWrapper;
 import com.serotonin.m2m2.util.ColorUtils;
 import com.serotonin.m2m2.util.chart.DiscreteTimeSeries;
 import com.serotonin.m2m2.util.chart.ImageChartUtils;
@@ -336,10 +337,8 @@ public class ReportChartCreator {
         return pointStatistics;
     }
 
-    public class PointStatistics {
+    public class PointStatistics extends DataPointWrapper {
         private final int reportPointId;
-        private String name;
-		private String deviceName;
         private int dataType;
         private String dataTypeDescription;
         private String startValue;
@@ -352,28 +351,11 @@ public class ReportChartCreator {
         private NumericTimeSeries numericTimeSeries;
         private DiscreteTimeSeries discreteTimeSeries;
         private byte[] imageData;
-        private DataPointVO vo;
-        private String tags;
 
-        public PointStatistics(int reportPointId) {
+        public PointStatistics(int reportPointId, DataPointVO dpvo) {
+            super(dpvo, null);
             this.reportPointId = reportPointId;
         }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-		
-		public String getDeviceName() {
-			return deviceName;
-		}
-		
-		public void setDeviceName(String deviceName) {
-			this.deviceName = deviceName;
-		}
 
         public int getDataType() {
             return dataType;
@@ -391,8 +373,8 @@ public class ReportChartCreator {
             this.dataTypeDescription = dataTypeDescription;
         }
         
-        public String getPointHierarchyPath() {
-            return PointHierarchy.getFlatPath(reportPointId, DataPointDao.getInstance().getPointHierarchy(true).getRoot());
+        public String getPointHierarchyPath() { //Legacy compatibility
+            return getPath();
         }
 
         public String getStartValue() {
@@ -532,18 +514,6 @@ public class ReportChartCreator {
             return vo;
         }
 
-        public void setVo(DataPointVO vo) {
-            this.vo = vo;
-        }
-
-        public String getTags() {
-            return tags;
-        }
-
-        public void setTags(String tags) {
-            this.tags = tags;
-        }
-        
         public void setLastValue(ExportDataValue lastValue) {
             this.lastValue = lastValue;
         }
@@ -641,9 +611,7 @@ public class ReportChartCreator {
 			
 			addDeviceIfAbsent(pointInfo.getDeviceName());
 
-            point = new PointStatistics(pointInfo.getReportPointId());
-            point.setName(pointInfo.getPointName());
-			point.setDeviceName(pointInfo.getDeviceName());
+            point = new PointStatistics(pointInfo.getReportPointId(), DataPointDao.getInstance().getDataPoint(pointInfo.getXid()));
             point.setDataType(pointInfo.getDataType());
             point.setDataTypeDescription(DataTypes.getDataTypeMessage(pointInfo.getDataType()).translate(translations));
             point.setTextRenderer(pointInfo.getTextRenderer());
@@ -652,22 +620,6 @@ public class ReportChartCreator {
                         TextRenderer.HINT_SPECIFIC));
                 point.setEndValue(point.getStartValue());
             }
-            
-            // Make the DataPointVO available to the freemarker template, may be null if the point was deleted
-            DataPointVO vo = DataPointDao.getInstance().getDataPoint(pointInfo.getXid());
-            point.setVo(vo);
-            
-            // Generate a tag string for easy use in the template
-            List<String> tagList = new ArrayList<>();
-            if (vo != null) {
-                vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
-                Map<String, String> tags = vo.getTags();
-                for (Entry<String, String> entry : tags.entrySet()) {
-                    tagList.add(entry.getKey() + ": " + entry.getValue());
-                }
-            }
-            
-            point.setTags(String.join(", ", tagList));
             
             pointStatistics.add(point);
             devices.get(point.getDeviceName()).put(point.getName(), point);
