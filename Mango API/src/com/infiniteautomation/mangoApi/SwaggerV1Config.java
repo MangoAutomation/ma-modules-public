@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.fasterxml.classmate.TypeResolver;
 import com.infiniteautomation.mango.rest.swagger.MangoRestSwaggerResourceProvider;
+import com.serotonin.m2m2.Common;
 
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -55,8 +56,9 @@ public class SwaggerV1Config {
         this.typeResolver = typeResolver;
 
         SwaggerResource v1 = new SwaggerResource();
-        v1.setName("v1");
-        v1.setUrl("/rest/v1/swagger/v2/api-docs");
+        v1.setName("Mango API v1");
+        String url = Common.envProps.getString("springfox.documentation.swagger.v2.path", "/swagger/v2/api-docs");
+        v1.setUrl("/rest/v1" + url);
         v1.setSwaggerVersion("2.0");
         resourceProvider.add(v1);
     }
