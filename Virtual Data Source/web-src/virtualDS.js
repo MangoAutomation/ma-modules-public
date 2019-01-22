@@ -39,7 +39,10 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
                 settable: true,
                 changeType: 'BROWNIAN'
             }
-        }
+        },
+        bulkEditorColumns: [
+            {name: 'pointLocator.changeType', label: 'dsEdit.virtual.changeType', selectedByDefault: true}
+        ]
     });
     
     maPointProvider.registerType({
