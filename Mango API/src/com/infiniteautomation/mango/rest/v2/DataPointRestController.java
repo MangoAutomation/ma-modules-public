@@ -531,6 +531,7 @@ public class DataPointRestController {
                     if (body == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
                     }
+                    result.setBody(body);
                     result.setBody(this.createDataPoint(body, user, builder).getBody());
                     break;
                 case UPDATE:
@@ -540,6 +541,7 @@ public class DataPointRestController {
                     if (body == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
                     }
+                    result.setBody(body);
                     result.setBody(this.updateDataPoint(xid, body, user, builder).getBody());
                     break;
                 case DELETE:
