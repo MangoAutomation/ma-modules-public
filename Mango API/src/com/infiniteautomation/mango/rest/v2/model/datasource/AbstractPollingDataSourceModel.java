@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.datasource;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
@@ -15,8 +16,15 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
 public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO<T>> extends AbstractDataSourceModel<T> {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected TimePeriod pollPeriod;
-
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected Boolean quantize;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected String cronPattern;
+    
     public AbstractPollingDataSourceModel() {
         super();
     }
@@ -55,4 +63,33 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     public void setPollPeriod(TimePeriod pollPeriod) {
         this.pollPeriod = pollPeriod;
     }
+
+    /**
+     * @return the quantize
+     */
+    public Boolean getQuantize() {
+        return quantize;
+    }
+
+    /**
+     * @param quantize the quantize to set
+     */
+    public void setQuantize(Boolean quantize) {
+        this.quantize = quantize;
+    }
+
+    /**
+     * @return the cronPattern
+     */
+    public String getCronPattern() {
+        return cronPattern;
+    }
+
+    /**
+     * @param cronPattern the cronPattern to set
+     */
+    public void setCronPattern(String cronPattern) {
+        this.cronPattern = cronPattern;
+    }
+    
 }
