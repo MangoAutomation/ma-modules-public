@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
@@ -122,8 +122,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             // special handling for our streamed arrays with total, unwrap the array and discard the total
-            if (value instanceof StreamedArrayWithTotal) {
-                value = ((StreamedArrayWithTotal) value).getItems();
+            if (value instanceof ArrayWithTotal) {
+                value = ((ArrayWithTotal<?>) value).getItems();
             }
             if (value instanceof QueryDataPageStream) {
                 // force using the serializer for QueryArrayStream so the total isn't written out
