@@ -7,7 +7,6 @@ package com.serotonin.m2m2.virtual.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -21,21 +20,13 @@ import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.virtual.rt.VirtualDataSourceRT;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
-import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
 public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO> {
     
 
 	private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
-        EVENT_CODES.addElement(VirtualDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
-    }
-    
-    
-	@Override
-    protected void addEventTypes(List<EventTypeVO> ets) {
-    	 ets.add(createPollAbortedEventType(VirtualDataSourceRT.POLL_ABORTED_EVENT));
+        EVENT_CODES.addElement(VirtualDataSourceRT.POLL_ABORTED_EVENT, POLL_ABORTED);
     }
     
 	/*
@@ -138,12 +129,4 @@ public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO
 		if(jsonObject.containsKey("delay"))
 			delay = jsonObject.getLong("delay");
     }
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
-	 */
-	@Override
-	public AbstractDataSourceModel<VirtualDataSourceVO> asModel() {
-		return new VirtualDataSourceModel(this);
-	}
 }

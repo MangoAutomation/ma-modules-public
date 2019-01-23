@@ -24,7 +24,15 @@ describe('Virtual data source v2', function() {
             xid: 'DS_VIRT_TEST',
             name: 'Virtual Test',
             enabled: false,
-            alarmLevels: null, //TBD
+            eventAlarmLevels: [
+                {
+                    dataSourceXid: 'DS_VIRT_TEST',
+                    eventType: 'POLL_ABORTED',
+                    duplicateHandling: 'IGNORE',
+                    level: 'INFORMATION',
+                    description: 'Poll aborted'
+                 }
+            ],
             purgeSettings: {
                 override: true,
                 frequency: {
@@ -55,7 +63,7 @@ describe('Virtual data source v2', function() {
           assert.strictEqual(response.data.pollPeriod.periods, vrtDs.pollPeriod.periods);
           assert.strictEqual(response.data.pollPeriod.type, vrtDs.pollPeriod.type);
           assertPermissions(response.data.editPermission, vrtDs.editPermission);
-          assertAlarmLevels(response.data.alarmLevels, vrtDs.alarmLevels);
+          assertAlarmLevels(response.data.eventAlarmLevels, vrtDs.eventAlarmLevels);
       });
     });
 
@@ -66,7 +74,6 @@ describe('Virtual data source v2', function() {
             method: 'PUT',
             data: vrtDs
         }).then((response) => {
-            console.log(response.data);
             assert.isNumber(response.data.id);
             assert.strictEqual(response.data.xid, vrtDs.xid);
             assert.strictEqual(response.data.name, vrtDs.name);
@@ -75,10 +82,10 @@ describe('Virtual data source v2', function() {
             assert.strictEqual(response.data.pollPeriod.periods, vrtDs.pollPeriod.periods);
             assert.strictEqual(response.data.pollPeriod.type, vrtDs.pollPeriod.type);
             assertPermissions(response.data.editPermission, vrtDs.editPermission);
-            assertAlarmLevels(response.data.alarmLevels, vrtDs.alarmLevels);
+            assertAlarmLevels(response.data.eventAlarmLevels, vrtDs.eventAlarmLevels);
         });
       });
-
+    
     it('Delete virtual data source', () => {
         return client.restRequest({
             path: `/rest/v2/data-sources/${vrtDs.xid}`,
@@ -92,14 +99,31 @@ describe('Virtual data source v2', function() {
             assert.strictEqual(response.data.pollPeriod.periods, vrtDs.pollPeriod.periods);
             assert.strictEqual(response.data.pollPeriod.type, vrtDs.pollPeriod.type);
             assertPermissions(response.data.editPermission, vrtDs.editPermission);
-            assertAlarmLevels(response.data.alarmLevels, vrtDs.alarmLevels);
+            assertAlarmLevels(response.data.eventAlarmLevels, vrtDs.eventAlarmLevels);
         });
     });
     
-    function assertPermissions(saved, stored){
-        console.log(saved);
+    function assertPermissions(saved, stored) {
+        assert.strictEqual(saved.length, stored.length);
+        for(var i=0; i<stored.length; i++){
+            assert.include(saved, stored[i], stored[i] + ' was not found in permissions')
+        }
     }
     function assertAlarmLevels(saved, stored){
-        console.log(saved);
+        var assertedEventTypes = [];
+        assert.strictEqual(saved.length, stored.length);
+        for(var i=0; i<stored.length; i++){
+            var found = false;
+            for(var j=0; j<saved.length; j++){
+                if(stored[i].eventType === saved[j].eventType){
+                    found = true;
+                    assert.strictEqual(saved.level, stored.level);
+                    assertedEventTypes.push(saved[i].eventType)
+                    break;
+                }
+            }
+            if(found === false)
+                assert.fail('Did not find event type: ' + stored[i].eventType);
+        }
     }
 });

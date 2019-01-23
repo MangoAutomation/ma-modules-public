@@ -36,10 +36,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
  * @author Terry Packer
  *
  */
-@CSVEntity(typeName=VirtualPointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName=VirtualPointLocatorModel.TYPE_NAME)
 public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLocatorVO>{
 
-	/**
+    public static final String TYPE_NAME = "PL.VIRTUAL";
+	
+    /**
 	 * @param data
 	 */
 	public VirtualPointLocatorModel(VirtualPointLocatorVO data) {
@@ -335,7 +337,7 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 	 */
 	@Override
 	public String getTypeName() {
-		return VirtualPointLocatorModelDefinition.TYPE_NAME;
+		return TYPE_NAME;
 	}
 	
 }

@@ -1,10 +1,11 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.virtual;
+package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.VirtualDataSourceModel;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
@@ -28,7 +29,7 @@ public class VirtualDataSourceModelMapping implements RestModelMapping<VirtualDa
     }
 
     @Override
-    public VirtualDataSourceModel map(Object from, User user) {
+    public VirtualDataSourceModel map(Object from, User user, RestModelMapper mapper) {
         return new VirtualDataSourceModel((VirtualDataSourceVO)from);
     }
 
