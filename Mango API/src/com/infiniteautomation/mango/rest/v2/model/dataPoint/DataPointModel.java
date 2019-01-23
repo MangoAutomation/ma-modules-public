@@ -114,9 +114,7 @@ public class DataPointModel {
         if (this.useRenderedUnit) {
             this.renderedUnit = UnitUtil.formatLocal(point.getRenderedUnit());
         }
-        if (point.getPointLocator() != null) {
-            this.pointLocator = point.getPointLocator().asModel();
-        }
+        //The Point Locator will be set by the RestModelMapper after
         this.chartColour = point.getChartColour();
         this.plotType = DataPointVO.PLOT_TYPE_CODES.getCode(point.getPlotType());
         this.tags = point.getTags();

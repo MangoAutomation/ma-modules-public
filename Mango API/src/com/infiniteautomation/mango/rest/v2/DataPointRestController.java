@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
@@ -89,8 +91,14 @@ public class DataPointRestController {
 
     private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
 
-    public DataPointRestController(@Autowired TemporaryResourceWebSocketHandler websocket) {
+    private final BiFunction<DataPointVO, User, DataPointModel> map;
+
+    @Autowired
+    public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
+        this.map = (vo, user) -> {
+            return modelMapper.map(vo, DataPointModel.class, user);
+        };
     }
 
     @ApiOperation(
@@ -110,7 +118,7 @@ public class DataPointRestController {
         DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
 
         Permissions.ensureDataPointReadPermission(user, dataPoint);
-        return new DataPointModel(dataPoint);
+        return map.apply(dataPoint, user);
     }
 
     @ApiOperation(
@@ -130,7 +138,7 @@ public class DataPointRestController {
         DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
 
         Permissions.ensureDataPointReadPermission(user, dataPoint);
-        return new DataPointModel(dataPoint);
+        return map.apply(dataPoint, user);
     }
 
     @ApiOperation(value = "Enable/disable/restart a data point")
@@ -273,7 +281,7 @@ public class DataPointRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.OK);
+        return new ResponseEntity<>(map.apply(dataPoint, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Create a new data point")
@@ -310,7 +318,7 @@ public class DataPointRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(new DataPointModel(dataPoint), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(map.apply(dataPoint, user), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Delete a data point")
@@ -328,7 +336,7 @@ public class DataPointRestController {
         Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
         Common.runtimeManager.deleteDataPoint(dataPoint);
-        return new DataPointModel(dataPoint);
+        return map.apply(dataPoint, user);
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
@@ -558,14 +566,15 @@ public class DataPointRestController {
         return result;
     }
 
-    private static StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         return doQuery(rql, user, null);
     }
 
-    private static StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
+        
         final Function<DataPointVO, Object> transformPoint = item -> {
             DataPointDao.getInstance().loadPartialRelationalData(item);
-            DataPointModel pointModel = new DataPointModel(item);
+            DataPointModel pointModel = map.apply(item, user);
 
             // option to apply a further transformation
             if (toModel != null) {
@@ -574,7 +583,7 @@ public class DataPointRestController {
 
             return pointModel;
         };
-
+        
         if (user.hasAdminPermission()) {
             return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), rql, transformPoint);
         } else {

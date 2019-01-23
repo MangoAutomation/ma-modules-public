@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model;
+package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.util.Collections;
 import java.util.List;

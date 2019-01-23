@@ -65,7 +65,6 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 @EnableWebMvc
 @ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.v2" }, excludeFilters = {})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
-    
 
     final ObjectMapper mapper;
     final PartialUpdateArgumentResolver resolver;
@@ -93,6 +92,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         
     }
 
+    
+    
     /**
      * Create a Path helper that will not URL Decode
      * the context path and request URI but will

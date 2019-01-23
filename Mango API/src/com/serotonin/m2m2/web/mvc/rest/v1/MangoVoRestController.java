@@ -20,6 +20,7 @@ import com.infiniteautomation.mango.db.query.TableModel;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
@@ -158,5 +159,16 @@ public abstract class MangoVoRestController<VO extends AbstractBasicVO, MODEL, D
      */
     @Override
     public abstract MODEL createModel(VO vo);
+    
+    /**
+     * Create a model, override if user is required
+     *   defaults to calling createModel(vo);
+     * @param vo
+     * @param user
+     * @return
+     */
+    public MODEL createModel(VO vo, User user) {
+        return createModel(vo);
+    }
 
 }

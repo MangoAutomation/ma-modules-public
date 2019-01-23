@@ -55,6 +55,9 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@JsonProperty 
 	@JsonDeserialize(using = SuperclassModelDeserializer.class)
 	private BaseChartRendererModel<?> chartRenderer;
+
+	private PointLocatorModel<?> pointLocator;
+	
 	
 	public DataPointModel(){
 		this(new DataPointVO());
@@ -267,18 +270,16 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	@CSVColumnGetter(header="pointLocatorType", order=14)
 	@JsonGetter("pointLocator")
 	public PointLocatorModel<?> getPointLocator(){
-		PointLocatorVO<?> vo = this.data.getPointLocator();
-		if(vo == null)
-			return null;
-		else
-			return this.data.getPointLocator().asModel();
+		return pointLocator;
 	}
 	
 	@CSVColumnSetter(header="pointLocatorType", order=14)
 	@JsonSetter("pointLocator")
 	public void setPointLocator(PointLocatorModel<?> pl){
-		if(pl != null)
+		if(pl != null) {
+		    this.pointLocator = pl;
 			this.data.setPointLocator((PointLocatorVO<?>)pl.getData());
+		}
 	}
 	
 	@JsonGetter("chartColour")

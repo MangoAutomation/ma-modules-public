@@ -45,7 +45,7 @@ public class DataSourceStreamCallback extends VoStreamCallback<DataSourceVO<?>, 
 		
 		try{
     		if(Permissions.hasDataSourcePermission(user, vo)){
-    			AbstractDataSourceModel<?> model = this.controller.createModel(vo);
+    			AbstractDataSourceModel<?> model = this.controller.createModel(vo, user);
     			this.jgen.writeObject(model);
     		}
     	}catch(PermissionException e){
@@ -58,7 +58,7 @@ public class DataSourceStreamCallback extends VoStreamCallback<DataSourceVO<?>, 
 	protected void writeCsv(DataSourceVO<?> vo) throws IOException{
 		try{
     		if(Permissions.hasDataSourcePermission(user, vo)){
-    			AbstractDataSourceModel<?> model = this.controller.createModel(vo);
+    			AbstractDataSourceModel<?> model = this.controller.createModel(vo, user);
     			this.csvWriter.writeNext(model);
     		}
     	}catch(PermissionException e){

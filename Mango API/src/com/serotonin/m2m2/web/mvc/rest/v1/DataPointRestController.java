@@ -8,12 +8,14 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -54,27 +56,33 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapper;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointStreamCallback;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
  *
  */
-@Api(value="Data Points", description="Data points")
+@Api(value="Data Points")
 @RestController(value="DataPointRestControllerV1")
 @RequestMapping("/data-points")
 public class DataPointRestController extends MangoVoRestController<DataPointVO, DataPointModel, DataPointDao>{
 
     private static Log LOG = LogFactory.getLog(DataPointRestController.class);
 
-    public DataPointRestController(){
+    private final BiFunction<DataPointVO, User, DataPointModel> map;
+    
+    @Autowired
+    public DataPointRestController(final RestModelMapper modelMapper){
         super(DataPointDao.getInstance());
-        LOG.info("Creating Data Point Rest Controller.");
+        this.map = (vo, user) -> {
+            return modelMapper.map(vo, DataPointModel.class, user);
+        };
     }
 
 
@@ -129,7 +137,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             //Check permissions
             try{
                 if(Permissions.hasDataPointReadPermission(user, vo))
-                    return result.createResponseEntity(new DataPointModel(vo));
+                    return result.createResponseEntity(map.apply(vo, user));
                 else{
                     LOG.warn("User: " + user.getUsername() + " tried to access data point with xid " + vo.getXid());
                     result.addRestMessage(getUnauthorizedMessage());
@@ -166,7 +174,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             //Check permissions
             try{
                 if(Permissions.hasDataPointReadPermission(user, vo))
-                    return result.createResponseEntity(new DataPointModel(vo));
+                    return result.createResponseEntity(map.apply(vo, user));
                 else{
                     LOG.warn("User: " + user.getUsername() + " tried to access data point with xid " + vo.getXid());
                     result.addRestMessage(getUnauthorizedMessage());
@@ -595,7 +603,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 }
 
                 Common.runtimeManager.deleteDataPoint(existing);
-                return result.createResponseEntity(new DataPointModel(existing));
+                return result.createResponseEntity(map.apply(existing, user));
             }
         }
         else {
@@ -670,7 +678,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             ProcessResult validation = new ProcessResult();
             copy.validate(validation);
 
-            DataPointModel model = new DataPointModel(copy);
+            DataPointModel model = map.apply(copy, user);
 
             if(model.validate()){
                 Common.runtimeManager.saveDataPoint(copy);
@@ -725,7 +733,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             for(DataPointVO vo : dataPoints){
                 try{
                     if(Permissions.hasDataPointReadPermission(user, vo)){
-                        userDataPoints.add(new DataPointModel(vo));
+                        userDataPoints.add(map.apply(vo, user));
                     }
                 }catch(PermissionException e){
                     //Munched
@@ -972,12 +980,16 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
     }
 
 
+    @Override
+    public DataPointModel createModel(DataPointVO vo) {
+        throw new UnsupportedOperationException();
+    }
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractVO)
      */
     @Override
-    public DataPointModel createModel(DataPointVO vo) {
-        return new DataPointModel(vo);
+    public DataPointModel createModel(DataPointVO vo, User user) {
+        return map.apply(vo, user);
     }
 
 }

@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.User;
@@ -27,7 +28,7 @@ public class AuditEventTypeModelMapping implements RestModelMapping<AuditEventTy
     }
 
     @Override
-    public AuditEventTypeModel map(Object from, User user) {
+    public AuditEventTypeModel map(Object from, User user, RestModelMapper mapper) {
         return new AuditEventTypeModel((AuditEventType) from);
     }
 

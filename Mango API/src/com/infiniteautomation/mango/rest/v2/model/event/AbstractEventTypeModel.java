@@ -5,10 +5,12 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  *
@@ -22,11 +24,23 @@ import io.swagger.annotations.ApiModel;
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="eventType")
 public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
 
+    @ApiModelProperty("Type of event")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String eventType;
+    
+    @ApiModelProperty("Sub-type of event")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String subType;
     protected DuplicateHandling duplicateHandling;
+    
+    @ApiModelProperty("ID used in event type/subtype combination")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer referenceId1;
+    
+    @ApiModelProperty("ID used in event type/subtype combination")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer referenceId2;
+    
     protected Boolean rateLimited;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected SOURCE source;
@@ -109,8 +123,8 @@ public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
         this.eventType = type.getEventType();
         this.subType = type.getEventSubtype();
         this.duplicateHandling = type.getDuplicateHandling();
-        this.referenceId1 = type.getReferenceId1();
-        this.referenceId2 = type.getReferenceId2();
+        this.referenceId1 = type.getReferenceId1() == Common.NEW_ID ? null : type.getReferenceId1();
+        this.referenceId2 = type.getReferenceId2() == Common.NEW_ID ? null : type.getReferenceId2();
         this.rateLimited = type.isRateLimited();
     }
 

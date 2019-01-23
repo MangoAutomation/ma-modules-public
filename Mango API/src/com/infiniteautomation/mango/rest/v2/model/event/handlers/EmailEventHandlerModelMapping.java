@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
@@ -17,7 +18,7 @@ import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
 public class EmailEventHandlerModelMapping implements RestModelMapping<EmailEventHandlerVO, EmailEventHandlerModel> {
 
     @Override
-    public EmailEventHandlerModel map(Object o, User user) {
+    public EmailEventHandlerModel map(Object o, User user, RestModelMapper mapper) {
         return new EmailEventHandlerModel((EmailEventHandlerVO)o);
     }
 

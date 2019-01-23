@@ -7,12 +7,14 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,6 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -40,6 +43,7 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapper;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.DataSourceStreamCallback;
 
@@ -57,9 +61,16 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/data-sources")
 public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>>{
 
-    public DataSourceRestController(){
+    private final DataSourceService service;
+    private final BiFunction<DataSourceVO<?>, User, AbstractDataSourceModel<?>> map;
+    
+    @Autowired
+    public DataSourceRestController(final DataSourceService service, final RestModelMapper modelMapper){
         super(DataSourceDao.getInstance());
-        LOG.info("Creating DS Rest Controller");
+        this.service = service;
+        this.map = (vo, user) -> {
+            return modelMapper.map(vo, AbstractDataSourceModel.class, user);
+        };
     }
     private static Log LOG = LogFactory.getLog(DataSourceRestController.class);
 
@@ -107,7 +118,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             for(DataSourceVO<?> ds : dataSources){
                 try{
                     if(Permissions.hasDataSourcePermission(user, ds))
-                        models.add(ds.asModel());
+                        models.add(map.apply(ds, user));
                 }catch(PermissionException e){
                     //Munch Munch
                 }
@@ -135,7 +146,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }else{
                 try{
                     if(Permissions.hasDataSourcePermission(user, vo))
-                        return result.createResponseEntity(vo.asModel());
+                        return result.createResponseEntity(map.apply(vo, user));
                     else{
                         result.addRestMessage(getUnauthorizedMessage());
                         return result.createResponseEntity();
@@ -169,7 +180,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }else{
                 try{
                     if(Permissions.hasDataSourcePermission(user, vo))
-                        return result.createResponseEntity(vo.asModel());
+                        return result.createResponseEntity(map.apply(vo, user));
                     else{
                         result.addRestMessage(getUnauthorizedMessage());
                         return result.createResponseEntity();
@@ -288,9 +299,9 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             else {
                 Common.runtimeManager.saveDataSource(vo);
                 DataSourceVO<?> created = DataSourceDao.getInstance().getByXid(model.getXid());
-                URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{created.asModel().getXid()}).toUri();
+                URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{created.getXid()}).toUri();
                 result.addRestMessage(this.getResourceCreatedMessage(location));
-                return result.createResponseEntity(created.asModel());
+                return result.createResponseEntity(map.apply(created, user));
             }
         } else {
             return result.createResponseEntity();
@@ -324,7 +335,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
                 }
 
                 Common.runtimeManager.deleteDataSource(existing.getId());
-                return result.createResponseEntity(existing.asModel());
+                return result.createResponseEntity(map.apply(existing, user));
             }
         }
         return result.createResponseEntity();
@@ -393,7 +404,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             ProcessResult validation = new ProcessResult();
             copy.validate(validation);
 
-            AbstractDataSourceModel<?> model = copy.asModel();
+            AbstractDataSourceModel<?> model = map.apply(copy, user);
 
             if(model.validate()){
                 Common.runtimeManager.saveDataSource(copy);
@@ -445,13 +456,18 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Override
+    public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo) {
+        throw new UnsupportedOperationException();
+    }
+    
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
      */
     @Override
-    public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo) {
+    public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo, User user) {
         if(vo != null)
-            return vo.asModel();
+            return map.apply(vo, user);
         else
             return null;
     }

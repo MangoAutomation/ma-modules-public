@@ -14,9 +14,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -36,6 +33,9 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
 
     public static final String MODEL_TYPE = "modelType";
 
+    @JsonIgnore
+    protected DataSourceDefinition definition;
+    
     @ApiModelProperty("Read only description of data source connection")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private TranslatableMessage connectionDiscription;
@@ -45,10 +45,9 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     private TranslatableMessage description;
     
     private boolean enabled;
-    private List<EventTypeVOModel<DataSourceEventType>> alarmLevels;
+    private List<EventTypeAlarmLevelModel> eventAlarmLevels;
     private PurgeSettings purgeSettings;
     private Set<String> editPermission;
-    
 
     public AbstractDataSourceModel() {
         super();
@@ -85,18 +84,22 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
+        this.definition = vo.getDefinition();
         this.connectionDiscription = vo.getConnectionDescription();
         this.description = new TranslatableMessage(vo.getDefinition().getDescriptionKey());
         
         this.enabled = vo.isEnabled();
-        this.alarmLevels = new ArrayList<>();
+        this.eventAlarmLevels = new ArrayList<>();
         for(EventTypeVO evt : vo.getEventTypes()) {
             DataSourceEventType dsEvt = (DataSourceEventType)evt.getEventType();
-            EventTypeVOModel<DataSourceEventType> model = new EventTypeVOModel<>(
-                    new DataSourceEventTypeModel(dsEvt), 
-                    evt.getDescription(),
-                    evt.getAlarmLevel());
-            this.alarmLevels.add(model);
+            EventTypeAlarmLevelModel model = new EventTypeAlarmLevelModel(
+                    vo.getXid(),
+                    dsEvt.getEventSubtype(),
+                    dsEvt.getDuplicateHandling(),
+                    dsEvt.getAlarmLevel(),
+                    evt.getDescription()
+                    );
+            this.eventAlarmLevels.add(model);
         }
         
         this.purgeSettings = new PurgeSettings(vo);
@@ -107,10 +110,9 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     public T toVO() {
         T vo = super.toVO();
         vo.setEnabled(enabled);
-        if(alarmLevels != null) {
-            for(EventTypeVOModel<DataSourceEventType> level : alarmLevels) {
-                AbstractEventTypeModel<DataSourceEventType> type = level.getType();
-                vo.setAlarmLevel(type.getReferenceId2(), level.getAlarmLevel());
+        if(eventAlarmLevels != null) {
+            for(EventTypeAlarmLevelModel eval : eventAlarmLevels) {
+                vo.setAlarmLevel(eval.getEventType(), eval.getLevel());
             }
         }
         
@@ -160,15 +162,15 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     /**
      * @return the alarmLevels
      */
-    public List<EventTypeVOModel<DataSourceEventType>> getAlarmLevels() {
-        return alarmLevels;
+    public List<EventTypeAlarmLevelModel> getEventAlarmLevels() {
+        return eventAlarmLevels;
     }
 
     /**
      * @param alarmLevels the alarmLevels to set
      */
-    public void setAlarmLevels(List<EventTypeVOModel<DataSourceEventType>> alarmLevels) {
-        this.alarmLevels = alarmLevels;
+    public void setEventAlarmLevels(List<EventTypeAlarmLevelModel> alarmLevels) {
+        this.eventAlarmLevels = alarmLevels;
     }
 
     /**
