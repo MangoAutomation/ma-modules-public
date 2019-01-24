@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.User;
 public class MaintenanceEventTypeModelMapping implements RestModelMapping<MaintenanceEventType, MaintenanceEventTypeModel>{
 
     @Override
-    public MaintenanceEventTypeModel map(Object o, User user) {
+    public MaintenanceEventTypeModel map(Object o, User user, RestModelMapper mapper) {
         MaintenanceEventType type = (MaintenanceEventType)o;
         MaintenanceEventVO vo = MaintenanceEventDao.getInstance().get(type.getReferenceId1());
         MaintenanceEventTypeModel model;

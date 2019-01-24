@@ -16,7 +16,7 @@ import com.serotonin.m2m2.vo.User;
 public class MaintenanceEventModelMapping implements RestModelMapping<MaintenanceEventVO, MaintenanceEventModel>{
 
     @Override
-    public MaintenanceEventModel map(Object o, User user) {
+    public MaintenanceEventModel map(Object o, User user, RestModelMapper mapper) {
         return new MaintenanceEventModel((MaintenanceEventVO)o);
     }
 
