@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.User;
 public class ScheduledEventTypeModelMapping implements RestModelMapping<ScheduledEventType, ScheduledEventTypeModel>{
 
     @Override
-    public ScheduledEventTypeModel map(Object o, User user) {
+    public ScheduledEventTypeModel map(Object o, User user, RestModelMapper mapper) {
         ScheduledEventType type = (ScheduledEventType)o;
         ScheduledEventVO vo = ScheduledEventDao.getInstance().getScheduledEvent(type.getReferenceId1());
         ScheduledEventTypeModel model;
