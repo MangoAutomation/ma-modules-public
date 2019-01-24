@@ -7,9 +7,10 @@ import virtualDataPointEditor from './virtualDataPointEditor.html';
 
 class VirtualDataPointEditorController {
     static get $$ngIsClass() { return true; }
-    static get $inject() { return []; }
+    static get $inject() { return ['maPoint']; }
     
-    constructor() {
+    constructor(maPoint) {
+        this.dataTypes = maPoint.dataTypes.filter(t => t.key !== 'IMAGE');
     }
     
     $onChanges(changes) {

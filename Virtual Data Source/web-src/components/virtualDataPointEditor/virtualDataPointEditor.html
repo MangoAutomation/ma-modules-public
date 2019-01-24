@@ -10,7 +10,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>storage</md-icon>
         <label ma-tr="dsEdit.pointDataType"></label>
-        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataSource.pointLocator.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataPoint.pointLocator.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+            <md-option ng-repeat="dataType in $ctrl.dataTypes track by dataType.key" ng-value="dataType.key" ma-tr="{{dataType.translation}}"></md-option>
         </md-select>
         <div ng-messages="dataTypeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
@@ -21,7 +22,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>change_history</md-icon>
         <label ma-tr="dsEdit.virtual.changeType"></label>
-        <md-select name="pointLocator.changeType" ng-model="$ctrl.dataSource.pointLocator.changeType" required ma-get-ctrl="changeTypeModelCtrl = $ngModel">
+        <md-select name="pointLocator.changeType" ng-model="$ctrl.dataPoint.pointLocator.changeType" required ma-get-ctrl="changeTypeModelCtrl = $ngModel">
         </md-select>
         <div ng-messages="changeTypeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
@@ -32,7 +33,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
-        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataSource.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
         </md-select>
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
