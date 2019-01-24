@@ -26,7 +26,7 @@ import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.TypedResultWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
 
@@ -50,7 +50,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
 			notes = "Admin Only"
 			)
 	@RequestMapping(method = RequestMethod.GET)
-    public TypedResultWithTotal<VirtualSerialPortConfig> query(
+    public ListWithTotal<VirtualSerialPortConfig> query(
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
 	
@@ -60,7 +60,7 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
         
 	    List<VirtualSerialPortConfig> results = query.accept(filter, all);
 	    
-	    return new TypedResultWithTotal<VirtualSerialPortConfig>() {
+	    return new ListWithTotal<VirtualSerialPortConfig>() {
 
             @Override
             public List<VirtualSerialPortConfig> getItems() {

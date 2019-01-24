@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.TypedResultWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -97,7 +97,7 @@ public class EventTypeV2RestController {
             response=AbstractEventTypeModel.class,
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET)
-    public TypedResultWithTotal<EventTypeVOModel<?>> queryEventTypes(
+    public ListWithTotal<EventTypeVOModel<?>> queryEventTypes(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
@@ -108,7 +108,7 @@ public class EventTypeV2RestController {
         List<EventTypeVOModel<?>> models = getAllEventTypesForUser(user);
 
         List<EventTypeVOModel<?>> results = query.accept(filter, models);
-        return new TypedResultWithTotal<EventTypeVOModel<?>>() {
+        return new ListWithTotal<EventTypeVOModel<?>>() {
 
             @Override
             public List<EventTypeVOModel<?>> getItems() {
