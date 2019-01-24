@@ -32,7 +32,7 @@ public class ThreadsDwrDef extends DwrDefinition {
 
         private final Map<Long, ThreadInfoBean> threadInfos = new HashMap<>();
 
-        @DwrPermission(custom = "internal.status")
+        @DwrPermission(custom = StatusPermissionDef.PERMISSION)
         public ProcessResult getStatusVars() {
             ProcessResult result = new ProcessResult();
 
