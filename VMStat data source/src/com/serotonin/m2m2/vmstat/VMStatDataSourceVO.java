@@ -149,12 +149,4 @@ public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
                         OUTPUT_SCALE_CODES.getCodeList());
         }
     }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
-     */
-    @Override
-    public VMStatDataSourceModel asModel() {
-        return new VMStatDataSourceModel(this);
-    }
 }

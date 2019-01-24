@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -82,20 +83,14 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     @JsonSetter(value="alarmLevels")
     public void setAlarmLevels(Map<String,String> alarmCodeLevels) throws TranslatableJsonException{
         if (alarmCodeLevels != null) {
-            ExportCodes eventCodes = this.data.getEventCodes();
-            if (eventCodes != null && eventCodes.size() > 0) {
-                for (String code : alarmCodeLevels.keySet()) {
-                    int eventId = eventCodes.getId(code);
-                    if (!eventCodes.isValidId(eventId))
-                        throw new TranslatableJsonException("emport.error.eventCode", code, eventCodes.getCodeList());
-
-                    String text = alarmCodeLevels.get(code);
-                    try {
-                        this.data.setAlarmLevel(eventId, AlarmLevels.fromName(text));
-                    } catch (IllegalArgumentException | NullPointerException e) {
-                        throw new TranslatableJsonException("emport.error.alarmLevel", text, code,
-                                Arrays.asList(AlarmLevels.values()));
-                    }
+            for (String code : alarmCodeLevels.keySet()) {
+                try {
+                    this.data.setAlarmLevel(code, AlarmLevels.fromName(alarmCodeLevels.get(code)));
+                } catch (IllegalArgumentException | NullPointerException e) {
+                    ProcessResult result = new ProcessResult();
+                    result.addContextualMessage("alarmLevel", "emport.error.alarmLevel", alarmCodeLevels.get(code), code,
+                            Arrays.asList(AlarmLevels.values()));
+                    throw new ValidationException(result);
                 }
             }
         }

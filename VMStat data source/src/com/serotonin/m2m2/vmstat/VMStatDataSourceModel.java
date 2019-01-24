@@ -22,7 +22,7 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
 	}
 	
 	public VMStatDataSourceModel() {
-		super(new VMStatDataSourceVO());
+		super();
 	}
 
 	
@@ -45,6 +45,11 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
 	public void setOutputScale(String outputScale) {
 	    this.data.setOutputScale(VMStatDataSourceVO.OUTPUT_SCALE_CODES.getId(outputScale));
 	}
+
+    @Override
+    public String getModelType() {
+        return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;
+    }
 
 
 

@@ -146,11 +146,4 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO<VMStatPointLoca
             throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
                     ATTRIBUTE_CODES.getCodeList());
     }
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
-	 */
-	@Override
-	public VMStatPointLocatorModel asModel() {
-		return new VMStatPointLocatorModel(this);
-	}
 }

@@ -7,9 +7,11 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
-@CSVEntity(typeName=VMStatPointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName=VMStatPointLocatorModel.TYPE_NAME)
 public class VMStatPointLocatorModel extends PointLocatorModel<VMStatPointLocatorVO> {
 
+    public static final String TYPE_NAME = "PL.VMSTAT";
+    
 	public VMStatPointLocatorModel(VMStatPointLocatorVO data) {
 		super(data);
 	}
@@ -20,7 +22,7 @@ public class VMStatPointLocatorModel extends PointLocatorModel<VMStatPointLocato
 
 	@Override
 	public String getTypeName() {
-		return VMStatPointLocatorModelDefinition.TYPE_NAME;
+		return TYPE_NAME;
 	}
 	
 	@JsonGetter("attribute")

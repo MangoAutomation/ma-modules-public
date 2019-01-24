@@ -26,7 +26,6 @@ describe('Virtual data source v2', function() {
             enabled: false,
             eventAlarmLevels: [
                 {
-                    dataSourceXid: 'DS_VIRT_TEST',
                     eventType: 'POLL_ABORTED',
                     duplicateHandling: 'IGNORE',
                     level: 'INFORMATION',
