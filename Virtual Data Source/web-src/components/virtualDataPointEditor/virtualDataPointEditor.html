@@ -1,3 +1,42 @@
-<h3 ma-tr="dsEdit.virtualPoint"></h3>
-
-<p>Edit a virtual data point</p>
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <div flex="100" flex-gt-md="50">
+        <md-checkbox class="ma-margin-input-container" name="pointLocator.settable" ng-model="$ctrl.dataPoint.pointLocator.settable">
+            <span ma-tr="dsEdit.settable"></span>
+        </md-checkbox>
+    </div>
+    
+    <pre ng-bind="modelCtrl"></pre>
+    
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="dsEdit.pointDataType"></label>
+        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataSource.pointLocator.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+        </md-select>
+        <div ng-messages="dataTypeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="dataTypeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+    
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>change_history</md-icon>
+        <label ma-tr="dsEdit.virtual.changeType"></label>
+        <md-select name="pointLocator.changeType" ng-model="$ctrl.dataSource.pointLocator.changeType" required ma-get-ctrl="changeTypeModelCtrl = $ngModel">
+        </md-select>
+        <div ng-messages="changeTypeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="changeTypeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+    
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.virtual.startValue"></label>
+        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataSource.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+        </md-select>
+        <div ng-messages="startValueModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>
