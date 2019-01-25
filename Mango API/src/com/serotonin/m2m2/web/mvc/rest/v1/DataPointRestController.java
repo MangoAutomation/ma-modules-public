@@ -33,6 +33,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -662,9 +663,8 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             copy.getComments().clear();
 
             // Copy the event detectors
-            for (AbstractPointEventDetectorVO<?> ped : copy.getEventDetectors()) {
+            for (AbstractPointEventDetectorVO<?> ped : EventDetectorDao.getInstance().getWithSource(existing.getId(), copy)) {
                 ped.setId(Common.NEW_ID);
-                ped.njbSetDataPoint(copy);
             }
 
             ProcessResult validation = new ProcessResult();

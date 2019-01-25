@@ -61,14 +61,11 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Event Detectors", description="All edits will force a data point to restart")
 @RestController()
 @RequestMapping("/event-detectors")
-public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>{
-
-    private final EventDetectorDao dao;
-
+public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>>{
+    
     @Autowired
-    public EventDetectorRestV2Controller(EventDetectorDao dao) {
+    public EventDetectorRestV2Controller(EventDetectorDao<AbstractEventDetectorVO<?>> dao) {
         super(dao);
-        this.dao = dao;
     }
 
     @ApiOperation(
@@ -88,8 +85,8 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
             return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);
         }else{
             EventDetectorStreamCallback callback = new EventDetectorStreamCallback(this, user);
-            FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao> stream  =
-                    new FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao>(EventDetectorDao.getInstance(),this, node, callback);
+            FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>> stream  =
+                    new FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>>(dao,this, node, callback);
             stream.setupQuery();
             return new ResponseEntity<>(stream, HttpStatus.OK);
         }
@@ -152,7 +149,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 
         //TODO Fix this when we have other types of detectors
         AbstractPointEventDetectorVO<?> ped = (AbstractPointEventDetectorVO<?>) vo;
-        ped.njbSetDataPoint(dp);
 
         //Validate
         ped.ensureValid();
@@ -203,7 +199,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 
         //TODO Fix this when we have other types of detectors
         AbstractPointEventDetectorVO<?> ped = (AbstractPointEventDetectorVO<?>) vo;
-        ped.njbSetDataPoint(dp);
 
         //Validate
         ped.ensureValid();
@@ -258,7 +253,6 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
 
         //TODO Fix this when we have other types of detectors
         AbstractPointEventDetectorVO<?> ped = (AbstractPointEventDetectorVO<?>) existing;
-        ped.njbSetDataPoint(dp);
 
         //Remove it from the data point, if it isn't replaced we fail.
         boolean removed = false;

@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,17 +22,26 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
+import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
+import com.serotonin.m2m2.rt.event.type.DataPointEventType;
+import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
+import com.serotonin.m2m2.rt.event.type.PublisherEventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -43,6 +53,7 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -54,10 +65,20 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/event-types")
 public class EventTypeV2RestController {
 
+    private final DataSourceDao<?> dataSourceDao;
+    private final PublisherDao publisherDao;
+    private final EventDetectorDao<?> eventDetectorDao;
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public EventTypeV2RestController(RestModelMapper modelMapper) {
+    public EventTypeV2RestController(
+            DataSourceDao<?> dataSourceDao,
+            PublisherDao publisherDao,
+            EventDetectorDao<?> eventDetectorDao,
+            RestModelMapper modelMapper) {
+        this.dataSourceDao = dataSourceDao;
+        this.publisherDao = publisherDao;
+        this.eventDetectorDao = eventDetectorDao;
         this.modelMapper = modelMapper;
     }
 
@@ -96,16 +117,21 @@ public class EventTypeV2RestController {
             notes = "Valid RQL ",
             response=AbstractEventTypeModel.class,
             responseContainer="List")
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, value="/{types}")
     public ListWithTotal<EventTypeVOModel<?>> queryEventTypes(
+            @ApiParam(value = "Event types to query over", required = true, allowMultiple = true) 
+            @PathVariable String[] types,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         RQLToPagedObjectListQuery<EventTypeVOModel<?>> filter = new RQLToPagedObjectListQuery<>();
 
-        //First prune the list based on permissions
-        List<EventTypeVOModel<?>> models = getAllEventTypesForUser(user);
+        //First fill/prune the list based on permissions
+        List<EventTypeVOModel<?>> models = new ArrayList<>();
+        for(String type : types) {
+            getEventTypesForUser(type, models, user);
+        }
 
         List<EventTypeVOModel<?>> results = query.accept(filter, models);
         return new ListWithTotal<EventTypeVOModel<?>>() {
@@ -152,70 +178,97 @@ public class EventTypeV2RestController {
      * @param user
      * @return
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private List<EventTypeVOModel<?>> getAllEventTypesForUser(User user) {
-        List<EventTypeVOModel<?>> types = new ArrayList<>();
 
-        //Data Points
-        for(DataPointVO vo : DataPointDao.getInstance().getAllFull()) {
-            if(vo.getEventDetectors() != null) {
-                for(AbstractPointEventDetectorVO<?> ed : vo.getEventDetectors()) {
-                    EventTypeVO type = ed.getEventType();
-                    if(Permissions.hasEventTypePermission(user, type.getEventType())) {
+    private void getEventTypesForUser(String typeName, List<EventTypeVOModel<?>> types, User user) {
+        //track if the type was a default type
+        boolean found = false;
+        switch(typeName) {
+            case EventTypeNames.DATA_POINT:
+                //Get Event Detectors
+                List<AbstractPointEventDetectorVO<?>> peds = this.eventDetectorDao.getForSourceType(EventTypeNames.DATA_POINT);
+                for(AbstractPointEventDetectorVO<?> ped : peds) {
+                    //This will load the data point into the type
+                    EventTypeVO type = ped.getEventType();
+                    DataPointVO dp = ped.getDataPoint();
+                    DataPointEventType eventType = (DataPointEventType)type.getEventType();
+                    //Shortcut to check permissions via event type
+                    if(dp!= null && Permissions.hasDataPointReadPermission(user, dp)) {
+                        DataPointEventTypeModel model = new DataPointEventTypeModel(eventType);
+                        model.setDataPoint(new DataPointModel(dp));
+                        types.add(new EventTypeVOModel<DataPointEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                    }
+                }
+                found = true;
+            break;
+            case EventTypeNames.DATA_SOURCE:
+                //Data Sources
+                for(DataSourceVO<?> vo : dataSourceDao.getAll()) {
+                    for(EventTypeVO type : vo.getEventTypes()) {
+                        //Shortcut to check permissions via event type
+                        DataSourceEventType eventType = (DataSourceEventType)type.getEventType();
+                        if(vo != null && Permissions.hasDataSourcePermission(user, vo)) {
+                            DataSourceEventTypeModel model = new DataSourceEventTypeModel(eventType);
+                            model.setDataSource(vo.asModel());
+                            types.add(new EventTypeVOModel<DataSourceEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                        }
+                    }
+                }
+                found = true;
+            break;
+            case EventTypeNames.PUBLISHER:
+                //Publishers
+                for(PublisherVO<?> vo : publisherDao.getAll()) {
+                    for(EventTypeVO type : vo.getEventTypes()) {
+                        PublisherEventType eventType = (PublisherEventType)type.getEventType();
+                        if(Permissions.hasEventTypePermission(user, eventType)) {
+                            PublisherEventTypeModel model = new PublisherEventTypeModel(eventType);
+                            model.setPublisher(vo.asModel());
+                            types.add(new EventTypeVOModel<PublisherEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                        }
+                    }
+                }
+                found = true;
+            break;
+            case EventTypeNames.SYSTEM:
+                //System
+                for(EventTypeVO type : SystemEventType.getRegisteredEventTypes()) {
+                    SystemEventType eventType = (SystemEventType)type.getEventType();
+                    if(Permissions.hasEventTypePermission(user, eventType)) {
+                        SystemEventTypeModel model = new SystemEventTypeModel(eventType);
+                        types.add(new EventTypeVOModel<SystemEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                    }
+                }
+                found=true;
+            break;
+            case EventTypeNames.AUDIT:
+                // Audit
+                for(EventTypeVO type : AuditEventType.getRegisteredEventTypes()) {
+                    AuditEventType eventType = (AuditEventType)type.getEventType();
+                    if(Permissions.hasEventTypePermission(user, eventType)) {
+                        AuditEventTypeModel model = new AuditEventTypeModel(eventType);
+                        types.add(new EventTypeVOModel<AuditEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                    }
+                }
+                found = true;
+            break;
+        }
+        if(!found) {
+            //Module defined
+            for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
+                if(def.getHandlersRequireAdmin() && user.hasAdminPermission()) {
+                    for(EventTypeVO type : def.getEventTypeVOs()) {
                         AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                        types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
+                        types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel()));
+                    }
+                }else {
+                    for(EventTypeVO type : def.getEventTypeVOs()) {
+                        if(Permissions.hasEventTypePermission(user, type.getEventType())) {
+                            AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
+                            types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel()));
+                        }
                     }
                 }
             }
         }
-        //Data Sources
-        for(DataSourceVO<?> vo : DataSourceDao.getInstance().getAll()) {
-            for(EventTypeVO type : vo.getEventTypes()) {
-                if(Permissions.hasEventTypePermission(user, type.getEventType())) {
-                    AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                    types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
-                }
-            }
-        }
-        //Publishers
-        for(PublisherVO<?> vo : PublisherDao.getInstance().getAll()) {
-            for(EventTypeVO type : vo.getEventTypes()) {
-                if(Permissions.hasEventTypePermission(user, type.getEventType())) {
-                    AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                    types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
-                }
-            }
-        }
-        //System
-        for(EventTypeVO type : SystemEventType.getRegisteredEventTypes()) {
-            if(Permissions.hasEventTypePermission(user, type.getEventType())) {
-                AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
-            }
-        }
-        // Audit
-        for(EventTypeVO type : AuditEventType.getRegisteredEventTypes()) {
-            if(Permissions.hasEventTypePermission(user, type.getEventType())) {
-                AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
-            }
-        }
-        //Module defined
-        for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
-            if(def.getHandlersRequireAdmin() && user.hasAdminPermission()) {
-                for(EventTypeVO type : def.getEventTypeVOs()) {
-                    AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                    types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
-                }
-            }else {
-                for(EventTypeVO type : def.getEventTypeVOs()) {
-                    if(Permissions.hasEventTypePermission(user, type.getEventType())) {
-                        AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                        types.add(new EventTypeVOModel(model, type.getDescription(), type.getAlarmLevel()));
-                    }
-                }
-            }
-        }
-        return types;
     }
 }

@@ -40,7 +40,7 @@ public class EventDetectorWebSocketHandler extends DaoNotificationWebSocketHandl
 
         if (vo instanceof AbstractPointEventDetectorVO) {
             AbstractPointEventDetectorVO<?> ped = (AbstractPointEventDetectorVO<?>) vo;
-            DataPointVO point = ped.njbGetDataPoint();
+            DataPointVO point = ped.getDataPoint();
             if (point == null) {
                 point = dataPointDao.get(vo.getSourceId());
             }

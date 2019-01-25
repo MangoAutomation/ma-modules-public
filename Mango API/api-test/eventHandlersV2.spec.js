@@ -112,6 +112,14 @@ describe('Event handlers v2', function() {
                 inactiveScript: 'return 1;',
                 scriptContext: [{xid: global.dp2.xid, variableName:'point2'}],
                 scriptPermissions: ['admin', 'testing'],
+                eventTypes: [
+                    {
+                        eventType: 'DATA_SOURCE',
+                        subType: null,
+                        referenceId1: global.ds1.id,
+                        referenceId2: 1 //Poll Aborted
+                    }
+                ],
                 handlerType : "SET_POINT"
               };
         return client.restRequest({
