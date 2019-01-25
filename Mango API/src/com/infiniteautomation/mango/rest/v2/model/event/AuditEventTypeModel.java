@@ -10,7 +10,7 @@ import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
  * @author Terry Packer
  *
  */
-public class AuditEventTypeModel extends AbstractEventTypeModel<AuditEventType> {
+public class AuditEventTypeModel extends AbstractEventTypeModel<AuditEventType, Void> {
 
     private String changeType;
     

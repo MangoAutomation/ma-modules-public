@@ -3,7 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
@@ -13,11 +12,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceMod
  *
  */
 
-public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceEventType> {
+public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceEventType, AbstractDataSourceModel<?>> {
     
     private AlarmLevels alarmLevel;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private AbstractDataSourceModel<?> dataSource;
     
     public DataSourceEventTypeModel() {
         super(new DataSourceEventType());
@@ -25,6 +22,11 @@ public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceE
     
     public DataSourceEventTypeModel(DataSourceEventType type) {
         super(type);
+        alarmLevel = type.getAlarmLevel();
+    }
+    
+    public DataSourceEventTypeModel(DataSourceEventType type, AbstractDataSourceModel<?> source) {
+        super(type, source);
         alarmLevel = type.getAlarmLevel();
     }
 
@@ -40,20 +42,6 @@ public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceE
      */
     public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
-    }
-    
-    /**
-     * @return the dataSource
-     */
-    public AbstractDataSourceModel<?> getDataSource() {
-        return dataSource;
-    }
-    
-    /**
-     * @param dataSource the dataSource to set
-     */
-    public void setDataSource(AbstractDataSourceModel<?> dataSource) {
-        this.dataSource = dataSource;
     }
     
     @Override

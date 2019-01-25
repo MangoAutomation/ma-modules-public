@@ -5,8 +5,9 @@ package com.infiniteautomation.mango.rest.v2.model;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
+import com.serotonin.m2m2.scheduledEvents.ScheduledEventDao;
 import com.serotonin.m2m2.scheduledEvents.ScheduledEventType;
+import com.serotonin.m2m2.scheduledEvents.ScheduledEventVO;
 import com.serotonin.m2m2.vo.User;
 
 /**
@@ -18,7 +19,14 @@ public class ScheduledEventTypeModelMapping implements RestModelMapping<Schedule
 
     @Override
     public ScheduledEventTypeModel map(Object o, User user) {
-        return new ScheduledEventTypeModel((ScheduledEventType)o);
+        ScheduledEventType type = (ScheduledEventType)o;
+        ScheduledEventVO vo = ScheduledEventDao.getInstance().getScheduledEvent(type.getReferenceId1());
+        ScheduledEventTypeModel model;
+        if(vo != null)
+            model = new ScheduledEventTypeModel(type, new ScheduledEventModel(vo));
+        else
+            model = new ScheduledEventTypeModel(type);
+        return model;
     }
 
     @Override

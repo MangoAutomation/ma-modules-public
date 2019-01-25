@@ -10,7 +10,7 @@ import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
  * @author Terry Packer
  *
  */
-public class MaintenanceEventTypeModel extends AbstractEventTypeModel<MaintenanceEventType> {
+public class MaintenanceEventTypeModel extends AbstractEventTypeModel<MaintenanceEventType, MaintenanceEventModel> {
 
     public MaintenanceEventTypeModel() {
         super(new MaintenanceEventType());
@@ -18,6 +18,10 @@ public class MaintenanceEventTypeModel extends AbstractEventTypeModel<Maintenanc
     
     public MaintenanceEventTypeModel(MaintenanceEventType type) {
         super(type);
+    }
+    
+    public MaintenanceEventTypeModel(MaintenanceEventType type, MaintenanceEventModel source) {
+        super(type, source);
     }
 
     @Override

@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
@@ -19,7 +20,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(discriminator="eventType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="eventType")
-public abstract class AbstractEventTypeModel<T extends EventType> {
+public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
 
     protected String eventType;
     protected String subType;
@@ -27,7 +28,14 @@ public abstract class AbstractEventTypeModel<T extends EventType> {
     protected Integer referenceId1;
     protected Integer referenceId2;
     protected Boolean rateLimited;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected SOURCE source;
 
+    public AbstractEventTypeModel(T type, SOURCE source) {
+        this(type);
+        this.source = source;
+    }
+    
     public AbstractEventTypeModel(T type) {
         fromVO(type);
     }
@@ -75,6 +83,20 @@ public abstract class AbstractEventTypeModel<T extends EventType> {
         return rateLimited;
     }
 
+    /**
+     * @return the source
+     */
+    public SOURCE getSource() {
+        return source;
+    }
+    
+    /**
+     * @param source the source to set
+     */
+    public void setSource(SOURCE source) {
+        this.source = source;
+    }
+    
     /**
      * EventType(s) are lacking setters 
      *  so they must be created/filled in this method

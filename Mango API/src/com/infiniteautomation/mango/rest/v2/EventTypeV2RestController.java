@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,6 +32,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
 import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
@@ -50,6 +52,8 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -118,26 +122,26 @@ public class EventTypeV2RestController {
             response=AbstractEventTypeModel.class,
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET, value="/{types}")
-    public ListWithTotal<EventTypeVOModel<?>> queryEventTypes(
+    public ListWithTotal<EventTypeVOModel<?,?>> queryEventTypes(
             @ApiParam(value = "Event types to query over", required = true, allowMultiple = true) 
             @PathVariable String[] types,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        RQLToPagedObjectListQuery<EventTypeVOModel<?>> filter = new RQLToPagedObjectListQuery<>();
+        RQLToPagedObjectListQuery<EventTypeVOModel<?,?>> filter = new RQLToPagedObjectListQuery<>();
 
         //First fill/prune the list based on permissions
-        List<EventTypeVOModel<?>> models = new ArrayList<>();
+        List<EventTypeVOModel<?,?>> models = new ArrayList<>();
         for(String type : types) {
             getEventTypesForUser(type, models, user);
         }
 
-        List<EventTypeVOModel<?>> results = query.accept(filter, models);
-        return new ListWithTotal<EventTypeVOModel<?>>() {
+        List<EventTypeVOModel<?,?>> results = query.accept(filter, models);
+        return new ListWithTotal<EventTypeVOModel<?,?>>() {
 
             @Override
-            public List<EventTypeVOModel<?>> getItems() {
+            public List<EventTypeVOModel<?,?>> getItems() {
                 return results;
             }
 
@@ -179,7 +183,7 @@ public class EventTypeV2RestController {
      * @return
      */
 
-    private void getEventTypesForUser(String typeName, List<EventTypeVOModel<?>> types, User user) {
+    private void getEventTypesForUser(String typeName, List<EventTypeVOModel<?,?>> types, User user) {
         //track if the type was a default type
         boolean found = false;
         switch(typeName) {
@@ -193,9 +197,9 @@ public class EventTypeV2RestController {
                     DataPointEventType eventType = (DataPointEventType)type.getEventType();
                     //Shortcut to check permissions via event type
                     if(dp!= null && Permissions.hasDataPointReadPermission(user, dp)) {
-                        DataPointEventTypeModel model = new DataPointEventTypeModel(eventType);
-                        model.setDataPoint(new DataPointModel(dp));
-                        types.add(new EventTypeVOModel<DataPointEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                        dp.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(dp.getId()));
+                        DataPointEventTypeModel model = new DataPointEventTypeModel(eventType, new DataPointModel(dp));
+                        types.add(new EventTypeVOModel<DataPointEventType, DataPointModel>(model, type.getDescription(), type.getAlarmLevel()));
                     }
                 }
                 found = true;
@@ -207,9 +211,8 @@ public class EventTypeV2RestController {
                         //Shortcut to check permissions via event type
                         DataSourceEventType eventType = (DataSourceEventType)type.getEventType();
                         if(vo != null && Permissions.hasDataSourcePermission(user, vo)) {
-                            DataSourceEventTypeModel model = new DataSourceEventTypeModel(eventType);
-                            model.setDataSource(vo.asModel());
-                            types.add(new EventTypeVOModel<DataSourceEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                            DataSourceEventTypeModel model = new DataSourceEventTypeModel(eventType, vo.asModel());
+                            types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>>(model, type.getDescription(), type.getAlarmLevel()));
                         }
                     }
                 }
@@ -221,9 +224,8 @@ public class EventTypeV2RestController {
                     for(EventTypeVO type : vo.getEventTypes()) {
                         PublisherEventType eventType = (PublisherEventType)type.getEventType();
                         if(Permissions.hasEventTypePermission(user, eventType)) {
-                            PublisherEventTypeModel model = new PublisherEventTypeModel(eventType);
-                            model.setPublisher(vo.asModel());
-                            types.add(new EventTypeVOModel<PublisherEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                            PublisherEventTypeModel model = new PublisherEventTypeModel(eventType, vo.asModel());
+                            types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>>(model, type.getDescription(), type.getAlarmLevel()));
                         }
                     }
                 }
@@ -235,7 +237,7 @@ public class EventTypeV2RestController {
                     SystemEventType eventType = (SystemEventType)type.getEventType();
                     if(Permissions.hasEventTypePermission(user, eventType)) {
                         SystemEventTypeModel model = new SystemEventTypeModel(eventType);
-                        types.add(new EventTypeVOModel<SystemEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                        types.add(new EventTypeVOModel<SystemEventType, Void>(model, type.getDescription(), type.getAlarmLevel()));
                     }
                 }
                 found=true;
@@ -246,7 +248,7 @@ public class EventTypeV2RestController {
                     AuditEventType eventType = (AuditEventType)type.getEventType();
                     if(Permissions.hasEventTypePermission(user, eventType)) {
                         AuditEventTypeModel model = new AuditEventTypeModel(eventType);
-                        types.add(new EventTypeVOModel<AuditEventType>(model, type.getDescription(), type.getAlarmLevel()));
+                        types.add(new EventTypeVOModel<AuditEventType, Void>(model, type.getDescription(), type.getAlarmLevel()));
                     }
                 }
                 found = true;
@@ -255,16 +257,18 @@ public class EventTypeV2RestController {
         if(!found) {
             //Module defined
             for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
-                if(def.getHandlersRequireAdmin() && user.hasAdminPermission()) {
-                    for(EventTypeVO type : def.getEventTypeVOs()) {
-                        AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
-                        types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel()));
-                    }
-                }else {
-                    for(EventTypeVO type : def.getEventTypeVOs()) {
-                        if(Permissions.hasEventTypePermission(user, type.getEventType())) {
-                            AbstractEventTypeModel<?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
+                if(StringUtils.equals(typeName, def.getTypeName())) {
+                    if(def.getHandlersRequireAdmin() && user.hasAdminPermission()) {
+                        for(EventTypeVO type : def.getEventTypeVOs()) {
+                            AbstractEventTypeModel<?,?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
                             types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel()));
+                        }
+                    }else {
+                        for(EventTypeVO type : def.getEventTypeVOs()) {
+                            if(Permissions.hasEventTypePermission(user, type.getEventType())) {
+                                AbstractEventTypeModel<?,?> model = modelMapper.map(type.getEventType(), AbstractEventTypeModel.class, user);
+                                types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel()));
+                            }
                         }
                     }
                 }

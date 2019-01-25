@@ -11,30 +11,29 @@ import com.serotonin.m2m2.rt.event.type.EventType;
  * @author Terry Packer
  *
  */
-public class EventTypeVOModel<T extends EventType> {
+public class EventTypeVOModel<T extends EventType, SOURCE> {
 
-    protected AbstractEventTypeModel<T> type;
+    protected AbstractEventTypeModel<T, SOURCE> type;
     private TranslatableMessage description;
     private AlarmLevels alarmLevel;
 
-    public EventTypeVOModel(AbstractEventTypeModel<T> type, TranslatableMessage description, AlarmLevels alarmLevel) {
+    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE> type, TranslatableMessage description, AlarmLevels alarmLevel) {
         this.type = type;
         this.description = description;
         this.alarmLevel = alarmLevel;
-
     }
 
     /**
      * @return the type
      */
-    public AbstractEventTypeModel<T> getType() {
+    public AbstractEventTypeModel<T, SOURCE> getType() {
         return type;
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(AbstractEventTypeModel<T> type) {
+    public void setType(AbstractEventTypeModel<T, SOURCE> type) {
         this.type = type;
     }
 
@@ -65,5 +64,5 @@ public class EventTypeVOModel<T extends EventType> {
     public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
-
+    
 }

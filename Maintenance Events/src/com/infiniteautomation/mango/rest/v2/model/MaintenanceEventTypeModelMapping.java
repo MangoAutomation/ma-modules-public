@@ -5,7 +5,9 @@ package com.infiniteautomation.mango.rest.v2.model;
 
 import org.springframework.stereotype.Component;
 
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.User;
 
 /**
@@ -17,7 +19,14 @@ public class MaintenanceEventTypeModelMapping implements RestModelMapping<Mainte
 
     @Override
     public MaintenanceEventTypeModel map(Object o, User user) {
-        return new MaintenanceEventTypeModel((MaintenanceEventType)o);
+        MaintenanceEventType type = (MaintenanceEventType)o;
+        MaintenanceEventVO vo = MaintenanceEventDao.getInstance().get(type.getReferenceId1());
+        MaintenanceEventTypeModel model;
+        if(vo != null)
+            model = new MaintenanceEventTypeModel(type, new MaintenanceEventModel(vo));
+        else
+            model = new MaintenanceEventTypeModel(type);
+        return model;
     }
 
     @Override

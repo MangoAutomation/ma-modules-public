@@ -3,7 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.serotonin.m2m2.rt.event.type.PublisherEventType;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 
@@ -12,10 +11,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel
  *
  */
 
-public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEventType> {
-    
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private AbstractPublisherModel<?, ?> publisher;
+public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEventType, AbstractPublisherModel<?,?>> {
     
     public PublisherEventTypeModel() {
         super(new PublisherEventType());
@@ -25,21 +21,13 @@ public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEve
         super(type);
     }
 
+    public PublisherEventTypeModel(PublisherEventType type, AbstractPublisherModel<?,?> source) {
+        super(type, source);
+    }
+
+    
     @Override
     public PublisherEventType toVO() {
         return new PublisherEventType(referenceId1, referenceId2);
-    }
-
-    /**
-     * @param asModel
-     */
-    public void setPublisher(AbstractPublisherModel<?, ?> publisher) {
-        this.publisher = publisher;
-    }
-    /**
-     * @return the publisher
-     */
-    public AbstractPublisherModel<?, ?> getPublisher() {
-        return publisher;
     }
 }
