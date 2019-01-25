@@ -158,15 +158,14 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
             response.addContextualMessage("targetPointId", "pointLinks.validate.targetRequired");
         if (sourcePointId == targetPointId)
             response.addContextualMessage("targetPointId", "pointLinks.validate.samePoint");
-        if(!StringUtils.isEmpty(script)) {
+        this.scriptPermissions.validate(response, Common.getHttpUser());
+        if(!StringUtils.isEmpty(script) && !response.getHasMessages()) {
             try {
-                
-                Common.getBean(MangoJavaScriptService.class).compile(script, true);
+                Common.getBean(MangoJavaScriptService.class).compile(script, true, scriptPermissions);
             } catch(ScriptError e) {
                 response.addContextualMessage("script", "pointLinks.validate.scriptError", e.getMessage());
             }
         }
-        this.scriptPermissions.validate(response, Common.getHttpUser());
         if (!ScriptLog.LOG_LEVEL_CODES.isValidId(logLevel))
             response.addContextualMessage("logLevel", "validate.invalidValue");
         if (logSize <= 0)

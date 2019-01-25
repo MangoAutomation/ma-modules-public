@@ -82,7 +82,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         Common.runtimeManager.addDataPointListener(vo.getSourcePointId(), this);
         checkSource();
         try {
-        	compiledScript = service.compile(vo.getScript(), true);
+        	compiledScript = service.compile(vo.getScript(), true, vo.getScriptPermissions());
         	compiled = true;
         } catch (ScriptError e) {
             raiseFailureEvent(Common.timer.currentTimeMillis(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
@@ -161,7 +161,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         if (!StringUtils.isBlank(vo.getScript())) {
             try {
             	if(!compiled) {
-            		compiledScript = service.compile(vo.getScript(), true);
+            		compiledScript = service.compile(vo.getScript(), true, vo.getScriptPermissions());
             		compiled = true;
             	}
                 Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
