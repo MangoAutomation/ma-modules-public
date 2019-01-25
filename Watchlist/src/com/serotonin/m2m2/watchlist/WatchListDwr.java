@@ -6,6 +6,7 @@ package com.serotonin.m2m2.watchlist;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class WatchListDwr extends ModuleDwr {
 	
 	private static final int pointEventsLimit = 10; //10 most recent events
 	
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public Map<String, Object> init() {
         Map<String, Object> data = new HashMap<>();
 
@@ -99,7 +100,7 @@ public class WatchListDwr extends ModuleDwr {
         return states;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public void updateWatchListName(String name) {
         User user = Common.getUser();
         WatchListVO watchList = getWatchList(user);
@@ -108,7 +109,7 @@ public class WatchListDwr extends ModuleDwr {
         WatchListDao.getInstance().saveWatchList(watchList);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public IntStringPair addNewWatchList(int copyId) {
         User user = Common.getUser();
 
@@ -125,6 +126,15 @@ public class WatchListDwr extends ModuleDwr {
         }
         watchList.setUserId(user.getId());
         watchList.setXid(WatchListDao.getInstance().generateUniqueXid());
+        
+        final boolean admin = Permissions.hasAdminPermission(user);
+        if(!admin) {
+            Iterator<DataPointVO> iter = watchList.getPointList().iterator();
+            while(iter.hasNext()) {
+                if(!Permissions.hasDataPointReadPermission(user, iter.next()))
+                    iter.remove();
+            }
+        }
 
         WatchListDao.getInstance().saveWatchList(watchList);
 
@@ -134,7 +144,7 @@ public class WatchListDwr extends ModuleDwr {
         return new IntStringPair(watchList.getId(), watchList.getName());
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public boolean deleteWatchList(int watchListId) {
         User user = Common.getUser();
 
@@ -154,7 +164,7 @@ public class WatchListDwr extends ModuleDwr {
         return false;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public Map<String, Object> setSelectedWatchList(int watchListId) {
         User user = Common.getUser();
 
@@ -170,7 +180,7 @@ public class WatchListDwr extends ModuleDwr {
         return data;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public WatchListState addToWatchList(int pointId) {
         HttpServletRequest request = WebContextFactory.get().getHttpServletRequest();
         User user = Common.getUser();
@@ -191,7 +201,7 @@ public class WatchListDwr extends ModuleDwr {
         return createWatchListState(request, point, Common.runtimeManager, new HashMap<String, Object>(), user);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public void removeFromWatchList(int pointId) {
         // Remove the point from the user's list.
         User user = Common.getUser();
@@ -206,7 +216,7 @@ public class WatchListDwr extends ModuleDwr {
         WatchListDao.getInstance().saveWatchList(watchList);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public void moveUp(int pointId) {
         User user = Common.getUser();
         WatchListVO watchList = getWatchList(user);
@@ -226,7 +236,7 @@ public class WatchListDwr extends ModuleDwr {
         WatchListDao.getInstance().saveWatchList(watchList);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public void moveDown(int pointId) {
         User user = Common.getUser();
         WatchListVO watchList = getWatchList(user);
@@ -290,7 +300,7 @@ public class WatchListDwr extends ModuleDwr {
     /**
      * Method for creating image charts of the points on the watch list.
      */
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public String getImageChartData(int[] pointIds, int fromYear, int fromMonth, int fromDay, int fromHour,
             int fromMinute, int fromSecond, boolean fromNone, int toYear, int toMonth, int toDay, int toHour,
             int toMinute, int toSecond, boolean toNone, int width, int height) {
@@ -320,7 +330,11 @@ public class WatchListDwr extends ModuleDwr {
         if(watchList.size() == 1)
         	usePointChartColour = true;
         
+        User user = Common.getHttpUser();
+        final boolean admin = Permissions.hasAdminPermission(user);
         for (DataPointVO dp : watchList) {
+            if(!admin && !Permissions.hasDataPointReadPermission(user, dp))
+                continue;
             int dtid = dp.getPointLocator().getDataTypeId();
             if ((dtid == DataTypes.NUMERIC || dtid == DataTypes.BINARY || dtid == DataTypes.MULTISTATE)
                     && ArrayUtils.contains(pointIds, dp.getId())) {
@@ -401,7 +415,7 @@ public class WatchListDwr extends ModuleDwr {
         return user.getAttribute("watchList", WatchListVO.class);
     }
 
-    @DwrPermission(anonymous = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public void resetWatchListState(int pollSessionId) {
         LongPollData data = getLongPollData(pollSessionId, false);
 
@@ -414,7 +428,7 @@ public class WatchListDwr extends ModuleDwr {
         notifyLongPollImpl(data.getRequest());
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public void getChartData(int[] pointIds, int fromYear, int fromMonth, int fromDay, int fromHour, int fromMinute,
             int fromSecond, boolean fromNone, int toYear, int toMonth, int toDay, int toHour, int toMinute,
             int toSecond, boolean toNone) {
@@ -426,7 +440,7 @@ public class WatchListDwr extends ModuleDwr {
         user.setDataExportDefinition(def);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public ProcessResult exportCurrentWatchlist() {
         ProcessResult result = new ProcessResult();
         WatchListVO wl = getWatchList();
@@ -442,7 +456,7 @@ public class WatchListDwr extends ModuleDwr {
         return result;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public ProcessResult savePermissions(String readPermission, String editPermission) {
         WatchListVO wl = getWatchList();
         wl.setReadPermission(readPermission);
@@ -455,7 +469,7 @@ public class WatchListDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = WatchListPermissionDefinition.PERMISSION)
     public ProcessResult getPermissions() {
         WatchListVO wl = getWatchList();
         ProcessResult result = new ProcessResult();
