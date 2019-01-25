@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 
 /**
@@ -13,6 +15,8 @@ import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEventType> {
 
     private Integer dataSourceId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private DataPointModel dataPoint;
     
     public DataPointEventTypeModel() {
         super(new DataPointEventType());
@@ -35,6 +39,20 @@ public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEve
      */
     public void setDataSourceId(Integer dataSourceId) {
         this.dataSourceId = dataSourceId;
+    }
+
+    /**
+     * @return the dataPoint
+     */
+    public DataPointModel getDataPoint() {
+        return dataPoint;
+    }
+
+    /**
+     * @param dataPoint the dataPoint to set
+     */
+    public void setDataPoint(DataPointModel dataPoint) {
+        this.dataPoint = dataPoint;
     }
 
     @Override
