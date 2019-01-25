@@ -130,6 +130,11 @@ describe('Test Event Handlers Endpoints', function() {
               eventType: [],
               additionalContext: [],
               scriptPermissions: [""],
+              eventTypes: [{
+                  dataSourceId: global.ds.id,
+                  dataSourceEventTypeId: 1, //POLL_ABORTED,
+                  typeName: 'DATA_SOURCE'
+              }],
               handlerType : "SET_POINT"
             }
       }).then(response => {
@@ -142,6 +147,8 @@ describe('Test Event Handlers Endpoints', function() {
         assert.equal(response.data.inactiveAction, "STATIC_VALUE");
         assert.equal(response.data.activeValueToSet, "false");
         assert.equal(response.data.inactiveValueToSet, "true");
+        assert.equal(response.data.eventTypes[0].dataSourceId, global.ds.id);
+        assert.equal(response.data.eventTypes[0].dataSourceEventTypeId, 1);
         assert.isNumber(response.data.id);
       });
     });
