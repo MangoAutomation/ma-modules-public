@@ -13,6 +13,7 @@ import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.mbus.MBusDataSourceVO;
 import com.serotonin.m2m2.mbus.MBusPointLocatorVO;
@@ -38,7 +39,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
     //
     // MBus stuff
     //
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveMBusDataSource(String name, String xid,
             Connection connection, int updatePeriodType, int updatePeriods, boolean quantize) {
         MBusDataSourceVO ds = (MBusDataSourceVO) Common.getHttpUser()
@@ -52,19 +53,18 @@ public class MBusEditDwr extends DataSourceEditDwr {
         return tryDataSourceSave(ds);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveMBusPointLocator(int id, String xid,
             String name, MBusPointLocatorVO locator) {
         return validatePoint(id, xid, name, locator);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult searchMBus(int dataSourceId, Connection conn, MBusSearchByAddressing addressing) {
         LOG.fatal("searchMBus");
         ProcessResult result = new ProcessResult();
         User user = Common.getHttpUser();
 
-        Permissions.ensureDataSourcePermission(user);
         if (!Common.runtimeManager.isDataSourceRunning(dataSourceId)) {
             MBusDiscovery discovery = new MBusDiscovery(getTranslations(), conn, addressing);
             discovery.start();
@@ -78,7 +78,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
         return result;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public Map<String, Object> mBusSearchUpdate() {
         Map<String, Object> result = new HashMap<>();
         MBusDiscovery test = Common.getHttpUser().getTestingUtility(MBusDiscovery.class);
@@ -90,7 +90,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
         return result;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public Map<String, Object> getMBusResponseFrames(int deviceIndex) {
         Map<String, Object> result = new HashMap<>();
         MBusDiscovery test = Common.getHttpUser().getTestingUtility(MBusDiscovery.class);
@@ -102,7 +102,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
         return result;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public Map<String, Object> changeMBusAddress(int deviceIndex, String newAddress) {
         Map<String, Object> result = new HashMap<>();
         result.put("deviceIndex", deviceIndex);
@@ -138,7 +138,7 @@ public class MBusEditDwr extends DataSourceEditDwr {
         return result;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public DataPointVO addMBusPoint(int deviceIndex,
             int rsIndex, int dbIndex) {
         DataPointVO dp = getPoint(Common.NEW_ID);

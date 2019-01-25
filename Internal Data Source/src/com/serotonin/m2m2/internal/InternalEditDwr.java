@@ -10,6 +10,7 @@ import java.util.List;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.dataSource.BasicDataSourceVO;
 import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
@@ -18,7 +19,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 public class InternalEditDwr extends DataSourceEditDwr {
 	
-	@DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
 	public ProcessResult init(){
 		ProcessResult result = new ProcessResult();
 		List<StringStringPair> monitors = new ArrayList<StringStringPair>();
@@ -29,7 +30,7 @@ public class InternalEditDwr extends DataSourceEditDwr {
     	return result;
 	}
 	
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveInternalDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, String createPointsPattern) {
         InternalDataSourceVO ds = (InternalDataSourceVO) Common.getHttpUser().getEditDataSource();
 
@@ -41,7 +42,7 @@ public class InternalEditDwr extends DataSourceEditDwr {
         return tryDataSourceSave(ds);
     }
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveInternalPointLocator(int id, String xid, String name, InternalPointLocatorVO locator) {
         return validatePoint(id, xid, name, locator);
     }

@@ -10,6 +10,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
@@ -26,7 +27,7 @@ import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 public class VirtualEditDwr extends DataSourceEditDwr {
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveVirtualDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType, boolean polling) {
         VirtualDataSourceVO ds = (VirtualDataSourceVO) Common.getHttpUser().getEditDataSource();
 
@@ -38,12 +39,12 @@ public class VirtualEditDwr extends DataSourceEditDwr {
         return tryDataSourceSave(ds);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public IntMessagePair[] getChangeTypes(int dataTypeId) {
         return ChangeTypeVO.getChangeTypes(dataTypeId);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveVirtualPointLocator(int id, String xid, String name, VirtualPointLocatorVO locator) {
         return validatePoint(id, xid, name, locator);
     }

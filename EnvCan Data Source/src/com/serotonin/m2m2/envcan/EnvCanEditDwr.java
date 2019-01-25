@@ -7,13 +7,14 @@ package com.serotonin.m2m2.envcan;
 import java.util.Date;
 
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.dataSource.BasicDataSourceVO;
 import com.serotonin.m2m2.web.dwr.DataSourceEditDwr;
 import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 
 public class EnvCanEditDwr extends DataSourceEditDwr {
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveEnvCanDataSource(BasicDataSourceVO basic, int stationId, Date dataStartTime) {
         EnvCanDataSourceVO ds = (EnvCanDataSourceVO) Common.getHttpUser().getEditDataSource();
 
@@ -24,7 +25,7 @@ public class EnvCanEditDwr extends DataSourceEditDwr {
         return tryDataSourceSave(ds);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveEnvCanPointLocator(int id, String xid, String name, EnvCanPointLocatorVO locator) {
         return validatePoint(id, xid, name, locator);
     }
