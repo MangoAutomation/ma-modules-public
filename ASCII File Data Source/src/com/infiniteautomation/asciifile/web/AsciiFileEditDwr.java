@@ -36,7 +36,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 public class AsciiFileEditDwr extends DataSourceEditDwr {
 	private static final Log LOG = LogFactory.getLog(AsciiFileEditDwr.class);
 
-	@DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
 	public ProcessResult saveFileDataSource(BasicDataSourceVO basic, int updatePeriods, int updatePeriodType,
 			String filePath) {
 		AsciiFileDataSourceVO ds = (AsciiFileDataSourceVO) Common.getHttpUser().getEditDataSource();
@@ -55,12 +55,12 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 		return tryDataSourceSave(ds);
 	}
 
-	@DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
 	public ProcessResult savePointLocator(int id, String xid, String name, AsciiFilePointLocatorVO locator) {
 		return validatePoint(id, xid, name, locator, null);
 	}
 
-	@DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
 	public boolean checkIsFileReadable(String path) {
 		String canonicalPath;
 		File verify = new File(path);
@@ -84,7 +84,7 @@ public class AsciiFileEditDwr extends DataSourceEditDwr {
 		return false;
 	}
 	
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult testString(int dsId, String raw) {
     	final ProcessResult pr = new ProcessResult();
     	

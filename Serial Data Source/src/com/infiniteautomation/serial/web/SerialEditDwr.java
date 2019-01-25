@@ -15,6 +15,7 @@ import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -26,7 +27,7 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
 public class SerialEditDwr extends DataSourceEditDwr{
 	private final Log LOG = LogFactory.getLog(SerialEditDwr.class);
 
-   @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveSerialDataSource(BasicDataSourceVO basic, String commPortId, int baudRate, int flowControlIn,
             int flowControlOut, int dataBits, int stopBits, int parity, int readTimeout, boolean useTerminator,
             String messageTerminator, String messageRegex, int pointIdentifierIndex,
@@ -56,21 +57,21 @@ public class SerialEditDwr extends DataSourceEditDwr{
         return tryDataSourceSave(ds);
     }	
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult savePointLocator(int id, String xid, String name,SerialPointLocatorVO locator) {
     	if(locator.getPointIdentifier() == null)
     		locator.setPointIdentifier(new String()); //Sometimes we want to match an empty string
         return validatePoint(id, xid, name, locator, null);
     }
     
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public String getSafeTerminator() {
     	SerialDataSourceVO ds = (SerialDataSourceVO) Common.getHttpUser().getEditDataSource();
     	return StringEscapeUtils.escapeJava(ds.getMessageTerminator());
     }
     
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult testString(String raw, int dsId, String messageRegex, String messageTerminator, 
     		int pointIdentifierIndex, boolean isHex, boolean useTerminator) {
     	final ProcessResult pr = new ProcessResult();

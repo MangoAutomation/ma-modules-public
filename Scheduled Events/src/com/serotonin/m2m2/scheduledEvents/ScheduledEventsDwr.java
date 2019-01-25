@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.dwr.ModuleDwr;
@@ -20,15 +21,13 @@ import com.serotonin.m2m2.web.dwr.util.DwrPermission;
  * 
  */
 public class ScheduledEventsDwr extends ModuleDwr {
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public List<ScheduledEventVO> getScheduledEvents() {
-        Permissions.ensureDataSourcePermission(Common.getUser());
         return ScheduledEventDao.getInstance().getScheduledEvents();
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ScheduledEventVO getScheduledEvent(int id) {
-        Permissions.ensureDataSourcePermission(Common.getUser());
 
         if (id == Common.NEW_ID) {
             DateTime dt = new DateTime();
@@ -43,12 +42,11 @@ public class ScheduledEventsDwr extends ModuleDwr {
         return ScheduledEventDao.getInstance().getScheduledEvent(id);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult saveScheduledEvent(int id, String xid, String alias, int alarmLevel, int scheduleType,
             boolean returnToNormal, boolean disabled, int activeYear, int activeMonth, int activeDay, int activeHour,
             int activeMinute, int activeSecond, String activeCron, int inactiveYear, int inactiveMonth,
             int inactiveDay, int inactiveHour, int inactiveMinute, int inactiveSecond, String inactiveCron) {
-        Permissions.ensureDataSourcePermission(Common.getUser());
 
         // Validate the given information. If there is a problem, return an appropriate error message.
         ScheduledEventVO se = new ScheduledEventVO();
@@ -92,9 +90,8 @@ public class ScheduledEventsDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public void deleteScheduledEvent(int seId) {
-        Permissions.ensureDataSourcePermission(Common.getUser());
         RTMDefinition.instance.deleteScheduledEvent(seId);
     }
 }
