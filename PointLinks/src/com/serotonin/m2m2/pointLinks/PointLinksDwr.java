@@ -23,6 +23,7 @@ import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -45,7 +46,7 @@ import com.serotonin.m2m2.web.taglib.Functions;
  * @author Matthew Lohbihler
  */
 public class PointLinksDwr extends ModuleDwr {
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public Map<String, Object> init() {
         User user = Common.getHttpUser();
         Map<String, Object> data = new HashMap<String, Object>();
@@ -85,7 +86,7 @@ public class PointLinksDwr extends ModuleDwr {
         return false;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public PointLinkVO getPointLink(int id) {
         PointLinkVO vo;
         PointLinkDao pointLinkDao = PointLinkDao.getInstance();
@@ -98,7 +99,7 @@ public class PointLinksDwr extends ModuleDwr {
         return vo;
     }
 
-    @DwrPermission(user = true)
+	@DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult savePointLink(int id, String xid, int sourcePointId, int targetPointId, String script,
             int event, boolean writeAnnotation, boolean disabled, ScriptPermissions permissions, int logLevel, float logSize, int logCount) {
         // Validate the given information. If there is a problem, return an appropriate error message.
@@ -135,12 +136,12 @@ public class PointLinksDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public void deletePointLink(int id) {
         RTMDefinition.instance.deletePointLink(id);
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, ScriptPermissions permissions, int logLevel) {
         ProcessResult response = new ProcessResult();
         TranslatableMessage message;
@@ -235,7 +236,7 @@ public class PointLinksDwr extends ModuleDwr {
         return response;
     }
 
-    @DwrPermission(user = true)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public String getLogPath(int pointId) {
         return Common.getLogsDir().getAbsolutePath() + File.separator + PointLinkRT.LOG_FILE_PREFIX + pointId + ".log";
     }
