@@ -45,7 +45,10 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.model.server.ServerCommandModel;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.IMangoLifecycle;
@@ -57,6 +60,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemInfoDefinition;
+import com.serotonin.m2m2.rt.maint.work.ProcessWorkItem;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
@@ -168,6 +172,30 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR,
                     new TranslatableMessage("modules.restartAlreadyScheduled"));
 
+    }
+    
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Run OS command",
+    notes = "Returns the output of the command, admin only")
+    @RequestMapping(method = RequestMethod.POST, value = "/execute-command")
+    public String executeCommand(
+            @RequestBody
+            ServerCommandModel command,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder, 
+            HttpServletRequest request) throws IOException {
+
+        if (StringUtils.isBlank(command.getCommand()))
+            return null;
+        
+        //Key -> Successful output
+        //Value --> error output
+        StringStringPair result = ProcessWorkItem.executeProcessCommand(command.getCommand(), command.getTimeout());
+        if(result.getValue() != null)
+             throw new ServerErrorException(new TranslatableMessage("common.default", result.getValue()));
+        else
+            return result.getKey();
+            
     }
 
     @PreAuthorize("isAdmin()")
