@@ -9,6 +9,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
 
+import com.infiniteautomation.mango.io.serial.DataBits;
+import com.infiniteautomation.mango.io.serial.FlowControl;
+import com.infiniteautomation.mango.io.serial.Parity;
+import com.infiniteautomation.mango.io.serial.StopBits;
 import com.infiniteautomation.mango.regex.MatchCallback;
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
@@ -36,11 +40,11 @@ public class SerialEditDwr extends DataSourceEditDwr{
         setBasicProps(ds, basic);
         ds.setCommPortId(commPortId);
         ds.setBaudRate(baudRate);
-        ds.setFlowControlIn(flowControlIn);
-        ds.setFlowControlOut(flowControlOut);
-        ds.setDataBits(dataBits);
-        ds.setStopBits(stopBits);
-        ds.setParity(parity);
+        ds.setFlowControlIn(FlowControl.fromValue(flowControlIn));
+        ds.setFlowControlOut(FlowControl.fromValue(flowControlOut));
+        ds.setDataBits(DataBits.fromValue(dataBits));
+        ds.setStopBits(StopBits.fromValue(stopBits));
+        ds.setParity(Parity.fromValue(parity));
         ds.setReadTimeout(readTimeout);
         ds.setUseTerminator(useTerminator);
         ds.setMessageTerminator(StringEscapeUtils.unescapeJava(messageTerminator));

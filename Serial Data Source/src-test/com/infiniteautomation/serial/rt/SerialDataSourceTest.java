@@ -16,9 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.infiniteautomation.mango.io.serial.DataBits;
+import com.infiniteautomation.mango.io.serial.FlowControl;
+import com.infiniteautomation.mango.io.serial.Parity;
 import com.infiniteautomation.mango.io.serial.SerialPortException;
 import com.infiniteautomation.mango.io.serial.SerialPortProxy;
 import com.infiniteautomation.mango.io.serial.SerialPortProxyEvent;
+import com.infiniteautomation.mango.io.serial.StopBits;
 import com.infiniteautomation.serial.SerialDataSourceTestCase;
 import com.infiniteautomation.serial.SerialDataSourceTestData;
 import com.infiniteautomation.serial.TestSerialPortInputStream;
@@ -226,15 +230,11 @@ public class SerialDataSourceTest extends MangoTestBase{
 	        this.proxy = proxy;
 	    }
 	    
-	    /* (non-Javadoc)
-	     * @see com.serotonin.m2m2.MockSerialPortManager#open(java.lang.String, java.lang.String, int, int, int, int, int, int)
-	     */
-	    @Override
-	    public SerialPortProxy open(String ownerName, String commPortId, int baudRate,
-	            int flowControlIn, int flowControlOut, int dataBits, int stopBits, int parity)
-	            throws SerialPortException {
-	        return proxy;
-	    }
-	    
+    	@Override
+    	public SerialPortProxy open(String ownerName, String commPortId, int baudRate,
+    	        FlowControl flowControlIn, FlowControl flowControlOut, DataBits dataBits,
+    	        StopBits stopBits, Parity parity) throws SerialPortException {
+    	    return this.proxy;
+    	}
 	}
 }

@@ -8,6 +8,10 @@ import java.util.List;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import com.infiniteautomation.mango.io.serial.DataBits;
+import com.infiniteautomation.mango.io.serial.FlowControl;
+import com.infiniteautomation.mango.io.serial.Parity;
+import com.infiniteautomation.mango.io.serial.StopBits;
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -15,6 +19,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -38,17 +43,11 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private String commPortId;
     @JsonProperty
     private int baudRate = 9600;
-    @JsonProperty
-    private int flowControlIn = 0;
-    @JsonProperty
-    private int flowControlOut = 0;
-    @JsonProperty
-    private int dataBits = 8;
-    @JsonProperty
-    private int stopBits = 1;
-    @JsonProperty
-    private int parity = 0;
-    @JsonProperty
+    private FlowControl flowControlIn = FlowControl.NONE;
+    private FlowControl flowControlOut = FlowControl.NONE;
+    private DataBits dataBits = DataBits.DATA_BITS_8;
+    private StopBits stopBits = StopBits.STOP_BITS_1;
+    private Parity parity = Parity.NONE;
     private int readTimeout = 1000; //Timeout in ms
     @JsonProperty
     private boolean useTerminator = true;
@@ -103,9 +102,6 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 "event.serial.patternMismatchException")));
 		
 	}
-	public int getFlowControlMode() {
-		return (this.getFlowControlIn() | this.getFlowControlOut());
-	}
 
 	public String getCommPortId() {
 		return commPortId;
@@ -123,46 +119,76 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 		this.baudRate = baudRate;
 	}
 
-	public int getFlowControlIn() {
-		return flowControlIn;
-	}
+    /**
+     * @return the flowControlIn
+     */
+    public FlowControl getFlowControlIn() {
+        return flowControlIn;
+    }
 
-	public void setFlowControlIn(int flowControlIn) {
-		this.flowControlIn = flowControlIn;
-	}
+    /**
+     * @param flowControlIn the flowControlIn to set
+     */
+    public void setFlowControlIn(FlowControl flowControlIn) {
+        this.flowControlIn = flowControlIn;
+    }
 
-	public int getFlowControlOut() {
-		return flowControlOut;
-	}
+    /**
+     * @return the flowControlOut
+     */
+    public FlowControl getFlowControlOut() {
+        return flowControlOut;
+    }
 
-	public void setFlowControlOut(int flowControlOut) {
-		this.flowControlOut = flowControlOut;
-	}
+    /**
+     * @param flowControlOut the flowControlOut to set
+     */
+    public void setFlowControlOut(FlowControl flowControlOut) {
+        this.flowControlOut = flowControlOut;
+    }
 
-	public int getDataBits() {
-		return dataBits;
-	}
+    /**
+     * @return the dataBits
+     */
+    public DataBits getDataBits() {
+        return dataBits;
+    }
 
-	public void setDataBits(int dataBits) {
-		this.dataBits = dataBits;
-	}
+    /**
+     * @param dataBits the dataBits to set
+     */
+    public void setDataBits(DataBits dataBits) {
+        this.dataBits = dataBits;
+    }
 
-	public int getStopBits() {
-		return stopBits;
-	}
+    /**
+     * @return the stopBits
+     */
+    public StopBits getStopBits() {
+        return stopBits;
+    }
 
-	public void setStopBits(int stopBits) {
-		this.stopBits = stopBits;
-	}
+    /**
+     * @param stopBits the stopBits to set
+     */
+    public void setStopBits(StopBits stopBits) {
+        this.stopBits = stopBits;
+    }
 
-	public int getParity() {
-		return parity;
-	}
+    /**
+     * @return the parity
+     */
+    public Parity getParity() {
+        return parity;
+    }
 
-	public void setParity(int parity) {
-		this.parity = parity;
-	}
-	
+    /**
+     * @param parity the parity to set
+     */
+    public void setParity(Parity parity) {
+        this.parity = parity;
+    }
+
     public int getReadTimeout() {
 		return readTimeout;
 	}
@@ -263,16 +289,16 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             response.addContextualMessage("commPortId", "validate.required");
         if (baudRate <= 0)
             response.addContextualMessage("baudRate", "validate.invalidValue");
-        if (!(flowControlIn == 0 || flowControlIn == 1 || flowControlIn == 4))
-            response.addContextualMessage("flowControlIn", "validate.invalidValue");
-        if (!(flowControlOut == 0 || flowControlOut == 2 || flowControlOut == 8))
-            response.addContextualMessage("flowControlOut", "validate.invalidValue");
-        if (dataBits < 5 || dataBits > 8)
-            response.addContextualMessage("dataBits", "validate.invalidValue");
-        if (stopBits < 1 || stopBits > 3)
-            response.addContextualMessage("stopBits", "validate.invalidValue");
-        if (parity < 0 || parity > 4)
-            response.addContextualMessage("parityBits", "validate.invalidValue");
+        if (flowControlIn == null)
+            response.addContextualMessage("flowControlIn", "validate.required");
+        if (flowControlOut == null)
+            response.addContextualMessage("flowControlOut", "validate.required");
+        if (dataBits == null)
+            response.addContextualMessage("dataBits", "validate.required");
+        if (stopBits == null)
+            response.addContextualMessage("stopBits", "validate.required");
+        if (parity == null)
+            response.addContextualMessage("parityBits", "validate.required");
         
         if(useTerminator) {
         	if(messageTerminator.length() <= 0)
@@ -313,17 +339,17 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 5;
+    private static final int version = 6;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         SerializationHelper.writeSafeUTF(out, commPortId);
         out.writeInt(baudRate);
-        out.writeInt(flowControlIn);
-        out.writeInt(flowControlOut);
-        out.writeInt(dataBits);
-        out.writeInt(stopBits);
-        out.writeInt(parity);
+        out.writeInt(flowControlIn.value());
+        out.writeInt(flowControlOut.value());
+        out.writeInt(dataBits.value());
+        out.writeInt(stopBits.value());
+        out.writeInt(parity.value());
         SerializationHelper.writeSafeUTF(out, messageTerminator);
         out.writeInt(readTimeout);
         SerializationHelper.writeSafeUTF(out, messageRegex);
@@ -344,11 +370,26 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         if (ver == 1) {
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();
-            flowControlIn = in.readInt();
-            flowControlOut = in.readInt();
-            dataBits = in.readInt();
-            stopBits = in.readInt();
-            parity = in.readInt();
+            //Convert legacy JSSC ints
+            switch(in.readInt()){
+                case 1:
+                    flowControlIn = FlowControl.RTSCTS;
+                case 4:
+                    flowControlIn = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            switch(in.readInt()){
+                case 2:
+                    flowControlOut = FlowControl.RTSCTS;
+                case 8:
+                    flowControlOut = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            dataBits = DataBits.fromValue(in.readInt());
+            stopBits = StopBits.fromValue(in.readInt());
+            parity = Parity.fromValue(in.readInt());
             messageTerminator = StringEscapeUtils.unescapeJava(SerializationHelper.readSafeUTF(in));
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
@@ -360,15 +401,29 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             ioLogFileSizeMBytes = 1;
             maxHistoricalIOLogs = 1;
             retries = 1;
-        }
-        if (ver == 2) {
+        }else if (ver == 2) {
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();
-            flowControlIn = in.readInt();
-            flowControlOut = in.readInt();
-            dataBits = in.readInt();
-            stopBits = in.readInt();
-            parity = in.readInt();
+            //Convert legacy JSSC ints
+            switch(in.readInt()){
+                case 1:
+                    flowControlIn = FlowControl.RTSCTS;
+                case 4:
+                    flowControlIn = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            switch(in.readInt()){
+                case 2:
+                    flowControlOut = FlowControl.RTSCTS;
+                case 8:
+                    flowControlOut = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            dataBits = DataBits.fromValue(in.readInt());
+            stopBits = StopBits.fromValue(in.readInt());
+            parity = Parity.fromValue(in.readInt());
             messageTerminator = SerializationHelper.readSafeUTF(in);
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
@@ -380,15 +435,29 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             ioLogFileSizeMBytes = 1;
             maxHistoricalIOLogs = 1;
             retries = 1;
-        }
-        if (ver == 3) {
+        }else if (ver == 3) {
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();
-            flowControlIn = in.readInt();
-            flowControlOut = in.readInt();
-            dataBits = in.readInt();
-            stopBits = in.readInt();
-            parity = in.readInt();
+            //Convert legacy JSSC ints
+            switch(in.readInt()){
+                case 1:
+                    flowControlIn = FlowControl.RTSCTS;
+                case 4:
+                    flowControlIn = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            switch(in.readInt()){
+                case 2:
+                    flowControlOut = FlowControl.RTSCTS;
+                case 8:
+                    flowControlOut = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            dataBits = DataBits.fromValue(in.readInt());
+            stopBits = StopBits.fromValue(in.readInt());
+            parity = Parity.fromValue(in.readInt());
             messageTerminator = SerializationHelper.readSafeUTF(in);
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
@@ -400,15 +469,28 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             ioLogFileSizeMBytes = 1;
             maxHistoricalIOLogs = 1;
             retries = 1;
-        }
-        if(ver == 4){
+        }else if(ver == 4){
             commPortId = SerializationHelper.readSafeUTF(in);
-            baudRate = in.readInt();
-            flowControlIn = in.readInt();
-            flowControlOut = in.readInt();
-            dataBits = in.readInt();
-            stopBits = in.readInt();
-            parity = in.readInt();
+            //Convert legacy JSSC ints
+            switch(in.readInt()){
+                case 1:
+                    flowControlIn = FlowControl.RTSCTS;
+                case 4:
+                    flowControlIn = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            switch(in.readInt()){
+                case 2:
+                    flowControlOut = FlowControl.RTSCTS;
+                case 8:
+                    flowControlOut = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            dataBits = DataBits.fromValue(in.readInt());
+            stopBits = StopBits.fromValue(in.readInt());
+            parity = Parity.fromValue(in.readInt());
             messageTerminator = SerializationHelper.readSafeUTF(in);
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
@@ -420,15 +502,49 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             ioLogFileSizeMBytes = in.readFloat();
             maxHistoricalIOLogs = in.readInt();
             retries = 1;
-        }
-        if(ver == 5){
+        }else if(ver == 5){
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();
-            flowControlIn = in.readInt();
-            flowControlOut = in.readInt();
-            dataBits = in.readInt();
-            stopBits = in.readInt();
-            parity = in.readInt();
+            //Convert legacy JSSC ints
+            switch(in.readInt()){
+                case 1:
+                    flowControlIn = FlowControl.RTSCTS;
+                case 4:
+                    flowControlIn = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            switch(in.readInt()){
+                case 2:
+                    flowControlOut = FlowControl.RTSCTS;
+                case 8:
+                    flowControlOut = FlowControl.XONXOFF;
+                default:
+                    flowControlIn = FlowControl.NONE;
+            }
+            dataBits = DataBits.fromValue(in.readInt());
+            stopBits = StopBits.fromValue(in.readInt());
+            parity = Parity.fromValue(in.readInt());
+            messageTerminator = SerializationHelper.readSafeUTF(in);
+            readTimeout = in.readInt();
+            messageRegex = SerializationHelper.readSafeUTF(in);
+            pointIdentifierIndex = in.readInt();
+            useTerminator = in.readBoolean();
+            hex = in.readBoolean();
+            logIO = in.readBoolean();
+            maxMessageSize = in.readInt();
+            ioLogFileSizeMBytes = in.readFloat();
+            maxHistoricalIOLogs = in.readInt();
+            retries = in.readInt();
+        }else if(ver == 6){
+            commPortId = SerializationHelper.readSafeUTF(in);
+            baudRate = in.readInt();
+            //Convert legacy JSSC ints
+            flowControlIn = FlowControl.fromValue(in.readInt());
+            flowControlOut = FlowControl.fromValue(in.readInt());
+            dataBits = DataBits.fromValue(in.readInt());
+            stopBits = StopBits.fromValue(in.readInt());
+            parity = Parity.fromValue(in.readInt());
             messageTerminator = SerializationHelper.readSafeUTF(in);
             readTimeout = in.readInt();
             messageRegex = SerializationHelper.readSafeUTF(in);
@@ -451,6 +567,13 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
+        
+        JsonValue value = jsonObject.get("flowControlIn");
+        value = jsonObject.get("flowControlOut");
+        value = jsonObject.get("dataBits");
+        value = jsonObject.get("stopBits");
+        value = jsonObject.get("parity");
+        
     }
 	
 	public static boolean isBlank(CharSequence cs) {
@@ -465,13 +588,4 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
 		}
 		return true;
 	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#asModel()
-	 */
-	@Override
-	public SerialDataSourceModel asModel() {
-		return new SerialDataSourceModel(this);
-	}
-    
 }

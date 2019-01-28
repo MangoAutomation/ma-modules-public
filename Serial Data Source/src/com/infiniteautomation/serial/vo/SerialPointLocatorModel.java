@@ -16,9 +16,11 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
  * @author Terry Packer
  *
  */
-@CSVEntity(typeName=SerialPointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName=SerialPointLocatorModel.TYPE_NAME)
 public class SerialPointLocatorModel extends PointLocatorModel<SerialPointLocatorVO>{
 
+    public static final String TYPE_NAME = "PL.SERIAL";
+    
 	/**
 	 * @param data
 	 */
@@ -78,7 +80,7 @@ public class SerialPointLocatorModel extends PointLocatorModel<SerialPointLocato
 	 */
 	@Override
 	public String getTypeName() {
-		return SerialPointLocatorModelDefinition.TYPE_NAME;
+		return TYPE_NAME;
 	}
 
 

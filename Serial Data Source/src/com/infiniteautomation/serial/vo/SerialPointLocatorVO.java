@@ -144,15 +144,4 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
 	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
 		writeDataType(writer);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
-	 */
-	@Override
-	public SerialPointLocatorModel asModel() {
-		return new SerialPointLocatorModel(this);
-	}
-
-	
-	
 }
