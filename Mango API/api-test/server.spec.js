@@ -60,4 +60,17 @@ describe('Server endpoint tests', function(){
             assert.isBoolean(response.data.enabled, true);
         });
     });
+    
+    it('List directory', () => {
+        return client.restRequest({
+            path: '/rest/v2/server/execute-command',
+            method: 'POST',
+            data:{
+                timeout: 5000,
+                command: 'ls'
+            }
+        }).then(response => {
+            assert.isString(response.data);
+        });
+    });
 });
