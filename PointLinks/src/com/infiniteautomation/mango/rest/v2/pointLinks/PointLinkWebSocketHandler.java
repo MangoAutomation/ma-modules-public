@@ -28,7 +28,7 @@ public class PointLinkWebSocketHandler extends DaoNotificationWebSocketHandler<P
     @Override
     protected boolean hasPermission(User user, PointLinkVO vo) {
         try{
-            service.ensureReadPermission(vo, user);
+            service.ensureReadPermission(user, vo);
             return true;
         }catch(Exception e) {
             return false;

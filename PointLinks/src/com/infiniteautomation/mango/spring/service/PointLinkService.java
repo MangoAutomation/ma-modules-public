@@ -5,7 +5,6 @@ package com.infiniteautomation.mango.spring.service;
 
 import java.util.function.Function;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,106 +25,40 @@ import net.jazdw.rql.parser.ASTNode;
  *
  */
 @Service
-public class PointLinkService {
+public class PointLinkService extends AbstractVOService<PointLinkVO, PointLinkDao> {
 
-
-    private final PointLinkDao dao;
     private final MangoJavaScriptService service;
     
     @Autowired    
     public PointLinkService(PointLinkDao dao, MangoJavaScriptService service) {
-        this.dao = dao;
+        super(dao);
         this.service = service;
     }
     
-    /**
-     * Get the vo checking permissions and existence
-     * @param xid
-     * @param user
-     * @return
-     * @throws NotFoundException
-     * @throws PermissionException
-     */
-    public PointLinkVO get(String xid, PermissionHolder user) throws NotFoundException, PermissionException {
-        PointLinkVO vo = dao.getByXid(xid);
-        if(vo == null)
-            throw new NotFoundException();
-        ensureReadPermission(vo, user);
-        return vo;
-    }
-    
-    /**
-     * 
-     * @param vo
-     * @param user
-     * @return
-     * @throws NotFoundException
-     * @throws PermissionException
-     * @throws ValidationException
-     */
-    public PointLinkVO insert(PointLinkVO vo, PermissionHolder user) throws NotFoundException, PermissionException, ValidationException {
-        //Ensure they can create an event
-        Permissions.ensureDataSourcePermission(user);
-        
-        //Generate an Xid if necessary
-        if(StringUtils.isEmpty(vo.getXid()))
-            vo.setXid(dao.generateUniqueXid());
-        
-        vo.ensureValid();
-        dao.save(vo);
+    @Override
+    protected PointLinkVO insert(PointLinkVO vo, PermissionHolder user, boolean full)
+            throws PermissionException, ValidationException {
+        PointLinkVO created = super.insert(vo, user, full);
         service.clearGlobalFunctions();
-        return vo;
+        return created;
     }
     
-    /**
-     * 
-     * @param existingXid
-     * @param vo
-     * @param user
-     * @return
-     * @throws NotFoundException
-     * @throws PermissionException
-     * @throws ValidationException
-     */
-    public PointLinkVO update(String existingXid, PointLinkVO vo, PermissionHolder user) throws NotFoundException, PermissionException, ValidationException {
-        return update(get(existingXid, user), vo, user);
-    }
-    
-    /**
-     * 
-     * @param existing
-     * @param vo
-     * @param user
-     * @return
-     * @throws NotFoundException
-     * @throws PermissionException
-     * @throws ValidationException
-     */
-    public PointLinkVO update(PointLinkVO existing, PointLinkVO vo, PermissionHolder user) throws NotFoundException, PermissionException, ValidationException {
-        ensureEditPermission(existing, user);
-        //Don't change ID ever
-        vo.setId(existing.getId());
-        vo.ensureValid();
-        dao.save(vo);
+    @Override
+    protected PointLinkVO update(PointLinkVO existing, PointLinkVO vo, PermissionHolder user,
+            boolean full) throws PermissionException, ValidationException {
+        PointLinkVO updated = super.update(existing, vo, user, full);
         service.clearGlobalFunctions();
-        return vo;
+        return updated;
     }
-    
-    /**
-     * Delete 
-     * @param xid
-     * @param user
-     * @return
-     * @throws NotFoundException
-     * @throws PermissionException
-     */
+
+    @Override
     public PointLinkVO delete(String xid, PermissionHolder user) throws NotFoundException, PermissionException {
-        PointLinkVO vo = get(xid, user);
-        ensureEditPermission(vo, user);
-        dao.delete(vo.getId());
+        PointLinkVO vo = super.delete(xid, user);
         service.clearGlobalFunctions();
         return vo;
     }
+    
+    
     
     /**
      * Perform a query, only admin users will get results
@@ -135,32 +68,24 @@ public class PointLinkService {
      * @return
      */
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<PointLinkVO, Object> transformVO) {
-        
         //If we are admin or have overall data source permission we can view all
-        //TODO Review permissions access
-        if (user.hasAdminPermission()) {
-            return new StreamedVOQueryWithTotal<>(dao, rql, transformVO);
-        } else {
-            return new StreamedVOQueryWithTotal<>(dao, rql, item -> false,  transformVO);
-        }
+        return new StreamedVOQueryWithTotal<>(dao, rql, item -> { return hasReadPermission(user, item);},  transformVO);
     }
-    
-    /**
-     * For future use if we add permissions to scripts, for now only admin's have permissions
-     * @param vo
-     * @param user
-     */
-    public void ensureReadPermission(PointLinkVO vo, PermissionHolder user) throws PermissionException {
-        Permissions.ensureHasAdminPermission(user);
+
+    @Override
+    public boolean hasCreatePermission(PermissionHolder user) {
+        //Ensure they can create an event
+        return Permissions.hasDataSourcePermission(user);
     }
-    
-    /**
-     * For future use if we add permissions to scripts, for now only admin's have permissions
-     * @param vo
-     * @param user
-     */
-    public void ensureEditPermission(PointLinkVO vo, PermissionHolder user) throws PermissionException {
-        Permissions.ensureHasAdminPermission(user);
+
+    @Override
+    public boolean hasEditPermission(PermissionHolder user, PointLinkVO vo) {
+        return Permissions.hasDataSourcePermission(user);
+    }
+
+    @Override
+    public boolean hasReadPermission(PermissionHolder user, PointLinkVO vo) {
+        return Permissions.hasDataSourcePermission(user);
     }
     
 }
