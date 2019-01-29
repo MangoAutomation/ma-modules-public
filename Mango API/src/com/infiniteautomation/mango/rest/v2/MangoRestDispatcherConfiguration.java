@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
@@ -76,6 +77,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             PartialUpdateArgumentResolver resolver) {
         this.mapper = mapper;
         this.resolver = resolver;
+        
+        mapper.registerModule(new MangoRestV2JacksonModule());
         mapper.registerSubtypes(
                     //Event Handlers
                     new NamedType(EmailEventHandlerModel.class, "EMAIL"),
