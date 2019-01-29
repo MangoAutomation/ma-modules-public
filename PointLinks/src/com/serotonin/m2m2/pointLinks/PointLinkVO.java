@@ -23,8 +23,8 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.script.ScriptError;
-import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.util.ExportCodes;
+import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -58,7 +58,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     private boolean writeAnnotation;
     @JsonProperty
     private boolean disabled;
-    private int logLevel = ScriptLog.LogLevel.NONE;
+    private LogLevel logLevel = LogLevel.NONE;
     private ScriptPermissions scriptPermissions = new ScriptPermissions();
     @JsonProperty
     private float logSize = 1.0f;
@@ -113,11 +113,11 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         this.disabled = disabled;
     }
     
-    public int getLogLevel() {
+    public LogLevel getLogLevel() {
         return logLevel;
     }
 
-    public void setLogLevel(int logLevel) {
+    public void setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
     }
     
@@ -158,16 +158,16 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
             response.addContextualMessage("targetPointId", "pointLinks.validate.targetRequired");
         if (sourcePointId == targetPointId)
             response.addContextualMessage("targetPointId", "pointLinks.validate.samePoint");
-        this.scriptPermissions.validate(response, Common.getHttpUser());
-        if(!StringUtils.isEmpty(script) && !response.getHasMessages()) {
+        if(!StringUtils.isEmpty(script)) {
             try {
                 Common.getBean(MangoJavaScriptService.class).compile(script, true, scriptPermissions);
             } catch(ScriptError e) {
                 response.addContextualMessage("script", "pointLinks.validate.scriptError", e.getMessage());
             }
         }
-        if (!ScriptLog.LOG_LEVEL_CODES.isValidId(logLevel))
-            response.addContextualMessage("logLevel", "validate.invalidValue");
+        this.scriptPermissions.validate(response, Common.getHttpUser());
+        if (logLevel == null)
+            response.addContextualMessage("logLevel", "validate.required");
         if (logSize <= 0)
             response.addContextualMessage("logSize", "validate.greaterThanZero");
         if (logCount <= 0)
@@ -193,7 +193,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
             writer.writeEntry("targetPointId", dp.getXid());
 
         writer.writeEntry("event", EVENT_CODES.getCode(event));
-        writer.writeEntry("logLevel", ScriptLog.LOG_LEVEL_CODES.getCode(logLevel));
+        writer.writeEntry("logLevel", logLevel);
         writer.writeEntry("scriptPermissions", scriptPermissions == null ? null : scriptPermissions.getPermissions());
     }
 
@@ -226,12 +226,14 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         }
         text = jsonObject.getString("logLevel");
         if (text != null) {
-            logLevel = ScriptLog.LOG_LEVEL_CODES.getId(text);
-            if (logLevel == -1)
+            try {
+                logLevel = LogLevel.fromName(text);
+            }catch(IllegalArgumentException e) {
                 throw new TranslatableJsonException("emport.error.invalid", "logLevel", text,
-                		ScriptLog.LOG_LEVEL_CODES.getCodeList());
+                        LogLevel.values());
+            }
         }else{
-        	logLevel = ScriptLog.LogLevel.NONE;
+        	logLevel = LogLevel.NONE;
         }
         if(jsonObject.containsKey("scriptPermissions")) {
             Set<String> permissions = null;

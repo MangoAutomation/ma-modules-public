@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
-import com.infiniteautomation.mango.util.script.ScriptLogLevels;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.rt.script.ScriptContextVariable;
+import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -29,7 +30,7 @@ public class MangoJavaScriptModel {
     private String script;
     private List<ScriptContextVariableModel> context;
     private Set<String> permissions;
-    private ScriptLogLevels logLevel;
+    private LogLevel logLevel;
     @ApiModelProperty("If non-null coerce the result into a PointValueTime with this data type")
     private String resultDataType; 
     
@@ -90,13 +91,13 @@ public class MangoJavaScriptModel {
     /**
      * @return the logLevel
      */
-    public ScriptLogLevels getLogLevel() {
+    public LogLevel getLogLevel() {
         return logLevel;
     }
     /**
      * @param logLevel the logLevel to set
      */
-    public void setLogLevel(ScriptLogLevels logLevel) {
+    public void setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
     }
     
@@ -150,12 +151,20 @@ public class MangoJavaScriptModel {
     public static class ScriptContextVariableModel {
         private String xid;
         private String variableName;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Boolean contextUpdate;
         
         public ScriptContextVariableModel() { }
         
         public ScriptContextVariableModel(String xid, String variableName) {
             this.xid = xid;
             this.variableName = variableName;
+        }
+        
+        public ScriptContextVariableModel(String xid, String variableName, Boolean updatesContext) {
+            this.xid = xid;
+            this.variableName = variableName;
+            this.contextUpdate = updatesContext;
         }
         
         public String getXid() {
@@ -170,5 +179,13 @@ public class MangoJavaScriptModel {
         public void setVariableName(String variableName) {
             this.variableName = variableName;
         }
+        public Boolean getContextUpdate() {
+            return contextUpdate;
+        }
+        public void setContextUpdate(Boolean contextUpdate) {
+            this.contextUpdate = contextUpdate;
+        }
+        
+        
     }
 }

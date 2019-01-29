@@ -36,6 +36,7 @@ import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.rt.script.ScriptLog;
 import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
+import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -88,7 +89,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
             raiseFailureEvent(Common.timer.currentTimeMillis(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
         }
 
-        if(vo.getLogLevel() == ScriptLog.LogLevel.NONE)
+        if(vo.getLogLevel() == LogLevel.NONE)
             scriptLog = new ScriptLog(LOG_FILE_PREFIX + vo.getId());
         else {
             int logSize = (int) (vo.getLogSize() * 1000000f);

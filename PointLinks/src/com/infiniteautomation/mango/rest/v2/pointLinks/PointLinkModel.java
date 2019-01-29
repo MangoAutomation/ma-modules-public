@@ -9,7 +9,7 @@ import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.pointLinks.PointLinkVO;
-import com.serotonin.m2m2.rt.script.ScriptLog;
+import com.serotonin.m2m2.util.log.LogLevel;
 
 /**
  * @author Terry Packer
@@ -31,7 +31,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
     private String event;
     private boolean writeAnnotation;
     private boolean disabled;
-    private String logLevel;
+    private LogLevel logLevel;
     private Set<String> scriptPermissions;
     private float logSize;
     private int logCount;
@@ -111,13 +111,13 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
     /**
      * @return the logLevel
      */
-    public String getLogLevel() {
+    public LogLevel getLogLevel() {
         return logLevel;
     }
     /**
      * @param logLevel the logLevel to set
      */
-    public void setLogLevel(String logLevel) {
+    public void setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
     }
     /**
@@ -165,7 +165,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
         vo.setEvent(PointLinkVO.EVENT_CODES.getId(event));
         vo.setWriteAnnotation(writeAnnotation);
         vo.setDisabled(disabled);
-        vo.setLogLevel(ScriptLog.LOG_LEVEL_CODES.getId(logLevel));
+        vo.setLogLevel(logLevel);
         vo.setScriptPermissions(new ScriptPermissions(scriptPermissions));
         vo.setLogSize(logSize);
         vo.setLogCount(logCount);
@@ -181,7 +181,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
         this.event = PointLinkVO.EVENT_CODES.getCode(vo.getEvent());
         this.writeAnnotation = vo.isWriteAnnotation();
         this.disabled = vo.isDisabled();
-        this.logLevel = ScriptLog.LOG_LEVEL_CODES.getCode(vo.getLogLevel());
+        this.logLevel = vo.getLogLevel();
         ScriptPermissions permissions = vo.getScriptPermissions();
         if(permissions != null) {
             this.scriptPermissions = permissions.getPermissionsSet();

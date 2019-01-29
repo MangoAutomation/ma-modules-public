@@ -18,7 +18,6 @@ import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptAction;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptError;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
-import com.infiniteautomation.mango.util.script.ScriptLogLevels;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
@@ -28,6 +27,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.script.ScriptContextVariable;
+import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.DataPointExtendedNameComparator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -109,7 +109,7 @@ public class PointLinksDwr extends ModuleDwr {
         vo.setWriteAnnotation(writeAnnotation);
         vo.setDisabled(disabled);
         vo.setScriptPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(permissions), user.getPermissionHolderName()));
-        vo.setLogLevel(logLevel);
+        vo.setLogLevel(LogLevel.fromValue(logLevel));
         vo.setLogSize(logSize);
         vo.setLogCount(logCount);
 
@@ -146,7 +146,7 @@ public class PointLinksDwr extends ModuleDwr {
         MangoJavaScriptService service = Common.getBean(MangoJavaScriptService.class);
         MangoJavaScript vo = new MangoJavaScript();
         vo.setWrapInFunction(true);
-        vo.setLogLevel(ScriptLogLevels.fromValue(logLevel));
+        vo.setLogLevel(LogLevel.fromValue(logLevel));
         vo.setPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(permissions), user.getPermissionHolderName()));
         vo.setScript(script);
         List<ScriptContextVariable> context = new ArrayList<>();

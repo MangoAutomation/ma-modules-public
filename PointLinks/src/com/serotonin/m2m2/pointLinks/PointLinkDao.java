@@ -23,6 +23,7 @@ import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
@@ -146,7 +147,7 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
             pl.setEvent(rs.getInt(++i));
             pl.setWriteAnnotation(charToBool(rs.getString(++i)));
             pl.setDisabled(charToBool(rs.getString(++i)));
-            pl.setLogLevel(rs.getInt(++i));
+            pl.setLogLevel(LogLevel.fromValue(rs.getInt(++i)));
             pl.setLogSize(rs.getFloat(++i));
             pl.setLogCount(rs.getInt(++i));
             pl.setScriptPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(rs.getString(++i))));
