@@ -29,6 +29,11 @@
             <md-option ng-if="$ctrl.dataPoint.pointLocator.changeType.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.changeType">
                 <em ng-bind="$ctrl.dataPoint.pointLocator.changeType"></em>
             </md-option>
+            <md-option 
+                ng-repeat="changeType in $ctrl.changeTypes[$ctrl.dataPoint.pointLocator.dataType] track by changeType.key" 
+                ng-value="changeType.key" 
+                ma-tr="{{changeType.translation}}">
+            </md-option>
         </md-select>
         <div ng-messages="changeTypeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>

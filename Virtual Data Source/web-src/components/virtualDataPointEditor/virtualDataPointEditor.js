@@ -11,8 +11,32 @@ class VirtualDataPointEditorController {
     
     constructor(maPoint) {
         this.dataTypes = maPoint.dataTypes.filter(t => t.key !== 'IMAGE');
+        this.changeTypes = { 
+            'BINARY': [
+                {key: 'ALTERNATE', translation: 'dsEdit.virtual.changeType.alternate'},
+                {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'},
+                {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
+            ],
+            'MULTISTATE': [
+                {key: 'INCREMENT', translation: 'dsEdit.virtual.changeType.increment'},
+                {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'},
+                {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
+            ],
+            'NUMERIC': [
+                {key: 'BROWNIAN', translation: 'dsEdit.virtual.changeType.brownian'},
+                {key: 'INCREMENT', translation: 'dsEdit.virtual.changeType.increment'},
+                {key: 'ATTRACTOR', translation: 'dsEdit.virtual.changeType.attractor'},
+                {key: 'SINUSOIDAL', translation: 'dsEdit.virtual.changeType.sinusoidal'},
+                {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
+                {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'} 
+            ],
+            'ALPHANUMERIC': [
+                {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'}, 
+            ]
+        
+        };
     }
-    
+
     $onChanges(changes) {
     }
 }
