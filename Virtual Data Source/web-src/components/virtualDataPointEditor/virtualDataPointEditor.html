@@ -11,6 +11,9 @@
         <md-icon>storage</md-icon>
         <label ma-tr="dsEdit.pointDataType"></label>
         <md-select name="pointLocator.dataType" ng-model="$ctrl.dataPoint.pointLocator.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.pointLocator.dataType.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.dataType">
+                <em ng-bind="$ctrl.dataPoint.pointLocator.dataType"></em>
+            </md-option>
             <md-option ng-repeat="dataType in $ctrl.dataTypes track by dataType.key" ng-value="dataType.key" ma-tr="{{dataType.translation}}"></md-option>
         </md-select>
         <div ng-messages="dataTypeModelCtrl.$error">
@@ -23,6 +26,9 @@
         <md-icon>change_history</md-icon>
         <label ma-tr="dsEdit.virtual.changeType"></label>
         <md-select name="pointLocator.changeType" ng-model="$ctrl.dataPoint.pointLocator.changeType" required ma-get-ctrl="changeTypeModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.pointLocator.changeType.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.changeType">
+                <em ng-bind="$ctrl.dataPoint.pointLocator.changeType"></em>
+            </md-option>
         </md-select>
         <div ng-messages="changeTypeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
@@ -34,6 +40,9 @@
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
         <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.pointLocator.startValue.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.startValue">
+                <em ng-bind="$ctrl.dataPoint.pointLocator.startValue"></em>
+            </md-option>
         </md-select>
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
