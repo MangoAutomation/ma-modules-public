@@ -22,39 +22,22 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
     
     
     private String commPortId;
-    
     private int baudRate = 9600;
-    
     private FlowControl flowControlIn;
-    
     private FlowControl flowControlOut;
-    
     private DataBits dataBits;
-    
     private StopBits stopBits;
-    
     private Parity parity;
-    
     private int readTimeout;
-    
     private boolean useTerminator;
-    
     private String messageTerminator;
-    
     private String messageRegex;
-    
     private int pointIdentifierIndex;
-    
     private boolean hex;
-    
     private boolean logIO;
-    
     private int maxMessageSize;
-    
     private float ioLogFileSizeMBytes;
-    
     private int maxHistoricalIOLogs;
-    
     private int retries;
     
     
@@ -78,14 +61,44 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
         vo.setBaudRate(baudRate);
         vo.setFlowControlIn(flowControlIn);
         vo.setFlowControlOut(flowControlOut);
-        
+        vo.setDataBits(dataBits);
+        vo.setStopBits(stopBits);
+        vo.setParity(parity);
+        vo.setReadTimeout(readTimeout);
+        vo.setUseTerminator(useTerminator);
+        vo.setMessageTerminator(messageTerminator);
+        vo.setMessageRegex(messageRegex);
+        vo.setPointIdentifierIndex(pointIdentifierIndex);
+        vo.setHex(hex);
+        vo.setLogIO(logIO);
+        vo.setMaxMessageSize(maxMessageSize);
+        vo.setIoLogFileSizeMBytes(ioLogFileSizeMBytes);
+        vo.setMaxHistoricalIOLogs(maxHistoricalIOLogs);
+        vo.setRetries(retries);
         return vo;
     }
     
     @Override
     public void fromVO(SerialDataSourceVO vo) {
         super.fromVO(vo);
-
+        this.commPortId = vo.getCommPortId();
+        this.baudRate = vo.getBaudRate();
+        this.flowControlIn = vo.getFlowControlIn();
+        this.flowControlOut = vo.getFlowControlOut();
+        this.dataBits = vo.getDataBits();
+        this.stopBits = vo.getStopBits();
+        this.parity = vo.getParity();
+        this.readTimeout = vo.getReadTimeout();
+        this.useTerminator = vo.getUseTerminator();
+        this.messageTerminator = vo.getMessageTerminator();
+        this.messageRegex = vo.getMessageRegex();
+        this.pointIdentifierIndex = vo.getPointIdentifierIndex();
+        this.hex = vo.isHex();
+        this.logIO = vo.isLogIO();
+        this.maxMessageSize = vo.getMaxMessageSize();
+        this.ioLogFileSizeMBytes = vo.getIoLogFileSizeMBytes();
+        this.maxHistoricalIOLogs = vo.getMaxHistoricalIOLogs();
+        this.retries = vo.getRetries();
     }
 
     /**

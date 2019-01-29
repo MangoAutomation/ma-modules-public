@@ -124,7 +124,7 @@ describe('Serial data source', function() {
           dsv1.name = 'Test too';
           dsv1.enabled = true;
           dsv1.alarmLevels = {
-              PDU_EXCEPTION: 'URGENT',
+              POINT_READ_PATTERN_MISMATCH_EVENT: 'URGENT',
               DATA_SOURCE_EXCEPTION: 'URGENT'
           };
           dsv1.purgeSettings = {
@@ -156,17 +156,26 @@ describe('Serial data source', function() {
           dsv1.maxHistoricalIOLogs = 22;
           
           return client.restRequest({
-              path:  `/rest/v1/data-sources/${dsv1.xid}`,
+              path:  `/rest/v1/data-sources/DS_TEST`,
               method: 'PUT',
               data: dsv1
           }).then((response) => {
               assertV1(response);
+          }, (error) => {
+              if(error.status === 422){
+                  var msg = 'Validation Failed: \n';
+                  for(var m in error.data.result.messages)
+                      msg += error.data.result.messages[m].property + '-->' + error.data.result.messages[m].message.key;
+                  assert.fail(msg);
+              }else{
+                  assert.fail(error)
+              }
           });
         });
       
       it('Delete data source v1', () => {
           return client.restRequest({
-              path: `/rest/v1/data-sources/DS_TEST`,
+              path: `/rest/v1/data-sources/${dsv1.xid}`,
               method: 'DELETE',
               data: {}
           }).then(response => {
@@ -203,7 +212,7 @@ describe('Serial data source', function() {
                 level: 'URGENT',
              },
              {
-                 eventType: 'PDU_EXCEPTION',
+                 eventType: 'POINT_READ_PATTERN_MISMATCH_EVENT',
                  level: 'URGENT',
              }
         ];
@@ -227,7 +236,7 @@ describe('Serial data source', function() {
         dsv2.retries  = 51;
         dsv2.useTerminator = true;
         dsv2.messageTerminator = ':';
-        dsv2.messageRegex = '';
+        dsv2.messageRegex = '(.?)';
         dsv2.pointIdentifierIndex = 21;
         dsv2.hex = false;
         dsv2.logIO = false;
@@ -241,6 +250,15 @@ describe('Serial data source', function() {
             data: dsv2
         }).then((response) => {
             assertV2(response);
+        }, (error) => {
+            if(error.status === 422){
+                var msg = 'Validation Failed: \n';
+                for(var m in error.data.result.messages)
+                    msg += error.data.result.messages[m].property + '-->' + error.data.result.messages[m].message.key;
+                assert.fail(msg);
+            }else{
+                assert.fail(error)
+            }
         });
       });
     
@@ -274,7 +292,7 @@ describe('Serial data source', function() {
         assert.strictEqual(response.data.useTerminator, dsv1.useTerminator);
         assert.strictEqual(response.data.messageTerminator, dsv1.messageTerminator);
         assert.strictEqual(response.data.messageRegex, dsv1.messageRegex);
-        assert.strictEqual(response.data.pointIdentifierIndex, dsv1.portIdentiferIndex);
+        assert.strictEqual(response.data.pointIdentifierIndex, dsv1.pointIdentifierIndex);
         assert.strictEqual(response.data.hex, dsv1.hex);
         assert.strictEqual(response.data.logIO, dsv1.logIO);
         assert.strictEqual(response.data.maxMessageSize, dsv1.maxMessageSize);
@@ -302,7 +320,7 @@ describe('Serial data source', function() {
         assert.strictEqual(response.data.useTerminator, dsv2.useTerminator);
         assert.strictEqual(response.data.messageTerminator, dsv2.messageTerminator);
         assert.strictEqual(response.data.messageRegex, dsv2.messageRegex);
-        assert.strictEqual(response.data.pointIdentifierIndex, dsv2.portIdentiferIndex);
+        assert.strictEqual(response.data.pointIdentifierIndex, dsv2.pointIdentifierIndex);
         assert.strictEqual(response.data.hex, dsv2.hex);
         assert.strictEqual(response.data.logIO, dsv2.logIO);
         assert.strictEqual(response.data.maxMessageSize, dsv2.maxMessageSize);

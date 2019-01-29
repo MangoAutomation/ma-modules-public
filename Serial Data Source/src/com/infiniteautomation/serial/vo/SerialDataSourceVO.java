@@ -18,10 +18,13 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.json.type.JsonNumber;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -562,6 +565,11 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
+        writer.writeEntry("flowControlIn", flowControlIn);
+        writer.writeEntry("flowControlOut", flowControlOut);
+        writer.writeEntry("dataBits", dataBits);
+        writer.writeEntry("stopBits", stopBits);
+        writer.writeEntry("parity", parity);
     }
 
     @Override
@@ -569,11 +577,85 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         super.jsonRead(reader, jsonObject);
         
         JsonValue value = jsonObject.get("flowControlIn");
-        value = jsonObject.get("flowControlOut");
-        value = jsonObject.get("dataBits");
-        value = jsonObject.get("stopBits");
-        value = jsonObject.get("parity");
+        if(value != null) {
+            if(value instanceof JsonString) {
+                try{
+                    flowControlIn = FlowControl.fromName(value.toString());
+                }catch(IllegalArgumentException e) {
+                    throw new TranslatableJsonException("emport.error.invalid", "flowControlIn", value, FlowControl.values());
+                }
+            }else if(value instanceof JsonNumber) {
+                //Legacy integer value
+                switch (((JsonNumber) value).intValue()) {
+                    case 1:
+                        flowControlIn = FlowControl.RTSCTS;
+                    case 4:
+                        flowControlIn = FlowControl.XONXOFF;
+                    default:
+                        flowControlIn = FlowControl.NONE;
+                }
+            }
+        }
         
+        value = jsonObject.get("flowControlOut");
+        if(value != null) {
+            if(value instanceof JsonString) {
+                try{
+                    flowControlOut = FlowControl.fromName(value.toString());
+                }catch(IllegalArgumentException e) {
+                    throw new TranslatableJsonException("emport.error.invalid", "flowControlOut", value, FlowControl.values());
+                }
+            }else if(value instanceof JsonNumber) {
+                //Legacy integer value
+                switch (((JsonNumber) value).intValue()) {
+                    case 2:
+                        flowControlOut = FlowControl.RTSCTS;
+                    case 8:
+                        flowControlOut = FlowControl.XONXOFF;
+                    default:
+                        flowControlIn = FlowControl.NONE;
+                }
+            }
+        }
+        
+        value = jsonObject.get("dataBits");
+        if(value != null) {
+            try {
+                if(value instanceof JsonString) {
+                    dataBits = DataBits.fromName(value.toString());
+                }else if(value instanceof JsonNumber) {
+                    dataBits = DataBits.fromValue(((JsonNumber)value).intValue());
+                }
+            }catch(IllegalArgumentException e) {
+                throw new TranslatableJsonException("emport.error.invalid", "dataBits", value, DataBits.values());
+            }
+        }
+        
+        value = jsonObject.get("stopBits");
+        if(value != null) {
+            try {
+                if(value instanceof JsonString) {
+                    stopBits = StopBits.fromName(value.toString());
+                }else if(value instanceof JsonNumber) {
+                    stopBits = StopBits.fromValue(((JsonNumber)value).intValue());
+                }
+            }catch(IllegalArgumentException e) {
+                throw new TranslatableJsonException("emport.error.invalid", "stopBits", value, StopBits.values());
+            }
+        }
+        
+        if(value != null) {
+            try {
+                value = jsonObject.get("parity");
+                if(value instanceof JsonString) {
+                    parity = Parity.fromName(value.toString());
+                }else if(value instanceof JsonNumber) {
+                    parity = Parity.fromValue(((JsonNumber)value).intValue());
+                }
+            }catch(IllegalArgumentException e) {
+                throw new TranslatableJsonException("emport.error.invalid", "parity", value, Parity.values());
+            }
+        }
     }
 	
 	public static boolean isBlank(CharSequence cs) {

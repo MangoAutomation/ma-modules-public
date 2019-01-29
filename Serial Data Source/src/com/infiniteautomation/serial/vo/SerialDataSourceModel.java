@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.infiniteautomation.mango.io.serial.DataBits;
 import com.infiniteautomation.mango.io.serial.FlowControl;
+import com.infiniteautomation.mango.io.serial.Parity;
 import com.infiniteautomation.mango.io.serial.StopBits;
 import com.infiniteautomation.serial.SerialDataSourceDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
@@ -62,8 +63,8 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
 	}
 
 	@JsonGetter("flowControlOut")
-	public int getFlowControlOut() {
-	    return this.data.getFlowControlOut().value();
+	public FlowControl getFlowControlOut() {
+	    return this.data.getFlowControlOut();
 	}
 
 	@JsonSetter("flowControlOut")
@@ -91,6 +92,13 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
 	    this.data.setStopBits(stopBits);
 	}
 
+	public Parity getParity(){
+	    return this.data.getParity();
+	}
+	
+	public void setParity(Parity parity) {
+	    this.data.setParity(parity);
+	}
 	@JsonGetter("readTimeout")
 	public int getReadTimeout() {
 	    return this.data.getReadTimeout();
@@ -189,6 +197,14 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
 	@JsonSetter("maxHistoricalIOLogs")
 	public void setMaxHistoricalIOLogs(int maxHistoricalIOLogs) {
 	    this.data.setMaxHistoricalIOLogs(maxHistoricalIOLogs);
+	}
+	
+	public int getRetries(){
+	    return this.data.getRetries();
+	}
+	
+	public void setRetries(int retries) {
+	    this.data.setRetries(retries);
 	}
 
 	/* (non-Javadoc)
