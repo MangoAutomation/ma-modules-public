@@ -57,40 +57,45 @@
         </div>
     </md-input-container>
 
-    <div flex="100" layout="row" layout-align="space-between end" layout-wrap>
-        <div flex="100" flex-gt-md="50" class="values-container" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'MULTISTATE'">
-            <label>values</label>
-            <md-chips ng-model="$ctrl.dataPoint.pointLocator.values" ng-change="$ctrl.chipsChanged()" readonly="false" md-removable="true"
-                md-separator-keys="$ctrl.separatorKeys" ma-form-exclude ma-get-ctrl="valuesModelCtrl = $ngModel">
-        
-                <input name="value" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
-            </md-chips>
-    
-            <div ng-messages="values.$error">
-                <div ng-message="required" ma-tr="ui.app.required"></div>
-                <div ng-message="validationMessage" ng-bind="values.validationMessage"></div>
-            </div>
+    <div flex="100" class="values-container" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'MULTISTATE'">
+        <label ma-tr="dsEdit.virtual.values"></label>
+        <md-chips ng-model="$ctrl.dataPoint.pointLocator.values" ng-change="$ctrl.chipsChanged()" readonly="false" md-removable="true"
+            md-separator-keys="$ctrl.separatorKeys" ma-form-exclude ma-get-ctrl="valuesModelCtrl = $ngModel">
+
+            <md-chip-template>
+                <span>
+                    <strong>{{$chip}}</strong>
+                </span>
+            </md-chip-template>
+            <md-icon md-chip-remove class="close-icon">close</md-icon>
+            <input name="value" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
+
+        </md-chips>
+
+        <div ng-messages="values.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="values.validationMessage"></div>
         </div>
-    
-        <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'MULTISTATE'">
-            <md-icon>looks_one</md-icon>
-            <label ma-tr="dsEdit.virtual.startValue"></label>
-            <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
-                <md-option ng-if="$ctrl.dataPoint.pointLocator.startValue.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.startValue">
-                    <em ng-bind="$ctrl.dataPoint.pointLocator.startValue"></em>
-                </md-option>
-                <md-option 
-                    ng-repeat="value in $ctrl.dataPoint.pointLocator.values track by value" 
-                    ng-value="value">
-                    {{value}}
-                </md-option>
-            </md-select>
-            <div ng-messages="startValueModelCtrl.$error">
-                <div ng-message="required" ma-tr="ui.app.required"></div>
-                <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
-            </div>
-        </md-input-container>
     </div>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'MULTISTATE'">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.virtual.startValue"></label>
+        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.pointLocator.startValue.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.startValue">
+                <em ng-bind="$ctrl.dataPoint.pointLocator.startValue"></em>
+            </md-option>
+            <md-option 
+                ng-repeat="value in $ctrl.dataPoint.pointLocator.values track by value" 
+                ng-value="value">
+                {{value}}
+            </md-option>
+        </md-select>
+        <div ng-messages="startValueModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
 
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC'">
         <md-icon>vertical_align_bottom</md-icon>

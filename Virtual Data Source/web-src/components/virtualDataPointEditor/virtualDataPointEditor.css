@@ -1,3 +1,8 @@
 ma-virtual-data-point-editor .values-container {
-    margin-bottom: 20px
+    margin-bottom: 20px;
+}
+
+ma-virtual-data-point-editor .close-icon {
+    font-size: 20px;
+    margin: 5px 0;
 }
