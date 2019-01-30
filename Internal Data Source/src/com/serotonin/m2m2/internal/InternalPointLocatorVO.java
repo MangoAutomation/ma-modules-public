@@ -172,11 +172,4 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
         	monitorId = LEGACY_ID_MAP.get(text);
         }
     }
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
-	 */
-	@Override
-	public InternalPointLocatorModel asModel() {
-		return new InternalPointLocatorModel(this);
-	}
 }

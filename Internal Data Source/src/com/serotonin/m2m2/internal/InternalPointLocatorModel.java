@@ -7,8 +7,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
-@CSVEntity(typeName=InternalPointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName=InternalPointLocatorModel.TYPE_NAME)
 public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLocatorVO> {
+    public static final String TYPE_NAME = "PL.INTERNAL";
 
 	public InternalPointLocatorModel(InternalPointLocatorVO data) {
 		super(data);
@@ -20,7 +21,7 @@ public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLo
 
 	@Override
 	public String getTypeName() {
-		return InternalPointLocatorModelDefinition.TYPE_NAME;
+		return TYPE_NAME;
 	}
 	
 	@JsonGetter("monitorId")

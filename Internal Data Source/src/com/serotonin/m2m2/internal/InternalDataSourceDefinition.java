@@ -6,7 +6,6 @@ package com.serotonin.m2m2.internal;
 
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
 public class InternalDataSourceDefinition extends DataSourceDefinition {
 	public static final String DATA_SOURCE_TYPE = "INTERNAL";
@@ -34,13 +33,4 @@ public class InternalDataSourceDefinition extends DataSourceDefinition {
     public Class<?> getDwrClass() {
         return InternalEditDwr.class;
     }
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.DataSourceDefinition#getModelClass()
-	 */
-	@Override
-	public Class<? extends AbstractDataSourceModel<?>> getModelClass() {
-		return InternalDataSourceModel.class;
-	}
-    
 }
