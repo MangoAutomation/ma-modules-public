@@ -56,7 +56,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     }
 
     public MaintenanceEventModel(MaintenanceEventVO vo) {
-        super(vo);
+        fromVO(vo);
     }
 
     /* (non-Javadoc)
