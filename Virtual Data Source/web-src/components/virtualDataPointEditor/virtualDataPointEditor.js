@@ -19,7 +19,7 @@ class VirtualDataPointEditorController {
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
             ],
             'MULTISTATE': [
-                {key: 'INCREMENT', translation: 'dsEdit.virtual.changeType.increment'},
+                {key: 'INCREMENT_MULTISTATE', translation: 'dsEdit.virtual.changeType.increment'},
                 {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'},
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
             ],

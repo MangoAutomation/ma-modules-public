@@ -97,6 +97,12 @@
         </div>
     </md-input-container>
 
+    <div flex="100" flex-gt-md="50">
+        <md-checkbox class="ma-margin-input-container" name="pointLocator.roll" ng-model="$ctrl.dataPoint.pointLocator.roll">
+            <span ma-tr="dsEdit.virtual.roll"></span>
+        </md-checkbox>
+    </div>
+
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC'">
         <md-icon>vertical_align_bottom</md-icon>
         <label ma-tr="dsEdit.virtual.min"></label>
