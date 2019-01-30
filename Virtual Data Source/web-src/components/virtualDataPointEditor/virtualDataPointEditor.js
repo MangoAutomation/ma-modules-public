@@ -4,6 +4,7 @@
  */
 
 import virtualDataPointEditor from './virtualDataPointEditor.html';
+import './virtualDataPointEditor.css';
 
 class VirtualDataPointEditorController {
     static get $$ngIsClass() { return true; }
@@ -37,7 +38,22 @@ class VirtualDataPointEditorController {
         };
     }
 
+    $onInit() {
+        this.chipsChanged();
+    }
+
     $onChanges(changes) {
+    }
+
+    chipsChanged() {
+        let values = this.dataPoint.pointLocator.values; 
+        let lastValue = this.dataPoint.pointLocator.values[values.length - 1] = Number(values[values.length - 1]);
+
+        if (values.length === 0) {
+            this.pointValue = 1;
+        } else {
+            this.pointValue = lastValue + 1;
+        }
     }
 }
 
