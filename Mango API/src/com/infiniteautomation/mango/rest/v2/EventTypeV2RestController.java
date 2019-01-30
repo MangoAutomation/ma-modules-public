@@ -24,6 +24,7 @@ import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
@@ -36,7 +37,6 @@ import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
-import com.serotonin.m2m2.db.dao.ResultsWithTotal;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -53,7 +53,6 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 
 import io.swagger.annotations.Api;
@@ -212,7 +211,8 @@ public class EventTypeV2RestController {
                         //Shortcut to check permissions via event type
                         DataSourceEventType eventType = (DataSourceEventType)type.getEventType();
                         if(vo != null && Permissions.hasDataSourcePermission(user, vo)) {
-                            DataSourceEventTypeModel model = new DataSourceEventTypeModel(eventType, vo.asModel());
+                            AbstractDataSourceModel<?> dsModel = modelMapper.map(vo, AbstractDataSourceModel.class, user);
+                            DataSourceEventTypeModel model = new DataSourceEventTypeModel(eventType, dsModel);
                             types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>>(model, type.getDescription(), type.getAlarmLevel()));
                         }
                     }

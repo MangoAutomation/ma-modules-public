@@ -3,9 +3,10 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
+
 
 /**
  * @author Terry Packer
