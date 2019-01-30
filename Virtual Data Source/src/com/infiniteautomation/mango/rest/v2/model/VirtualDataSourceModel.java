@@ -23,7 +23,7 @@ public class VirtualDataSourceModel extends AbstractPollingDataSourceModel<Virtu
     }
     
     public VirtualDataSourceModel(VirtualDataSourceVO data) {
-        super(data);
+        fromVO(data);
     }
 
     @Override

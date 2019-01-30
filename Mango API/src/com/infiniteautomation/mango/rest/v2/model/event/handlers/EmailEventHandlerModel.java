@@ -65,7 +65,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
     public EmailEventHandlerModel() { }
 
     public EmailEventHandlerModel(EmailEventHandlerVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     /**

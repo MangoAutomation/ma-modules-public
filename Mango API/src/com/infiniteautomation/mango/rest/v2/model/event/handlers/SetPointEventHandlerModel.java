@@ -57,7 +57,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     public SetPointEventHandlerModel() { }
 
     public SetPointEventHandlerModel(SetPointEventHandlerVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     /**

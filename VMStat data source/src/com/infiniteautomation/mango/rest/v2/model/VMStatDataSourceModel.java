@@ -24,7 +24,7 @@ public class VMStatDataSourceModel extends AbstractDataSourceModel<VMStatDataSou
     }
     
     public VMStatDataSourceModel(VMStatDataSourceVO data) {
-        super(data);
+        fromVO(data);
     }
 
     @Override

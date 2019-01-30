@@ -22,7 +22,7 @@ public class PointLinkModel extends AbstractVoModel<PointLinkVO> {
         
     }
     public PointLinkModel(PointLinkVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     private String sourcePointXid;

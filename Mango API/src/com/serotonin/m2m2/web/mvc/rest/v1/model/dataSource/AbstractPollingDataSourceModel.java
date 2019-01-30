@@ -4,6 +4,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
@@ -36,12 +37,13 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     }
     
     @JsonGetter()
-    public boolean isQuantize() {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean isQuantize() {
         return this.data.isQuantize();
     }
     
     @JsonGetter()
-    public void setQuantize(boolean quantize){
+    public void setQuantize(Boolean quantize){
         this.data.setQuantize(quantize);
     }
 

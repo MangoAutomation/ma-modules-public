@@ -28,12 +28,10 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     private Set<String> editPermissions;
     private WeeklySchedule inactiveSchedule;
 
-    public MailingListModel() {
-        super(new MailingList());
-    }
+    public MailingListModel() { }
 
     public MailingListModel(MailingList vo) {
-        super(vo);
+        fromVO(vo);
     }
 
     /**

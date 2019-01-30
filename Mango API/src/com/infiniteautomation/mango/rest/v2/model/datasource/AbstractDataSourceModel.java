@@ -50,11 +50,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     private Set<String> editPermission;
 
     public AbstractDataSourceModel() {
-        super();
-    }
-    
-    public AbstractDataSourceModel(T vo) {
-        super(vo);
+
     }
     
     /**

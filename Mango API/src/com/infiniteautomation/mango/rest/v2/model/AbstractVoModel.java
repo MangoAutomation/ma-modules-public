@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.AbstractVO;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -23,12 +24,7 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String name;
     
-    protected AbstractVoModel() {
-        fromVO(newVO());
-    }
-    protected AbstractVoModel(VO vo) {
-        fromVO(vo);
-    }
+    protected AbstractVoModel() { }
     
     @ApiModelProperty(value ="ID of object in database")
     @JsonGetter("id")
@@ -70,7 +66,7 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
      */
     public VO toVO() {
         VO vo = newVO();
-        vo.setId(id);
+        vo.setId(id == null ? Common.NEW_ID : id);
         vo.setXid(xid);
         vo.setName(name);
         return vo;

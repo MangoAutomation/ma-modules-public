@@ -46,7 +46,7 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
     }
     
     public SerialDataSourceModel(SerialDataSourceVO data) {
-        super(data);
+        fromVO(data);
     }
 
     @Override

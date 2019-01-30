@@ -29,7 +29,7 @@ public class ReportEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     public ReportEventHandlerModel(ReportEventHandlerVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     /**

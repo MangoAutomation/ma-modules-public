@@ -40,7 +40,7 @@ public class UserModel extends AbstractVoModel<User> {
         super();
     }
     public UserModel(User vo) {
-        super(vo);
+        fromVO(vo);
     }
 
     public String getUsername() {

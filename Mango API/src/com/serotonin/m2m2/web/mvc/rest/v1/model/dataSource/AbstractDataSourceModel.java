@@ -34,14 +34,15 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  */
 @JsonPropertyOrder({"xid", "name", "enabled"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
-public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends AbstractActionVoModel<T>{
+public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends AbstractActionVoModel<T> {
 
     public static final String MODEL_TYPE = "modelType";
     
     public AbstractDataSourceModel() {
         super(null);
         //This little hack allows us to subclass and create the vo there
-        // letting Jackson use JsonTypeInfo as designed
+        // letting Jackson use JsonTypeInfo as designed.  
+        //NOTE: this will be problematic if you model has values initialized in their definitions as they override these values.
         this.data = newVO();
     }
     public AbstractDataSourceModel(T data) throws ModelNotFoundException {

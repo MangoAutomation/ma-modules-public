@@ -27,7 +27,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel {
     public ProcessEventHandlerModel() { }
 
     public ProcessEventHandlerModel(ProcessEventHandlerVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     /**

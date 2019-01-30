@@ -28,9 +28,6 @@ public abstract class AbstractEventHandlerModel extends AbstractVoModel<Abstract
     private List<AbstractEventTypeModel<?,?>> eventTypes;
     
     public AbstractEventHandlerModel() { }
-    public AbstractEventHandlerModel(AbstractEventHandlerVO<?> vo) {
-        super(vo);
-    }
     
     /**
      * @return the disabled

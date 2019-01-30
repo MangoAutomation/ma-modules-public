@@ -388,7 +388,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 case 8:
                     flowControlOut = FlowControl.XONXOFF;
                 default:
-                    flowControlIn = FlowControl.NONE;
+                    flowControlOut = FlowControl.NONE;
             }
             dataBits = DataBits.fromValue(in.readInt());
             stopBits = StopBits.fromValue(in.readInt());
@@ -422,7 +422,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 case 8:
                     flowControlOut = FlowControl.XONXOFF;
                 default:
-                    flowControlIn = FlowControl.NONE;
+                    flowControlOut = FlowControl.NONE;
             }
             dataBits = DataBits.fromValue(in.readInt());
             stopBits = StopBits.fromValue(in.readInt());
@@ -456,7 +456,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 case 8:
                     flowControlOut = FlowControl.XONXOFF;
                 default:
-                    flowControlIn = FlowControl.NONE;
+                    flowControlOut = FlowControl.NONE;
             }
             dataBits = DataBits.fromValue(in.readInt());
             stopBits = StopBits.fromValue(in.readInt());
@@ -489,7 +489,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 case 8:
                     flowControlOut = FlowControl.XONXOFF;
                 default:
-                    flowControlIn = FlowControl.NONE;
+                    flowControlOut = FlowControl.NONE;
             }
             dataBits = DataBits.fromValue(in.readInt());
             stopBits = StopBits.fromValue(in.readInt());
@@ -523,7 +523,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 case 8:
                     flowControlOut = FlowControl.XONXOFF;
                 default:
-                    flowControlIn = FlowControl.NONE;
+                    flowControlOut = FlowControl.NONE;
             }
             dataBits = DataBits.fromValue(in.readInt());
             stopBits = StopBits.fromValue(in.readInt());
@@ -542,7 +542,6 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         }else if(ver == 6){
             commPortId = SerializationHelper.readSafeUTF(in);
             baudRate = in.readInt();
-            //Convert legacy JSSC ints
             flowControlIn = FlowControl.fromValue(in.readInt());
             flowControlOut = FlowControl.fromValue(in.readInt());
             dataBits = DataBits.fromValue(in.readInt());
@@ -613,7 +612,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                     case 8:
                         flowControlOut = FlowControl.XONXOFF;
                     default:
-                        flowControlIn = FlowControl.NONE;
+                        flowControlOut = FlowControl.NONE;
                 }
             }
         }

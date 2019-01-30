@@ -70,7 +70,7 @@ public class ReportModel extends AbstractVoModel<ReportVO> {
     }
 
     public ReportModel(ReportVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     /**

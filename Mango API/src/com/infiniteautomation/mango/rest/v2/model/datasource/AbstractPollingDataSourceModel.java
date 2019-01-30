@@ -22,15 +22,8 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Boolean quantize;
     
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String cronPattern;
-    
     public AbstractPollingDataSourceModel() {
         super();
-    }
-    
-    public AbstractPollingDataSourceModel(T vo) {
-        super(vo);
     }
     
     @Override
@@ -38,6 +31,7 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
         super.fromVO(vo);
         this.pollPeriod = new TimePeriod(vo.getUpdatePeriods(), 
                 TimePeriodType.convertTo(vo.getUpdatePeriodType()));
+        vo.setQuantize(quantize);
     }
     
     @Override
@@ -47,6 +41,7 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
             vo.setUpdatePeriods(pollPeriod.getPeriods());
             vo.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
         }
+        quantize = vo.isQuantize();
         return vo;
     }
     
@@ -77,19 +72,4 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     public void setQuantize(Boolean quantize) {
         this.quantize = quantize;
     }
-
-    /**
-     * @return the cronPattern
-     */
-    public String getCronPattern() {
-        return cronPattern;
-    }
-
-    /**
-     * @param cronPattern the cronPattern to set
-     */
-    public void setCronPattern(String cronPattern) {
-        this.cronPattern = cronPattern;
-    }
-    
 }
