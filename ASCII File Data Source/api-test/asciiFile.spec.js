@@ -225,6 +225,9 @@ describe('ASCII File data source', function() {
         assertPermissions(response.data.editPermission, dsv1.editPermission);
         assertAlarmLevels(response.data.alarmLevels, dsv1.alarmLevels);
 
+        assert.strictEqual(response.data.pollPeriod.periods, dsv1.pollPeriod.periods);
+        assert.strictEqual(response.data.pollPeriod.type, dsv1.pollPeriod.type);
+
         assert.strictEqual(response.data.filePath, dsv1.filePath);
     }
     
@@ -236,6 +239,9 @@ describe('ASCII File data source', function() {
         assertPermissions(response.data.editPermission, dsv2.editPermission);
         assertAlarmLevels(response.data.alarmLevels, dsv2.alarmLevels);
         
+        assert.strictEqual(response.data.pollPeriod.periods, dsv2.pollPeriod.periods);
+        assert.strictEqual(response.data.pollPeriod.type, dsv2.pollPeriod.type);
+
         assert.strictEqual(response.data.filePath, dsv2.filePath);
     }
     

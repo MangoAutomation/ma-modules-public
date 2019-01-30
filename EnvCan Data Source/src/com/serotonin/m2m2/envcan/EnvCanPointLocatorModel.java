@@ -7,9 +7,11 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 
-@CSVEntity(typeName=EnvCanPointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName=EnvCanPointLocatorModel.TYPE_NAME)
 public class EnvCanPointLocatorModel extends PointLocatorModel<EnvCanPointLocatorVO>{
 
+    public static final String TYPE_NAME = "PL.ENV_CAN";
+    
 	public EnvCanPointLocatorModel(EnvCanPointLocatorVO data) {
 		super(data);
 	}
@@ -20,7 +22,7 @@ public class EnvCanPointLocatorModel extends PointLocatorModel<EnvCanPointLocato
 
 	@Override
 	public String getTypeName() {
-		return EnvCanPointLocatorModelDefinition.TYPE_NAME;
+		return TYPE_NAME;
 	}
 
 	@JsonGetter("attribute")

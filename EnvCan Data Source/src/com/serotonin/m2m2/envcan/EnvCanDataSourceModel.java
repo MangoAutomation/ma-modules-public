@@ -4,6 +4,8 @@
  */
 package com.serotonin.m2m2.envcan;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
@@ -15,7 +17,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceMod
 public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSourceVO>{
 	
 	public EnvCanDataSourceModel() {
-		super(new EnvCanDataSourceVO());
+		super();
 	}
 	
 	/**
@@ -24,7 +26,6 @@ public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSou
 	public EnvCanDataSourceModel(EnvCanDataSourceVO data) {
 		super(data);
 	}
-
 	
 	@JsonGetter("stationId")
 	public int getStationId() {
@@ -36,14 +37,20 @@ public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSou
 	    this.data.setStationId(stationId);
 	}
 	@JsonGetter("dataStartTime")
-	public long getDataStartTime() {
-	    return this.data.getDataStartTime();
+	public Date getDataStartTime() {
+	    return new Date(this.data.getDataStartTime());
 	}
 
 	@JsonSetter("dataStartTime")
-	public void setDataStartTime(long dataStartTime) {
-	    this.data.setDataStartTime(dataStartTime);
+	public void setDataStartTime(Date dataStartTime) {
+	    if(dataStartTime != null)
+	        this.data.setDataStartTime(dataStartTime.getTime());
 	}
+
+    @Override
+    public String getModelType() {
+        return EnvCanDataSourceDefinition.DATA_SOURCE_TYPE;
+    }
 
 
 	

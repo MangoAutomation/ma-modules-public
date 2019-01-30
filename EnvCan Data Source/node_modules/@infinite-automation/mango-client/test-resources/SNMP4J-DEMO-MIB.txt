@@ -1,0 +1,968 @@
+SNMP4J-DEMO-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	snmp4jAgentModules
+		FROM SNMP4J-AGENT-REG
+	DisplayString,
+	TimeStamp,
+	RowStatus,
+	StorageType,
+	TEXTUAL-CONVENTION
+		FROM SNMPv2-TC
+	MODULE-IDENTITY,
+	OBJECT-TYPE,
+	NOTIFICATION-TYPE,
+	Counter32,
+	Integer32,
+	Unsigned32
+		FROM SNMPv2-SMI
+	OBJECT-GROUP,
+	NOTIFICATION-GROUP
+		FROM SNMPv2-CONF;
+
+snmp4jDemoMIB MODULE-IDENTITY
+	LAST-UPDATED "201512100055Z"	-- Dec 10, 2015, 12:55:00 AM
+	ORGANIZATION "SNMP4J.org"
+	CONTACT-INFO
+		"Frank Fock
+		Email: info@snmp4j.org"
+	DESCRIPTION
+		"This module defines a small set of MIB objects to
+		illustrate their instrumentation using SNMP4J-Agent
+		API."
+	REVISION "201512100055Z"	-- Dec 10, 2015, 12:55:00 AM
+	DESCRIPTION
+		"Added sparse table demo."
+	REVISION "200804211754Z"	-- Apr 21, 2008, 5:54:00 PM
+	DESCRIPTION
+		"Initial version."
+	-- 1.3.6.1.4.1.4976.10.1.1.20
+::= { snmp4jAgentModules 20 }
+
+
+SparseTableColumn ::= TEXTUAL-CONVENTION
+	STATUS  current
+	DESCRIPTION
+		"The value type for a demo sparse table column.
+		The column value is an OCTET STRING which 
+		is the concatenation of the row index, a colon 
+		character, and the column index (both one-based)."
+	SYNTAX OCTET STRING (SIZE (0..10))
+
+
+-- Scalars and Tables
+--
+
+snmp4jDemoObjects OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1
+::= { snmp4jDemoMIB 1 }
+
+snmp4jDemoScalar OBJECT-TYPE
+	SYNTAX  DisplayString
+	MAX-ACCESS read-write
+	STATUS  current
+	DESCRIPTION
+		"This is a scalar object with a display string value."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.1
+::= { snmp4jDemoObjects 1 }
+
+
+snmp4jDemoTable OBJECT-TYPE
+	SYNTAX  SEQUENCE OF Snmp4jDemoEntry
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"A simple table with a dual index consisting of an
+		integer and a string sub-index."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2
+::= { snmp4jDemoObjects 2 }
+
+
+snmp4jDemoEntry OBJECT-TYPE
+	SYNTAX  Snmp4jDemoEntry
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"A row in this table has an integer and  string value.
+		The timestamp value indicates the last modification
+		of the row and the counter value indicates the number
+		of changes since the last restart.
+		The RowStatus column is used to create and delete
+		rows whereas the StorageType column controls the
+		row's persistency."
+	INDEX {
+		snmp4jDemoEntryIndex1,
+		IMPLIED snmp4jDemoEntryIndex2 }
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1
+::= { snmp4jDemoTable 1 }
+
+
+Snmp4jDemoEntry ::= SEQUENCE {
+
+	snmp4jDemoEntryIndex1          INTEGER,
+	snmp4jDemoEntryIndex2          DisplayString,
+	snmp4jDemoEntryCol1            Integer32,
+	snmp4jDemoEntryCol2            OCTET STRING,
+	snmp4jDemoEntryCol3            Counter32,
+	snmp4jDemoEntryCol4            TimeStamp,
+	snmp4jDemoEntryCol5            StorageType,
+	snmp4jDemoEntryCol6            RowStatus,
+	snmp4jDemoTableRowModification INTEGER }
+
+
+snmp4jDemoEntryIndex1 OBJECT-TYPE
+	SYNTAX  INTEGER (0..1000000)
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"The integer portion of the demo table index."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.1
+::= { snmp4jDemoEntry 1 }
+
+
+snmp4jDemoEntryIndex2 OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (1..32))
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"The string portion of the demo table index."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.2
+::= { snmp4jDemoEntry 2 }
+
+
+snmp4jDemoEntryCol1 OBJECT-TYPE
+	SYNTAX  Integer32
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"An arbitrary integer value, the default is 1."
+	DEFVAL { 1 }
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.3
+::= { snmp4jDemoEntry 3 }
+
+
+snmp4jDemoEntryCol2 OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE (0..128))
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The string column, default is the empty string."
+	DEFVAL { "" }
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.4
+::= { snmp4jDemoEntry 4 }
+
+
+snmp4jDemoEntryCol3 OBJECT-TYPE
+	SYNTAX  Counter32
+	MAX-ACCESS read-only
+	STATUS  current
+	DESCRIPTION
+		"The row's change counter which starts at one after
+		row creation."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.5
+::= { snmp4jDemoEntry 5 }
+
+
+snmp4jDemoEntryCol4 OBJECT-TYPE
+	SYNTAX  TimeStamp
+	MAX-ACCESS read-only
+	STATUS  current
+	DESCRIPTION
+		"The timestamp value when the content of this row
+		was changed last."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.6
+::= { snmp4jDemoEntry 6 }
+
+
+snmp4jDemoEntryCol5 OBJECT-TYPE
+	SYNTAX  StorageType
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The storage type of this row."
+	DEFVAL { volatile }
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.7
+::= { snmp4jDemoEntry 7 }
+
+
+snmp4jDemoEntryCol6 OBJECT-TYPE
+	SYNTAX  RowStatus
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The row status of this row. Set this value to
+		createAndWait(5) or createAndGo(4) to create
+		an new row. Set it to destroy(6) to delete it."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.8
+::= { snmp4jDemoEntry 8 }
+
+
+snmp4jDemoTableRowModification OBJECT-TYPE
+	SYNTAX  INTEGER {
+			created(1),
+			updated(2),
+			deleted(3) }
+	MAX-ACCESS accessible-for-notify
+	STATUS  current
+	DESCRIPTION
+		"This object specifies the modification type of a demo
+		table row change."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.2.1.9
+::= { snmp4jDemoEntry 9 }
+
+
+snmp4jDemoSparseTableType OBJECT-TYPE
+	SYNTAX  INTEGER {
+			cross(1),
+			square(2),
+			stairsDown(3),
+			stairsUp(4),
+			rain(5),
+			random(6) }
+	MAX-ACCESS read-write
+	STATUS  current
+	DESCRIPTION
+		"The sparse table type specifies the characteristics
+		of the sparse presence of cells in the 
+		snmp4jDemoSparseTable. "
+	DEFVAL { random }
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.3
+	::= { snmp4jDemoObjects 3 }
+
+
+snmp4jDemoSparseTable OBJECT-TYPE
+	SYNTAX  SEQUENCE OF Snmp4jDemoSparseEntry
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"The demo sparse table provides an array of 
+		50x10000 OCTET STRING values which are sparsly
+		filled. The object snmp4jDemoSparseTableType
+		object specifies which pattern is used to fill cell values. "
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4
+	::= { snmp4jDemoObjects 4 }
+
+
+snmp4jDemoSparseEntry OBJECT-TYPE
+	SYNTAX  Snmp4jDemoSparseEntry
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"Each row in the sparse table contains OCTET STRING
+		values. Each present cell value is built by the row number
+		plus a colon character and then the column number."
+	INDEX {
+		snmp4jDemoSparseTableIndex }
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1
+	::= { snmp4jDemoSparseTable 1 }
+
+
+Snmp4jDemoSparseEntry ::= SEQUENCE {
+
+	snmp4jDemoSparseTableIndex     Unsigned32,
+	snmp4jDemoSparseTableRowStatus RowStatus,
+	snmp4jDemoSparseTableCol1      SparseTableColumn,
+	snmp4jDemoSparseTableCol2      SparseTableColumn,
+	snmp4jDemoSparseTableCol3      SparseTableColumn,
+	snmp4jDemoSparseTableCol4      SparseTableColumn,
+	snmp4jDemoSparseTableCol5      SparseTableColumn,
+	snmp4jDemoSparseTableCol6      SparseTableColumn,
+	snmp4jDemoSparseTableCol7      SparseTableColumn,
+	snmp4jDemoSparseTableCol8      SparseTableColumn,
+	snmp4jDemoSparseTableCol9      SparseTableColumn,
+	snmp4jDemoSparseTableCol10     SparseTableColumn,
+	snmp4jDemoSparseTableCol11     SparseTableColumn,
+	snmp4jDemoSparseTableCol12     SparseTableColumn,
+	snmp4jDemoSparseTableCol13     SparseTableColumn,
+	snmp4jDemoSparseTableCol14     SparseTableColumn,
+	snmp4jDemoSparseTableCol15     SparseTableColumn,
+	snmp4jDemoSparseTableCol16     SparseTableColumn,
+	snmp4jDemoSparseTableCol17     SparseTableColumn,
+	snmp4jDemoSparseTableCol18     SparseTableColumn,
+	snmp4jDemoSparseTableCol19     SparseTableColumn,
+	snmp4jDemoSparseTableCol20     SparseTableColumn,
+	snmp4jDemoSparseTableCol21     SparseTableColumn,
+	snmp4jDemoSparseTableCol22     SparseTableColumn,
+	snmp4jDemoSparseTableCol23     SparseTableColumn,
+	snmp4jDemoSparseTableCol24     SparseTableColumn,
+	snmp4jDemoSparseTableCol25     SparseTableColumn,
+	snmp4jDemoSparseTableCol26     SparseTableColumn,
+	snmp4jDemoSparseTableCol27     SparseTableColumn,
+	snmp4jDemoSparseTableCol28     SparseTableColumn,
+	snmp4jDemoSparseTableCol29     SparseTableColumn,
+	snmp4jDemoSparseTableCol30     SparseTableColumn,
+	snmp4jDemoSparseTableCol31     SparseTableColumn,
+	snmp4jDemoSparseTableCol32     SparseTableColumn,
+	snmp4jDemoSparseTableCol33     SparseTableColumn,
+	snmp4jDemoSparseTableCol34     SparseTableColumn,
+	snmp4jDemoSparseTableCol35     SparseTableColumn,
+	snmp4jDemoSparseTableCol36     SparseTableColumn,
+	snmp4jDemoSparseTableCol37     SparseTableColumn,
+	snmp4jDemoSparseTableCol38     SparseTableColumn,
+	snmp4jDemoSparseTableCol39     SparseTableColumn,
+	snmp4jDemoSparseTableCol40     SparseTableColumn,
+	snmp4jDemoSparseTableCol41     SparseTableColumn,
+	snmp4jDemoSparseTableCol42     SparseTableColumn,
+	snmp4jDemoSparseTableCol43     SparseTableColumn,
+	snmp4jDemoSparseTableCol44     SparseTableColumn,
+	snmp4jDemoSparseTableCol45     SparseTableColumn,
+	snmp4jDemoSparseTableCol46     SparseTableColumn,
+	snmp4jDemoSparseTableCol47     SparseTableColumn,
+	snmp4jDemoSparseTableCol48     SparseTableColumn,
+	snmp4jDemoSparseTableCol49     SparseTableColumn,
+	snmp4jDemoSparseTableCol50     SparseTableColumn }
+
+
+snmp4jDemoSparseTableIndex OBJECT-TYPE
+	SYNTAX  Unsigned32
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"The index column of the sparse table demo is
+		a simple serial number."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.1
+	::= { snmp4jDemoSparseEntry 1 }
+
+
+snmp4jDemoSparseTableRowStatus OBJECT-TYPE
+	SYNTAX  RowStatus
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The row status column which can be used to
+		create or delete rows in this sparse table."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.2
+	::= { snmp4jDemoSparseEntry 2 }
+
+
+snmp4jDemoSparseTableCol1 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #1."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.3
+	::= { snmp4jDemoSparseEntry 3 }
+
+
+snmp4jDemoSparseTableCol2 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #2."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.4
+::= { snmp4jDemoSparseEntry 4 }
+
+
+snmp4jDemoSparseTableCol3 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #3."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.5
+::= { snmp4jDemoSparseEntry 5 }
+
+
+snmp4jDemoSparseTableCol4 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #4."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.6
+::= { snmp4jDemoSparseEntry 6 }
+
+
+snmp4jDemoSparseTableCol5 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #5."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.7
+::= { snmp4jDemoSparseEntry 7 }
+
+
+snmp4jDemoSparseTableCol6 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #6."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.8
+::= { snmp4jDemoSparseEntry 8 }
+
+
+snmp4jDemoSparseTableCol7 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #7."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.9
+::= { snmp4jDemoSparseEntry 9 }
+
+
+snmp4jDemoSparseTableCol8 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #8."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.10
+::= { snmp4jDemoSparseEntry 10 }
+
+
+snmp4jDemoSparseTableCol9 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #9."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.11
+::= { snmp4jDemoSparseEntry 11 }
+
+
+snmp4jDemoSparseTableCol10 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #10."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.12
+::= { snmp4jDemoSparseEntry 12 }
+
+
+snmp4jDemoSparseTableCol11 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #11."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.13
+::= { snmp4jDemoSparseEntry 13 }
+
+
+snmp4jDemoSparseTableCol12 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #12."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.14
+::= { snmp4jDemoSparseEntry 14 }
+
+
+snmp4jDemoSparseTableCol13 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #13."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.15
+::= { snmp4jDemoSparseEntry 15 }
+
+
+snmp4jDemoSparseTableCol14 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #14."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.16
+::= { snmp4jDemoSparseEntry 16 }
+
+
+snmp4jDemoSparseTableCol15 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #15."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.17
+::= { snmp4jDemoSparseEntry 17 }
+
+
+snmp4jDemoSparseTableCol16 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #16."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.18
+::= { snmp4jDemoSparseEntry 18 }
+
+
+snmp4jDemoSparseTableCol17 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #17."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.19
+::= { snmp4jDemoSparseEntry 19 }
+
+
+snmp4jDemoSparseTableCol18 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #18."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.20
+::= { snmp4jDemoSparseEntry 20 }
+
+
+snmp4jDemoSparseTableCol19 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #19."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.21
+::= { snmp4jDemoSparseEntry 21 }
+
+
+snmp4jDemoSparseTableCol20 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #20."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.22
+::= { snmp4jDemoSparseEntry 22 }
+
+
+snmp4jDemoSparseTableCol21 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #21."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.23
+::= { snmp4jDemoSparseEntry 23 }
+
+
+snmp4jDemoSparseTableCol22 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #22."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.24
+::= { snmp4jDemoSparseEntry 24 }
+
+
+snmp4jDemoSparseTableCol23 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #23."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.25
+::= { snmp4jDemoSparseEntry 25 }
+
+
+snmp4jDemoSparseTableCol24 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #24."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.26
+::= { snmp4jDemoSparseEntry 26 }
+
+
+snmp4jDemoSparseTableCol25 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #25."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.27
+::= { snmp4jDemoSparseEntry 27 }
+
+
+snmp4jDemoSparseTableCol26 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #26."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.28
+::= { snmp4jDemoSparseEntry 28 }
+
+
+snmp4jDemoSparseTableCol27 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #27."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.29
+::= { snmp4jDemoSparseEntry 29 }
+
+
+snmp4jDemoSparseTableCol28 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #28."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.30
+::= { snmp4jDemoSparseEntry 30 }
+
+
+snmp4jDemoSparseTableCol29 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #29."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.31
+::= { snmp4jDemoSparseEntry 31 }
+
+
+snmp4jDemoSparseTableCol30 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #30."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.32
+::= { snmp4jDemoSparseEntry 32 }
+
+
+snmp4jDemoSparseTableCol31 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #31."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.33
+::= { snmp4jDemoSparseEntry 33 }
+
+
+snmp4jDemoSparseTableCol32 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #32."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.34
+::= { snmp4jDemoSparseEntry 34 }
+
+
+snmp4jDemoSparseTableCol33 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #33."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.35
+::= { snmp4jDemoSparseEntry 35 }
+
+
+snmp4jDemoSparseTableCol34 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #34."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.36
+::= { snmp4jDemoSparseEntry 36 }
+
+
+snmp4jDemoSparseTableCol35 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #35."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.37
+::= { snmp4jDemoSparseEntry 37 }
+
+
+snmp4jDemoSparseTableCol36 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #36."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.38
+::= { snmp4jDemoSparseEntry 38 }
+
+
+snmp4jDemoSparseTableCol37 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #37."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.39
+::= { snmp4jDemoSparseEntry 39 }
+
+
+snmp4jDemoSparseTableCol38 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #38."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.40
+::= { snmp4jDemoSparseEntry 40 }
+
+
+snmp4jDemoSparseTableCol39 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #39."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.41
+::= { snmp4jDemoSparseEntry 41 }
+
+
+snmp4jDemoSparseTableCol40 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #40."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.42
+::= { snmp4jDemoSparseEntry 42 }
+
+
+snmp4jDemoSparseTableCol41 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #41."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.43
+::= { snmp4jDemoSparseEntry 43 }
+
+
+snmp4jDemoSparseTableCol42 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #42."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.44
+::= { snmp4jDemoSparseEntry 44 }
+
+
+snmp4jDemoSparseTableCol43 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #43."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.45
+::= { snmp4jDemoSparseEntry 45 }
+
+
+snmp4jDemoSparseTableCol44 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #44."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.46
+::= { snmp4jDemoSparseEntry 46 }
+
+
+snmp4jDemoSparseTableCol45 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #45."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.47
+::= { snmp4jDemoSparseEntry 47 }
+
+
+snmp4jDemoSparseTableCol46 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #46."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.48
+::= { snmp4jDemoSparseEntry 48 }
+
+
+snmp4jDemoSparseTableCol47 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #47."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.49
+::= { snmp4jDemoSparseEntry 49 }
+
+
+snmp4jDemoSparseTableCol48 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #48."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.50
+::= { snmp4jDemoSparseEntry 50 }
+
+
+snmp4jDemoSparseTableCol49 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #49."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.51
+::= { snmp4jDemoSparseEntry 51 }
+
+
+snmp4jDemoSparseTableCol50 OBJECT-TYPE
+	SYNTAX  SparseTableColumn
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Payload column #50."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.1.4.1.52
+::= { snmp4jDemoSparseEntry 52 }
+
+
+-- Notification Types
+--
+
+snmp4jDemoEvents OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.20.2
+::= { snmp4jDemoMIB 2 }
+
+snmp4jDemoEventSNMPv1Node OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.20.2.0
+::= { snmp4jDemoEvents 0 }
+
+-- Conformance
+--
+
+snmp4jDemoConf OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.20.3
+::= { snmp4jDemoMIB 3 }
+
+-- Groups
+--
+
+snmp4jDemoGroups OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.20.3.1
+::= { snmp4jDemoConf 1 }
+
+-- Compliance
+--
+
+snmp4jDemoCompls OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.20.3.2
+::= { snmp4jDemoConf 2 }
+
+
+snmp4jDemoEvent NOTIFICATION-TYPE
+	OBJECTS {
+		snmp4jDemoEntryCol3,
+		snmp4jDemoTableRowModification}
+	STATUS  current
+	DESCRIPTION
+		"The demo event is fired when the demo table is
+		modified."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.2.0.1
+::= { snmp4jDemoEventSNMPv1Node 1 }
+
+snmp4jDemoBasicGroup OBJECT-GROUP
+	OBJECTS {
+		snmp4jDemoScalar,
+		snmp4jDemoEntryCol1,
+		snmp4jDemoEntryCol2,
+		snmp4jDemoEntryCol3,
+		snmp4jDemoEntryCol4,
+		snmp4jDemoEntryCol5,
+		snmp4jDemoEntryCol6,
+		snmp4jDemoTableRowModification }
+	STATUS  current
+	DESCRIPTION
+		"Basic objects."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.3.1.1
+::= { snmp4jDemoGroups 1 }
+
+snmp4jDemoSparseTableGroup OBJECT-GROUP
+	OBJECTS {
+		snmp4jDemoSparseTableType,
+		snmp4jDemoSparseTableRowStatus,
+		snmp4jDemoSparseTableCol1,
+		snmp4jDemoSparseTableCol2,
+		snmp4jDemoSparseTableCol3,
+		snmp4jDemoSparseTableCol4,
+		snmp4jDemoSparseTableCol5,
+		snmp4jDemoSparseTableCol6,
+		snmp4jDemoSparseTableCol7,
+		snmp4jDemoSparseTableCol8,
+		snmp4jDemoSparseTableCol9,
+		snmp4jDemoSparseTableCol10,
+		snmp4jDemoSparseTableCol11,
+		snmp4jDemoSparseTableCol12,
+		snmp4jDemoSparseTableCol13,
+		snmp4jDemoSparseTableCol14,
+		snmp4jDemoSparseTableCol15,
+		snmp4jDemoSparseTableCol16,
+		snmp4jDemoSparseTableCol17,
+		snmp4jDemoSparseTableCol18,
+		snmp4jDemoSparseTableCol19,
+		snmp4jDemoSparseTableCol20,
+		snmp4jDemoSparseTableCol21,
+		snmp4jDemoSparseTableCol22,
+		snmp4jDemoSparseTableCol23,
+		snmp4jDemoSparseTableCol24,
+		snmp4jDemoSparseTableCol25,
+		snmp4jDemoSparseTableCol26,
+		snmp4jDemoSparseTableCol27,
+		snmp4jDemoSparseTableCol28,
+		snmp4jDemoSparseTableCol29,
+		snmp4jDemoSparseTableCol30,
+		snmp4jDemoSparseTableCol31,
+		snmp4jDemoSparseTableCol32,
+		snmp4jDemoSparseTableCol33,
+		snmp4jDemoSparseTableCol34,
+		snmp4jDemoSparseTableCol35,
+		snmp4jDemoSparseTableCol36,
+		snmp4jDemoSparseTableCol37,
+		snmp4jDemoSparseTableCol38,
+		snmp4jDemoSparseTableCol39,
+		snmp4jDemoSparseTableCol40,
+		snmp4jDemoSparseTableCol41,
+		snmp4jDemoSparseTableCol42,
+		snmp4jDemoSparseTableCol43,
+		snmp4jDemoSparseTableCol44,
+		snmp4jDemoSparseTableCol45,
+		snmp4jDemoSparseTableCol46,
+		snmp4jDemoSparseTableCol47,
+		snmp4jDemoSparseTableCol48,
+		snmp4jDemoSparseTableCol49,
+		snmp4jDemoSparseTableCol50 }
+	STATUS  current
+	DESCRIPTION
+		"This object group contains all objects related
+		to the sparse table demo."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.3.1.3
+	::= { snmp4jDemoGroups 3 }
+
+snmp4jDemoBasicEvents NOTIFICATION-GROUP
+	NOTIFICATIONS {
+		snmp4jDemoEvent }
+	STATUS  current
+	DESCRIPTION
+		"Basic notifications."
+	-- 1.3.6.1.4.1.4976.10.1.1.20.3.1.2
+::= { snmp4jDemoGroups 2 }
+
+END

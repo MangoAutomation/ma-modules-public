@@ -1,0 +1,324 @@
+SNMP4J-CONFIG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	snmp4jAgentModules
+		FROM SNMP4J-AGENT-REG
+	DisplayString,
+	RowStatus,
+	StorageType,
+	TimeStamp
+		FROM SNMPv2-TC
+	SnmpAdminString
+		FROM SNMP-FRAMEWORK-MIB
+	MODULE-IDENTITY,
+	OBJECT-TYPE,
+	TimeTicks
+		FROM SNMPv2-SMI
+	OBJECT-GROUP
+		FROM SNMPv2-CONF;
+
+snmp4jCfgMIB MODULE-IDENTITY
+	LAST-UPDATED "200608311905Z"	-- Aug 31, 2006 7:05:00 PM
+	ORGANIZATION "SNMP4J.ORG"
+	CONTACT-INFO
+		"Frank Fock
+		http://www.snmp4j.org
+		fock@snmp4j.org"
+	DESCRIPTION
+		"This MIB module defines managed objects for the
+		configuration of a SNMP4J agent."
+	REVISION "200608311905Z"	-- Aug 31, 2006 7:05:00 PM
+	DESCRIPTION
+		"Added error(5) state to snmp4jCfgStorageOperation."
+	REVISION "200601301947Z"	-- Jan 30, 2006 7:47:00 PM
+	DESCRIPTION
+		"Initial version."
+	-- 1.3.6.1.4.1.4976.10.1.1.2
+	::= { snmp4jAgentModules 2 }
+
+
+-- Scalars and Tables
+--
+
+snmp4jCfgObjects OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1
+	::= { snmp4jCfgMIB 1 }
+
+snmp4jCfgSecurity OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.1
+	::= { snmp4jCfgObjects 1 }
+
+snmp4jCfgSecSrcAddrValidation OBJECT-TYPE
+	SYNTAX  INTEGER {
+			enabled(1),
+			disabled(2),
+			notAvailable(3) }
+	MAX-ACCESS read-write
+	STATUS  current
+	DESCRIPTION
+		"Specifies whether SNMPv1/v2c source address
+		validation via the snmpTargetAddrExtTable and
+		the snmpCommunityTable is enabled or disabled.
+
+		If the value of this object is notAvailable(3), then at
+		least one of the necessary MIB modules are not
+		implemented for this agent instance and an attempt
+		to set this object's value to enabled(1) or disabled(2)
+		will result in a wrongValue error."
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.1.1
+	::= { snmp4jCfgSecurity 1 }
+
+
+snmp4jCfgStorage OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2
+	::= { snmp4jCfgObjects 2 }
+
+snmp4jCfgStorageTable OBJECT-TYPE
+	SYNTAX  SEQUENCE OF Snmp4jCfgStorageEntry
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"A table containing a list of SNMP4J-Agent persistent
+		storage configurations. By default this table contains
+		a single row with an snmp4jCfgStorageName of
+		'primary' that represents the persistent storage
+		configuration used to load the agent's configuration
+		at boot time. This entry will have a storage type of
+		'permanent' and thus it cannot be deleted.
+
+		Other entries may be added to provide for
+		experimental or backup storage.'"
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1
+	::= { snmp4jCfgStorage 1 }
+
+
+snmp4jCfgStorageEntry OBJECT-TYPE
+	SYNTAX  Snmp4jCfgStorageEntry
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"A row specifying the location and storage format
+		of an SNMP4J-Agent agent configuration."
+	INDEX {
+		snmp4jCfgStorageName }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1
+	::= { snmp4jCfgStorageTable 1 }
+
+
+Snmp4jCfgStorageEntry ::= SEQUENCE {
+
+	snmp4jCfgStorageName        SnmpAdminString,
+	snmp4jCfgStoragePath        DisplayString,
+	snmp4jCfgStorageFormat      INTEGER,
+	snmp4jCfgStorageLastStore   TimeTicks,
+	snmp4jCfgStorageLastRestore TimeTicks,
+	snmp4jCfgStorageRestoreMode INTEGER,
+	snmp4jCfgStorageOperation   INTEGER,
+	snmp4jCfgStorageStorageType StorageType,
+	snmp4jCfgStorageStatus      RowStatus }
+
+
+snmp4jCfgStorageName OBJECT-TYPE
+	SYNTAX  SnmpAdminString
+	MAX-ACCESS not-accessible
+	STATUS  current
+	DESCRIPTION
+		"The name of the configuration storage entry.
+		A default SNMP4J-Agent agent implementation will
+		always contain an entry (row) with the name
+		'primary'. The 'primary' entry specifies the storage
+		from which the agent reads its configuration after
+		a restart.
+		the"
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.1
+	::= { snmp4jCfgStorageEntry 1 }
+
+
+snmp4jCfgStoragePath OBJECT-TYPE
+	SYNTAX  DisplayString
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The path to the configuration on the agent's file
+		system. Depending on the persistent storage type,
+		the path can be a directory or a file.
+
+		If the path is a directory, the last character of the
+		path has to be the file separation character (on
+		UNIX '/') of the platform the agent is running on."
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.2
+	::= { snmp4jCfgStorageEntry 2 }
+
+
+snmp4jCfgStorageFormat OBJECT-TYPE
+	SYNTAX  INTEGER {
+			binary(1), 	-- Default format
+			xml(2) }
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The storage format specifies the format of the persistent
+		configuration storage associated with this row.
+		Currently only SNMP4J-Agent's binary encoded MIB object
+		serialization 'binary(1)' is supported."
+	DEFVAL { binary }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.3
+	::= { snmp4jCfgStorageEntry 3 }
+
+
+snmp4jCfgStorageLastStore OBJECT-TYPE
+	SYNTAX  TimeTicks
+	MAX-ACCESS read-only
+	STATUS  current
+	DESCRIPTION
+		"The time stamp of the last store operation on the
+		configuration persistent storage represented by
+		this entry. A zero value is returned when this
+		configuration have not been written since the last
+		agent restart.
+
+		This object will be reset to 0 if snmp4jCfgStoragePath
+		is altered for this row."
+	DEFVAL { 0 }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.4
+	::= { snmp4jCfgStorageEntry 4 }
+
+
+snmp4jCfgStorageLastRestore OBJECT-TYPE
+	SYNTAX  TimeTicks
+	MAX-ACCESS read-only
+	STATUS  current
+	DESCRIPTION
+		"The time stamp when the configuration of this
+		persistent storage has been restored for the last time.
+		A zero value is returned, when this configuration has not
+		been read since the last restart of the agent.
+
+		This object will be reset to 0 if snmp4jCfgStoragePath
+		is altered for this row."
+	DEFVAL { 0 }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.5
+	::= { snmp4jCfgStorageEntry 5 }
+
+
+snmp4jCfgStorageRestoreMode OBJECT-TYPE
+	SYNTAX  INTEGER {
+			replaceAndCreate(1),
+			updateAndCreate(2),
+			updateOnly(3),
+			createOnly(4) }
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The restore mode defines how the configuration
+		should be restored and optionally merged with the
+		current running configuration."
+	DEFVAL { replaceAndCreate }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.6
+	::= { snmp4jCfgStorageEntry 6 }
+
+
+snmp4jCfgStorageOperation OBJECT-TYPE
+	SYNTAX  INTEGER {
+			idle(1),       	-- no action
+			inProgress(2), 	-- (re)store operation in progress
+			store(3),      	-- store current configuration
+			restore(4),    	-- restore configuration
+			error(5)      	-- last operation failed
+			}
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The states 'idle(1)', 'inProgress(2)', and 'error(5)' can
+		only be read, whereas the states 'store(3)' and 'restore(4)' 
+		can only be written.
+
+		Setting this object to 'store(3)' will save the agent's
+		configuration to the location identified by
+		snmp4jCfgStoragePath. Setting this object to
+		'restore(4)' resets the agent to the configuration
+		read from location snmp4jCfgStoragePath.
+		While the two operations above are in progress,
+		this object returns 'inProgress(2)' on get requests.
+		Otherwise 'idle(1)' is returned on get requests.
+		If the last operation failed with an error, error(5) is
+		is returned. An operation may fail because an IO
+		exception occurred while accessing persistent 
+		storage, for example.
+
+		While its state is 'inProgress' any set request returns
+		a 'resourceUnavailable(13)' error."
+	DEFVAL { idle }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.7
+	::= { snmp4jCfgStorageEntry 7 }
+
+
+snmp4jCfgStorageStorageType OBJECT-TYPE
+	SYNTAX  StorageType
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"The storage type of the entry in the SNMP4J-Agent persistent
+		storage table."
+	DEFVAL { nonVolatile }
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.8
+	::= { snmp4jCfgStorageEntry 8 }
+
+
+snmp4jCfgStorageStatus OBJECT-TYPE
+	SYNTAX  RowStatus
+	MAX-ACCESS read-create
+	STATUS  current
+	DESCRIPTION
+		"Control for creating and deleting entries.  Entries may
+		not be modified while active."
+	-- 1.3.6.1.4.1.4976.10.1.1.2.1.2.1.1.9
+	::= { snmp4jCfgStorageEntry 9 }
+
+
+-- Notification Types
+--
+
+snmp4jCfgEvents OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.2
+	::= { snmp4jCfgMIB 2 }
+
+-- Conformance
+--
+
+snmp4jCfgConf OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.3
+	::= { snmp4jCfgMIB 3 }
+
+-- Groups
+--
+
+snmp4jCfgGroups OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.3.1
+	::= { snmp4jCfgConf 1 }
+
+-- Compliance
+--
+
+snmp4jCfgCompls OBJECT IDENTIFIER 
+	-- 1.3.6.1.4.1.4976.10.1.1.2.3.2
+	::= { snmp4jCfgConf 2 }
+
+snmp4jCfgBasicGroup OBJECT-GROUP
+	OBJECTS {
+		snmp4jCfgSecSrcAddrValidation,
+		snmp4jCfgStorageFormat,
+		snmp4jCfgStorageLastRestore,
+		snmp4jCfgStorageLastStore,
+		snmp4jCfgStorageOperation,
+		snmp4jCfgStoragePath,
+		snmp4jCfgStorageRestoreMode,
+		snmp4jCfgStorageStatus,
+		snmp4jCfgStorageStorageType }
+	STATUS  current
+	DESCRIPTION
+		"Basic objects."
+	-- 1.3.6.1.4.1.4976.10.1.1.2.3.1.1
+	::= { snmp4jCfgGroups 1 }
+
+END

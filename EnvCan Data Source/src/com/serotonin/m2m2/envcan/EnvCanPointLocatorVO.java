@@ -136,12 +136,5 @@ public class EnvCanPointLocatorVO extends AbstractPointLocatorVO<EnvCanPointLoca
             throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
                     ATTRIBUTE_CODES.getCodeList());
     }
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
-	 */
-	@Override
-	public EnvCanPointLocatorModel asModel() {
-		return new EnvCanPointLocatorModel(this);
-	}
 	
 }
