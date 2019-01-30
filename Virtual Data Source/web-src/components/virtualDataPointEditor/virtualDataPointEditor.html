@@ -40,6 +40,8 @@
             <div ng-message="validationMessage" ng-bind="changeTypeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
+
+
     
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'BINARY'">
         <md-icon>looks_one</md-icon>
@@ -73,6 +75,36 @@
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC'">
+        <md-icon>vertical_align_bottom</md-icon>
+        <label ma-tr="dsEdit.virtual.min"></label>
+        <input name="pointLocator.min" ng-model="$ctrl.dataPoint.pointLocator.min" required ma-get-ctrl="minModelCtrl = $ngModel">
+        <div ng-messages="minModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="minModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC'">
+        <md-icon>vertical_align_top</md-icon>
+        <label ma-tr="dsEdit.virtual.max"></label>
+        <input name="pointLocator.max" ng-model="$ctrl.dataPoint.pointLocator.max" required ma-get-ctrl="maxModelCtrl = $ngModel">
+        <div ng-messages="maxModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="maxModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC'">
+        <md-icon>timeline</md-icon>
+        <label ma-tr="dsEdit.virtual.maxChange"></label>
+        <input name="pointLocator.maxChange" ng-model="$ctrl.dataPoint.pointLocator.maxChange" required ma-get-ctrl="maxChangeModelCtrl = $ngModel">
+        <div ng-messages="maxChangeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="maxChangeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
     
