@@ -55,7 +55,7 @@ public class ScheduledEventModel extends AbstractVoModel<ScheduledEventVO>{
         super();
     }
     public ScheduledEventModel(ScheduledEventVO vo) {
-        super(vo);
+        fromVO(vo);
     }
     
     @Override
