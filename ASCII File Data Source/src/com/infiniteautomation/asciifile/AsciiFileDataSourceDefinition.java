@@ -1,11 +1,9 @@
 package com.infiniteautomation.asciifile;
 
-import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceModel;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.web.AsciiFileEditDwr;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
 /**
  * @author Phillip Dunlap
@@ -39,13 +37,4 @@ public class AsciiFileDataSourceDefinition extends DataSourceDefinition{
 	public Class<?> getDwrClass() {
 		return AsciiFileEditDwr.class;
 	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.DataSourceDefinition#getModelClass()
-	 */
-	@Override
-	public Class<? extends AbstractDataSourceModel<?>> getModelClass() {
-		return AsciiFileDataSourceModel.class;
-	}
-
 }

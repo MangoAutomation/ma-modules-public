@@ -17,9 +17,11 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
  * @author Terry Packer
  *
  */
-@CSVEntity(typeName=AsciiFilePointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName=AsciiFilePointLocatorModel.TYPE_NAME)
 public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePointLocatorVO>{
 
+    public static final String TYPE_NAME = "PL.ASCII_FILE";
+    
 	/**
 	 * @param data
 	 */
@@ -132,13 +134,10 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 	public void setDataTypeId(String dataType) {
 	    this.data.setDataType(DataTypes.CODES.getId(dataType));
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel#getTypeName()
-	 */
+
 	@Override
 	public String getTypeName() {
-		return AsciiFilePointLocatorModelDefinition.TYPE_NAME;
+		return TYPE_NAME;
 	}
 
 }

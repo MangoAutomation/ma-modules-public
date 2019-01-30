@@ -214,12 +214,4 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
 	public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
 		writer.writeEntry("dataType", DataTypes.CODES.getCode(dataType));
 	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
-	 */
-	@Override
-	public AsciiFilePointLocatorModel asModel() {
-		return new AsciiFilePointLocatorModel(this);
-	}
 }

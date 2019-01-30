@@ -10,18 +10,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.rt.AsciiFileDataSourceRT;
-import com.serotonin.json.JsonException;
-import com.serotonin.json.JsonReader;
-import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
-import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.util.SerializationHelper;
 
@@ -30,7 +25,7 @@ import com.serotonin.util.SerializationHelper;
  */
 
 @JsonEntity
-public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
+public class AsciiFileDataSourceVO extends PollingDataSourceVO<AsciiFileDataSourceVO>{
 	
     private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
@@ -42,10 +37,6 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
     
     @JsonProperty
     private String filePath;
-    @JsonProperty
-    private int updatePeriodType = Common.TimePeriods.MINUTES;
-    @JsonProperty
-    private int updatePeriods = 5;
     
 	@Override
 	public TranslatableMessage getConnectionDescription() {
@@ -73,12 +64,8 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
                 "event.ds.dataSource")));
 		eventTypes.add(createEventType(AsciiFileDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointRead")));	
-		eventTypes.add(createPollAbortedEventType(AsciiFileDataSourceRT.POLL_ABORTED_EVENT));
 	}
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
-	 */
+
 	@Override
 	public int getPollAbortedExceptionEventId() {
 		return AsciiFileDataSourceRT.POLL_ABORTED_EVENT;
@@ -114,10 +101,6 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 		//TODO: ensure the path syntax is reasonable
         if (isBlank(this.filePath))
             response.addContextualMessage("filePath", "validate.required");
-        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType))
-            response.addContextualMessage("updatePeriodType", "validate.invalidValue");
-//        if (updatePeriods < 0)
-//        	response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
         if(!StringUtils.isEmpty(this.filePath)) {
         	File file = new File(this.filePath);
         	try {
@@ -141,13 +124,11 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 1;
+    private static final int version = 2;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         SerializationHelper.writeSafeUTF(out, this.filePath);
-        out.writeInt(updatePeriodType);
-        out.writeInt(updatePeriods);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -158,17 +139,9 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
             this.filePath = SerializationHelper.readSafeUTF(in);
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
+        }else if(ver == 2) {
+            filePath = SerializationHelper.readSafeUTF(in);
         }
-    }
-
-    @Override
-    public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        super.jsonWrite(writer);
-    }
-
-    @Override
-    public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        super.jsonRead(reader, jsonObject);
     }
 	
 	public static boolean isBlank(CharSequence cs) {
@@ -183,13 +156,4 @@ public class AsciiFileDataSourceVO extends DataSourceVO<AsciiFileDataSourceVO>{
 		}
 		return true;
 	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
-	 */
-	@Override
-	public AsciiFileDataSourceModel asModel() {
-		return new AsciiFileDataSourceModel(this);
-	}
-    
 }
