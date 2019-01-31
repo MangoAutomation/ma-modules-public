@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
@@ -24,9 +23,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRende
 
 /**
  * Data point REST model v2
- * 
+ *
  * @author Jared Wiltshire
- * 
+ *
  */
 public class DataPointModel {
 
@@ -61,6 +60,11 @@ public class DataPointModel {
     String simplifyType;
     Double simplifyTolerance;
     Integer simplifyTarget;
+    Boolean preventSetExtremeValues;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Double setExtremeLowLimit;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Double setExtremeHighLimit;
 
     /**
      * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
@@ -92,7 +96,7 @@ public class DataPointModel {
         this.xid = point.getXid();
         this.name = point.getName();
         this.enabled = point.isEnabled();
-        
+
         this.deviceName = point.getDeviceName();
         this.readPermission = point.getReadPermission();
         this.setPermission = point.getSetPermission();
@@ -120,12 +124,12 @@ public class DataPointModel {
         this.loggingProperties = new LoggingPropertiesModel(point);
         this.textRenderer = TextRendererFactory.createModel(point);
         this.chartRenderer = ChartRendererFactory.createModel(point);
-        
+
         this.dataSourceId = point.getDataSourceId();
         this.dataSourceXid = point.getDataSourceXid();
         this.dataSourceName = point.getDataSourceName();
         this.dataSourceTypeName = point.getDataSourceTypeName();
-        
+
         this.templateXid = point.getTemplateXid();
         this.templateName = point.getTemplateName();
 
@@ -133,6 +137,12 @@ public class DataPointModel {
         this.simplifyType = DataPointVO.SIMPLIFY_TYPE_CODES.getCode(point.getSimplifyType());
         this.simplifyTolerance = point.getSimplifyTolerance();
         this.simplifyTarget = point.getSimplifyTarget();
+
+        this.preventSetExtremeValues = point.isPreventSetExtremeValues();
+        if (this.preventSetExtremeValues) {
+            this.setExtremeLowLimit = point.getSetExtremeLowLimit();
+            this.setExtremeHighLimit = point.getSetExtremeHighLimit();
+        }
     }
 
     public void copyPropertiesTo(DataPointVO point) {
@@ -210,7 +220,7 @@ public class DataPointModel {
                 for (Entry<String, String> entry : this.tags.entrySet()) {
                     String tagKey = entry.getKey();
                     String tagValue = entry.getValue();
-                    
+
                     if (tagValue == null) {
                         mergedTags.remove(tagKey);
                     } else {
@@ -230,16 +240,16 @@ public class DataPointModel {
             ChartRendererFactory.updateDataPoint(point, chartRenderer);
         }
         if (pointLocator != null) {
-            point.setPointLocator((PointLocatorVO<?>) pointLocator.getData());
+            point.setPointLocator(pointLocator.getData());
         }
-        
+
         // template XID is allowed to be null, if it is then clear the template properties on the point
         if (templateXidWasSet && templateXid == null) {
             point.setTemplateId(null);
             point.setTemplateXid(null);
             point.setTemplateName(null);
         }
-        
+
         if (this.rollup != null) {
             point.setRollup(Common.ROLLUP_CODES.getId(this.rollup));
         }
@@ -251,6 +261,15 @@ public class DataPointModel {
         }
         if(this.simplifyTarget != null) {
             point.setSimplifyTarget(simplifyTarget);
+        }
+        if (this.preventSetExtremeValues != null) {
+            point.setPreventSetExtremeValues(this.preventSetExtremeValues);
+        }
+        if (this.setExtremeLowLimit != null) {
+            point.setSetExtremeLowLimit(this.setExtremeLowLimit);
+        }
+        if (this.setExtremeHighLimit != null) {
+            point.setSetExtremeHighLimit(this.setExtremeHighLimit);
         }
     }
 
@@ -510,12 +529,36 @@ public class DataPointModel {
     public void setSimplifyTolerance(Double simplifyTolerance) {
         this.simplifyTolerance = simplifyTolerance;
     }
-    
+
     public Integer getSimplifyTarget() {
         return simplifyTarget;
     }
-    
+
     public void setSimplifyTarget(Integer simplifyTarget) {
         this.simplifyTarget = simplifyTarget;
+    }
+
+    public Boolean getPreventSetExtremeValues() {
+        return preventSetExtremeValues;
+    }
+
+    public void setPreventSetExtremeValues(Boolean preventSetExtremeValues) {
+        this.preventSetExtremeValues = preventSetExtremeValues;
+    }
+
+    public Double getSetExtremeLowLimit() {
+        return setExtremeLowLimit;
+    }
+
+    public void setSetExtremeLowLimit(Double setExtremeLowLimit) {
+        this.setExtremeLowLimit = setExtremeLowLimit;
+    }
+
+    public Double getSetExtremeHighLimit() {
+        return setExtremeHighLimit;
+    }
+
+    public void setSetExtremeHighLimit(Double setExtremeHighLimit) {
+        this.setExtremeHighLimit = setExtremeHighLimit;
     }
 }
