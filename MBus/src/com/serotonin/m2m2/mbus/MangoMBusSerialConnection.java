@@ -6,10 +6,13 @@ package com.serotonin.m2m2.mbus;
 
 import java.io.IOException;
 
+import com.infiniteautomation.mango.io.serial.DataBits;
+import com.infiniteautomation.mango.io.serial.FlowControl;
+import com.infiniteautomation.mango.io.serial.Parity;
 import com.infiniteautomation.mango.io.serial.SerialPortException;
 import com.infiniteautomation.mango.io.serial.SerialPortProxy;
+import com.infiniteautomation.mango.io.serial.StopBits;
 import com.serotonin.m2m2.Common;
-import jssc.SerialPort;
 
 import net.sf.mbus4j.Connection;
 
@@ -50,11 +53,11 @@ public class MangoMBusSerialConnection extends Connection {
                     ownerName,
                     commPortId,
                     baudRate,
-                    SerialPort.FLOWCONTROL_NONE,
-                    SerialPort.FLOWCONTROL_NONE,
-                    SerialPort.DATABITS_8,
-                    SerialPort.STOPBITS_1,
-                    SerialPort.PARITY_EVEN
+                    FlowControl.NONE,
+                    FlowControl.NONE,
+                    DataBits.DATA_BITS_8,
+                    StopBits.STOP_BITS_1,
+                    Parity.EVEN
             );
             this.is = this.serialPort.getInputStream();
             this.os = this.serialPort.getOutputStream();

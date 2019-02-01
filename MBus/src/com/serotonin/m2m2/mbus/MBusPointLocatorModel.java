@@ -6,12 +6,15 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
+
 import net.sf.mbus4j.MBusAddressing;
 import net.sf.mbus4j.dataframes.MBusMedium;
 
-@CSVEntity(typeName = MBusPointLocatorModelDefinition.TYPE_NAME)
+@CSVEntity(typeName = MBusPointLocatorModel.TYPE_NAME)
 public class MBusPointLocatorModel extends PointLocatorModel<MBusPointLocatorVO> {
-
+    
+    public static final String TYPE_NAME = "PL.MBUS";
+    
     public MBusPointLocatorModel(MBusPointLocatorVO data) {
         super(data);
     }
@@ -22,7 +25,7 @@ public class MBusPointLocatorModel extends PointLocatorModel<MBusPointLocatorVO>
 
     @Override
     public String getTypeName() {
-        return MBusPointLocatorModelDefinition.TYPE_NAME;
+        return TYPE_NAME;
     }
 
     @JsonGetter("address")

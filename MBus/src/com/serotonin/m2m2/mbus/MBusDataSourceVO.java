@@ -31,17 +31,15 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
-import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.mbus.rest.MBusDataSourceModel;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.util.ExportCodes;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.util.SerializationHelper;
 
@@ -52,7 +50,7 @@ import net.sf.mbus4j.dataframes.MBusMedium;
 import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 
 @JsonEntity
-public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
+public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
 
 //    private final static Log LOG = LogFactory.getLog(MBusDataSourceVO.class);
 
@@ -67,12 +65,9 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         EVENT_CODES.addElement(MBusDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
         EVENT_CODES.addElement(MBusDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
         EVENT_CODES.addElement(MBusDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, "POINT_WRITE_EXCEPTION");
+        EVENT_CODES.addElement(MBusDataSourceRT.POLL_ABORTED_EVENT, POLL_ABORTED);
     }
-    private int updatePeriodType = Common.TimePeriods.DAYS;
-    @JsonProperty
-    private int updatePeriods = 1;
-    @JsonProperty
-    private boolean quantize;
+
     private Connection connection;
 
     @Override
@@ -111,22 +106,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         return EVENT_CODES;
     }
 
-    public int getUpdatePeriodType() {
-        return updatePeriodType;
-    }
-
-    public void setUpdatePeriodType(int updatePeriodType) {
-        this.updatePeriodType = updatePeriodType;
-    }
-
-    public int getUpdatePeriods() {
-        return updatePeriods;
-    }
-
-    public void setUpdatePeriods(int updatePeriods) {
-        this.updatePeriods = updatePeriods;
-    }
-
     @Override
     public void validate(ProcessResult response) {
         super.validate(response);
@@ -161,15 +140,12 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     // /
     //
     private static final long serialVersionUID = -1;
-    private static final int SERIAL_VERSION = 4;
+    private static final int SERIAL_VERSION = 5;
 
     // Serialization for saveDataSource
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(SERIAL_VERSION);
         out.writeObject(connection);
-        out.writeInt(updatePeriodType);
-        out.writeInt(updatePeriods);
-        out.writeBoolean(quantize);
     }
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
@@ -229,6 +205,8 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
             connection.setResponseTimeOutOffset(in.readInt());
         } else if (ver == 4) {
             readObjectVer4(in);
+        }else if( ver == 5) {
+            connection = (Connection) in.readObject();
         }
 
     }
@@ -266,12 +244,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
         quantize = in.readBoolean();
     }
 
-    /**
-     * @return the quantize
-     */
-    public boolean isQuantize() {
-        return quantize;
-    }
 
     /**
      * @param quantize the quantize to set
@@ -294,11 +266,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
     	super.jsonRead(reader, jsonObject);
-    	
-    	 Integer value = readUpdatePeriodType(jsonObject);
-         if (value != null)
-             updatePeriodType = value;
-         
          String s = jsonObject.getString("connectionType");
          if(s == null){
         	 List<String> codes = new ArrayList<String>();
@@ -328,7 +295,6 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
     	super.jsonWrite(writer);
-    	writeUpdatePeriodType(writer, this.updatePeriodType);
     	if(connection instanceof SerialPortConnection){
     		writer.writeEntry("connectionType", "mbusSerial");
     		SerialPortConnection conn = (SerialPortConnection)connection;
@@ -344,12 +310,9 @@ public class MBusDataSourceVO extends DataSourceVO<MBusDataSourceVO> {
     		writer.writeEntry("port", conn.getPort());
     	}
     }
-    
-    /* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getModel()
-     */
+
     @Override
-    public MBusDataSourceModel asModel() {
-        return new MBusDataSourceModel(this);
+    public int getPollAbortedExceptionEventId() {
+        return MBusDataSourceRT.POLL_ABORTED_EVENT;
     }
 }

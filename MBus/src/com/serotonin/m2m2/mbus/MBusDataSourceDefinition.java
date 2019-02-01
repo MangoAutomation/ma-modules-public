@@ -5,10 +5,8 @@
 package com.serotonin.m2m2.mbus;
 
 import com.serotonin.m2m2.mbus.dwr.MBusEditDwr;
-import com.serotonin.m2m2.mbus.rest.MBusDataSourceModel;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
 
 public class MBusDataSourceDefinition extends DataSourceDefinition {
 	
@@ -38,12 +36,4 @@ public class MBusDataSourceDefinition extends DataSourceDefinition {
     public Class<?> getDwrClass() {
         return MBusEditDwr.class;
     }
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.DataSourceDefinition#getModelClass()
-	 */
-	@Override
-	public Class<? extends AbstractDataSourceModel<?>> getModelClass() {
-		return MBusDataSourceModel.class;
-	}
 }

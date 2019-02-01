@@ -8,10 +8,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.mbus.MBusDataSourceDefinition;
 import com.serotonin.m2m2.mbus.MBusDataSourceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
-import io.swagger.annotations.ApiModelProperty;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractPollingDataSourceModel;
 
 import net.sf.mbus4j.Connection;
 
@@ -19,14 +16,14 @@ import net.sf.mbus4j.Connection;
  * @author Terry Packer
  *
  */
-public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceVO>{
+public class MBusDataSourceModel extends AbstractPollingDataSourceModel<MBusDataSourceVO>{
 
 	public MBusDataSourceModel(MBusDataSourceVO data) {
 		super(data);
 	}
 
 	public MBusDataSourceModel() {
-		super(new MBusDataSourceVO());
+		super();
 	}
 
 
@@ -36,30 +33,6 @@ public class MBusDataSourceModel extends AbstractDataSourceModel<MBusDataSourceV
 	@Override
 	public String getModelType() {
 		return MBusDataSourceDefinition.DATA_SOURCE_TYPE;
-	}
-	
-	@ApiModelProperty(value = "Poll period", required = false)
-	@JsonGetter(value="pollPeriod")
-	public TimePeriod getPollPeriod(){
-	    return new TimePeriod(this.data.getUpdatePeriods(), 
-	            TimePeriodType.convertTo(this.data.getUpdatePeriodType()));
-	}
-
-	@JsonSetter(value="pollPeriod")
-	public void setPollPeriod(TimePeriod pollPeriod){
-	    this.data.setUpdatePeriods(pollPeriod.getPeriods());
-	    this.data.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
-	}
-	
-	@ApiModelProperty(value = "Quantize", required = false)
-	@JsonGetter(value="quantize")
-	public boolean getQuantize(){
-	    return this.data.isQuantize();
-	}
-
-	@JsonSetter(value="quantize")
-	public void setQuantize(boolean quantize){
-	    this.data.setQuantize(quantize);
 	}
 	
 	@JsonGetter(value="connection")

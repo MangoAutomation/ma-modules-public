@@ -56,14 +56,13 @@ public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 1;
     public static final int POINT_READ_EXCEPTION_EVENT = 2;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 3;
+    public static final int POLL_ABORTED_EVENT = 4;
     private final MBusDataSourceVO vo;
     private final MBusMaster master = new MBusMaster();
 
     public MBusDataSourceRT(MBusDataSourceVO vo) {
         super(vo);
         this.vo = vo;
-        LOG.fatal("UpdatePeriodType " + vo.getUpdatePeriodType());
-        LOG.fatal("UpdatePeriods " + vo.getUpdatePeriods());
         setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), vo.isQuantize());
     }
 

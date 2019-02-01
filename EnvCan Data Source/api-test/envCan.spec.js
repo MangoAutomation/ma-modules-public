@@ -175,8 +175,8 @@ describe('EnvCan data source', function() {
             }
         };
         dsv2.editPermission = ['superadmin', 'test2'];
-        dsv1.stationId = 40;
-        dsv1.dataStartTime = '2003-11-29T14:57:30.240-10:00';
+        dsv2.stationId = 40;
+        dsv2.dataStartTime = '2003-11-29T14:57:30.240-10:00';
         return client.restRequest({
             path:  `/rest/v2/data-sources/DS_TEST`,
             method: 'PUT',

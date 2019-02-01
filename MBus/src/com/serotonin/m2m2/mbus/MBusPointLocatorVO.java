@@ -792,12 +792,4 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
 		if(text != null)
 			medium = MBusMedium.fromLabel(text);
 	}
-	
-    /* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#asModel()
-	 */
-	@Override
-	public MBusPointLocatorModel asModel() {
-		return new MBusPointLocatorModel(this);
-	}
 }
