@@ -1,0 +1,49 @@
+/**
+ * @copyright 2019 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
+ * @author Luis Güette
+ */
+
+import angular from 'angular';
+import internalDataSourceEditor from './components/internalDataSourceEditor/internalDataSourceEditor';
+import internalDataPointEditor from './components/internalDataPointEditor/internalDataPointEditor';
+
+const internalDataSourceModule = angular.module('maInternalDataSource', ['maUiApp'])
+.component('maInternalDataSourceEditor', internalDataSourceEditor)
+.component('maInternalDataPointEditor', internalDataPointEditor)
+.config(['maDataSourceProvider', 'maPointProvider', function(maDataSourceProvider, maPointProvider) {
+    maDataSourceProvider.registerType({
+        type: 'INTERNAL',
+        description: 'dox.internalDS',
+        template: `<ma-internal-data-source-editor data-source="$ctrl.dataSource"></ma-internal-data-source-editor>`,
+        polling: true,
+        defaultDataSource: {
+            modelType: 'INTERNAL',
+            polling: true,
+            pollPeriod: {
+                periods: 1,
+                type: 'MINUTES'
+            },
+            alarmLevels: {
+                POLL_ABORTED: 'INFORMATION'
+            }
+        },
+        defaultDataPoint: {
+            dataSourceTypeName: 'INTERNAL',
+            pointLocator: {
+                dataType: 'NUMERIC',
+                modelType: 'PL.INTERNAL',
+                relinquishable: false,
+                settable: false
+            }
+        },
+        bulkEditorColumns: []
+    });
+    
+    maPointProvider.registerType({
+        type: 'INTERNAL',
+        description: 'dsEdit.internalPoint',
+        template: `<ma-internal-data-point-editor data-point="$ctrl.dataPoint"></ma-internal-data-point-editor>`
+    });
+}]);
+
+export default internalDataSourceModule;
