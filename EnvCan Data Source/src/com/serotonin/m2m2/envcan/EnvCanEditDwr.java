@@ -20,7 +20,8 @@ public class EnvCanEditDwr extends DataSourceEditDwr {
         setBasicProps(ds, basic);
         ds.setStationId(stationId);
         ds.setDataStartTime(dataStartTime.getTime());
-
+        ds.setUpdatePeriods(1);
+        ds.setUpdatePeriodType(Common.TimePeriods.HOURS);
         return tryDataSourceSave(ds);
     }
 

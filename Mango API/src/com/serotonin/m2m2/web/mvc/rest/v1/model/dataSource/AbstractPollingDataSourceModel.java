@@ -46,5 +46,19 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     public void setQuantize(Boolean quantize){
         this.data.setQuantize(quantize);
     }
-
+    
+    public boolean isUseCron() {
+        return this.data.isUseCron();
+    }
+    public void setUseCron(boolean useCron) {
+        this.data.setUseCron(useCron);
+    }
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getCronPattern() {
+        return this.data.getCronPattern();
+    }
+    public void setCronPattern(String cronPattern) {
+        this.data.setCronPattern(cronPattern);
+    }
 }

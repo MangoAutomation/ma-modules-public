@@ -45,7 +45,6 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
 	
     public InternalDataSourceRT(InternalDataSourceVO vo) {
         super(vo);
-        setPollingPeriod(vo.getUpdatePeriodType(), vo.getUpdatePeriods(), false);
         createsPoints = !StringUtils.isEmpty(vo.getCreatePointsPattern());
         if(createsPoints)
             try {

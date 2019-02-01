@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -98,7 +99,7 @@ public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> 
     // Serialization
     //
     private static final long serialVersionUID = -1;
-    private static final int version = 2;
+    private static final int version = 3;
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
@@ -113,7 +114,14 @@ public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> 
         if (ver == 1) {
             stationId = in.readInt();
             dataStartTime = 1199145600000L;
+            updatePeriods = 1;
+            updatePeriodType = Common.TimePeriods.HOURS;
         } else if (ver == 2) {
+            stationId = in.readInt();
+            dataStartTime = in.readLong();
+            updatePeriods = 1;
+            updatePeriodType = Common.TimePeriods.HOURS;
+        }else if (ver == 3) {
             stationId = in.readInt();
             dataStartTime = in.readLong();
         }

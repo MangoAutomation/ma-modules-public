@@ -47,7 +47,6 @@ public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
 
     public EnvCanDataSourceRT(EnvCanDataSourceVO vo) {
         super(vo);
-        setPollingPeriod(Common.TimePeriods.HOURS, 1, false);
     }
 
     @Override

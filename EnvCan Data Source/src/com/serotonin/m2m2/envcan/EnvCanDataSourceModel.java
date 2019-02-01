@@ -8,13 +8,13 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractDataSourceModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.dataSource.AbstractPollingDataSourceModel;
 
 /**
  * @author Terry Packer
  *
  */
-public class EnvCanDataSourceModel extends AbstractDataSourceModel<EnvCanDataSourceVO>{
+public class EnvCanDataSourceModel extends AbstractPollingDataSourceModel<EnvCanDataSourceVO>{
 	
 	public EnvCanDataSourceModel() {
 		super();

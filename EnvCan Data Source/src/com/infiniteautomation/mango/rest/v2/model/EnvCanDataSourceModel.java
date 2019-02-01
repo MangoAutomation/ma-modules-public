@@ -5,9 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model;
 
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractPollingDataSourceModel;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.serotonin.m2m2.envcan.EnvCanDataSourceDefinition;
 import com.serotonin.m2m2.envcan.EnvCanDataSourceVO;
 
@@ -50,12 +48,6 @@ public class EnvCanDataSourceModel extends AbstractPollingDataSourceModel<EnvCan
         super.fromVO(vo);
         this.stationId = vo.getStationId();
         this.dataStartTime = new Date(vo.getDataStartTime());
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Override
-    public TimePeriod getPollPeriod() {
-        return null;
     }
     
     /**
