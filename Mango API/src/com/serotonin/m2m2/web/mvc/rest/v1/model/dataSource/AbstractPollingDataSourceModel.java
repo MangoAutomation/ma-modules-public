@@ -14,7 +14,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  * @author Terry Packer
  *
  */
-public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO<T>> extends AbstractDataSourceModel<T> {
+public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO<?>> extends AbstractDataSourceModel<T> {
 
     public AbstractPollingDataSourceModel() {
         super();
@@ -37,13 +37,12 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     }
     
     @JsonGetter()
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean isQuantize() {
+    public boolean isQuantize() {
         return this.data.isQuantize();
     }
     
     @JsonGetter()
-    public void setQuantize(Boolean quantize){
+    public void setQuantize(boolean quantize){
         this.data.setQuantize(quantize);
     }
     

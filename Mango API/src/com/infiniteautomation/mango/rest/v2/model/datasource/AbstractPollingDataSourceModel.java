@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
+
+import io.swagger.annotations.ApiModelProperty;
+
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 
 /**
@@ -14,16 +17,19 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
  *
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
-public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO<T>> extends AbstractDataSourceModel<T> {
+public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO<?>> extends AbstractDataSourceModel<T> {
 
+    @ApiModelProperty("Period to poll for data, unless using CRON")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected TimePeriod pollPeriod;
     
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Boolean quantize;
+    @ApiModelProperty("Quantize polls to the nearest poll period type")
+    protected boolean quantize;
     
+    @ApiModelProperty("Instead of poll period, use a CRON expression")
     protected boolean useCron;
     
+    @ApiModelProperty("CRON expression instead of poll period")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String cronPattern;
     
@@ -37,9 +43,9 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
         super.fromVO(vo);
         this.pollPeriod = new TimePeriod(vo.getUpdatePeriods(), 
                 TimePeriodType.convertTo(vo.getUpdatePeriodType()));
-        vo.setQuantize(quantize);
-        vo.setUseCron(useCron);
-        vo.setCronPattern(cronPattern);
+        quantize = vo.isQuantize();
+        useCron = vo.isUseCron();
+        cronPattern = vo.getCronPattern();
     }
     
     @Override
@@ -49,9 +55,9 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
             vo.setUpdatePeriods(pollPeriod.getPeriods());
             vo.setUpdatePeriodType(TimePeriodType.convertFrom(pollPeriod.getType()));
         }
-        quantize = vo.isQuantize();
-        useCron = vo.isUseCron();
-        cronPattern = vo.getCronPattern();
+        vo.setQuantize(quantize);
+        vo.setUseCron(useCron);
+        vo.setCronPattern(cronPattern);
         return vo;
     }
     
@@ -72,14 +78,14 @@ public abstract class AbstractPollingDataSourceModel<T extends PollingDataSource
     /**
      * @return the quantize
      */
-    public Boolean getQuantize() {
+    public boolean isQuantize() {
         return quantize;
     }
 
     /**
      * @param quantize the quantize to set
      */
-    public void setQuantize(Boolean quantize) {
+    public void setQuantize(boolean quantize) {
         this.quantize = quantize;
     }
 

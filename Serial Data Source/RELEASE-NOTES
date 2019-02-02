@@ -1,5 +1,6 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
+* Modify v1 data source model to use Enums for serial settings
 
 *Version 3.5.1*
 * Fix for port hanging open if values were being set with nonzero retries at data source shutdown
