@@ -5,28 +5,35 @@
 
 import componentTemplate from './InternalDataPointEditor.html';
 
-const $inject = Object.freeze(['$scope']);
+const $inject = Object.freeze(['$scope', 'maSystemStatus']);
 
 class InternalDataPointEditorController {
 
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor($scope) {
+    constructor($scope, maSystemStatus) {
         this.$scope = $scope;
+        this.maSystemStatus = maSystemStatus;
    }
 
     $onInit() {
-        
+        this.getInternalMetrics();
+    }
+
+    getInternalMetrics() {
+        this.maSystemStatus.getInternalMetrics().then(response => {
+            this.monitorIds = response.data;
+        });
     }
 
 }
 
 export default {
-    bindings: {},
-    require: {
-
+    bindings: {
+        dataPoint: '<point'
     },
+    require: {},
     controller: InternalDataPointEditorController,
     template: componentTemplate
 };
