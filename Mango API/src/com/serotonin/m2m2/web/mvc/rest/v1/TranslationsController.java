@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -149,6 +150,13 @@ public class TranslationsController extends MangoRestController {
         }
 
         return result.createResponseEntity();
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Clear the translation cache", notes = "Translations will be reloaded from .properties files upon next translation request")
+    @RequestMapping(method = RequestMethod.POST, value = "/clear-cache")
+    public void clearCache() {
+        Translations.clearCache();
     }
 
     /**
