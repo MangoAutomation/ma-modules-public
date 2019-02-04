@@ -23,10 +23,10 @@ class InternalDataSourceEditorController {
 }
 
 export default {
-    bindings: {},
-    require: {
-
+    bindings: {
+        dataSource: '<source'
     },
+    require: {},
     controller: InternalDataSourceEditorController,
     template: componentTemplate
 };
