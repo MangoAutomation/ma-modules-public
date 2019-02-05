@@ -301,7 +301,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
         if (stopBits == null)
             response.addContextualMessage("stopBits", "validate.required");
         if (parity == null)
-            response.addContextualMessage("parityBits", "validate.required");
+            response.addContextualMessage("parity", "validate.required");
         
         if(useTerminator) {
         	if(messageTerminator.length() <= 0)
