@@ -4,10 +4,10 @@
 --%>
 <%@page import="com.serotonin.m2m2.Common"%>
 <%@page import="com.serotonin.m2m2.pointLinks.PointLinkVO"%>
-<%@page import="com.serotonin.m2m2.rt.script.ScriptLog"%>
+<%@page import="com.serotonin.m2m2.util.log.LogLevel"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 <c:set var="NEW_ID"><%= Common.NEW_ID %></c:set>
-<c:set var="NONE_LOG"><%= ScriptLog.LogLevel.NONE %></c:set>
+<c:set var="NONE_LOG"><%= LogLevel.NONE %></c:set>
 <tag:page dwr="PointLinksDwr" onload="init">
   <script type="text/javascript">
     dojo.require("dojo.store.Memory");
@@ -296,8 +296,11 @@
             <tr>
               <td class="formLabelRequired"><fmt:message key="dsEdit.script.logLevel"/></td>
               <td class="formField">
-                <tag:exportCodesOptions id="logLevel" optionList="<%= ScriptLog.LOG_LEVEL_CODES.getIdKeys() %>"
-                        onchange="logLevelChanged()"/>
+                <sst:select id="logLevel" onchange="logLevelChanged()">
+			    <c:forEach items="${LogLevel.values}" var="option">
+    		    <sst:option value="${option.value}"><fmt:message key="${option.description.key}"/></sst:option>
+    		  </c:forEach>    	
+			  </sst:select>
                 <div id="logPathMsg">
                 </div>
               </td>
