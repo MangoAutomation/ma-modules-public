@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamField;
 import java.util.List;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -343,7 +344,15 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     //
     private static final long serialVersionUID = -1;
     private static final int version = 6;
-
+    //Track previous data types for field serialization
+    private static final ObjectStreamField[] serialPersistentFields
+        = { 
+                new ObjectStreamField("flowControlIn", int.class),
+                new ObjectStreamField("flowControlOut", int.class),
+                new ObjectStreamField("dataBits", int.class),
+                new ObjectStreamField("stopBits", int.class),
+                new ObjectStreamField("parity", int.class)
+          };
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         SerializationHelper.writeSafeUTF(out, commPortId);

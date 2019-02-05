@@ -31,8 +31,8 @@ public class SerialEditDwr extends DataSourceEditDwr{
 	private final Log LOG = LogFactory.getLog(SerialEditDwr.class);
 
    @DwrPermission(user = true)
-    public ProcessResult saveSerialDataSource(BasicDataSourceVO basic, String commPortId, int baudRate, int flowControlIn,
-            int flowControlOut, int dataBits, int stopBits, int parity, int readTimeout, boolean useTerminator,
+    public ProcessResult saveSerialDataSource(BasicDataSourceVO basic, String commPortId, int baudRate, FlowControl flowControlIn,
+            FlowControl flowControlOut, DataBits dataBits, StopBits stopBits, Parity parity, int readTimeout, boolean useTerminator,
             String messageTerminator, String messageRegex, int pointIdentifierIndex,
             boolean hex, boolean logIO, int maxMessageSize, float ioLogFileSizeMBytes, int maxHistoricalIOLogs, int retries) {
         SerialDataSourceVO ds = (SerialDataSourceVO) Common.getHttpUser().getEditDataSource();
@@ -40,11 +40,11 @@ public class SerialEditDwr extends DataSourceEditDwr{
         setBasicProps(ds, basic);
         ds.setCommPortId(commPortId);
         ds.setBaudRate(baudRate);
-        ds.setFlowControlIn(FlowControl.fromValue(flowControlIn));
-        ds.setFlowControlOut(FlowControl.fromValue(flowControlOut));
-        ds.setDataBits(DataBits.fromValue(dataBits));
-        ds.setStopBits(StopBits.fromValue(stopBits));
-        ds.setParity(Parity.fromValue(parity));
+        ds.setFlowControlIn(flowControlIn);
+        ds.setFlowControlOut(flowControlOut);
+        ds.setDataBits(dataBits);
+        ds.setStopBits(stopBits);
+        ds.setParity(parity);
         ds.setReadTimeout(readTimeout);
         ds.setUseTerminator(useTerminator);
         ds.setMessageTerminator(StringEscapeUtils.unescapeJava(messageTerminator));
