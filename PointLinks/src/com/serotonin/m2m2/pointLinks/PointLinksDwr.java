@@ -95,7 +95,7 @@ public class PointLinksDwr extends ModuleDwr {
 
     @DwrPermission(user = true)
     public ProcessResult savePointLink(int id, String xid, String name, int sourcePointId, int targetPointId, String script,
-            int event, boolean writeAnnotation, boolean disabled, String permissions, int logLevel, float logSize, int logCount) {
+            int event, boolean writeAnnotation, boolean disabled, String permissions, LogLevel logLevel, float logSize, int logCount) {
         // Validate the given information. If there is a problem, return an appropriate error message.
         User user = Common.getHttpUser();
         PointLinkVO vo = new PointLinkVO();
@@ -109,7 +109,7 @@ public class PointLinksDwr extends ModuleDwr {
         vo.setWriteAnnotation(writeAnnotation);
         vo.setDisabled(disabled);
         vo.setScriptPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(permissions), user.getPermissionHolderName()));
-        vo.setLogLevel(LogLevel.fromValue(logLevel));
+        vo.setLogLevel(logLevel);
         vo.setLogSize(logSize);
         vo.setLogCount(logCount);
 
@@ -138,7 +138,7 @@ public class PointLinksDwr extends ModuleDwr {
     }
 
     @DwrPermission(user = true)
-    public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, String permissions, int logLevel) {
+    public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, String permissions, LogLevel logLevel) {
         User user = Common.getHttpUser();
         ProcessResult response = new ProcessResult();
         TranslatableMessage message;
@@ -146,7 +146,7 @@ public class PointLinksDwr extends ModuleDwr {
         MangoJavaScriptService service = Common.getBean(MangoJavaScriptService.class);
         MangoJavaScript vo = new MangoJavaScript();
         vo.setWrapInFunction(true);
-        vo.setLogLevel(LogLevel.fromValue(logLevel));
+        vo.setLogLevel(logLevel);
         vo.setPermissions(new ScriptPermissions(Permissions.explodePermissionGroups(permissions), user.getPermissionHolderName()));
         vo.setScript(script);
         List<ScriptContextVariable> context = new ArrayList<>();

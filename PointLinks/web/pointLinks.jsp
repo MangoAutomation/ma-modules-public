@@ -7,7 +7,7 @@
 <%@page import="com.serotonin.m2m2.util.log.LogLevel"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 <c:set var="NEW_ID"><%= Common.NEW_ID %></c:set>
-<c:set var="NONE_LOG"><%= LogLevel.NONE %></c:set>
+<c:set var="NONE_LOG"><%= LogLevel.NONE.name() %></c:set>
 <tag:page dwr="PointLinksDwr" onload="init">
   <script type="text/javascript">
     dojo.require("dojo.store.Memory");
@@ -207,7 +207,7 @@
           var logLevelPath = dojo.byId("logPathMsg");
           logLevelPath.innerHTML = response;
     
-          if ($get("logLevel") == ${NONE_LOG}) {
+          if ($get("logLevel") == '${NONE_LOG}') {
               hide("logPathMsg");
               hide("logSizeRow");
               hide("logCountRow");
@@ -296,11 +296,11 @@
             <tr>
               <td class="formLabelRequired"><fmt:message key="dsEdit.script.logLevel"/></td>
               <td class="formField">
-                <sst:select id="logLevel" onchange="logLevelChanged()">
-			    <c:forEach items="${LogLevel.values}" var="option">
-    		    <sst:option value="${option.value}"><fmt:message key="${option.description.key}"/></sst:option>
-    		  </c:forEach>    	
-			  </sst:select>
+				<sst:select id="logLevel" onchange="logLevelChanged()">
+				<c:forEach items="${LogLevel.values()}" var="option">
+				<sst:option value="${option.name()}"><fmt:message key="${option.getDescription().getKey()}"/></sst:option>
+				</c:forEach>    	
+				</sst:select>
                 <div id="logPathMsg">
                 </div>
               </td>
