@@ -193,7 +193,8 @@ public class UserModel extends AbstractVoModel<User> {
         user.setTimezone(timezone);
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
-        user.setPermissionsSet(permissions);
+        if(permissions != null)
+            user.setPermissionsSet(permissions);
         user.setLocale(locale);
         if(!StringUtils.isEmpty(hashAlgorithm)) {
             String password = this.password != null ? this.password : "";

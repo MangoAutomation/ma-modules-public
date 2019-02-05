@@ -95,14 +95,6 @@ describe('Event handlers v2', function() {
                 xid : "EVTH_SET_POINT_TEST",
                 name : "Testing setpoint",
                 disabled : false,
-                eventTypes: [
-                    {
-                        eventType: 'SYSTEM',
-                        subType: 'SYSTEM_STARTUP',
-                        referenceId1: 0,
-                        referenceId2: 0
-                    }
-                ],
                 targetPointXid : global.dp1.xid,
                 activeAction : "STATIC_VALUE",
                 inactiveAction : "STATIC_VALUE",
@@ -115,7 +107,6 @@ describe('Event handlers v2', function() {
                 eventTypes: [
                     {
                         eventType: 'DATA_SOURCE',
-                        subType: null,
                         referenceId1: global.ds1.id,
                         referenceId2: 1 //Poll Aborted
                     }
@@ -133,7 +124,6 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.eventTypes.length, global.staticValueSetPointEventHandler.eventTypes.length);
             for(var i=0; i<response.data.eventTypes.length; i++){
                 assert.strictEqual(response.data.eventTypes[i].eventType, global.staticValueSetPointEventHandler.eventTypes[i].eventType);
-                assert.strictEqual(response.data.eventTypes[0].subType, global.staticValueSetPointEventHandler.eventTypes[i].subType);
                 assert.strictEqual(response.data.eventTypes[0].referenceId1, global.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
                 assert.strictEqual(response.data.eventTypes[0].referenceId2, global.staticValueSetPointEventHandler.eventTypes[i].referenceId2);
             }

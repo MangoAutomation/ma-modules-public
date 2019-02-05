@@ -40,7 +40,7 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
     });
     
     private PointLinkDao() {
-        super(AuditEvent.TYPE_NAME, "pl", new String[] {}, false, new TranslatableMessage("header.pointLinks"));
+        super(AuditEvent.TYPE_NAME, "pl", new String[0], false, new TranslatableMessage("header.pointLinks"));
     }
 	
     public static PointLinkDao getInstance() {
@@ -122,7 +122,7 @@ public class PointLinkDao extends AbstractDao<PointLinkVO> {
                 vo.getEvent(),
                 boolToChar(vo.isWriteAnnotation()),
                 boolToChar(vo.isDisabled()),
-                vo.getLogLevel(),
+                vo.getLogLevel().value(),
                 vo.getLogSize(),
                 vo.getLogCount(),
                 vo.getScriptPermissions().getPermissions()

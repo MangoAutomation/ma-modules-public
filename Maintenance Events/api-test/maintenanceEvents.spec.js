@@ -90,6 +90,7 @@ describe('Maintenance events', function() {
         xid: 'MAINT_TEST_ONE_DATA_POINT',
         name: 'Test maintenance event',
         dataPoints: [global.dp1.xid],
+        scheduleType: 'MANUAL',
         alarmLevel: "URGENT"
       };
 
@@ -114,6 +115,7 @@ describe('Maintenance events', function() {
           xid: 'MAINT_TEST_ONE_DATA_POINTS',
           name: 'Test maintenance event',
           dataPoints: [global.dp1.xid, global.dp2.xid],
+          scheduleType: 'MANUAL',
           alarmLevel: "URGENT"
         };
 
@@ -147,6 +149,7 @@ describe('Maintenance events', function() {
           xid: 'MAINT_TEST_ONE_DATA_SOURCE',
           name: 'Test maintenance event',
           dataSources: [global.ds1.xid],
+          scheduleType: 'MANUAL',
           alarmLevel: "URGENT"
         };
 
@@ -171,6 +174,7 @@ describe('Maintenance events', function() {
           xid: 'MAINT_TEST_ONE_DATA_SOURCES',
           name: 'Test maintenance event',
           dataSources: [global.ds1.xid, global.ds2.xid],
+          scheduleType: 'MANUAL',
           alarmLevel: "URGENT"
         };
 
