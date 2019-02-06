@@ -23,9 +23,9 @@ const internalDataSourceModule = angular.module('maInternalDataSource', ['maUiAp
                 periods: 1,
                 type: 'MINUTES'
             },
-            alarmLevels: {
-                POLL_ABORTED: 'INFORMATION'
-            }
+            eventAlarmLevels: [
+                {eventType: 'POLL_ABORTED', level: 'INFORMATION', duplicateHandling: 'IGNORE', descriptionKey: 'event.ds.pollAborted'}
+            ],
         },
         defaultDataPoint: {
             dataSourceTypeName: 'INTERNAL',
