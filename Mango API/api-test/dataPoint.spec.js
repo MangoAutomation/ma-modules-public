@@ -272,6 +272,87 @@ describe('Data point service', () => {
         });
     });
     
+    it('Gets v2 websocket notifications for data point create', function() {
+        this.timeout(5000);
+        
+        let ws;
+        const subscription = {
+            sequenceNumber: 0,
+            messageType: 'REQUEST',
+            requestType: 'SUBSCRIPTION',
+            showResultWhenIncomplete: true,
+            showResultWhenComplete: true,
+            anyStatus: true
+        };
+        const testData = {id: ''};
+        const socketOpenDeferred = config.defer();
+        const actionFinishedDeferred = config.defer();
+
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/data-points'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                actionFinishedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                actionFinishedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                assert.isString(msgStr);
+                const msg = JSON.parse(msgStr);
+                if(msg.payload.action === 'add'){
+                    assert.strictEqual(msg.payload.object.name, 'Node mango client ws');
+                    assert.strictEqual(msg.payload.object.pointLocator.dataType, 'NUMERIC');
+                    assert.strictEqual(msg.payload.object.pointLocator.modelType, 'PL.VIRTUAL');
+                    actionFinishedDeferred.resolve();
+                }else{
+                    actionFinishedDeferred.reject();
+                }
+            });
+
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const dp = new DataPoint({
+                name: 'Node mango client ws',
+                dataSourceXid : 'mango_client_test',
+                pointLocator : {
+                    startValue : '0',
+                    modelType : 'PL.VIRTUAL',
+                    dataType : 'NUMERIC',
+                    settable : false,
+                    changeType : 'BROWNIAN',
+                    max: 100,
+                    maxChange: 0.01,
+                    min: 0
+                }
+            });
+            return client.restRequest({
+                path: '/rest/v2/data-points',
+                method: 'POST',
+                data: dp
+            }).then(response => {
+                //TODO Could assert but not really the purpose here
+            }, error =>{
+                actionFinishedDeferred.reject(msg);
+            });
+            
+        }).then(() => actionFinishedDeferred.promise ).then(() => {
+          //Close websocket 
+            ws.close();
+        });
+    });
     
     
     it('Deletes the new virtual data source and its points', () => {
