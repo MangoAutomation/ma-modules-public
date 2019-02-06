@@ -11,29 +11,29 @@ import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Container to allow adjusting the alarm levels for a given data source's 
+ * Container to allow adjusting the alarm levels for a given data source's
  * alarms.
- * 
+ *
  * @author Terry Packer
  *
  */
 public class EventTypeAlarmLevelModel {
-    
+
     @ApiModelProperty("Sub-type of DATA_SOURCE type event")
     private String eventType;
-    
+
     @ApiModelProperty("How are duplicate events handled in order")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private DuplicateHandling duplicateHandling;
-    
+
     @ApiModelProperty("Alarm level to raise alarm")
     private AlarmLevels level;
-    
+
     @ApiModelProperty("Description of this event")
     private TranslatableMessage description;
 
     public EventTypeAlarmLevelModel() { }
-    
+
     /**
      * @param dataSourceXid
      * @param eventType
@@ -105,5 +105,9 @@ public class EventTypeAlarmLevelModel {
      */
     public void setDescription(TranslatableMessage description) {
         this.description = description;
-    }    
+    }
+
+    public String getDescriptionKey() {
+        return description.getKey();
+    }
 }

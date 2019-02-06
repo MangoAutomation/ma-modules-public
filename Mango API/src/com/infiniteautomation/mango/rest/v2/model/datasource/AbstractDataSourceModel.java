@@ -35,15 +35,15 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
 
     @JsonIgnore
     protected DataSourceDefinition definition;
-    
+
     @ApiModelProperty("Read only description of data source connection")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private TranslatableMessage connectionDiscription;
-    
+    private TranslatableMessage connectionDescription;
+
     @ApiModelProperty("Read only description of data source type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private TranslatableMessage description;
-    
+
     private boolean enabled;
     private List<EventTypeAlarmLevelModel> eventAlarmLevels;
     private PurgeSettings purgeSettings;
@@ -52,14 +52,14 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
     public AbstractDataSourceModel() {
 
     }
-    
+
     /**
      * Return the TYPE_NAME from the Data Source definition
      * @return
      */
     public abstract String getModelType();
-    
-    
+
+
     @SuppressWarnings("unchecked")
     @Override
     protected T newVO() {
@@ -68,7 +68,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
         vo.setDefinition(def);
         return vo;
     }
-    
+
     @JsonIgnore
     public DataSourceDefinition getDefinition() {
         DataSourceDefinition definition = ModuleRegistry.getDataSourceDefinition(getModelType());
@@ -76,14 +76,14 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("rest.exception.modelNotFound", getModelType()));
         return definition;
     }
-    
+
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
         this.definition = vo.getDefinition();
-        this.connectionDiscription = vo.getConnectionDescription();
+        this.connectionDescription = vo.getConnectionDescription();
         this.description = new TranslatableMessage(vo.getDefinition().getDescriptionKey());
-        
+
         this.enabled = vo.isEnabled();
         this.eventAlarmLevels = new ArrayList<>();
         for(EventTypeVO evt : vo.getEventTypes()) {
@@ -97,11 +97,11 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
                     );
             this.eventAlarmLevels.add(model);
         }
-        
+
         this.purgeSettings = new PurgeSettings(vo);
         this.editPermission = Permissions.explodePermissionGroups(vo.getEditPermission());
     }
-    
+
     @Override
     public T toVO() {
         T vo = super.toVO();
@@ -111,34 +111,27 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
                 vo.setAlarmLevel(eval.getEventType(), eval.getLevel());
             }
         }
-        
+
         if(purgeSettings != null)
             purgeSettings.toVO(vo);
         vo.setEditPermission(Permissions.implodePermissionGroups(editPermission));
         return vo;
     }
-    
+
     /**
      * Get the description for the data source's connection
      * @return
      */
     public TranslatableMessage getConnectionDescription() {
-        return connectionDiscription;
+        return connectionDescription;
     }
-    
+
     /**
      * Get the description for the type of data source
      * @return
      */
     public TranslatableMessage getDescription() {
         return description;
-    }
-
-    /**
-     * @return the connectionDiscription
-     */
-    public TranslatableMessage getConnectionDiscription() {
-        return connectionDiscription;
     }
 
     /**
@@ -196,5 +189,5 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
     public void setEditPermission(Set<String> editPermission) {
         this.editPermission = editPermission;
     }
-    
+
 }
