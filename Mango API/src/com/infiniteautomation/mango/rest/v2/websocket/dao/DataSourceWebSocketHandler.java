@@ -8,7 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
@@ -45,7 +45,7 @@ public class DataSourceWebSocketHandler extends DaoNotificationWebSocketHandler<
 
     @Override
     protected Object createModel(DataSourceVO<?> vo, User user) {
-        return modelMapper.map(vo, AbstractEventHandlerModel.class, user);
+        return modelMapper.map(vo, AbstractDataSourceModel.class, user);
     }
 
     @Override
@@ -58,5 +58,5 @@ public class DataSourceWebSocketHandler extends DaoNotificationWebSocketHandler<
     protected boolean isModelPerUser() {
         return true;
     }
-    
+
 }
