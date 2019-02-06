@@ -37,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel
 import com.infiniteautomation.mango.rest.v2.model.event.MissingEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
+import com.infiniteautomation.mango.rest.v2.model.event.detectors.AnalogHighLimitEventDetectorModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
@@ -44,6 +45,7 @@ import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.module.definitions.event.detectors.AnalogHighLimitEventDetectorDefinition;
 import com.serotonin.m2m2.util.AbstractRestModelConverter;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
@@ -90,7 +92,10 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
                     new NamedType(DataSourceEventTypeModel.class, "DATA_SOURCE"),
                     new NamedType(MissingEventTypeModel.class, "MISSING"),
                     new NamedType(PublisherEventTypeModel.class, "PUBLISHER"),
-                    new NamedType(SystemEventTypeModel.class, "SYSTEM")
+                    new NamedType(SystemEventTypeModel.class, "SYSTEM"),
+                    
+                    //Event Detectors
+                    new NamedType(AnalogHighLimitEventDetectorModel.class, AnalogHighLimitEventDetectorDefinition.TYPE_NAME)
                 );
         
     }

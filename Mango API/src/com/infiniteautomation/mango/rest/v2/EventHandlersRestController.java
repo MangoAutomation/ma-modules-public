@@ -89,7 +89,7 @@ public class EventHandlersRestController {
             )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public AbstractEventHandlerModel get(
-            @ApiParam(value = "XID of Mailing List to update", required = true, allowMultiple = false)
+            @ApiParam(value = "XID to get", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
