@@ -25,7 +25,7 @@ describe('Point Event detector service', function() {
         global.ped = {
           xid : "PED_mango_client_test",
           name : "When true.",
-          sourceId : global.numDp.id,
+          dataPointId : global.numDp.id,
           alarmLevel : 'URGENT',
           duration : {
               periods: 10,
@@ -43,7 +43,7 @@ describe('Point Event detector service', function() {
             data: global.ped
         }).then(response => {
             assert.strictEqual(response.data.name, global.ped.name);
-            assert.strictEqual(response.data.sourceId, global.ped.sourceId);
+            assert.strictEqual(response.data.dataPointId, global.ped.dataPointId);
             assert.strictEqual(response.data.alarmLevel, global.ped.alarmLevel);
             
             assert.strictEqual(response.data.duration.periods, global.ped.duration.periods);
@@ -53,8 +53,7 @@ describe('Point Event detector service', function() {
             assert.strictEqual(response.data.resetLimit, global.ped.resetLimit);
             assert.strictEqual(response.data.useResetLimit, global.ped.useResetLimit);
             assert.strictEqual(response.data.notHigher, global.ped.notHigher);
-            
-            
+
             global.ped.id = response.data.id;
         }, error => {
             if(error.status === 422){
@@ -64,9 +63,29 @@ describe('Point Event detector service', function() {
         });
       });
     
-    it('Query point event detector', () => {
+    it('Query point event detector on xid', () => {
         return client.restRequest({
             path: `/rest/v2/point-event-detectors?xid=${global.ped.xid}`,
+            method: 'GET'
+        }).then(response => {
+            assert.strictEqual(response.data.total, 1);
+            assert.strictEqual(response.data.items[0].xid, global.ped.xid);
+        });
+      });
+    
+    it('Query point event detector on data point id', () => {
+        return client.restRequest({
+            path: `/rest/v2/point-event-detectors?dataPointId=${global.ped.dataPointId}`,
+            method: 'GET'
+        }).then(response => {
+            assert.strictEqual(response.data.total, 1);
+            assert.strictEqual(response.data.items[0].xid, global.ped.xid);
+        });
+      });
+    
+    it('Query point event detector on source type name', () => {
+        return client.restRequest({
+            path: `/rest/v2/point-event-detectors?detectorSourceType=DATA_POINT`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.total, 1);

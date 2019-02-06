@@ -74,14 +74,6 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     public String getDetectorSourceType(){
         return detectorSourceType;
     }
-
-    public void setSourceId(int sourceId) {
-        this.sourceId = sourceId;
-    }
-    
-    public int getSourceId() {
-        return sourceId;
-    }
     
     public boolean isRtnApplicable() {
         return rtnApplicable;
