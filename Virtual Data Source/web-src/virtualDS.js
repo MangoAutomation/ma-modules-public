@@ -17,15 +17,27 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
         template: `<ma-virtual-data-source-editor data-source="$ctrl.dataSource"></ma-virtual-data-source-editor>`,
         polling: true,
         defaultDataSource: {
-            modelType: 'VIRTUAL',
+            name: '',
+            enabled: false,
             polling: true,
+            modelType: 'VIRTUAL',
             pollPeriod: {
                 periods: 1,
                 type: 'MINUTES'
             },
-            alarmLevels: {
-                POLL_ABORTED: 'INFORMATION'
-            }
+            editPermission: ['superadmin'],
+            purgeSettings: {
+                override: false,
+                frequency: {
+                    periods: 1,
+                    type: 'YEARS'
+                }
+            },
+            eventAlarmLevels: [
+                {eventType: 'POLL_ABORTED', level: 'INFORMATION', duplicateHandling: 'IGNORE', description: 'Poll aborted'}
+            ],
+            quantize: false,
+            useCron: false
         },
         defaultDataPoint: {
             dataSourceTypeName: 'VIRTUAL',
@@ -44,7 +56,7 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
             {name: 'pointLocator.changeType', label: 'dsEdit.virtual.changeType', selectedByDefault: true}
         ]
     });
-    
+
     maPointProvider.registerType({
         type: 'VIRTUAL',
         description: 'dsEdit.virtualPoint',
