@@ -135,6 +135,14 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends
     }
 
     /**
+     * Get the description translation key for the type of data source
+     * @return
+     */
+    public String getDescriptionKey() {
+        return description.getKey();
+    }
+
+    /**
      * @return the enabled
      */
     public boolean isEnabled() {
