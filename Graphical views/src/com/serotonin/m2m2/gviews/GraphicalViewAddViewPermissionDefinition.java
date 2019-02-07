@@ -4,9 +4,6 @@
  */
 package com.serotonin.m2m2.gviews;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.serotonin.m2m2.module.PermissionDefinition;
 
 /**
@@ -25,13 +22,6 @@ public class GraphicalViewAddViewPermissionDefinition extends PermissionDefiniti
 	@Override
 	public String getPermissionTypeName() {
 		return PERMISSION;
-	}
-	
-	@Override
-	public List<String> getDefaultGroups() {
-		List<String> groups = new ArrayList<String>();
-		groups.add("user");
-		return groups;
 	}
 
 }
