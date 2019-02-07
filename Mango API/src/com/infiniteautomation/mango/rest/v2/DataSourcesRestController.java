@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -69,6 +70,32 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
+    }
+    
+    @ApiOperation(
+            value = "Get Data Source by XID",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}")
+    public AbstractDataSourceModel<?> get(
+            @ApiParam(value = "XID of Data Source", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        return map.apply(service.getFull(xid, user), user);
+    }
+    
+    @ApiOperation(
+            value = "Get Data Source by ID",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/by-id/{id}")
+    public AbstractDataSourceModel<?> getById(
+            @ApiParam(value = "ID of Data Source", required = true, allowMultiple = false)
+            @PathVariable int id,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        return map.apply(service.getFull(id, user), user);
     }
 
     @ApiOperation(value = "Save data source")
@@ -140,6 +167,22 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             UriComponentsBuilder builder) {
         return map.apply(service.delete(xid, user), user);
     }
+    
+    @ApiOperation(value = "Enable/disable/restart a data source")
+    @RequestMapping(method = RequestMethod.PUT, value = "/enable-disable/{xid}")
+    public void enableDisable(
+            @PathVariable String xid,
+
+            @ApiParam(value = "Enable or disable the data source", required = true, allowMultiple = false)
+            @RequestParam(required=true) boolean enabled,
+
+            @ApiParam(value = "Restart the data source, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean restart,
+            
+            @AuthenticationPrincipal User user) {
+        service.restart(xid, enabled, restart, user);
+    }
+    
     
     /**
      * Perform a query
