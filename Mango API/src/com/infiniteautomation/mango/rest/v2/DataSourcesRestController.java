@@ -43,13 +43,13 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data source controller")
 @RestController
 @RequestMapping("/data-sources")
-public class DataSourcesRestController {
+public class DataSourcesRestController<T extends DataSourceVO<T>> {
     
-    private final DataSourceService service;
+    private final DataSourceService<T> service;
     private final BiFunction<DataSourceVO<?>, User, AbstractDataSourceModel<?>> map;
     
     @Autowired
-    public DataSourcesRestController(final DataSourceService service, final RestModelMapper modelMapper) {
+    public DataSourcesRestController(final DataSourceService<T> service, final RestModelMapper modelMapper) {
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractDataSourceModel.class, user);
@@ -74,7 +74,7 @@ public class DataSourcesRestController {
     @ApiOperation(value = "Save data source")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractDataSourceModel<?>> save(
-            @RequestBody(required=true) AbstractDataSourceModel<?> model,
+            @RequestBody(required=true) AbstractDataSourceModel<T> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
@@ -90,7 +90,7 @@ public class DataSourcesRestController {
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> update(
             @PathVariable String xid,
-            @RequestBody(required=true) AbstractDataSourceModel<?> model,
+            @RequestBody(required=true) AbstractDataSourceModel<T> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
@@ -114,7 +114,7 @@ public class DataSourcesRestController {
             @PatchVORequestBody(
                     service=DataSourceService.class,
                     modelClass=AbstractDataSourceModel.class)
-            AbstractDataSourceModel<?> model,
+            AbstractDataSourceModel<T> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 

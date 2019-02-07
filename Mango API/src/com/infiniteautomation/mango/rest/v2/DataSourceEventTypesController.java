@@ -36,10 +36,10 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/data-source-event-types")
 public class DataSourceEventTypesController {
 
-    private final DataSourceService service;
+    private final DataSourceService<?> service;
     
     @Autowired
-    public DataSourceEventTypesController(DataSourceService service) {
+    public DataSourceEventTypesController(DataSourceService<?> service) {
         this.service = service;
     }
     

@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AnalogHighLimitDetectorVO;
 
@@ -15,7 +14,7 @@ import com.serotonin.m2m2.vo.event.detector.AnalogHighLimitDetectorVO;
  *
  */
 @Component
-public class AnalogHighLimitEventDetectorModelMapping implements RestModelMapping<AnalogHighLimitDetectorVO, AnalogHighLimitEventDetectorModel> {
+public class AnalogHighLimitEventDetectorModelMapping extends AbstractPointEventDetectorModelMapping<AnalogHighLimitDetectorVO, AnalogHighLimitEventDetectorModel> {
 
     @Override
     public Class<? extends AnalogHighLimitDetectorVO> fromClass() {
@@ -29,7 +28,8 @@ public class AnalogHighLimitEventDetectorModelMapping implements RestModelMappin
 
     @Override
     public AnalogHighLimitEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
-        return new AnalogHighLimitEventDetectorModel((AnalogHighLimitDetectorVO)from);
+        AnalogHighLimitDetectorVO detector = (AnalogHighLimitDetectorVO)from;
+        return loadDataPoint(detector, new AnalogHighLimitEventDetectorModel(detector), user, mapper);
     }
 
 }

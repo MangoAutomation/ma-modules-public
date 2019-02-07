@@ -34,7 +34,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
  */
 @JsonPropertyOrder({"xid", "name", "enabled"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
-public abstract class AbstractDataSourceModel<T extends DataSourceVO<?>> extends AbstractActionVoModel<T> {
+public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends AbstractActionVoModel<T> {
 
     public static final String MODEL_TYPE = "modelType";
     

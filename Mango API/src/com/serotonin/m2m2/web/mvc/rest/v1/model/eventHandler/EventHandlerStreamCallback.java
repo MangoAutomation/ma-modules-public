@@ -16,7 +16,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.handlers.AbstractEventHan
  * Filter Event Handlers Based on Permissions for thier Event Type
  * @author Terry Packer
  */
-public class EventHandlerStreamCallback extends FilteredVoStreamCallback<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>{
+public class EventHandlerStreamCallback<T extends AbstractEventHandlerVO<T>> extends FilteredVoStreamCallback<T, AbstractEventHandlerModel<T>, EventHandlerDao<T>>{
 
 	private User user;
 	
@@ -26,7 +26,7 @@ public class EventHandlerStreamCallback extends FilteredVoStreamCallback<Abstrac
 	 * 
 	 */
 	public EventHandlerStreamCallback(
-			MangoVoRestController<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao> controller,
+			MangoVoRestController<T, AbstractEventHandlerModel<T>, EventHandlerDao<T>> controller,
 			User user) {
 		super(controller);
 		this.user = user;
@@ -37,7 +37,7 @@ public class EventHandlerStreamCallback extends FilteredVoStreamCallback<Abstrac
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredQueryStreamCallback#filter(java.lang.Object)
 	 */
 	@Override
-	protected boolean filter(AbstractEventHandlerVO<?> vo) {
+	protected boolean filter(T vo) {
 		return !Permissions.hasAdminPermission(user);
 	}
 	

@@ -58,13 +58,14 @@ import net.jazdw.rql.parser.ASTNode;
  *
  * @author Terry Packer
  */
+@Deprecated
 @Api(value="Event Detectors", description="All edits will force a data point to restart")
 @RestController()
 @RequestMapping("/event-detectors")
-public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controller<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>>{
+public class EventDetectorRestV2Controller<T extends AbstractEventDetectorVO<T>> extends AbstractMangoVoRestV2Controller<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>>{
     
     @Autowired
-    public EventDetectorRestV2Controller(EventDetectorDao<AbstractEventDetectorVO<?>> dao) {
+    public EventDetectorRestV2Controller(EventDetectorDao<T> dao) {
         super(dao);
     }
 
@@ -75,7 +76,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
             responseContainer="List"
             )
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<QueryDataPageStream<AbstractEventDetectorVO<?>>> queryRQL(
+    public ResponseEntity<QueryDataPageStream<T>> queryRQL(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
@@ -84,9 +85,9 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
             //admin users don't need to filter the results
             return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);
         }else{
-            EventDetectorStreamCallback callback = new EventDetectorStreamCallback(this, user);
-            FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>> stream  =
-                    new FilteredPageQueryStream<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>>(dao,this, node, callback);
+            EventDetectorStreamCallback<T> callback = new EventDetectorStreamCallback<>(this, user);
+            FilteredPageQueryStream<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>> stream  =
+                    new FilteredPageQueryStream<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>>(dao,this, node, callback);
             stream.setupQuery();
             return new ResponseEntity<>(stream, HttpStatus.OK);
         }
@@ -356,7 +357,7 @@ public class EventDetectorRestV2Controller extends AbstractMangoVoRestV2Controll
     }
 
     @Override
-    public AbstractEventDetectorModel<?> createModel(AbstractEventDetectorVO<?> vo) {
+    public AbstractEventDetectorModel<T> createModel(T vo) {
         return vo.asModel();
     }
 

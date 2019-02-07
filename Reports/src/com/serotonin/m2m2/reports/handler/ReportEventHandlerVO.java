@@ -57,7 +57,7 @@ public class ReportEventHandlerVO extends AbstractEventHandlerVO<ReportEventHand
      * @see com.serotonin.m2m2.vo.event.AbstractEventHandlerVO#asModel()
      */
     @Override
-    public AbstractEventHandlerModel<?> asModel() {
+    public AbstractEventHandlerModel<ReportEventHandlerVO> asModel() {
         return new ReportEventHandlerModel(this);
     }
 

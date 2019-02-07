@@ -59,14 +59,14 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data Sources", description="Data Sources")
 @RestController
 @RequestMapping("/data-sources")
-public class DataSourceRestController extends MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>>{
+public class DataSourceRestController<T extends DataSourceVO<T>> extends MangoVoRestController<T, AbstractDataSourceModel<T>, DataSourceDao<T>>{
 
-    private final DataSourceService service;
-    private final BiFunction<DataSourceVO<?>, User, AbstractDataSourceModel<?>> map;
+    private final DataSourceService<T> service;
+    private final BiFunction<T, User, AbstractDataSourceModel<T>> map;
     
     @Autowired
-    public DataSourceRestController(final DataSourceService service, final RestModelMapper modelMapper){
-        super(DataSourceDao.getInstance());
+    public DataSourceRestController(final DataSourceService<T> service, final RestModelMapper modelMapper){
+        super((DataSourceDao<T>) DataSourceDao.getInstance());
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractDataSourceModel.class, user);
@@ -113,9 +113,9 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            List<DataSourceVO<?>> dataSources = DataSourceDao.getInstance().getAll();
+            List<T> dataSources = dao.getAll();
             List<AbstractDataSourceModel<?>> models = new ArrayList<AbstractDataSourceModel<?>>();
-            for(DataSourceVO<?> ds : dataSources){
+            for(T ds : dataSources){
                 try{
                     if(Permissions.hasDataSourcePermission(user, ds))
                         models.add(map.apply(ds, user));
@@ -139,7 +139,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            DataSourceVO<?> vo = DataSourceDao.getInstance().getByXid(xid);
+            T vo = dao.getByXid(xid);
 
             if (vo == null) {
                 return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
@@ -173,7 +173,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            DataSourceVO<?> vo = DataSourceDao.getInstance().get(id);
+            T vo = dao.get(id);
 
             if (vo == null) {
                 return new ResponseEntity<AbstractDataSourceModel<?>>(HttpStatus.NOT_FOUND);
@@ -298,7 +298,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
             }
             else {
                 Common.runtimeManager.saveDataSource(vo);
-                DataSourceVO<?> created = DataSourceDao.getInstance().getByXid(model.getXid());
+                T created = dao.getByXid(model.getXid());
                 URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{created.getXid()}).toUri();
                 result.addRestMessage(this.getResourceCreatedMessage(location));
                 return result.createResponseEntity(map.apply(created, user));
@@ -318,7 +318,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
         RestProcessResult<AbstractDataSourceModel<?>> result = new RestProcessResult<AbstractDataSourceModel<?>>(HttpStatus.OK);
         User user = this.checkUser(request, result);
         if(result.isOk()) {
-            DataSourceVO<?> existing = DataSourceDao.getInstance().getByXid(xid);
+            T existing = dao.getByXid(xid);
             if(existing == null) {
                 result.addRestMessage(this.getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -360,7 +360,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 
         User user = this.checkUser(request, result);
         if(result.isOk()){
-            DataSourceVO<?> existing = DataSourceDao.getInstance().getByXid(xid);
+            T existing = dao.getByXid(xid);
             if (existing == null) {
                 result.addRestMessage(getDoesNotExistMessage());
                 return result.createResponseEntity();
@@ -395,7 +395,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
 
 
             //Setup the Copy
-            DataSourceVO<?> copy = existing.copy();
+            T copy = existing.copy();
             copy.setId(Common.NEW_ID);
             copy.setName(name);
             copy.setXid(newXid);
@@ -457,7 +457,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
     }
 
     @Override
-    public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo) {
+    public AbstractDataSourceModel<T> createModel(T vo) {
         throw new UnsupportedOperationException();
     }
     
@@ -465,7 +465,7 @@ public class DataSourceRestController extends MangoVoRestController<DataSourceVO
      * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
      */
     @Override
-    public AbstractDataSourceModel<?> createModel(DataSourceVO<?> vo, User user) {
+    public AbstractDataSourceModel<T> createModel(T vo, User user) {
         if(vo != null)
             return map.apply(vo, user);
         else

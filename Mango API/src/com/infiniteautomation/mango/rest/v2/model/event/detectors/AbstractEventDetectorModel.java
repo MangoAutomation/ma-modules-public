@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,6 +17,8 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author Terry Packer
  *
@@ -25,10 +29,14 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     public static final String DETECTOR_TYPE = "detectorType";
 
     protected int sourceId;
+    @ApiModelProperty("Read only description of detector")
     protected TranslatableMessage description;
+    @ApiModelProperty("Read only indication if this detector supports return to normal")
     protected boolean rtnApplicable;
     protected AlarmLevels alarmLevel;
-    protected String detectorSourceType;
+    protected String sourceTypeName;
+    @ApiModelProperty("Xids for event handlers tied to this detector.  If supplied in the model it will replace any existing mappings.")
+    protected List<String> handlerXids;
     
     @Override
     public void fromVO(T vo) {
@@ -37,13 +45,16 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         this.description = vo.getDescription();
         this.rtnApplicable = vo.isRtnApplicable();
         this.alarmLevel = vo.getAlarmLevel();
-        this.detectorSourceType = vo.getDetectorSourceType();
+        this.sourceTypeName = vo.getDetectorSourceType();
+        this.handlerXids = vo.getEventHandlerXids();
     }
     
     @Override
     public T toVO() {
         T vo = super.toVO();
         vo.setAlarmLevel(alarmLevel);
+        if(handlerXids != null)
+            vo.setEventHandlerXids(handlerXids);
         return vo;
     }
     
@@ -68,11 +79,10 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     public abstract String getDetectorType();
     
     /**
-     * Our source type name
-     * @return
+     * @return the sourceTypeName
      */
-    public String getDetectorSourceType(){
-        return detectorSourceType;
+    public String getSourceTypeName() {
+        return sourceTypeName;
     }
     
     public boolean isRtnApplicable() {
@@ -96,5 +106,31 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         this.alarmLevel = alarmLevel;
     }
     
-    //TODO List of Event Handlers
+    /**
+     * @return the sourceId
+     */
+    public int getSourceId() {
+        return sourceId;
+    }
+    
+    /**
+     * @param sourceId the sourceId to set
+     */
+    public void setSourceId(int sourceId) {
+        this.sourceId = sourceId;
+    }
+    
+    /**
+     * @return the handlers
+     */
+    public List<String> getHandlerXids() {
+        return handlerXids;
+    }
+    
+    /**
+     * @param handlers the handlers to set
+     */
+    public void setHandlerXids(List<String> handlers) {
+        this.handlerXids = handlers;
+    }
 }

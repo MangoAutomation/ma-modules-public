@@ -52,7 +52,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     public MaintenanceEventVO insert(MaintenanceEventVO vo, PermissionHolder user, boolean full)
             throws PermissionException, ValidationException {
         //Ensure they can create
-        ensureCreatePermission(user);
+        ensureCreatePermission(user, vo);
         
         //Generate an Xid if necessary
         if(StringUtils.isEmpty(vo.getXid()))
@@ -285,7 +285,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     }
 
     @Override
-    public boolean hasCreatePermission(PermissionHolder user) {
+    public boolean hasCreatePermission(PermissionHolder user, MaintenanceEventVO vo) {
         return Permissions.hasDataSourcePermission(user);
     }
 

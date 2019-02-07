@@ -20,7 +20,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(subTypes= {EmailEventHandlerModel.class, SetPointEventHandlerModel.class, ProcessEventHandlerModel.class}, discriminator="handlerType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractEventHandlerModel.HANDLER_TYPE)
-public abstract class AbstractEventHandlerModel extends AbstractVoModel<AbstractEventHandlerVO<?>>{
+public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO<T>> extends AbstractVoModel<T>{
 
     public static final String HANDLER_TYPE = "handlerType";
     
@@ -58,14 +58,14 @@ public abstract class AbstractEventHandlerModel extends AbstractVoModel<Abstract
     
 
     @Override
-    public void fromVO(AbstractEventHandlerVO<?> vo) {
+    public void fromVO(T vo) {
         super.fromVO(vo);
         this.disabled = vo.isDisabled();
     }
     
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
-        AbstractEventHandlerVO<?> vo = super.toVO();
+    public T toVO() {
+        T vo = super.toVO();
         vo.setDisabled(disabled);
         if(eventTypes != null) {
             List<EventType> types = new ArrayList<>();

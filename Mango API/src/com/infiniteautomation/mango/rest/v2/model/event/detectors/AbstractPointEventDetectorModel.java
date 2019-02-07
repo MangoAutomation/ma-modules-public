@@ -39,12 +39,4 @@ public abstract class AbstractPointEventDetectorModel<T extends AbstractPointEve
     public void setDataPoint(DataPointModel dataPoint) {
         this.dataPoint = dataPoint;
     }
-    
-    public int getDataPointId(){
-        return sourceId;
-    }
-    
-    public void setDataPointId(int dataPointId) {
-        this.sourceId = dataPointId;
-    }
 }

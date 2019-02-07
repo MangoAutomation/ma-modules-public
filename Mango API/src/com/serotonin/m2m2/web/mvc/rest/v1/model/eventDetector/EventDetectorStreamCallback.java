@@ -18,7 +18,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.detectors.AbstractEventDe
  * 
  * @author Terry Packer
  */
-public class EventDetectorStreamCallback extends FilteredVoStreamCallback<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>>{
+public class EventDetectorStreamCallback<T extends AbstractEventDetectorVO<T>> extends FilteredVoStreamCallback<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>>{
 
 	private final DataPointFilter filter;
 	
@@ -26,7 +26,7 @@ public class EventDetectorStreamCallback extends FilteredVoStreamCallback<Abstra
 	 * @param controller
 	 */
 	public EventDetectorStreamCallback(
-			IMangoVoRestController<AbstractEventDetectorVO<?>, AbstractEventDetectorModel<?>, EventDetectorDao<AbstractEventDetectorVO<?>>> controller, User user) {
+			IMangoVoRestController<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>> controller, User user) {
 		super(controller);
 		this.filter = new DataPointFilter(user);
 	}
@@ -35,7 +35,7 @@ public class EventDetectorStreamCallback extends FilteredVoStreamCallback<Abstra
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredQueryStreamCallback#filter(java.lang.Object)
 	 */
 	@Override
-	protected boolean filter(AbstractEventDetectorVO<?> vo) {
+	protected boolean filter(T vo) {
 		switch(vo.getDetectorSourceType()){
 		case EventType.EventTypeNames.DATA_POINT:
 		    //The row mapper will not have set the data point vo to the point event detectors

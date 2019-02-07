@@ -277,13 +277,8 @@ describe('Data point service', () => {
         
         let ws;
         const subscription = {
-            sequenceNumber: 0,
-            messageType: 'REQUEST',
-            requestType: 'SUBSCRIPTION',
-            showResultWhenIncomplete: true,
-            showResultWhenComplete: true,
-            anyStatus: true
-        };
+                eventTypes: ['add', 'delete', 'update']
+            };
         const testData = {id: ''};
         const socketOpenDeferred = config.defer();
         const actionFinishedDeferred = config.defer();
@@ -323,7 +318,8 @@ describe('Data point service', () => {
             });
 
             return socketOpenDeferred.promise;
-        }).then(() => {
+        }).then(() => config.delay(1000)).then(() => {
+            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             const dp = new DataPoint({
                 name: 'Node mango client ws',
                 dataSourceXid : 'mango_client_test',

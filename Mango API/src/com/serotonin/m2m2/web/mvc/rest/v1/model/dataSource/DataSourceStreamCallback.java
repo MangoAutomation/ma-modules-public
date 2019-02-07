@@ -20,7 +20,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
  * @author Terry Packer
  *
  */
-public class DataSourceStreamCallback extends VoStreamCallback<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>>{
+public class DataSourceStreamCallback<T extends DataSourceVO<T>> extends VoStreamCallback<T, AbstractDataSourceModel<T>, DataSourceDao<T>>{
 
 	private final User user;
 	
@@ -28,7 +28,7 @@ public class DataSourceStreamCallback extends VoStreamCallback<DataSourceVO<?>, 
 	 * @param controller
 	 */
 	public DataSourceStreamCallback(
-			MangoVoRestController<DataSourceVO<?>, AbstractDataSourceModel<?>, DataSourceDao<DataSourceVO<?>>> controller,
+			MangoVoRestController<T, AbstractDataSourceModel<T>, DataSourceDao<T>> controller,
 			User user) {
 		super(controller);
 		this.user = user;
@@ -41,7 +41,7 @@ public class DataSourceStreamCallback extends VoStreamCallback<DataSourceVO<?>, 
 	 * @throws IOException
 	 */
 	@Override
-	protected void writeJson(DataSourceVO<?> vo) throws IOException{
+	protected void writeJson(T vo) throws IOException{
 		
 		try{
     		if(Permissions.hasDataSourcePermission(user, vo)){
@@ -55,7 +55,7 @@ public class DataSourceStreamCallback extends VoStreamCallback<DataSourceVO<?>, 
 		
 	}
 	@Override
-	protected void writeCsv(DataSourceVO<?> vo) throws IOException{
+	protected void writeCsv(T vo) throws IOException{
 		try{
     		if(Permissions.hasDataSourcePermission(user, vo)){
     			AbstractDataSourceModel<?> model = this.controller.createModel(vo, user);

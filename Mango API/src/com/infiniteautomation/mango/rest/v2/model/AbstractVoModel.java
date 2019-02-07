@@ -15,7 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author Terry Packer
  */
-public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
+public abstract class AbstractVoModel<VO extends AbstractVO<VO>> {
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer id;

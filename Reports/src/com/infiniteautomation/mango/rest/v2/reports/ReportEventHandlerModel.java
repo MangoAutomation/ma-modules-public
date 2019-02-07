@@ -9,7 +9,6 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.handler.ReportEventHandlerDefinition;
 import com.serotonin.m2m2.reports.handler.ReportEventHandlerVO;
-import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 
 import io.swagger.annotations.ApiModel;
 
@@ -19,7 +18,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value="REPORT", parent=AbstractEventHandlerModel.class)
 @JsonTypeName("REPORT")
-public class ReportEventHandlerModel extends AbstractEventHandlerModel {
+public class ReportEventHandlerModel extends AbstractEventHandlerModel<ReportEventHandlerVO> {
 
     private String activeReportXid;
     private String inactiveReportXid;
@@ -61,8 +60,8 @@ public class ReportEventHandlerModel extends AbstractEventHandlerModel {
     }
 
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
-        ReportEventHandlerVO vo = (ReportEventHandlerVO)super.toVO();
+    public ReportEventHandlerVO toVO() {
+        ReportEventHandlerVO vo = super.toVO();
         Integer id =  ReportDao.getInstance().getIdByXid(activeReportXid);
         if(id != null)
             vo.setActiveReportId(id);
@@ -73,7 +72,7 @@ public class ReportEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    public void fromVO(AbstractEventHandlerVO<?> vo) {
+    public void fromVO(ReportEventHandlerVO vo) {
         super.fromVO(vo);
         ReportEventHandlerVO hVo = (ReportEventHandlerVO)vo;
         this.activeReportXid = ReportDao.getInstance().getXidById(hVo.getActiveReportId());
@@ -82,7 +81,7 @@ public class ReportEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    protected AbstractEventHandlerVO<?> newVO() {
+    protected ReportEventHandlerVO newVO() {
         ReportEventHandlerVO vo = new ReportEventHandlerVO();
         vo.setDefinition(ModuleRegistry.getEventHandlerDefinition(ReportEventHandlerDefinition.TYPE_NAME));
         return vo;

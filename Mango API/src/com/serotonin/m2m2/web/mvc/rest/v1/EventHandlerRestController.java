@@ -33,10 +33,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventHandler.EventHandlerStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.events.handlers.AbstractEventHandlerModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -47,7 +47,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Event Handlers", description="REST access to Event Handlers")
 @RestController
 @RequestMapping("/event-handlers")
-public class EventHandlerRestController extends MangoVoRestController<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>{
+public class EventHandlerRestController<T extends AbstractEventHandlerVO<T>> extends MangoVoRestController<T, AbstractEventHandlerModel<T>, EventHandlerDao<T>>{
 
 	private static Log LOG = LogFactory.getLog(EventHandlerRestController.class);
 	
@@ -55,7 +55,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	 * @param dao
 	 */
 	public EventHandlerRestController() {
-		super(EventHandlerDao.getInstance());
+		super((EventHandlerDao<T>) EventHandlerDao.getInstance());
 	}
 
 	@ApiOperation(
@@ -93,16 +93,16 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			responseContainer="List"
 			)
 	@RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<QueryDataPageStream<AbstractEventHandlerVO<?>>> queryRQL(HttpServletRequest request) {
+    public ResponseEntity<QueryDataPageStream<T>> queryRQL(HttpServletRequest request) {
 		
-		RestProcessResult<QueryDataPageStream<AbstractEventHandlerVO<?>>> result = new RestProcessResult<QueryDataPageStream<AbstractEventHandlerVO<?>>>(HttpStatus.OK);
+		RestProcessResult<QueryDataPageStream<T>> result = new RestProcessResult<QueryDataPageStream<T>>(HttpStatus.OK);
     	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
 				ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
-				EventHandlerStreamCallback callback = new EventHandlerStreamCallback(this, user);
-				FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao> stream = 
-						new FilteredPageQueryStream<AbstractEventHandlerVO<?>, AbstractEventHandlerModel<?>, EventHandlerDao>(EventHandlerDao.getInstance(), this, node, callback);
+				EventHandlerStreamCallback<T> callback = new EventHandlerStreamCallback<T>(this, user);
+				FilteredPageQueryStream<T, AbstractEventHandlerModel<T>, EventHandlerDao<T>> stream = 
+						new FilteredPageQueryStream<T, AbstractEventHandlerModel<T>, EventHandlerDao<T>>(dao, this, node, callback);
 				stream.setupQuery();
 				return result.createResponseEntity(stream);
     		}catch(InvalidRQLRestException e){
@@ -123,7 +123,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
     public ResponseEntity<AbstractEventHandlerModel<?>> update(
     		@PathVariable String xid,
     		@ApiParam(value = "Updated model", required = true)
-    		@RequestBody(required=true) AbstractEventHandlerModel<?> model, 
+    		@RequestBody(required=true) AbstractEventHandlerModel<T> model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<AbstractEventHandlerModel<?>> result = new RestProcessResult<AbstractEventHandlerModel<?>>(HttpStatus.OK);
@@ -131,8 +131,8 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 		User user = this.checkUser(request, result);
         if(result.isOk()){
         	
-			AbstractEventHandlerVO<?> vo = model.getData();
-			AbstractEventHandlerVO<?> existing = EventHandlerDao.getInstance().getByXid(xid);
+            T vo = model.getData();
+			T existing = dao.getByXid(xid);
 	        if (existing == null) {
 	    		result.addRestMessage(getDoesNotExistMessage());
 	    		return result.createResponseEntity();
@@ -152,7 +152,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        	return result.createResponseEntity(model); 
 	        }else{
 	        	String initiatorId = request.getHeader("initiatorId");
-	        	EventHandlerDao.getInstance().saveFull(vo, initiatorId);
+	        	dao.saveFull(vo, initiatorId);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -171,7 +171,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 			)
 	@RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractEventHandlerModel<?>> save(
-    		@RequestBody(required=true) AbstractEventHandlerModel<?> model, 
+    		@RequestBody(required=true) AbstractEventHandlerModel<T> model, 
     		UriComponentsBuilder builder, HttpServletRequest request) {
 
 		RestProcessResult<AbstractEventHandlerModel<?>> result = new RestProcessResult<AbstractEventHandlerModel<?>>(HttpStatus.OK);
@@ -194,9 +194,9 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-				AbstractEventHandlerVO<?> vo = model.getData();
+				T vo = model.getData();
 	        	String initiatorId = request.getHeader("initiatorId");
-	        	EventHandlerDao.getInstance().saveFull(vo, initiatorId);
+	        	dao.saveFull(vo, initiatorId);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -244,7 +244,7 @@ public class EventHandlerRestController extends MangoVoRestController<AbstractEv
 	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)
 	 */
 	@Override
-	public AbstractEventHandlerModel<?> createModel(AbstractEventHandlerVO<?> vo) {
+	public AbstractEventHandlerModel<T> createModel(T vo) {
 		if(vo != null)
 			return vo.asModel();
 		else

@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.TableModel;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
-import com.serotonin.m2m2.db.dao.AbstractBasicDao;
-import com.serotonin.m2m2.vo.AbstractBasicVO;
+import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
@@ -36,7 +36,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Terry Packer
  *
  */
-public abstract class MangoVoRestController<VO extends AbstractBasicVO, MODEL, DAO extends AbstractBasicDao<VO>> extends MangoRestController implements IMangoVoRestController<VO, MODEL, DAO>{
+public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL, DAO extends AbstractDao<VO>> extends MangoRestController implements IMangoVoRestController<VO, MODEL, DAO>{
 
     protected DAO dao;
 

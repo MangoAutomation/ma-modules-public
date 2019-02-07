@@ -18,7 +18,6 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.SetPointEventHandlerDefinition;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
 
 import io.swagger.annotations.ApiModel;
@@ -29,7 +28,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value="SET_POINT", parent=AbstractEventHandlerModel.class)
 @JsonTypeName("SET_POINT")
-public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
+public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPointEventHandlerVO> {
 
     private String targetPointXid;
     
@@ -215,7 +214,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     }
 
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
+    public SetPointEventHandlerVO toVO() {
         SetPointEventHandlerVO vo = (SetPointEventHandlerVO)super.toVO();
         Integer targetId = DataPointDao.getInstance().getIdByXid(targetPointXid);
         if(targetId != null)
@@ -258,7 +257,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    public void fromVO(AbstractEventHandlerVO<?> vo) {
+    public void fromVO(SetPointEventHandlerVO vo) {
         super.fromVO(vo);
         SetPointEventHandlerVO handler = (SetPointEventHandlerVO)vo;
         DataPointVO target = DataPointDao.getInstance().get(handler.getTargetPointId());
@@ -300,7 +299,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    protected AbstractEventHandlerVO<?> newVO() {
+    protected SetPointEventHandlerVO newVO() {
         SetPointEventHandlerVO handler = new SetPointEventHandlerVO();
         handler.setDefinition(ModuleRegistry.getEventHandlerDefinition(SetPointEventHandlerDefinition.TYPE_NAME));
         return handler;

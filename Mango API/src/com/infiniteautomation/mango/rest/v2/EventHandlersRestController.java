@@ -46,13 +46,13 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Event Handlers Rest Controller")
 @RestController("EventHandlersRestControllerV2")
 @RequestMapping("/event-handlers")
-public class EventHandlersRestController {
+public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
 
-    private final EventHandlerService service;
-    private final BiFunction<AbstractEventHandlerVO<?>, User, AbstractEventHandlerModel> map;
+    private final EventHandlerService<T> service;
+    private final BiFunction<T, User, AbstractEventHandlerModel<T>> map;
 
     @Autowired
-    public EventHandlersRestController(EventHandlerService service, final RestModelMapper modelMapper) {
+    public EventHandlersRestController(EventHandlerService<T> service, final RestModelMapper modelMapper) {
         this.service = service;
 
         //Map the event types into the model
@@ -60,7 +60,8 @@ public class EventHandlersRestController {
             List<AbstractEventTypeModel<?,?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
                 return (AbstractEventTypeModel<?,?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
             }).collect(Collectors.toList());
-            AbstractEventHandlerModel model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
+            @SuppressWarnings("unchecked")
+            AbstractEventHandlerModel<T> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
             model.setEventTypes(eventTypes);
             return model;
         };
@@ -88,7 +89,7 @@ public class EventHandlersRestController {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
-    public AbstractEventHandlerModel get(
+    public AbstractEventHandlerModel<?> get(
             @ApiParam(value = "XID to get", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
@@ -103,12 +104,12 @@ public class EventHandlersRestController {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<AbstractEventHandlerModel> create(
-            @RequestBody AbstractEventHandlerModel model,
+    public ResponseEntity<AbstractEventHandlerModel<?>> create(
+            @RequestBody AbstractEventHandlerModel<T> model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        AbstractEventHandlerVO<?> vo = service.insertFull(model.toVO(), user);
+        T vo = service.insertFull(model.toVO(), user);
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -121,15 +122,15 @@ public class EventHandlersRestController {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
-    public ResponseEntity<AbstractEventHandlerModel> update(
+    public ResponseEntity<AbstractEventHandlerModel<T>> update(
             @ApiParam(value = "XID of Event Handler to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value = "Event Handler of update", required = true, allowMultiple = false)
-            @RequestBody AbstractEventHandlerModel model,
+            @RequestBody AbstractEventHandlerModel<T> model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        AbstractEventHandlerVO<?> vo = service.updateFull(xid, model.toVO(), user);
+        T vo = service.updateFull(xid, model.toVO(), user);
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -142,19 +143,19 @@ public class EventHandlersRestController {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
-    public ResponseEntity<AbstractEventHandlerModel> partialUpdate(
+    public ResponseEntity<AbstractEventHandlerModel<?>> partialUpdate(
             @PathVariable String xid,
 
             @ApiParam(value = "Updated maintenance event", required = true)
             @PatchVORequestBody(
                     service=EventHandlerService.class,
                     modelClass=AbstractEventHandlerModel.class)
-            AbstractEventHandlerModel model,
+            AbstractEventHandlerModel<T> model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        AbstractEventHandlerVO<?> vo = service.updateFull(xid, model.toVO(), user);
+        T vo = service.updateFull(xid, model.toVO(), user);
         
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -169,7 +170,7 @@ public class EventHandlersRestController {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
-    public ResponseEntity<AbstractEventHandlerModel> delete(
+    public ResponseEntity<AbstractEventHandlerModel<?>> delete(
             @ApiParam(value = "XID of EventHandler to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
@@ -186,7 +187,7 @@ public class EventHandlersRestController {
     @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.POST, value="/validate")
     public void validate(
-            @RequestBody AbstractEventHandlerModel model,
+            @RequestBody AbstractEventHandlerModel<T> model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {

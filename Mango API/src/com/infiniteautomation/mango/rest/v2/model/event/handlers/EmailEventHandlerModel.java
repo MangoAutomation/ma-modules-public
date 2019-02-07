@@ -21,7 +21,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.EmailEventHandlerDefinition;
-import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
@@ -37,7 +36,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value="EMAIL", parent=AbstractEventHandlerModel.class)
 @JsonTypeName("EMAIL")
-public class EmailEventHandlerModel extends AbstractEventHandlerModel {
+public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEventHandlerVO> {
 
     private List<EmailRecipientModel> activeRecipients;
     private boolean sendEscalation;
@@ -293,8 +292,8 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
     }
 
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
-        EmailEventHandlerVO vo = (EmailEventHandlerVO) super.toVO();
+    public EmailEventHandlerVO toVO() {
+        EmailEventHandlerVO vo = super.toVO();
         if(activeRecipients != null) {
             List<RecipientListEntryBean> beans = new ArrayList<>();
             for(EmailRecipientModel model : activeRecipients)
@@ -348,13 +347,12 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    public void fromVO(AbstractEventHandlerVO<?> vo) {
+    public void fromVO(EmailEventHandlerVO vo) {
         super.fromVO(vo);
-        EmailEventHandlerVO handler = (EmailEventHandlerVO)vo;
         
-        if(handler.getActiveRecipients() != null) {
+        if(vo.getActiveRecipients() != null) {
             this.activeRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : handler.getActiveRecipients()) {
+            for(RecipientListEntryBean bean : vo.getActiveRecipients()) {
                 switch(bean.getRecipientType()) {
                     case EmailRecipient.TYPE_ADDRESS:
                         activeRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
@@ -371,14 +369,14 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
             }
         }
         
-        this.sendEscalation = handler.isSendEscalation();
-        this.escalationDelayType = Common.TIME_PERIOD_CODES.getCode(handler.getEscalationDelayType());
-        this.repeatEscalations = handler.isRepeatEscalations();
-        this.escalationDelay = handler.getEscalationDelay();
+        this.sendEscalation = vo.isSendEscalation();
+        this.escalationDelayType = Common.TIME_PERIOD_CODES.getCode(vo.getEscalationDelayType());
+        this.repeatEscalations = vo.isRepeatEscalations();
+        this.escalationDelay = vo.getEscalationDelay();
         
-        if(handler.getEscalationRecipients() != null) {
+        if(vo.getEscalationRecipients() != null) {
             this.escalationRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : handler.getEscalationRecipients()) {
+            for(RecipientListEntryBean bean : vo.getEscalationRecipients()) {
                 switch(bean.getRecipientType()) {
                     case EmailRecipient.TYPE_ADDRESS:
                         escalationRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
@@ -395,12 +393,12 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
             }
         }
         
-        this.sendInactive = handler.isSendInactive();
-        this.inactiveOverride = handler.isInactiveOverride();
+        this.sendInactive = vo.isSendInactive();
+        this.inactiveOverride = vo.isInactiveOverride();
 
-        if(handler.getInactiveRecipients() != null) {
+        if(vo.getInactiveRecipients() != null) {
             this.inactiveRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : handler.getInactiveRecipients()) {
+            for(RecipientListEntryBean bean : vo.getInactiveRecipients()) {
                 switch(bean.getRecipientType()) {
                     case EmailRecipient.TYPE_ADDRESS:
                         inactiveRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
@@ -416,19 +414,19 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
                 }
             }
         }
-        this.includeSystemInfo = handler.isIncludeSystemInfo();
-        this.includePointValueCount = handler.getIncludePointValueCount() == 0 ? null : handler.getIncludePointValueCount();
-        this.includeLogfile = handler.isIncludeLogfile();
-        this.customTemplate = handler.getCustomTemplate();
+        this.includeSystemInfo = vo.isIncludeSystemInfo();
+        this.includePointValueCount = vo.getIncludePointValueCount() == 0 ? null : vo.getIncludePointValueCount();
+        this.includeLogfile = vo.isIncludeLogfile();
+        this.customTemplate = vo.getCustomTemplate();
         
-        this.script = handler.getScript();
+        this.script = vo.getScript();
 
-        if(handler.getScriptPermissions() != null) {
-            this.scriptPermissions = handler.getScriptPermissions().getPermissionsSet();
+        if(vo.getScriptPermissions() != null) {
+            this.scriptPermissions = vo.getScriptPermissions().getPermissionsSet();
         }
-        if(handler.getAdditionalContext() != null) {
+        if(vo.getAdditionalContext() != null) {
             this.scriptContext = new ArrayList<>();
-            for(IntStringPair var : handler.getAdditionalContext()) {
+            for(IntStringPair var : vo.getAdditionalContext()) {
                 String xid = DataPointDao.getInstance().getXidById(var.getKey());
                 if(xid != null) {
                     this.scriptContext.add(new ScriptContextVariableModel(xid, var.getValue()));
@@ -438,7 +436,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    protected AbstractEventHandlerVO<?> newVO() {
+    protected EmailEventHandlerVO newVO() {
         EmailEventHandlerVO handler = new EmailEventHandlerVO();
         handler.setDefinition(ModuleRegistry.getEventHandlerDefinition(EmailEventHandlerDefinition.TYPE_NAME));
         return handler;

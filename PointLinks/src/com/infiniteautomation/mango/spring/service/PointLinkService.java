@@ -73,7 +73,7 @@ public class PointLinkService extends AbstractVOService<PointLinkVO, PointLinkDa
     }
 
     @Override
-    public boolean hasCreatePermission(PermissionHolder user) {
+    public boolean hasCreatePermission(PermissionHolder user, PointLinkVO vo) {
         //Ensure they can create an event
         return Permissions.hasDataSourcePermission(user);
     }

@@ -4,7 +4,9 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.db.query.appender.ReverseEnumColumnQueryAppender;
 import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
+import com.infiniteautomation.mango.db.query.appender.ReverseEnumColumnQueryAppender;
+import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.AuditEventDao;
@@ -27,8 +30,10 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
+import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.audit.AuditEventInstanceModel;
 
 import io.swagger.annotations.Api;
@@ -46,12 +51,21 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Audit System", description="Restore/Read Configuration From History")
 @RestController
 @RequestMapping("/audit")
-public class AuditRestController extends MangoVoRestController<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> {
+public class AuditRestController extends MangoRestController implements IMangoVoRestController<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> {
 
+    private final AuditEventDao dao = AuditEventDao.getInstance();
+    
+    //Map of keys -> model members to value -> Vo member/sql column
+    protected Map<String,String> modelMap;
+    //Map of Vo member/sql column to value converter
+    protected Map<String, SQLColumnQueryAppender> appenders;
+    
     public AuditRestController() {
-        super(AuditEventDao.getInstance());
+        this.appenders = new HashMap<String, SQLColumnQueryAppender>();
         this.appenders.put("alarmLevel", new ReverseEnumColumnQueryAppender<>(AlarmLevels.class));
         this.appenders.put("changeType", new ExportCodeColumnQueryAppender(AuditEventInstanceVO.CHANGE_TYPE_CODES));
+        this.modelMap = new HashMap<String,String>();
+
     }
 
     @ApiOperation(
@@ -106,14 +120,6 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
             info.alarmLevel = vo.getAlarmLevel();
             return info;
         }).collect(Collectors.toList());
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)
-     */
-    @Override
-    public AuditEventInstanceModel createModel(AuditEventInstanceVO vo) {
-        return new AuditEventInstanceModel(vo);
     }
 
     class EventTypeInfo {
@@ -172,4 +178,41 @@ public class AuditRestController extends MangoVoRestController<AuditEventInstanc
         }
     }
 
+    /**
+     * Get a Stream that is more like a result set with a count
+     * @param query
+     * @return
+     */
+    protected PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> getPageStream(ASTNode root){
+        return getPageStream(root, new VoStreamCallback<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>(this));
+    }
+
+    /**
+     * Get a Stream that is more like a result set with a count
+     * @param query
+     * @return
+     */
+    protected PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> getPageStream(ASTNode node, VoStreamCallback<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> callback){
+        PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> stream = new PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>(dao, this, node, callback);
+        //Ensure its ready
+        stream.setupQuery();
+        return stream;
+    }
+
+
+    @Override
+    public AuditEventInstanceModel createModel(AuditEventInstanceVO vo) {
+        return new AuditEventInstanceModel(vo);
+    }
+    
+    @Override
+    public Map getModelMap() {
+        return modelMap;
+    }
+
+    @Override
+    public Map getAppenders() {
+        return appenders;
+    }
+    
 }

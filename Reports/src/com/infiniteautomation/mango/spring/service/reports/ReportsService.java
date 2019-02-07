@@ -84,7 +84,7 @@ public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
     }
     
     @Override
-    public boolean hasCreatePermission(PermissionHolder user) {
+    public boolean hasCreatePermission(PermissionHolder user, ReportVO vo) {
         if(user.hasAdminPermission())
             return true;
         else if(Permissions.hasAnyPermission(user, getReportCreatePermissions()))

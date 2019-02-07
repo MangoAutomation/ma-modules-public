@@ -23,7 +23,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedVORqlQueryWithTotal<T extends AbstractVO<?>, DAO extends AbstractDao<T>, SERVICE extends AbstractVOService<T, DAO>> implements StreamedArrayWithTotal {
+public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, DAO extends AbstractDao<T>, SERVICE extends AbstractVOService<T, DAO>> implements StreamedArrayWithTotal {
     private final SERVICE service;
     private final ConditionSortLimit conditions;
     private final Function<T, ?> toModel;

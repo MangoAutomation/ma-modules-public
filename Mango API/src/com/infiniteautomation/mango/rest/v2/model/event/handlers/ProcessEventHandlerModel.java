@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.ProcessEventHandlerDefinition;
-import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.event.ProcessEventHandlerVO;
 
 import io.swagger.annotations.ApiModel;
@@ -17,7 +16,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel(value="PROCESS", parent=AbstractEventHandlerModel.class)
 @JsonTypeName("PROCESS")
-public class ProcessEventHandlerModel extends AbstractEventHandlerModel {
+public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessEventHandlerVO> {
 
     private String activeProcessCommand;
     private Integer activeProcessTimeout;
@@ -87,8 +86,8 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel {
     }
 
     @Override
-    public AbstractEventHandlerVO<?> toVO() {
-        ProcessEventHandlerVO vo = (ProcessEventHandlerVO)super.toVO();
+    public ProcessEventHandlerVO toVO() {
+        ProcessEventHandlerVO vo = super.toVO();
         vo.setActiveProcessCommand(activeProcessCommand);
         if(activeProcessTimeout != null)
             vo.setActiveProcessTimeout(activeProcessTimeout);
@@ -99,7 +98,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    public void fromVO(AbstractEventHandlerVO<?> vo) {
+    public void fromVO(ProcessEventHandlerVO vo) {
         super.fromVO(vo);
         ProcessEventHandlerVO handler = (ProcessEventHandlerVO)vo;
         this.activeProcessCommand = handler.getActiveProcessCommand();
@@ -109,7 +108,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel {
     }
     
     @Override
-    protected AbstractEventHandlerVO<?> newVO() {
+    protected ProcessEventHandlerVO newVO() {
         ProcessEventHandlerVO handler = new ProcessEventHandlerVO();
         handler.setDefinition(ModuleRegistry.getEventHandlerDefinition(ProcessEventHandlerDefinition.TYPE_NAME));
         return handler;

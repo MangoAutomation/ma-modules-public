@@ -21,75 +21,191 @@ describe('Point Event detector service', function() {
     this.timeout(5000);
     before('Login', config.login);
     
-    it('Creates an event detector', () => {
-        global.ped = {
-          xid : "PED_mango_client_test",
-          name : "When true.",
-          dataPointId : global.numDp.id,
-          alarmLevel : 'URGENT',
-          duration : {
-              periods: 10,
-              type: 'SECONDS'
-          },
-          limit: 10.0,
-          resetLimit: 9.0,
-          useResetLimit: true,
-          notHigher: false,
-          detectorType : "HIGH_LIMIT",
-        };
+    const highLimitPed = {
+                name : "When true.",
+                alarmLevel : 'URGENT',
+                duration : {
+                    periods: 10,
+                    type: 'SECONDS'
+                },
+                limit: 10.0,
+                resetLimit: 9.0,
+                useResetLimit: true,
+                notHigher: false,
+                detectorType : "HIGH_LIMIT",
+    };
+    
+    it('Creates a HIGH_LIMIT event detector', () => {
+        highLimitPed.sourceId = numDp.id;
         return client.restRequest({
-            path: '/rest/v2/point-event-detectors',
+            path: '/rest/v2/full-event-detectors',
             method: 'POST',
-            data: global.ped
+            data: highLimitPed
         }).then(response => {
-            assert.strictEqual(response.data.name, global.ped.name);
-            assert.strictEqual(response.data.dataPointId, global.ped.dataPointId);
-            assert.strictEqual(response.data.alarmLevel, global.ped.alarmLevel);
             
-            assert.strictEqual(response.data.duration.periods, global.ped.duration.periods);
-            assert.strictEqual(response.data.duration.type, global.ped.duration.type);
+            assert.strictEqual(response.data.name, highLimitPed.name);
+            assert.strictEqual(response.data.sourceId, highLimitPed.sourceId);
+            assert.strictEqual(response.data.alarmLevel, highLimitPed.alarmLevel);
             
-            assert.strictEqual(response.data.limit, global.ped.limit);
-            assert.strictEqual(response.data.resetLimit, global.ped.resetLimit);
-            assert.strictEqual(response.data.useResetLimit, global.ped.useResetLimit);
-            assert.strictEqual(response.data.notHigher, global.ped.notHigher);
-
-            global.ped.id = response.data.id;
+            assert.strictEqual(response.data.duration.periods, highLimitPed.duration.periods);
+            assert.strictEqual(response.data.duration.type, highLimitPed.duration.type);
+            
+            assert.strictEqual(response.data.limit, highLimitPed.limit);
+            assert.strictEqual(response.data.resetLimit, highLimitPed.resetLimit);
+            assert.strictEqual(response.data.useResetLimit, highLimitPed.useResetLimit);
+            assert.strictEqual(response.data.notHigher, highLimitPed.notHigher);
+            
+            assert.strictEqual(response.data.dataPoint.id, highLimitPed.sourceId);
+            assert.strictEqual(response.data.dataPoint.xid, numDp.xid);
+            assert.strictEqual(response.data.dataPoint.pointLocator.dataType, numDp.pointLocator.dataType);
+            
+            
+            highLimitPed.xid = response.data.xid;
+            highLimitPed.id = response.data.id;
         }, error => {
             if(error.status === 422){
                 printValidationErrors(error.data);
             }else
                 assert.fail(error);
         });
-      });
+    });
+    
+    it('Add event handler to a HIGH_LIMIT event detector', () => {
+        highLimitPed.handlerXids = [staticValueSetPointEventHandler.xid];
+        return client.restRequest({
+            path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+            method: 'PUT',
+            data: highLimitPed
+        }).then(response => {
+            assert.strictEqual(response.data.name, highLimitPed.name);
+            assert.strictEqual(response.data.sourceId, highLimitPed.sourceId);
+            assert.strictEqual(response.data.alarmLevel, highLimitPed.alarmLevel);
+            
+            assert.strictEqual(response.data.duration.periods, highLimitPed.duration.periods);
+            assert.strictEqual(response.data.duration.type, highLimitPed.duration.type);
+            
+            assert.strictEqual(response.data.limit, highLimitPed.limit);
+            assert.strictEqual(response.data.resetLimit, highLimitPed.resetLimit);
+            assert.strictEqual(response.data.useResetLimit, highLimitPed.useResetLimit);
+            assert.strictEqual(response.data.notHigher, highLimitPed.notHigher);
+            
+            assert.strictEqual(response.data.handlerXids.length, highLimitPed.handlerXids.length);
+            for(var i=0; i<response.data.handlerXids.length; i++)
+                assert.strictEqual(response.data.handlerXids[i], highLimitPed.handlerXids[i]);
+            
+        }, error => {
+            if(error.status === 422){
+                printValidationErrors(error.data);
+            }else
+                assert.fail(error);
+        });
+    });
+    
+    it('Fail to add non-existant event handler from a HIGH_LIMIT event detector', () => {
+        const oldHandlerXids = highLimitPed.handlerXids.slice();
+        highLimitPed.handlerXids = ['nothing-at-all'];
+        return client.restRequest({
+            path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+            method: 'PUT',
+            data: highLimitPed
+        }).then(response => {
+            highLimitPed.handlerXids = oldHandlerXids;
+            assert.fail('Should have been invalid');
+        }, error => {
+            highLimitPed.handlerXids = oldHandlerXids;
+            if(error.status !== 422){
+                assert.fail('Should have been invalid');
+            }
+        });
+    });
+    
+    it('Get a HIGH_LIMIT event detector', () => {
+        return client.restRequest({
+            path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+            method: 'GET'
+        }).then(response => {
+            assert.strictEqual(response.data.name, highLimitPed.name);
+            assert.strictEqual(response.data.sourceId, highLimitPed.sourceId);
+            assert.strictEqual(response.data.alarmLevel, highLimitPed.alarmLevel);
+            
+            assert.strictEqual(response.data.duration.periods, highLimitPed.duration.periods);
+            assert.strictEqual(response.data.duration.type, highLimitPed.duration.type);
+            
+            assert.strictEqual(response.data.limit, highLimitPed.limit);
+            assert.strictEqual(response.data.resetLimit, highLimitPed.resetLimit);
+            assert.strictEqual(response.data.useResetLimit, highLimitPed.useResetLimit);
+            assert.strictEqual(response.data.notHigher, highLimitPed.notHigher);
+            
+            assert.strictEqual(response.data.handlerXids.length, highLimitPed.handlerXids.length);
+            for(var i=0; i<response.data.handlerXids.length; i++)
+                assert.strictEqual(response.data.handlerXids[i], highLimitPed.handlerXids[i]);
+            
+        }, error => {
+            if(error.status === 422){
+                printValidationErrors(error.data);
+            }else
+                assert.fail(error);
+        });
+    });
+    
+    it('Remove event handler from a HIGH_LIMIT event detector', () => {
+        highLimitPed.handlerXids = [];
+        return client.restRequest({
+            path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+            method: 'PUT',
+            data: highLimitPed
+        }).then(response => {
+            assert.strictEqual(response.data.name, highLimitPed.name);
+            assert.strictEqual(response.data.sourceId, highLimitPed.sourceId);
+            assert.strictEqual(response.data.alarmLevel, highLimitPed.alarmLevel);
+            
+            assert.strictEqual(response.data.duration.periods, highLimitPed.duration.periods);
+            assert.strictEqual(response.data.duration.type, highLimitPed.duration.type);
+            
+            assert.strictEqual(response.data.limit, highLimitPed.limit);
+            assert.strictEqual(response.data.resetLimit, highLimitPed.resetLimit);
+            assert.strictEqual(response.data.useResetLimit, highLimitPed.useResetLimit);
+            assert.strictEqual(response.data.notHigher, highLimitPed.notHigher);
+            
+            assert.strictEqual(response.data.handlerXids.length, highLimitPed.handlerXids.length);
+            for(var i=0; i<response.data.handlerXids.length; i++)
+                assert.strictEqual(response.data.handlerXids[i], highLimitPed.handlerXids[i]);
+            
+        }, error => {
+            if(error.status === 422){
+                printValidationErrors(error.data);
+            }else
+                assert.fail(error);
+        });
+    });
     
     it('Query point event detector on xid', () => {
         return client.restRequest({
-            path: `/rest/v2/point-event-detectors?xid=${global.ped.xid}`,
+            path: `/rest/v2/full-event-detectors?xid=${highLimitPed.xid}`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.total, 1);
-            assert.strictEqual(response.data.items[0].xid, global.ped.xid);
+            assert.strictEqual(response.data.items[0].xid, highLimitPed.xid);
         });
       });
     
     it('Query point event detector on data point id', () => {
         return client.restRequest({
-            path: `/rest/v2/point-event-detectors?dataPointId=${global.ped.dataPointId}`,
+            path: `/rest/v2/full-event-detectors?sourceId=${highLimitPed.sourceId}`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.total, 1);
-            assert.strictEqual(response.data.items[0].xid, global.ped.xid);
+            assert.strictEqual(response.data.items[0].xid, highLimitPed.xid);
         });
       });
     
     it('Query point event detector on source type name', () => {
         return client.restRequest({
-            path: `/rest/v2/point-event-detectors?detectorSourceType=DATA_POINT`,
+            path: `/rest/v2/full-event-detectors?detectorSourceType=DATA_POINT`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.total, 1);
-            assert.strictEqual(response.data.items[0].xid, global.ped.xid);
+            assert.strictEqual(response.data.items[0].xid, highLimitPed.xid);
         });
       });
     
@@ -100,301 +216,159 @@ describe('Point Event detector service', function() {
         }
         assert.fail(messages);
     }
+
+    //Data Points and Sources for tests
+    
+    const ds = new DataSource({
+        name: 'Mango client test',
+        enabled: false,
+        modelType: 'VIRTUAL',
+        pollPeriod: { periods: 5, type: 'SECONDS' },
+        purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
+        alarmLevels: { POLL_ABORTED: 'URGENT' },
+        editPermission: null
+    });
+    
+    const dp = new DataPoint({
+        name: 'Virtual Test Point 1',
+        pointLocator : {
+            startValue : "true",
+            modelType : "PL.VIRTUAL",
+            dataType : "BINARY",
+            settable : true,
+            changeType : "ALTERNATE_BOOLEAN",
+        }
+    });
+    
+    const numDp = new DataPoint({
+        name: 'Virtual Test Point 2',
+        pointLocator : {
+            startValue : "0",
+            modelType : "PL.VIRTUAL",
+            dataType : "NUMERIC",
+            settable : true,
+            changeType : "NO_CHANGE",
+        }
+    });
+    
+    const mulDp = new DataPoint({
+        name: 'Virtual Test Point 3',
+        pointLocator : {
+            startValue : "3",
+            modelType : "PL.VIRTUAL",
+            dataType : "MULTISTATE",
+            settable : true,
+            changeType : "NO_CHANGE",
+        }
+    });
+    
+    const alphaDp = new DataPoint({
+        name: 'Virtual Test Point 4',
+        pointLocator : {
+            startValue : "",
+            modelType : "PL.VIRTUAL",
+            dataType : "ALPHANUMERIC",
+            settable : true,
+            changeType : "NO_CHANGE",
+        }
+    });
     
     before('Create data source and points', function() {
-      global.ds = new DataSource({
-          xid: 'mango_client_test',
-          name: 'Mango client test',
-          enabled: true,
-          modelType: 'VIRTUAL',
-          pollPeriod: { periods: 5, type: 'SECONDS' },
-          purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
-          alarmLevels: { POLL_ABORTED: 'URGENT' },
-          editPermission: null
-      });
 
-      return global.ds.save().then((savedDs) => {
-          assert.strictEqual(savedDs, global.ds);
-          assert.equal(savedDs.xid, 'mango_client_test');
+      return ds.save().then((savedDs) => {
+          assert.strictEqual(savedDs, ds);
           assert.equal(savedDs.name, 'Mango client test');
           assert.isNumber(savedDs.id);
-          global.ds.id = savedDs.id;
+          ds.xid = savedDs.xid;
+          ds.id = savedDs.id;
 
           let promises = [];
-          global.dp = new DataPoint({
-                xid : "dp_mango_client_test",
-                deviceName : "_",
-                name : "Virtual Test Point 1",
-                enabled : false,
-                templateXid : "Binary_Default",
-                loggingProperties : {
-                  tolerance : 0.0,
-                  discardExtremeValues : false,
-                  discardLowLimit : -1.7976931348623157E308,
-                  discardHighLimit : 1.7976931348623157E308,
-                  loggingType : "ON_CHANGE",
-                  intervalLoggingType: "INSTANT",
-                  intervalLoggingPeriod : {
-                    periods : 15,
-                    type : "MINUTES"
-                  },
-                  overrideIntervalLoggingSamples : false,
-                  intervalLoggingSampleWindowSize : 0,
-                  cacheSize : 1
-                },
-                textRenderer : {
-                  zeroLabel : "zero",
-                  zeroColour : "blue",
-                  oneLabel : "one",
-                  oneColour : "black",
-                  type : "textRendererBinary"
-                },
-                chartRenderer : {
-                  limit : 10,
-                  type : "chartRendererTable"
-                },
-                dataSourceXid : "mango_client_test",
-                useIntegralUnit : false,
-                useRenderedUnit : false,
-                readPermission : "read",
-                setPermission : "write",
-                chartColour : "",
-                rollup : "NONE",
-                plotType : "STEP",
-                purgeOverride : false,
-                purgePeriod : {
-                  periods : 1,
-                  type : "YEARS"
-                },
-                unit : "",
-                pointFolderId : 0,
-                integralUnit : "s",
-                renderedUnit : "",
-                modelType : "DATA_POINT",
-                pointLocator : {
-                  startValue : "true",
-                  modelType : "PL.VIRTUAL",
-                  dataType : "BINARY",
-                  settable : true,
-                  changeType : "ALTERNATE_BOOLEAN",
-                  relinquishable : false
-                }
-              });
-
-          promises.push(global.dp.save().then((savedDp) => {
-            assert.equal(savedDp.xid, 'dp_mango_client_test');
+          
+          dp.dataSourceXid = ds.xid;
+          promises.push(dp.save().then((savedDp) => {
             assert.equal(savedDp.name, 'Virtual Test Point 1');
             assert.equal(savedDp.enabled, false);
             assert.isNumber(savedDp.id);
-            global.dp.id = savedDp.id; //Save the ID for later
+            dp.xid = savedDp.xid;
+            dp.id = savedDp.id; //Save the ID for later
           }));
 
-          global.numDp = new DataPoint({
-              xid : "dp_mango_client_test_num",
-              deviceName : "_",
-              name : "Virtual Test Point 3",
-              enabled : false,
-              templateXid : "Numeric_Default",
-              loggingProperties : {
-                tolerance : 0.0,
-                discardExtremeValues : false,
-                discardLowLimit : -1.7976931348623157E308,
-                discardHighLimit : 1.7976931348623157E308,
-                loggingType : "ON_CHANGE",
-                intervalLoggingType: "INSTANT",
-                intervalLoggingPeriod : {
-                  periods : 15,
-                  type : "MINUTES"
-                },
-                overrideIntervalLoggingSamples : false,
-                intervalLoggingSampleWindowSize : 0,
-                cacheSize : 1
-              },
-              textRenderer : {
-                  unit : "",
-                  renderedUnit:"",
-                  suffix:"",
-                  type : "textRendererPlain"
-              },
-              chartRenderer : {
-                limit : 10,
-                type : "chartRendererTable"
-              },
-              dataSourceXid : "mango_client_test",
-              useIntegralUnit : false,
-              useRenderedUnit : false,
-              readPermission : "read",
-              setPermission : "write",
-              chartColour : "",
-              rollup : "NONE",
-              plotType : "STEP",
-              purgeOverride : false,
-              purgePeriod : {
-                periods : 1,
-                type : "YEARS"
-              },
-              unit : "",
-              pointFolderId : 0,
-              integralUnit : "s",
-              renderedUnit : "",
-              modelType : "DATA_POINT",
-              pointLocator : {
-                startValue : "true",
-                modelType : "PL.VIRTUAL",
-                dataType : "NUMERIC",
-                settable : true,
-                changeType : "NO_CHANGE",
-                relinquishable : false
-              }
-            });
+          numDp.dataSourceXid = ds.xid;
+          promises.push(numDp.save().then((savedDp) => {
+            assert.equal(savedDp.name, 'Virtual Test Point 2');
+            assert.equal(savedDp.enabled, false);
+            assert.isNumber(savedDp.id);
+            numDp.xid = savedDp.xid;
+            numDp.id = savedDp.id; //Save the ID for later
+          }));
 
-          promises.push(global.numDp.save().then((savedDp) => {
-          assert.equal(savedDp.xid, 'dp_mango_client_test_num');
-          assert.equal(savedDp.name, 'Virtual Test Point 3');
-          assert.equal(savedDp.enabled, false);
-          assert.isNumber(savedDp.id);
-          global.numDp.id = savedDp.id; //Save the ID for later
-        }));
-
-        global.mulDp = new DataPoint({
-            xid : "dp_mango_client_test_mul",
-            deviceName : "_",
-            name : "Virtual Test Point 4",
-            enabled : false,
-            templateXid : "Multistate_Default",
-            loggingProperties : {
-              tolerance : 0.0,
-              discardExtremeValues : false,
-              discardLowLimit : -1.7976931348623157E308,
-              discardHighLimit : 1.7976931348623157E308,
-              loggingType : "ON_CHANGE",
-              intervalLoggingType: "INSTANT",
-              intervalLoggingPeriod : {
-                periods : 15,
-                type : "MINUTES"
-              },
-              overrideIntervalLoggingSamples : false,
-              intervalLoggingSampleWindowSize : 0,
-              cacheSize : 1
-            },
-            textRenderer : {
-                unit : "",
-                renderedUnit:"",
-                suffix:"",
-                type : "textRendererPlain"
-            },
-            chartRenderer : {
-              limit : 10,
-              type : "chartRendererTable"
-            },
-            dataSourceXid : "mango_client_test",
-            useIntegralUnit : false,
-            useRenderedUnit : false,
-            readPermission : "read",
-            setPermission : "write",
-            chartColour : "",
-            rollup : "NONE",
-            plotType : "STEP",
-            purgeOverride : false,
-            purgePeriod : {
-              periods : 1,
-              type : "YEARS"
-            },
-            unit : "",
-            pointFolderId : 0,
-            integralUnit : "s",
-            renderedUnit : "",
-            modelType : "DATA_POINT",
-            pointLocator : {
-              startValue : "3",
-              modelType : "PL.VIRTUAL",
-              dataType : "MULTISTATE",
-              settable : true,
-              changeType : "NO_CHANGE",
-              relinquishable : false
-            }
-          });
-
-    promises.push(global.mulDp.save().then((savedDp) => {
-        assert.equal(savedDp.xid, 'dp_mango_client_test_mul');
-        assert.equal(savedDp.name, 'Virtual Test Point 4');
-        assert.equal(savedDp.enabled, false);
-        assert.isNumber(savedDp.id);
-        global.mulDp.id = savedDp.id; //Save the ID for later
-      }));
-
-          global.alphaDp = new DataPoint({
-              xid : "dp_mango_client_test_alpha",
-              deviceName : "_",
-              name : "Virtual Test Point 2",
-              enabled : false,
-              templateXid : "Alphanumeric_Default",
-              loggingProperties : {
-                tolerance : 0.0,
-                discardExtremeValues : false,
-                discardLowLimit : -1.7976931348623157E308,
-                discardHighLimit : 1.7976931348623157E308,
-                loggingType : "ON_CHANGE",
-                intervalLoggingType: "INSTANT",
-                intervalLoggingPeriod : {
-                  periods : 15,
-                  type : "MINUTES"
-                },
-                overrideIntervalLoggingSamples : false,
-                intervalLoggingSampleWindowSize : 0,
-                cacheSize : 1
-              },
-              textRenderer : {
-                unit : "",
-                renderedUnit:"",
-                suffix:"",
-                type : "textRendererPlain"
-              },
-              chartRenderer : {
-                limit : 10,
-                type : "chartRendererTable"
-              },
-              dataSourceXid : "mango_client_test",
-              useIntegralUnit : false,
-              useRenderedUnit : false,
-              readPermission : "read",
-              setPermission : "write",
-              chartColour : "",
-              rollup : "NONE",
-              plotType : "STEP",
-              purgeOverride : false,
-              purgePeriod : {
-                periods : 1,
-                type : "YEARS"
-              },
-              unit : "",
-              pointFolderId : 0,
-              integralUnit : "s",
-              renderedUnit : "",
-              modelType : "DATA_POINT",
-              pointLocator : {
-                startValue : "",
-                modelType : "PL.VIRTUAL",
-                dataType : "ALPHANUMERIC",
-                settable : true,
-                changeType : "NO_CHANGE",
-                relinquishable : false
-              }
-            });
-
-      promises.push(global.alphaDp.save().then((savedDp) => {
-          assert.equal(savedDp.xid, 'dp_mango_client_test_alpha');
-          assert.equal(savedDp.name, 'Virtual Test Point 2');
-          assert.equal(savedDp.enabled, false);
-          assert.isNumber(savedDp.id);
-          global.alphaDp.id = savedDp.id; //Save the ID for later
-        }));
+          mulDp.dataSourceXid = ds.xid;
+          promises.push(mulDp.save().then((savedDp) => {
+            assert.equal(savedDp.name, 'Virtual Test Point 3');
+            assert.equal(savedDp.enabled, false);
+            assert.isNumber(savedDp.id);
+            mulDp.xid = savedDp.xid;
+            mulDp.id = savedDp.id; //Save the ID for later
+          }));
+          
+          alphaDp.dataSourceXid = ds.xid;
+          promises.push(alphaDp.save().then((savedDp) => {
+            assert.equal(savedDp.name, 'Virtual Test Point 4');
+            assert.equal(savedDp.enabled, false);
+            assert.isNumber(savedDp.id);
+            alphaDp.xid = savedDp.xid;
+            alphaDp.id = savedDp.id; //Save the ID for later
+          }));
       return Promise.all(promises);
       });
     });
 
+    const staticValueSetPointEventHandler = {
+            name : "Testing setpoint",
+            disabled : false,
+            activeAction : "STATIC_VALUE",
+            inactiveAction : "STATIC_VALUE",
+            activeValueToSet : 1,
+            inactiveValueToSet : 2,
+            eventTypes: null,
+            handlerType : "SET_POINT"
+          };
+    before('Create static set point event handler', () => {
+        staticValueSetPointEventHandler.targetPointXid = numDp.xid;
+        return client.restRequest({
+            path: '/rest/v2/event-handlers',
+            method: 'POST',
+            data: staticValueSetPointEventHandler
+        }).then(response => {
+            staticValueSetPointEventHandler.xid = response.data.xid;
+            assert.strictEqual(response.data.name, staticValueSetPointEventHandler.name);
+            assert.strictEqual(response.data.disabled, staticValueSetPointEventHandler.disabled);
+
+            assert.strictEqual(response.data.activePointXid, staticValueSetPointEventHandler.activePointXid);
+            assert.strictEqual(response.data.inactivePointXid, staticValueSetPointEventHandler.inactivePointXid);
+            assert.strictEqual(response.data.activeAction, staticValueSetPointEventHandler.activeAction);
+            assert.strictEqual(response.data.inactiveAction, staticValueSetPointEventHandler.inactiveAction);
+            assert.strictEqual(response.data.activeValueToSet, staticValueSetPointEventHandler.activeValueToSet);
+            assert.strictEqual(response.data.inactiveValueToSet, staticValueSetPointEventHandler.inactiveValueToSet);
+
+            assert.isNumber(response.data.id);
+        });
+    });
+    
     //Clean up when done
     after('Deletes the new virtual data source and its points to clean up', () => {
-        return DataSource.delete('mango_client_test');
+        return DataSource.delete(ds.xid);
     });
+    
+    after('Delete static set point handler', () => {
+        return client.restRequest({
+            path: `/rest/v2/event-handlers/${staticValueSetPointEventHandler.xid}`,
+            method: 'DELETE',
+            data: {}
+        }).then(response => {
+
+        });
+    });
+    
+
 });
