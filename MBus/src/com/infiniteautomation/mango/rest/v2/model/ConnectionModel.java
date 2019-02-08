@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import io.swagger.annotations.ApiModel;
@@ -14,6 +15,10 @@ import net.sf.mbus4j.Connection;
  */
 @ApiModel(subTypes= {ConnectionModel.class, SerialPortConnectionModel.class, TcpIpConnectionModel.class}, discriminator="modelType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=ConnectionModel.MODEL_TYPE)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = TcpIpConnectionModel.class, name="mbusTcpIp"),
+    @JsonSubTypes.Type(value = SerialPortConnectionModel.class, name="mbusSerial")
+})
 public abstract class ConnectionModel <T extends Connection>{
     
     public static final String MODEL_TYPE = "modelType";

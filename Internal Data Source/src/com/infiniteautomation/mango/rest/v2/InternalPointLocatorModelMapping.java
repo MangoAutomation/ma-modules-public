@@ -5,8 +5,8 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.internal.InternalPointLocatorModel;
 import com.serotonin.m2m2.internal.InternalPointLocatorVO;
 import com.serotonin.m2m2.vo.User;
@@ -19,7 +19,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class InternalPointLocatorModelMapping implements RestModelMapping<InternalPointLocatorVO, InternalPointLocatorModel> {
+public class InternalPointLocatorModelMapping implements RestModelJacksonMapping<InternalPointLocatorVO, InternalPointLocatorModel> {
 
     @Override
     public Class<? extends InternalPointLocatorVO> fromClass() {
@@ -34,6 +34,11 @@ public class InternalPointLocatorModelMapping implements RestModelMapping<Intern
     @Override
     public InternalPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
         return new InternalPointLocatorModel((InternalPointLocatorVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return InternalPointLocatorModel.TYPE_NAME;
     }
 
 }

@@ -5,9 +5,10 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.VirtualDataSourceModel;
+import com.serotonin.m2m2.virtual.VirtualDataSourceDefinition;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 import com.serotonin.m2m2.vo.User;
 
@@ -16,7 +17,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class VirtualDataSourceModelMapping implements RestModelMapping<VirtualDataSourceVO, VirtualDataSourceModel> {
+public class VirtualDataSourceModelMapping implements RestModelJacksonMapping<VirtualDataSourceVO, VirtualDataSourceModel> {
 
     @Override
     public Class<? extends VirtualDataSourceVO> fromClass() {
@@ -31,6 +32,11 @@ public class VirtualDataSourceModelMapping implements RestModelMapping<VirtualDa
     @Override
     public VirtualDataSourceModel map(Object from, User user, RestModelMapper mapper) {
         return new VirtualDataSourceModel((VirtualDataSourceVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return VirtualDataSourceDefinition.TYPE_NAME;
     }
 
 }

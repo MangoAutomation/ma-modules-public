@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 import com.serotonin.m2m2.envcan.EnvCanPointLocatorModel;
 import com.serotonin.m2m2.envcan.EnvCanPointLocatorVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelJacksonMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapper;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapping;
 
 /**
  * @author Terry Packer
  *
  */
 @Component
-public class EnvCanPointLocatorModelMapping implements RestModelMapping<EnvCanPointLocatorVO, EnvCanPointLocatorModel> {
+public class EnvCanPointLocatorModelMapping implements RestModelJacksonMapping<EnvCanPointLocatorVO, EnvCanPointLocatorModel> {
 
     @Override
     public Class<? extends EnvCanPointLocatorVO> fromClass() {
@@ -31,6 +31,11 @@ public class EnvCanPointLocatorModelMapping implements RestModelMapping<EnvCanPo
     @Override
     public EnvCanPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
         return new EnvCanPointLocatorModel((EnvCanPointLocatorVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return EnvCanPointLocatorModel.TYPE_NAME;
     }
 
 }

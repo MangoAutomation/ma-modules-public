@@ -5,8 +5,8 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.serial.vo.SerialPointLocatorModel;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.vo.User;
@@ -19,7 +19,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class SerialPointLocatorModelMapping implements RestModelMapping<SerialPointLocatorVO, SerialPointLocatorModel> {
+public class SerialPointLocatorModelMapping implements RestModelJacksonMapping<SerialPointLocatorVO, SerialPointLocatorModel> {
 
     @Override
     public Class<? extends SerialPointLocatorVO> fromClass() {
@@ -36,4 +36,8 @@ public class SerialPointLocatorModelMapping implements RestModelMapping<SerialPo
         return new SerialPointLocatorModel((SerialPointLocatorVO)from);
     }
 
+    @Override
+    public String getTypeName() {
+        return SerialPointLocatorModel.TYPE_NAME;
+    }
 }

@@ -5,8 +5,8 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.envcan.EnvCanPointLocatorModel;
 import com.serotonin.m2m2.envcan.EnvCanPointLocatorVO;
 import com.serotonin.m2m2.vo.User;
@@ -19,7 +19,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class EnvCanPointLocatorModelMapping implements RestModelMapping<EnvCanPointLocatorVO, EnvCanPointLocatorModel> {
+public class EnvCanPointLocatorModelMapping implements RestModelJacksonMapping<EnvCanPointLocatorVO, EnvCanPointLocatorModel> {
 
     @Override
     public Class<? extends EnvCanPointLocatorVO> fromClass() {
@@ -34,6 +34,11 @@ public class EnvCanPointLocatorModelMapping implements RestModelMapping<EnvCanPo
     @Override
     public EnvCanPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
         return new EnvCanPointLocatorModel((EnvCanPointLocatorVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return EnvCanPointLocatorModel.TYPE_NAME;
     }
 
 }

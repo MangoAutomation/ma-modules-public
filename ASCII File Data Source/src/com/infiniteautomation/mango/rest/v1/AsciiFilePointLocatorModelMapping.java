@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorModel;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelJacksonMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapper;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapping;
 
 /**
  * @author Terry Packer
  *
  */
 @Component
-public class AsciiFilePointLocatorModelMapping implements RestModelMapping<AsciiFilePointLocatorVO, AsciiFilePointLocatorModel> {
+public class AsciiFilePointLocatorModelMapping implements RestModelJacksonMapping<AsciiFilePointLocatorVO, AsciiFilePointLocatorModel> {
 
     @Override
     public Class<? extends AsciiFilePointLocatorVO> fromClass() {
@@ -31,6 +31,11 @@ public class AsciiFilePointLocatorModelMapping implements RestModelMapping<Ascii
     @Override
     public AsciiFilePointLocatorModel map(Object from, User user, RestModelMapper mapper) {
         return new AsciiFilePointLocatorModel((AsciiFilePointLocatorVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return AsciiFilePointLocatorModel.TYPE_NAME;
     }
 
 }

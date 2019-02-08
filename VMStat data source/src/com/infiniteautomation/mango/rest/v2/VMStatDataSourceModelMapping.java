@@ -5,9 +5,10 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.VMStatDataSourceModel;
+import com.serotonin.m2m2.vmstat.VMStatDataSourceDefinition;
 import com.serotonin.m2m2.vmstat.VMStatDataSourceVO;
 import com.serotonin.m2m2.vo.User;
 
@@ -16,7 +17,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class VMStatDataSourceModelMapping implements RestModelMapping<VMStatDataSourceVO, VMStatDataSourceModel> {
+public class VMStatDataSourceModelMapping implements RestModelJacksonMapping<VMStatDataSourceVO, VMStatDataSourceModel> {
 
     @Override
     public Class<? extends VMStatDataSourceVO> fromClass() {
@@ -31,6 +32,11 @@ public class VMStatDataSourceModelMapping implements RestModelMapping<VMStatData
     @Override
     public VMStatDataSourceModel map(Object from, User user, RestModelMapper mapper) {
         return new VMStatDataSourceModel((VMStatDataSourceVO)from);
+    }   
+    
+    @Override
+    public String getTypeName() {
+        return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;
     }
 
 }

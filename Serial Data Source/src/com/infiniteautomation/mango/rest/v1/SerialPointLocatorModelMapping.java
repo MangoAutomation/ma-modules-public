@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.serial.vo.SerialPointLocatorModel;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelJacksonMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapper;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapping;
 
 /**
  * @author Terry Packer
  *
  */
 @Component
-public class SerialPointLocatorModelMapping implements RestModelMapping<SerialPointLocatorVO, SerialPointLocatorModel> {
+public class SerialPointLocatorModelMapping implements RestModelJacksonMapping<SerialPointLocatorVO, SerialPointLocatorModel> {
 
     @Override
     public Class<? extends SerialPointLocatorVO> fromClass() {
@@ -31,6 +31,11 @@ public class SerialPointLocatorModelMapping implements RestModelMapping<SerialPo
     @Override
     public SerialPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
         return new SerialPointLocatorModel((SerialPointLocatorVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return SerialPointLocatorModel.TYPE_NAME;
     }
 
 }

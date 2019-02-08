@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
+const uuidV4 = require('uuid/v4');
 const config = require('@infinite-automation/mango-client/test/setup');
 
-describe('Test MBus Data Source REST', function() {
+describe('Legacy MBus Data Source tests ', function() {
     before('Login', config.login);
 
     it('Create MBus Serial data source', () => {
@@ -227,10 +228,13 @@ describe('Test MBus Data Source REST', function() {
     it('Deletes the new tcpip MBus data source and its point', () => {
         return DataSource.delete('DS_MBUS_TCPIP_TEST');
     });
+});
+
+describe('Test MBus Data Source v1 ', function() {
+    before('Login', config.login);
     
-    
-    const dsv1 = {
-            xid: 'DS_TEST',
+    const ds = function() {
+        return {
             name: 'Test',
             enabled: false,
             alarmLevels: {
@@ -257,10 +261,127 @@ describe('Test MBus Data Source REST', function() {
                 modelType : "mbusTcpIp"
             },
             modelType: 'MBUS'
-    };
+        };
+    }
     
-    const dsv2 = {
-            xid: 'DS_TEST',
+    beforeEach('Create serial data source v1', function() {
+        const dsv1 = ds();
+        return client.restRequest({
+            path: '/rest/v1/data-sources',
+            method: 'POST',
+            data: dsv1
+        }).then((response) => {
+            this.ds = response.data;
+            assertV1(response, dsv1);
+        }, (error) => {
+            if(error.status === 422){
+                var msg = 'Validation Failed: \n';
+                for(var m in error.data.validationMessages)
+                    msg += error.data.validationMessages[m].property + '-->' + error.data.validationMessages[m].message + '\n';
+                assert.fail(msg);
+            }else{
+                assert.fail(error)
+            }
+        });
+      });
+    
+    it('Get data source', function() {
+        const dsv1 = ds();
+        return client.restRequest({
+            path: `/rest/v1/data-sources/${this.ds.xid}`,
+            method: 'GET'
+        }).then(response => {
+            assertV1(response, dsv1);
+        });
+    });  
+    
+      it('Update data source v1', function() {
+          const dsv1 = ds();
+          dsv1.xid = uuidV4();
+          dsv1.name = 'Test too';
+          dsv1.enabled = false;
+          dsv1.alarmLevels = {
+                  POINT_WRITE_EXCEPTION: 'URGENT',
+                  POINT_READ_EXCEPTION: 'URGENT'
+          };
+          dsv1.purgeSettings = {
+              override: true,
+              frequency: {
+                  periods: 12,
+                  type:'MONTHS'
+              }
+          };
+          dsv1.editPermission = 'superadmin,testing';
+          dsv1.pollPeriod = {
+              periods: 5,
+              type: 'SECONDS'
+          };
+          dsv1.connection = {
+              bitPerSecond : 4800,
+              responseTimeoutOffset : 503,
+              portName: '/dev/null',
+              modelType : "mbusSerial"
+          };
+          return client.restRequest({
+              path:  `/rest/v1/data-sources/${this.ds.xid}`,
+              method: 'PUT',
+              data: dsv1
+          }).then((response) => {
+              this.ds = response.data;
+              assertV1(response, dsv1);
+          }, (error) => {
+              if(error.status === 422){
+                  var msg = 'Validation Failed: \n';
+                  for(var m in error.data.validationMessages)
+                      msg += error.data.validationMessages[m].property + '-->' + error.data.validationMessages[m].message + '\n';
+                  assert.fail(msg);
+              }else{
+                  assert.fail(error)
+              }
+          });
+        });
+      
+      afterEach('Delete data source', function() {
+          return client.restRequest({
+              path: `/rest/v1/data-sources/${this.ds.xid}`,
+              method: 'DELETE',
+              data: {}
+          }).then(response => {
+              assert.strictEqual(response.data.xid, this.ds.xid);
+              assert.strictEqual(response.data.name, this.ds.name);
+          });
+      });
+      
+    function assertV1(response, dsv1){
+        assert.isNumber(response.data.id);
+        assert.isString(response.data.xid);
+        assert.strictEqual(response.data.name, dsv1.name);
+        assert.strictEqual(response.data.enabled, dsv1.enabled);
+        assertPermissions(response.data.editPermission, dsv1.editPermission);
+        assertAlarmLevels(response.data.alarmLevels, dsv1.alarmLevels);
+
+        assert.strictEqual(response.data.pollPeriod.periods, dsv1.pollPeriod.periods);
+        assert.strictEqual(response.data.pollPeriod.type, dsv1.pollPeriod.type);
+
+        assert.strictEqual(response.data.connection.bitPerSecond, dsv1.connection.bitPerSecond);
+        assert.strictEqual(response.data.connection.responseTimeoutOffset, dsv1.connection.responseTimeoutOffset);
+        if(dsv1.connection.modelType === 'mbusSerial'){
+            assert.strictEqual(response.data.connection.portName, dsv1.connection.portName);
+        }else {
+            assert.strictEqual(response.data.connection.host, dsv1.connection.host);
+            assert.strictEqual(response.data.connection.port, dsv1.connection.port);
+        }
+    }
+
+
+});
+
+
+describe('Test MBus Data Source v2 ', function() {
+    before('Login', config.login);
+    
+    const ds = function() {
+        return {
             name: 'Test',
             enabled: false,
             eventAlarmLevels: [
@@ -293,89 +414,18 @@ describe('Test MBus Data Source REST', function() {
                 modelType : "mbusTcpIp"
             },
             modelType: 'MBUS'
-    };
-    
-    it('Create serial data source v1', () => {
-        return client.restRequest({
-            path: '/rest/v1/data-sources',
-            method: 'POST',
-            data: dsv1
-        }).then((response) => {
-            assertV1(response);
-        }, (error) => {
-            if(error.status === 422){
-                var msg = 'Validation Failed: \n';
-                for(var m in error.data.validationMessages)
-                    msg += error.data.validationMessages[m].property + '-->' + error.data.validationMessages[m].message + '\n';
-                assert.fail(msg);
-            }else{
-                assert.fail(error)
-            }
-        });
-      });
-    
-      it('Update data source v1', () => {
-          dsv1.xid = 'DS_TEST_TOO';
-          dsv1.name = 'Test too';
-          dsv1.enabled = false;
-          dsv1.alarmLevels = {
-                  POINT_WRITE_EXCEPTION: 'URGENT',
-                  POINT_READ_EXCEPTION: 'URGENT'
-          };
-          dsv1.purgeSettings = {
-              override: true,
-              frequency: {
-                  periods: 12,
-                  type:'MONTHS'
-              }
-          };
-          dsv1.editPermission = 'superadmin,testing';
-          dsv1.pollPeriod = {
-              periods: 5,
-              type: 'SECONDS'
-          };
-          dsv1.connection = {
-              bitPerSecond : 4800,
-              responseTimeoutOffset : 503,
-              portName: '/dev/null',
-              modelType : "mbusSerial"
-          };
-          return client.restRequest({
-              path:  `/rest/v1/data-sources/DS_TEST`,
-              method: 'PUT',
-              data: dsv1
-          }).then((response) => {
-              assertV1(response);
-          }, (error) => {
-              if(error.status === 422){
-                  var msg = 'Validation Failed: \n';
-                  for(var m in error.data.validationMessages)
-                      msg += error.data.validationMessages[m].property + '-->' + error.data.validationMessages[m].message + '\n';
-                  assert.fail(msg);
-              }else{
-                  assert.fail(error)
-              }
-          });
-        });
+        };
+    }
       
-      it('Delete data source v1', () => {
-          return client.restRequest({
-              path: `/rest/v1/data-sources/${dsv1.xid}`,
-              method: 'DELETE',
-              data: {}
-          }).then(response => {
-              assert.strictEqual(response.data.xid, dsv1.xid);
-              assert.strictEqual(response.data.name, dsv1.name);
-          });
-      });
-      
-    it('Create data source v2', () => {
+    beforeEach('Create data source', function() {
+        const dsv2 = ds();
       return client.restRequest({
           path: '/rest/v2/data-sources',
           method: 'POST',
           data: dsv2
       }).then((response) => {
-          assertV2(response);
+          this.ds = response.data;
+          assertV2(response, dsv2);
       }, (error) => {
           if(error.status === 422){
               var msg = 'Validation Failed: \n';
@@ -387,9 +437,20 @@ describe('Test MBus Data Source REST', function() {
           }
       });
     });
-
-    it('Update data source v2', () => {
-        dsv2.xid = 'DS_TEST_TWO';
+    
+    it('Get data source', function() {
+        const dsv2 = ds();
+        return client.restRequest({
+            path: `/rest/v2/data-sources/${this.ds.xid}`,
+            method: 'GET'
+        }).then(response => {
+            assertV2(response, dsv2);
+        });
+    });  
+    
+    it('Update data source v2', function() {
+        dsv2 = ds();
+        dsv2.xid = uuidV4();
         dsv2.name = 'Test too';
         dsv2.enabled = false;
         dsv2.eventAlarmLevels = [
@@ -421,11 +482,12 @@ describe('Test MBus Data Source REST', function() {
                 modelType : "mbusSerial"
         };
         return client.restRequest({
-            path:  `/rest/v2/data-sources/DS_TEST`,
+            path:  `/rest/v2/data-sources/${this.ds.xid}`,
             method: 'PUT',
             data: dsv2
         }).then((response) => {
-            assertV2(response);
+            this.ds = response.data;
+            assertV2(response, dsv2);
         }, (error) => {
             if(error.status === 422){
                 var msg = 'Validation Failed: \n';
@@ -438,40 +500,21 @@ describe('Test MBus Data Source REST', function() {
         });
       });
     
-    it('Delete data source v2', () => {
+    it('Delete data source v2', function() {
         return client.restRequest({
-            path: `/rest/v2/data-sources/${dsv2.xid}`,
+            path: `/rest/v2/data-sources/${this.ds.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
-            assertV2(response);
+            assert.strictEqual(response.data.xid, this.ds.xid);
+            assert.strictEqual(response.data.name, this.ds.name);
         });
     });
-    
-    function assertV1(response){
-        assert.isNumber(response.data.id);
-        assert.strictEqual(response.data.xid, dsv1.xid);
-        assert.strictEqual(response.data.name, dsv1.name);
-        assert.strictEqual(response.data.enabled, dsv1.enabled);
-        assertPermissions(response.data.editPermission, dsv1.editPermission);
-        assertAlarmLevels(response.data.alarmLevels, dsv1.alarmLevels);
 
-        assert.strictEqual(response.data.pollPeriod.periods, dsv1.pollPeriod.periods);
-        assert.strictEqual(response.data.pollPeriod.type, dsv1.pollPeriod.type);
-
-        assert.strictEqual(response.data.connection.bitPerSecond, dsv1.connection.bitPerSecond);
-        assert.strictEqual(response.data.connection.responseTimeoutOffset, dsv1.connection.responseTimeoutOffset);
-        if(dsv1.connection.modelType === 'mbusSerial'){
-            assert.strictEqual(response.data.connection.portName, dsv1.connection.portName);
-        }else {
-            assert.strictEqual(response.data.connection.host, dsv1.connection.host);
-            assert.strictEqual(response.data.connection.port, dsv1.connection.port);
-        }
-    }
     
-    function assertV2(response){
+    function assertV2(response, dsv2){
         assert.isNumber(response.data.id);
-        assert.strictEqual(response.data.xid, dsv2.xid);
+        assert.isString(response.data.xid);
         assert.strictEqual(response.data.name, dsv2.name);
         assert.strictEqual(response.data.enabled, dsv2.enabled);
         assertPermissions(response.data.editPermission, dsv2.editPermission);
@@ -482,70 +525,52 @@ describe('Test MBus Data Source REST', function() {
 
         assert.strictEqual(response.data.connection.bitPerSecond, dsv2.connection.bitPerSecond);
         assert.strictEqual(response.data.connection.responseTimeoutOffset, dsv2.connection.responseTimeoutOffset);
-        if(dsv1.connection.modelType === 'mbusSerial'){
+        if(dsv2.connection.modelType === 'mbusSerial'){
             assert.strictEqual(response.data.connection.commPortId, dsv2.connection.commPortId);
         }else {
             assert.strictEqual(response.data.connection.host, dsv2.connection.host);
             assert.strictEqual(response.data.connection.port, dsv2.connection.port);
         }
     }
-    
-    function assertArray(saved, stored){
+
+});
+
+
+function assertPermissions(saved, stored) {
+    if(Array.isArray(saved)){
         assert.strictEqual(saved.length, stored.length);
         for(var i=0; i<stored.length; i++){
+            assert.include(saved, stored[i], stored[i] + ' was not found in permissions')
+        }
+    }else{
+        assert.strictEqual(saved, stored);
+    }
+
+}
+
+function assertAlarmLevels(saved, stored){
+    if(Array.isArray(saved)) {
+        
+        var assertedEventTypes = [];
+        for(var i=0; i<stored.length; i++){
+            var found = false;
+            for(var j=0; j<saved.length; j++){
+                if(stored[i].eventType === saved[j].eventType){
+                    found = true;
+                    assert.strictEqual(saved.level, stored.level);
+                    assertedEventTypes.push(saved[i].eventType)
+                    break;
+                }
+            }
+            if(found === false)
+                assert.fail('Did not find event type: ' + stored[i].eventType);
+            if(assertedEventTypes.length === stored.length)
+                break;
+        }
+    }else{
+        for(var i in stored){
             assert.strictEqual(saved[i], stored[i]);
         }
     }
     
-    function assertScriptContext(saved, stored){
-        assert.strictEqual(saved.length, stored.length);
-        for(var i=0; i<stored.length; i++){
-            if(typeof saved[i].dataPointXid === 'undefined')
-                assert.strictEqual(saved[i].xid, stored[i].xid);
-            else
-                assert.strictEqual(saved[i].dataPointXid, stored[i].dataPointXid);
-            assert.strictEqual(saved[i].variableName, stored[i].variableName);
-            assert.strictEqual(saved[i].contextUpdate, stored[i].contextUpdate);
-        }
-    }
-    
-    function assertPermissions(saved, stored) {
-        if(Array.isArray(saved)){
-            assert.strictEqual(saved.length, stored.length);
-            for(var i=0; i<stored.length; i++){
-                assert.include(saved, stored[i], stored[i] + ' was not found in permissions')
-            }
-        }else{
-            assert.strictEqual(saved, stored);
-        }
-
-    }
-    
-    function assertAlarmLevels(saved, stored){
-        if(Array.isArray(saved)) {
-            
-            var assertedEventTypes = [];
-            for(var i=0; i<stored.length; i++){
-                var found = false;
-                for(var j=0; j<saved.length; j++){
-                    if(stored[i].eventType === saved[j].eventType){
-                        found = true;
-                        assert.strictEqual(saved.level, stored.level);
-                        assertedEventTypes.push(saved[i].eventType)
-                        break;
-                    }
-                }
-                if(found === false)
-                    assert.fail('Did not find event type: ' + stored[i].eventType);
-                if(assertedEventTypes.length === stored.length)
-                    break;
-            }
-        }else{
-            for(var i in stored){
-                assert.strictEqual(saved[i], stored[i]);
-            }
-        }
-        
-    }
-
-});
+}

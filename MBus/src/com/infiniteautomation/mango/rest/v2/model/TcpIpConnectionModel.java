@@ -25,6 +25,7 @@ public class TcpIpConnectionModel extends ConnectionModel<TcpIpConnection> {
     public TcpIpConnectionModel(TcpIpConnection conn) {
         super(conn);
         this.host =  conn.getHost();
+        this.port = conn.getPort();
     }
     
     @Override

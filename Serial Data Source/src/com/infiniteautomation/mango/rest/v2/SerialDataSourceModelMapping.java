@@ -5,9 +5,10 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.SerialDataSourceModel;
+import com.infiniteautomation.serial.SerialDataSourceDefinition;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.serotonin.m2m2.vo.User;
 
@@ -16,7 +17,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class SerialDataSourceModelMapping implements RestModelMapping<SerialDataSourceVO, SerialDataSourceModel> {
+public class SerialDataSourceModelMapping implements RestModelJacksonMapping<SerialDataSourceVO, SerialDataSourceModel> {
 
     @Override
     public Class<? extends SerialDataSourceVO> fromClass() {
@@ -32,5 +33,8 @@ public class SerialDataSourceModelMapping implements RestModelMapping<SerialData
     public SerialDataSourceModel map(Object from, User user, RestModelMapper mapper) {
         return new SerialDataSourceModel((SerialDataSourceVO)from);
     }
-
+    @Override
+    public String getTypeName() {
+        return SerialDataSourceDefinition.DATA_SOURCE_TYPE;
+    }
 }

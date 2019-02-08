@@ -5,8 +5,8 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.mbus.MBusPointLocatorModel;
 import com.serotonin.m2m2.mbus.MBusPointLocatorVO;
 import com.serotonin.m2m2.vo.User;
@@ -19,7 +19,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class MBusPointLocatorModelMapping implements RestModelMapping<MBusPointLocatorVO, MBusPointLocatorModel> {
+public class MBusPointLocatorModelMapping implements RestModelJacksonMapping<MBusPointLocatorVO, MBusPointLocatorModel> {
 
     @Override
     public Class<? extends MBusPointLocatorVO> fromClass() {
@@ -34,6 +34,11 @@ public class MBusPointLocatorModelMapping implements RestModelMapping<MBusPointL
     @Override
     public MBusPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
         return new MBusPointLocatorModel((MBusPointLocatorVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return MBusPointLocatorModel.TYPE_NAME;
     }
 
 }

@@ -5,10 +5,11 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.asciifile.AsciiFileDataSourceDefinition;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.mango.rest.v2.model.AsciiFileDataSourceModel;
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.vo.User;
 
 /**
@@ -16,7 +17,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class AsciiFileDataSourceModelMapping implements RestModelMapping<AsciiFileDataSourceVO, AsciiFileDataSourceModel> {
+public class AsciiFileDataSourceModelMapping implements RestModelJacksonMapping<AsciiFileDataSourceVO, AsciiFileDataSourceModel> {
 
     @Override
     public Class<? extends AsciiFileDataSourceVO> fromClass() {
@@ -31,6 +32,11 @@ public class AsciiFileDataSourceModelMapping implements RestModelMapping<AsciiFi
     @Override
     public AsciiFileDataSourceModel map(Object from, User user, RestModelMapper mapper) {
         return new AsciiFileDataSourceModel((AsciiFileDataSourceVO)from);
+    }
+
+    @Override
+    public String getTypeName() {
+        return AsciiFileDataSourceDefinition.DATA_SOURCE_TYPE;
     }
 
 }
