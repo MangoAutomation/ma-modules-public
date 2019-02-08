@@ -37,7 +37,7 @@ describe('EnvCan data source', function() {
             },
             editPermission: 'superadmin,test',
             stationId: 3,
-            dataStartTime: '2017-11-29T14:57:30.240-10:00',
+            dataStartTime: '2017-11-19T00:57:30.240Z',
             modelType: 'EnvCan'
     };
     
@@ -64,7 +64,7 @@ describe('EnvCan data source', function() {
             },
             editPermission: ['superadmin', 'test'],
             stationId: 3,
-            dataStartTime: '2014-11-29T14:57:30.240-10:00',
+            dataStartTime: '2017-11-19T00:57:30.240Z0',
             modelType: 'EnvCan'
     };
     
@@ -104,7 +104,7 @@ describe('EnvCan data source', function() {
           };
           dsv1.editPermission = 'superadmin,testing';
           dsv1.stationId = 40;
-          dsv1.dataStartTime = '2017-11-18T14:57:30.240-10:00';
+          dsv1.dataStartTime = '2017-11-29T00:57:30.240Z';
           return client.restRequest({
               path:  `/rest/v1/data-sources/DS_TEST`,
               method: 'PUT',
@@ -176,7 +176,7 @@ describe('EnvCan data source', function() {
         };
         dsv2.editPermission = ['superadmin', 'test2'];
         dsv2.stationId = 40;
-        dsv2.dataStartTime = '2003-11-29T14:57:30.240-10:00';
+        dsv2.dataStartTime = '2013-11-19T00:57:30.240Z';
         return client.restRequest({
             path:  `/rest/v2/data-sources/DS_TEST`,
             method: 'PUT',
