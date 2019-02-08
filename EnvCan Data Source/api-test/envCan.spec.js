@@ -21,7 +21,6 @@ describe('EnvCan data source', function() {
     before('Login', config.login);
     
     const dsv1 = {
-            xid: 'DS_TEST',
             name: 'Test',
             enabled: false,
             alarmLevels: {
@@ -42,7 +41,6 @@ describe('EnvCan data source', function() {
     };
     
     const dsv2 = {
-            xid: 'DS_TEST',
             name: 'Test',
             enabled: false,
             eventAlarmLevels: [
@@ -64,7 +62,7 @@ describe('EnvCan data source', function() {
             },
             editPermission: ['superadmin', 'test'],
             stationId: 3,
-            dataStartTime: '2017-11-19T00:57:30.240Z0',
+            dataStartTime: '2017-11-19T00:57:30.240Z',
             modelType: 'EnvCan'
     };
     
@@ -74,6 +72,9 @@ describe('EnvCan data source', function() {
             method: 'POST',
             data: dsv1
         }).then((response) => {
+            dsv1.di = response.data.id;
+            dsv1.xid = response.data.xid;
+            dsv1.original_xid = response.data.xid;
             assertV1(response);
         }, (error) => {
             if(error.status === 422){
@@ -106,7 +107,7 @@ describe('EnvCan data source', function() {
           dsv1.stationId = 40;
           dsv1.dataStartTime = '2017-11-29T00:57:30.240Z';
           return client.restRequest({
-              path:  `/rest/v1/data-sources/DS_TEST`,
+              path:  `/rest/v1/data-sources/${dsv1.original_xid}`,
               method: 'PUT',
               data: dsv1
           }).then((response) => {
@@ -140,6 +141,9 @@ describe('EnvCan data source', function() {
           method: 'POST',
           data: dsv2
       }).then((response) => {
+          dsv2.di = response.data.id;
+          dsv2.xid = response.data.xid;
+          dsv2.original_xid = response.data.xid;
           assertV2(response);
       }, (error) => {
           if(error.status === 422){
@@ -178,7 +182,7 @@ describe('EnvCan data source', function() {
         dsv2.stationId = 40;
         dsv2.dataStartTime = '2013-11-19T00:57:30.240Z';
         return client.restRequest({
-            path:  `/rest/v2/data-sources/DS_TEST`,
+            path:  `/rest/v2/data-sources/${dsv2.original_xid}`,
             method: 'PUT',
             data: dsv2
         }).then((response) => {
