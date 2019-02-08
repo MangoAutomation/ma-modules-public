@@ -168,11 +168,11 @@ describe('Test MBus Data Source REST', function() {
       });
     });
 
-    it('Deletes the copy serial snmp data source and its point', () => {
+    it('Deletes the copy serial MBus data source and its point', () => {
         return DataSource.delete('DS_MBUS_SERIAL_TEST_COPY');
     });
 
-    it('Deletes the new serial snmp data source and its point', () => {
+    it('Deletes the new serial MBus data source and its point', () => {
         return DataSource.delete('DS_MBUS_SERIAL_TEST');
     });
 
@@ -224,7 +224,7 @@ describe('Test MBus Data Source REST', function() {
       });
     });
 
-    it('Deletes the new tcpip snmp data source and its point', () => {
+    it('Deletes the new tcpip MBus data source and its point', () => {
         return DataSource.delete('DS_MBUS_TCPIP_TEST');
     });
     
