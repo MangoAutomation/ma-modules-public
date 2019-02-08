@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.serotonin.m2m2.module.definitions.event.detectors.NoChangeEventDetectorDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.NoChangeDetectorVO;
 
@@ -31,5 +32,8 @@ public class NoChangeEventDetectorModelMapping extends AbstractPointEventDetecto
         NoChangeDetectorVO detector = (NoChangeDetectorVO)from;
         return loadDataPoint(detector, new NoChangeEventDetectorModel(detector), user, mapper);
     }
-
+    @Override
+    public String getTypeName() {
+        return NoChangeEventDetectorDefinition.TYPE_NAME;
+    }
 }

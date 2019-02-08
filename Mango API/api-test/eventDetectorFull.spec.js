@@ -17,7 +17,7 @@
 
 const config = require('@infinite-automation/mango-client/test/setup');
 
-describe('Event detector service', function() {
+describe('Full event detector service', function() {
     this.timeout(5000);
     before('Login', config.login);
     before('Create data source and points', function() {
@@ -745,9 +745,9 @@ describe('Event detector service', function() {
     	}).catch(response => {
     		if(typeof response.response === 'undefined')
     			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
+    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Bad Request")=== -1)
+    			throw "Received non-string or non 400 response: " + response.response.statusMessage;
+    		assert.equal(response.response.statusCode, 400);
     	});
     });
 
@@ -774,117 +774,6 @@ describe('Event detector service', function() {
       });
     });
 
-    //Tests for websockets
-    it('Gets websocket notifications for event detectors', function() {
-      this.timeout(5000);
-      
-      const socketOpenDeferred = config.defer();
-      const gotAddEventDeferred = config.defer();
-      const gotUpdateEventDeferred = config.defer();
-      const gotDeleteEventDeferred = config.defer();
-
-      return Promise.resolve().then(() => {
-          const ws = client.openWebSocket({
-              path: '/rest/v1/websocket/event-detectors'
-          });
-
-          ws.on('open', () => {
-              socketOpenDeferred.resolve();
-          });
-
-          ws.on('error', error => {
-              const msg = new Error(`WebSocket error, error: ${error}`);
-              socketOpenDeferred.reject(msg);
-              gotAddEventDeferred.reject(msg);
-              gotUpdateEventDeferred.reject(msg);
-              gotDeleteEventDeferred.reject(msg);
-          });
-
-          ws.on('close', (code, reason) => {
-              const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
-              socketOpenDeferred.reject(msg);
-              gotAddEventDeferred.reject(msg);
-              gotUpdateEventDeferred.reject(msg);
-              gotDeleteEventDeferred.reject(msg);
-          });
-
-          ws.on('message', msgStr => {
-              assert.isString(msgStr);
-
-              const msg = JSON.parse(msgStr);
-              //console.log(msg.payload);
-              assert.strictEqual(msg.status, 'OK');
-              if(msg.payload.action === 'add'){
-                assert.strictEqual(msg.payload.object.xid, 'PED_mango_client_test');
-                assert.strictEqual(msg.payload.originalXid, null);
-                gotAddEventDeferred.resolve();
-              }else if(msg.payload.action === 'update'){
-                assert.strictEqual(msg.payload.object.xid, 'PED_mango_client_test_update');
-                assert.strictEqual(msg.payload.originalXid, 'PED_mango_client_test');
-                gotUpdateEventDeferred.resolve();
-              }else if(msg.payload.action === 'delete'){
-                assert.strictEqual(msg.payload.object.xid, 'PED_mango_client_test_update');
-                assert.strictEqual(msg.payload.originalXid, null);
-                ws.close();
-                gotDeleteEventDeferred.resolve();
-              }
-          });
-          
-          return socketOpenDeferred.promise;
-        }).then(() => config.delay(500)).then(() => {
-            //Create the event detector for add message
-            //console.log('adding');
-            return client.restRequest({
-                path: '/rest/v2/full-event-detectors',
-                method: 'POST',
-                data: {
-                  xid : "PED_mango_client_test",
-                  name : "When true.",
-                  duration: {
-                      periods: 10,
-                      type: "SECONDS"
-                  },
-                  alarmLevel : "NONE",
-                  alias : "When true.",
-                  rtnApplicable : true,
-                  state: true,
-                  sourceTypeName : "DATA_POINT",
-                  sourceId : global.dp.id,
-                  detectorType : "BINARY_STATE",
-                }
-            });
-        }).then(() => gotAddEventDeferred.promise).then(()=>{
-          //Update the detector for update statusMessage
-          //console.log('updating');
-          return client.restRequest({
-              path: '/rest/v2/full-event-detectors/PED_mango_client_test',
-              method: 'PUT',
-              data: {
-                xid : "PED_mango_client_test_update",
-                name : "When true.",
-                duration: {
-                    periods: 10,
-                    type: "SECONDS"
-                },
-                alarmLevel : "NONE",
-                alias : "When true.",
-                rtnApplicable : true,
-                state: true,
-                sourceTypeName : "DATA_POINT",
-                sourceId : global.dp.id,
-                detectorType : "BINARY_STATE",
-              }
-          });
-        }).then(() => gotUpdateEventDeferred.promise).then(()=>{
-          //Update the detector for update statusMessage
-          //console.log('deleting');
-          return client.restRequest({
-              path: '/rest/v2/full-event-detectors/PED_mango_client_test_update',
-              method: 'DELETE',
-              data: {}
-          });
-        }).then(() => gotDeleteEventDeferred.promise);
-    });
 
     //Clean up when done
     after('Deletes the new virtual data source and its points to clean up', () => {

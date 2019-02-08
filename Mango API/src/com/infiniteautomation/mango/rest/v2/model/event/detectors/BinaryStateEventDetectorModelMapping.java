@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.serotonin.m2m2.module.definitions.event.detectors.BinaryStateEventDetectorDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.BinaryStateDetectorVO;
 
@@ -32,4 +33,8 @@ public class BinaryStateEventDetectorModelMapping extends AbstractPointEventDete
         return loadDataPoint(detector, new BinaryStateEventDetectorModel(detector), user, mapper);
     }
 
+    @Override
+    public String getTypeName() {
+        return BinaryStateEventDetectorDefinition.TYPE_NAME;
+    }
 }

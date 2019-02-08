@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel.ScriptContextVariableModel;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.db.pair.IntStringPair;
@@ -27,7 +26,6 @@ import io.swagger.annotations.ApiModel;
  *
  */
 @ApiModel(value="SET_POINT", parent=AbstractEventHandlerModel.class)
-@JsonTypeName("SET_POINT")
 public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPointEventHandlerVO> {
 
     private String targetPointXid;

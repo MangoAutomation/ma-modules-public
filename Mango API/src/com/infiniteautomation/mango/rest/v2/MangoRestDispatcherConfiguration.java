@@ -25,27 +25,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
-import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.MissingEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.detectors.AnalogHighLimitEventDetectorModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.EmailEventHandlerModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.ProcessEventHandlerModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.SetPointEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.module.definitions.event.detectors.AnalogHighLimitEventDetectorDefinition;
 import com.serotonin.m2m2.util.AbstractRestModelConverter;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
@@ -81,23 +69,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         this.resolver = resolver;
         
         mapper.registerModule(new MangoRestV2JacksonModule());
-        mapper.registerSubtypes(
-                    //Event Handlers
-                    new NamedType(EmailEventHandlerModel.class, "EMAIL"),
-                    new NamedType(ProcessEventHandlerModel.class, "PROCESS"),
-                    new NamedType(SetPointEventHandlerModel.class, "SET_POINT"),
-                    new NamedType(AuditEventTypeModel.class, "AUDIT"),
-                    //Event Types
-                    new NamedType(DataPointEventTypeModel.class, "DATA_POINT"),
-                    new NamedType(DataSourceEventTypeModel.class, "DATA_SOURCE"),
-                    new NamedType(MissingEventTypeModel.class, "MISSING"),
-                    new NamedType(PublisherEventTypeModel.class, "PUBLISHER"),
-                    new NamedType(SystemEventTypeModel.class, "SYSTEM"),
-                    
-                    //Event Detectors
-                    new NamedType(AnalogHighLimitEventDetectorModel.class, AnalogHighLimitEventDetectorDefinition.TYPE_NAME)
-                );
-        
     }
 
     

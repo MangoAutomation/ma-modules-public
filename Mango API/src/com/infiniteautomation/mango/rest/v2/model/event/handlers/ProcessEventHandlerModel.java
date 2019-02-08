@@ -3,7 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.ProcessEventHandlerDefinition;
 import com.serotonin.m2m2.vo.event.ProcessEventHandlerVO;
@@ -15,7 +14,6 @@ import io.swagger.annotations.ApiModel;
  *
  */
 @ApiModel(value="PROCESS", parent=AbstractEventHandlerModel.class)
-@JsonTypeName("PROCESS")
 public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessEventHandlerVO> {
 
     private String activeProcessCommand;

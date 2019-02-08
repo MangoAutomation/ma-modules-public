@@ -21,35 +21,35 @@ import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
  */
 @Component("EventHandlerWebSocketHandlerV2")
 @WebSocketMapping("/websocket/event-handlers")
-public class EventHandlerWebSocketHandler extends DaoNotificationWebSocketHandler<AbstractEventHandlerVO<?>> {
+public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> extends DaoNotificationWebSocketHandler<T> {
 
-    private final EventHandlerService service;
+    private final EventHandlerService<T> service;
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public EventHandlerWebSocketHandler(EventHandlerService service, RestModelMapper modelMapper) {
+    public EventHandlerWebSocketHandler(EventHandlerService<T> service, RestModelMapper modelMapper) {
         this.service = service;
         this.modelMapper = modelMapper;
     }
 
     @Override
-    protected boolean hasPermission(User user, AbstractEventHandlerVO<?> vo) {
+    protected boolean hasPermission(User user, T vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(AbstractEventHandlerVO<?> vo) {
+    protected Object createModel(T vo) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected Object createModel(AbstractEventHandlerVO<?> vo, User user) {
+    protected Object createModel(T vo, User user) {
         return modelMapper.map(vo, AbstractEventHandlerModel.class, user);
     }
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends AbstractEventHandlerVO<?>> event) {
+    protected void handleDaoEvent(DaoEvent<? extends T> event) {
         this.notify(event);
     }
 

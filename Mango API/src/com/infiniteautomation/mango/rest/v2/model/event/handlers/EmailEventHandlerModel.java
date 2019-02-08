@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel.ScriptContextVariableModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.AddressEntryModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.EmailRecipientModel;
@@ -35,7 +34,6 @@ import io.swagger.annotations.ApiModel;
  *
  */
 @ApiModel(value="EMAIL", parent=AbstractEventHandlerModel.class)
-@JsonTypeName("EMAIL")
 public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEventHandlerVO> {
 
     private List<EmailRecipientModel> activeRecipients;

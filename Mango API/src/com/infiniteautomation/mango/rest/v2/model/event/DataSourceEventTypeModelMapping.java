@@ -5,9 +5,10 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
+import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.User;
 
 /**
@@ -15,7 +16,7 @@ import com.serotonin.m2m2.vo.User;
  *
  */
 @Component
-public class DataSourceEventTypeModelMapping implements RestModelMapping<DataSourceEventType, DataSourceEventTypeModel> {
+public class DataSourceEventTypeModelMapping implements RestModelJacksonMapping<DataSourceEventType, DataSourceEventTypeModel> {
 
     @Override
     public Class<DataSourceEventType> fromClass() {
@@ -30,5 +31,10 @@ public class DataSourceEventTypeModelMapping implements RestModelMapping<DataSou
     @Override
     public DataSourceEventTypeModel map(Object from, User user, RestModelMapper mapper) {
         return new DataSourceEventTypeModel((DataSourceEventType) from);
+    }
+    
+    @Override
+    public String getTypeName() {
+        return EventType.EventTypeNames.DATA_SOURCE;
     }
 }

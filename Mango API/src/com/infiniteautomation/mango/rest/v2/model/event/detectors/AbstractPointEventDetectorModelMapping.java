@@ -3,8 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -17,7 +17,7 @@ import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
  * @author Terry Packer
  *
  */
-public abstract class AbstractPointEventDetectorModelMapping<T extends AbstractPointEventDetectorVO<T>, M extends AbstractPointEventDetectorModel<T>> implements RestModelMapping<T, M> {
+public abstract class AbstractPointEventDetectorModelMapping<T extends AbstractPointEventDetectorVO<T>, M extends AbstractPointEventDetectorModel<T>> implements RestModelJacksonMapping<T, M> {
 
     
     protected M loadDataPoint(T detector, M model, User user, RestModelMapper mapper) {

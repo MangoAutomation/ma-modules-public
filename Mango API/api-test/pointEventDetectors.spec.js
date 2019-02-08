@@ -217,6 +217,165 @@ describe('Point Event detector service', function() {
         assert.fail(messages);
     }
 
+    //Alphanumeric Regex State
+    const alphaRegexState = {
+            name : "When matches",
+            alarmLevel : 'URGENT',
+            duration : {
+                periods: 10,
+                type: 'SECONDS'
+            },
+            state: 'TEST',
+            detectorType : "ALPHANUMERIC_REGEX_STATE",
+    };
+    
+    it('Creates a ALPHANUMERIC_REGEX_STATE event detector', () => {
+        alphaRegexState.sourceId = alphaDp.id;
+        return client.restRequest({
+            path: '/rest/v2/full-event-detectors',
+            method: 'POST',
+            data: alphaRegexState
+        }).then(response => {
+            alphaRegexState.xid = response.data.xid;
+            
+            assert.strictEqual(response.data.name, alphaRegexState.name);
+            assert.strictEqual(response.data.sourceId, alphaRegexState.sourceId);
+            assert.strictEqual(response.data.alarmLevel, alphaRegexState.alarmLevel);
+            
+            assert.strictEqual(response.data.duration.periods, alphaRegexState.duration.periods);
+            assert.strictEqual(response.data.duration.type, alphaRegexState.duration.type);
+            
+            assert.strictEqual(response.data.state, alphaRegexState.state);            
+            
+            alphaRegexState.xid = response.data.xid;
+            alphaRegexState.id = response.data.id;
+        }, error => {
+            if(error.status === 422){
+                printValidationErrors(error.data);
+            }else
+                assert.fail(error);
+        });
+    });
+    
+    it('Deletes a ALPHANUMERIC_REGEX_STATE event detector', () => {
+        alphaRegexState.sourceId = alphaDp.id;
+        return client.restRequest({
+            path: `/rest/v2/full-event-detectors/${alphaRegexState.xid}`,
+            method: 'DELETE',
+        }).then(response => {
+            
+            assert.strictEqual(response.data.name, alphaRegexState.name);
+            assert.strictEqual(response.data.sourceId, alphaRegexState.sourceId);
+            assert.strictEqual(response.data.alarmLevel, alphaRegexState.alarmLevel);
+            
+            assert.strictEqual(response.data.duration.periods, alphaRegexState.duration.periods);
+            assert.strictEqual(response.data.duration.type, alphaRegexState.duration.type);
+            
+            assert.strictEqual(response.data.state, alphaRegexState.state);            
+        }, error => {
+            if(error.status === 422){
+                printValidationErrors(error.data);
+            }else
+                assert.fail(error);
+        });
+    });
+    
+    it('Gets websocket notifications for create', function() {
+        
+        const ed = {
+                name : "When matches",
+                alarmLevel : 'URGENT',
+                duration : {
+                    periods: 10,
+                    type: 'SECONDS'
+                },
+                state: true,
+                sourceId: dp.id,
+                detectorType : "BINARY_STATE",
+        };
+        
+        let ws;
+        const subscription = {
+            eventTypes: ['add', 'delete', 'update']
+        };
+        
+        const socketOpenDeferred = config.defer();
+        const listUpdatedDeferred = config.defer();
+
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/full-event-detectors'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                try{
+                    assert.isString(msgStr);
+                    const msg = JSON.parse(msgStr);
+                    assert.strictEqual(msg.status, 'OK');
+                    assert.strictEqual(msg.payload.action, 'add');
+                    assert.strictEqual(msg.payload.object.xid, ed.xid);
+                    listUpdatedDeferred.resolve();   
+                }catch(e){
+                    listUpdatedDeferred.reject(e);
+                }
+            });
+
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const send = config.defer();
+            ws.send(JSON.stringify(subscription), error => {
+                if (error != null) {
+                    send.reject(error);
+                } else {
+                    send.resolve();
+                }
+            });
+            return send.promise;
+            
+        }).then(() => config.delay(1000)).then(() => {
+            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
+            return client.restRequest({
+                path: `/rest/v2/full-event-detectors`,
+                method: 'POST',
+                data: ed
+            }).then(response =>{
+                ed.xid = response.data.xid;
+                assert.strictEqual(response.data.name, ed.name);
+                assert.strictEqual(response.data.sourceId, ed.sourceId);
+                assert.strictEqual(response.data.alarmLevel, ed.alarmLevel);
+                
+                assert.strictEqual(response.data.duration.periods, ed.duration.periods);
+                assert.strictEqual(response.data.duration.type, ed.duration.type);
+                
+                assert.strictEqual(response.data.state, ed.state);            
+
+                assert.isNumber(response.data.id);
+            });
+        }).then(() => listUpdatedDeferred.promise).then((r)=>{
+            ws.close();
+            return r;
+        },e => {
+            ws.close();
+            return Promise.reject(e);
+        });
+    });
+    
     //Data Points and Sources for tests
     
     const ds = new DataSource({
