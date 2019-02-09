@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+const uuidV4 = require('uuid/v4');
 const config = require('@infinite-automation/mango-client/test/setup');
 
 describe('Point Event detector service', function() {
@@ -355,6 +356,7 @@ describe('Point Event detector service', function() {
     it('Gets websocket notifications for create', function() {
         
         const ed = {
+                xid: uuidV4(),
                 name : "When matches",
                 alarmLevel : 'URGENT',
                 duration : {
@@ -427,7 +429,7 @@ describe('Point Event detector service', function() {
                 method: 'POST',
                 data: ed
             }).then(response =>{
-                ed.xid = response.data.xid;
+                assert.strictEqual(response.data.xid, ed.xid);
                 assert.strictEqual(response.data.name, ed.name);
                 assert.strictEqual(response.data.sourceId, ed.sourceId);
                 assert.strictEqual(response.data.alarmLevel, ed.alarmLevel);
