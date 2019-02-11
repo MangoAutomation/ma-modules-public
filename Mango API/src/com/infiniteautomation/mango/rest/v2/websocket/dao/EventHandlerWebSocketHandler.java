@@ -3,11 +3,16 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket.dao;
 
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
@@ -24,12 +29,21 @@ import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> extends DaoNotificationWebSocketHandler<T> {
 
     private final EventHandlerService<T> service;
-    private final RestModelMapper modelMapper;
-
+    private final BiFunction<T, User, AbstractEventHandlerModel<T>> map;
+    
     @Autowired
     public EventHandlerWebSocketHandler(EventHandlerService<T> service, RestModelMapper modelMapper) {
         this.service = service;
-        this.modelMapper = modelMapper;
+        //Map the event types into the model
+        this.map = (vo, user) -> {
+            List<AbstractEventTypeModel<?,?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
+                return (AbstractEventTypeModel<?,?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
+            }).collect(Collectors.toList());
+            @SuppressWarnings("unchecked")
+            AbstractEventHandlerModel<T> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
+            model.setEventTypes(eventTypes);
+            return model;
+        };
     }
 
     @Override
@@ -44,7 +58,7 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> e
 
     @Override
     protected Object createModel(T vo, User user) {
-        return modelMapper.map(vo, AbstractEventHandlerModel.class, user);
+        return this.map.apply(vo, user);
     }
 
     @Override
