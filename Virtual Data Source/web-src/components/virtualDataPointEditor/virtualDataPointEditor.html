@@ -107,17 +107,20 @@
     </div>
 
     <!-- Numeric Inputs -->
-    <md-input-container id="attractionPointContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'ANALOG_ATTRACTOR'">
-        <div layout="row">    
-        <md-icon>all_out</md-icon>
-        <ma-point-list flex="100" label="Atrractor point" ng-model="$ctrl.attractionPoint" ng-change="$ctrl.attractionPointChanged()"
-            allow-clear="false"  required ma-get-ctrl="attractionPointModelCtrl = $ngModel"></ma-point-list>
+    <div id="attractionPointContainer" flex="100" flex-gt-md="50" layout-wrapper ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'ANALOG_ATTRACTOR'">
+        <div layout="row" layout-align="space-between center">    
+            <md-icon>all_out</md-icon>
+            <ma-filtering-point-list
+                ma-get-ctrl="attractionPointModelCtrl = $ngModel"
+                flex="100"
+                label="Atractor point" 
+                point-xid="{{$ctrl.dataPoint.pointLocator.attractionPointXid}}"
+                ng-model="$ctrl.attractionPoint" 
+                ng-change="$ctrl.attractionPointChanged()"  
+                required ma-get-ctrl="attractionPointModelCtrl = $ngModel">
+            </ma-filtering-point-list>
         </div>
-        <div ng-messages="attractionPointModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
-            <div ng-message="validationMessage" ng-bind="amplitudeModelCtrl.validationMessage"></div>
-        </div>
-    </md-input-container>
+    </div>
 
     <md-input-container id="minValueContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && ($ctrl.dataPoint.pointLocator.changeType === 'BROWNIAN' || $ctrl.dataPoint.pointLocator.changeType === 'INCREMENT' || $ctrl.dataPoint.pointLocator.changeType === 'RANDOM')">
         <md-icon>vertical_align_bottom</md-icon>

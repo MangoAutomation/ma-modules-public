@@ -6,3 +6,7 @@ ma-virtual-data-point-editor .close-icon {
     font-size: 20px;
     margin: 5px 0;
 }
+
+ma-virtual-data-point-editor ma-filtering-point-list {
+    margin-left: 10px;
+}
