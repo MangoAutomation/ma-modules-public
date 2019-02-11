@@ -339,7 +339,9 @@ public class DataPointRestController {
         return map.apply(dataPoint, user);
     }
 
-    @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
+    @ApiOperation(value = "Bulk get/create/update/delete data points", 
+            notes = "User must have read/edit permission for the data point",
+            consumes=MediaTypes.CSV_VALUE)
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperationCSV(
             @RequestBody
