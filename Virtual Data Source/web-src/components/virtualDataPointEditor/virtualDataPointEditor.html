@@ -4,9 +4,9 @@
             <span ma-tr="dsEdit.settable"></span>
         </md-checkbox>
     </div>
-    
+
     <pre ng-bind="modelCtrl"></pre>
-    
+
     <md-input-container id="dataTypeContainer" flex="100" flex-gt-md="50">
         <md-icon>storage</md-icon>
         <label ma-tr="dsEdit.pointDataType"></label>
@@ -21,18 +21,17 @@
             <div ng-message="validationMessage" ng-bind="dataTypeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
-    
+
     <md-input-container id="changeTypeContainer" flex="100" flex-gt-md="50">
         <md-icon>change_history</md-icon>
         <label ma-tr="dsEdit.virtual.changeType"></label>
-        <md-select name="pointLocator.changeType" ng-model="$ctrl.dataPoint.pointLocator.changeType" required ma-get-ctrl="changeTypeModelCtrl = $ngModel">
+        <md-select name="pointLocator.changeType" ng-model="$ctrl.dataPoint.pointLocator.changeType" required
+            ma-get-ctrl="changeTypeModelCtrl = $ngModel">
             <md-option ng-if="$ctrl.dataPoint.pointLocator.changeType.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.changeType">
                 <em ng-bind="$ctrl.dataPoint.pointLocator.changeType"></em>
             </md-option>
-            <md-option 
-                ng-repeat="changeType in $ctrl.changeTypes[$ctrl.dataPoint.pointLocator.dataType] track by changeType.key" 
-                ng-value="changeType.key" 
-                ma-tr="{{changeType.translation}}">
+            <md-option ng-repeat="changeType in $ctrl.changeTypes[$ctrl.dataPoint.pointLocator.dataType] track by changeType.key"
+                ng-value="changeType.key" ma-tr="{{changeType.translation}}">
             </md-option>
         </md-select>
         <div ng-messages="changeTypeModelCtrl.$error">
@@ -46,12 +45,13 @@
     <md-input-container id="startValueContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'BINARY'">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
-        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required
+            ma-get-ctrl="startValueModelCtrl = $ngModel">
             <md-option ng-if="$ctrl.dataPoint.pointLocator.startValue.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.startValue">
                 <em ng-bind="$ctrl.dataPoint.pointLocator.startValue"></em>
             </md-option>
-            <md-option ng-value="1" ma-tr="common.true"></md-option> 
-            <md-option ng-value="0" ma-tr="common.false"></md-option> 
+            <md-option ng-value="1" ma-tr="common.true"></md-option>
+            <md-option ng-value="0" ma-tr="common.false"></md-option>
         </md-select>
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
@@ -62,8 +62,8 @@
     <!-- Multistate Inputs -->
     <div flex="100" id="multiStateValuesContainer" class="values-container" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'MULTISTATE' && ($ctrl.dataPoint.pointLocator.changeType ==='INCREMENT' || $ctrl.dataPoint.pointLocator.changeType ==='RANDOM') ">
         <label ma-tr="dsEdit.virtual.values"></label>
-        <md-chips ng-model="$ctrl.dataPoint.pointLocator.values" ng-change="$ctrl.chipsChanged()" readonly="false" md-removable="true"
-            md-separator-keys="$ctrl.separatorKeys" ma-form-exclude ma-get-ctrl="valuesModelCtrl = $ngModel">
+        <md-chips ng-model="$ctrl.dataPoint.pointLocator.values" ng-change="$ctrl.chipsChanged()" readonly="false"
+            md-removable="true" md-separator-keys="$ctrl.separatorKeys" ma-form-exclude ma-get-ctrl="valuesModelCtrl = $ngModel">
 
             <md-chip-template>
                 <span>
@@ -84,13 +84,12 @@
     <md-input-container id="multiStateStartValuesContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'MULTISTATE'">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
-        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+        <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required
+            ma-get-ctrl="startValueModelCtrl = $ngModel">
             <md-option ng-if="$ctrl.dataPoint.pointLocator.startValue.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.startValue">
                 <em ng-bind="$ctrl.dataPoint.pointLocator.startValue"></em>
             </md-option>
-            <md-option 
-                ng-repeat="value in $ctrl.dataPoint.pointLocator.values track by value" 
-                ng-value="value">
+            <md-option ng-repeat="value in $ctrl.dataPoint.pointLocator.values track by value" ng-value="value">
                 {{value}}
             </md-option>
         </md-select>
@@ -108,6 +107,18 @@
     </div>
 
     <!-- Numeric Inputs -->
+    <md-input-container id="attractionPointContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'ANALOG_ATTRACTOR'">
+        <div layout="row">    
+        <md-icon>all_out</md-icon>
+        <ma-point-list flex="100" label="Atrractor point" ng-model="$ctrl.attractionPoint" ng-change="$ctrl.attractionPointChanged()"
+            allow-clear="false"  required ma-get-ctrl="attractionPointModelCtrl = $ngModel"></ma-point-list>
+        </div>
+        <div ng-messages="attractionPointModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="amplitudeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
     <md-input-container id="minValueContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && ($ctrl.dataPoint.pointLocator.changeType === 'BROWNIAN' || $ctrl.dataPoint.pointLocator.changeType === 'INCREMENT' || $ctrl.dataPoint.pointLocator.changeType === 'RANDOM')">
         <md-icon>vertical_align_bottom</md-icon>
         <label ma-tr="dsEdit.virtual.min"></label>
@@ -128,7 +139,7 @@
         </div>
     </md-input-container>
 
-    <md-input-container id="maxChangeContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && ($ctrl.dataPoint.pointLocator.changeType === 'BROWNIAN' || $ctrl.dataPoint.pointLocator.changeType === 'ATTRACTOR')">
+    <md-input-container id="maxChangeContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && ($ctrl.dataPoint.pointLocator.changeType === 'BROWNIAN' || $ctrl.dataPoint.pointLocator.changeType === 'ANALOG_ATTRACTOR')">
         <md-icon>timeline</md-icon>
         <label ma-tr="dsEdit.virtual.maxChange"></label>
         <input name="pointLocator.maxChange" ng-model="$ctrl.dataPoint.pointLocator.maxChange" required ma-get-ctrl="maxChangeModelCtrl = $ngModel">
@@ -138,10 +149,7 @@
         </div>
     </md-input-container>
     <!-- Numeric & Alphanumeric start value -->
-    <md-input-container id="numericStartValueContainer"
-        flex="100" 
-        flex-gt-md="50" 
-        ng-if="($ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' || $ctrl.dataPoint.pointLocator.dataType === 'ALPHANUMERIC') && $ctrl.dataPoint.pointLocator.changeType != 'SINUSOIDAL'">
+    <md-input-container id="numericStartValueContainer" flex="100" flex-gt-md="50" ng-if="($ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' || $ctrl.dataPoint.pointLocator.dataType === 'ALPHANUMERIC') && $ctrl.dataPoint.pointLocator.changeType != 'SINUSOIDAL'">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
         <input name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
@@ -160,10 +168,10 @@
             <div ng-message="validationMessage" ng-bind="changeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
-    
-    <!-- @TODO find suitable icon  for all items below-->
-    <md-input-container id="volatilityContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'ATTRACTOR'">
-        <!-- <md-icon>volatility_history</md-icon> -->
+
+
+    <md-input-container id="volatilityContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'ANALOG_ATTRACTOR'">
+        <md-icon>trending_up</md-icon>
         <label ma-tr="dsEdit.virtual.volatility"></label>
         <input name="pointLocator.volatility" ng-model="$ctrl.dataPoint.pointLocator.volatility" required ma-get-ctrl="volatilityModelCtrl = $ngModel">
         <div ng-messages="volatilityModelCtrl.$error">
@@ -172,10 +180,8 @@
         </div>
     </md-input-container>
 
-    <ma-filtering-point-list ng-model="$ctrl.attractionPoint" ng-change="$ctrl.pointChanged()" allow-clear="false"></ma-filtering-point-list>
-
     <md-input-container id="amplitudeContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'SINUSOIDAL'">
-        <!-- <md-icon>amplitude_history</md-icon> -->
+        <md-icon>waves</md-icon>
         <label ma-tr="dsEdit.virtual.amplitude"></label>
         <input name="pointLocator.amplitude" ng-model="$ctrl.dataPoint.pointLocator.amplitude" required ma-get-ctrl="amplitudeModelCtrl = $ngModel">
         <div ng-messages="amplitudeModelCtrl.$error">
@@ -183,9 +189,9 @@
             <div ng-message="validationMessage" ng-bind="amplitudeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
-    
+
     <md-input-container id="offsetContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'SINUSOIDAL'">
-        <!-- <md-icon>offset_history</md-icon> -->
+        <md-icon>keyboard_arrow_right</md-icon>
         <label ma-tr="dsEdit.virtual.offset"></label>
         <input name="pointLocator.offset" ng-model="$ctrl.dataPoint.pointLocator.offset" required ma-get-ctrl="offsetModelCtrl = $ngModel">
         <div ng-messages="offsetModelCtrl.$error">
@@ -193,9 +199,9 @@
             <div ng-message="validationMessage" ng-bind="offsetModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
-    
+
     <md-input-container id="periodContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'SINUSOIDAL'">
-        <!-- <md-icon>period_history</md-icon> -->
+        <md-icon>loop</md-icon>
         <label ma-tr="dsEdit.virtual.period"></label>
         <input name="pointLocator.period" ng-model="$ctrl.dataPoint.pointLocator.period" required ma-get-ctrl="periodModelCtrl = $ngModel">
         <div ng-messages="periodModelCtrl.$error">
@@ -203,9 +209,9 @@
             <div ng-message="validationMessage" ng-bind="periodModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
-    
+
     <md-input-container id="phaseShiftContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' && $ctrl.dataPoint.pointLocator.changeType === 'SINUSOIDAL'">
-        <!-- <md-icon>phaseShift_history</md-icon> -->
+        <md-icon>short_text</md-icon>
         <label ma-tr="dsEdit.virtual.phaseShift"></label>
         <input name="pointLocator.phaseShift" ng-model="$ctrl.dataPoint.pointLocator.phaseShift" required ma-get-ctrl="phaseShiftModelCtrl = $ngModel">
         <div ng-messages="phaseShiftModelCtrl.$error">

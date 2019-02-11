@@ -26,7 +26,7 @@ class VirtualDataPointEditorController {
             'NUMERIC': [
                 {key: 'BROWNIAN', translation: 'dsEdit.virtual.changeType.brownian'},
                 {key: 'INCREMENT', translation: 'dsEdit.virtual.changeType.increment'},
-                {key: 'ATTRACTOR', translation: 'dsEdit.virtual.changeType.attractor'},
+                {key: 'ANALOG_ATTRACTOR', translation: 'dsEdit.virtual.changeType.attractor'},
                 {key: 'SINUSOIDAL', translation: 'dsEdit.virtual.changeType.sinusoidal'},
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
                 {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'} 
@@ -43,6 +43,11 @@ class VirtualDataPointEditorController {
     }
 
     $onChanges(changes) {
+        
+    }
+
+    attractionPointChanged(){
+        this.dataPoint.pointLocator.attractionPointXid = this.attractionPoint.xid;
     }
 
     chipsChanged() {
