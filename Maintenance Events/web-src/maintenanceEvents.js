@@ -16,7 +16,7 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
 .component('maMaintenanceEventsSetup', maintenanceEventsSetup)
 .component('maFilteringMaintenanceEventsList', filteringMaintenanceEventsList)
 .factory('maMaintenanceEvent', maintenanceEventFactory)
-.config(['maUiMenuProvider', function(maUiMenuProvider) {
+.config(['maUiMenuProvider', 'maEventTypeInfoProvider', function(maUiMenuProvider, eventTypeInfoProvider) {
     maUiMenuProvider.registerMenuItems([
         {
             name: 'ui.settings.maintenanceEvents',
@@ -42,4 +42,12 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
             menuTr: 'header.maintenanceEvents'
         }
     ]);
+
+    eventTypeInfoProvider.registerEventTypeOptions({
+        typeName: 'MAINTENANCE',
+        typeId(type, subType, ref1, ref2) {
+            return `${type}_${ref1}`;
+        }
+    });
+
 }]);
