@@ -53,6 +53,11 @@ class VirtualDataPointEditorController {
 
     chipsChanged() {
         let values = this.dataPoint.pointLocator.values; 
+
+        if (!Array.isArray(values)) {
+            values = this.dataPoint.pointLocator.values = [];
+        }
+
         let lastValue = this.dataPoint.pointLocator.values[values.length - 1] = Number(values[values.length - 1]);
 
         if (values.length === 0) {
