@@ -50,7 +50,8 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
                 modelType: 'PL.VIRTUAL',
                 dataType: 'NUMERIC',
                 settable: true,
-                changeType: 'BROWNIAN'
+                changeType: 'BROWNIAN',
+                values: []
             }
         },
         bulkEditorColumns: [
