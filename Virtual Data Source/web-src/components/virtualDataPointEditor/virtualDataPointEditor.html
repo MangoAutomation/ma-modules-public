@@ -4,13 +4,11 @@
             <span ma-tr="dsEdit.settable"></span>
         </md-checkbox>
     </div>
-    
-    <pre ng-bind="modelCtrl"></pre>
-    
+
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>storage</md-icon>
         <label ma-tr="dsEdit.pointDataType"></label>
-        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataPoint.pointLocator.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataPoint.pointLocator.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel" ng-change="$ctrl.pointEditor.dataTypeChanged()">
             <md-option ng-if="$ctrl.dataPoint.pointLocator.dataType.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.dataType">
                 <em ng-bind="$ctrl.dataPoint.pointLocator.dataType"></em>
             </md-option>

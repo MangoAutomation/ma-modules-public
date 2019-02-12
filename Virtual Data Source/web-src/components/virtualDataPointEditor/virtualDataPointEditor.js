@@ -62,5 +62,8 @@ export default {
     controller: VirtualDataPointEditorController,
     bindings: {
         dataPoint: '<point'
+    },
+    require: {
+        pointEditor: '^maDataPointEditor'
     }
 };
