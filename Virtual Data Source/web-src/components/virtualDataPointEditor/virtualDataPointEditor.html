@@ -152,10 +152,20 @@
         </div>
     </md-input-container>
     <!-- Numeric & Alphanumeric start value -->
-    <md-input-container id="numericStartValueContainer" flex="100" flex-gt-md="50" ng-if="($ctrl.dataPoint.pointLocator.dataType === 'NUMERIC' || $ctrl.dataPoint.pointLocator.dataType === 'ALPHANUMERIC') && $ctrl.dataPoint.pointLocator.changeType != 'SINUSOIDAL'">
+    <md-input-container id="numericStartValueContainer" flex="100" flex-gt-md="50" ng-if="($ctrl.dataPoint.pointLocator.dataType === 'NUMERIC') && $ctrl.dataPoint.pointLocator.changeType != 'SINUSOIDAL'">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
         <input name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
+        <div ng-messages="startValueModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container id="numericStartValueContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.dataType === 'ALPHANUMERIC'">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.virtual.startValue"></label>
+        <input name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" ma-get-ctrl="startValueModelCtrl = $ngModel">
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
