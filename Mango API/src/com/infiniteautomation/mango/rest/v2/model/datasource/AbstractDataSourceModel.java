@@ -18,6 +18,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
+import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.permission.Permissions;
@@ -86,11 +87,13 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
 
         this.enabled = vo.isEnabled();
         this.eventAlarmLevels = new ArrayList<>();
+        ExportCodes eventCodes = vo.getEventCodes();
+        
         for(EventTypeVO evt : vo.getEventTypes()) {
             DataSourceEventType dsEvt = (DataSourceEventType)evt.getEventType();
             EventTypeAlarmLevelModel model = new EventTypeAlarmLevelModel(
                     vo.getXid(),
-                    dsEvt.getEventSubtype(),
+                    eventCodes.getCode(dsEvt.getReferenceId2()),
                     dsEvt.getDuplicateHandling(),
                     dsEvt.getAlarmLevel(),
                     evt.getDescription()
