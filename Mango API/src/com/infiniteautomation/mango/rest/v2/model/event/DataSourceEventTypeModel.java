@@ -47,6 +47,6 @@ public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceE
     
     @Override
     public DataSourceEventType toVO() {
-        return new DataSourceEventType(referenceId1, referenceId2, subType, alarmLevel, duplicateHandling);
+        return new DataSourceEventType(referenceId1, referenceId2 , alarmLevel, duplicateHandling);
     }
 }
