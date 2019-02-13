@@ -8,8 +8,8 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 
 /**
  *

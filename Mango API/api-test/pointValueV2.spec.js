@@ -574,5 +574,4 @@ describe('Point values v2', function() {
         });
     });
 
-    it('Does GET requests');
 });

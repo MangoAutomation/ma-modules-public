@@ -7,17 +7,21 @@ package com.infiniteautomation.mango.rest.v2;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,12 +32,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.AbstractPurgeValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataPointValuesModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataSourceValuesModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgePointValuesResponseModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
@@ -48,21 +57,32 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidRollupTime
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
+import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -78,6 +98,12 @@ import io.swagger.annotations.ApiParam;
 public class PointValueRestController extends AbstractMangoRestV2Controller{
     
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
+    private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager; 
+    
+    @Autowired
+    public PointValueRestController(TemporaryResourceWebSocketHandler websocket) {
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(websocket);
+    }
     
     @ApiOperation(
             value = "Get latest values For 1 Data Point in time descending order", 
@@ -903,6 +929,193 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             rt.setAttribute(entry.getKey(), entry.getValue());
         }
         return ResponseEntity.ok(rt.getAttributes());
+    }
+    
+    @ApiOperation(
+            value = "Purge Point Values for one or many data points",
+            notes = "User must have edit access to data source and its points, use created header to track progress/cancel"
+            )
+    @RequestMapping(method = RequestMethod.POST, value="/purge/data-source")
+    public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>> purgePointValuesForDataSource(HttpServletRequest request,
+            @RequestBody(required = true) PurgeDataSourceValuesModel input,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        
+        input.ensureValid();
+        return purgePointValues(
+                user, 
+                input,
+                builder);
+    }
+    
+    @ApiOperation(
+            value = "Purge Point Values for one or many data points",
+            notes = "User must have edit access to data source and its points, use created header to track progress/cancel"
+            )
+    @RequestMapping(method = RequestMethod.POST, value="/purge/data-points")
+    public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>> purgePointValues(HttpServletRequest request,
+            @RequestBody(required = true) PurgeDataPointValuesModel model,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+
+        return purgePointValues(
+                user, 
+                model,
+                builder);
+    }
+    
+    
+    private ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>>  purgePointValues(
+            User user,  AbstractPurgeValuesModel model, UriComponentsBuilder builder) throws ValidationException {
+        model.ensureValid();
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> response = resourceManager.newTemporaryResource(
+                "DATA_POINT_PURGE_", null, user.getId(), model.getExpiry(), model.getTimeout(), 
+                (resource, taskUser) -> {
+                    PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
+                    
+                    Map<Integer, DataSourceVO<?>> dataSourceMap = new HashMap<>();
+                    Map<String, DataPointVO> dataPointsMap = new HashMap<>();
+                    
+                    //Build the list of data point Xids
+                    List<String> xids;
+                    if(model instanceof PurgeDataPointValuesModel) {
+                        xids = ((PurgeDataPointValuesModel)model).getXids();
+                        for(String xid : xids) {
+                            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+                            dataPointsMap.put(xid, vo);
+                            if(vo != null) {
+                                dataSourceMap.computeIfAbsent(vo.getDataSourceId(), (key) ->{
+                                    return DataSourceDao.getInstance().get(vo.getDataSourceId());
+                                });
+                            }
+                        }
+                    }else {
+                        String dsXid = ((PurgeDataSourceValuesModel)model).getXid();
+                        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(dsXid);
+                        xids = new ArrayList<>();
+                        if(ds != null) {
+                            dataSourceMap.put(ds.getId(), ds);
+                            List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId(), null, false);
+                            for(DataPointVO point : points) {
+                                xids.add(point.getXid());
+                                dataPointsMap.put(point.getXid(), point);
+                            }
+                        }
+                    }
+                    int maximum = xids.size();
+                    int position = 0;
+                    
+                    //Initial status
+                    resource.progressOrSuccess(result, position, maximum);
+                    
+
+                    for(String xid : xids) {
+                        try {
+                            //Get the point and its data source XID
+                            DataPointVO dp = dataPointsMap.get(xid);
+                            if(dp == null)
+                                throw new NotFoundException();
+
+                            DataSourceVO<?> ds = dataSourceMap.get(dp.getDataSourceId());
+                            if(ds == null)
+                                throw new NotFoundException();
+                            
+                            //Ensure edit permission
+                            Permissions.ensureDataSourcePermission(user, ds);
+                            
+                            //Do purge based on settings
+                            if(model.isPurgeAll())
+                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp.getId());
+                            else if(model.isUseTimeRange())
+                                Common.runtimeManager.purgeDataPointValuesBetween(dp.getId(), model.getTimeRange().getFrom().getTime(), model.getTimeRange().getTo().getTime());
+                            else {
+                                long before = DateUtils.minus(Common.timer.currentTimeMillis(), TimePeriodType.convertFrom(model.getDuration().getType()), model.getDuration().getPeriods());
+                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp.getId(), before);
+                            }
+                            result.getSuccessfullyPurged().add(xid);
+                        }catch(NotFoundException e) {
+                            result.getNotFound().add(xid);
+                        }catch(PermissionException e) {
+                            result.getNoEditPermission().add(xid);
+                        }
+                        position++;
+                        resource.progressOrSuccess(result, position, maximum);
+                    }
+
+                    return null;
+                });
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(builder.path("/point-values/purge/{id}").buildAndExpand(response.getId()).toUri());
+        return new ResponseEntity<>(response, headers, HttpStatus.CREATED);
+    }
+
+    @ApiOperation(value = "Update a purge task using its id", 
+            notes = "Only allowed operation is to change the status to CANCELLED. " +
+            "User can only update their own purge task unless they are an admin.")
+    @RequestMapping(method = RequestMethod.PUT, value="/purge/{id}")
+    public TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> updateDataPointPurge(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+
+            @RequestBody
+            TemporaryResourceStatusUpdate body,
+
+            @AuthenticationPrincipal
+            User user) {
+
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
+
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+
+        if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
+            resource.cancel();
+        } else {
+            throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
+        }
+
+        return resource;
+    }
+    
+    @ApiOperation(value = "Get the status of a purge operation using its id", 
+            notes = "User can only get their own status unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/purge/{id}")
+    public TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> getDataPointPurgeStatus(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+
+            @AuthenticationPrincipal
+            User user) {
+
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
+
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+
+        return resource;
+    }
+    
+    @ApiOperation(value = "Remove a purge task using its id",
+            notes = "Will only remove a task if it is complete. " +
+            "User can only remove their own purge task unless they are an admin.")
+    @RequestMapping(method = RequestMethod.DELETE, value="/purge/data-points/{id}")
+    public void removeDataPointPurgeTask(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+
+            @AuthenticationPrincipal
+            User user) {
+
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
+
+        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+
+        resource.remove();
     }
     
     /**
