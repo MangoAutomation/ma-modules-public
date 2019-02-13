@@ -5,20 +5,58 @@
 
 import componentTemplate from './maintenanceEvents.html';
 
-const $inject = Object.freeze(['$scope', '$mdMedia']);
+const $inject = Object.freeze(['$scope', '$mdMedia', '$state', 'maMaintenanceEvent']);
 
 class maintenanceEventsController {
 
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor($scope, $mdMedia) {
+    constructor($scope, $mdMedia, $state, maMaintenanceEvent) {
         this.$scope = $scope;
         this.$mdMedia = $mdMedia;
-   }
+        this.$state = $state;
+        this.maMaintenanceEvent = maMaintenanceEvent;
+    }
 
     $onInit() {
-        
+        this.selectedEvent = null;
+        if (this.$state.params.xid) {
+            this.maMaintenanceEvent.get(this.$state.params.xid).then((event) => {
+                delete event.$promise;
+                this.selectedEvent = event;
+                this.eventUpdated(this.selectedEvent);
+            }, () => {
+                this.newEvent(); 
+                this.updateUrl();
+            });
+        } else {
+            this.newEvent();
+            this.updateUrl();
+        }
+    }
+
+    newEvent() {
+        this.selectedEvent = new this.maMaintenanceEvent();
+    }
+
+    eventSelected(event) {
+        this.updateUrl();
+    }
+
+    updateUrl() {
+        this.$state.params.xid = this.selectedEvent && !this.selectedEvent.isNew() && this.selectedEvent.xid || null;
+        this.$state.go('.', this.$state.params, {location: 'replace', notify: false});
+    }
+
+    eventUpdated(event) {
+        this.updatedEvent = event;
+        this.updateUrl();
+    }
+
+    eventDeleted(event) {
+        this.deletedEvent = event;
+        this.updateUrl();
     }
 
 }

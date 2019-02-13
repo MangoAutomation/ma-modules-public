@@ -42,7 +42,8 @@ class MaintenanceEventsSetupController {
                 this.getMaintenanceEventsByXid(this.selectedEvent.xid).then(response => {
                     const items = response.data.items;
                     if (items.length) {
-                        return this.activeEvent = items[items.length - 1].active;
+                        this.activeEvent = items[items.length - 1].active;
+                        return this.activeEvent;
                     }
                 });
             }
@@ -56,31 +57,31 @@ class MaintenanceEventsSetupController {
 
     getMaintenanceEventsByXid(xid) {
         return this.$http.post('/rest/v1/events/module-defined-query', {
-            queryType: "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL",
+            queryType: 'MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL',
             parameters: {
-                rql: "xid=" + xid
+                rql: 'xid=' + xid
             }
         });
     }
 
     getDataSourcesByIds(ids) {
-        if (!ids || ids.length == 0) return;
+        if (!ids || ids.length === 0) return;
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
         this.maDataSource.rql({rqlQuery}).$promise.then(dataSources => {
             this.dataSources = dataSources;
-        })
+        });
     }
 
     getDataPointsByIds(ids) {
-        if (!ids || ids.length == 0) return;
+        if (!ids || ids.length === 0) return;
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
         this.maPoint.rql({rqlQuery}).$promise.then(points => {
             this.dataPoints = points;
-        })
+        });
     }
     
     setViewValue() {
@@ -98,14 +99,14 @@ class MaintenanceEventsSetupController {
     }
 
     addDataSource() {
-        if (this.dataSources.filter(t => t.xid === this.selectedDataSource.xid).length == 0) {
+        if (this.dataSources.filter(t => t.xid === this.selectedDataSource.xid).length === 0) {
             this.dataSources.push(this.selectedDataSource); 
         }
         this.selectedDataSource = null;
     }
 
     addDataPoint() {
-        if (this.dataPoints.filter(t => t.xid === this.selectedDataPoint.xid).length == 0) {
+        if (this.dataPoints.filter(t => t.xid === this.selectedDataPoint.xid).length === 0) {
             this.dataPoints.push(this.selectedDataPoint); 
         }
         this.selectedDataPoint = null;
@@ -115,27 +116,12 @@ class MaintenanceEventsSetupController {
         this.selectedEvent.dataSources = this.getXids(this.dataSources);
         this.selectedEvent.dataPoints = this.getXids(this.dataPoints);
 
-        if (!this.form.$valid) {
-            this.maDialogHelper.toastOptions({
-                textTr: 'maintenanceEvents.invalidForm',
-                classes: 'md-warn',
-                hideDelay: 3000
-            });
-            return;
-        }
-
         this.selectedEvent.save().then(() => {
             
             this.dataSources = [];
             this.dataPoints = [];
-            this.selectedEvent = null;
+            this.updateItem();
             this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meSaved']});
-            this.$rootScope.$broadcast('meUpdated', true);
-            this.dataSources = [];
-            this.dataPoints = [];
-            this.validationMessages = null;
-            this.form.$setPristine();
-            this.form.$setUntouched();
 
         }, (error) => {
             this.validationMessages = error.data.result.messages;
@@ -154,12 +140,8 @@ class MaintenanceEventsSetupController {
                 
                 this.dataSources = [];
                 this.dataPoints = [];
-                this.selectedEvent = null;
+                this.deleteItem();
                 this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meDeleted']});
-                this.$rootScope.$broadcast('meUpdated', true);
-                this.dataSources = [];
-                this.dataPoints = [];
-                this.validationMessages = null;
 
             }, (error) => {
 
@@ -180,24 +162,31 @@ class MaintenanceEventsSetupController {
             ids.push(item.xid);
         });
 
-        return ids
+        return ids;
     }
 
-    checkError(property) {
-        if (!this.validationMessages) {
-            return null;
+    updateItem() {
+        if (typeof this.itemUpdated === 'function') {
+            const copyOfItem = this.selectedEvent.copy();
+            this.itemUpdated({$item: copyOfItem});
         }
+    }
 
-        return this.validationMessages.filter((item) => {
-            return item.property === property;
-        }, property)[0];
+    deleteItem() {
+        if (typeof this.itemDeleted === 'function') {
+            const copyOfItem = this.selectedEvent.copy();
+            this.itemDeleted({$item: copyOfItem});
+        } 
     }
 }
 
 export default {
     template: componentTemplate,
     controller: MaintenanceEventsSetupController,
-    bindings: {},
+    bindings: {
+        itemUpdated: '&?',
+        itemDeleted: '&?'
+    },
     require: {
         ngModelCtrl: 'ngModel'
     },

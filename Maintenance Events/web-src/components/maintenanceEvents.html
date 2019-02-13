@@ -7,7 +7,12 @@
         </md-toolbar>
 
         <md-card-content flex layout layout-align="start start" ng-if="$ctrl.$mdMedia('gt-md')" class="ma-no-padding ma-scroll-parent">
-            <ma-maintenance-events-list flex layout="row" ng-model="$ctrl.selectedEvent"></ma-maintenance-events-list>
+            <ma-maintenance-events-list flex layout="column" class="ma-scroll-child" 
+                on-select="$ctrl.eventSelected($item)"
+                deleted-item="$ctrl.deletedEvent"
+                updated-item="$ctrl.updatedEvent"
+                ng-model="$ctrl.selectedEvent">
+            </ma-maintenance-events-list>
         </md-card-content>
     </md-card>
 
@@ -15,11 +20,15 @@
         <md-card>
             <md-toolbar class="md-hue-3">
                 <div class="md-toolbar-tools">
-                    <span ng-if="!$ctrl.selectedEvent.isNew()" ma-tr="excelreports.ui.editTemplate" ma-tr-args="[$ctrl.selectedEvent.name]"></span>
-                    <span ng-if="$ctrl.selectedEvent.isNew()" ma-tr="excelreports.ui.createNewTemplate"></span>
+                    <span ng-if="!$ctrl.selectedEvent.isNew()" ma-tr="maintenanceEvents.edit" ma-tr-args="[$ctrl.selectedEvent.name]"></span>
+                    <span ng-if="$ctrl.selectedEvent.isNew()" ma-tr="maintenanceEvents.createMe"></span>
                 </div>
             </md-toolbar>
-            <ma-maintenance-events-setup ng-model="$ctrl.selectedEvent"></ma-maintenance-events-setup>
+            <ma-maintenance-events-setup 
+                item-deleted="$ctrl.eventDeleted($item)" 
+                item-updated="$ctrl.eventUpdated($item)"
+                ng-model="$ctrl.selectedEvent">
+            </ma-maintenance-events-setup>
         </md-card>
     </div>
 </div>

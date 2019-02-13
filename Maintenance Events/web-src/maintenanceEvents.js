@@ -20,7 +20,7 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
     maUiMenuProvider.registerMenuItems([
         {
             name: 'ui.settings.maintenanceEvents',
-            url: '/maintenance-events',
+            url: '/maintenance-events/{xid}',
             template: '<ma-maintenance-events></ma-maintenance-events>',
             menuTr: 'header.maintenanceEvents',
             menuIcon: 'event_busy',

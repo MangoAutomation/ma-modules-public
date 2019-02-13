@@ -21,34 +21,41 @@ class MaintenanceEventsListController {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.maMaintenanceEvent = maMaintenanceEvent;
-
-        this.$scope.$on('meUpdated', (event) => {
-            this.new = false;
-            this.getEvents().then(() => {
-                this.selectDefaultEvent();
-            });
-        });
-
-        this.$scope.$on('meDeleted', (event) => {
-            this.getEvents().then(() => {
-                this.selectDefaultEvent();
-            });
-        });
     }
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
-        this.getEvents().then(() => {
-            this.selectDefaultEvent();
-        });
+        this.getEvents();
     }
 
-    selectDefaultEvent() {
-        if (this.events.length == 0) {
-            this.newMaintenanceEvent();
-        } else {
-            this.selectedEvent = this.events[0];
-            this.setViewValue();
+    $onChanges(changes) {
+        if(this.events) {
+            if (changes.updatedItem && this.updatedItem) {
+                const foundIndex = this.events.findIndex(item => item.xid === this.updatedItem.xid);
+    
+                if (foundIndex >= 0) {
+                    // if we found it then replace it in the list
+                    this.events[foundIndex] = this.updatedItem;
+                    this.selectedEvent = this.updatedItem;
+                    
+                } else {
+                    // otherwise add it to the list
+                    this.events.push(this.updatedItem);
+                    this.selectedEvent = this.events[this.events.length - 1];
+                }
+    
+                this.new = false;
+            }
+    
+            if (changes.deletedItem && this.deletedItem) {
+                const foundIndex = this.events.findIndex(item => item.xid === this.deletedItem.xid);
+    
+                if (foundIndex >= 0) {
+                    this.selectedEvent = this.updatedItem;
+                    this.events.splice(foundIndex, 1);
+                    this.newMaintenanceEvent();
+                } 
+            }
         }
     }
 
@@ -70,13 +77,21 @@ class MaintenanceEventsListController {
         this.new = true;
         this.selectedEvent = new this.maMaintenanceEvent();
         this.setViewValue();
-        this.$rootScope.$broadcast('meNew', true);
+        this.itemSelected();
     }
 
     selectMaintenanceEvent(event) {
         this.new = false;
         this.selectedEvent = event;
         this.setViewValue();
+        this.itemSelected();
+    }
+
+    itemSelected() {
+        if (typeof this.onSelect === 'function') {
+            const copyOfItem = this.selectedEvent.copy(); 
+            this.onSelect({$item: copyOfItem});
+        }
     }
 
 }
@@ -84,7 +99,11 @@ class MaintenanceEventsListController {
 export default {
     template: componentTemplate,
     controller: MaintenanceEventsListController,
-    bindings: {},
+    bindings: {
+        updatedItem: '<?',
+        deletedItem: '<?',
+        onSelect: '&?',
+    },
     require: {
         ngModelCtrl: 'ngModel'
     },
