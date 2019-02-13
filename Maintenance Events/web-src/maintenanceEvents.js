@@ -6,6 +6,7 @@
 import angular from 'angular';
 import maintenanceEvents from './components/maintenanceEvents';
 import maintenanceEventsList from './components/maintenanceEventsList';
+import maintenanceEventsSelect from './components/maintenanceEventsSelect';
 import maintenanceEventsSetup from './components/maintenanceEventsSetup';
 import filteringMaintenanceEventsList from './components/filteringMaintenanceEventsList';
 import maintenanceEventFactory from './services/maintenanceEvent';
@@ -15,6 +16,7 @@ import './maintenanceEvents.css';
 export default angular.module('maMaintenanceEvents', ['maUiApp'])
 .component('maMaintenanceEvents', maintenanceEvents)
 .component('maMaintenanceEventsList', maintenanceEventsList)
+.component('maMaintenanceEventsSelect', maintenanceEventsSelect)
 .component('maMaintenanceEventsSetup', maintenanceEventsSetup)
 .component('maFilteringMaintenanceEventsList', filteringMaintenanceEventsList)
 .factory('maMaintenanceEvent', maintenanceEventFactory)

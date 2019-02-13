@@ -1,29 +1,23 @@
 /**
- * @copyright 2018 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
+ * @copyright 2019 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Luis Güette
  */
 
-import componentTemplate from './maintenanceEventsList.html';
-
-/**
- * @ngdoc directive
- * @name ngMango.directive:maMaintenanceEventsList
- * @restrict E
- * @description Displays a list of maintenance events
- */
+import componentTemplate from './maintenanceEventsSelect.html';
 
 const $inject = Object.freeze(['maMaintenanceEvent']);
-class MaintenanceEventsListController {
+
+class maintenanceEventsSelectController {
+
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
-    
+
     constructor(maMaintenanceEvent) {
         this.maMaintenanceEvent = maMaintenanceEvent;
     }
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
-        this.new = true;
         this.getEvents();
     }
 
@@ -43,7 +37,6 @@ class MaintenanceEventsListController {
                     this.selectedEvent = this.events[this.events.length - 1];
                 }
     
-                this.new = false;
             }
     
             if (changes.deletedItem && this.deletedItem) {
@@ -58,8 +51,8 @@ class MaintenanceEventsListController {
         }
     }
 
-    setViewValue() {
-        this.ngModelCtrl.$setViewValue(this.selectedEvent.copy());
+    setViewValue(selectedEvent) {
+        this.ngModelCtrl.$setViewValue(selectedEvent);
     }
 
     render() {
@@ -73,16 +66,14 @@ class MaintenanceEventsListController {
     }
     
     newMaintenanceEvent() {
-        this.new = true;
         this.selectedEvent = new this.maMaintenanceEvent();
         this.setViewValue();
         this.itemSelected();
     }
 
-    selectMaintenanceEvent(event) {
-        this.new = false;
-        this.selectedEvent = event;
-        this.setViewValue();
+    selectMaintenanceEvent() {
+        const selectedEvent = this.selectedEvent.copy();
+        this.setViewValue(selectedEvent);
         this.itemSelected();
     }
 
@@ -96,18 +87,18 @@ class MaintenanceEventsListController {
 }
 
 export default {
-    template: componentTemplate,
-    controller: MaintenanceEventsListController,
     bindings: {
         updatedItem: '<?',
         deletedItem: '<?',
         onSelect: '&?',
+        selectMultiple: '<?',
     },
     require: {
         ngModelCtrl: 'ngModel'
     },
-    designerInfo: {
-        translation: 'maintenanceEvents.list',
-        icon: 'list'
-    }
+    transclude: {
+        labelSlot: '?maLabel'
+    },
+    controller: maintenanceEventsSelectController,
+    template: componentTemplate
 };

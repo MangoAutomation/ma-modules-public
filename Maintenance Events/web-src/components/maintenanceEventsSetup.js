@@ -69,7 +69,7 @@ class MaintenanceEventsSetupController {
         if (!ids || ids.length === 0) {
             this.dataPoints = [];
             return;
-        };
+        }
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
