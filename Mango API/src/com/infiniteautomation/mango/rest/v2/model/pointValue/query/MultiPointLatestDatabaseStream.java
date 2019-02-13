@@ -94,8 +94,10 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 writer.writeDataPointValues(bookends, bookends.get(0).getTime());
         }else {
             if(!info.isSingleArray()) {
-                if(contentType == StreamContentType.JSON)
-                    writer.writeEndArray();
+                if(contentType == StreamContentType.JSON) {
+                    if(this.currentDataPointId != Common.NEW_ID)
+                        writer.writeEndArray();
+                }
             }
         }
         super.finish(writer);
@@ -149,7 +151,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             if(!info.isSingleArray()) {
                 //Writing multi-array, could be a multi-array of 1 though
                 if(currentDataPointId != value.getId()) {
-                    if(currentDataPointId != -1)
+                    if(currentDataPointId != Common.NEW_ID)
                         writer.writeEndArray();
                     writer.writeStartArray(this.voMap.get(value.getId()).getXid());
                     currentDataPointId = value.getId();
