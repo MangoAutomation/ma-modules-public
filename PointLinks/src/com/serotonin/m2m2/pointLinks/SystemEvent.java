@@ -34,4 +34,14 @@ public class SystemEvent extends SystemEventTypeDefinition {
         sb.append("'/></a>");
         return sb.toString();
     }
+
+    @Override
+    public boolean supportsReferenceId1() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsReferenceId2() {
+        return false;
+    }
 }

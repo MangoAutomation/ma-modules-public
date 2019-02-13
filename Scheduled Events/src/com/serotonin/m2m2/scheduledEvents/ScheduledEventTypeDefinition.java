@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.scheduledEvents;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -75,11 +76,23 @@ public class ScheduledEventTypeDefinition extends EventTypeDefinition {
         return null;
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.module.EventTypeDefinition#getModelClass()
-	 */
 	@Override
 	public Class<? extends EventTypeModel> getModelClass() {
 		return ScheduledEventTypeModel.class;
 	}
+
+    @Override
+    public List<String> getEventSubTypes() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean supportsReferenceId1() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsReferenceId2() {
+        return false;
+    }
 }
