@@ -107,6 +107,7 @@ describe('Event handlers v2', function() {
                 eventTypes: [
                     {
                         eventType: 'DATA_SOURCE',
+                        subType: null,
                         referenceId1: global.ds1.id,
                         referenceId2: 1 //Poll Aborted
                     }
@@ -277,20 +278,25 @@ describe('Event handlers v2', function() {
             assert.strictEqual(error.status, 422);
             assert.strictEqual(error.data.result.messages.length, 4);
             
-            //Missing user
             assert.strictEqual(error.data.result.messages[0].property, 'targetPointId');
-            //Missing user
             assert.strictEqual(error.data.result.messages[1].property, 'activePointId');
-            //Invalid FTL
             assert.strictEqual(error.data.result.messages[2].property, 'inactivePointId');
-            //Missing point
             assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].id');
         });
     });
     
     it('Gets websocket notifications for update', function() {
         
-        global.staticValueSetPointEventHandler.name = 'New event handler name';
+        global.pointValueSetPointEventHandler.name = 'New event handler name';
+        global.pointValueSetPointEventHandler.eventTypes = [
+            {
+                eventType: 'SYSTEM',
+                subType: 'USER_LOGIN',
+                referenceId1: 0,
+                referenceId2: 0
+                
+            }
+        ];
         
         let ws;
         const subscription = {
@@ -330,6 +336,10 @@ describe('Event handlers v2', function() {
                     assert.strictEqual(msg.status, 'OK');
                     assert.strictEqual(msg.payload.action, 'update');
                     assert.strictEqual(msg.payload.object.xid, global.pointValueSetPointEventHandler.xid);
+                    assert.strictEqual(msg.payload.object.eventTypes.length, 1);
+                    assert.strictEqual(msg.payload.object.eventTypes[0].eventType, global.pointValueSetPointEventHandler.eventTypes[0].eventType);
+                    assert.strictEqual(msg.payload.object.eventTypes[0].subType, global.pointValueSetPointEventHandler.eventTypes[0].subType);
+                    
                     listUpdatedDeferred.resolve();   
                 }catch(e){
                     listUpdatedDeferred.reject(e);

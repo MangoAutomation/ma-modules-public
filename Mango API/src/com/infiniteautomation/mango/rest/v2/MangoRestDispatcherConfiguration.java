@@ -107,7 +107,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         .ignoreAcceptHeader(false)
         .favorParameter(true)
         .useRegisteredExtensionsOnly(true)
-        //.mediaType("html", MediaType.TEXT_HTML) TODO should we re-enable this?
         .mediaType("xml", MediaType.APPLICATION_XML)
         .mediaType("json", MediaType.APPLICATION_JSON_UTF8)
         .mediaType("sjson", MediaTypes.SEROTONIN_JSON)

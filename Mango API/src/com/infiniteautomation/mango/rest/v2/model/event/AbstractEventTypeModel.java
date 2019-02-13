@@ -25,23 +25,22 @@ import io.swagger.annotations.ApiModelProperty;
 public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
 
     @ApiModelProperty("Type of event")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String eventType;
     
     @ApiModelProperty("Sub-type of event")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String subType;
+    
     protected DuplicateHandling duplicateHandling;
     
     @ApiModelProperty("ID used in event type/subtype combination")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer referenceId1;
     
     @ApiModelProperty("ID used in event type/subtype combination")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer referenceId2;
     
+    @ApiModelProperty("Is the alarm rate limited")
     protected Boolean rateLimited;
+    
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected SOURCE source;
 

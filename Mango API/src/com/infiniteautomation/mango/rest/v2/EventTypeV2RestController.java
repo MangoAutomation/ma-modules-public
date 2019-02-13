@@ -182,7 +182,6 @@ public class EventTypeV2RestController {
      * @param user
      * @return
      */
-
     private void getEventTypesForUser(String typeName, List<EventTypeVOModel<?,?>> types, User user) {
         //track if the type was a default type
         boolean found = false;

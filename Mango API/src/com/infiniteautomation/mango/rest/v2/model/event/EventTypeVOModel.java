@@ -17,6 +17,18 @@ public class EventTypeVOModel<T extends EventType, SOURCE> {
     private TranslatableMessage description;
     private AlarmLevels alarmLevel;
 
+    private boolean supportsReferenceId1;
+    private boolean supportsReferenceId2;
+    
+    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE> type, TranslatableMessage description, AlarmLevels alarmLevel, boolean supportsTypeRef1, boolean supportsTypeRef2) {
+        this.type = type;
+        this.description = description;
+        this.alarmLevel = alarmLevel;
+        this.supportsReferenceId1 = supportsTypeRef1;
+        this.supportsReferenceId2 = supportsTypeRef2;
+    }
+    
+    @Deprecated
     public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE> type, TranslatableMessage description, AlarmLevels alarmLevel) {
         this.type = type;
         this.description = description;
@@ -63,6 +75,34 @@ public class EventTypeVOModel<T extends EventType, SOURCE> {
      */
     public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
+    }
+
+    /**
+     * @return the supportsReferenceId1
+     */
+    public boolean isSupportsReferenceId1() {
+        return supportsReferenceId1;
+    }
+
+    /**
+     * @param supportsReferenceId1 the supportsReferenceId1 to set
+     */
+    public void setSupportsReferenceId1(boolean supportsReferenceId1) {
+        this.supportsReferenceId1 = supportsReferenceId1;
+    }
+
+    /**
+     * @return the supportsReferenceId2
+     */
+    public boolean isSupportsReferenceId2() {
+        return supportsReferenceId2;
+    }
+
+    /**
+     * @param supportsReferenceId2 the supportsReferenceId2 to set
+     */
+    public void setSupportsReferenceId2(boolean supportsReferenceId2) {
+        this.supportsReferenceId2 = supportsReferenceId2;
     }
     
 }
