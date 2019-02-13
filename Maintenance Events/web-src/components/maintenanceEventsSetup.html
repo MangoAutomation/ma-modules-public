@@ -1,10 +1,10 @@
 <div class="md-padding" layout layout-align="space-between top" layout-wrap ng-form="$ctrl.form" ma-validation-messages="$ctrl.validationMessages">
-    <md-switch ng-model="$ctrl.activeEvent" ng-disabled="$ctrl.selectedEvent.disabled" ng-change="$ctrl.toggleEvent()" md-invert aria-label="Toggle Event">Toggle event</md-switch>
     <md-input-container flex="100" flex-gt-md="45" class="ma-input-space-between">
         <label ma-tr="common.xid"></label>
         <input name="xid" ng-model="$ctrl.selectedEvent.xid" required>
         <div ng-messages="$ctrl.form.xid.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.xid.validationMessage"></div>
         </div>
     </md-input-container>
 
@@ -13,6 +13,7 @@
         <input name="name" ng-model="$ctrl.selectedEvent.name" required>
         <div ng-messages="$ctrl.form.name.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.name.validationMessage"></div>
         </div>
     </md-input-container>
 
@@ -31,6 +32,7 @@
         </md-select>
         <div ng-messages="$ctrl.form.alarmLevel.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.alarmLevel.validationMessage"></div>
         </div>
     </md-input-container>
 
@@ -48,8 +50,13 @@
         </md-select>
         <div ng-messages="$ctrl.form.scheduleType.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.scheduleType.validationMessage"></div>
         </div>
     </md-input-container>
+
+    <md-switch flex="100" flex-gt-sm="50" ng-model="$ctrl.activeEvent" ng-disabled="$ctrl.selectedEvent.disabled" ng-change="$ctrl.toggleEvent()">
+        <span ma-tr="maintenanceEvents.toggle"></span>
+    </md-switch>
 
     <!-- Active Time -->
 
@@ -62,6 +69,7 @@
                 <input name="activeMinute" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.activeMinute" required>
                 <div ng-messages="$ctrl.form.activeMinute.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeMinute.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex="100" flex-gt-md="50" class="ma-input-space-between">
@@ -69,6 +77,7 @@
                 <input name="activeSecond" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.activeSecond" required>
                 <div ng-messages="$ctrl.form.activeSecond.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeSecond.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -87,6 +96,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.activeDay.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeDay.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -110,6 +120,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.activeMonth.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeMonth.validationMessage"></div>
                 </div>
             </md-input-container>
             
@@ -150,6 +161,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.activeDay.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeDay.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -160,6 +172,7 @@
                 <input name="activeYear" type="number" min="2018" max="3000" ng-model="$ctrl.selectedEvent.activeYear" required>
                 <div ng-messages="$ctrl.form.activeYear.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeYear.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex>
@@ -180,6 +193,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.activeMonth.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeMonth.validationMessage"></div>
                 </div>
             </md-input-container>
             
@@ -220,6 +234,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.activeDay.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeDay.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -230,6 +245,7 @@
                 <input name="activeHour" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.activeHour" required>
                 <div ng-messages="$ctrl.form.activeHour.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeHour.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex="100" flex-gt-md="40" class="ma-input-space-between">
@@ -237,6 +253,7 @@
                 <input name="activeMinute" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.activeMinute" required>
                 <div ng-messages="$ctrl.form.activeMinute.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeMinute.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex="100" flex-gt-md="30" class="ma-input-space-between">
@@ -244,6 +261,7 @@
                 <input name="activeSecond" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.activeSecond" required>
                 <div ng-messages="$ctrl.form.activeSecond.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.activeSecond.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -256,6 +274,7 @@
                     <input name="activeCron" ng-model="$ctrl.selectedEvent.activeCron" required>
                     <div ng-messages="$ctrl.form.activeCron.$error">
                         <div ng-message="required" ma-tr="ui.app.required"></div>
+                        <div ng-message="validationMessage" ng-bind="$ctrl.form.activeCron.validationMessage"></div>
                     </div>
                 </md-input-container>
             </div>
@@ -277,6 +296,7 @@
                 <input name="inactiveMinute" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.inactiveMinute" required>
                 <div ng-messages="$ctrl.form.inactiveMinute.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveMinute.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex="100" flex-gt-md="50" class="ma-input-space-between">
@@ -284,6 +304,7 @@
                 <input name="inactiveSecond" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.inactiveSecond" required>
                 <div ng-messages="$ctrl.form.inactiveSecond.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveSecond.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -302,6 +323,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.inactiveDay.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveDay.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -325,6 +347,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.inactiveMonth.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveMonth.validationMessage"></div>
                 </div>
             </md-input-container>
             
@@ -365,6 +388,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.inactiveDay.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveDay.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -375,6 +399,7 @@
                 <input name="inactiveYear" type="number" min="2018" max="3000" ng-model="$ctrl.selectedEvent.inactiveYear" required>
                 <div ng-messages="$ctrl.form.inactiveYear.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveYear.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex>
@@ -395,6 +420,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.inactiveMonth.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveMonth.validationMessage"></div>
                 </div>
             </md-input-container>
             
@@ -435,6 +461,7 @@
                 </md-select>
                 <div ng-messages="$ctrl.form.inactiveDay.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveDay.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -445,6 +472,7 @@
                 <input name="inactiveHour" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.inactiveHour" required>
                 <div ng-messages="$ctrl.form.inactiveHour.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveHour.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex="100" flex-gt-md="40" class="ma-input-space-between">
@@ -452,6 +480,7 @@
                 <input name="inactiveMinute" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.inactiveMinute" required>
                 <div ng-messages="$ctrl.form.inactiveMinute.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveMinute.validationMessage"></div>
                 </div>
             </md-input-container>
             <md-input-container flex="100" flex-gt-md="30" class="ma-input-space-between">
@@ -459,6 +488,7 @@
                 <input name="inactiveSecond" type="number" min="0" max="59" ng-model="$ctrl.selectedEvent.inactiveSecond" required>
                 <div ng-messages="$ctrl.form.inactiveSecond.$error">
                     <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveSecond.validationMessage"></div>
                 </div>
             </md-input-container>
         </div>
@@ -471,6 +501,7 @@
                     <input name="inactiveCron" ng-model="$ctrl.selectedEvent.inactiveCron" required>
                     <div ng-messages="$ctrl.form.inactiveCron.$error">
                         <div ng-message="required" ma-tr="ui.app.required"></div>
+                        <div ng-message="validationMessage" ng-bind="$ctrl.form.inactiveCron.validationMessage"></div>
                     </div>
                 </md-input-container>
             </div>
@@ -494,20 +525,20 @@
                 <md-icon>close</md-icon>
             </md-chip-template>
         </md-chips>
-        <span ng-if="$ctrl.checkError('dataSources')" style="color: rgb(221,44,0);">{{ $ctrl.checkError('dataSources').message }}</span>
+        <div md-colors="{color: 'red-500'}" ng-bind="$ctrl.getValidationMessage('dataSources').message"></div>
     </div>
 
     <div flex="100" class="ma-input-space-between">
         <ma-filtering-point-list ng-model="$ctrl.selectedDataPoint" label-text="'Select data points'"
         ng-change="$ctrl.addDataPoint()"></ma-filtering-point-list>
-        <md-chips ng-model="$ctrl.dataPoints" name="name" readonly="true" md-max-chips="10">
+        <md-chips ng-model="$ctrl.dataPoints" name="dataPoints" readonly="true" md-max-chips="10">
             <md-chip-template ng-click="$ctrl.dataPoints.splice($$replacedScope.$index,1)">
                 <strong>{{$chip.name}}</strong>
                 <em>({{$chip.deviceName}})</em>
                 <md-icon>close</md-icon>
             </md-chip-template>
         </md-chips>
-        <span ng-if="$ctrl.checkError('dataPoints')" style="color: rgb(221,44,0);">{{ $ctrl.checkError('dataPoints').message }}</span>
+        <div md-colors="{color: 'red-500'}" ng-bind="$ctrl.getValidationMessage('dataPoints').message"></div>
     </div>
 
     <md-input-container flex="100" flex-sm="20" flex-gt-sm="20">
@@ -515,6 +546,7 @@
         <input name="timeoutPeriods" type="number" min="0" ng-model="$ctrl.selectedEvent.timeoutPeriods" required>
         <div ng-messages="$ctrl.form.timeoutPeriods.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.timeoutPeriods.validationMessage"></div>
         </div>
     </md-input-container>
 
@@ -531,6 +563,7 @@
         </md-select>
         <div ng-messages="$ctrl.form.timeoutPeriodType.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.timeoutPeriodType.validationMessage"></div>
         </div>
     </md-input-container>
 
@@ -539,6 +572,7 @@
         <input name="togglePermission" ng-model="$ctrl.selectedEvent.togglePermission" pattern="^\s*[\w-]+?\s*(,\s*[\w-]+?\s*)*$">
         <div ng-messages="$ctrl.form.togglePermission.$error">
             <div ng-message="pattern" ma-tr="ui.app.invalidPermissions"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.form.togglePermission.validationMessage"></div>
         </div>
         <ma-permissions-menu ng-model="$ctrl.selectedEvent.togglePermission"></ma-permissions-menu>
     </md-input-container>
@@ -546,13 +580,13 @@
     <md-input-container flex="50" flex-gt-md="45" class="ma-input-space-between md-block">
         <md-checkbox ng-model="$ctrl.selectedEvent.disabled"><span ma-tr="maintenanceEvents.disabled"></span></md-checkbox>
     </md-input-container>
-</div>
-
-<div flex layout layout-align="end center" class="ma-margin-bottom">
-    <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
-        <md-icon>save</md-icon> <span ma-tr="common.save"></span>
-    </md-button>
-    <md-button class="md-raised md-warn" ng-click="$ctrl.delete($event)" ng-disabled="!$ctrl.form.$valid && !$ctrl.form.$touched">
-        <md-icon>delete</md-icon> <span ma-tr="common.delete"></span>
-    </md-button>
+    
+    <div flex="100" layout layout-align="start center" class="ma-margin-bottom">
+        <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
+            <md-icon>save</md-icon> <span ma-tr="common.save"></span>
+        </md-button>
+        <md-button class="md-raised md-warn" ng-click="$ctrl.delete($event)" ng-disabled="$ctrl.selectedEvent.isNew()">
+            <md-icon>delete</md-icon> <span ma-tr="common.delete"></span>
+        </md-button>
+    </div>
 </div>

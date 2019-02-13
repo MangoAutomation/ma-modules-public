@@ -14,18 +14,18 @@ import angular from 'angular';
  */
 
 
- const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', '$http']);
+ const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', 'maMaintenanceEvent']);
 class MaintenanceEventsSetupController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint, $http) {
+    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint, maMaintenanceEvent) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.maDialogHelper = maDialogHelper;
         this.maDataSource = maDataSource;
         this.maPoint = maPoint;
-        this.$http = $http;
+        this.maMaintenanceEvent = maMaintenanceEvent;
 
         this.dataSources = [];
         this.dataPoints = [];
@@ -33,39 +33,30 @@ class MaintenanceEventsSetupController {
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
-
-        this.$scope.$watch('$ctrl.selectedEvent', (newValues) => {
-            if (this.selectedEvent) {
-                this.getDataSourcesByIds(this.selectedEvent.dataSources);
-                this.getDataPointsByIds(this.selectedEvent.dataPoints);
-
-                this.getMaintenanceEventsByXid(this.selectedEvent.xid).then(response => {
-                    const items = response.data.items;
-                    if (items.length) {
-                        this.activeEvent = items[items.length - 1].active;
-                        return this.activeEvent;
-                    }
-                });
-            }
-        });
-
-        this.$scope.$on('meNew', (event) => {
-            this.dataSources = [];
-            this.dataPoints = [];
-        });
     }
 
-    getMaintenanceEventsByXid(xid) {
-        return this.$http.post('/rest/v1/events/module-defined-query', {
-            queryType: 'MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL',
-            parameters: {
-                rql: 'xid=' + xid
-            }
-        });
-    }
+    $onChanges(changes) {
+        if (changes.selectedItem && this.selectedItem && this.selectedEvent) {
+            this.validationMessages = null;
+            this.getDataSourcesByIds(this.selectedEvent.dataSources);
+            this.getDataPointsByIds(this.selectedEvent.dataPoints);
 
+            this.selectedEvent.getByXid().then(response => {
+                const items = response.data.items;
+                if (items.length) {
+                    this.activeEvent = items[items.length - 1].active;
+                    return this.activeEvent;
+                }
+            });
+        }
+        
+    }
+    
     getDataSourcesByIds(ids) {
-        if (!ids || ids.length === 0) return;
+        if (!ids || ids.length === 0) {
+            this.dataSources = [];
+            return;
+        }
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
@@ -75,7 +66,10 @@ class MaintenanceEventsSetupController {
     }
 
     getDataPointsByIds(ids) {
-        if (!ids || ids.length === 0) return;
+        if (!ids || ids.length === 0) {
+            this.dataPoints = [];
+            return;
+        };
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
@@ -117,9 +111,6 @@ class MaintenanceEventsSetupController {
         this.selectedEvent.dataPoints = this.getXids(this.dataPoints);
 
         this.selectedEvent.save().then(() => {
-            
-            this.dataSources = [];
-            this.dataPoints = [];
             this.updateItem();
             this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meSaved']});
 
@@ -136,8 +127,8 @@ class MaintenanceEventsSetupController {
 
     delete() {
         this.maDialogHelper.confirm(event, ['maintenanceEvents.confirmDelete']).then(() => {
-            this.selectedEvent.delete().then(() => {
-                
+            this.selectedEvent.delete().then(() => {      
+
                 this.dataSources = [];
                 this.dataPoints = [];
                 this.deleteItem();
@@ -153,6 +144,12 @@ class MaintenanceEventsSetupController {
 
             });
         }, angular.noop);  
+    }
+
+    getValidationMessage(property) {
+        if (this.validationMessages) {
+            return this.validationMessages.filter(item => item.property === property)[0];
+        }
     }
 
     getXids (dataArray) {
@@ -185,7 +182,8 @@ export default {
     controller: MaintenanceEventsSetupController,
     bindings: {
         itemUpdated: '&?',
-        itemDeleted: '&?'
+        itemDeleted: '&?',
+        selectedItem: '<?'
     },
     require: {
         ngModelCtrl: 'ngModel'
