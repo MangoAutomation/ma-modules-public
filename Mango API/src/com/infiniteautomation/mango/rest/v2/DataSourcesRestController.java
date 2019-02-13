@@ -4,6 +4,9 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,9 +28,15 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel.PollStatus;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.db.pair.LongLongPair;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
+import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -183,6 +192,36 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
         service.restart(xid, enabled, restart, user);
     }
     
+    
+    @ApiOperation(
+            value = "Get runtime status for data source",
+            notes = "Only polling data sources have runtime status",
+            response=RuntimeStatusModel.class)
+    @RequestMapping(method = RequestMethod.GET, value = "/status/{xid}")
+    public RuntimeStatusModel getRuntimeStatus(            
+            @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal User user) {
+        DataSourceVO<?> vo = service.get(xid, user);
+        RuntimeStatusModel model = new RuntimeStatusModel();
+        DataSourceRT<?> ds = Common.runtimeManager.getRunningDataSource(vo.getId());
+        
+        if ((ds != null)&&(ds instanceof PollingDataSource)){
+            List<LongLongPair> list = ((PollingDataSource<?>)ds).getLatestPollTimes();
+            List<PollStatus> latestPolls = new ArrayList<>();
+            for(LongLongPair poll : list){
+                latestPolls.add(new PollStatus(new Date(poll.getKey()), poll.getValue()));
+            }
+            model.setLatestPolls(latestPolls);
+            List<PollStatus> latestAbortedPolls = new ArrayList<>();
+            List<Long> aborted = ((PollingDataSource<?>)ds).getLatestAbortedPollTimes();
+            for(Long poll : aborted)
+                latestAbortedPolls.add(new PollStatus(new Date(poll), -1));
+            model.setLatestAbortedPolls(latestAbortedPolls);
+        }
+        
+        return model;
+    }
     
     /**
      * Perform a query
