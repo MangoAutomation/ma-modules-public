@@ -25,7 +25,7 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     public static final String HANDLER_TYPE = "handlerType";
     
     private boolean disabled;
-    private List<AbstractEventTypeModel<?,?>> eventTypes;
+    private List<AbstractEventTypeModel<?,?, ?>> eventTypes;
     
     public AbstractEventHandlerModel() { }
     
@@ -46,13 +46,13 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     /**
      * @return the eventTypes
      */
-    public List<AbstractEventTypeModel<?,?>> getEventTypes() {
+    public List<AbstractEventTypeModel<?,?, ?>> getEventTypes() {
         return eventTypes;
     }
     /**
      * @param eventTypes the eventTypes to set
      */
-    public void setEventTypes(List<AbstractEventTypeModel<?,?>> eventTypes) {
+    public void setEventTypes(List<AbstractEventTypeModel<?,?, ?>> eventTypes) {
         this.eventTypes = eventTypes;
     }
     
@@ -69,7 +69,7 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
         vo.setDisabled(disabled);
         if(eventTypes != null) {
             List<EventType> types = new ArrayList<>();
-            for(AbstractEventTypeModel<?,?> etm : eventTypes) {
+            for(AbstractEventTypeModel<?,?, ?> etm : eventTypes) {
                 types.add(etm.toVO());
             }
             vo.setEventTypes(types);

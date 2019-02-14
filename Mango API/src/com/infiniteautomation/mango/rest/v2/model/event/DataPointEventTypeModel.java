@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.event;
 
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractPointEventDetectorModel;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 
 /**
@@ -11,7 +12,7 @@ import com.serotonin.m2m2.rt.event.type.DataPointEventType;
  *
  */
 
-public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEventType, DataPointModel> {
+public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEventType, DataPointModel, AbstractPointEventDetectorModel<?>> {
 
     private Integer dataSourceId;
     
@@ -24,8 +25,13 @@ public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEve
         this.dataSourceId = type.getDataSourceId();
     }
     
-    public DataPointEventTypeModel(DataPointEventType type, DataPointModel source) {
-        super(type, source);
+    public DataPointEventTypeModel(DataPointEventType type, DataPointModel reference1) {
+        super(type, reference1);
+        this.dataSourceId = type.getDataSourceId();
+    }
+    
+    public DataPointEventTypeModel(DataPointEventType type, DataPointModel reference1, AbstractPointEventDetectorModel<?> reference2) {
+        super(type, reference1, reference2);
         this.dataSourceId = type.getDataSourceId();
     }
 

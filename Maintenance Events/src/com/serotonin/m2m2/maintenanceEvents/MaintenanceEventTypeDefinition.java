@@ -13,6 +13,8 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 import com.serotonin.web.taglib.Functions;
 
@@ -36,13 +38,19 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     public boolean getHandlersRequireAdmin() {
         return true;
     }
+    
+    @Override
+    public boolean hasCreatePermission(PermissionHolder user) {
+        return user.hasAdminPermission();
+    }
 
     @Override
-    public List<EventTypeVO> getEventTypeVOs() {
+    public List<EventTypeVO> getEventTypeVOs(PermissionHolder user) {
         List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
 
         for (MaintenanceEventVO me : MaintenanceEventDao.getInstance().getAll())
-            vos.add(me.getEventType());
+            if(Permissions.hasEventTypePermission(user, me.getEventType().getEventType()))
+                vos.add(me.getEventType());
 
         return vos;
     }
@@ -82,7 +90,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
 	}
 	
     @Override
-    public List<String> getEventSubTypes() {
+    public List<String> getEventSubTypes(PermissionHolder user) {
         return Collections.emptyList();
     }
 

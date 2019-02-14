@@ -13,7 +13,7 @@ import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
  *
  */
 
-public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceEventType, AbstractDataSourceModel<?>> {
+public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceEventType, AbstractDataSourceModel<?>, String> {
     
     private AlarmLevels alarmLevel;
     
@@ -26,8 +26,13 @@ public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceE
         alarmLevel = type.getAlarmLevel();
     }
     
-    public DataSourceEventTypeModel(DataSourceEventType type, AbstractDataSourceModel<?> source) {
-        super(type, source);
+    public DataSourceEventTypeModel(DataSourceEventType type, AbstractDataSourceModel<?> reference1) {
+        super(type, reference1);
+        alarmLevel = type.getAlarmLevel();
+    }
+    
+    public DataSourceEventTypeModel(DataSourceEventType type, AbstractDataSourceModel<?> reference1, String reference2) {
+        super(type, reference1, reference2);
         alarmLevel = type.getAlarmLevel();
     }
 

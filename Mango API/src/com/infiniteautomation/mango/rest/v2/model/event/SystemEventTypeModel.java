@@ -10,7 +10,7 @@ import com.serotonin.m2m2.rt.event.type.SystemEventType;
  *
  */
 
-public class SystemEventTypeModel extends AbstractEventTypeModel<SystemEventType, Void> {
+public class SystemEventTypeModel extends AbstractEventTypeModel<SystemEventType, Object, Object> {
     
     public SystemEventTypeModel() {
         super(new SystemEventType());
@@ -18,6 +18,14 @@ public class SystemEventTypeModel extends AbstractEventTypeModel<SystemEventType
     
     public SystemEventTypeModel(SystemEventType type) {
         super(type);
+    }
+    
+    public SystemEventTypeModel(SystemEventType type, Object reference1) {
+        super(type, reference1);
+    }
+    
+    public SystemEventTypeModel(SystemEventType type, Object reference1, Object reference2) {
+        super(type, reference1, reference2);
     }
 
     @Override

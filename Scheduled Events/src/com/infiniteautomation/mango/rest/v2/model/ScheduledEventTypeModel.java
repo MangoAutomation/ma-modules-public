@@ -10,7 +10,7 @@ import com.serotonin.m2m2.scheduledEvents.ScheduledEventType;
  * @author Terry Packer
  *
  */
-public class ScheduledEventTypeModel extends AbstractEventTypeModel<ScheduledEventType, ScheduledEventModel> {
+public class ScheduledEventTypeModel extends AbstractEventTypeModel<ScheduledEventType, ScheduledEventModel, Void> {
 
     public ScheduledEventTypeModel() {
         super(new ScheduledEventType());

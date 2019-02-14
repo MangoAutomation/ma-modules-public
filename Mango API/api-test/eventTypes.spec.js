@@ -18,14 +18,14 @@
 const config = require('@infinite-automation/mango-client/test/setup');
 const uuidV4 = require('uuid/v4');
 
-describe('Event types v3', function() {
+describe('Event types', function() {
     before('Login', config.login);
     
     //Setup Data Point With Event Detector
     
     it('Query all event types', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types-v2`,
+            path: `/rest/v2/event-types`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -33,13 +33,32 @@ describe('Event types v3', function() {
             for(var i=0; i<response.data.items.length; i++){
                 assert.strictEqual(response.data.items[i].type.referenceId1, 0);
                 assert.strictEqual(response.data.items[i].type.referenceId2, 0);
+                if(response.data.items[i].eventType === 'DATA_POINT'){
+                    assert.isNull(response.data.items[i].type.subType);
+                    assert.isNull(response.data.items[i].alarmLevel);
+                    assert.isTrue(response.data.items[i].supportsReferenceId1);
+                    assert.isTrue(response.data.items[i].supportsReferenceId2);
+                }else if(response.data.items[i].eventType === 'DATA_SOURCE'){
+                    assert.isNull(response.data.items[i].type.subType);
+                    assert.isNull(response.data.items[i].type.alarmLevel);
+                    assert.isNull(response.data.items[i].alarmLevel);
+                    assert.isTrue(response.data.items[i].supportsReferenceId1);
+                    assert.isTrue(response.data.items[i].supportsReferenceId2);
+                }else if(response.data.items[i].eventType === 'SYSTEM'){
+                    assert.isNotNull(response.data.items[i].type.subType);
+                    assert.isNotNull(response.data.items[i].alarmLevel);
+                    if(reponse.data.items[i].subType === 'USER_LOGIN')
+                        assert.isTrue(response.data.items[i].supportsReferenceId1);
+                    else
+                        assert.isFalse(response.data.items[i].supportsReferenceId1);
+                }
             }             
         });
     });
     
     it('Query for data point event types ref2 always 0', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types-v2/DATA_POINT/null`,
+            path: `/rest/v2/event-types/DATA_POINT/null`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -47,13 +66,14 @@ describe('Event types v3', function() {
             for(var i=0; i<response.data.items.length; i++){
                 assert.isTrue(response.data.items[i].type.referenceId1 !== 0);
                 assert.strictEqual(response.data.items[i].type.referenceId2, 0);
+                assert.isNull(response.data.items[i].alarmLevel);
             }           
         });
     });
 
     it('Query for all possible user login events', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types-v2/SYSTEM/USER_LOGIN`,
+            path: `/rest/v2/event-types/SYSTEM/USER_LOGIN`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -67,7 +87,7 @@ describe('Event types v3', function() {
     
     it('Query event types for single data point', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types-v2/DATA_POINT/null/${this.dp.id}`,
+            path: `/rest/v2/event-types/DATA_POINT/null/${this.dp.id}`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -75,7 +95,57 @@ describe('Event types v3', function() {
             for(var i=0; i<response.data.items.length; i++){
                 assert.strictEqual(response.data.items[i].type.referenceId1, this.dp.id);
                 assert.isTrue(response.data.items[i].type.referenceId2 !== 0);
+                assert.isNotNull(response.data.items[i].alarmLevel);
             }           
+        });
+    });
+    
+    it('Query event types for single data source', function () {
+        return client.restRequest({
+            path: `/rest/v2/event-types/DATA_SOURCE/null/${this.ds.id}`,
+            method: 'GET'
+        }).then(response => {
+            assert.isNumber(response.data.total);
+            assert.isAbove(response.data.items.length, 0);
+            for(var i=0; i<response.data.items.length; i++){
+                assert.strictEqual(response.data.items[i].type.referenceId1, this.ds.id);
+                assert.isTrue(response.data.items[i].type.referenceId2 !== 0);
+                assert.isNotNull(response.data.items[i].type.alarmLevel);
+                assert.isNotNull(response.data.items[i].alarmLevel);
+            }           
+        });
+    });
+    
+    it('Fails to query data source event subtype', function () {
+        return client.restRequest({
+            path: `/rest/v2/event-types/DATA_SOURCE/test`,
+            method: 'GET'
+        }).then(response => {
+            assert.fail(response);
+        }, error =>{
+            assert.strictEqual(error.status, 400);
+        });
+    });
+    
+    it('Fails to query system event using reference 1', function () {
+        return client.restRequest({
+            path: `/rest/v2/event-types/SYSTEM/EMAIL_SEND_FAILURE`,
+            method: 'GET'
+        }).then(response => {
+            assert.fail(response);
+        }, error =>{
+            assert.strictEqual(error.status, 500);
+        });
+    });
+    
+    it('System event with missing subtype should 404', function () {
+        return client.restRequest({
+            path: `/rest/v2/event-types/SYSTEM/NOTHING`,
+            method: 'GET'
+        }).then(response => {
+            assert.fail(response);
+        }, error =>{
+            assert.strictEqual(error.status, 404);
         });
     });
     

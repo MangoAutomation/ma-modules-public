@@ -36,8 +36,8 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> e
         this.service = service;
         //Map the event types into the model
         this.map = (vo, user) -> {
-            List<AbstractEventTypeModel<?,?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
-                return (AbstractEventTypeModel<?,?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
+            List<AbstractEventTypeModel<?,?, ?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
+                return (AbstractEventTypeModel<?,?, ?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
             }).collect(Collectors.toList());
             @SuppressWarnings("unchecked")
             AbstractEventHandlerModel<T> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);

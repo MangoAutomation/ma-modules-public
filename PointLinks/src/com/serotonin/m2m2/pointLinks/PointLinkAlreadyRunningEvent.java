@@ -4,15 +4,27 @@
  */
 package com.serotonin.m2m2.pointLinks;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.SystemEventTypeDefinition;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.type.SystemEventType;
+import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.web.taglib.Functions;
 
 /**
  * @author Terry Packer
  *
  */
-public class PointLinkAlreadyRunningEvent extends SystemEventTypeDefinition{
+public class PointLinkAlreadyRunningEvent extends SystemEventTypeDefinition {
     public static final String TYPE_NAME = "POINT_LINK_ALREADY_RUNNING";
 
     @Override
@@ -47,5 +59,20 @@ public class PointLinkAlreadyRunningEvent extends SystemEventTypeDefinition{
     @Override
     public boolean supportsReferenceId2() {
         return false;
+    }
+    
+    @Override
+    public List<EventTypeVO> generatePossibleEventTypesWithReferenceId1(PermissionHolder user, String subtype) {
+        if(!StringUtils.equals(TYPE_NAME, subtype) || !user.hasAdminPermission())
+            return Collections.emptyList();
+        
+        List<PointLinkVO> links = PointLinkDao.getInstance().getAll();
+        List<EventTypeVO> types = new ArrayList<>(links.size());
+        AlarmLevels level = AlarmLevels.fromValue(SystemSettingsDao.instance.getIntValue(SystemEventType.SYSTEM_SETTINGS_PREFIX + TYPE_NAME));
+
+        for(PointLinkVO link : links)
+            types.add(new EventTypeVO(new SystemEventType(TYPE_NAME, link.getId()), new TranslatableMessage("event.system.pointLinkAlreadyRunningSpecific", link.getName()), level));
+        
+        return types;
     }
 }

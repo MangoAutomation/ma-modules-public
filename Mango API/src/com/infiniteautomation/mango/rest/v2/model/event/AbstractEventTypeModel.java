@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(discriminator="eventType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="eventType")
-public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
+public abstract class AbstractEventTypeModel<T extends EventType, SOURCE_ONE, SOURCE_TWO> {
 
     @ApiModelProperty("Type of event")
     protected String eventType;
@@ -42,11 +42,20 @@ public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
     protected Boolean rateLimited;
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected SOURCE source;
+    protected SOURCE_ONE reference1;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected SOURCE_TWO reference2;
 
-    public AbstractEventTypeModel(T type, SOURCE source) {
+    public AbstractEventTypeModel(T type, SOURCE_ONE reference1, SOURCE_TWO reference2) {
         this(type);
-        this.source = source;
+        this.reference1 = reference1;
+        this.reference2 = reference2;
+    }
+    
+    public AbstractEventTypeModel(T type, SOURCE_ONE reference1) {
+        this(type);
+        this.reference1 = reference1;
     }
     
     public AbstractEventTypeModel(T type) {
@@ -97,17 +106,17 @@ public abstract class AbstractEventTypeModel<T extends EventType, SOURCE> {
     }
 
     /**
-     * @return the source
+     * @return the reference1
      */
-    public SOURCE getSource() {
-        return source;
+    public SOURCE_ONE getReference1() {
+        return reference1;
     }
     
     /**
-     * @param source the source to set
+     * @return the reference2
      */
-    public void setSource(SOURCE source) {
-        this.source = source;
+    public SOURCE_TWO getReference2() {
+        return reference2;
     }
     
     /**

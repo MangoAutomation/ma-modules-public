@@ -11,16 +11,16 @@ import com.serotonin.m2m2.rt.event.type.EventType;
  * @author Terry Packer
  *
  */
-public class EventTypeVOModel<T extends EventType, SOURCE> {
+public class EventTypeVOModel<T extends EventType, SOURCE_ONE, SOURCE_TWO> {
 
-    protected AbstractEventTypeModel<T, SOURCE> type;
+    protected AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type;
     private TranslatableMessage description;
     private AlarmLevels alarmLevel;
 
     private boolean supportsReferenceId1;
     private boolean supportsReferenceId2;
     
-    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE> type, TranslatableMessage description, AlarmLevels alarmLevel, boolean supportsTypeRef1, boolean supportsTypeRef2) {
+    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type, TranslatableMessage description, AlarmLevels alarmLevel, boolean supportsTypeRef1, boolean supportsTypeRef2) {
         this.type = type;
         this.description = description;
         this.alarmLevel = alarmLevel;
@@ -28,24 +28,24 @@ public class EventTypeVOModel<T extends EventType, SOURCE> {
         this.supportsReferenceId2 = supportsTypeRef2;
     }
     
-    @Deprecated
-    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE> type, TranslatableMessage description, AlarmLevels alarmLevel) {
+    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type, TranslatableMessage description, boolean supportsTypeRef1, boolean supportsTypeRef2) {
         this.type = type;
         this.description = description;
-        this.alarmLevel = alarmLevel;
+        this.supportsReferenceId1 = supportsTypeRef1;
+        this.supportsReferenceId2 = supportsTypeRef2;
     }
 
     /**
      * @return the type
      */
-    public AbstractEventTypeModel<T, SOURCE> getType() {
+    public AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> getType() {
         return type;
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(AbstractEventTypeModel<T, SOURCE> type) {
+    public void setType(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type) {
         this.type = type;
     }
 

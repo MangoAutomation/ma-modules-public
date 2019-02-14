@@ -11,7 +11,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel
  *
  */
 
-public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEventType, AbstractPublisherModel<?,?>> {
+public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEventType, AbstractPublisherModel<?,?>, String> {
     
     public PublisherEventTypeModel() {
         super(new PublisherEventType());
@@ -21,8 +21,12 @@ public class PublisherEventTypeModel extends AbstractEventTypeModel<PublisherEve
         super(type);
     }
 
-    public PublisherEventTypeModel(PublisherEventType type, AbstractPublisherModel<?,?> source) {
-        super(type, source);
+    public PublisherEventTypeModel(PublisherEventType type, AbstractPublisherModel<?,?> reference1) {
+        super(type, reference1);
+    }
+    
+    public PublisherEventTypeModel(PublisherEventType type, AbstractPublisherModel<?,?> reference1, String reference2) {
+        super(type, reference1, reference2);
     }
 
     
