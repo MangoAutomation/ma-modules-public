@@ -26,24 +26,24 @@ public abstract class AbstractEventTypeModel<T extends EventType, SOURCE_ONE, SO
 
     @ApiModelProperty("Type of event")
     protected String eventType;
-    
+
     @ApiModelProperty("Sub-type of event")
     protected String subType;
-    
+
     protected DuplicateHandling duplicateHandling;
-    
+
     @ApiModelProperty("ID used in event type/subtype combination")
     protected Integer referenceId1;
-    
+
     @ApiModelProperty("ID used in event type/subtype combination")
     protected Integer referenceId2;
-    
+
     @ApiModelProperty("Is the alarm rate limited")
     protected Boolean rateLimited;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected SOURCE_ONE reference1;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected SOURCE_TWO reference2;
 
@@ -52,14 +52,17 @@ public abstract class AbstractEventTypeModel<T extends EventType, SOURCE_ONE, SO
         this.reference1 = reference1;
         this.reference2 = reference2;
     }
-    
+
     public AbstractEventTypeModel(T type, SOURCE_ONE reference1) {
         this(type);
         this.reference1 = reference1;
     }
-    
+
     public AbstractEventTypeModel(T type) {
         fromVO(type);
+    }
+
+    public AbstractEventTypeModel() {
     }
 
     /**
@@ -111,22 +114,22 @@ public abstract class AbstractEventTypeModel<T extends EventType, SOURCE_ONE, SO
     public SOURCE_ONE getReference1() {
         return reference1;
     }
-    
+
     /**
      * @return the reference2
      */
     public SOURCE_TWO getReference2() {
         return reference2;
     }
-    
+
     /**
-     * EventType(s) are lacking setters 
+     * EventType(s) are lacking setters
      *  so they must be created/filled in this method
      *  implemented in the concrete model class
      * @return
      */
     public abstract T toVO();
-    
+
     public void fromVO(T type) {
         this.eventType = type.getEventType();
         this.subType = type.getEventSubtype();
