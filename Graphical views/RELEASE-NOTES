@@ -1,3 +1,6 @@
+*Version 3.5.3*
+* Bugfix for sessionUser not being available for JSP processing
+
 *Version 3.5.2*
 * Bugfix for sessionUser not being available for JSP processing
 
