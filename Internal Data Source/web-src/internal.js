@@ -4,8 +4,8 @@
  */
 
 import angular from 'angular';
-import internalDataSourceEditor from './components/internalDataSourceEditor/internalDataSourceEditor';
-import internalDataPointEditor from './components/internalDataPointEditor/internalDataPointEditor';
+import internalDataSourceEditor from './components/InternalDataSourceEditor/InternalDataSourceEditor';
+import internalDataPointEditor from './components/InternalDataPointEditor/InternalDataPointEditor';
 
 const internalDataSourceModule = angular.module('maInternalDataSource', ['maUiApp'])
 .component('maInternalDataSourceEditor', internalDataSourceEditor)
