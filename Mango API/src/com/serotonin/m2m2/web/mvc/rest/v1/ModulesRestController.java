@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -105,11 +107,21 @@ public class ModulesRestController extends MangoRestController {
     public static AngularJSModuleDefinitionGroupModel getAngularJSModules() {
         List<AngularJSModuleDefinition> definitions = ModuleRegistry.getAngularJSDefinitions();
         List<String> urls = new ArrayList<String>();
+
+        String snapshot = "-SNAPSHOT";
+        // construct a Maven-like snapshot version string
+        String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(new Date(Common.START_TIME)) + "-1";
+
         for (AngularJSModuleDefinition def : definitions) {
+            String version = def.getModule().getVersion().toString();
+            if (version.endsWith(snapshot)) {
+                version = version.substring(0, version.length() - snapshot.length()) + dateString;
+            }
+
             String url = UriComponentsBuilder.fromPath(def.getModule().getWebPath())
                     .path(WEB)
                     .path(def.getJavaScriptFilename())
-                    .queryParam("v", def.getModule().getVersion().toString())
+                    .queryParam("v", version)
                     .build()
                     .toUriString();
 
@@ -362,10 +374,10 @@ public class ModulesRestController extends MangoRestController {
         module.setMarkedForDeletion(delete);
         if(module.isMarkedForDeletion() != delete)
             throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
-        
+
         return ResponseEntity.ok(new ModuleModel(module));
     }
-    
+
     @ApiOperation(value = "Set Marked For Deletion state of Module", notes = "Marking a module for deletion will un-install it upon restart")
     @RequestMapping(method = RequestMethod.PUT, value = "/deletion-state/{moduleName}")
     public ResponseEntity<ModuleModel> markForDeletion(
@@ -382,8 +394,8 @@ public class ModulesRestController extends MangoRestController {
         module.setMarkedForDeletion(delete);
         if(module.isMarkedForDeletion() != delete)
             throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
-        
-       return ResponseEntity.ok(new ModuleModel(module));
+
+        return ResponseEntity.ok(new ModuleModel(module));
     }
 
     @PreAuthorize("isAdmin()")
