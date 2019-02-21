@@ -167,6 +167,8 @@ public class SystemSettingsRestController extends MangoRestController {
             return value.textValue();
         } else if (value.isNumber()) {
             return value.intValue();
+        } else if (value.isBoolean()) {
+            return value.booleanValue();
         }
         return null;
     }
