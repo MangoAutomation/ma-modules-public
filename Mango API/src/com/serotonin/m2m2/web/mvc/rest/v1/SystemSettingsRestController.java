@@ -6,13 +6,12 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,8 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -46,11 +44,7 @@ import io.swagger.annotations.ApiParam;
 @Api(value="System Settings", description="Configure/Read System Settings")
 @RestController
 @RequestMapping("/system-settings")
-public class SystemSettingsRestController extends MangoRestController{
-
-    @Autowired
-    @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
-    ObjectMapper mapper;
+public class SystemSettingsRestController extends MangoRestController {
 
     private SystemSettingsDao dao = SystemSettingsDao.instance;
 
@@ -78,10 +72,7 @@ public class SystemSettingsRestController extends MangoRestController{
                     value = SystemSettingsDao.instance.getIntValue(key);
                     break;
                 case JSON:
-                    String json = SystemSettingsDao.instance.getValue(key);
-                    if(json != null) {
-                        value = this.mapper.reader().readTree(json);
-                    }
+                    value = SystemSettingsDao.instance.getAsJson(key);
                     break;
                 case STRING:
                 default:
@@ -132,9 +123,7 @@ public class SystemSettingsRestController extends MangoRestController{
     public ResponseEntity<Object> update(
             @PathVariable String key,
             @ApiParam(value = "Updated model", required = true)
-            @RequestBody(required=true) Object model,
-            @ApiParam(value = "Setting Type", required = false, defaultValue="false", allowMultiple = false)
-            @RequestParam(required=false, defaultValue="STRING") SystemSettingTypeEnum type,
+            @RequestBody(required=true) JsonNode model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder, HttpServletRequest request) {
 
@@ -142,39 +131,16 @@ public class SystemSettingsRestController extends MangoRestController{
 
         this.checkUser(request, result);
         if (result.isOk()) {
-            Map<String, Object> settings = new HashMap<String, Object>();
-            settings.put(key, model);
             ProcessResult response = new ProcessResult();
+            Map<String, Object> settings = Collections.singletonMap(key, convertValue(model));
+
+            settings = this.dao.convertCodesToValues(settings);
+
             this.dao.validate(settings, response, user);
             if (response.getHasMessages()) {
                 throw new ValidationException(response);
             }
-            switch (type) {
-                case BOOLEAN:
-                    dao.setBooleanValue(key, (Boolean) model);
-                    break;
-                case INTEGER:
-                    dao.setIntValue(key, (Integer) model);
-                    break;
-                case JSON:
-                    try {
-                        dao.setJsonObjectValue(key, model);
-                    } catch (Exception e) {
-                        result.addRestMessage(
-                                this.getInternalServerErrorMessage(e.getMessage()));
-                        return result.createResponseEntity();
-                    }
-                    break;
-                case STRING:
-                default:
-                    // Potentially convert value from its code
-                    Integer code = this.dao.convertToValueFromCode(key, (String) model);
-                    if (code != null)
-                        dao.setIntValue(key, code);
-                    else
-                        dao.setValue(key, (String) model);
-                    break;
-            }
+            this.dao.updateSettings(settings);
 
             // J.W. WTF is this for?
             // Put a link to the updated data in the header
@@ -188,6 +154,23 @@ public class SystemSettingsRestController extends MangoRestController{
         return result.createResponseEntity();
     }
 
+    private Map<String, Object> convertValues(Map<String, JsonNode> input) {
+        return input.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+            return convertValue(entry.getValue());
+        }));
+    }
+
+    private Object convertValue(JsonNode value) {
+        if (value.isContainerNode()) {
+            return value;
+        } else if (value.isTextual()) {
+            return value.textValue();
+        } else if (value.isNumber()) {
+            return value.intValue();
+        }
+        return null;
+    }
+
     @ApiOperation(
             value = "Update Many System Settings",
             notes = "Admin Privs Required"
@@ -195,7 +178,7 @@ public class SystemSettingsRestController extends MangoRestController{
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> updateMany(
             @ApiParam(value = "Updated settings", required = true)
-            @RequestBody(required=true) Map<String,Object> settings,
+            @RequestBody(required=true) Map<String, JsonNode> body,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder, HttpServletRequest request) {
 
@@ -204,6 +187,8 @@ public class SystemSettingsRestController extends MangoRestController{
         this.checkUser(request, result);
         if (result.isOk()) {
             ProcessResult response = new ProcessResult();
+            Map<String, Object> settings = convertValues(body);
+
             // Convert incoming ExportCodes to int values
             settings = this.dao.convertCodesToValues(settings);
             this.dao.validate(settings, response, user);
