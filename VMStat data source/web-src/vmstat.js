@@ -19,7 +19,7 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
         template: `<ma-vm-stat-data-source-editor data-source="$ctrl.dataSource"></ma-vm-stat-data-source-editor>`,
         polling: true,
         defaultDataSource: {
-            connectionDescription: 'Poll seconds: 60',
+            connectionDescription: '',
             descriptionKey: 'dsEdit.vmstat',
             editPermission: [],
             enabled: false,
@@ -46,7 +46,7 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
             purgeSettings: {override: false, frequency: {periods: 1, type: 'YEARS'}}
         },
         defaultDataPoint: {
-            dataSourceTypeName: 'SCRIPTING',
+            dataSourceTypeName: 'VMSTAT',
             pointLocator: {
                 attribute: 'CPU_ID',
                 dataType: 'NUMERIC',
@@ -59,7 +59,7 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
     });
 
     maPointProvider.registerType({
-        type: 'SCRIPTING',
+        type: 'VMSTAT',
         description: 'dsEdit.vmstatPoint',
         template: `<ma-vm-stat-data-point-editor data-point="$ctrl.dataPoint"></ma-vm-stat-data-point-editor>`
     });
