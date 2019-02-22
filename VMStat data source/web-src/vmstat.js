@@ -66,13 +66,13 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
 
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.vmStatDataSource',
+            name: 'ui.help.vmstatDataSource',
             url: '/vm-stat-data-source',
             menuTr: 'dsEdit.vmstat',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.vmStatDataPoint',
+            name: 'ui.help.vmstatDataPoint',
             url: '/vm-stat-data-point',
             menuTr: 'dsEdit.vmstatPoint',
             template: dpHelpTemplate
