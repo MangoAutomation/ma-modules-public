@@ -27,6 +27,7 @@ import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
@@ -165,7 +166,10 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
                 response.addContextualMessage("script", "pointLinks.validate.scriptError", e.getMessage());
             }
         }
-        this.scriptPermissions.validate(response, Common.getHttpUser());
+        User user = Common.getHttpUser();
+        if(user == null)
+            user = Common.getBackgroundContextUser();
+        this.scriptPermissions.validate(response, user);
         if (logLevel == null)
             response.addContextualMessage("logLevel", "validate.required");
         if (logSize <= 0)
