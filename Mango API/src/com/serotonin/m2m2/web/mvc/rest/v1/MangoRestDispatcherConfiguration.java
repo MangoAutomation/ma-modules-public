@@ -115,10 +115,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
         // see WebMvcConfigurationSupport.addDefaultHttpMessageConverters()
 
-        converters.add(new PointValueTimeStreamCsvMessageConverter());
-        converters.add(new CsvObjectStreamMessageConverter());
-        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
-        
         converters.add(new ResourceHttpMessageConverter());
         converters.add(new ResourceRegionHttpMessageConverter());
         converters.add(new MappingJackson2HttpMessageConverter(mapper));
@@ -130,6 +126,10 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new SerotoninJsonMessageConverter());
         converters.add(new ExceptionCsvMessageConverter());
         converters.add(new SqlMessageConverter());
+
+        converters.add(new PointValueTimeStreamCsvMessageConverter());
+        converters.add(new CsvObjectStreamMessageConverter());
+        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
 
         // Now is a good time to register our Sero Json Converter
         Common.JSON_CONTEXT.addConverter(new AbstractRestModelConverter(), AbstractRestModel.class);
