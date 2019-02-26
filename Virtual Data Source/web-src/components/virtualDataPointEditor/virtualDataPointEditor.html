@@ -3,7 +3,6 @@
     <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.virtualDataPoint">
         <md-icon>help</md-icon>
     </md-button>
-    <p>craig</p>
 </h3>
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
     <div flex="100" flex-gt-md="50">
@@ -38,7 +37,7 @@
                 <em ng-bind="$ctrl.dataPoint.pointLocator.changeType"></em>
             </md-option>
             <md-option ng-repeat="changeType in $ctrl.changeTypes[$ctrl.dataPoint.pointLocator.dataType] track by changeType.key"
-                ng-value="changeType.key" ma-tr="{{changeType.translation}}"></md-option>
+                ng-value="changeType.key" ma-tr="{{changeType.translation}}">
             </md-option>
         </md-select>
         <div ng-messages="changeTypeModelCtrl.$error">
