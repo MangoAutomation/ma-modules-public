@@ -138,7 +138,7 @@ public class PointLinksDwr extends ModuleDwr {
         RTMDefinition.instance.deletePointLink(id);
     }
 
-    @DwrPermission(custom = PointLinkPermissionDefinition.PERMISSION)
+    @DwrPermission(custom = SystemSettingsDao.PERMISSION_DATASOURCE)
     public ProcessResult validateScript(String script, int sourcePointId, int targetPointId, String permissions, LogLevel logLevel) {
         User user = Common.getHttpUser();
         ProcessResult response = new ProcessResult();
