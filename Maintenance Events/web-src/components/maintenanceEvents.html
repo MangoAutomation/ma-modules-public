@@ -1,9 +1,44 @@
-<div layout="column" layout-gt-md="row" flex="noshrink">
-    <div flex="100" flex-gt-md="25" flex-gt-lg="20" layout="row">
-        <ma-maintenance-events-list flex layout="row" ng-model="$ctrl.selectedEvent"></ma-maintenance-events-list>
-    </div>
+<div layout="column" layout-gt-md="row" layout-gt-lg="row" flex="noshrink">
+    <md-card flex="noshrink" flex-gt-md="25" flex-gt-lg="20" layout="column">
+        <md-toolbar class="md-hue-3">
+            <div class="md-toolbar-tools">
+                <span ma-tr="maintenanceEvents.select"></span>
+            </div>
+        </md-toolbar>
 
-    <div flex layout="row">
-        <ma-maintenance-events-setup ng-model="$ctrl.selectedEvent"></ma-maintenance-events-setup>
+        <md-card-content flex ng-if="!$ctrl.$mdMedia('gt-md')">
+            <section layout="row" layout-align="space-between center">
+                <ma-maintenance-events-select flex layout on-select="$ctrl.eventSelected($item)" deleted-item="$ctrl.deletedEvent" updated-item="$ctrl.updatedEvent" ng-model="$ctrl.selectedEvent" ng-change="$ctrl.change()"></ma-maintenance-events-select>
+                <md-button class="md-raised md-primary" ng-click="$ctrl.newEvent()">
+                    <md-icon>add</md-icon> <span ma-tr="maintenanceEvents.new"></span>
+                </md-button>
+            </section>
+        </md-card-content>
+
+        <md-card-content flex layout layout-align="start start" ng-if="$ctrl.$mdMedia('gt-md')" class="ma-no-padding ma-scroll-parent">
+            <ma-maintenance-events-list flex layout="column" class="ma-scroll-child" 
+                on-select="$ctrl.eventSelected($item)"
+                deleted-item="$ctrl.deletedEvent"
+                updated-item="$ctrl.updatedEvent"
+                ng-model="$ctrl.selectedEvent">
+            </ma-maintenance-events-list>
+        </md-card-content>
+    </md-card>
+
+    <div flex>
+        <md-card>
+            <md-toolbar class="md-hue-3">
+                <div class="md-toolbar-tools">
+                    <span ng-if="!$ctrl.selectedEvent.isNew()" ma-tr="maintenanceEvents.edit" ma-tr-args="[$ctrl.selectedEvent.name]"></span>
+                    <span ng-if="$ctrl.selectedEvent.isNew()" ma-tr="maintenanceEvents.createMe"></span>
+                </div>
+            </md-toolbar>
+            <ma-maintenance-events-setup 
+                item-deleted="$ctrl.eventDeleted($item)" 
+                item-updated="$ctrl.eventUpdated($item)"
+                selected-item="$ctrl.selectedEvent"
+                ng-model="$ctrl.selectedEvent">
+            </ma-maintenance-events-setup>
+        </md-card>
     </div>
 </div>

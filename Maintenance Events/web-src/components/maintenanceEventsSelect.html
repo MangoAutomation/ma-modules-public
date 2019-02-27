@@ -1,0 +1,14 @@
+<md-input-container flex>
+    <label ng-transclude="labelSlot">
+        <span ma-tr="maintenanceEvents.select"></span>
+    </label>
+
+    <md-select flex ng-if="$ctrl.selectMultiple" multiple="true" md-on-open="$ctrl.getEvents()" ma-form-exclude ng-model="$ctrl.selectedEvent" ng-change="$ctrl.selectMaintenanceEvent()" ng-model-options="{trackBy: '$value.xid'}">
+        <md-option ng-if="$ctrl.showClear" ng-value="undefined" md-option-empty><md-icon>clear</md-icon> <em ma-tr="ui.app.clear"></em></md-option>
+        <md-option ng-repeat="event in $ctrl.events | orderBy:'name' track by event.xid" ng-value="event"><span ng-bind="event.name"></span></md-option>
+    </md-select>
+    <md-select flex ng-if="!$ctrl.selectMultiple" md-on-open="$ctrl.getEvents" ma-form-exclude ng-model="$ctrl.selectedEvent" ng-change="$ctrl.selectMaintenanceEvent()" ng-model-options="{trackBy: '$value.xid'}">
+        <md-option ng-if="$ctrl.showClear" ng-value="undefined" md-option-empty><md-icon>clear</md-icon> <em ma-tr="ui.app.clear"></em></md-option>
+        <md-option ng-repeat="event in $ctrl.events | orderBy:'name' track by event.xid" ng-value="event"><span ng-bind="event.name"></span></md-option>
+    </md-select>
+</md-input-container>

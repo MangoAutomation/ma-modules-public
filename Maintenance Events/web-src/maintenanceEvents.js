@@ -6,13 +6,17 @@
 import angular from 'angular';
 import maintenanceEvents from './components/maintenanceEvents';
 import maintenanceEventsList from './components/maintenanceEventsList';
+import maintenanceEventsSelect from './components/maintenanceEventsSelect';
 import maintenanceEventsSetup from './components/maintenanceEventsSetup';
 import filteringMaintenanceEventsList from './components/filteringMaintenanceEventsList';
 import maintenanceEventFactory from './services/maintenanceEvent';
 
+import './maintenanceEvents.css';
+
 export default angular.module('maMaintenanceEvents', ['maUiApp'])
 .component('maMaintenanceEvents', maintenanceEvents)
 .component('maMaintenanceEventsList', maintenanceEventsList)
+.component('maMaintenanceEventsSelect', maintenanceEventsSelect)
 .component('maMaintenanceEventsSetup', maintenanceEventsSetup)
 .component('maFilteringMaintenanceEventsList', filteringMaintenanceEventsList)
 .factory('maMaintenanceEvent', maintenanceEventFactory)
@@ -20,7 +24,7 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
     maUiMenuProvider.registerMenuItems([
         {
             name: 'ui.settings.maintenanceEvents',
-            url: '/maintenance-events',
+            url: '/maintenance-events/{xid}',
             template: '<ma-maintenance-events></ma-maintenance-events>',
             menuTr: 'header.maintenanceEvents',
             menuIcon: 'event_busy',

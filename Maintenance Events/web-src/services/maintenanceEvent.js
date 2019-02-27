@@ -55,6 +55,19 @@ function maintenanceEventsFactory(RestResource) {
             return maintenanceEventXidPrefix;
         }
 
+        getByXid() {
+            return this.constructor.http({
+                url: '/rest/v1/events/module-defined-query',
+                method: 'POST',
+                data: {
+                    queryType: 'MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL',
+                    parameters: {
+                        rql: 'xid=' + this.xid
+                    }
+                }
+            });
+        }
+
         toggleActive(opts = {}) {
             return this.constructor.http({
                 url: `${this.constructor.baseUrl}/toggle/${this.getEncodedId()}`,

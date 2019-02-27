@@ -14,18 +14,18 @@ import angular from 'angular';
  */
 
 
- const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', '$http']);
+ const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', 'maMaintenanceEvent']);
 class MaintenanceEventsSetupController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint, $http) {
+    constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint, maMaintenanceEvent) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.maDialogHelper = maDialogHelper;
         this.maDataSource = maDataSource;
         this.maPoint = maPoint;
-        this.$http = $http;
+        this.maMaintenanceEvent = maMaintenanceEvent;
 
         this.dataSources = [];
         this.dataPoints = [];
@@ -33,54 +33,49 @@ class MaintenanceEventsSetupController {
     
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
-
-        this.$scope.$watch('$ctrl.selectedEvent', (newValues) => {
-            if (this.selectedEvent) {
-                this.getDataSourcesByIds(this.selectedEvent.dataSources);
-                this.getDataPointsByIds(this.selectedEvent.dataPoints);
-
-                this.getMaintenanceEventsByXid(this.selectedEvent.xid).then(response => {
-                    const items = response.data.items;
-                    if (items.length) {
-                        return this.activeEvent = items[items.length - 1].active;
-                    }
-                });
-            }
-        });
-
-        this.$scope.$on('meNew', (event) => {
-            this.dataSources = [];
-            this.dataPoints = [];
-        });
     }
 
-    getMaintenanceEventsByXid(xid) {
-        return this.$http.post('/rest/v1/events/module-defined-query', {
-            queryType: "MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL",
-            parameters: {
-                rql: "xid=" + xid
-            }
-        });
-    }
+    $onChanges(changes) {
+        if (changes.selectedItem && this.selectedItem && this.selectedEvent) {
+            this.validationMessages = null;
+            this.getDataSourcesByIds(this.selectedEvent.dataSources);
+            this.getDataPointsByIds(this.selectedEvent.dataPoints);
 
+            this.selectedEvent.getByXid().then(response => {
+                const items = response.data.items;
+                if (items.length) {
+                    this.activeEvent = items[items.length - 1].active;
+                    return this.activeEvent;
+                }
+            });
+        }
+        
+    }
+    
     getDataSourcesByIds(ids) {
-        if (!ids || ids.length == 0) return;
+        if (!ids || ids.length === 0) {
+            this.dataSources = [];
+            return;
+        }
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
         this.maDataSource.rql({rqlQuery}).$promise.then(dataSources => {
             this.dataSources = dataSources;
-        })
+        });
     }
 
     getDataPointsByIds(ids) {
-        if (!ids || ids.length == 0) return;
+        if (!ids || ids.length === 0) {
+            this.dataPoints = [];
+            return;
+        }
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
         this.maPoint.rql({rqlQuery}).$promise.then(points => {
             this.dataPoints = points;
-        })
+        });
     }
     
     setViewValue() {
@@ -98,14 +93,14 @@ class MaintenanceEventsSetupController {
     }
 
     addDataSource() {
-        if (this.dataSources.filter(t => t.xid === this.selectedDataSource.xid).length == 0) {
+        if (this.dataSources.filter(t => t.xid === this.selectedDataSource.xid).length === 0) {
             this.dataSources.push(this.selectedDataSource); 
         }
         this.selectedDataSource = null;
     }
 
     addDataPoint() {
-        if (this.dataPoints.filter(t => t.xid === this.selectedDataPoint.xid).length == 0) {
+        if (this.dataPoints.filter(t => t.xid === this.selectedDataPoint.xid).length === 0) {
             this.dataPoints.push(this.selectedDataPoint); 
         }
         this.selectedDataPoint = null;
@@ -115,27 +110,9 @@ class MaintenanceEventsSetupController {
         this.selectedEvent.dataSources = this.getXids(this.dataSources);
         this.selectedEvent.dataPoints = this.getXids(this.dataPoints);
 
-        if (!this.form.$valid) {
-            this.maDialogHelper.toastOptions({
-                textTr: 'maintenanceEvents.invalidForm',
-                classes: 'md-warn',
-                hideDelay: 3000
-            });
-            return;
-        }
-
         this.selectedEvent.save().then(() => {
-            
-            this.dataSources = [];
-            this.dataPoints = [];
-            this.selectedEvent = null;
+            this.updateItem();
             this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meSaved']});
-            this.$rootScope.$broadcast('meUpdated', true);
-            this.dataSources = [];
-            this.dataPoints = [];
-            this.validationMessages = null;
-            this.form.$setPristine();
-            this.form.$setUntouched();
 
         }, (error) => {
             this.validationMessages = error.data.result.messages;
@@ -150,16 +127,12 @@ class MaintenanceEventsSetupController {
 
     delete() {
         this.maDialogHelper.confirm(event, ['maintenanceEvents.confirmDelete']).then(() => {
-            this.selectedEvent.delete().then(() => {
-                
+            this.selectedEvent.delete().then(() => {      
+
                 this.dataSources = [];
                 this.dataPoints = [];
-                this.selectedEvent = null;
+                this.deleteItem();
                 this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meDeleted']});
-                this.$rootScope.$broadcast('meUpdated', true);
-                this.dataSources = [];
-                this.dataPoints = [];
-                this.validationMessages = null;
 
             }, (error) => {
 
@@ -173,6 +146,12 @@ class MaintenanceEventsSetupController {
         }, angular.noop);  
     }
 
+    getValidationMessage(property) {
+        if (this.validationMessages) {
+            return this.validationMessages.filter(item => item.property === property)[0];
+        }
+    }
+
     getXids (dataArray) {
         let ids = [];
 
@@ -180,24 +159,32 @@ class MaintenanceEventsSetupController {
             ids.push(item.xid);
         });
 
-        return ids
+        return ids;
     }
 
-    checkError(property) {
-        if (!this.validationMessages) {
-            return null;
+    updateItem() {
+        if (typeof this.itemUpdated === 'function') {
+            const copyOfItem = this.selectedEvent.copy();
+            this.itemUpdated({$item: copyOfItem});
         }
+    }
 
-        return this.validationMessages.filter((item) => {
-            return item.property === property;
-        }, property)[0];
+    deleteItem() {
+        if (typeof this.itemDeleted === 'function') {
+            const copyOfItem = this.selectedEvent.copy();
+            this.itemDeleted({$item: copyOfItem});
+        } 
     }
 }
 
 export default {
     template: componentTemplate,
     controller: MaintenanceEventsSetupController,
-    bindings: {},
+    bindings: {
+        itemUpdated: '&?',
+        itemDeleted: '&?',
+        selectedItem: '<?'
+    },
     require: {
         ngModelCtrl: 'ngModel'
     },
