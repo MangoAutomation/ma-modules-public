@@ -1,0 +1,36 @@
+<h3>
+    <span ma-tr="dsEdit.vmstatPoint"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.vmstatDataPoint">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="dsEdit.vmstat.attribute"></label>
+        <md-select name="attribute" ng-model="$ctrl.dataPoint.pointLocator.attribute" required ma-get-ctrl="attributeModelCtrl = $ngModel">
+            <md-option ng-value="'PROCS_R'" ma-tr="dsEdit.vmstat.attr.procsR"></md-option>
+            <md-option ng-value="'PROCS_B'" ma-tr="dsEdit.vmstat.attr.procsB"></md-option>
+            <md-option ng-value="'MEMORY_SWPD'" ma-tr="dsEdit.vmstat.attr.memorySwpd"></md-option>
+            <md-option ng-value="'MEMORY_FREE'" ma-tr="ddsEdit.vmstat.attr.memoryFree"></md-option>
+            <md-option ng-value="'MEMORY_BUFF'" ma-tr="dsEdit.vmstat.attr.memoryBuff"></md-option>
+            <md-option ng-value="'MEMORY_CACHE'" ma-tr="dsEdit.vmstat.attr.memoryCache"></md-option>
+            <md-option ng-value="'SWAP_SI'" ma-tr="dsEdit.vmstat.attr.swapSi"></md-option>
+            <md-option ng-value="'SWAP_SO'" ma-tr="dsEdit.vmstat.attr.swapSo"></md-option>
+            <md-option ng-value="'IO_BI'" ma-tr="dsEdit.vmstat.attr.ioBi"></md-option>
+            <md-option ng-value="'IO_BO'" ma-tr="dsEdit.vmstat.attr.ioBo"></md-option>
+            <md-option ng-value="'SYSTEM_IN'" ma-tr="dsEdit.vmstat.attr.systemIn"></md-option>
+            <md-option ng-value="'SYSTEM_CS'" ma-tr="dsEdit.vmstat.attr.systemCs"></md-option>
+            <md-option ng-value="'CPU_US'" ma-tr="dsEdit.vmstat.attr.cpuUs"></md-option>
+            <md-option ng-value="'CPU_SY'" ma-tr="dsEdit.vmstat.attr.cpuSy"></md-option>
+            <md-option ng-value="'CPU_ID'" ma-tr="dsEdit.vmstat.attr.cpuId"></md-option>
+            <md-option ng-value="'CPU_WA'" ma-tr="dsEdit.vmstat.attr.cpuWa"></md-option>
+            <md-option ng-value="'CPU_ST'" ma-tr="dsEdit.vmstat.attr.cpuSt"></md-option>
+        </md-select>
+        <div ng-messages="attributeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="attributeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>

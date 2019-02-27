@@ -1,0 +1,34 @@
+<h3>
+    <span ma-tr="dsEdit.vmstat"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.vmstatDataSource">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>timer</md-icon>
+        <label ma-tr="dsEdit.vmstat.pollSeconds"></label>
+        <input name="pollSeconds" ng-model="$ctrl.dataSource.pollSeconds" required ma-get-ctrl="pollSecondsModelCtrl = $ngModel">
+        <div ng-messages="pollSecondsModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="pollSecondsModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="dsEdit.vmstat.outputScale"></label>
+        <md-select name="outputScale" ng-model="$ctrl.dataSource.outputScale" required ma-get-ctrl="outputScaleModelCtrl = $ngModel" ng-change="$ctrl.pointEditor.outputScaleChanged()">
+            <md-option ng-value="'NONE'" ma-tr="dsEdit.vmstat.scale.none"></md-option>
+            <md-option ng-value="'LOWER_K'" ma-tr="dsEdit.vmstat.scale.k"></md-option>
+            <md-option ng-value="'UPPER_K'" ma-tr="dsEdit.vmstat.scale.K"></md-option>
+            <md-option ng-value="'LOWER_M'" ma-tr="dsEdit.vmstat.scale.m"></md-option>
+            <md-option ng-value="'UPPER_M'" ma-tr="dsEdit.vmstat.scale.M"></md-option>
+        </md-select>
+        <div ng-messages="outputScaleModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="outputScaleModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>

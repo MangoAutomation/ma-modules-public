@@ -4,3 +4,6 @@
 /maven-target
 /config.json
 /node_modules/
+/node
+/.vscode
+/web/angular
