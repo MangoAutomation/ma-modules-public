@@ -6,11 +6,14 @@
 import angular from 'angular';
 import internalDataSourceEditor from './components/InternalDataSourceEditor/InternalDataSourceEditor';
 import internalDataPointEditor from './components/InternalDataPointEditor/InternalDataPointEditor';
+import dsHelpTemplate from './dsHelp.html';
+import dpHelpTemplate from './dpHelp.html';
 
 const internalDataSourceModule = angular.module('maInternalDataSource', ['maUiApp'])
 .component('maInternalDataSourceEditor', internalDataSourceEditor)
 .component('maInternalDataPointEditor', internalDataPointEditor)
-.config(['maDataSourceProvider', 'maPointProvider', function(maDataSourceProvider, maPointProvider) {
+.config(['maDataSourceProvider', 'maPointProvider','maUiMenuProvider', 
+function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
     maDataSourceProvider.registerType({
         type: 'INTERNAL',
         description: 'dox.internalDS',
@@ -44,6 +47,21 @@ const internalDataSourceModule = angular.module('maInternalDataSource', ['maUiAp
         description: 'dsEdit.internalPoint',
         template: `<ma-internal-data-point-editor data-point="$ctrl.dataPoint"></ma-internal-data-point-editor>`
     });
+
+    maUiMenuProvider.registerMenuItems([
+        {
+            name: 'ui.help.internalDataSource',
+            url: '/internal-data-source',
+            menuTr: 'dsEdit.internal',
+            template: dsHelpTemplate
+        },
+        {
+            name: 'ui.help.internalDataPoint',
+            url: '/internal-data-point',
+            menuTr: 'dsEdit.internalPoint',
+            template: dpHelpTemplate
+        }
+    ]);
 }]);
 
 export default internalDataSourceModule;
