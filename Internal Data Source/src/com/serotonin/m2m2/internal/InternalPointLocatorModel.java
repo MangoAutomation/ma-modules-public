@@ -30,7 +30,7 @@ public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLo
 	    return data.getMonitorId();
 	}
 
-	@JsonSetter("monitor")
+	@JsonSetter("monitorId")
 	@CSVColumnSetter(order=18, header="monitor")
 	public void setMonitorId(String monitorId) {
 	    this.data.setMonitorId(monitorId);

@@ -1,0 +1,23 @@
+<h3>
+    <span ma-tr="dsEdit.internalPoint"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.internalDataPoint">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>show_chart</md-icon>
+        <label ma-tr="dsEdit.internal.attribute"></label>
+        <md-select name="pointLocator.monitorId" ng-model="$ctrl.dataPoint.pointLocator.monitorId" required ma-get-ctrl="monitorIdModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.pointLocator.monitorId.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.monitorId">
+                <em ng-bind="$ctrl.dataPoint.pointLocator.monitorId"></em>
+            </md-option>
+            <md-option ng-repeat="monitorId in $ctrl.monitorIds track by monitorId.id" ng-value="monitorId.id" ng-bind="monitorId.name"></md-option>
+        </md-select>
+        <div ng-messages="monitorIdModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>
