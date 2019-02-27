@@ -151,8 +151,7 @@ public class EventHandlerRestController<T extends AbstractEventHandlerVO<T>> ext
 	        	result.addRestMessage(this.getValidationFailedError());
 	        	return result.createResponseEntity(model); 
 	        }else{
-	        	String initiatorId = request.getHeader("initiatorId");
-	        	dao.saveFull(vo, initiatorId);
+	        	dao.update(existing, vo, true);
 	        }
 	        
 	        //Put a link to the updated data in the header?
@@ -195,8 +194,7 @@ public class EventHandlerRestController<T extends AbstractEventHandlerVO<T>> ext
 	        	return result.createResponseEntity(model); 
 	        }else{
 				T vo = model.getData();
-	        	String initiatorId = request.getHeader("initiatorId");
-	        	dao.saveFull(vo, initiatorId);
+	        	dao.insert(vo, true);
 	        }
 	        
 	        //Put a link to the updated data in the header?
