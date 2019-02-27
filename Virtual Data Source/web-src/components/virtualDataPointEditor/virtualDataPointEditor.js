@@ -14,22 +14,22 @@ class VirtualDataPointEditorController {
         this.dataTypes = maPoint.dataTypes.filter(t => t.key !== 'IMAGE');
         this.changeTypes = { 
             'BINARY': [
-                {key: 'ALTERNATE', translation: 'dsEdit.virtual.changeType.alternate'},
-                {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'},
+                {key: 'ALTERNATE_BOOLEAN', translation: 'dsEdit.virtual.changeType.alternate'},
+                {key: 'RANDOM_BOOLEAN', translation: 'dsEdit.virtual.changeType.random'},
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
             ],
             'MULTISTATE': [
                 {key: 'INCREMENT_MULTISTATE', translation: 'dsEdit.virtual.changeType.increment'},
-                {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'},
+                {key: 'RANDOM_MULTISTATE', translation: 'dsEdit.virtual.changeType.random'},
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
             ],
             'NUMERIC': [
                 {key: 'BROWNIAN', translation: 'dsEdit.virtual.changeType.brownian'},
-                {key: 'INCREMENT', translation: 'dsEdit.virtual.changeType.increment'},
-                {key: 'ATTRACTOR', translation: 'dsEdit.virtual.changeType.attractor'},
+                {key: 'INCREMENT_ANALOG', translation: 'dsEdit.virtual.changeType.increment'},
+                {key: 'ANALOG_ATTRACTOR', translation: 'dsEdit.virtual.changeType.attractor'},
                 {key: 'SINUSOIDAL', translation: 'dsEdit.virtual.changeType.sinusoidal'},
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'},
-                {key: 'RANDOM', translation: 'dsEdit.virtual.changeType.random'} 
+                {key: 'RANDOM_ANALOG', translation: 'dsEdit.virtual.changeType.random'} 
             ],
             'ALPHANUMERIC': [
                 {key: 'NO_CHANGE', translation: 'dsEdit.virtual.changeType.noChange'}, 
@@ -39,14 +39,25 @@ class VirtualDataPointEditorController {
     }
 
     $onInit() {
+        
         this.chipsChanged();
     }
 
     $onChanges(changes) {
+        
+    }
+
+    attractionPointChanged(){
+        this.dataPoint.pointLocator.attractionPointXid = this.attractionPoint.xid;
     }
 
     chipsChanged() {
         let values = this.dataPoint.pointLocator.values; 
+
+        if (!Array.isArray(values)) {
+            values = this.dataPoint.pointLocator.values = [];
+        }
+
         let lastValue = this.dataPoint.pointLocator.values[values.length - 1] = Number(values[values.length - 1]);
 
         if (values.length === 0) {

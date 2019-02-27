@@ -6,8 +6,8 @@
 import angular from 'angular';
 import virtualDataSourceEditor from './components/virtualDataSourceEditor/virtualDataSourceEditor';
 import virtualDataPointEditor from './components/virtualDataPointEditor/virtualDataPointEditor';
-import dsHelpTemplate from './dsHelp.html';
-import dpHelpTemplate from './dpHelp.html';
+import virtualDsHelpTemplate from './help/dsHelp.html';
+import virtualDpHelpTemplate from './help/dpHelp.html';
 
 const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'])
 .component('maVirtualDataSourceEditor', virtualDataSourceEditor)
@@ -65,19 +65,18 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
         description: 'dsEdit.virtualPoint',
         template: `<ma-virtual-data-point-editor data-point="$ctrl.dataPoint"></ma-virtual-data-point-editor>`
     });
-
     maUiMenuProvider.registerMenuItems([
         {
             name: 'ui.help.virtualDataSource',
             url: '/virtual-data-source',
             menuTr: 'dsEdit.virtual',
-            template: dsHelpTemplate
+            template: virtualDsHelpTemplate
         },
         {
             name: 'ui.help.virtualDataPoint',
             url: '/virtual-data-point',
             menuTr: 'dsEdit.virtualPoint',
-            template: dpHelpTemplate
+            template: virtualDpHelpTemplate
         }
     ]);
 }]);
