@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
+import com.serotonin.m2m2.module.DefaultPagesDefinition.LoginUriInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 
@@ -35,13 +36,13 @@ import io.swagger.annotations.ApiParam;
  *
  * @author Terry Packer
  */
-@Api(value = "Login", description = "Login")
+@Api(value = "Login")
 @RestController
 @RequestMapping("/login")
 public class LoginRestV2Controller {
 
-    //private static final Log LOG = LogFactory.getLog(LoginRestController.class);
     public static final String LOGIN_DEFAULT_URI_HEADER = "X-Mango-Default-URI";
+    public static final String LOGIN_DEFAULT_URI_REQUIRED_HEADER = "X-Mango-Default-URI-Required";
     public static final String LOGIN_LAST_UPGRADE_HEADER = "X-Mango-Last-Upgrade";
 
     /**
@@ -67,9 +68,11 @@ public class LoginRestV2Controller {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
-            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
+            LoginUriInfo info = DefaultPagesDefinition.getDefaultUriInfo(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
             response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
+            if(info.isRequired())
+                response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
         }
     }
@@ -102,8 +105,11 @@ public class LoginRestV2Controller {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
-            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
+            LoginUriInfo info = DefaultPagesDefinition.getDefaultUriInfo(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
+            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
+            if(info.isRequired())
+                response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
         }
     }
@@ -134,8 +140,11 @@ public class LoginRestV2Controller {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            String loggedInUri = DefaultPagesDefinition.getDefaultUri(request, response, user);
-            response.setHeader(LOGIN_DEFAULT_URI_HEADER, loggedInUri);
+            LoginUriInfo info = DefaultPagesDefinition.getDefaultUriInfo(request, response, user);
+            response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
+            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
+            if(info.isRequired())
+                response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
         }
     }
