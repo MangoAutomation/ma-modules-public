@@ -1,28 +1,21 @@
-<md-tab>
-    <md-tab-label>
-        <span ma-tr="dsEdit.internal.tools"></span>
-    </md-tab-label>
-    <md-tab-body>
-        <div class="md-padding ma-no-padding-bottom" layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
-            <md-input-container flex="100" flex-gt-md="50">
-                <md-icon>code</md-icon>
-                <label ma-tr="dsEdit.internal.createPointsPattern"></label>
-                <md-select name="createPointsPattern" ng-model="$ctrl.dataSource.createPointsPattern" required ma-get-ctrl="createPointsPatternModelCtrl = $ngModel">
-                    <md-option ng-value="" ma-tr="common.none"></md-option>
-                    <md-option ng-value="'.+'" ma-tr="common.all"></md-option>
-                    <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource"></md-option>
-                    <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_SUCCESS'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.sequential"></md-option>
-                    <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_DURATION'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.duration"></md-option>
-                    <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_PERCENTAGE'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.percentage"></md-option>
-                    <md-option ng-value="'com[.]serotonin[.]m2m2[.]persistent.+'" ma-tr="dsEdit.internal.autoCreate.persistent"></md-option>
-                    <md-option ng-value="'com[.]serotonin[.]m2m2[.]persistent[.]RECIEVING_RATE_MONITOR_.+'" ma-tr="dsEdit.internal.autoCreate.persistent.writeSpeed"></md-option>
-                    <md-option ng-value="'com[.]serotonin[.]m2m2[.]persistent[.]TOTAL_CONNECTION_TIME_MONITOR_.+'" ma-tr="dsEdit.internal.autoCreate.persistent.connectionTime"></md-option>
-                </md-select>
-                <div ng-messages="createPointsPatternModelCtrl.$error">
-                    <div ng-message="required" ma-tr="ui.app.required"></div>
-                    <div ng-message="validationMessage" ng-bind="createPointsPatternModelCtrl.validationMessage"></div>
-                </div>
-            </md-input-container>
-        </div>  
-    </md-tab-body>
-</md-tab>
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>code</md-icon>
+        <label ma-tr="dsEdit.internal.createPointsPattern"></label>
+        <md-select name="createPointsPattern" ng-model="$ctrl.dataSource.createPointsPattern" required ma-get-ctrl="createPointsPatternModelCtrl = $ngModel">
+            <md-option ng-value="" ma-tr="common.none"></md-option>
+            <md-option ng-value="'.+'" ma-tr="common.all"></md-option>
+            <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource"></md-option>
+            <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_SUCCESS'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.sequential"></md-option>
+            <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_DURATION'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.duration"></md-option>
+            <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_PERCENTAGE'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.percentage"></md-option>
+            <md-option ng-value="'com[.]serotonin[.]m2m2[.]persistent.+'" ma-tr="dsEdit.internal.autoCreate.persistent"></md-option>
+            <md-option ng-value="'com[.]serotonin[.]m2m2[.]persistent[.]RECIEVING_RATE_MONITOR_.+'" ma-tr="dsEdit.internal.autoCreate.persistent.writeSpeed"></md-option>
+            <md-option ng-value="'com[.]serotonin[.]m2m2[.]persistent[.]TOTAL_CONNECTION_TIME_MONITOR_.+'" ma-tr="dsEdit.internal.autoCreate.persistent.connectionTime"></md-option>
+        </md-select>
+        <div ng-messages="createPointsPatternModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="createPointsPatternModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>
