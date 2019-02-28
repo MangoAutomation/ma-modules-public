@@ -64,6 +64,9 @@ describe('Websocket authentication', function() {
     });
 
     beforeEach('Reset the test user', function() {
+        this.testUserPassword = uuidV4();
+        this.clients.basic.setBasicAuthentication(this.testUser.username, this.testUserPassword);
+        
         this.testUser.password = this.testUserPassword;
         this.testUser.disabled = false;
         this.testUser.permissions = '';
