@@ -17,7 +17,7 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
         type: 'VIRTUAL',
         description: 'dsEdit.virtual',
         template: `<ma-virtual-data-source-editor data-source="$ctrl.dataSource"></ma-virtual-data-source-editor>`,
-        polling: true,
+        polling: ds => ds.polling,
         defaultDataSource: {
             name: '',
             enabled: false,
