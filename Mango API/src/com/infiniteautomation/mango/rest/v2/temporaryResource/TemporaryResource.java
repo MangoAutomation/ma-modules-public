@@ -47,7 +47,7 @@ public final class TemporaryResource<T, E> {
     private Date completionTime;
     private Integer position;
     private Integer maximum;
-    private volatile Consumer<TemporaryResource<T, E>> cancelCallback;
+    private volatile Consumer<TemporaryResource<T, E>> completeCallback;
 
     /**
      * Holds runtime data for the resource manager to use
@@ -106,8 +106,7 @@ public final class TemporaryResource<T, E> {
 
         if (position != null && position.equals(maximum)) {
             this.status = TemporaryResourceStatus.SUCCESS;
-            this.completionTime = new Date(Common.timer.currentTimeMillis());
-            this.manager.resourceCompleted(this);
+            this.resourceCompleted();
         } else {
             this.status = TemporaryResourceStatus.RUNNING;
             this.manager.resourceUpdated(this);
@@ -119,8 +118,7 @@ public final class TemporaryResource<T, E> {
 
         this.status = TemporaryResourceStatus.TIMED_OUT;
         this.resourceVersion++;
-        this.completionTime = new Date(Common.timer.currentTimeMillis());
-        this.manager.resourceCompleted(this);
+        this.resourceCompleted();
     }
 
     public synchronized final void cancel() {
@@ -128,12 +126,8 @@ public final class TemporaryResource<T, E> {
 
         this.status = TemporaryResourceStatus.CANCELLED;
         this.resourceVersion++;
-        this.completionTime = new Date(Common.timer.currentTimeMillis());
-        this.manager.resourceCompleted(this);
+        this.resourceCompleted();
 
-        if (this.cancelCallback != null) {
-            this.cancelCallback.accept(this);
-        }
     }
 
     public synchronized final void success(T result) {
@@ -142,8 +136,7 @@ public final class TemporaryResource<T, E> {
         this.status = TemporaryResourceStatus.SUCCESS;
         this.resourceVersion++;
         this.result = result;
-        this.completionTime = new Date(Common.timer.currentTimeMillis());
-        this.manager.resourceCompleted(this);
+        this.resourceCompleted();
     }
 
     public synchronized final void error(E error) {
@@ -152,8 +145,7 @@ public final class TemporaryResource<T, E> {
         this.status = TemporaryResourceStatus.ERROR;
         this.resourceVersion++;
         this.error = error;
-        this.completionTime = new Date(Common.timer.currentTimeMillis());
-        this.manager.resourceCompleted(this);
+        this.resourceCompleted();
     }
 
     protected synchronized final void safeError(E error) {
@@ -166,13 +158,23 @@ public final class TemporaryResource<T, E> {
         this.manager.remove(this);
     }
 
+    private void resourceCompleted() {
+        this.completionTime = new Date(Common.timer.currentTimeMillis());
+        this.manager.resourceCompleted(this);
+
+        Consumer<TemporaryResource<T, E>> completeCallback = this.completeCallback;
+        if (completeCallback != null) {
+            completeCallback.accept(this);
+        }
+    }
+
     @JsonIgnore
     public synchronized final boolean isComplete() {
         return !(this.status == TemporaryResourceStatus.VIRGIN || this.status == TemporaryResourceStatus.SCHEDULED || this.status == TemporaryResourceStatus.RUNNING);
     }
 
     protected final void runTask(User user) throws Exception {
-        this.cancelCallback = task.run(this, user);
+        this.completeCallback = task.run(this, user);
     }
 
     @JsonIgnore
