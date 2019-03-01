@@ -2,6 +2,7 @@
 * Upgraded to work with core version 3.6.x
 * Add CSV download button
 * Separate inputs for query and update
+* Store last used queries in local storage
 
 *Version 3.5.1*
 * New AngularJS UI
