@@ -36,14 +36,27 @@ class SqlConsoleController {
     getTables() {
         this.csvUrl = null;
         
+        this.disableButtons = true;
+        this.gettingTables = true;
+        
         this.maSqlConsole.getTables().then(response => {
             this.tableHeaders = response.headers;
             this.rows = response.data;
+        }).finally(() => {
+            delete this.disableButtons;
+            delete this.gettingTables;
         });
     }
 
-    query(queryString) {
+    query(queryString, isSelection) {
         this.csvUrl = null;
+
+        this.disableButtons = true;
+        if (isSelection) {
+            this.queryingSelection = true;
+        } else {
+            this.querying = true;
+        }
         
         this.maSqlConsole.query(queryString).then(response => {
             this.tableHeaders = response.headers;
@@ -55,11 +68,20 @@ class SqlConsoleController {
                 classes: 'md-warn',
                 hideDelay: 10000
             });
+        }).finally(() => {
+            delete this.disableButtons;
+            delete this.querying;
+            delete this.queryingSelection;
         });
     }
 
-    update(queryString) {
-        this.csvUrl = null;
+    update(queryString, isSelection) {
+        this.disableButtons = true;
+        if (isSelection) {
+            this.updatingSelection = true;
+        } else {
+            this.updating = true;
+        }
         
         this.maSqlConsole.update(queryString).then(response => {
             this.maDialogHelper.toastOptions({
@@ -76,6 +98,10 @@ class SqlConsoleController {
                 classes: 'md-warn',
                 hideDelay: 10000
             });
+        }).finally(() => {
+            delete this.disableButtons;
+            delete this.updating;
+            delete this.updatingSelection;
         });
     }
 
@@ -88,7 +114,7 @@ class SqlConsoleController {
             });
         }
 
-        this.query(queryString);
+        this.query(queryString, true);
     }
 
     runSelectedUpdate(queryString) {
@@ -100,7 +126,7 @@ class SqlConsoleController {
             });
         }
 
-        this.update(queryString);
+        this.update(queryString, true);
     }
 }
 

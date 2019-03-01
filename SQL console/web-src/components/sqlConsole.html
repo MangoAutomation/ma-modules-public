@@ -16,13 +16,13 @@
         <md-card-content>
             <ma-ace-editor style="height: 100px" selection-changed="$ctrl.selection = $text" mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
             <div layout="row" layout-align="start center" layout-wrap>
-                <md-button class="md-raised" ng-click="$ctrl.getTables($event)">
+                <md-button class="md-raised" ng-click="$ctrl.getTables($event)" ng-disabled="$ctrl.disableButtons" ng-class="{'ma-throb-opacity': $ctrl.gettingTables}">
                     <span ma-tr="sql.tableList"></span>
                 </md-button>
-                <md-button class="md-raised md-primary" ng-click="$ctrl.query($ctrl.queryString)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.query($ctrl.queryString)" ng-disabled="$ctrl.disableButtons" ng-class="{'ma-throb-opacity': $ctrl.querying}">
                     <span ma-tr="sql.query"></span>
                 </md-button>
-                <md-button class="md-raised md-primary" ng-click="$ctrl.runSelectedQuery($ctrl.selection)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.runSelectedQuery($ctrl.selection)" ng-disabled="$ctrl.disableButtons" ng-class="{'ma-throb-opacity': $ctrl.queryingSelection}">
                     <span ma-tr="sql.runSelectedSql"></span>
                 </md-button>
             </div>
@@ -38,10 +38,10 @@
         <md-card-content>
             <ma-ace-editor style="height: 100px" selection-changed="$ctrl.updateSelection = $text" mode="sql" ng-model="$ctrl.updateString"></ma-ace-editor>
             <div layout="row" layout-align="start center" layout-wrap>
-                <md-button class="md-raised md-warn" ng-click="$ctrl.update($ctrl.updateString)">
+                <md-button class="md-raised md-warn" ng-click="$ctrl.update($ctrl.updateString)" ng-disabled="$ctrl.disableButtons" ng-class="{'ma-throb-opacity': $ctrl.updating}">
                     <span ma-tr="sql.update"></span>
                 </md-button>
-                <md-button class="md-raised md-warn" ng-click="$ctrl.runSelectedUpdate($ctrl.updateSelection)">
+                <md-button class="md-raised md-warn" ng-click="$ctrl.runSelectedUpdate($ctrl.updateSelection)" ng-disabled="$ctrl.disableButtons" ng-class="{'ma-throb-opacity': $ctrl.updatingSelection}">
                     <span ma-tr="sql.runSelectedUpdate"></span>
                 </md-button>
                 <md-checkbox ng-model="$ctrl.queryAfterUpdate" class="ma-no-margin-bottom"><span ma-tr="sql.queryAfterUpdate"></span></md-checkbox>
