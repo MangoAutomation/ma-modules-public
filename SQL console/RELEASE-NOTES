@@ -1,6 +1,7 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
 * Add CSV download button
+* Separate inputs for query and update
 
 *Version 3.5.1*
 * New AngularJS UI
