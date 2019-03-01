@@ -9,6 +9,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
@@ -35,6 +37,8 @@ public class UserModel extends AbstractVoModel<User> {
     private String locale;
     private boolean passwordLocked;
     private String hashAlgorithm;
+    private boolean sessionExpirationOverride;
+    private TimePeriod sessionExpirationPeriod;
 
     public UserModel() {
         super();
@@ -131,6 +135,22 @@ public class UserModel extends AbstractVoModel<User> {
         return this.lastPasswordChange;
     }
 
+    public boolean isSessionExpirationOverride() {
+        return sessionExpirationOverride;
+    }
+    
+    public void setSessionExpirationOverride(boolean sessionExpirationOverride) {
+        this.sessionExpirationOverride = sessionExpirationOverride;
+    }
+
+    public TimePeriod getSessionExpirationPeriod() {
+        return sessionExpirationPeriod;
+    }
+    
+    public void setSessionExpirationPeriod(TimePeriod sessionExpirationPeriod) {
+        this.sessionExpirationPeriod = sessionExpirationPeriod;
+    }
+
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -146,17 +166,12 @@ public class UserModel extends AbstractVoModel<User> {
         String defaultAlgorithm = Common.getHashAlgorithm();
         return !defaultAlgorithm.equals(algorithm);
     }
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#newVO()
-     */
+
     @Override
     protected User newVO() {
         return new User();
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#fromVO(com.serotonin.m2m2.vo.AbstractVO)
-     */
     @Override
     public void fromVO(User vo) {
         super.fromVO(vo);
@@ -175,16 +190,15 @@ public class UserModel extends AbstractVoModel<User> {
         this.permissions = vo.getPermissionsSet();
         this.locale = vo.getLocale();
         this.passwordLocked = vo.isPasswordLocked();
+        this.sessionExpirationOverride = vo.isSessionExpirationOverride();
+        if(sessionExpirationOverride)
+            this.sessionExpirationPeriod = new TimePeriod(vo.getSessionExpirationPeriods(), TimePeriodType.valueOf(vo.getSessionExpirationPeriodType()));
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#toVO()
-     */
     @Override
     public User toVO() {
         User user = super.toVO();
         user.setUsername(username);
-
         user.setEmail(email);
         user.setPhone(phone);
         user.setDisabled(disabled);
@@ -201,6 +215,12 @@ public class UserModel extends AbstractVoModel<User> {
             user.setPasswordHash(this.hashAlgorithm, password);
         }else if(!StringUtils.isEmpty(password)){
             user.setPlainTextPassword(password);
+        }
+        user.setSessionExpirationOverride(sessionExpirationOverride);
+        if(sessionExpirationPeriod != null) {
+            user.setSessionExpirationPeriods(sessionExpirationPeriod.getPeriods());
+            if(sessionExpirationPeriod.getType() != null)
+                user.setSessionExpirationPeriodType(sessionExpirationPeriod.getType().name());
         }
         return user;
     }

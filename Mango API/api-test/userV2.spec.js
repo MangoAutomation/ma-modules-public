@@ -16,6 +16,7 @@
  */
 
 const config = require('@infinite-automation/mango-client/test/setup');
+const MangoClient = require('@infinite-automation/mango-client');
 
 describe('User V2 endpoint tests', function() {
     before('Login', config.login);
@@ -32,6 +33,11 @@ describe('User V2 endpoint tests', function() {
             receiveOwnAuditEvents: false,
             muted: false,
             permissions: ['user', 'test'],
+            sessionExpirationOverride: true,
+            sessionExpirationPeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
         };
         return client.restRequest({
             path: '/rest/v2/users',
@@ -40,6 +46,10 @@ describe('User V2 endpoint tests', function() {
         }).then(response => {
             assert.equal(response.data.username, global.testUser.username);
         });
+    });
+    
+    before('Create a session reference that uses session authentication', function() {
+        this.sessionTimeoutRef = new MangoClient(config);
     });
     
     after('Deletes the test user', function() {
@@ -105,6 +115,20 @@ describe('User V2 endpoint tests', function() {
         }).then(response => {
             assert.equal(response.data.username, global.testUser.username);
             assert.equal(response.data.name, 'test user');
+        });
+    });
+    
+    //TODO something is wrong with this as we can't login
+    it.skip('User session timeout override expires session', function() {
+        const loginClient = new MangoClient(config);
+        return loginClient.User.login('test', 'password').then(() => {
+            return config.delay(1000);
+        }).then(() => {
+            return loginClient.User.current().then(response => {
+                throw new Error('Session should be expired');
+            }, error => {
+                assert.strictEqual(error.status, 401);
+            });
         });
     });
     

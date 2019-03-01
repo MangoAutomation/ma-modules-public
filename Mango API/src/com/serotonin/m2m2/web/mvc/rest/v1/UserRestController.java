@@ -34,9 +34,11 @@ import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.definitions.permissions.UserEditSelfPermission;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionDetails;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -225,7 +227,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 }
                 return result.createResponseEntity(model);
             }else{
-                if(u.getId() != user.getId()){
+                if(u.getId() != user.getId() || !Permissions.hasAnyPermission(user, Permissions.explodePermissionGroups(SystemSettingsDao.instance.getValue(UserEditSelfPermission.PERMISSION)))){
                     LOG.warn("Non admin user: " + user.getUsername() + " attempted to update user : " + u.getUsername());
                     result.addRestMessage(this.getUnauthorizedMessage());
                     return result.createResponseEntity();
@@ -398,7 +400,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 }
                 return result.createResponseEntity(model);
             }else{
-                if(u.getId() != user.getId()){
+                if(u.getId() != user.getId() || !Permissions.hasAnyPermission(user, Permissions.explodePermissionGroups(SystemSettingsDao.instance.getValue(UserEditSelfPermission.PERMISSION)))){
                     LOG.warn("Non admin user: " + user.getUsername() + " attempted to access user : " + u.getUsername());
                     result.addRestMessage(this.getUnauthorizedMessage());
                     return result.createResponseEntity();
@@ -465,7 +467,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 }
                 return result.createResponseEntity(model);
             }else{
-                if(u.getId() != user.getId()){
+                if(u.getId() != user.getId() || !Permissions.hasAnyPermission(user, Permissions.explodePermissionGroups(SystemSettingsDao.instance.getValue(UserEditSelfPermission.PERMISSION)))){
                     LOG.warn("Non admin user: " + user.getUsername() + " attempted to access user : " + u.getUsername());
                     result.addRestMessage(this.getUnauthorizedMessage());
                     return result.createResponseEntity();
@@ -542,7 +544,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                 if(!user.isAdmin()){
                     query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "id", user.getId()));
                 }
-                return result.createResponseEntity(getPageStream(query));
+                return result.createResponseEntity(getPageStream(query, user));
             }catch(InvalidRQLRestException e){
                 LOG.error(e.getMessage(), e);
                 result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));

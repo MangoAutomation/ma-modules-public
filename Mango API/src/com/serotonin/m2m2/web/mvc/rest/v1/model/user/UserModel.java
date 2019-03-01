@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,6 +27,8 @@ import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -310,6 +314,28 @@ public class UserModel extends AbstractRestModel<User> {
         }
     }
 
+    public boolean isSessionExpirationOverride() {
+        return data.isSessionExpirationOverride();
+    }
+    
+    public void setSessionExpirationOverride(boolean sessionExpirationOverride) {
+        this.data.setSessionExpirationOverride(sessionExpirationOverride);
+    }
+    
+    public TimePeriod getSessionExpirationPeriod() {
+        if(StringUtils.isNotEmpty(this.data.getSessionExpirationPeriodType()))
+                return new TimePeriod(this.data.getSessionExpirationPeriods(), TimePeriodType.valueOf(this.data.getSessionExpirationPeriodType()));
+        else
+            return null;
+    }
+    
+    public void setSessionExpirationPeriod(TimePeriod period) {
+        if(period != null) {
+            this.data.setSessionExpirationPeriods(period.getPeriods());
+            this.data.setSessionExpirationPeriodType(period.getType().name());
+        }
+    }
+    
     public Date getLastLogin() {
         long lastLogin = data.getLastLogin();
 
