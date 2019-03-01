@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 
 /**
@@ -17,13 +18,15 @@ import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 public class FilteredVoStreamCallback<VO extends AbstractBasicVO, MODEL, DAO extends AbstractBasicDao<VO>> extends FilteredQueryStreamCallback<VO> {
 
 	protected IMangoVoRestController<VO, MODEL, DAO> controller;
+	protected final User user;
 	
 	/**
 	 * 
 	 * @param controller
 	 */
-	public FilteredVoStreamCallback(IMangoVoRestController<VO, MODEL, DAO> controller){
+	public FilteredVoStreamCallback(IMangoVoRestController<VO, MODEL, DAO> controller, User user){
 		this.controller = controller;
+		this.user = user;
 	}
 	
 	/**
@@ -33,12 +36,12 @@ public class FilteredVoStreamCallback<VO extends AbstractBasicVO, MODEL, DAO ext
 	 */
 	@Override
 	protected void writeJson(VO vo) throws IOException{
-		MODEL model = this.controller.createModel(vo);
+		MODEL model = this.controller.createModel(vo, user);
 		this.jgen.writeObject(model);
 	}
 	@Override
 	protected void writeCsv(VO vo) throws IOException{
-		MODEL model = this.controller.createModel(vo);
+		MODEL model = this.controller.createModel(vo, user);
 		this.csvWriter.writeNext(model);
 	}
 }

@@ -23,17 +23,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
  */
 public class DataPointSummaryStreamCallback extends VoStreamCallback<DataPointVO, DataPointSummary, DataPointDao>{
 
-	private final User user;
-	
 	/**
 	 * @param controller
 	 */
 	public DataPointSummaryStreamCallback(
 			MangoVoRestController<DataPointVO, DataPointSummary, DataPointDao> controller,
 			User user) {
-		super(controller);
-		this.user = user;
-
+		super(controller, user);
 	}
 
 	/**
@@ -46,7 +42,7 @@ public class DataPointSummaryStreamCallback extends VoStreamCallback<DataPointVO
 		
 		try{
     		if(Permissions.hasDataPointReadPermission(user, vo)){
-    			DataPointSummary model = this.controller.createModel(vo);
+    			DataPointSummary model = this.controller.createModel(vo, user);
     			this.jgen.writeObject(model);
     		}
     	}catch(PermissionException e){
@@ -59,7 +55,7 @@ public class DataPointSummaryStreamCallback extends VoStreamCallback<DataPointVO
 	protected void writeCsv(DataPointVO vo) throws IOException{
 		try{
     		if(Permissions.hasDataPointReadPermission(user, vo)){
-    			DataPointSummary model = this.controller.createModel(vo);
+    			DataPointSummary model = this.controller.createModel(vo, user);
     			this.csvWriter.writeNext(model);
     		}
     	}catch(PermissionException e){

@@ -16,15 +16,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListSummaryModel;
  *
  */
 public class WatchListStreamCallback extends FilteredVoStreamCallback<WatchListVO, WatchListSummaryModel, WatchListDao>{
-
-	private User user;
 	
 	/**
 	 * @param controller
 	 */
 	public WatchListStreamCallback(MangoVoRestController<WatchListVO, WatchListSummaryModel, WatchListDao> controller, User user) {
-		super(controller);
-		this.user = user;
+		super(controller, user);
 	}
 
 	

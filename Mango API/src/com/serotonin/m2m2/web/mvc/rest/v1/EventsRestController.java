@@ -174,7 +174,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         User user = this.checkUser(request, result);
         if(result.isOk()){
             ASTNode root = new ASTNode("and", new ASTNode("eq", "userId", user.getId()), new ASTNode("limit", limit));
-            return result.createResponseEntity(getPageStream(root));
+            return result.createResponseEntity(getPageStream(root, user));
         }
         return result.createResponseEntity();
     }
@@ -227,7 +227,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
         User user = this.checkUser(request, result);
         if(result.isOk()){
             query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-            return result.createResponseEntity(getPageStream(query));
+            return result.createResponseEntity(getPageStream(query, user));
         }
 
         return result.createResponseEntity();
@@ -250,7 +250,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
                 //Parse the RQL Query
                 ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
                 query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "userId", user.getId()));
-                return result.createResponseEntity(getPageStream(query));
+                return result.createResponseEntity(getPageStream(query, user));
             }catch(InvalidRQLRestException e){
                 LOG.error(e.getMessage(), e);
                 result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
@@ -526,7 +526,7 @@ public class EventsRestController extends MangoVoRestController<EventInstanceVO,
 
             });
         else
-            return ResponseEntity.ok(getPageStream(query));
+            return ResponseEntity.ok(getPageStream(query, user));
     }
 
     @ApiOperation(

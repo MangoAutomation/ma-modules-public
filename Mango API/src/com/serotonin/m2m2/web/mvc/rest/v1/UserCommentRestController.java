@@ -70,10 +70,10 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
 
         RestProcessResult<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>> result = new RestProcessResult<QueryStream<UserCommentVO, UserCommentModel, UserCommentDao>>(HttpStatus.OK);
         
-        this.checkUser(request, result);
+        User user = this.checkUser(request, result);
     	
         if(result.isOk()){
-        	return result.createResponseEntity(getStream(new ASTNode("limit", limit)));
+        	return result.createResponseEntity(getStream(new ASTNode("limit", limit), user));
     	}
         return result.createResponseEntity();
 	}
@@ -93,9 +93,9 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<UserCommentVO>> result = new RestProcessResult<QueryDataPageStream<UserCommentVO>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
-    		return result.createResponseEntity(getPageStream(query));
+    		return result.createResponseEntity(getPageStream(query, user));
     	}
     	
     	return result.createResponseEntity();
@@ -113,11 +113,11 @@ public class UserCommentRestController extends MangoVoRestController<UserComment
     		HttpServletRequest request) {
 		
 		RestProcessResult<QueryDataPageStream<UserCommentVO>> result = new RestProcessResult<QueryDataPageStream<UserCommentVO>>(HttpStatus.OK);
-    	this.checkUser(request, result);
+    	User user = this.checkUser(request, result);
     	if(result.isOk()){
     		try{
 	    		ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-	    		return result.createResponseEntity(getPageStream(query));
+	    		return result.createResponseEntity(getPageStream(query, user));
     		}catch(InvalidRQLRestException e){
     			LOG.error(e.getMessage(), e);
     			result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));

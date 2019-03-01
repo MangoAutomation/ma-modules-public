@@ -22,17 +22,13 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
  */
 public class DataSourceStreamCallback<T extends DataSourceVO<T>> extends VoStreamCallback<T, AbstractDataSourceModel<T>, DataSourceDao<T>>{
 
-	private final User user;
-	
 	/**
 	 * @param controller
 	 */
 	public DataSourceStreamCallback(
 			MangoVoRestController<T, AbstractDataSourceModel<T>, DataSourceDao<T>> controller,
 			User user) {
-		super(controller);
-		this.user = user;
-
+		super(controller, user);
 	}
 
 	/**

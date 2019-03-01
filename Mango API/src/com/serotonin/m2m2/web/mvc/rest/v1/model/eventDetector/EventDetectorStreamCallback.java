@@ -27,7 +27,7 @@ public class EventDetectorStreamCallback<T extends AbstractEventDetectorVO<T>> e
 	 */
 	public EventDetectorStreamCallback(
 			IMangoVoRestController<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>> controller, User user) {
-		super(controller);
+		super(controller, user);
 		this.filter = new DataPointFilter(user);
 	}
 	

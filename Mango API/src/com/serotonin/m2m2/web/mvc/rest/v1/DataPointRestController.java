@@ -101,7 +101,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
             ASTNode root = new ASTNode("limit", limit);
             if(user.isAdmin()){
                 //Admin Users Don't need to filter the results
-                return result.createResponseEntity(getStream(root));
+                return result.createResponseEntity(getStream(root, user));
             }else{
                 //We are going to filter the results, so we need to strip out the limit(limit,offset) or limit(limit) clause.
                 DataPointStreamCallback callback = new DataPointStreamCallback(this, user);
@@ -775,7 +775,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 return result.createResponseEntity(stream);
             }else{
                 //Admin Users Don't need to filter the results
-                return result.createResponseEntity(getPageStream(root));
+                return result.createResponseEntity(getPageStream(root, user));
             }
         }
 
@@ -798,7 +798,7 @@ public class DataPointRestController extends MangoVoRestController<DataPointVO, 
                 ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
                 if(user.isAdmin()){
                     //Admin Users Don't need to filter the results
-                    return result.createResponseEntity(getPageStream(node));
+                    return result.createResponseEntity(getPageStream(node, user));
                 }else{
                     //Limit our results based on the fact that our permissions should be in the permissions strings
                     node = addPermissionsFilter(node, user);

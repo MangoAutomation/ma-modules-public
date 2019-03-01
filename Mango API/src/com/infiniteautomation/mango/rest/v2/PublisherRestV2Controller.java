@@ -70,7 +70,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
     public ResponseEntity<QueryDataPageStream<PublisherVO<?>>> queryRQL(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
 		ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
-		return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);		
+		return new ResponseEntity<>(getPageStream(node, user), HttpStatus.OK);		
 	}
 	
 	@ApiOperation(

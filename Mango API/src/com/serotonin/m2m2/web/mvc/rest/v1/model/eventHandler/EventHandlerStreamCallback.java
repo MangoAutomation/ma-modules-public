@@ -28,7 +28,7 @@ public class EventHandlerStreamCallback<T extends AbstractEventHandlerVO<T>> ext
 	public EventHandlerStreamCallback(
 			MangoVoRestController<T, AbstractEventHandlerModel<T>, EventHandlerDao<T>> controller,
 			User user) {
-		super(controller);
+		super(controller, user);
 		this.user = user;
 
 	}

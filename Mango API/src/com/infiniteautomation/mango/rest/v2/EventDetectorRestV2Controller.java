@@ -83,7 +83,7 @@ public class EventDetectorRestV2Controller<T extends AbstractEventDetectorVO<T>>
         ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
         if(user.hasAdminPermission()){
             //admin users don't need to filter the results
-            return new ResponseEntity<>(getPageStream(node), HttpStatus.OK);
+            return new ResponseEntity<>(getPageStream(node, user), HttpStatus.OK);
         }else{
             EventDetectorStreamCallback<T> callback = new EventDetectorStreamCallback<>(this, user);
             FilteredPageQueryStream<T, AbstractEventDetectorModel<T>, EventDetectorDao<T>> stream  =

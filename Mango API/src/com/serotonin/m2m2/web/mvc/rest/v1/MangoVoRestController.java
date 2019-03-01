@@ -60,8 +60,8 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL, DA
      * @param query
      * @return
      */
-    protected QueryStream<VO, MODEL, DAO> getStream(ASTNode root){
-        return this.getStream(root, new VoStreamCallback<VO, MODEL, DAO>(this));
+    protected QueryStream<VO, MODEL, DAO> getStream(ASTNode root, User user){
+        return this.getStream(root, new VoStreamCallback<VO, MODEL, DAO>(this, user));
     }
 
     /**
@@ -81,8 +81,8 @@ public abstract class MangoVoRestController<VO extends AbstractVO<VO>, MODEL, DA
      * @param query
      * @return
      */
-    protected PageQueryStream<VO, MODEL, DAO> getPageStream(ASTNode root){
-        return getPageStream(root, new VoStreamCallback<VO, MODEL, DAO>(this));
+    protected PageQueryStream<VO, MODEL, DAO> getPageStream(ASTNode root, User user){
+        return getPageStream(root, new VoStreamCallback<VO, MODEL, DAO>(this, user));
     }
 
     /**

@@ -20,15 +20,16 @@ import com.infiniteautomation.mango.db.query.TableModel;
 import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.IMangoVoRestController;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.VoStreamCallback;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -59,8 +60,8 @@ public abstract class AbstractMangoVoRestV2Controller <VO extends AbstractBasicV
 	 * @param query
 	 * @return
 	 */
-	protected QueryStream<VO, MODEL, DAO> getStream(ASTNode root){
-		return this.getStream(root, new VoStreamCallback<VO, MODEL, DAO>(this));
+	protected QueryStream<VO, MODEL, DAO> getStream(ASTNode root, User user){
+		return this.getStream(root, new VoStreamCallback<VO, MODEL, DAO>(this, user));
 	}
 	
 	/**
@@ -80,8 +81,8 @@ public abstract class AbstractMangoVoRestV2Controller <VO extends AbstractBasicV
 	 * @param query
 	 * @return
 	 */
-	protected PageQueryStream<VO, MODEL, DAO> getPageStream(ASTNode root){
-		return getPageStream(root, new VoStreamCallback<VO, MODEL, DAO>(this));
+	protected PageQueryStream<VO, MODEL, DAO> getPageStream(ASTNode root, User user){
+		return getPageStream(root, new VoStreamCallback<VO, MODEL, DAO>(this, user));
 	}
 
 	/**

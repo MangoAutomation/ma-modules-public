@@ -106,7 +106,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
                     stream.setupQuery();
                     return result.createResponseEntity(stream);
                 }else
-                    return result.createResponseEntity(getPageStream(query));
+                    return result.createResponseEntity(getPageStream(query, user));
             }catch(InvalidRQLRestException e){
                 LOG.error(e.getMessage(), e);
                 result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));

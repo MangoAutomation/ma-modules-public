@@ -27,7 +27,7 @@ public class DataPointStreamCallback extends FilteredVoStreamCallback<DataPointV
 	public DataPointStreamCallback(
 			IMangoVoRestController<DataPointVO, DataPointModel, DataPointDao> controller,
 			User user) {
-		super(controller);
+		super(controller, user);
 		this.filter = new DataPointFilter(user);
 
 	}

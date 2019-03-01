@@ -87,7 +87,7 @@ public class AuditRestController extends MangoRestController implements IMangoVo
                 }else{
                     //Limit our results based on the fact that our permissions should be in the permissions strings
                     ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
-                    return result.createResponseEntity(getPageStream(root));
+                    return result.createResponseEntity(getPageStream(root, user));
                 }
             }catch(InvalidRQLRestException e){
                 result.addRestMessage(getInternalServerErrorMessage(e.getMessage()));
@@ -183,8 +183,8 @@ public class AuditRestController extends MangoRestController implements IMangoVo
      * @param query
      * @return
      */
-    protected PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> getPageStream(ASTNode root){
-        return getPageStream(root, new VoStreamCallback<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>(this));
+    protected PageQueryStream<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao> getPageStream(ASTNode root, User user){
+        return getPageStream(root, new VoStreamCallback<AuditEventInstanceVO, AuditEventInstanceModel, AuditEventDao>(this, user));
     }
 
     /**
