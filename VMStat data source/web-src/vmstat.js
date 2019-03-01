@@ -28,14 +28,14 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
                     description: 'Data source exception',
                     descriptionKey: 'event.ds.dataSource',
                     duplicateHandling: 'IGNORE_SAME_MESSAGE',
-                    eventType: null,
+                    eventType: 'DATA_SOURCE_EXCEPTION',
                     level: 'URGENT'
                 },
                 {
                     description: 'Point data parse exception',
                     descriptionKey: 'event.ds.dataParse',
                     duplicateHandling: 'IGNORE',
-                    eventType: null,
+                    eventType: 'PARSE_EXCEPTION',
                     level: 'URGENT'
                 }
             ],
@@ -55,7 +55,9 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
                 settable: false
             }
         },
-        bulkEditorColumns: []
+        bulkEditorColumns: [
+            {name: 'pointLocator.attribute', label: 'dsEdit.vmstat.attribute', selectedByDefault: true}
+        ]
     });
 
     maPointProvider.registerType({
