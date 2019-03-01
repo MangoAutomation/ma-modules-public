@@ -39,7 +39,9 @@ function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
                 settable: false
             }
         },
-        bulkEditorColumns: []
+        bulkEditorColumns: [
+            {name: 'pointLocator.monitorId', label: 'dsEdit.internal.attribute', selectedByDefault: true}
+        ]
     });
     
     maPointProvider.registerType({
