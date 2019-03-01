@@ -7,9 +7,15 @@
 
 <div layout="column">
     <md-card flex="100">
+        <md-card-header class="ma-no-padding-bottom">
+            <md-card-header-text>
+                <span class="md-title" ma-tr="sql.queryHeader"></span>
+            </md-card-header-text>
+        </md-card-header>
+    
         <md-card-content>
             <ma-ace-editor style="height: 100px" selection-changed="$ctrl.selection = $text" mode="sql" ng-model="$ctrl.queryString"></ma-ace-editor>
-            <div layout="column" layout-gt-xs="row" layout-align="center center">
+            <div layout="row" layout-align="start center" layout-wrap>
                 <md-button class="md-raised" ng-click="$ctrl.getTables($event)">
                     <span ma-tr="sql.tableList"></span>
                 </md-button>
@@ -19,9 +25,26 @@
                 <md-button class="md-raised md-primary" ng-click="$ctrl.runSelectedQuery($ctrl.selection)">
                     <span ma-tr="sql.runSelectedSql"></span>
                 </md-button>
-                <md-button class="md-raised md-warn" ng-click="$ctrl.update($ctrl.queryString)">
+            </div>
+        </md-card-content>
+    </md-card>
+    
+    <md-card flex="100">
+        <md-card-header class="ma-no-padding-bottom">
+            <md-card-header-text>
+                <span class="md-title" ma-tr="sql.updateHeader"></span>
+            </md-card-header-text>
+        </md-card-header>
+        <md-card-content>
+            <ma-ace-editor style="height: 100px" selection-changed="$ctrl.updateSelection = $text" mode="sql" ng-model="$ctrl.updateString"></ma-ace-editor>
+            <div layout="row" layout-align="start center" layout-wrap>
+                <md-button class="md-raised md-warn" ng-click="$ctrl.update($ctrl.updateString)">
                     <span ma-tr="sql.update"></span>
                 </md-button>
+                <md-button class="md-raised md-warn" ng-click="$ctrl.runSelectedUpdate($ctrl.updateSelection)">
+                    <span ma-tr="sql.runSelectedUpdate"></span>
+                </md-button>
+                <md-checkbox ng-model="$ctrl.queryAfterUpdate" class="ma-no-margin-bottom"><span ma-tr="sql.queryAfterUpdate"></span></md-checkbox>
             </div>
         </md-card-content>
     </md-card>

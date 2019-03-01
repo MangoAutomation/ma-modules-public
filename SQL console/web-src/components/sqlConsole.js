@@ -53,7 +53,7 @@ class SqlConsoleController {
             this.maDialogHelper.toastOptions({
                 text: error.data.cause,
                 classes: 'md-warn',
-                hideDelay: 5000
+                hideDelay: 10000
             });
         });
     }
@@ -64,27 +64,43 @@ class SqlConsoleController {
         this.maSqlConsole.update(queryString).then(response => {
             this.maDialogHelper.toastOptions({
                 textTr: ['sql.rowsUpdated', response],
-                hideDelay: 3000
+                hideDelay: 5000
             });
+            
+            if (this.queryString && this.queryAfterUpdate) {
+                this.query(this.queryString);
+            }
         }, error => {
             this.maDialogHelper.toastOptions({
                 text: error.data.cause,
                 classes: 'md-warn',
-                hideDelay: 5000
+                hideDelay: 10000
             });
         });
     }
 
     runSelectedQuery(queryString) {
-        if (this.selection.trim() === '') {
+        if (queryString.trim() === '') {
             this.maDialogHelper.toastOptions({
                 textTr: 'sql.emptySelection',
                 classes: 'md-warn',
-                hideDelay: 3000
+                hideDelay: 5000
             });
         }
 
         this.query(queryString);
+    }
+
+    runSelectedUpdate(queryString) {
+        if (queryString.trim() === '') {
+            this.maDialogHelper.toastOptions({
+                textTr: 'sql.emptySelection',
+                classes: 'md-warn',
+                hideDelay: 5000
+            });
+        }
+
+        this.update(queryString);
     }
 }
 
