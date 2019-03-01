@@ -13,17 +13,20 @@ import './sqlConsole.css';
  * @description Displays a list of maintenance events
  */
 
-const $inject = Object.freeze(['$rootScope', '$scope', '$http', 'maSqlConsole', 'maDialogHelper']);
+const localStorageKey = 'sqlConsole';
+
+const $inject = Object.freeze(['$rootScope', '$scope', '$http', 'maSqlConsole', 'maDialogHelper', 'localStorageService']);
 class SqlConsoleController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
     
-    constructor($rootScope, $scope, $http, maSqlConsole, maDialogHelper) {
+    constructor($rootScope, $scope, $http, maSqlConsole, maDialogHelper, localStorageService) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
         this.$http = $http;
         this.maSqlConsole = maSqlConsole;
         this.maDialogHelper = maDialogHelper;
+        this.localStorageService = localStorageService;
 
         this.queryOpts = {
             limit: 15,
@@ -31,7 +34,12 @@ class SqlConsoleController {
         };
     }
     
-    $onInit() {}
+    $onInit() {
+        const settings = this.localStorageService.get(localStorageKey) || {};
+        this.queryString = settings.query || '';
+        this.updateString = settings.update || '';
+        this.queryAfterUpdate = !!settings.queryAfterUpdate;
+    }
 
     getTables() {
         this.csvUrl = null;
@@ -47,6 +55,11 @@ class SqlConsoleController {
             delete this.gettingTables;
         });
     }
+    
+    saveSettings(newValues) {
+        const settings = this.localStorageService.get(localStorageKey) || {};
+        this.localStorageService.set(localStorageKey, Object.assign(settings, newValues));
+    }
 
     query(queryString, isSelection) {
         this.csvUrl = null;
@@ -56,6 +69,7 @@ class SqlConsoleController {
             this.queryingSelection = true;
         } else {
             this.querying = true;
+            this.saveSettings({query: queryString});
         }
         
         this.maSqlConsole.query(queryString).then(response => {
@@ -81,6 +95,7 @@ class SqlConsoleController {
             this.updatingSelection = true;
         } else {
             this.updating = true;
+            this.saveSettings({update: queryString});
         }
         
         this.maSqlConsole.update(queryString).then(response => {

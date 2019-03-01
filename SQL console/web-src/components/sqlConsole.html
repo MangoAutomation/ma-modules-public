@@ -44,7 +44,9 @@
                 <md-button class="md-raised md-warn" ng-click="$ctrl.runSelectedUpdate($ctrl.updateSelection)" ng-disabled="$ctrl.disableButtons" ng-class="{'ma-throb-opacity': $ctrl.updatingSelection}">
                     <span ma-tr="sql.runSelectedUpdate"></span>
                 </md-button>
-                <md-checkbox ng-model="$ctrl.queryAfterUpdate" class="ma-no-margin-bottom"><span ma-tr="sql.queryAfterUpdate"></span></md-checkbox>
+                <md-checkbox ng-model="$ctrl.queryAfterUpdate" class="ma-no-margin-bottom" ng-change="$ctrl.saveSettings({queryAfterUpdate: $ctrl.queryAfterUpdate})">
+                    <span ma-tr="sql.queryAfterUpdate"></span>
+                </md-checkbox>
             </div>
         </md-card-content>
     </md-card>
