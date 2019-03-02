@@ -90,8 +90,6 @@ public class TextRendererFactory {
 			AnalogTextRendererModel model = (AnalogTextRendererModel)baseRendererModel;
 			AnalogRenderer r = new AnalogRenderer();
 			r.setUseUnitAsSuffix(model.isUseUnitAsSuffix());
-			r.setUnit(UnitUtil.parseLocal(model.getUnit()));
-			r.setRenderedUnit(UnitUtil.parseLocal(model.getRenderedUnit()));
 			r.setFormat(model.getFormat());
 			r.setSuffix(model.getSuffix());
 			vo.setTextRenderer(r);
@@ -115,16 +113,12 @@ public class TextRendererFactory {
 			PlainTextRendererModel model = (PlainTextRendererModel)baseRendererModel;
 			PlainRenderer r = new PlainRenderer();
 			r.setUseUnitAsSuffix(model.isUseUnitAsSuffix());
-			r.setUnit(UnitUtil.parseLocal(model.getUnit()));
-			r.setRenderedUnit(UnitUtil.parseLocal(model.getRenderedUnit()));
 			r.setSuffix(model.getSuffix());
 			vo.setTextRenderer(r);
 		}else if(baseRendererModel.getType().equals(RangeRenderer.getDefinition().getName())){
 			RangeTextRendererModel model = (RangeTextRendererModel)baseRendererModel;
 			RangeRenderer r = new RangeRenderer();
 			r.setUseUnitAsSuffix(model.isUseUnitAsSuffix());
-			r.setUnit(UnitUtil.parseLocal(model.getUnit()));
-			r.setRenderedUnit(UnitUtil.parseLocal(model.getRenderedUnit()));
 			r.setFormat(model.getFormat());
 			r.setRangeValues(model.getRangeValues());
 			vo.setTextRenderer(r);

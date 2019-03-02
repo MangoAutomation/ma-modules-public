@@ -14,10 +14,6 @@ public abstract class ConvertingTextRendererModel<T> extends BaseTextRendererMod
 
 	@JsonProperty
 	private boolean useUnitAsSuffix;
-	@JsonProperty
-	private String unit;
-	@JsonProperty
-	private String renderedUnit;
 	
 	public ConvertingTextRendererModel(){ }
 	
@@ -30,8 +26,6 @@ public abstract class ConvertingTextRendererModel<T> extends BaseTextRendererMod
 			String renderedUnit) {
 		super();
 		this.useUnitAsSuffix = useUnitAsSuffix;
-		this.unit = unit;
-		this.renderedUnit = renderedUnit;
 	}
 	public boolean isUseUnitAsSuffix() {
 		return useUnitAsSuffix;
@@ -39,17 +33,4 @@ public abstract class ConvertingTextRendererModel<T> extends BaseTextRendererMod
 	public void setUseUnitAsSuffix(boolean useUnitAsSuffix) {
 		this.useUnitAsSuffix = useUnitAsSuffix;
 	}
-	public String getUnit() {
-		return unit;
-	}
-	public void setUnit(String unit) {
-		this.unit = unit;
-	}
-	public String getRenderedUnit() {
-		return renderedUnit;
-	}
-	public void setRenderedUnit(String renderedUnit) {
-		this.renderedUnit = renderedUnit;
-	}
-	
 }
