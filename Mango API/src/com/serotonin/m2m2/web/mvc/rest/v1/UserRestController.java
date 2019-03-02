@@ -637,6 +637,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
+            groups.add(Permissions.USER_DEFAULT);
             if(user.isAdmin()) {
                 for (User u : UserDao.getInstance().getActiveUsers())
                     groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
@@ -671,7 +672,9 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
-            if(user.isAdmin()) {
+            //Ensure always available
+            groups.add(Permissions.USER_DEFAULT);
+            if(user.hasAdminPermission()) {
                 for (User u : UserDao.getInstance().getActiveUsers())
                     groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
             }else {
