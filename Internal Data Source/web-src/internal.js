@@ -20,6 +20,7 @@ function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
         template: `<ma-internal-data-source-editor data-source="$ctrl.dataSource"></ma-internal-data-source-editor>`,
         polling: true,
         defaultDataSource: {
+            createPointsPattern: '.+',
             modelType: 'INTERNAL',
             polling: true,
             pollPeriod: {
