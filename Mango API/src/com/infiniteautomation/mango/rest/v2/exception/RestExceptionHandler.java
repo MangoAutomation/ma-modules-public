@@ -40,7 +40,6 @@ import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.web.mvc.spring.exception.ExceptionUtils;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
 /**
@@ -174,11 +173,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         HttpServletResponse servletResponse = ((ServletWebRequest) request).getResponse();
 
         this.storeException(servletRequest, ex, status);
-
-        // Log all but not found exceptions
-        if (body instanceof ServerErrorException || body instanceof GenericRestException
-                || !(body instanceof AbstractRestV2Exception))
-            ExceptionUtils.logWebException(ex, servletRequest, LOG);
 
         if (this.browserHtmlRequestMatcher.matches(servletRequest) && !REST_DEVELOPMENT_MODE.equals(Common.envProps.getString("rest.mode", ""))) {
             String uri;
