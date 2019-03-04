@@ -129,7 +129,7 @@ describe('Test Event Handlers Endpoints', function() {
               inactiveValueToSet : "true",
               eventType: [],
               additionalContext: [],
-              scriptPermissions: [""],
+              scriptPermissions: null,
               eventTypes: [{
                   dataSourceId: global.ds.id,
                   dataSourceEventTypeId: 1, //POLL_ABORTED,
