@@ -37,7 +37,7 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
                 }
             },
             eventAlarmLevels: [
-                {eventType: 'POLL_ABORTED', level: 'INFORMATION', duplicateHandling: 'IGNORE', descriptionKey: 'event.ds.pollAborted'}
+                {eventType: 'POLL_ABORTED', level: 'URGENT', duplicateHandling: 'IGNORE', descriptionKey: 'event.ds.pollAborted'}
             ],
             quantize: false,
             useCron: false
