@@ -60,7 +60,7 @@ public class SwaggerV2Config {
         String url = Common.envProps.getString("springfox.documentation.swagger.v2.path", "/swagger/v2/api-docs");
         v2.setUrl("/rest/v2" + url);
         v2.setSwaggerVersion("2.0");
-        resourceProvider.add(v2);
+        resourceProvider.get().add(0,v2);
     }
     
     
