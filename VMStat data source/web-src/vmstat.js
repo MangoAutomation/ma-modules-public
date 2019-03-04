@@ -17,7 +17,7 @@ const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
         type: 'VMSTAT',
         description: 'dsEdit.vmstat',
         template: `<ma-vm-stat-data-source-editor data-source="$ctrl.dataSource"></ma-vm-stat-data-source-editor>`,
-        polling: true,
+        polling: false,
         defaultDataSource: {
             connectionDescription: '',
             descriptionKey: 'dsEdit.vmstat',
