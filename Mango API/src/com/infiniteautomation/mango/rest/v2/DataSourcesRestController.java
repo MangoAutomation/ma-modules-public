@@ -216,7 +216,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             List<PollStatus> latestAbortedPolls = new ArrayList<>();
             List<Long> aborted = ((PollingDataSource<?>)ds).getLatestAbortedPollTimes();
             for(Long poll : aborted)
-                latestAbortedPolls.add(new PollStatus(new Date(poll), -1));
+                latestAbortedPolls.add(new PollStatus(new Date(poll), -1L));
             model.setLatestAbortedPolls(latestAbortedPolls);
         }
         
