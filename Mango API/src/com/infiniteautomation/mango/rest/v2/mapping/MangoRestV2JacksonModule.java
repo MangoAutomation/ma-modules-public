@@ -6,6 +6,8 @@ package com.infiniteautomation.mango.rest.v2.mapping;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2ExceptionMixin;
 import com.infiniteautomation.mango.rest.v2.exception.ExceptionMixin;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
@@ -21,6 +23,7 @@ public class MangoRestV2JacksonModule extends SimpleModule{
 		super("MangoCoreRestV2", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation",
 				"mango"));
         this.setMixInAnnotation(Exception.class, ExceptionMixin.class);
+        this.setMixInAnnotation(AbstractRestV2Exception.class, AbstractRestV2ExceptionMixin.class);
 	}
 	
 	@Override
