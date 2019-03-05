@@ -2,6 +2,9 @@ package com.serotonin.m2m2.internal;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.infiniteautomation.mango.monitor.ValueMonitor;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
@@ -34,6 +37,15 @@ public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLo
 	@CSVColumnSetter(order=18, header="monitor")
 	public void setMonitorId(String monitorId) {
 	    this.data.setMonitorId(monitorId);
+	}
+	
+	@JsonGetter
+	public TranslatableMessage getDescription() {
+        ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(data.getMonitorId());
+        if (monitor != null)
+            return monitor.getName();
+        else
+            return null;
 	}
 
 }
