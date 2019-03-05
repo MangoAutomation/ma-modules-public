@@ -338,7 +338,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 	}
 
 	@Override
-	public void SystemSettingsSaved(String key, String oldValue, String newValue) {
+	public void systemSettingsSaved(String key, String oldValue, String newValue) {
 		this.restrictedPath = isPathRestricted(newValue);
 	}
 	
@@ -353,7 +353,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 	}
 
 	@Override
-	public void SystemSettingsRemoved(String key, String lastValue) {
+	public void systemSettingsRemoved(String key, String lastValue, String defaultValue) {
 		this.restrictedPath = false;
 	}
 
