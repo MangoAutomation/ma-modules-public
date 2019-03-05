@@ -12,15 +12,20 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -46,20 +51,28 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
 		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
 	})
 	@RequestMapping( method = {RequestMethod.GET}, value = {"/latest"} )
-	public ResponseEntity<Map<String,Exception>> getLatest(HttpServletRequest request) {
-		RestProcessResult<Map<String,Exception>> result = new RestProcessResult<>(HttpStatus.OK);
+	public ResponseEntity<MappingJacksonValue> getLatest(
+	        @AuthenticationPrincipal User user,
+	        HttpServletRequest request) {
+		RestProcessResult<MappingJacksonValue> result = new RestProcessResult<>(HttpStatus.OK);
 		
 		//Get latest Session Exception
 		HttpSession session = request.getSession(false);
 		if(session == null)
 			throw new ServerErrorException(new TranslatableMessage("rest.error.noSession"));
 		
-		Map<String,Exception> exceptionMap = new HashMap<String, Exception>();
+		Map<String, Exception> exceptionMap = new HashMap<String, Exception>();
 		for(String key : exceptionKeys){
 			exceptionMap.put(key, (Exception)session.getAttribute(key));			
 		}
 		
-		return result.createResponseEntity(exceptionMap);
+		MappingJacksonValue jacksonValue = new MappingJacksonValue(exceptionMap);
+		if(user.hasAdminPermission())
+		    jacksonValue.setSerializationView(AdminView.class);
+		else
+		    jacksonValue.setSerializationView(Object.class);
+		
+		return result.createResponseEntity(jacksonValue);
 	}
 	
 	@ApiOperation(value = "Clear Last Exception for your session", notes = "")
