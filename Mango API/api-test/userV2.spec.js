@@ -18,7 +18,8 @@
 const config = require('@infinite-automation/mango-client/test/setup');
 const MangoClient = require('@infinite-automation/mango-client');
 
-describe('User V2 endpoint tests', function() {
+//TODO Re-enable when ready to use v2 endpoints
+describe.skip('User V2 endpoint tests', function() {
     before('Login', config.login);
     before('Create test User', function() {
         global.testUser = {
