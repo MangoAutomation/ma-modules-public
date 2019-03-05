@@ -168,7 +168,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
             Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
-
+        if(LOG.isDebugEnabled())
+            LOG.debug("Rest API Error", ex);
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
         HttpServletResponse servletResponse = ((ServletWebRequest) request).getResponse();
 
