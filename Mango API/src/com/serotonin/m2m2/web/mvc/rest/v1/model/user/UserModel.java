@@ -22,6 +22,7 @@ import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
@@ -223,7 +224,11 @@ public class UserModel extends AbstractRestModel<User> {
     @CSVColumnGetter(order=11, header="admin")
     @JsonGetter("admin")
     public Boolean isAdmin() {
-        return data.hasAdminPermission();
+        try {
+            return data.hasAdminPermission();
+        }catch(PermissionException e) {
+            return false;
+        }
     }
 
     @CSVColumnGetter(order=12, header="receiveOwnAuditEvents")
@@ -318,7 +323,12 @@ public class UserModel extends AbstractRestModel<User> {
     
     @JsonGetter
     public Set<String> getGrantedPermissions() {
-        return Permissions.getGrantedPermissions(this.data);
+        try {
+            return Permissions.getGrantedPermissions(this.data);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public boolean isSessionExpirationOverride() {
