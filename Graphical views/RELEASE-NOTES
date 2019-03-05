@@ -1,5 +1,6 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
+* Remove 'user' role from default image upload permissions
 
 *Version 3.5.1*
 * Bugfix for not being able to update permissions
