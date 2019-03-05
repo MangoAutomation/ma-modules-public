@@ -50,6 +50,10 @@ class VirtualDataPointEditorController {
     attractionPointChanged(){
         this.dataPoint.pointLocator.attractionPointXid = this.attractionPoint.xid;
     }
+    dataTypeChanged(){
+        this.dataPoint.pointLocator.changeType = this.changeTypes[this.dataPoint.pointLocator.dataType][0].key;
+        
+    }
 
     chipsChanged() {
         let values = this.dataPoint.pointLocator.values; 
