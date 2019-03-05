@@ -14,6 +14,9 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  *
@@ -39,6 +42,9 @@ public class UserModel extends AbstractVoModel<User> {
     private String hashAlgorithm;
     private boolean sessionExpirationOverride;
     private TimePeriod sessionExpirationPeriod;
+    
+    @ApiModelProperty("List of system settings permission definitions this user has access to")
+    private Set<String> grantedPermissions;
 
     public UserModel() {
         super();
@@ -151,6 +157,10 @@ public class UserModel extends AbstractVoModel<User> {
         this.sessionExpirationPeriod = sessionExpirationPeriod;
     }
 
+    public Set<String> getGrantedPermissions() {
+        return grantedPermissions;
+    }
+    
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -193,6 +203,7 @@ public class UserModel extends AbstractVoModel<User> {
         this.sessionExpirationOverride = vo.isSessionExpirationOverride();
         if(sessionExpirationOverride)
             this.sessionExpirationPeriod = new TimePeriod(vo.getSessionExpirationPeriods(), TimePeriodType.valueOf(vo.getSessionExpirationPeriodType()));
+        this.grantedPermissions = Permissions.getGrantedPermissions(vo);
     }
 
     @Override
