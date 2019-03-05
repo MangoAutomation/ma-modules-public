@@ -20,6 +20,7 @@ function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
         template: `<ma-internal-data-source-editor data-source="$ctrl.dataSource"></ma-internal-data-source-editor>`,
         polling: true,
         defaultDataSource: {
+            createPointsPattern: '.+',
             modelType: 'INTERNAL',
             polling: true,
             pollPeriod: {
@@ -27,7 +28,7 @@ function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
                 type: 'MINUTES'
             },
             eventAlarmLevels: [
-                {eventType: 'POLL_ABORTED', level: 'INFORMATION', duplicateHandling: 'IGNORE', descriptionKey: 'event.ds.pollAborted'}
+                {eventType: 'POLL_ABORTED', level: 'URGENT', duplicateHandling: 'IGNORE', descriptionKey: 'event.ds.pollAborted'}
             ],
         },
         defaultDataPoint: {

@@ -1,1 +1,15 @@
-<h1>help</h1>
+<!--
+    Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
+    @author Matthew Lohbihler
+-->
+<h1>Overview</h1>
+<p>
+  The Internal data source is used to monitor various performance aspects of Mango Automation. 
+</p>
+<p>
+  Some things, like Persistent TCP data sources and any polling data source, will create new monitors which 
+  the internal data source can record values from. Because this is dynamic, the internal data source can automatically
+  create points for new monitor IDs that match the <b>Create points pattern</b>. If no pattern is supplied, no points
+  are automatically created. If you wish to use more than one of the supplied patterns, you may conjoin them as
+</p>
+<code>(?:pattern|pattern)</code>
