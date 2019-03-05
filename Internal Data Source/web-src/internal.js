@@ -40,7 +40,7 @@ function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
             }
         },
         bulkEditorColumns: [
-            {name: 'pointLocator.monitorId', label: 'dsEdit.internal.attribute', selectedByDefault: true}
+            {name: 'pointLocator.description', label: 'dsEdit.internal.attribute', selectedByDefault: true}
         ]
     });
     
