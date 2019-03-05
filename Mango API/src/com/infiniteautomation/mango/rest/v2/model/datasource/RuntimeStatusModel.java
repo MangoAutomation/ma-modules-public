@@ -61,7 +61,7 @@ public class RuntimeStatusModel {
         
         public PollStatus() { }
         
-        public PollStatus(Date startTime, long duration) {
+        public PollStatus(Date startTime, Long duration) {
             this.startTime = startTime;
             if(duration >= 0)
                 this.duration = duration;
@@ -84,13 +84,13 @@ public class RuntimeStatusModel {
         /**
          * @return the duration
          */
-        public long getDuration() {
+        public Long getDuration() {
             return duration;
         }
         /**
          * @param duration the duration to set
          */
-        public void setDuration(long duration) {
+        public void setDuration(Long duration) {
             this.duration = duration;
         }
         /**
@@ -105,8 +105,6 @@ public class RuntimeStatusModel {
         public void setAborted(boolean aborted) {
             this.aborted = aborted;
         }
-        
-        
     }
 
 }
