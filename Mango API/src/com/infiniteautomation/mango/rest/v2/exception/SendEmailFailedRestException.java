@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**
@@ -24,6 +25,7 @@ public class SendEmailFailedRestException extends AbstractRestV2Exception {
         this.smtpSessionLog = smtpSessionLog;
     }
 
+    @JsonProperty
     public String getSmtpSessionLog() {
         return smtpSessionLog;
     }

@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
@@ -17,6 +18,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class RQLVisitRestException extends AbstractRestV2Exception {
 
     private static final long serialVersionUID = 1L;
+    @JsonProperty
     private final ASTNode node;
 
     public RQLVisitRestException(RQLVisitException cause) {

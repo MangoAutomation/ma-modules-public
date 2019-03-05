@@ -13,11 +13,12 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  * 
  * @author Terry Packer
  */
-public class AlreadyExistsRestException extends AbstractRestV2Exception{
+public class AlreadyExistsRestException extends AbstractRestV2Exception {
 
-		private static final long serialVersionUID = 1L;
-		
-		public AlreadyExistsRestException(String xid) {
-			super(HttpStatus.CONFLICT, MangoRestErrorCode.ALREADY_EXISTS, new TranslatableMessage("rest.exception.alreadyExists", xid));
-		}
+    private static final long serialVersionUID = 1L;
+
+    public AlreadyExistsRestException(String xid) {
+        super(HttpStatus.CONFLICT, MangoRestErrorCode.ALREADY_EXISTS,
+                new TranslatableMessage("rest.exception.alreadyExists", xid));
+    }
 }

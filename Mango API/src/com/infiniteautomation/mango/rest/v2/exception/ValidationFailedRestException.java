@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -30,6 +31,7 @@ public class ValidationFailedRestException extends AbstractRestV2Exception{
 		this.result = result;
 	}
 
+	@JsonProperty
     public RestValidationResult getResult(){
 		return result;
 	}

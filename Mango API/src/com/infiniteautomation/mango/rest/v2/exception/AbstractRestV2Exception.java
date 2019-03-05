@@ -64,13 +64,15 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
         return this.httpCode;
     }
 
+    @JsonProperty
     public int getMangoStatusCode(){
         if(mangoCode != null)
             return mangoCode.getCode();
         else
             return -1;
     }
-
+    
+    @JsonProperty
     public String getMangoStatusName(){
         if(mangoCode != null)
             return mangoCode.name();
