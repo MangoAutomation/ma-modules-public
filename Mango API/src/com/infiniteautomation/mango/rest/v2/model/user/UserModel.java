@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.user;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +15,7 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.vo.permission.Permission;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -161,6 +162,10 @@ public class UserModel extends AbstractVoModel<User> {
         return grantedPermissions;
     }
     
+    public void setGrantedPermissions(Set<String> grants) {
+        this.grantedPermissions = grants;
+    }
+    
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -203,7 +208,12 @@ public class UserModel extends AbstractVoModel<User> {
         this.sessionExpirationOverride = vo.isSessionExpirationOverride();
         if(sessionExpirationOverride)
             this.sessionExpirationPeriod = new TimePeriod(vo.getSessionExpirationPeriods(), TimePeriodType.valueOf(vo.getSessionExpirationPeriodType()));
-        this.grantedPermissions = Permissions.getGrantedPermissions(vo);
+        Set<Permission> granted = vo.getGrantedPermissions();
+        if(granted != null) {
+            this.grantedPermissions = new HashSet<>(granted.size());
+            for(Permission grant : granted)
+                this.grantedPermissions.add(grant.getTypeName());
+        }
     }
 
     @Override

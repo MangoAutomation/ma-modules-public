@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.PermissionDefinition;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PermissionDefinitionModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -38,8 +38,6 @@ public class PermissionsRestController {
     public ResponseEntity<List<PermissionDefinitionModel>> listPermissions() {
         List<PermissionDefinitionModel> permissions = new ArrayList<>();
 
-        permissions.add(new PermissionDefinitionModel(SystemSettingsDao.PERMISSION_DATASOURCE, "systemSettings.permissions.datasourceManagement"));
-        
         for (PermissionDefinition def : ModuleRegistry.getDefinitions(PermissionDefinition.class)) {
             permissions.add(new PermissionDefinitionModel(def));
         }

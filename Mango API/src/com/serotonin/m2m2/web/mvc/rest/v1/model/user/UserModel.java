@@ -6,6 +6,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.user;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -22,8 +23,8 @@ import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permission;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnGetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVColumnSetter;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVEntity;
@@ -324,11 +325,21 @@ public class UserModel extends AbstractRestModel<User> {
     @JsonGetter
     public Set<String> getGrantedPermissions() {
         try {
-            return Permissions.getGrantedPermissions(this.data);
+            Set<Permission> granted = this.data.getGrantedPermissions();
+            if(granted != null) {
+                Set<String> grantedPermissions = new HashSet<>(granted.size());
+                for(Permission grant : granted)
+                    grantedPermissions.add(grant.getTypeName());
+                return grantedPermissions;
+            }
         }catch(Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public void setGrantedPermissions(Set<String> grants) {
+        //no op
     }
 
     public boolean isSessionExpirationOverride() {
