@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;
@@ -47,7 +49,6 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     @Override
     public List<EventTypeVO> getEventTypeVOs(PermissionHolder user) {
         List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
-
         for (MaintenanceEventVO me : MaintenanceEventDao.getInstance().getAll())
             if(Permissions.hasEventTypePermission(user, me.getEventType().getEventType()))
                 vos.add(me.getEventType());
@@ -102,5 +103,20 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     @Override
     public boolean supportsReferenceId2() {
         return false;
+    }
+
+    @Override
+    public boolean supportsSubType() {
+        return false;
+    }
+    
+    @Override
+    public List<EventTypeVO> generatePossibleEventTypesWithReferenceId1(PermissionHolder user,
+            String subtype) {
+        List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
+        for (MaintenanceEventVO me : MaintenanceEventDao.getInstance().getAll())
+        if(Permissions.hasEventTypePermission(user, me.getEventType().getEventType()) && StringUtils.equals(me.getEventType().getEventType().getEventSubtype(), subtype))
+            vos.add(me.getEventType());
+        return vos;
     }
 }

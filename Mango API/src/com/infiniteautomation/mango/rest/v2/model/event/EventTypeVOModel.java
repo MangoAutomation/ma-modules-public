@@ -17,20 +17,23 @@ public class EventTypeVOModel<T extends EventType, SOURCE_ONE, SOURCE_TWO> {
     private TranslatableMessage description;
     private AlarmLevels alarmLevel;
 
+    private boolean supportsSubtype;
     private boolean supportsReferenceId1;
     private boolean supportsReferenceId2;
     
-    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type, TranslatableMessage description, AlarmLevels alarmLevel, boolean supportsTypeRef1, boolean supportsTypeRef2) {
+    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type, TranslatableMessage description, AlarmLevels alarmLevel, boolean supportsSubtype, boolean supportsTypeRef1, boolean supportsTypeRef2) {
         this.type = type;
         this.description = description;
         this.alarmLevel = alarmLevel;
+        this.supportsSubtype = supportsSubtype;
         this.supportsReferenceId1 = supportsTypeRef1;
         this.supportsReferenceId2 = supportsTypeRef2;
     }
     
-    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type, TranslatableMessage description, boolean supportsTypeRef1, boolean supportsTypeRef2) {
+    public EventTypeVOModel(AbstractEventTypeModel<T, SOURCE_ONE, SOURCE_TWO> type, TranslatableMessage description, boolean supportsSubtype, boolean supportsTypeRef1, boolean supportsTypeRef2) {
         this.type = type;
         this.description = description;
+        this.supportsSubtype = supportsSubtype; 
         this.supportsReferenceId1 = supportsTypeRef1;
         this.supportsReferenceId2 = supportsTypeRef2;
     }
@@ -77,6 +80,20 @@ public class EventTypeVOModel<T extends EventType, SOURCE_ONE, SOURCE_TWO> {
         this.alarmLevel = alarmLevel;
     }
 
+    /**
+     * @return the supportsSubtype
+     */
+    public boolean isSupportsSubtype() {
+        return supportsSubtype;
+    }
+    
+    /**
+     * @param supportsSubtype the supportsSubtype to set
+     */
+    public void setSupportsSubtype(boolean supportsSubtype) {
+        this.supportsSubtype = supportsSubtype;
+    }
+    
     /**
      * @return the supportsReferenceId1
      */

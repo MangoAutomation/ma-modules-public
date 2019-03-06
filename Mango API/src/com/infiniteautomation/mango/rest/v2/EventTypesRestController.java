@@ -114,67 +114,81 @@ public class EventTypesRestController {
          DataSourceEventType dset = new DataSourceEventType(0, 0);
          DataSourceEventTypeModel dsetm = new DataSourceEventTypeModel(dset);
          dsetm.setAlarmLevel(null);
-         EventTypeVOModel<?,?,?> dataSource = new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(dsetm, new TranslatableMessage("eventHandlers.dataSourceEvents"), true, true);
+         EventTypeVOModel<?,?,?> dataSource = new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(dsetm, new TranslatableMessage("eventHandlers.dataSourceEvents"), false, true, true);
          dataSource.setAlarmLevel(null);
          models.add(dataSource);
          
          //Data point
          DataPointEventType dpet = new DataPointEventType(0, 0);
          DataPointEventTypeModel dpetm = new DataPointEventTypeModel(dpet);
-         EventTypeVOModel<?,?,?> dataPoint = new EventTypeVOModel<DataPointEventType, DataPointModel, AbstractPointEventDetectorModel<?>>(dpetm, new TranslatableMessage("eventHandlers.pointEventDetector"), true, true);
+         EventTypeVOModel<?,?,?> dataPoint = new EventTypeVOModel<DataPointEventType, DataPointModel, AbstractPointEventDetectorModel<?>>(dpetm, new TranslatableMessage("eventHandlers.pointEventDetector"), false, true, true);
          dataPoint.setAlarmLevel(null);
          models.add(dataPoint);
 
          //Publisher
          PublisherEventType pet = new PublisherEventType(0, 0);
          PublisherEventTypeModel petm = new PublisherEventTypeModel(pet);
-         EventTypeVOModel<?,?,?> publisher = new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(petm, new TranslatableMessage("eventHandlers.publisherEvents"), true, true);
+         EventTypeVOModel<?,?,?> publisher = new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(petm, new TranslatableMessage("eventHandlers.publisherEvents"), false, true, true);
          publisher.setAlarmLevel(null);
          models.add(publisher);
-         
+
          //System
-         for(SystemEventTypeDefinition def : ModuleRegistry.getDefinitions(SystemEventTypeDefinition.class)) {
-             EventTypeVO vo = SystemEventType.getEventType(def.getTypeName());
-             SystemEventType set = (SystemEventType) vo.getEventType();
-             if(Permissions.hasEventTypePermission(user, set)) {
-                 SystemEventTypeModel setm = new SystemEventTypeModel(set);
-                 EventTypeVOModel<?,?,?> system = new EventTypeVOModel<>(setm, vo.getDescription(), vo.getAlarmLevel(), def.supportsReferenceId1(), def.supportsReferenceId2());
-                 models.add(system);
-             }
-         }
+         //TODO Permissions
+         //TODO since we some system event types support referenceId1 and 2 we can't be sure here
+         SystemEventType set = new SystemEventType();
+         SystemEventTypeModel setm = new SystemEventTypeModel(set);
+         EventTypeVOModel<?,?,?> system = new EventTypeVOModel<>(setm, new TranslatableMessage("eventHandlers.systemEvents"), null, true, true, true);
+         models.add(system);
+
          
          //Audit
-         for(EventTypeVO vo : AuditEventType.getRegisteredEventTypes()) {
-             AuditEventType aet = (AuditEventType) vo.getEventType();
-             if(Permissions.hasEventTypePermission(user, aet)) {
-                 AuditEventTypeModel aetm = new AuditEventTypeModel(aet);
-                 EventTypeVOModel<?,?,?> audit = new EventTypeVOModel<>(aetm, vo.getDescription(), vo.getAlarmLevel(), false, false);
-                 models.add(audit);
-             }
-         }
+         //TODO Permissions
+         //TODO Audit Event Types will eventually support ref1 & 2
+         AuditEventType aet = new AuditEventType();
+         AuditEventTypeModel aetm = new AuditEventTypeModel(aet);
+         EventTypeVOModel<?,?,?> audit = new EventTypeVOModel<>(aetm, new TranslatableMessage("eventHandlers.auditEvents"), null, true, false, false);
+         models.add(audit);
 
          //Module defined
          for (EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
              if(!def.hasCreatePermission(user))
                  continue;
              
-             List<String> subtypes = def.getEventSubTypes(user);
-             if(subtypes.size() == 0) {
-                 EventTypeVO type = def.createDefaultEventTypeVO(null, 0, 0);
-                 EventType et = type.getEventType();
-                 AbstractEventTypeModel<?,?,?> model = modelMapper.map(et, AbstractEventTypeModel.class, user);
-                 models.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsReferenceId1(), def.supportsReferenceId2()));
-             }else {
-                 for(String subtype: subtypes) {
-                     EventTypeVO type = def.createDefaultEventTypeVO(subtype, 0, 0);
-                     EventType et = type.getEventType();
-                     AbstractEventTypeModel<?,?,?> model = modelMapper.map(et, AbstractEventTypeModel.class, user);
-                     models.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsReferenceId1(), def.supportsReferenceId2()));
-                 }
-             }
-
+             EventType et = def.createDefaultEventType();
+             AbstractEventTypeModel<?,?,?> model = modelMapper.map(et, AbstractEventTypeModel.class, user);
+             models.add(new EventTypeVOModel<>(model, new TranslatableMessage(def.getDescriptionKey()), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
          }
 
+         List<EventTypeVOModel<?,?,?>> results = query.accept(filter, models);
+         return new ListWithTotal<EventTypeVOModel<?,?,?>>() {
+
+             @Override
+             public List<EventTypeVOModel<?,?,?>> getItems() {
+                 return results;
+             }
+
+             @Override
+             public int getTotal() {
+                 return filter.getUnlimitedSize();
+             }
+
+         };
+     }
+     
+     @ApiOperation(
+             value = "Query event types from one eventType to get all subtypes for an event type",
+             notes = "Subtypes are set",
+             response=EventTypeVOModel.class,
+             responseContainer="List")
+     @RequestMapping(method = RequestMethod.GET, value="/{type}")
+     public ListWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForType(
+             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
+             @AuthenticationPrincipal User user,
+             HttpServletRequest request) {
+
+         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+         RQLToPagedObjectListQuery<EventTypeVOModel<?,?,?>> filter = new RQLToPagedObjectListQuery<>();
+         List<EventTypeVOModel<?,?,?>> models = getEventTypes(type, user);
          List<EventTypeVOModel<?,?,?>> results = query.accept(filter, models);
          return new ListWithTotal<EventTypeVOModel<?,?,?>>() {
 
@@ -255,6 +269,65 @@ public class EventTypesRestController {
      }
      
      /**
+      * 
+      * @param typeName
+      * @param user
+      * @return
+      * @throws NotFoundException
+      */
+     private List<EventTypeVOModel<?,?,?>> getEventTypes(String typeName, User user) throws NotFoundException {
+         //track if the type was a default type
+         List<EventTypeVOModel<?,?,?>> types = new ArrayList<>();
+         boolean found = false;
+         switch(typeName) {
+             case EventTypeNames.DATA_POINT:
+             case EventTypeNames.DATA_SOURCE:
+             case EventTypeNames.PUBLISHER:
+                 //TODO There is no subtype what do we do?
+                 throw new BadRequestException();
+             case EventTypeNames.SYSTEM:
+                 found = true;
+                 for(SystemEventTypeDefinition def : ModuleRegistry.getDefinitions(SystemEventTypeDefinition.class)) {
+                     EventTypeVO type = SystemEventType.getEventType(def.getTypeName());
+                     if(Permissions.hasEventTypePermission(user, type.getEventType())) {
+                         SystemEventTypeModel model = modelMapper.map(type.getEventType(), SystemEventTypeModel.class, user);
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
+                     }
+                 }
+             break;
+             case EventTypeNames.AUDIT:
+                 found = true;
+                 for(EventTypeVO vo : AuditEventType.getRegisteredEventTypes()) {
+                     AuditEventType aet = (AuditEventType) vo.getEventType();
+                     if(Permissions.hasEventTypePermission(user, aet)) {
+                         AuditEventTypeModel aetm = new AuditEventTypeModel(aet);
+                         EventTypeVOModel<?,?,?> audit = new EventTypeVOModel<>(aetm, vo.getDescription(), vo.getAlarmLevel(), true, false, false);
+                         types.add(audit);
+                     }
+                 }
+             break;
+         }
+         
+         if(!found) {
+             //Module defined
+             for(EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
+                 if(StringUtils.equals(typeName, def.getTypeName())) {
+                     found = true;
+                     for(EventTypeVO type : def.generatePossibleEventTypesWithSubtype(user)) {
+                         EventType eventType = type.getEventType();
+                         AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                     }
+                     break;
+                 }
+             }
+         }
+         if(!found)
+             throw new NotFoundException();
+         return types;
+     }
+     
+     /**
       * Generate a list of all event types generalized by sub-type
       * 
       * @param typeName
@@ -286,7 +359,7 @@ public class EventTypesRestController {
                      if(Permissions.hasDataPointReadPermission(user, vo)) {
                          DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), new DataPointModel(vo));
                          vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
-                         types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), true, true));
+                         types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                      }
                  }
                  found = true;
@@ -300,7 +373,7 @@ public class EventTypesRestController {
                      if(Permissions.hasDataSourcePermission(user, vo)) {
                          AbstractDataSourceModel<?> dsModel = modelMapper.map(vo, AbstractDataSourceModel.class, user);
                          DataSourceEventTypeModel model = new DataSourceEventTypeModel(new DataSourceEventType(vo.getId(), 0), dsModel);
-                         types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), true, true));
+                         types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                      }
                  }
                  found = true;
@@ -316,7 +389,7 @@ public class EventTypesRestController {
                  
                  for(PublisherVO<?> vo : publisherDao.getAll()) {
                      PublisherEventTypeModel model = new PublisherEventTypeModel(new PublisherEventType(vo.getId(), 0), vo.asModel());
-                     types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), true, true));
+                     types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                  }
                  found = true;
              break;
@@ -331,7 +404,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithReferenceId1(user, subtype)) {
                          SystemEventType eventType = (SystemEventType) type.getEventType();
                          SystemEventTypeModel model = modelMapper.map(eventType, SystemEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
                     }
                      break;
                  }
@@ -349,7 +422,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithReferenceId1(user, subtype)) {
                          EventType eventType = type.getEventType();
                          AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
@@ -390,7 +463,7 @@ public class EventTypesRestController {
                      EventTypeVO type = vo.getEventType();
                      DataPointEventType eventType = (DataPointEventType)type.getEventType();
                      DataPointEventTypeModel model = new DataPointEventTypeModel(eventType, new DataPointModel(dp), edm);
-                     types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, type.getDescription(), type.getAlarmLevel(), true, true));
+                     types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, type.getDescription(), type.getAlarmLevel(), false, true, true));
                  }
                  found = true;
              break;
@@ -408,7 +481,7 @@ public class EventTypesRestController {
                  for(EventTypeVO type : ds.getEventTypes()) {
                      DataSourceEventType eventType = (DataSourceEventType)type.getEventType();
                      DataSourceEventTypeModel model = new DataSourceEventTypeModel(eventType, dsModel);
-                     types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(model, type.getDescription(), type.getAlarmLevel(), true, true));
+                     types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(model, type.getDescription(), type.getAlarmLevel(), false, true, true));
                  }
                  found = true;
              break;
@@ -428,7 +501,7 @@ public class EventTypesRestController {
                  for(EventTypeVO type : pub.getEventTypes()) {
                      PublisherEventType eventType = (PublisherEventType)type.getEventType();
                      PublisherEventTypeModel model = new PublisherEventTypeModel(eventType, pub.asModel());
-                     types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, type.getDescription(), type.getAlarmLevel(), true, true));
+                     types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, type.getDescription(), type.getAlarmLevel(), false, true, true));
                  }
                  
                  found = true;
@@ -442,7 +515,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithReferenceId2(user, subtype, referenceId1)) {
                          SystemEventType eventType = (SystemEventType) type.getEventType();
                          SystemEventTypeModel model = modelMapper.map(eventType, SystemEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(),true, def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
@@ -467,7 +540,7 @@ public class EventTypesRestController {
                              continue;
                          
                          AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
