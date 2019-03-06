@@ -72,6 +72,7 @@ public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
 
     @Override
     protected void addEventTypes(List<EventTypeVO> eventTypes) {
+        super.addEventTypes(eventTypes);
         eventTypes.add(createEventType(MBusDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.dataSource")));
         eventTypes.add(createEventType(MBusDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(

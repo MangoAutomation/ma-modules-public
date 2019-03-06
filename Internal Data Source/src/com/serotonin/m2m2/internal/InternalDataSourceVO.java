@@ -25,10 +25,6 @@ import com.serotonin.util.SerializationHelper;
  */
 public class InternalDataSourceVO extends PollingDataSourceVO<InternalDataSourceVO> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
-	 */
 	@Override
 	public int getPollAbortedExceptionEventId() {
 		return InternalDataSourceRT.POLL_ABORTED_EVENT;

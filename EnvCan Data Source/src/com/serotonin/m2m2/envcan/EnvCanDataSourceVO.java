@@ -25,6 +25,7 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> {
     @Override
     protected void addEventTypes(List<EventTypeVO> ets) {
+        super.addEventTypes(ets);
         ets.add(createEventType(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, new TranslatableMessage(
                 "event.ds.dataSource"), DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));

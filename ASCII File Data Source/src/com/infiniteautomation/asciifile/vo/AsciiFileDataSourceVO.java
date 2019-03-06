@@ -60,6 +60,7 @@ public class AsciiFileDataSourceVO extends PollingDataSourceVO<AsciiFileDataSour
 
 	@Override
 	protected void addEventTypes(List<EventTypeVO> eventTypes) {
+	    super.addEventTypes(eventTypes);
 		eventTypes.add(createEventType(AsciiFileDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.dataSource")));
 		eventTypes.add(createEventType(AsciiFileDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(
