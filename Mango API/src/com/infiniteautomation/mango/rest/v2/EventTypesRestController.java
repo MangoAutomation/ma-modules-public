@@ -291,7 +291,7 @@ public class EventTypesRestController {
                      EventTypeVO type = SystemEventType.getEventType(def.getTypeName());
                      if(Permissions.hasEventTypePermission(user, type.getEventType())) {
                          SystemEventTypeModel model = modelMapper.map(type.getEventType(), SystemEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                  }
              break;
@@ -316,7 +316,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithSubtype(user)) {
                          EventType eventType = type.getEventType();
                          AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
@@ -404,7 +404,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithReferenceId1(user, subtype)) {
                          SystemEventType eventType = (SystemEventType) type.getEventType();
                          SystemEventTypeModel model = modelMapper.map(eventType, SystemEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
                     }
                      break;
                  }
@@ -422,7 +422,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithReferenceId1(user, subtype)) {
                          EventType eventType = type.getEventType();
                          AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
@@ -515,7 +515,7 @@ public class EventTypesRestController {
                      for(EventTypeVO type : def.generatePossibleEventTypesWithReferenceId2(user, subtype, referenceId1)) {
                          SystemEventType eventType = (SystemEventType) type.getEventType();
                          SystemEventTypeModel model = modelMapper.map(eventType, SystemEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(),true, def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
@@ -540,7 +540,7 @@ public class EventTypesRestController {
                              continue;
                          
                          AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);
-                         types.add(new EventTypeVOModel<>(model, type.getDescription(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
+                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
                      }
                      break;
                  }
