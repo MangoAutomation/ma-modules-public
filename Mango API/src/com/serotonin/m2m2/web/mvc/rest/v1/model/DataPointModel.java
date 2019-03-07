@@ -5,6 +5,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.model;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -370,19 +371,6 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 		return this.data.getDataSourceName();
 	}
 	
-	//Removing until we have models (And decide if we are going to use a separate end point to set these)
-//	@JsonGetter("eventDetectors")
-//	public List<PointEventDetectorVO> getEventDetectors(){
-//		if(this.data.getEventDetectors() == null)
-//			return new ArrayList<PointEventDetectorVO>();
-//		else
-//			return this.data.getEventDetectors();
-//	}
-//	@JsonSetter("eventDetectors")
-//	public void setEventDetectors(List<PointEventDetectorVO> eventDetectors){
-//		this.data.setEventDetectors(eventDetectors);
-//	}
-	
 	/**
 	 * Ensure all Complex properties are set in the Data Point prior to returning
 	 */
@@ -401,5 +389,13 @@ public class DataPointModel extends AbstractActionVoModel<DataPointVO>{
 	
     public void setTags(Map<String, String> tags) {
         this.data.setTags(tags);
+    }
+    
+    public Set<String> getDataSourceEditRoles() {
+        return this.data.getDataSourceEditRoles();
+    }
+
+    public void setDataSourceEditRoles(Set<String> dataSourceEditRoles) {
+        //No-op
     }
 }

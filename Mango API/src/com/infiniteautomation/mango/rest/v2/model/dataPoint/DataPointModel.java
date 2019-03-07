@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.dataPoint;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -80,6 +81,7 @@ public class DataPointModel {
     String dataSourceXid;
     String dataSourceName;
     String dataSourceTypeName;
+    Set<String> dataSourceEditRoles;
 
     boolean mergeTags = false;
     Map<String, String> tags;
@@ -141,6 +143,7 @@ public class DataPointModel {
             this.setExtremeLowLimit = point.getSetExtremeLowLimit();
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
+        this.dataSourceEditRoles = point.getDataSourceEditRoles();
     }
 
     public void copyPropertiesTo(DataPointVO point) {
@@ -558,5 +561,13 @@ public class DataPointModel {
 
     public void setSetExtremeHighLimit(Double setExtremeHighLimit) {
         this.setExtremeHighLimit = setExtremeHighLimit;
+    }
+    
+    public Set<String> getDataSourceEditRoles() {
+        return dataSourceEditRoles;
+    }
+
+    public void setDataSourceEditRoles(Set<String> dataSourceEditRoles) {
+        //No-op
     }
 }
