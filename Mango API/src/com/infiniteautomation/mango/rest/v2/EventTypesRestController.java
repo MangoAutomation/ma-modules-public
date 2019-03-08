@@ -283,7 +283,6 @@ public class EventTypesRestController {
              case EventTypeNames.DATA_POINT:
              case EventTypeNames.DATA_SOURCE:
              case EventTypeNames.PUBLISHER:
-                 //TODO There is no subtype what do we do?
                  throw new BadRequestException();
              case EventTypeNames.SYSTEM:
                  found = true;
@@ -357,8 +356,8 @@ public class EventTypesRestController {
                  for(DataPointVO vo : uniquePointsMap.values()) {    
                      //Shortcut to check permissions via event type
                      if(Permissions.hasDataPointReadPermission(user, vo)) {
-                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), new DataPointModel(vo));
                          vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
+                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), new DataPointModel(vo));
                          types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                      }
                  }
@@ -457,7 +456,8 @@ public class EventTypesRestController {
                      throw new NotFoundException();
                  
                  Permissions.ensureDataPointReadPermission(user, dp);
-                 
+                 dp.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(dp.getId()));
+
                  for(AbstractPointEventDetectorVO<?> vo : dp.getEventDetectors()) {    
                      AbstractPointEventDetectorModel<?> edm =  modelMapper.map(vo, AbstractPointEventDetectorModel.class, user);
                      EventTypeVO type = vo.getEventType();
