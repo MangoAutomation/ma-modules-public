@@ -7,7 +7,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -51,7 +51,7 @@ import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -59,10 +59,10 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController
 @RequestMapping("/data-sources")
 public class DataSourcesRestController<T extends DataSourceVO<T>> {
-    
+
     private final DataSourceService<T> service;
     private final BiFunction<DataSourceVO<?>, User, AbstractDataSourceModel<?>> map;
-    
+
     @Autowired
     public DataSourcesRestController(final DataSourceService<T> service, final RestModelMapper modelMapper) {
         this.service = service;
@@ -70,7 +70,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             return modelMapper.map(vo, AbstractDataSourceModel.class, user);
         };
     }
-    
+
     @ApiOperation(
             value = "Query Data Sources",
             notes = "RQL Formatted Query",
@@ -85,7 +85,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
-    
+
     @ApiOperation(
             value = "Get Data Source by XID",
             notes = ""
@@ -98,7 +98,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             UriComponentsBuilder builder) {
         return map.apply(service.getFull(xid, user), user);
     }
-    
+
     @ApiOperation(
             value = "Get Data Source by ID",
             notes = ""
@@ -119,14 +119,14 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
-        
+
         DataSourceVO<?> vo = this.service.insertFull(model.toVO(), user);
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
     }
-    
+
     @ApiOperation(value = "Update data source")
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> update(
@@ -135,14 +135,14 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
-        
+
         DataSourceVO<?> vo = this.service.update(xid, model.toVO(), user);
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Partially update a data source",
             notes = "Requires edit permission"
@@ -160,14 +160,14 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             UriComponentsBuilder builder) {
 
         DataSourceVO<?> vo = service.updateFull(xid, model.toVO(), user);
-        
+
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Delete a data source",
             notes = "",
@@ -181,7 +181,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             UriComponentsBuilder builder) {
         return map.apply(service.delete(xid, user), user);
     }
-    
+
     @ApiOperation(value = "Enable/disable/restart a data source")
     @RequestMapping(method = RequestMethod.PUT, value = "/enable-disable/{xid}")
     public void enableDisable(
@@ -192,25 +192,25 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
 
             @ApiParam(value = "Restart the data source, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart,
-            
+
             @AuthenticationPrincipal User user) {
         service.restart(xid, enabled, restart, user);
     }
-    
-    
+
+
     @ApiOperation(
             value = "Get runtime status for data source",
             notes = "Only polling data sources have runtime status",
             response=RuntimeStatusModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/status/{xid}")
-    public RuntimeStatusModel getRuntimeStatus(            
+    public RuntimeStatusModel getRuntimeStatus(
             @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
         DataSourceVO<?> vo = service.get(xid, user);
         RuntimeStatusModel model = new RuntimeStatusModel();
         DataSourceRT<?> ds = Common.runtimeManager.getRunningDataSource(vo.getId());
-        
+
         if ((ds != null)&&(ds instanceof PollingDataSource)){
             List<LongLongPair> list = ((PollingDataSource<?>)ds).getLatestPollTimes();
             List<PollStatus> latestPolls = new ArrayList<>();
@@ -224,33 +224,33 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
                 latestAbortedPolls.add(new PollStatus(new Date(poll), -1L));
             model.setLatestAbortedPolls(latestAbortedPolls);
         }
-        
+
         return model;
     }
-    
+
     @ApiOperation(
             value = "Export formatted for Configuration Import",
             notes = "Optionally include data points",
             response=RuntimeStatusModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/export/{xid}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, Object> exportDataSource(            
+    public Map<String, Object> exportDataSource(
             @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value = "Include data points")
-            @RequestParam(value = "includePoints", required = false, defaultValue="false") 
+            @RequestParam(value = "includePoints", required = false, defaultValue="false")
             Boolean includePoints,
             @AuthenticationPrincipal User user) {
-        
+
         DataSourceVO<?> vo = service.get(xid, user);
-        Map<String,Object> export = new HashMap<>();
+        Map<String,Object> export = new LinkedHashMap<>();
         export.put("dataSources", Arrays.asList(vo));
-        
+
         if(includePoints) {
             export.put("dataPoints", DataPointDao.getInstance().getDataPoints(vo.getId(), null, true));
         }
         return export;
     }
-    
+
     /**
      * Perform a query
      * @param rql
