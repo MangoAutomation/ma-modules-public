@@ -5,7 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -243,7 +243,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
 
         DataSourceVO<?> vo = service.get(xid, user);
         Map<String,Object> export = new LinkedHashMap<>();
-        export.put("dataSources", Arrays.asList(vo));
+        export.put("dataSources", Collections.singletonList(vo));
 
         if(includePoints) {
             export.put("dataPoints", DataPointDao.getInstance().getDataPoints(vo.getId(), null, true));
