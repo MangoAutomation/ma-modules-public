@@ -99,6 +99,8 @@ public class SerotoninJsonMessageConverter extends AbstractHttpMessageConverter<
             throws IOException, HttpMessageNotWritableException {
         OutputStreamWriter osWriter = new OutputStreamWriter(outputMessage.getBody());
         JsonWriter writer = new JsonWriter(Common.JSON_CONTEXT, osWriter);
+        writer.setPrettyOutput(true);
+        writer.setPrettyIndent(2);
         try {
             writer.writeObject(t);
             writer.flush();
