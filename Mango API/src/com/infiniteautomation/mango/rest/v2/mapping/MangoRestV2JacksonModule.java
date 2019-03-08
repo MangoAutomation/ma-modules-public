@@ -13,7 +13,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  * Jackson Module to extend JSON rendering
  * @author Terry Packer
  */
-public class MangoRestV2JacksonModule extends SimpleModule{
+public class MangoRestV2JacksonModule extends SimpleModule {
 
 	private static final long serialVersionUID = 1L;
 

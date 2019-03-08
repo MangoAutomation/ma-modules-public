@@ -5,8 +5,11 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,10 +38,12 @@ import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.pair.LongLongPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -221,6 +226,29 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
         }
         
         return model;
+    }
+    
+    @ApiOperation(
+            value = "Export formatted for Configuration Import",
+            notes = "Optionally include data points",
+            response=RuntimeStatusModel.class)
+    @RequestMapping(method = RequestMethod.GET, value = "/export/{xid}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, Object> exportDataSource(            
+            @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @ApiParam(value = "Include data points")
+            @RequestParam(value = "includePoints", required = false, defaultValue="false") 
+            Boolean includePoints,
+            @AuthenticationPrincipal User user) {
+        
+        DataSourceVO<?> vo = service.get(xid, user);
+        Map<String,Object> export = new HashMap<>();
+        export.put("dataSources", Arrays.asList(vo));
+        
+        if(includePoints) {
+            export.put("dataPoints", DataPointDao.getInstance().getDataPoints(vo.getId(), null, true));
+        }
+        return export;
     }
     
     /**

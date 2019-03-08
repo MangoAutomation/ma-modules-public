@@ -4,7 +4,10 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,6 +44,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
@@ -568,6 +572,31 @@ public class DataPointRestController {
         return result;
     }
 
+    @ApiOperation(
+            value = "Export data point(s) formatted for Configuration Import",
+            notes = "User must have read permission",
+            response=RuntimeStatusModel.class)
+    @RequestMapping(method = RequestMethod.GET, value = "/export/{xids}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, Object> exportDataSource(            
+            @ApiParam(value="Data point xids to export.")
+            @PathVariable String[] xids,
+            @AuthenticationPrincipal User user) {
+
+        Map<String,Object> export = new HashMap<>();
+        List<DataPointVO> points = new ArrayList<>();
+        for(String xid : xids) {
+            DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
+            if (dataPoint == null) {
+                throw new NotFoundRestException();
+            }
+            DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
+            points.add(dataPoint);
+            Permissions.ensureDataPointReadPermission(user, dataPoint);
+        }
+        export.put("dataPoints", points);
+        return export;
+    }
+    
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         return doQuery(rql, user, null);
     }
