@@ -12,12 +12,13 @@ import com.serotonin.m2m2.i18n.ProcessResult;
  *
  */
 public class PurgeDataPointValuesModel extends AbstractPurgeValuesModel {
-    
+
     private List<String> xids;
-        
+    private String dataSourceXid;
+
     @Override
     protected void validateImpl(ProcessResult result) {
-        if(xids == null || xids.size() == 0)
+        if((dataSourceXid == null || dataSourceXid.isEmpty()) && (xids == null || xids.isEmpty()))
             result.addContextualMessage("xids", "validate.required");
     }
 
@@ -27,12 +28,20 @@ public class PurgeDataPointValuesModel extends AbstractPurgeValuesModel {
     public List<String> getXids() {
         return xids;
     }
-    
+
     /**
      * @param xids the xids to set
      */
     public void setXids(List<String> xids) {
         this.xids = xids;
     }
-    
+
+    public String getDataSourceXid() {
+        return dataSourceXid;
+    }
+
+    public void setDataSourceXid(String dataSourceXid) {
+        this.dataSourceXid = dataSourceXid;
+    }
+
 }

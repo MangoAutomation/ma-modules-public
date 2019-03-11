@@ -36,12 +36,10 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.AbstractPurgeValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataPointValuesModel;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataSourceValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgePointValuesResponseModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
@@ -96,338 +94,338 @@ import io.swagger.annotations.ApiParam;
 @RestController("PointValueV2RestController")
 @RequestMapping("/point-values")
 public class PointValueRestController extends AbstractMangoRestV2Controller{
-    
+
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
-    private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager; 
-    
+    private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;
+
     @Autowired
     public PointValueRestController(TemporaryResourceWebSocketHandler websocket) {
         this.resourceManager = new MangoTaskTemporaryResourceManager<>(websocket);
     }
-    
+
     @ApiOperation(
-            value = "Get latest values For 1 Data Point in time descending order", 
+            value = "Get latest values For 1 Data Point in time descending order",
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Array"
             )
     @RequestMapping(method = RequestMethod.GET, value = "/latest/{xid}")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> getLatestPointValues(
             HttpServletRequest request,
-            @ApiParam(value = "Point xid", required = true, allowMultiple = false) 
+            @ApiParam(value = "Point xid", required = true, allowMultiple = false)
             @PathVariable String xid,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-            required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
 
             @ApiParam(value = "Return values before this time", required = false, allowMultiple = false)
             @RequestParam(value = "before", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime before,
-            
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
-            @RequestParam(value = "timezone", required = false) 
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false)
             String timezone,
-            
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "limit", required = false) 
+
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
+            @RequestParam(value = "limit", required = false)
             Integer limit,
 
-            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+            @ApiParam(value = "Use cached/intra-interval logging data, for best performance set the data point's cache size >= the the requested limit", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Double simplifyTolerance,
-            
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Integer simplifyTarget,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
+        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
                 false, true, useCache, simplifyTolerance, simplifyTarget, fields);
-        
+
         return generateLatestStream(user, info, new String[] {xid});
-    }    
-    
+    }
+
     @ApiOperation(
-            value = "Get latest values For 1 or more Data Points in time descending order in a single array", 
+            value = "Get latest values For 1 or more Data Points in time descending order in a single array",
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Array"
             )
     @RequestMapping(method = RequestMethod.GET, value = "/single-array/latest/{xids}")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> getLatestPointValuesAsSingleArray(
             HttpServletRequest request,
-            @ApiParam(value = "Point xids", required = true, allowMultiple = false) 
+            @ApiParam(value = "Point xids", required = true, allowMultiple = false)
             @PathVariable String[] xids,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-            required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
 
             @ApiParam(value = "Return values before this time", required = false, allowMultiple = false)
             @RequestParam(value = "before", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime before,
-            
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
-            @RequestParam(value = "timezone", required = false) 
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false)
             String timezone,
-            
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "limit", required = false) 
+
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
+            @RequestParam(value = "limit", required = false)
             Integer limit,
 
-            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Double simplifyTolerance,
-            
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Integer simplifyTarget,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
+        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
                 true, true, useCache, simplifyTolerance, simplifyTarget, fields);
-        
+
         return generateLatestStream(user, info, xids);
     }
 
     @ApiOperation(
-            value = "POST for latest values For 1 or more Data Points in time descending order in a single array", 
+            value = "POST for latest values For 1 or more Data Points in time descending order in a single array",
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Array"
             )
     @RequestMapping(method = RequestMethod.POST, value = "/single-array/latest")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> postLatestPointValuesAsSingleArray(
             HttpServletRequest request,
-            
-            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false)
             @RequestBody
             XidLatestQueryInfoModel info,
-            
+
             @AuthenticationPrincipal User user
             ) {
 
         return generateLatestStream(user, info.createLatestQueryInfo(true, true), info.getXids());
     }
-    
+
     @ApiOperation(
-            value = "GET latest values For 1 or more Data Points in time descending order in multiple arrays", 
+            value = "GET latest values For 1 or more Data Points in time descending order in multiple arrays",
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Object"
             )
     @RequestMapping(method = RequestMethod.GET, value = "/multiple-arrays/latest/{xids}")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> getLatestPointValuesAsMultipleArrays(
             HttpServletRequest request,
-            @ApiParam(value = "Point xids", required = true, allowMultiple = false) 
+            @ApiParam(value = "Point xids", required = true, allowMultiple = false)
             @PathVariable String[] xids,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-            required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
 
             @ApiParam(value = "Return values before this time", required = false, allowMultiple = false)
             @RequestParam(value = "before", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime before,
-            
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
-            @RequestParam(value = "timezone", required = false) 
+
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false)
             String timezone,
-            
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
-            @RequestParam(value = "limit", required = false) 
+
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
+            @RequestParam(value = "limit", required = false)
             Integer limit,
 
-            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Double simplifyTolerance,
-            
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Integer simplifyTarget,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit, 
+        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
                 false, false, useCache, simplifyTolerance, simplifyTarget, fields);
-        
+
         return generateLatestStream(user, info, xids);
-    } 
-    
+    }
+
     @ApiOperation(
-            value = "Get latest values For 1 or more Data Points in time descending order in multiple arrays", 
+            value = "Get latest values For 1 or more Data Points in time descending order in multiple arrays",
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Object"
             )
     @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/latest")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> postLatestPointValuesAsMultipleArrays(
             HttpServletRequest request,
-            
-            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false)
             @RequestBody
             XidLatestQueryInfoModel info,
-            
+
             @AuthenticationPrincipal User user
             ) {
         return generateLatestStream(user, info.createLatestQueryInfo(false, false), info.getXids());
     }
-    
+
     @ApiOperation(
-            value = "Query Time Range For 1 Data Point, return in time ascending order", 
+            value = "Query Time Range For 1 Data Point, return in time ascending order",
             notes = "From time inclusive, To time exclusive.  With a bookend value at from and to if possible/necessary.",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Array"
             )
     @RequestMapping(method = RequestMethod.GET, value = "/time-period/{xid}")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> getPointValues(
             HttpServletRequest request,
-            @ApiParam(value = "Point xid", required = true, allowMultiple = false) 
+            @ApiParam(value = "Point xid", required = true, allowMultiple = false)
             @PathVariable String xid,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-            required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
-    
+
             @ApiParam(value = "From time", required = false, allowMultiple = false)
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @ApiParam(value = "To time", required = false, allowMultiple = false)
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime to,
 
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
-            @RequestParam(value = "timezone", required = false) 
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false)
             String timezone,
-            
-            @ApiParam(value = "Limit (not including bookend values)", required = false, allowMultiple = false) 
-            @RequestParam(value = "limit", required = false) 
+
+            @ApiParam(value = "Limit (not including bookend values)", required = false, allowMultiple = false)
+            @RequestParam(value = "limit", required = false)
             Integer limit,
-            
-            @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
-            @RequestParam(value = "bookend", required = false, defaultValue="false") 
+
+            @ApiParam(value = "Bookend", required = false, allowMultiple = false)
+            @RequestParam(value = "bookend", required = false, defaultValue="false")
             boolean bookend,
-            
-            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Double simplifyTolerance,
-            
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Integer simplifyTarget,
 
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
+                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit,
                 bookend, false, true, useCache, simplifyTolerance, simplifyTarget, false, fields);
-        
+
         return generateStream(user, info, new String[] {xid});
     }
-    
+
     @ApiOperation(
-            value = "Rollup values For 1 Data Point, return in time ascending order", 
+            value = "Rollup values For 1 Data Point, return in time ascending order",
             notes = "From time inclusive, To time exclusive.",
-            response = PointValueTimeModel.class, 
+            response = PointValueTimeModel.class,
             responseContainer = "Array"
             )
     @RequestMapping(method = RequestMethod.GET, value = "/time-period/{xid}/{rollup}")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> getRollupPointValues(
             HttpServletRequest request,
-            @ApiParam(value = "Point xid", required = true,  allowMultiple = false) 
+            @ApiParam(value = "Point xid", required = true,  allowMultiple = false)
             @PathVariable String xid,
 
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
-            @PathVariable(value = "rollup") 
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+            @PathVariable(value = "rollup")
             RollupEnum rollup,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-            required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
-    
-            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+
+            @ApiParam(value = "From time", required = false, allowMultiple = false)
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @ApiParam(value = "To time", required = false, allowMultiple = false)
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime to,
 
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
-            @RequestParam(value = "timezone", required = false) 
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false)
             String timezone,
-            
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
             @RequestParam(value = "limit", required = false) Integer limit,
-            
-            @ApiParam(value = "Time Period Type", required = false, allowMultiple = false) 
-            @RequestParam(value = "timePeriodType",required = false) 
+
+            @ApiParam(value = "Time Period Type", required = false, allowMultiple = false)
+            @RequestParam(value = "timePeriodType",required = false)
             TimePeriodType timePeriodType,
 
-            @ApiParam(value = "Time Periods", required = false,allowMultiple = false) 
-            @RequestParam(value = "timePeriods", required = false) 
+            @ApiParam(value = "Time Periods", required = false,allowMultiple = false)
+            @RequestParam(value = "timePeriods", required = false)
             Integer timePeriods,
-            
-            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false) 
-            @RequestParam(value = "truncate", required = false, defaultValue="false") 
+
+            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false)
+            @RequestParam(value = "truncate", required = false, defaultValue="false")
             boolean truncate,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
 
@@ -435,14 +433,14 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         if ((timePeriodType != null) && (timePeriods != null)) {
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
- 
+
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit,
                 true, false, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
-        
+
         return generateStream(user, info, new String[] {xid});
     }
-    
+
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive. Return in single array with bookends, use limit if provided.",
             response = PointValueTimeModel.class, responseContainer = "Array")
@@ -451,77 +449,77 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
 
             @ApiParam(value = "Point xids", required = true,
-                    allowMultiple = true) 
+            allowMultiple = true)
             @PathVariable String[] xids,
-            
-            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
-            
-            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+
+            @ApiParam(value = "From time", required = false, allowMultiple = false)
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @ApiParam(value = "To time", required = false, allowMultiple = false)
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime to,
 
             @ApiParam(value = "Time zone", required = false, allowMultiple = false)
-            @RequestParam(value = "timezone", required = false) 
+            @RequestParam(value = "timezone", required = false)
             String timezone,
 
-            @ApiParam(value = "Limit (not including bookend values)", required = false, allowMultiple = false) 
-            @RequestParam(value = "limit", required = false) 
+            @ApiParam(value = "Limit (not including bookend values)", required = false, allowMultiple = false)
+            @RequestParam(value = "limit", required = false)
             Integer limit,
-            
-            @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
-            @RequestParam(value = "bookend", required = false, defaultValue="false") 
+
+            @ApiParam(value = "Bookend", required = false, allowMultiple = false)
+            @RequestParam(value = "bookend", required = false, defaultValue="false")
             boolean bookend,
-            
-            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Double simplifyTolerance,
-            
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Integer simplifyTarget,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        
+
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
+                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit,
                 bookend, true, true, useCache, simplifyTolerance, simplifyTarget, false, fields);
         return generateStream(user, info, xids);
     }
-    
+
     @ApiOperation(value = "POST to query a time range for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive. Return in single array with bookends, use limit if provided.",
             response = PointValueTimeModel.class, responseContainer = "Array")
     @RequestMapping(method = RequestMethod.POST, value = "/single-array/time-period")
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> postPointValuesAsSingleArray(
             HttpServletRequest request,
-            
-            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false)
             @RequestBody
             XidTimeRangeQueryModel model,
 
             @AuthenticationPrincipal User user
             ) {
-        
+
         return generateStream(user, model.createZonedDateTimeRangeQueryInfo(true, true), model.getXids());
     }
-    
+
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive. Return in single array.",
             response = PointValueTimeModel.class, responseContainer = "Array")
@@ -530,66 +528,66 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
 
             @ApiParam(value = "Point xids", required = true,
-                    allowMultiple = true) 
+            allowMultiple = true)
             @PathVariable String[] xids,
 
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
-            @PathVariable(value = "rollup") 
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+            @PathVariable(value = "rollup")
             RollupEnum rollup,
-            
-            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+
+            @ApiParam(value = "From time", required = false, allowMultiple = false)
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @ApiParam(value = "To time", required = false, allowMultiple = false)
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime to,
 
             @ApiParam(value = "Time Period Type", required = false,
-                    allowMultiple = false) 
-            @RequestParam(value = "timePeriodType", required = false) 
+            allowMultiple = false)
+            @RequestParam(value = "timePeriodType", required = false)
             TimePeriodType timePeriodType,
 
-            @ApiParam(value = "Time Periods", required = false, allowMultiple = false) 
-            @RequestParam(value = "timePeriods", required = false) 
+            @ApiParam(value = "Time Periods", required = false, allowMultiple = false)
+            @RequestParam(value = "timePeriods", required = false)
             Integer timePeriods,
 
             @ApiParam(value = "Time zone", required = false, allowMultiple = false)
-            @RequestParam(value = "timezone", required = false) 
+            @RequestParam(value = "timezone", required = false)
             String timezone,
 
-            @ApiParam(value = "Limit", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit", required = false, allowMultiple = false)
             @RequestParam(value = "limit", required = false) Integer limit,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-                    required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
-            
-            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false) 
-            @RequestParam(value = "truncate", required = false, defaultValue="false") 
+
+            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false)
+            @RequestParam(value = "truncate", required = false, defaultValue="false")
             boolean truncate,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        
+
         TimePeriod timePeriod = null;
         if ((timePeriodType != null) && (timePeriods != null)) {
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
-        
+
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, true,
                 true, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
         return generateStream(user, info, xids);
     }
-    
+
     @ApiOperation(value = "POST to get rollup values for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive. Return in single array.",
             response = PointValueTimeModel.class, responseContainer = "Array")
@@ -597,19 +595,19 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> postRollupPointValuesAsSingleArray(
             HttpServletRequest request,
 
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
-            @PathVariable(value = "rollup") 
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+            @PathVariable(value = "rollup")
             RollupEnum rollup,
-            
-            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false)
             @RequestBody
             XidRollupTimeRangeQueryModel model,
-            
+
             @AuthenticationPrincipal User user
             ) {
         return generateStream(user, model.createZonedDateTimeRangeQueryInfo(true, true, rollup), model.getXids());
     }
-    
+
     @ApiOperation(value = "Query time range for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays with bookends.",
             response = PointValueTimeModel.class, responseContainer = "Object")
@@ -617,74 +615,74 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>, ZonedDateTimeRangeQueryInfo>> getPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request,
 
-            @ApiParam(value = "Point xids", required = true, allowMultiple = true) 
+            @ApiParam(value = "Point xids", required = true, allowMultiple = true)
             @PathVariable String[] xids,
 
-            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false) 
+            @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used", required = false, allowMultiple = false)
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
-    
-            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+
+            @ApiParam(value = "From time", required = false, allowMultiple = false)
             @RequestParam(value = "from", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @ApiParam(value = "To time", required = false, allowMultiple = false)
             @RequestParam(value = "to", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
 
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
             @RequestParam(value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit (per series not including bookend values)", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit (per series not including bookend values)", required = false, allowMultiple = false)
             @RequestParam(value = "limit", required = false) Integer limit,
 
-            @ApiParam(value = "Bookend", required = false, allowMultiple = false) 
-            @RequestParam(value = "bookend", required = false, defaultValue="false") 
+            @ApiParam(value = "Bookend", required = false, allowMultiple = false)
+            @RequestParam(value = "bookend", required = false, defaultValue="false")
             boolean bookend,
-            
-            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Tolerance for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Double simplifyTolerance,
-            
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Target number of values to return for use in Simplify algorithm", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             Integer simplifyTarget,
 
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        
+
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit, 
+                from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit,
                 bookend, false, false, useCache, simplifyTolerance, simplifyTarget, false, fields);
-        
+
         return generateStream(user, info, xids);
     }
-    
+
     @ApiOperation(value = "POST to query time range for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to values with optionally limited value arrays with bookends.",
             response = PointValueTimeModel.class, responseContainer = "Object")
     @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/time-period")
     public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>, ZonedDateTimeRangeQueryInfo>> postPointValuesForMultiplePointsAsMultipleArrays(
             HttpServletRequest request,
-            
-            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false)
             @RequestBody
             XidTimeRangeQueryModel model,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        return generateStream(user, 
-                model.createZonedDateTimeRangeQueryInfo(false, false), 
+        return generateStream(user,
+                model.createZonedDateTimeRangeQueryInfo(false, false),
                 model.getXids());
     }
-    
+
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to point value time arrays.",
             response = PointValueTimeModel.class, responseContainer = "Object")
@@ -693,83 +691,83 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
 
             @ApiParam(value = "Point xids", required = true,
-                    allowMultiple = true) @PathVariable String[] xids,
+            allowMultiple = true) @PathVariable String[] xids,
 
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
-            @PathVariable(value = "rollup") 
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+            @PathVariable(value = "rollup")
             RollupEnum rollup,
 
             @ApiParam(value = "From time", required = false,
-                    allowMultiple = false) @RequestParam(value = "from", required = false)
+            allowMultiple = false) @RequestParam(value = "from", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime from,
 
             @ApiParam(value = "To time", required = false,
-                    allowMultiple = false) @RequestParam(value = "to", required = false)
+            allowMultiple = false) @RequestParam(value = "to", required = false)
             @DateTimeFormat(iso = ISO.DATE_TIME) ZonedDateTime to,
 
             @ApiParam(value = "Time Period Type", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriodType",
-                            required = false) TimePeriodType timePeriodType,
+            allowMultiple = false) @RequestParam(value = "timePeriodType",
+            required = false) TimePeriodType timePeriodType,
 
             @ApiParam(value = "Time Periods", required = false,
-                    allowMultiple = false) @RequestParam(value = "timePeriods",
-                            required = false) Integer timePeriods,
+            allowMultiple = false) @RequestParam(value = "timePeriods",
+            required = false) Integer timePeriods,
 
             @ApiParam(value = "Time zone", required = false, allowMultiple = false) @RequestParam(
                     value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit (per series)", required = false, allowMultiple = false) 
+            @ApiParam(value = "Limit (per series)", required = false, allowMultiple = false)
             @RequestParam(value = "limit", required = false) Integer limit,
-            
+
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-                    required = false, allowMultiple = false) 
+            required = false, allowMultiple = false)
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
-            
-            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false) 
-            @RequestParam(value = "truncate", required = false, defaultValue="false") 
+
+            @ApiParam(value = "Truncate the from time and expand to time based on the time period settings", required = false,allowMultiple = false)
+            @RequestParam(value = "truncate", required = false, defaultValue="false")
             boolean truncate,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        
+
         TimePeriod timePeriod = null;
         if ((timePeriodType != null) && (timePeriods != null)) {
             timePeriod = new TimePeriod(timePeriods, timePeriodType);
         }
-        
+
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, 
+                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit,
                 true, false, false, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
-        
+
         return generateStream(user, info, xids);
     }
-    
+
     @ApiOperation(value = "POST to rollup values for multiple data points, return in time ascending order",
             notes = "From time inclusive, To time exclusive.  Returns a map of xid to point value time arrays.",
             response = PointValueTimeModel.class, responseContainer = "Object")
     @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/time-period/{rollup}")
     public ResponseEntity<PointValueTimeStream<Map<String, List<PointValueTime>>, ZonedDateTimeRangeQueryInfo>> postRollupPointValuesAsMultipleArrays(
             HttpServletRequest request,
-            
-            @ApiParam(value = "Rollup type", required = false, allowMultiple = false) 
-            @PathVariable(value = "rollup") 
+
+            @ApiParam(value = "Rollup type", required = false, allowMultiple = false)
+            @PathVariable(value = "rollup")
             RollupEnum rollup,
-            
-            @ApiParam(value = "Query Information", required = true, allowMultiple = false) 
+
+            @ApiParam(value = "Query Information", required = true, allowMultiple = false)
             @RequestBody
             XidRollupTimeRangeQueryModel model,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        return generateStream(user, 
-                model.createZonedDateTimeRangeQueryInfo(false, false, rollup), 
+        return generateStream(user,
+                model.createZonedDateTimeRangeQueryInfo(false, false, rollup),
                 model.getXids());
     }
-    
+
     @ApiOperation(value = "GET statistics for data point(s) over the given time range",
             notes = "From time inclusive, To time exclusive. Returns map of xid to Statistics object",
             response = PointValueTimeModel.class, responseContainer = "Map")
@@ -778,44 +776,44 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request,
 
             @ApiParam(value = "Point xids", required = true,
-                    allowMultiple = true) 
+            allowMultiple = true)
             @PathVariable String[] xids,
-            
-            @ApiParam(value = "From time", required = false, allowMultiple = false) 
+
+            @ApiParam(value = "From time", required = false, allowMultiple = false)
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime from,
 
-            @ApiParam(value = "To time", required = false, allowMultiple = false) 
+            @ApiParam(value = "To time", required = false, allowMultiple = false)
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime to,
 
             @ApiParam(value = "Time zone", required = false, allowMultiple = false)
-            @RequestParam(value = "timezone", required = false) 
+            @RequestParam(value = "timezone", required = false)
             String timezone,
 
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used",
-                    required = false, allowMultiple = false) 
-            @RequestParam(value = "dateTimeFormat", required = false) 
+            required = false, allowMultiple = false)
+            @RequestParam(value = "dateTimeFormat", required = false)
             String dateTimeFormat,
-            
-            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false) 
-            @RequestParam(value = "useCache", required = false, defaultValue="NONE") 
+
+            @ApiParam(value = "Use cached/intra-interval logging data", required = false, allowMultiple = false)
+            @RequestParam(value = "useCache", required = false, defaultValue="NONE")
             PointValueTimeCacheControl useCache,
-            
-            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false) 
-            @RequestParam(required = false) 
+
+            @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE", required = false, allowMultiple = false)
+            @RequestParam(required = false)
             PointValueField[] fields,
-            
+
             @AuthenticationPrincipal User user
             ) {
-        
+
         ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, useCache, fields);
         Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
         return ResponseEntity.ok(new MultiPointStatisticsStream(info, voMap, this.dao));
     }
-    
+
     @ApiOperation(
             value = "Import Point Values for one or many Data Points",
             notes = "Data Point must exist and user must have write access"
@@ -828,7 +826,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         //Map of XIDs to results
         Map<String, PointValueImportResult> results = new HashMap<String, PointValueImportResult>();
-        
+
         for(XidPointValueTimeModel model : models) {
             PointValueImportResult result = results.get(model.getXid());
             if(result == null) {
@@ -838,10 +836,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             //Attempt to save it
             result.saveValue(model);
         }
-        
+
         return ResponseEntity.ok(results.values());
     }
-    
+
     @ApiOperation(
             value = "Delete point values >= from  and < to",
             notes = "The user must have set permission to the data point. If date is not supplied it defaults to now."
@@ -849,30 +847,30 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<Long> deletePointValues(
             @ApiParam(value = "Point xids", required = true)
-            @PathVariable 
+            @PathVariable
             String xid,
-            
+
             @ApiParam(value = "From time", required = false,
-                allowMultiple = false)
+            allowMultiple = false)
             @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime from,
 
             @ApiParam(value = "To time", required = false,
-                allowMultiple = false) 
+            allowMultiple = false)
             @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = ISO.DATE_TIME) 
+            @DateTimeFormat(iso = ISO.DATE_TIME)
             ZonedDateTime to,
 
-            @ApiParam(value = "Time zone", required = false, allowMultiple = false) 
-            @RequestParam(value = "timezone", required = false) 
+            @ApiParam(value = "Time zone", required = false, allowMultiple = false)
+            @RequestParam(value = "timezone", required = false)
             String timezone,
 
             @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder, 
+            UriComponentsBuilder builder,
             HttpServletRequest request) {
-    
-        
+
+
         DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
         if (vo == null) {
             throw new NotFoundRestException();
@@ -880,7 +878,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             if(!Permissions.hasDataPointSetPermission(user, vo))
                 throw new AccessDeniedException();
         }
-        
+
         ZoneId zoneId;
         if (timezone == null) {
             if (from != null) {
@@ -930,56 +928,38 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         }
         return ResponseEntity.ok(rt.getAttributes());
     }
-    
+
     @ApiOperation(
-            value = "Purge Point Values for one or many data points",
+            value = "Purge Point Values for one or many data points, or a single data source",
             notes = "User must have edit access to data source and its points, use created header to track progress/cancel"
             )
-    @RequestMapping(method = RequestMethod.POST, value="/purge/data-source")
-    public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>> purgePointValuesForDataSource(HttpServletRequest request,
-            @RequestBody(required = true) PurgeDataSourceValuesModel input,
-            @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder) {
-        
-        input.ensureValid();
-        return purgePointValues(
-                user, 
-                input,
-                builder);
-    }
-    
-    @ApiOperation(
-            value = "Purge Point Values for one or many data points",
-            notes = "User must have edit access to data source and its points, use created header to track progress/cancel"
-            )
-    @RequestMapping(method = RequestMethod.POST, value="/purge/data-points")
+    @RequestMapping(method = RequestMethod.POST, value="/purge")
     public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>> purgePointValues(HttpServletRequest request,
             @RequestBody(required = true) PurgeDataPointValuesModel model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
         return purgePointValues(
-                user, 
+                user,
                 model,
                 builder);
     }
-    
-    
+
+
     private ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>>  purgePointValues(
-            User user,  AbstractPurgeValuesModel model, UriComponentsBuilder builder) throws ValidationException {
+            User user,  PurgeDataPointValuesModel model, UriComponentsBuilder builder) throws ValidationException {
         model.ensureValid();
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> response = resourceManager.newTemporaryResource(
-                "DATA_POINT_PURGE_", null, user.getId(), model.getExpiry(), model.getTimeout(), 
+                "DATA_POINT_PURGE", null, user.getId(), model.getExpiry(), model.getTimeout(),
                 (resource, taskUser) -> {
                     PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
-                    
+
                     Map<Integer, DataSourceVO<?>> dataSourceMap = new HashMap<>();
                     Map<String, DataPointVO> dataPointsMap = new HashMap<>();
-                    
+
                     //Build the list of data point Xids
-                    List<String> xids;
-                    if(model instanceof PurgeDataPointValuesModel) {
-                        xids = ((PurgeDataPointValuesModel)model).getXids();
+                    List<String> xids = model.getXids();
+                    if (xids != null && !xids.isEmpty()) {
                         for(String xid : xids) {
                             DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
                             dataPointsMap.put(xid, vo);
@@ -990,8 +970,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                             }
                         }
                     }else {
-                        String dsXid = ((PurgeDataSourceValuesModel)model).getXid();
-                        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(dsXid);
+                        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
                         xids = new ArrayList<>();
                         if(ds != null) {
                             dataSourceMap.put(ds.getId(), ds);
@@ -1004,10 +983,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                     }
                     int maximum = xids.size();
                     int position = 0;
-                    
+
                     //Initial status
                     resource.progressOrSuccess(result, position, maximum);
-                    
+
 
                     for(String xid : xids) {
                         try {
@@ -1019,10 +998,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                             DataSourceVO<?> ds = dataSourceMap.get(dp.getDataSourceId());
                             if(ds == null)
                                 throw new NotFoundException();
-                            
+
                             //Ensure edit permission
                             Permissions.ensureDataSourcePermission(user, ds);
-                            
+
                             //Do purge based on settings
                             if(model.isPurgeAll())
                                 Common.runtimeManager.purgeDataPointValuesWithoutCount(dp.getId());
@@ -1044,13 +1023,13 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
                     return null;
                 });
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/point-values/purge/{id}").buildAndExpand(response.getId()).toUri());
         return new ResponseEntity<>(response, headers, HttpStatus.CREATED);
     }
 
-    @ApiOperation(value = "Update a purge task using its id", 
+    @ApiOperation(value = "Update a purge task using its id",
             notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own purge task unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/purge/{id}")
@@ -1078,8 +1057,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         return resource;
     }
-    
-    @ApiOperation(value = "Get the status of a purge operation using its id", 
+
+    @ApiOperation(value = "Get the status of a purge operation using its id",
             notes = "User can only get their own status unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/purge/{id}")
     public TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> getDataPointPurgeStatus(
@@ -1097,7 +1076,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         return resource;
     }
-    
+
     @ApiOperation(value = "Remove a purge task using its id",
             notes = "Will only remove a task if it is complete. " +
             "User can only remove their own purge task unless they are an admin.")
@@ -1117,10 +1096,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         resource.remove();
     }
-    
+
     /**
      * The Hard Working Value Generation Logic for Latest Value Queries
-     * 
+     *
      * @param user
      * @param info
      * @param xids
@@ -1138,7 +1117,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         }else
             return ResponseEntity.ok(new MultiPointLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
     }
-    
+
     /**
      * The Hard Working Value Generation Logic for Time Range Queries
      * @param user
@@ -1147,10 +1126,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
      * @return
      */
     protected <T, INFO extends ZonedDateTimeRangeQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateStream(User user, INFO info, String[] xids){
-        
+
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
-        
+
         // Are we using rollup
         if (info.getRollup() != RollupEnum.NONE) {
             if(info.getRollup() == RollupEnum.POINT_DEFAULT)
@@ -1169,7 +1148,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 return ResponseEntity.ok(new MultiPointTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
         }
     }
-    
+
     /**
      * Build and validate the map of Requested Data Points
      * @param user
@@ -1187,7 +1166,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 if(!Permissions.hasDataPointReadPermission(user, vo))
                     throw new AccessDeniedException();
             }
-            
+
             //Validate the rollup
             switch(vo.getPointLocator().getDataTypeId()) {
                 case DataTypes.ALPHANUMERIC:
@@ -1202,7 +1181,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             }
             voMap.put(vo.getId(), vo);
         }
-        
+
         //Do we have any points
         if(voMap.isEmpty())
             throw new NotFoundRestException();
