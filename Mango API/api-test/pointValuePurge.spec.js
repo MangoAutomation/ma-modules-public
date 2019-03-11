@@ -27,7 +27,7 @@ describe('Point value purge', function() {
         let resourceId;
         let cutoffTime = new Date().getTime() - 10*60*1000;
         return client.restRequest({
-            path: '/rest/v2/point-values/purge/data-points',
+            path: '/rest/v2/point-values/purge',
             method: 'POST',
             data: {
                 xids: [testPointXid1],
@@ -70,10 +70,10 @@ describe('Point value purge', function() {
         let resourceId;
         let cutoffTime = new Date().getTime() - 10*60*1000;
         return client.restRequest({
-            path: '/rest/v2/point-values/purge/data-source',
+            path: '/rest/v2/point-values/purge',
             method: 'POST',
             data: {
-                xid: this.ds.xid,
+                dataSourceXid: this.ds.xid,
                 useTimeRange: true,
                 timeRange: {
                     from: startTime,
