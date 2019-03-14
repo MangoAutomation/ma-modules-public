@@ -1,6 +1,10 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
 
+*Version 3.5.1*
+* Legacy UI DWR Security enhancements
+* Fix data type CSV import method defined twice
+
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
 
