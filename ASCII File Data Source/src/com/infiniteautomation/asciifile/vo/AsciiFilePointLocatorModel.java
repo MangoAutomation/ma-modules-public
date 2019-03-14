@@ -80,18 +80,6 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 	    this.data.setValueIndex(valueIndex);
 	}
 
-	@JsonGetter("dataType")
-	@CSVColumnGetter(order=27, header="dataType")
-	public String getDataType() {
-	    return DataTypes.CODES.getCode(this.data.getDataTypeId());
-	}
-
-	@JsonSetter("dataType")
-	@CSVColumnSetter(order=27, header="dataType")
-	public void setDataType(String dataType) {
-	    this.data.setDataType(DataTypes.CODES.getId(dataType));
-	}
-
 	@JsonGetter("hasTimestamp")
 	@CSVColumnGetter(order=28, header="hasTimestamp")
 	public boolean isHasTimestamp() {
@@ -129,7 +117,7 @@ public class AsciiFilePointLocatorModel extends PointLocatorModel<AsciiFilePoint
 	}
 
 	@JsonSetter("dataType")
-	@CSVColumnSetter(order=20, header="dataType")
+	@CSVColumnSetter(order=15, header="dataType")
 	@Override
 	public void setDataTypeId(String dataType) {
 	    this.data.setDataType(DataTypes.CODES.getId(dataType));
