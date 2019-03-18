@@ -29,7 +29,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author Terry Packer
  *
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
 public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends AbstractVoModel<T> {
 
     public static final String MODEL_TYPE = "modelType";
