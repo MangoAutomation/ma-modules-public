@@ -6,8 +6,8 @@
 import angular from 'angular';
 import vmStatDataSourceEditor from './components/vmStatDataSourceEditor/vmStatDataSourceEditor';
 import vmStatDataPointEditor from './components/vmStatDataPointEditor/vmStatDataPointEditor';
-import dsHelpTemplate from './dsHelp.html';
-import dpHelpTemplate from './dpHelp.html';
+import dsHelpTemplate from './help/dsHelp.html';
+import dpHelpTemplate from './help/dpHelp.html';
 
 const vmStatDataSourceModule = angular.module('maVmStatDataSource', ['maUiApp'])
 .component('maVmStatDataSourceEditor', vmStatDataSourceEditor)

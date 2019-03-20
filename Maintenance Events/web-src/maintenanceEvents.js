@@ -31,7 +31,8 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
             menuHidden: false,
             params: {
                 noPadding: false,
-                hideFooter: false
+                hideFooter: false,
+                helpPage: 'ui.help.maintenanceEvents'
             },
             permission: 'superadmin'
         },
