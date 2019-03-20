@@ -14,7 +14,7 @@ public class RestExceptionIndividualResponse<A, B> extends IndividualResponse<A,
      * Sets the http status and error fields from the exception
      * @param exception
      */
-    public void exceptionCaught(Exception exception) {
+    public void exceptionCaught(Throwable exception) {
         AbstractRestV2Exception e = this.mapException(exception);
         this.setHttpStatus(e.getStatus().value());
         this.setError(e);

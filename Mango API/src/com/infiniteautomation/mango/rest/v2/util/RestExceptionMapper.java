@@ -17,10 +17,10 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
  * @author Jared Wiltshire
  */
 public interface RestExceptionMapper extends ExceptionMapper<AbstractRestV2Exception> {
-    
+
     // TODO the exceptions and status codes are taken from MangoSpringExceptionHandler
     // we should make it easier to reuse the logic from that class elsewhere
-    public default AbstractRestV2Exception mapException(Exception e) {
+    public default AbstractRestV2Exception mapException(Throwable e) {
         if (e instanceof AbstractRestV2Exception) {
             return (AbstractRestV2Exception) e;
         } else if (e instanceof PermissionException) {

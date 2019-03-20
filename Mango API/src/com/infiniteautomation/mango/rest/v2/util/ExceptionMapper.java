@@ -7,5 +7,5 @@ package com.infiniteautomation.mango.rest.v2.util;
  * @author Jared Wiltshire
  */
 public interface ExceptionMapper<E> {
-    public E mapException(Exception e);
+    public E mapException(Throwable e);
 }
