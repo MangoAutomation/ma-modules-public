@@ -10,6 +10,7 @@ import asciiFileDataPointEditor from './components/asciiFileDataPointEditor/asci
 import settingsTemplate from './settings.html';
 import dsHelpTemplate from './help/dsHelp.html';
 import dpHelpTemplate from './help/dpHelp.html';
+import systemSettingsTemplate from './help/settingsHelp.html';
 
 const asciiFileDataSourceModule = angular.module('maAsciiFileDataSource', ['maUiApp'])
 .component('maAsciiFileDataSourceEditor', asciiFileDataSourceEditor)
@@ -37,23 +38,33 @@ const asciiFileDataSourceModule = angular.module('maAsciiFileDataSource', ['maUi
 
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.mqttClientDataSource',
+            name: 'ui.help.asciiDataSource',
             url: '/ascii-file-data-source',
             menuTr: 'dsEdit.asciiFile',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.mqttClientDataPoint',
+            name: 'ui.help.asciiDataPoint',
             url: '/ascii-file-data-point',
             menuTr: 'dsEdit.asciiFilePoint',
             template: dpHelpTemplate
+        },
+        {
+            name: 'ui.help.systemSettings',
+            url: '/ascii-file-system-settings',
+            menuTr: 'dsEdit.file.systemSettingsDescription',
+            template: systemSettingsTemplate
         },
         {
             name: 'ui.settings.system.asciiFile',
             url: '/ascii-file',
             template: settingsTemplate,
             menuTr: 'dsEdit.file.systemSettingsDescription',
-            menuHidden: true
+            menuHidden: true,
+            params: {
+               
+                helpPage: 'ui.help.systemSettings'
+            },
         }
     ]);
 }]);
