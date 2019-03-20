@@ -6,8 +6,8 @@
 import angular from 'angular';
 import virtualDataSourceEditor from './components/virtualDataSourceEditor/virtualDataSourceEditor';
 import virtualDataPointEditor from './components/virtualDataPointEditor/virtualDataPointEditor';
-import dsHelpTemplate from './dsHelp.html';
-import dpHelpTemplate from './dpHelp.html';
+import dsHelpTemplate from './help/dsHelp.html';
+import dpHelpTemplate from './help/dpHelp.html';
 
 const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'])
 .component('maVirtualDataSourceEditor', virtualDataSourceEditor)
