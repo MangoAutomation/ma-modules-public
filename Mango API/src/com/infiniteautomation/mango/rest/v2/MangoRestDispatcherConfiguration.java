@@ -16,6 +16,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.ResourceRegionHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
@@ -112,7 +113,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         .mediaType("sjson", MediaTypes.SEROTONIN_JSON)
         .mediaType("csv", MediaTypes.CSV_V1)
         .mediaType("csv1", MediaTypes.CSV_V1)
-        .mediaType("csv2", MediaTypes.CSV_V2);
+        .mediaType("csv2", MediaTypes.CSV_V2)
+        .mediaType("txt", MediaType.TEXT_PLAIN);
     }
 
     @Bean("csvObjectMapper")
@@ -123,7 +125,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     }
     
     /**
-     * Configure the Message Converters for the API for now only JSON
+     * Configure the Message Converters for the API
      */
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -143,7 +145,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new PointValueTimeStreamCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
-
+        converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
         
         //Now is a good time to register our Sero Json Converter
         Common.JSON_CONTEXT.addConverter(new AbstractRestModelConverter(), AbstractRestModel.class);
