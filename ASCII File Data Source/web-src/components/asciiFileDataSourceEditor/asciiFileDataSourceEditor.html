@@ -28,17 +28,13 @@
     </md-tab-label>
     <md-tab-body>
         <div class="md-padding ma-no-padding-bottom ma-inputs-container" layout="row" layout-wrap layout-align="space-between start">
-            <div flex="100" flex-gt-md="50" layout="row" layout-wrap layout-align="center center">
+            <div flex="100" layout="row" layout-wrap layout-align="center center">
                 <md-input-container flex>
                     <md-icon>insert_drive_file</md-icon>
-                    <label ma-tr="dsEdit.file.path"></label>
-                    <input name="filePath" ng-model="$ctrl.dataSource.filePath" ma-get-ctrl="filePathModelCtrl = $ngModel">
-                    <div ng-messages="filePathModelCtrl.$error">
-                        <div ng-message="required" ma-tr="ui.app.required"></div>
-                        <div ng-message="validationMessage" ng-bind="filePathModelCtrl.validationMessage"></div>
-                    </div>
+                    <label ma-tr="dsEdit.file"></label>
+                    <input name="file" ng-model="$ctrl.file">
                 </md-input-container>
-                <md-button class="md-raised md-primary" ng-click="$ctrl.startListener($event)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.validateFile($event)">
                     <span ma-tr="dsEdit.file.test.submitTestString"></span>
                 </md-button>
             </div>

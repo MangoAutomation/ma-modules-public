@@ -5,19 +5,24 @@
 
 import componentTemplate from './asciiFileDataSourceEditor.html';
 
-const $inject = Object.freeze(['$scope']);
+const $inject = Object.freeze(['$scope', 'maAsciiFile']);
 
 class asciiFileDataSourceEditorController {
 
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor($scope) {
+    constructor($scope, maAsciiFile) {
         this.$scope = $scope;
+        this.maAsciiFile = maAsciiFile;
     }
 
     $onInit() {
-        
+        this.asciiFile = new this.maAsciiFile();
+    }
+
+    validateFile(){
+        this.asciiFile.validate(this.dataSource.xid, this.file);
     }
 
 }

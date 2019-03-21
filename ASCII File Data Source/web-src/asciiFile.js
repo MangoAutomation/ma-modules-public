@@ -7,6 +7,8 @@ import angular from 'angular';
 import asciiFileDataSourceEditor from './components/asciiFileDataSourceEditor/asciiFileDataSourceEditor';
 import asciiFileDataPointEditor from './components/asciiFileDataPointEditor/asciiFileDataPointEditor';
 
+import asciiFile from './services/asciiFile';
+
 import settingsTemplate from './settings.html';
 import dsHelpTemplate from './help/dsHelp.html';
 import dpHelpTemplate from './help/dpHelp.html';
@@ -15,6 +17,7 @@ import systemSettingsTemplate from './help/settingsHelp.html';
 const asciiFileDataSourceModule = angular.module('maAsciiFileDataSource', ['maUiApp'])
 .component('maAsciiFileDataSourceEditor', asciiFileDataSourceEditor)
 .component('maAsciiFileDataPointEditor', asciiFileDataPointEditor)
+.factory('maAsciiFile', asciiFile)
 .config(['maDataSourceProvider', 'maPointProvider', 'maUiMenuProvider', function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
     maDataSourceProvider.registerType({
         type: 'ASCII FILE',
