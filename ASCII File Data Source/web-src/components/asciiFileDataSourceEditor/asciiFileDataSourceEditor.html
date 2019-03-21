@@ -1,0 +1,23 @@
+<h3>
+    <span ma-tr="dsEdit.asciiFile"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.asciiDataSource">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <div flex="100" flex-gt-md="50" layout="row" layout-wrap layout-align="center center">
+        <md-input-container flex>
+            <md-icon>insert_drive_file</md-icon>
+            <label ma-tr="dsEdit.file.path"></label>
+            <input name="filePath" ng-model="$ctrl.dataSource.filePath" ma-get-ctrl="filePathModelCtrl = $ngModel">
+            <div ng-messages="filePathModelCtrl.$error">
+                <div ng-message="required" ma-tr="ui.app.required"></div>
+                <div ng-message="validationMessage" ng-bind="filePathModelCtrl.validationMessage"></div>
+            </div>
+        </md-input-container>
+        <md-button class="md-raised md-primary" ng-click="$ctrl.startListener($event)">
+            <span ma-tr="dsEdit.file.check"></span>
+        </md-button>
+    </div>
+</div>
