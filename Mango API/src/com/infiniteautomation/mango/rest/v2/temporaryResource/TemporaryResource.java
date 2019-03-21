@@ -169,8 +169,9 @@ public final class TemporaryResource<T, E> {
     }
 
     @JsonIgnore
-    public synchronized final boolean isComplete() {
-        return !(this.status == TemporaryResourceStatus.VIRGIN || this.status == TemporaryResourceStatus.SCHEDULED || this.status == TemporaryResourceStatus.RUNNING);
+    public final boolean isComplete() {
+        TemporaryResourceStatus status = this.status;
+        return !(status == TemporaryResourceStatus.VIRGIN || status == TemporaryResourceStatus.SCHEDULED || status == TemporaryResourceStatus.RUNNING);
     }
 
     protected final void runTask(User user) throws Exception {
@@ -212,8 +213,12 @@ public final class TemporaryResource<T, E> {
     }
 
     public final Integer getProgress() {
-        if (position != null && maximum != null) {
-            return Math.floorDiv(position * 100, maximum);
+        try {
+            if (position != null && maximum != null) {
+                return Math.floorDiv(position * 100, maximum);
+            }
+        } catch (ArithmeticException e) {
+            return null;
         }
         return null;
     }
