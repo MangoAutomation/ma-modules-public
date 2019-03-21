@@ -33,7 +33,8 @@ public class MangoApiV2ApplicationContextDefinition extends ApplicationContextDe
                 context.addServlet("restV2DispatcherServlet", new DispatcherServlet(restDispatcherContext));
         restDispatcher.setLoadOnStartup(3);
         restDispatcher.addMapping("/rest/v2/*");
-        
+        restDispatcher.setAsyncSupported(true);
+
         boolean enableSwagger = Common.envProps.getBoolean("swagger.enabled", false);
         if(enableSwagger)
             restDispatcherContext.register(SwaggerV2Config.class);
