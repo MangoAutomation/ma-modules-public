@@ -20,12 +20,54 @@ const asciiFileDataSourceModule = angular.module('maAsciiFileDataSource', ['maUi
         type: 'ASCII FILE',
         description: 'dsEdit.asciiFile',
         template: `<ma-ascii-file-data-source-editor data-source="$ctrl.dataSource"></ma-ascii-file-data-source-editor>`,
-        polling: false,
-        defaultDataSource: {},
+        polling: true,
+        defaultDataSource: {
+            descriptionKey: 'dsEdit.file.desc',
+            editPermission: [],
+            enabled: false,
+            eventAlarmLevels:[
+                {
+                    descriptionKey: 'event.ds.pollAborted',
+                    duplicateHandling: 'IGNORE',
+                    eventType: 'POLL_ABORTED',
+                    level: 'URGENT'
+                },
+                {
+                    descriptionKey: 'event.ds.dataSource',
+                    duplicateHandling: 'IGNORE',
+                    eventType: 'DATA_SOURCE_EXCEPTION',
+                    level: 'URGENT'
+                },
+                {
+                    descriptionKey: 'event.ds.pointRead',
+                    duplicateHandling: 'IGNORE',
+                    eventType: 'POINT_READ_EXCEPTION',
+                    level: 'URGENT'
+                }
+            ],
+            filePath: '',
+            modelType: 'ASCII FILE',
+            pollPeriod: {periods: 5, type: 'MINUTES'},
+            purgeSettings: {override: false, frequency: {periods: 1, type: 'YEARS'}},
+            quantize: false,
+            useCron: false
+        },
         defaultDataPoint: {
             dataSourceTypeName: 'ASCII FILE',
             enabled: false,
-            pointLocator: {}
+            pointLocator: {
+                dataType: 'BINARY',
+                hasTimestamp: false,
+                modelType: 'PL.ASCII_FILE',
+                pointIdentifier: '',
+                pointIdentifierIndex: 0,
+                relinquishable: false,
+                settable: false,
+                timestampFormat: '',
+                timestampIndex: 0,
+                valueIndex: 0,
+                valueRegex: '',
+            }
         },
         bulkEditorColumns: []
     });
