@@ -6,7 +6,7 @@ public class AsciiFileAngularJSModuleDefinition extends AngularJSModuleDefinitio
 
     @Override
     public String getJavaScriptFilename() {
-        return "/asciiFileAngularModule.js";
+        return "/angular/asciiFile.js";
     }
 
 }
