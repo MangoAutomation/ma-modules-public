@@ -235,7 +235,7 @@ public class LatestQueryInfo {
             try {
                 ZoneId.of(timezone);
             } catch (Exception e) {
-                throw new BadRequestException(new TranslatableMessage("validate.invalidValue", "timezone"));
+                throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "timezone"));
             }
         }
     }
@@ -246,7 +246,7 @@ public class LatestQueryInfo {
             try {
                 DateTimeFormatter.ofPattern(dateTimeFormat);
             } catch (IllegalArgumentException e) {
-                throw new BadRequestException(new TranslatableMessage("validate.invalid", "dateTimeFormat"));
+                throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "dateTimeFormat"));
             }
         }
     }
