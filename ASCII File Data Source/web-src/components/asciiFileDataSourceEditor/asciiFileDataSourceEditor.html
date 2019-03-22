@@ -38,6 +38,38 @@
                     <span ma-tr="dsEdit.file.test.submitTestString"></span>
                 </md-button>
             </div>
+
+            <div ng-if="$ctrl.testValues" flex="100" class="ma-table-container">
+                <md-table-container>
+                    <table md-table ng-model="$ctrl.page.selected">
+                        <thead md-head>
+                            <tr md-row>
+                                <th md-column ma-tr="common.pointName"></th>
+                                <th md-column ma-tr="dsEdit.file.pointIdentifier"></th>
+                                <th md-column ma-tr="common.stats.value"></th>
+                                <th md-column ma-tr="dsEdit.status"></th>
+                            </tr>
+                        </thead>
+                        <tbody md-body>
+                            <tr md-row ng-repeat="items in $ctrl.testValues | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
+                                <td md-cell ng-bind="items.pointName"></td>
+                                <td md-cell ng-bind="items.identifier"></td>
+                                <td md-cell>{{ items.value }}@{{ items.timestamp | maMoment:'format':'dddd, MMMM Do YYYY, h:mm:ss a' }}</td>
+                                <td md-cell ng-if="items.success" ma-tr="dsEdit.file.test.match"></td>
+                                <td md-cell ng-if="!items.success" ma-tr="dsEdit.file.test.noMatch"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </md-table-container>
+                <md-table-pagination 
+                    md-limit="$ctrl.query.limit" 
+                    md-limit-options="[5, 10, 20]" 
+                    md-page="$ctrl.query.page" 
+                    md-total="{{$ctrl.testValues.length}}" 
+                    md-on-paginate="$ctrl.getBound"
+                    md-page-select>
+                </md-table-pagination>
+            </div>
         </div>
     </md-tab-body>
 </md-tab>

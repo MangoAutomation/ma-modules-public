@@ -20,11 +20,17 @@ class asciiFileDataSourceEditorController {
 
     $onInit() {
         this.asciiFile = new this.maAsciiFile();
+        this.query = {
+            limit: 10, 
+            page: 1, 
+        };
     }
 
     validateFile() {
+        this.testValues = null;
+
         this.asciiFile.validate(this.dataSource.xid, this.file).then(response => {
-            console.log(response);
+            this.testValues = response;
         });
     }
 
