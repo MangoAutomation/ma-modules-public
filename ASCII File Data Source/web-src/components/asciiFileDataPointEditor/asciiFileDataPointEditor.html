@@ -1,0 +1,89 @@
+<h3>
+    <span ma-tr="dsEdit.httpJsonRetrieverPoint"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.httpJsonRetrieverDataPoint">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container id="dataTypeContainer" flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="dsEdit.pointDataType"></label>
+        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataPoint.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.dataType.hasMultipleValues()" ng-value="$ctrl.dataPoint.dataType">
+                <em ng-bind="$ctrl.dataPoint.dataType"></em>
+            </md-option>
+            <md-option ng-repeat="dataType in $ctrl.dataTypes track by dataType.key" ng-value="dataType.key" ma-tr="{{dataType.translation}}"></md-option>
+        </md-select>
+        <div ng-messages="dataTypeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="dataTypeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.file.pointIdentifier"></label>
+        <input name="pointIdentifier" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifier" ma-get-ctrl="pointIdentifierModelCtrl = $ngModel">
+        <div ng-messages="pointIdentifierModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="pointIdentifierModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.file.pointIdentifierIndex"></label>
+        <input name="pointIdentifierIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifierIndex" ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
+        <div ng-messages="pointIdentifierIndexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.file.valueIndex"></label>
+        <input name="valueIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.valueIndex" ma-get-ctrl="valueIndexModelCtrl = $ngModel">
+        <div ng-messages="valueIndexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="valueIndexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>settings_ethernet</md-icon>
+        <label ma-tr="dsEdit.file.valueRegex"></label>
+        <input name="valueRegex" ng-model="$ctrl.dataPoint.pointLocator.valueRegex" ma-get-ctrl="valueRegexModelCtrl = $ngModel">
+        <div ng-messages="valueRegexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="valueRegexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <div flex="100" flex-gt-md="50">
+        <md-checkbox class="ma-margin-input-container" name="hasTimestamp" ng-model="$ctrl.dataPoint.pointLocator.hasTimestamp">
+            <span ma-tr="dsEdit.file.hasTimestamp"></span>
+        </md-checkbox>
+    </div>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.hasTimestamp">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.file.timestampIndex"></label>
+        <input name="timestampIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.timestampIndex" ma-get-ctrl="timestampIndexModelCtrl = $ngModel">
+        <div ng-messages="timestampIndexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="timestampIndexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.hasTimestamp">
+        <md-icon>av_timer</md-icon>
+        <label ma-tr="dsEdit.file.timestampFormat"></label>
+        <input name="timestampFormat" ng-model="$ctrl.dataPoint.pointLocator.timestampFormat" ma-get-ctrl="timestampFormatModelCtrl = $ngModel">
+        <div ng-messages="timestampFormatModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="timestampFormatModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>

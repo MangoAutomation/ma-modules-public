@@ -107,7 +107,6 @@ const asciiFileDataSourceModule = angular.module('maAsciiFileDataSource', ['maUi
             menuTr: 'dsEdit.file.systemSettingsDescription',
             menuHidden: true,
             params: {
-               
                 helpPage: 'ui.help.systemSettings'
             },
         }
