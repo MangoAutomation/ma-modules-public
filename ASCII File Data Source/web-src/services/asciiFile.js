@@ -10,15 +10,35 @@ function asciiFilerFactory($http) {
 
         validate(xid, data) {
             let url, method;
-            url = '/rest/v2/ascii-file-data-source/validate-ascii' + xid;
+            url = '/rest/v2/ascii-file-data-source/validate-ascii/' + xid;
             method = 'POST';
             
             return $http({
                 url,
                 method,
-                data: data
+                data: data,
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
             }).then(response => {
                 return response.data;
+            });
+        }
+
+        validateFileExists(data) {
+            let url, method;
+            url = '/rest/v2/ascii-file-data-source/validate-ascii-file-exists';
+            method = 'POST';
+            
+            return $http({
+                url,
+                method,
+                data: data,
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+            }).then(response => {
+                return response;
             });
         }
     }
