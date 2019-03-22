@@ -22,12 +22,14 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import com.fasterxml.classmate.TypeResolver;
 import com.infiniteautomation.mango.rest.swagger.MangoRestSwaggerResourceProvider;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.schema.AlternateTypeRule;
+import springfox.documentation.schema.AlternateTypeRules;
 import springfox.documentation.schema.WildcardType;
 import springfox.documentation.service.ApiKey;
 import springfox.documentation.service.AuthorizationScope;
@@ -74,7 +76,6 @@ public class SwaggerV1Config {
                 .securityContexts(Arrays.asList(securityContext()))
                 .produces(defaultMediaTypes)
                 .consumes(defaultMediaTypes)
-                //.pathProvider(new BasePathAwareRelativePathProvider("/rest"))
                 .genericModelSubstitutes(ResponseEntity.class);
                 
         docket.alternateTypeRules(
@@ -84,8 +85,13 @@ public class SwaggerV1Config {
                         typeResolver.resolve(WildcardType.class)),
                 // Rule to allow Multipart requests to show up as single file input
                 new AlternateTypeRule(typeResolver.resolve(MultipartHttpServletRequest.class),
-                        typeResolver.resolve(MultipartFile.class)))
-
+                        typeResolver.resolve(MultipartFile.class)),
+                //Setup Translatable Messages to appear as Strings
+                AlternateTypeRules.newRule(TranslatableMessage.class, String.class),
+                //Setup Lists of Translatable Messages to appear as Lists of Strings
+                AlternateTypeRules.newRule(typeResolver.resolve(List.class, TranslatableMessage.class), typeResolver.resolve(List.class, String.class)),
+                //Setup Sets of Translatable Messages to appear as Sets of Strings
+                AlternateTypeRules.newRule(typeResolver.resolve(Set.class, TranslatableMessage.class), typeResolver.resolve(Set.class, String.class)))
                 .useDefaultResponseMessages(false);
 
         docket.apiInfo(new ApiInfoBuilder().title("Mango REST V1 API").description(
