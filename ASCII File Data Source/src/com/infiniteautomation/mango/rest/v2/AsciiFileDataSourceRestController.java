@@ -3,13 +3,16 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,14 +20,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.rt.AsciiFileDataSourceRT;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.infiniteautomation.mango.regex.MatchCallback;
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.AsciiFileTestResultModel;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -49,6 +55,31 @@ public class AsciiFileDataSourceRestController {
     @Autowired
     public AsciiFileDataSourceRestController(DataSourceService<?> service) {
         this.service = service;
+    }
+    
+    @PreAuthorize("hasDataSourcePermission()")
+    @ApiOperation(value = "Validate ASCII File is readable on Server", notes = "")
+    @RequestMapping(method = RequestMethod.POST, value = "/validate-ascii-file-exists", consumes= {"text/plain;charset=UTF-8"})
+    public void validateFileExists(
+            @RequestBody
+            String path,
+            @AuthenticationPrincipal User user) {
+        File verify = new File(path);
+        try {
+            verify.getCanonicalPath();
+        }catch(Exception e) {
+            throw new BadRequestException(new TranslatableMessage("dsEdit.file.ioexceptionCanonical", path));
+        }
+        
+        String restrictedPaths = SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+        if(!StringUtils.isEmpty(restrictedPaths))
+            for(String p : restrictedPaths.split(";"))
+                if(path.startsWith(p)) {
+                    throw new AccessDeniedException(new TranslatableMessage("dsEdit.file.pathRestrictedBy", path));
+                }
+        
+        if (!verify.exists() || !verify.canRead())
+            throw new AccessDeniedException(new TranslatableMessage("dsEdit.file.cannotRead"));
     }
     
     @ApiOperation(value = "Validate ASCII", notes = "")
