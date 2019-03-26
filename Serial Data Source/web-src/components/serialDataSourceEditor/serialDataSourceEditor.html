@@ -213,3 +213,97 @@
         </div>
     </md-input-container>
 </div>
+
+<md-tab ng-if="!$ctrl.dataSource.isNew()">
+    <md-tab-label>
+        <span ma-tr="dsEdit.serial.submitTestString"></span>
+    </md-tab-label>
+    <md-tab-body>
+        <div class="md-padding ma-no-padding-bottom ma-inputs-container" layout="row" layout-wrap layout-align="space-between start">
+            <div flex="100" flex-gt-md="50">
+                <md-checkbox class="ma-margin-input-container" name="hex" ng-model="$ctrl.dataSource.hex">
+                    <span ma-tr="dsEdit.serial.hex"></span>
+                </md-checkbox>
+            </div>
+
+            <div flex="100" flex-gt-md="50">
+                <md-checkbox class="ma-margin-input-container" name="useTerminator" ng-model="$ctrl.dataSource.useTerminator">
+                    <span ma-tr="dsEdit.serial.useTerminator"></span>
+                </md-checkbox>
+            </div>
+            
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.useTerminator">
+                <md-icon>last_page</md-icon>
+                <label ma-tr="dsEdit.serial.messageTerminator"></label>
+                <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
+                <div ng-messages="messageTerminatorModelCtrl.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="messageTerminatorModelCtrl.validationMessage"></div>
+                </div>
+            </md-input-container>
+        
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.useTerminator">
+                <md-icon>settings_ethernet</md-icon>
+                <label ma-tr="dsEdit.serial.messageRegex"></label>
+                <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required ma-get-ctrl="messageRegexModelCtrl = $ngModel">
+                <div ng-messages="messageRegexModelCtrl.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="messageRegexModelCtrl.validationMessage"></div>
+                </div>
+            </md-input-container>
+        
+            <md-input-container flex="100" flex-gt-md="50">
+                <md-icon>call_received</md-icon>
+                <label ma-tr="dsEdit.serial.pointIdentifierIndex"></label>
+                <input name="pointIdentifierIndex" min="0" type="number" ng-model="$ctrl.dataSource.pointIdentifierIndex" required ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
+                <div ng-messages="pointIdentifierIndexModelCtrl.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
+                </div>
+            </md-input-container>
+        
+            <div flex="100" layout="row" layout-wrap layout-align="center center">
+                <md-input-container flex>
+                    <md-icon>insert_drive_file</md-icon>
+                    <label ma-tr="dsEdit.serial.string"></label>
+                    <input name="string" ng-model="$ctrl.string">
+                </md-input-container>
+                <md-button class="md-raised md-primary" ng-click="$ctrl.validateString($event)">
+                    <span ma-tr="dsEdit.serial.submitTestString"></span>
+                </md-button>
+            </div>
+
+            <div ng-if="$ctrl.testValues" flex="100" class="ma-table-container">
+                <md-table-container>
+                    <table md-table ng-model="$ctrl.page.selected">
+                        <thead md-head>
+                            <tr md-row>
+                                <th md-column ma-tr="common.pointName"></th>
+                                <th md-column ma-tr="dsEdit.file.pointIdentifier"></th>
+                                <th md-column ma-tr="common.stats.value"></th>
+                                <th md-column ma-tr="dsEdit.status"></th>
+                            </tr>
+                        </thead>
+                        <tbody md-body>
+                            <tr md-row ng-repeat="items in $ctrl.testValues | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
+                                <td md-cell ng-bind="items.pointName"></td>
+                                <td md-cell ng-bind="items.identifier"></td>
+                                <td md-cell>{{ items.value }}@{{ items.timestamp | maMoment:'format':'dddd, MMMM Do YYYY, h:mm:ss a' }}</td>
+                                <td md-cell ng-if="items.success" ma-tr="dsEdit.file.test.match"></td>
+                                <td md-cell ng-if="!items.success" ma-tr="dsEdit.file.test.noMatch"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </md-table-container>
+                <md-table-pagination 
+                    md-limit="$ctrl.query.limit" 
+                    md-limit-options="[5, 10, 20]" 
+                    md-page="$ctrl.query.page" 
+                    md-total="{{$ctrl.testValues.length}}" 
+                    md-on-paginate="$ctrl.getBound"
+                    md-page-select>
+                </md-table-pagination>
+            </div>
+        </div>
+    </md-tab-body>
+</md-tab>

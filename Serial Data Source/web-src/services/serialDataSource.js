@@ -17,6 +17,20 @@ function serialDataSourceFactory($http) {
             });
         }
 
+        static validateString(xid, data) {
+            let url, method;
+            url = '/rest/v2/serial-data-source/validate-ascii/' + xid;
+            method = 'POST';
+            
+            return $http({
+                url,
+                method,
+                data: data
+            }).then(response => {
+                return response.data;
+            });
+        }
+
     }
     
     return SerialDataSource;
