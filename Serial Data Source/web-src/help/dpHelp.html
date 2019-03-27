@@ -1,1 +1,21 @@
-<h1>help</h1>
+<div class="ma-help-doc-container">
+    <h1 ma-tr="dsEdit.serialPoint"></h1>
+    <h2>Configuration</h2>
+
+<ul>
+    <li><b>Data type</b> - the matched value is attempted to be converted from its string value to this (see below)</li>
+    <li><b>Point identifier</b> - the String that is used to determine if the message in the data source is for this point.  It is used to check for an exact match to the data source's <b>point identifier group</b></li>
+    <li><b>Value group</b> - the matching group from the point's value regex that will be used to extract a value for this point</li>
+    <li><b>Value regex</b> - the regular expression pattern to use on the entire message to extract a value.</li>
+</ul>
+
+<h2>Data Type Conversion</h2>
+
+<ul>
+    <li><b>Alphanumeric</b> values are straight from UTF-8 bytes</li>
+    <li><b>Binary</b> for hex representations 0 is false, 1 is true.  For non-hex case insensitive 'true' or 'false' strings.</li>
+    <li><b>Multistate</b> for hex the value of 2 or 4 bytes is converted to an integer. For non-hex strings of '124' are converted to the integer 124.</li>
+    <li><b>Numeric</b> for hex the value of 4(float) or 8(double) bytes is converted to a floating point precision number.  For non-hex strings of '1234.3' are converted to the floating point value 1234.3</li> 
+</ul>
+
+    </div>

@@ -87,7 +87,11 @@ const serialSourceModule = angular.module('maSerialDataSource', ['maUiApp'])
                 valueRegex: ''
             }
         },
-        bulkEditorColumns: []
+        bulkEditorColumns: [
+            {name: 'pointLocator.pointIdentifier', label: 'dsEdit.serial.pointIdentifier', selectedByDefault: true},
+            {name: 'pointLocator.valueIndex', label: 'dsEdit.serial.valueIndex', selectedByDefault: true},
+            {name: 'pointLocator.valueRegex', label: 'dsEdit.serial.valueRegex', selectedByDefault: true}
+        ]
     });
 
     maPointProvider.registerType({
