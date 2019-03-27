@@ -1,0 +1,52 @@
+<h3>
+    <span ma-tr="dsEdit.serialPoint"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.serialDataPoint">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container id="dataTypeContainer" flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="dsEdit.pointDataType"></label>
+        <md-select name="pointLocator.dataType" ng-model="$ctrl.dataPoint.dataType" required ma-get-ctrl="dataTypeModelCtrl = $ngModel">
+            <md-option ng-if="$ctrl.dataPoint.dataType.hasMultipleValues()" ng-value="$ctrl.dataPoint.dataType">
+                <em ng-bind="$ctrl.dataPoint.dataType"></em>
+            </md-option>
+            <md-option ng-repeat="dataType in $ctrl.dataTypes track by dataType.key" ng-value="dataType.key" ma-tr="{{dataType.translation}}"></md-option>
+        </md-select>
+        <div ng-messages="dataTypeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="dataTypeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.serial.pointIdentifier"></label>
+        <input name="pointIdentifier" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifier" ma-get-ctrl="pointIdentifierModelCtrl = $ngModel">
+        <div ng-messages="pointIdentifierModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="pointIdentifierModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.serial.valueIndex"></label>
+        <input name="valueIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.valueIndex" ma-get-ctrl="valueIndexModelCtrl = $ngModel">
+        <div ng-messages="valueIndexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="valueIndexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>settings_ethernet</md-icon>
+        <label ma-tr="dsEdit.serial.valueRegex"></label>
+        <input name="valueRegex" ng-model="$ctrl.dataPoint.pointLocator.valueRegex" ma-get-ctrl="valueRegexModelCtrl = $ngModel">
+        <div ng-messages="valueRegexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="valueRegexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>
