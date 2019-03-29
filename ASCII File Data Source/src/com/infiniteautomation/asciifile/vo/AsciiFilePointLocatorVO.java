@@ -57,7 +57,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
             response.addContextualMessage("valueRegex", "validate.required");
 		
 		//Validate the regex
-		if(!Pattern.compile("([^\\\\]|^)\\(.*[^\\\\]\\)").matcher(valueRegex).find())
+		if(!Pattern.compile("([^\\\\]|^)\\(.*[^\\\\]*\\)").matcher(valueRegex).find())
 			response.addContextualMessage("valueRegex", "file.validate.noCaptureGroup");
 		
 		if(pointIdentifierIndex < 0)

@@ -2,6 +2,7 @@
 * Upgraded to work with core version 3.6.x
 * Add REST endpoint to test if a file exists and is readable by the data source
 * Add REST endpoint to validate example ASCII as per the data source settings
+* Change regex validation to allow an empty catch group for point identifier
 
 *Version 3.5.1*
 * Legacy UI DWR Security enhancements
