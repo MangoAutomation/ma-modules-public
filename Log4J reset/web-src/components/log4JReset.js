@@ -4,7 +4,6 @@
  */
 
 import componentTemplate from './log4JReset.html';
-import angular from 'angular';
 
 const $inject = Object.freeze(['$scope', 'maLog4JReset', 'maDialogHelper']);
 
