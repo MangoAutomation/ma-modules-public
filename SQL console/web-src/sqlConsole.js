@@ -20,6 +20,8 @@ const sqlConsoleModule = angular.module('maSqlConsole', [])
             menuIcon: 'storage',
             permission: 'superadmin',
             weight: 2000,
+            menuHidden: true,
+            showInUtilities: true,
             params: {
                 noPadding: false,
                 hideFooter: false,
