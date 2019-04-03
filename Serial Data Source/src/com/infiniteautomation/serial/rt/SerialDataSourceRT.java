@@ -391,7 +391,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
             			}else{
             				//Check to see if we have remaining data, if not cancel timeout
             				if(this.buffer.size() == 0)
-            					this.timeoutTask.cancel();
+            				    if(this.timeoutTask != null)
+            				        this.timeoutTask.cancel();
             			}
             			
             		}
