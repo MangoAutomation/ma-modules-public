@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2.exception;
 
 import java.io.IOException;
+import java.util.concurrent.CompletionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +27,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
@@ -53,18 +57,26 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private final Log LOG = LogFactory.getLog(RestExceptionHandler.class);
 
     final RequestMatcher browserHtmlRequestMatcher;
+    final HandlerExceptionResolver handlerExceptionResolver;
 
     @Autowired
-    public RestExceptionHandler(@Qualifier("browserHtmlRequestMatcher") RequestMatcher browserHtmlRequestMatcher) {
+    public RestExceptionHandler(@Qualifier("browserHtmlRequestMatcher") RequestMatcher browserHtmlRequestMatcher, HandlerExceptionResolver handlerExceptionResolver) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
+        this.handlerExceptionResolver = handlerExceptionResolver;
+    }
+
+    /**
+     * Work around for CompletionException until this PR is merged https://github.com/spring-projects/spring-framework/pull/22476
+     */
+    @ExceptionHandler(CompletionException.class)
+    public ModelAndView handleCompletionException(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod, CompletionException ex) {
+        return handlerExceptionResolver.resolveException(request, response, handlerMethod, (Exception) ex.getCause());
     }
 
     //Anything that extends our Base Exception
     @ExceptionHandler({AbstractRestV2Exception.class})
-    protected ResponseEntity<Object> handleMangoError(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
-        //Since all Exceptions handled by this method extend AbstractRestV2Exception we don't need to check type
-        AbstractRestV2Exception e = (AbstractRestV2Exception)ex;
-        return handleExceptionInternal(ex, ex, new HttpHeaders(), e.getStatus(), req);
+    public ResponseEntity<Object> handleMangoError(HttpServletRequest request, HttpServletResponse response, AbstractRestV2Exception ex, WebRequest req) {
+        return handleExceptionInternal(ex, ex, new HttpHeaders(), ex.getStatus(), req);
     }
 
     //TODO Handle Permission Exception Here
