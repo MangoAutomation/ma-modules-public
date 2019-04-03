@@ -3,6 +3,7 @@ package com.infiniteautomation.asciifile.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
 import com.infiniteautomation.asciifile.rt.AsciiFilePointLocatorRT;
@@ -61,19 +62,26 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
 			response.addContextualMessage("valueRegex", "file.validate.noCaptureGroup");
 		
 		if(pointIdentifierIndex < 0)
-			response.addContextualMessage("pointIdentifierIndex","validate.invalidValue");
+			response.addContextualMessage("pointIdentifierIndex", "validate.invalidValue");
 		
 		if(valueIndex < 0)
-			response.addContextualMessage("valueIndex","validate.invalidValue");
+			response.addContextualMessage("valueIndex", "validate.invalidValue");
 		
 		if (!DataTypes.CODES.isValidId(dataType))
             response.addContextualMessage("dataTypeId", "validate.invalidValue");
 		
 		if(hasTimestamp) {
 			if(timestampIndex < 0)
-				response.addContextualMessage("timestampIndex","validate.invalidValue");
+				response.addContextualMessage("timestampIndex", "validate.invalidValue");
 			if(timestampFormat == null || timestampFormat.equals(""))
-				response.addContextualMessage("timestampFormat","validate.invalidValue");
+				response.addContextualMessage("timestampFormat", "validate.invalidValue");
+			else {
+			    try {
+			        new SimpleDateFormat(timestampFormat);
+			    } catch(IllegalArgumentException e) {
+			        response.addContextualMessage("timestampFormat", "file.validate.invalidDateFormat", timestampFormat, e.getMessage());
+			    }
+			}
 		}
 
 	}
