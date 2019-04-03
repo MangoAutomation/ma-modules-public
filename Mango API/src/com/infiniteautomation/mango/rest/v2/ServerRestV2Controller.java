@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.rest.v2;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.SocketException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.model.server.NetworkInterfaceModel;
 import com.infiniteautomation.mango.rest.v2.model.server.ServerCommandModel;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.pair.StringStringPair;
@@ -61,6 +63,8 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemInfoDefinition;
 import com.serotonin.m2m2.rt.maint.work.ProcessWorkItem;
+import com.serotonin.m2m2.util.HostUtils;
+import com.serotonin.m2m2.util.HostUtils.NICInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
 import com.serotonin.m2m2.web.dwr.ModulesDwr;
@@ -364,6 +368,38 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         corsSettings.setHeaders(headers);
 
         return corsSettings;
+    }
+    
+    
+    @ApiOperation(value = "List network interfaces", notes="Requires global data source permission")
+    @RequestMapping(method = {RequestMethod.GET}, value = "/network-interfaces")
+    @PreAuthorize("hasDataSourcePermission()")
+    public List<NetworkInterfaceModel> getNetworkInterfaces(
+            @RequestParam(value = "includeLoopback", required = false, defaultValue = "false") boolean includeLoopback,
+            @RequestParam(value = "includeDefault", required = false, defaultValue = "false") boolean includeDefault,
+            @AuthenticationPrincipal User user) {
+
+        List<NetworkInterfaceModel> models = new ArrayList<>();
+        if(includeDefault) {
+            NetworkInterfaceModel model = new NetworkInterfaceModel();
+            model.setHostAddress("0.0.0.0");
+            model.setInterfaceName("");
+            models.add(model);
+        }
+            
+        try {
+            for (NICInfo ni : HostUtils.getLocalInet4Addresses(includeLoopback)) {
+                NetworkInterfaceModel model = new NetworkInterfaceModel();
+                model.setHostAddress(ni.getInetAddress().getHostAddress());
+                model.setInterfaceName(ni.getInterfaceName());
+                models.add(model);
+            }
+        }
+        catch (SocketException e) {
+            throw new ServerErrorException(new TranslatableMessage("common.default", e.getMessage()), e);
+        }
+        
+        return models;
     }
 
     public static class CorsSettings {
