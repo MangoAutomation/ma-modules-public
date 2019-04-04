@@ -170,6 +170,10 @@ public class DataPointModel {
         }
         if (purgeOverride != null) {
             point.setPurgeOverride(purgeOverride);
+            //Ensure that a purge period must be supplied
+            point.setPurgePeriod(-1);
+            point.setPurgeType(-1);
+
         }
         if (purgePeriod != null) {
             point.setPurgePeriod(purgePeriod.getPeriods());

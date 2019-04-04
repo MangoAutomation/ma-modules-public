@@ -16,6 +16,7 @@
 * Add granted permissions to user models
 * Add JSON export endpoints for data points at /v2/data-points/export/{xids}
 * Add JSON export endpoints for data source at /v2/data-sources/export/{xid}
+* Ensure Data Point v2 model requires a purge period if purge override is in the model
 
 *Version 3.5.2*
 * Fix for v2 endpoints using HTTP PATCH where some models were not getting de-serialized correctly
