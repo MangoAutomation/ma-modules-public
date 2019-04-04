@@ -56,8 +56,8 @@
             <md-option ng-if="$ctrl.dataPoint.pointLocator.startValue.hasMultipleValues()" ng-value="$ctrl.dataPoint.pointLocator.startValue">
                 <em ng-bind="$ctrl.dataPoint.pointLocator.startValue"></em>
             </md-option>
-            <md-option ng-value="1" ma-tr="common.true"></md-option>
-            <md-option ng-value="0" ma-tr="common.false"></md-option>
+            <md-option value="true" ma-tr="common.true"></md-option>
+            <md-option value="false" ma-tr="common.false"></md-option>
         </md-select>
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
