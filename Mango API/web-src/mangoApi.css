@@ -6,3 +6,5 @@
 .cell-text-md {
     font-size: 18px !important;
 }
+
+md-card.ma-ui-system-settings-main md-card-actions { display: none }

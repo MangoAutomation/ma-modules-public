@@ -14,7 +14,7 @@ const mangoApiModule = angular.module('maApi', [])
 .config(['maUiMenuProvider', 'maSystemSettingsProvider', function(maUiMenuProvider, SystemSettingsProvider) {
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.settings.mangoApiSettings',
+            name: 'ui.settings.system.mangoApiSettings',
             url: '/mango-api-settings',
             template: '<ma-api-settings></ma-api-settings>',
             menuTr: 'rest.settings.title',
