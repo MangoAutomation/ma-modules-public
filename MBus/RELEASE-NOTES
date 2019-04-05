@@ -1,5 +1,6 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
+* Adding REST endpoints for scan tool
 
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
