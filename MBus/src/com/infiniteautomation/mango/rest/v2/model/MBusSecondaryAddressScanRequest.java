@@ -14,7 +14,7 @@ import net.sf.mbus4j.dataframes.MBusMedium;
  * @author Terry Packer
  *
  */
-public class MBusSecondaryAddressSearchRequest extends MBusScanRequest {
+public abstract class MBusSecondaryAddressScanRequest extends MBusScanRequest {
     
     private Integer id;
     private Byte version;
@@ -23,6 +23,8 @@ public class MBusSecondaryAddressSearchRequest extends MBusScanRequest {
     
     @Override
     public void validate(ProcessResult response) {
+        super.validate(response);
+        
         if(StringUtils.isNotEmpty(medium)){
            try { 
                MBusMedium.fromLabel(medium);

@@ -9,15 +9,20 @@ import com.serotonin.m2m2.i18n.ProcessResult;
  * @author Terry Packer
  *
  */
-public class MBusAddressSearchRequest extends MBusScanRequest {
+public abstract class MBusAddressScanRequest extends MBusScanRequest {
 
     private byte firstAddress;
     private byte lastAddress;
     
     @Override
     public void validate(ProcessResult response) {
-        // TODO Auto-generated method stub
-        //TODO first must be before last
+        super.validate(response);
+        if(firstAddress < 0)
+            response.addContextualMessage("firstAddress", "validate.greaterThanZero");
+        if(lastAddress < 0)
+            response.addContextualMessage("firstAddress", "validate.greaterThanZero");
+        if(firstAddress > lastAddress)
+            response.addContextualMessage("lastAddress", "validate.greaterThanOrEqualTo", firstAddress);
     }
 
     public byte getFirstAddress() {

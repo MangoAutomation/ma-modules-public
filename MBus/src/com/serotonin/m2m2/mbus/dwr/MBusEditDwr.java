@@ -70,10 +70,10 @@ public class MBusEditDwr extends DataSourceEditDwr {
             discovery.start();
             user.setTestingUtility(discovery);
             result.addData("sourceRunning", false);
-            LOG.fatal("searchMBus not running");
+            LOG.debug("searchMBus running");
         } else {
             result.addData("sourceRunning", true);
-            LOG.fatal("searchMBus running");
+            LOG.debug("searchMBus not running, data source enabled");
         }
         return result;
     }

@@ -3,6 +3,12 @@
  */
 package com.infiniteautomation.mango.rest.v2.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.Validatable;
 
 import net.sf.mbus4j.Connection;
@@ -11,15 +17,34 @@ import net.sf.mbus4j.Connection;
  * @author Terry Packer
  *
  */
+@JsonTypeInfo(use=Id.NAME, include=As.PROPERTY, property="type")
+@JsonSubTypes({
+    @Type(value = MBusTcpIpAddressScanRequest.class, name="MBusTcpIpAddressScanRequest"),
+    @Type(value = MBusTcpIpSecondaryAddressScanRequest.class, name="MBusTcpIpSecondaryAddressScanRequest"),
+    @Type(value = MBusSerialAddressScanRequest.class, name="MBusSerialAddressScanRequest"),
+    @Type(value = MBusSerialSecondaryAddressScanRequest.class, name="MBusSerialSecondaryAddressScanRequest")
+})
 public abstract class MBusScanRequest implements Validatable {
 
+    protected int bitsPerSecond;
+    protected int responseTimeoutOffset;
     private String dataSourceXid;
-    
-    public Connection createConnection() {
-        // TODO Auto-generated method stub
-        return null;
+
+    public int getBitsPerSecond() {
+        return bitsPerSecond;
     }
 
+    public void setBitsPerSecond(int bitsPerSecond) {
+        this.bitsPerSecond = bitsPerSecond;
+    }
+
+    public int getResponseTimeoutOffset() {
+        return responseTimeoutOffset;
+    }
+
+    public void setResponseTimeoutOffset(int responseTimeoutOffset) {
+        this.responseTimeoutOffset = responseTimeoutOffset;
+    }
 
     public String getDataSourceXid() {
         return dataSourceXid;
@@ -28,5 +53,13 @@ public abstract class MBusScanRequest implements Validatable {
     public void setDataSourceXid(String dataSourceXid) {
         this.dataSourceXid = dataSourceXid;
     }
+    
+    @Override
+    public void validate(ProcessResult response) {
+        if(bitsPerSecond != 2400 || bitsPerSecond != 2400 || bitsPerSecond != 2400)
+            response.addContextualMessage("bitsPerSecond", "validate.required");
+    }
+    
+    public abstract Connection createConnection();
 
 }

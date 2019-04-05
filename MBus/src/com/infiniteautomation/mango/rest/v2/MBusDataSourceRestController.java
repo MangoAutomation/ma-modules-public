@@ -28,11 +28,11 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.model.MBusAddressSearchRequest;
+import com.infiniteautomation.mango.rest.v2.model.MBusAddressScanRequest;
 import com.infiniteautomation.mango.rest.v2.model.MBusDeviceScanResult;
 import com.infiniteautomation.mango.rest.v2.model.MBusScanRequest;
 import com.infiniteautomation.mango.rest.v2.model.MBusScanResult;
-import com.infiniteautomation.mango.rest.v2.model.MBusSecondaryAddressSearchRequest;
+import com.infiniteautomation.mango.rest.v2.model.MBusSecondaryAddressScanRequest;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
@@ -52,6 +52,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.sf.mbus4j.Connection;
 import net.sf.mbus4j.SerialPortConnection;
+import net.sf.mbus4j.dataframes.Frame;
+import net.sf.mbus4j.dataframes.UserDataResponse;
 import net.sf.mbus4j.devices.GenericDevice;
 import net.sf.mbus4j.master.MBusMaster;
 
@@ -77,7 +79,7 @@ public class MBusDataSourceRestController {
         this.executor = executor;
     }
     
-    @PreAuthorize("isAdmin()")
+    @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(value = "Start an MBus scan")
     @RequestMapping(method = RequestMethod.POST, value= {"/scan"})
     public ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestV2Exception>> operation(
@@ -95,7 +97,8 @@ public class MBusDataSourceRestController {
         
         requestBody.ensureValid();
         
-        ensureNotRunning(requestBody.getDataSourceXid(), user);
+        if(requestBody.getDataSourceXid() != null)
+            ensureNotRunning(requestBody.getDataSourceXid(), user);
         
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> responseBody = temporaryResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource, taskUser)-> {
@@ -115,25 +118,29 @@ public class MBusDataSourceRestController {
                                 master.setConnection(connection);
                             }
                             
-                            if(requestBody instanceof MBusAddressSearchRequest) {
-                                MBusAddressSearchRequest asr = (MBusAddressSearchRequest)requestBody;
+                            //Open the connection
+                            master.open();
+                            
+                            if(requestBody instanceof MBusAddressScanRequest) {
+                                MBusAddressScanRequest asr = (MBusAddressScanRequest)requestBody;
                                 int position = 0;
                                 int maximum = asr.getLastAddress() - asr.getFirstAddress();
                                 resource.progressOrSuccess(result, position, maximum);
                                 for (byte address = asr.getFirstAddress(); address <= asr.getLastAddress(); address++) {
-                                    GenericDevice c = master.searchDeviceByAddress(address);
-                                    if (c != null) {
-                                        devices.add(new MBusDeviceScanResult(c));
+                                    Frame requestFrame = master.sendRequestUserData(address);
+                                    if(requestFrame instanceof UserDataResponse) {
+                                        UserDataResponse udResp = (UserDataResponse) requestFrame;
+                                        GenericDevice d = new GenericDevice(udResp, requestFrame);
+                                        devices.add(new MBusDeviceScanResult(d));
                                         result.setDevices(devices);
-        
                                     }
                                     position++;
                                     resource.progressOrSuccess(result, position, maximum);
                                 }
-                            }else if(requestBody instanceof MBusSecondaryAddressSearchRequest){
-                                //No easy way to get feedback during request without using deprecated APIs
+                            }else if(requestBody instanceof MBusSecondaryAddressScanRequest){
+                                //TODO No easy way to get feedback during request without using deprecated APIs
                                 resource.progressOrSuccess(result, 0, 1);
-                                MBusSecondaryAddressSearchRequest sasd = (MBusSecondaryAddressSearchRequest)requestBody;
+                                MBusSecondaryAddressScanRequest sasd = (MBusSecondaryAddressScanRequest)requestBody;
                                 Collection<GenericDevice> genericDevices = master.widcardSearch(
                                         sasd.createMaskedId(),
                                         sasd.createMaskedManufacturer(),
@@ -141,6 +148,7 @@ public class MBusDataSourceRestController {
                                         sasd.createMaskedMedium());
                                 for(GenericDevice c : genericDevices)
                                     devices.add(new MBusDeviceScanResult(c));
+                                result.setDevices(devices);
                                 resource.progressOrSuccess(result, 1, 1);
                             }
                         }catch(Exception e) {
@@ -246,7 +254,7 @@ public class MBusDataSourceRestController {
     private void ensureNotRunning(String dataSourceXid, User user) throws PermissionException {
         try {
             DataSourceVO<?> ds = service.get(dataSourceXid, user);
-            if (!Common.runtimeManager.isDataSourceRunning(ds.getId())) 
+            if (Common.runtimeManager.isDataSourceRunning(ds.getId())) 
                 throw new BadRequestException(new TranslatableMessage("dsEdit.mbus.noSearchWhileDataSourceRunning"));
         }catch(NotFoundException e) {
             //Don't care its not running

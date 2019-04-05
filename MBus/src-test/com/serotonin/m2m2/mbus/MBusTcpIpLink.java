@@ -14,15 +14,16 @@ import net.sf.mbus4j.Connection;
  * @author Terry Packer
  *
  */
-public class MBusTcpIpLink extends Connection{
+public class MBusTcpIpLink extends Connection {
     static final String TCP_IP_LINK = "tcpIpLinkConnection";
     public static final int DEFAULT_RESPONSE_TIMEOUT_OFFSET = 600;
 
-    private Socket in;
+    private final Socket socket;
+    private InputStreamWrapper isWrapper;
     
-	public MBusTcpIpLink(Socket in){
+	public MBusTcpIpLink(Socket socket){
 		super(Connection.DEFAULT_BAUDRATE, DEFAULT_RESPONSE_TIMEOUT_OFFSET);
-		this.in = in;
+		this.socket = socket;
 	}
 	
 	
@@ -30,7 +31,7 @@ public class MBusTcpIpLink extends Connection{
 	public void close() throws IOException {
         setConnState(State.CLOSING);
         try {
-            this.in.close();
+            this.socket.close();
         } finally {
             setConnState(State.CLOSED);
         }
@@ -39,9 +40,15 @@ public class MBusTcpIpLink extends Connection{
 	@Override
 	public void open() throws IOException {
         setConnState(State.OPENING);
-		is = this.in.getInputStream();
-		os = this.in.getOutputStream();
+        this.isWrapper = new InputStreamWrapper(socket.getInputStream());
+		is = this.isWrapper;
+		os = this.socket.getOutputStream();
         setConnState(State.OPEN);
+        
+	}
+	
+	public boolean isConnected() {
+	    return this.socket.isClosed();
 	}
 
 	@Override
@@ -49,13 +56,16 @@ public class MBusTcpIpLink extends Connection{
 		return TCP_IP_LINK;
 	}
 
+	public boolean isDisconnected() {
+	    return this.isWrapper.isDisconnected();
+	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.mbus4j.Connection#getName()
 	 */
 	@Override
 	public String getName() {
-		return this.in.getInetAddress().getHostAddress();
+		return this.socket.getInetAddress().getHostAddress();
 	}
 
 }
