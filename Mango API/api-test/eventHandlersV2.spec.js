@@ -572,6 +572,7 @@ describe('Event handlers v2', function() {
                     ],
                 scriptPermissions: ['admin', 'testing'],
                 script: 'return 0;',
+                subject: 'INCLUDE_EVENT_MESSAGE',
                 handlerType : "EMAIL"
               };
         return client.restRequest({
@@ -616,6 +617,7 @@ describe('Event handlers v2', function() {
                 assert.include(global.emailEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);
+            assert.strictEqual(response.data.subject, 'INCLUDE_EVENT_MESSAGE');
             global.emailEventHandler.id = response.data.id;
         });
     });
@@ -662,7 +664,7 @@ describe('Event handlers v2', function() {
             throw new Error('Should not have created email event handler');
         }, error => {
             assert.strictEqual(error.status, 422);
-            assert.strictEqual(error.data.result.messages.length, 4);
+            assert.strictEqual(error.data.result.messages.length, 5);
             
             //Missing user
             assert.strictEqual(error.data.result.messages[0].property, 'activeRecipients[0]');
@@ -672,6 +674,8 @@ describe('Event handlers v2', function() {
             assert.strictEqual(error.data.result.messages[2].property, 'customTemplate');
             //Missing point
             assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].id');
+            //Invalid subject
+            assert.strictEqual(error.data.result.messages[4].property, 'subject');
         });
     });
     
