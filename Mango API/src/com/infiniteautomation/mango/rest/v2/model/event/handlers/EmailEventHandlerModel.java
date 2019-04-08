@@ -58,6 +58,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     private Set<String> scriptPermissions;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String script;
+    private String subject;
     
     public EmailEventHandlerModel() { }
 
@@ -288,7 +289,21 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     public void setScript(String script) {
         this.script = script;
     }
-
+    
+    /**
+     * @return the subject
+     */
+    public String getSubject() {
+        return subject;
+    }
+    
+    /**
+     * @param subject the subject to set
+     */
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+    
     @Override
     public EmailEventHandlerVO toVO() {
         EmailEventHandlerVO vo = super.toVO();
@@ -340,6 +355,8 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
             }
             vo.setAdditionalContext(additionalContext);
         }
+        
+        vo.setSubject(EmailEventHandlerVO.SUBJECT_INCLUDE_CODES.getId(subject));
         
         return vo;
     }
@@ -431,6 +448,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                 }
             }
         }
+        this.subject = EmailEventHandlerVO.SUBJECT_INCLUDE_CODES.getCode(vo.getSubject());
     }
     
     @Override
