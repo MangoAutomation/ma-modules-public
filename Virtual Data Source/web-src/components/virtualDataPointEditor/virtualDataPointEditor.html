@@ -6,7 +6,7 @@
 </h3>
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
     <div flex="100" flex-gt-md="50">
-        <md-checkbox class="ma-margin-input-container" name="pointLocator.settable" ng-model="$ctrl.dataPoint.pointLocator.settable">
+        <md-checkbox ma-flatten-values="false" class="ma-margin-input-container" name="pointLocator.settable" ng-model="$ctrl.dataPoint.pointLocator.settable">
             <span ma-tr="dsEdit.settable"></span>
         </md-checkbox>
     </div>
@@ -77,7 +77,7 @@
                 </span>
             </md-chip-template>
             <md-icon md-chip-remove class="close-icon">close</md-icon>
-            <input name="value" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
+            <input name="value" ma-flatten-values="$values.firstNonEmpty()" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
 
         </md-chips>
 
@@ -107,7 +107,7 @@
 
     <!-- Roll Checkbox only for increment change type -->
     <div flex="100" id="rollCheckBoxContainer" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.changeType ==='INCREMENT_ANALOG' || $ctrl.dataPoint.pointLocator.changeType ==='INCREMENT_MULTISTATE'">
-        <md-checkbox class="ma-margin-input-container" name="pointLocator.roll" ng-model="$ctrl.dataPoint.pointLocator.roll">
+        <md-checkbox ma-flatten-values="false" class="ma-margin-input-container" name="pointLocator.roll" ng-model="$ctrl.dataPoint.pointLocator.roll">
             <span ma-tr="dsEdit.virtual.roll"></span>
         </md-checkbox>
     </div>
