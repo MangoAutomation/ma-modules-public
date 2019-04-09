@@ -18,7 +18,7 @@
 
     <md-input-container flex="100" flex-gt-md="50">
         <label ma-tr="envcands.dataStartTime"></label>
-        <ma-date-picker name="dataStartTime" ng-model="$ctrl.dataSource.dataStartTime" format="MM/DD/YYYY" mode="date" required ma-get-ctrl="dataStartTimeChangeModelCtrl = $ngModel"></ma-date-picker>
+        <ma-date-picker name="dataStartTime" ng-model="$ctrl.dataStartTime" ng-change="$ctrl.dataSource.dataStartTime = $ctrl.dataStartTime" format="MM/DD/YYYY" mode="date" required ma-get-ctrl="dataStartTimeChangeModelCtrl = $ngModel"></ma-date-picker>
         <div ng-messages="dataStartTimeChangeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="dataStartTimeChangeModelCtrl.validationMessage"></div>
