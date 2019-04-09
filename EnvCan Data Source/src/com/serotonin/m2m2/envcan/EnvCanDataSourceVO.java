@@ -29,7 +29,7 @@ public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> 
         ets.add(createEventType(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, new TranslatableMessage(
                 "event.ds.dataSource"), DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));
-        ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("envcands.event.noTemperatureData"),
+        ets.add(createEventType(EnvCanDataSourceRT.NO_DATA_RETRIEVED_EVENT, new TranslatableMessage("envcands.event.noTemperatureData"),
         		DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.INFORMATION));
     }
 
