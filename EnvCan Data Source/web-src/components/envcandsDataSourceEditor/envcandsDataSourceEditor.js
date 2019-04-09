@@ -17,7 +17,9 @@ class envcandsDataSourceEditorController {
     }
 
     $onInit() {
-        
+        if (!this.dataSource.isNew()) {
+            this.dataSource.dataStartTime = new Date(this.dataSource.dataStartTime);
+        }
     }
 
 }

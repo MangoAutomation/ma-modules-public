@@ -16,7 +16,7 @@ const envcandsSourceModule = angular.module('maEnvcandsDataSource', ['maUiApp'])
     maDataSourceProvider.registerType({
         type: 'EnvCan',
         description: 'dsEdit.envcands',
-        template: `<ma-env-can-data-source-editor data-source="$ctrl.dataSource"></ma-env-can-data-source-editor>`,
+        template: `<ma-envcands-data-source-editor data-source="$ctrl.dataSource"></ma-envcands-data-source-editor>`,
         polling: true,
         defaultDataSource: {
             dataStartTime: '',
@@ -45,7 +45,7 @@ const envcandsSourceModule = angular.module('maEnvcandsDataSource', ['maUiApp'])
                 {
                     descriptionKey: 'envcands.event.noTemperatureData',
                     duplicateHandling: 'IGNORE_SAME_MESSAGE',
-                    eventType: 'PARSE_EXCEPTION',
+                    eventType: 'NO_DATA_RETRIEVED_EVENT',
                     level: 'INFORMATION'
                 }
             ],
@@ -74,7 +74,7 @@ const envcandsSourceModule = angular.module('maEnvcandsDataSource', ['maUiApp'])
     maPointProvider.registerType({
         type: 'EnvCan',
         description: 'dsEdit.envcandsPoint',
-        template: `<ma-env-can-data-point-editor data-point="$ctrl.dataPoint"></ma-env-can-data-point-editor>`
+        template: `<ma-envcands-data-point-editor data-point="$ctrl.dataPoint"></ma-envcands-data-point-editor>`
     });
 
     maUiMenuProvider.registerMenuItems([
