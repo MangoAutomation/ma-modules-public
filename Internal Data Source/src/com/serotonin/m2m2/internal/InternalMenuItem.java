@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataTypes;
@@ -176,17 +177,23 @@ public class InternalMenuItem extends MenuItemDefinition {
 			vo.setUpdatePeriods(10);
 			vo.setUpdatePeriodType(TimePeriods.SECONDS);
 			
-			DataSourceDao.getInstance().saveDataSource(vo);
-			
-			//Setup the Points
-			maybeCreatePoints(safe, ds);
-			
-			//Enable the data source
-			if(!safe){
-				vo.setEnabled(true);
-				Common.runtimeManager.saveDataSource(vo);
+			try {
+                vo.ensureValid();
+                DataSourceDao.getInstance().saveDataSource(vo);
+
+                // Setup the Points
+                maybeCreatePoints(safe, ds);
+
+                // Enable the data source
+                if (!safe) {
+                    vo.setEnabled(true);
+                    Common.runtimeManager.saveDataSource(vo);
+                }
+			}catch(ValidationException e) {
+                for(ProcessMessage message : e.getValidationResult().getMessages()){
+                    LOG.error(message.toString(Common.getTranslations()));
+                }
 			}
-			
 		}else{
 			//Ensure all points are added
 			maybeCreatePoints(safe, ds);
