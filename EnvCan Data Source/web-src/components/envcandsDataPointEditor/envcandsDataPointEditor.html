@@ -1,0 +1,29 @@
+<h3>
+    <span ma-tr="dsEdit.envcandsPoint"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.envcandsDataPoint">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container id="dataTypeContainer" flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="envcands.attr"></label>
+        <md-select name="attribute" ng-model="$ctrl.dataPoint.pointLocator.attribute" required ng-change="$ctrl.updateDataType()" ma-get-ctrl="attributeModelCtrl = $ngModel">
+            <md-option ng-value="'TEMP'" ma-tr="envcands.attr.temp"></md-option>
+            <md-option ng-value="'DEW_POINT_TEMP'" ma-tr="envcands.attr.dewPointTemp"></md-option>
+            <md-option ng-value="'REL_HUM'" ma-tr="envcands.attr.relHum"></md-option>
+            <md-option ng-value="'WIND_DIR'" ma-tr="envcands.attr.windDir"></md-option>
+            <md-option ng-value="'WIND_SPEED'" ma-tr="envcands.attr.windSpeed"></md-option>
+            <md-option ng-value="'VISIBILITY'" ma-tr="envcands.attr.visibility"></md-option>
+            <md-option ng-value="'STN_PRESS'" ma-tr="envcands.attr.stnPress"></md-option>
+            <md-option ng-value="'HUMIDEX'" ma-tr="envcands.attr.humidex"></md-option>
+            <md-option ng-value="'WIND_CHILL'" ma-tr="envcands.attr.windChill"></md-option>
+            <md-option ng-value="'WEATHER'" ma-tr="envcands.attr.weather"></md-option>
+        </md-select>
+        <div ng-messages="attributeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="attributeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>

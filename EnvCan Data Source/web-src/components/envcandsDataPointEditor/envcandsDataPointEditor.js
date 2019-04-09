@@ -1,6 +1,6 @@
 /**
  * @copyright 2019 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
- * @author Luis Güette
+ * @author 
  */
 
 import componentTemplate from './envcandsDataPointEditor.html';
@@ -12,21 +12,29 @@ class envcandsDataPointEditorController {
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor() {
-        
-    }
+    constructor() {}
 
     $onInit() {
         
+    }
+
+    updateDataType() {
+        if (this.dataPoint.pointLocator.attribute === 'WEATHER') {
+            this.dataPoint.dataType = 'ALPHANUMERIC';
+        } else {
+            this.dataPoint.dataType = 'NUMERIC';
+        }
     }
 
 }
 
 export default {
     bindings: {
-        dataSource: '<source'
+        dataPoint: '<point'
     },
-    require: {},
+    require: {
+        pointEditor: '^maDataPointEditor'
+    },
     controller: envcandsDataPointEditorController,
     template: componentTemplate
 };
