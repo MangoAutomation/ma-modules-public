@@ -17,12 +17,56 @@ const envcandsSourceModule = angular.module('maEnvcandsDataSource', ['maUiApp'])
         type: 'EnvCan',
         description: 'dsEdit.envcands',
         template: `<ma-env-can-data-source-editor data-source="$ctrl.dataSource"></ma-env-can-data-source-editor>`,
-        polling: false,
-        defaultDataSource: {},
+        polling: true,
+        defaultDataSource: {
+            dataStartTime: '',
+            descriptionKey: 'envcands.desc',
+            editPermission: [],
+            enabled: false,
+            eventAlarmLevels: [
+                {
+                    descriptionKey: 'event.ds.pollAborted',
+                    duplicateHandling: 'IGNORE',
+                    eventType: 'POLL_ABORTED',
+                    level: 'URGENT'
+                },
+                {
+                    descriptionKey: 'event.ds.dataSource',
+                    duplicateHandling: 'IGNORE_SAME_MESSAGE',
+                    eventType: 'DATA_RETRIEVAL_FAILURE_EVENT',
+                    level: 'URGENT'
+                },
+                {
+                    descriptionKey: 'event.ds.dataParse',
+                    duplicateHandling: 'IGNORE',
+                    eventType: 'PARSE_EXCEPTION',
+                    level: 'URGENT'
+                },
+                {
+                    descriptionKey: 'envcands.event.noTemperatureData',
+                    duplicateHandling: 'IGNORE_SAME_MESSAGE',
+                    eventType: 'PARSE_EXCEPTION',
+                    level: 'INFORMATION'
+                }
+            ],
+            modelType: 'EnvCan',
+            name: '',
+            pollPeriod: {periods: 1, type: 'HOURS'},
+            purgeSettings: {override: false, frequency: {periods: 1, type: 'YEARS'}},
+            quantize: false,
+            stationId: 1,
+            useCron: false,
+        },
         defaultDataPoint: {
             dataSourceTypeName: 'EnvCan',
             enabled: false,
-            pointLocator: {}
+            pointLocator: {
+                attribute: 'TEMP',
+                dataType: 'NUMERIC',
+                modelType: 'PL.ENV_CAN',
+                relinquishable: false,
+                settable: false
+            }
         },
         bulkEditorColumns: []
     });
