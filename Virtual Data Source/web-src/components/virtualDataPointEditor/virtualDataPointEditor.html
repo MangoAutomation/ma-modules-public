@@ -77,8 +77,7 @@
                 </span>
             </md-chip-template>
             <md-icon md-chip-remove class="close-icon">close</md-icon>
-            <input name="value" ma-flatten-values="$values.firstNonEmpty()" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
-
+            <input name="value" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
         </md-chips>
 
         <div ng-messages="values.$error">
