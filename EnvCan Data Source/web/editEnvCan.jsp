@@ -4,9 +4,11 @@
 --%>
 <%@page import="com.serotonin.m2m2.envcan.EnvCanDataSourceVO"%>
 <%@page import="com.serotonin.m2m2.envcan.EnvCanPointLocatorVO"%>
+<%@page import="com.serotonin.m2m2.DataTypes"%>
 <%@ include file="/WEB-INF/jsp/include/tech.jsp" %>
 
 <script type="text/javascript">
+  var envCanAttributeId;
   function saveDataSourceImpl(basic) {
 	  EnvCanEditDwr.saveEnvCanDataSource(basic, $get("stationId"), document.getElementById("dataStartTime").valueAsDate,
 			  saveDataSourceCB);
@@ -20,6 +22,7 @@
   
   function editPointCBImpl(locator) {
       $set("attributeId", locator.attributeId);
+      envCanAttributeId = locator.attributeId;
   }
   
   function savePointImpl(locator) {
@@ -30,6 +33,22 @@
       locator.attributeId = $get("attributeId");
       
       EnvCanEditDwr.saveEnvCanPointLocator(currentPoint.id, $get("xid"), $get("name"), locator, savePointCB);
+  }
+  
+  function envCanDataTypeChange(){
+      var attrId = $get("attributeId");
+      switch(attrId){
+	  	case "10": //Weather
+	  	  	dataPointDataTypeChanged(<%= DataTypes.ALPHANUMERIC %>);
+	  		envCanAttributeId = attrId;
+	  	break;
+	  	default:
+	  	    //Only change data type if we were weather
+	  	    if(envCanAttributeId === "10"){
+				dataPointDataTypeChanged(<%= DataTypes.NUMERIC %>);
+	  	    }
+	  		envCanAttributeId = attrId;
+	  } 
   }
 </script>
 
@@ -49,7 +68,7 @@
   <tr>
     <td class="formLabelRequired"><fmt:message key="envcands.attr"/></td>
     <td class="formField">
-      <tag:exportCodesOptions id="attributeId" optionList="<%= EnvCanPointLocatorVO.ATTRIBUTE_CODES.getIdKeys() %>"/>
+      <tag:exportCodesOptions id="attributeId" optionList="<%= EnvCanPointLocatorVO.ATTRIBUTE_CODES.getIdKeys() %>"  onchange="envCanDataTypeChange()"/>
     </td>
   </tr>
 </tag:pointList>

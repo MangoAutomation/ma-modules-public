@@ -1,6 +1,7 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
 * Bugfix where Parse Exception alarm level was being exported in JSON configuration as No Temperature Data
+* Bugfix for legacy UI where selecting 'weather' for the point attribute would not work.
 
 *Version 3.5.0*
 * Upgraded to work with core version 3.5.x
