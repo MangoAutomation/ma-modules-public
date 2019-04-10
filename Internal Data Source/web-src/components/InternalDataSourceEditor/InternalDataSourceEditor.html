@@ -10,7 +10,7 @@
         <md-icon>code</md-icon>
         <label ma-tr="dsEdit.internal.createPointsPattern"></label>
         <md-select name="createPointsPattern" ng-model="$ctrl.dataSource.createPointsPattern" required ma-get-ctrl="createPointsPatternModelCtrl = $ngModel">
-            <md-option ng-value="" ma-tr="common.none"></md-option>
+            <md-option ng-value="null" ma-tr="common.none"></md-option>
             <md-option ng-value="'.+'" ma-tr="common.all"></md-option>
             <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource"></md-option>
             <md-option ng-value="'com.serotonin.m2m2.rt.dataSource.PollingDataSource_.+_SUCCESS'" ma-tr="dsEdit.internal.autoCreate.pollingDataSource.sequential"></md-option>
