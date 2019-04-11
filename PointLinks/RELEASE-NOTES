@@ -1,6 +1,7 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
 * Combining all 3 script permission group into a single permission group used globally throughout the script
+* Change JSON export of script permissions to an array of roles, legacy format supported for import
 
 *Version 3.5.1*
 * Fix create tables for non-H2 database types to create logSize and logCount columns

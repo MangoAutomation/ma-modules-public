@@ -5,8 +5,6 @@
 package com.serotonin.m2m2.pointLinks;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,7 +26,6 @@ import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Matthew Lohbihler
@@ -198,7 +195,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
 
         writer.writeEntry("event", EVENT_CODES.getCode(event));
         writer.writeEntry("logLevel", logLevel);
-        writer.writeEntry("scriptPermissions", scriptPermissions == null ? null : scriptPermissions.getPermissions());
+        ScriptPermissions.writeJsonSafely(writer, scriptPermissions);
     }
 
     @Override
@@ -239,23 +236,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         }else{
         	logLevel = LogLevel.NONE;
         }
-        if(jsonObject.containsKey("scriptPermissions")) {
-            Set<String> permissions = null;
-            try{
-                JsonObject o = jsonObject.getJsonObject("scriptPermissions");
-                permissions = new HashSet<>();
-                permissions.addAll(Permissions.explodePermissionGroups(o.getString("dataSourcePermissions")));
-                permissions.addAll(Permissions.explodePermissionGroups(o.getString("dataPointSetPermissions")));
-                permissions.addAll(Permissions.explodePermissionGroups(o.getString("dataPointReadPermissions")));
-                permissions.addAll(Permissions.explodePermissionGroups(o.getString("customPermissions")));
-                this.scriptPermissions = new ScriptPermissions(permissions);
-            }catch(ClassCastException e) {
-               //Munchy munch, not a legacy script permissions object 
-            }
-            if(permissions == null) {
-                this.scriptPermissions = new ScriptPermissions(Permissions.explodePermissionGroups(jsonObject.getString("scriptPermissions")));
-            }
-        }
+        scriptPermissions = ScriptPermissions.readJsonSafely(jsonObject);
     }
 
 	/* (non-Javadoc)
