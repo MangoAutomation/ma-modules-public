@@ -21,7 +21,7 @@ public class SendEmailFailedRestException extends AbstractRestV2Exception {
     private final String smtpSessionLog;
 
     public SendEmailFailedRestException(Throwable t, String smtpSessionLog) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, MangoRestErrorCode.GENERIC_500, new TranslatableMessage("common.default", t.getMessage()));
+        super(HttpStatus.INTERNAL_SERVER_ERROR, MangoRestErrorCode.GENERIC_500, new TranslatableMessage("event.system.email"), t);
         this.smtpSessionLog = smtpSessionLog;
     }
 
