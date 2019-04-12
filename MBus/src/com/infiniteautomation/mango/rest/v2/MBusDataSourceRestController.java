@@ -102,62 +102,14 @@ public class MBusDataSourceRestController {
         
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> responseBody = temporaryResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource, taskUser)-> {
-                    MBusScanResult result = new MBusScanResult();
+                    
                     //Start the discovery
-                    Future<?> future = this.executor.submit(()->{
-                        
-                        Connection connection = requestBody.createConnection();
-                        CopyOnWriteArrayList<MBusDeviceScanResult> devices = new CopyOnWriteArrayList<>();
-                        try (final MBusMaster master = new MBusMaster();){
-                            if (connection instanceof SerialPortConnection) {
-                                //replace with buggy jssc
-                                SerialPortConnection spc = (SerialPortConnection) connection;
-                                String owner = "Mango MBus Serial Test Tool by " + user.getUsername();
-                                master.setConnection(new MangoMBusSerialConnection(owner, spc.getPortName(), spc.getBitPerSecond(), 1000));
-                            } else {
-                                master.setConnection(connection);
-                            }
-                            
-                            //Open the connection
-                            master.open();
-                            
-                            if(requestBody instanceof MBusAddressScanRequest) {
-                                MBusAddressScanRequest asr = (MBusAddressScanRequest)requestBody;
-                                int position = 0;
-                                int maximum = asr.getLastAddress() - asr.getFirstAddress();
-                                resource.progressOrSuccess(result, position, maximum);
-                                for (byte address = asr.getFirstAddress(); address <= asr.getLastAddress(); address++) {
-                                    Frame requestFrame = master.sendRequestUserData(address);
-                                    if(requestFrame instanceof UserDataResponse) {
-                                        UserDataResponse udResp = (UserDataResponse) requestFrame;
-                                        GenericDevice d = new GenericDevice(udResp, requestFrame);
-                                        devices.add(new MBusDeviceScanResult(d));
-                                        result.setDevices(devices);
-                                    }
-                                    position++;
-                                    resource.progressOrSuccess(result, position, maximum);
-                                }
-                            }else if(requestBody instanceof MBusSecondaryAddressScanRequest){
-                                //TODO No easy way to get feedback during request without using deprecated APIs
-                                resource.progressOrSuccess(result, 0, 1);
-                                MBusSecondaryAddressScanRequest sasd = (MBusSecondaryAddressScanRequest)requestBody;
-                                Collection<GenericDevice> genericDevices = master.widcardSearch(
-                                        sasd.createMaskedId(),
-                                        sasd.createMaskedManufacturer(),
-                                        sasd.createMaskedVersion(), 
-                                        sasd.createMaskedMedium());
-                                for(GenericDevice c : genericDevices)
-                                    devices.add(new MBusDeviceScanResult(c));
-                                result.setDevices(devices);
-                                resource.progressOrSuccess(result, 1, 1);
-                            }
-                        }catch(Exception e) {
-                            resource.error(new ServerErrorException(e));
-                        }
-                    });
+                    MBusScan scan = new MBusScan(requestBody, taskUser, resource);
+                    Future<?> future = this.executor.submit(scan);
 
                     return r -> {
                         if(r.getStatus() == TemporaryResourceStatus.CANCELLED || r.getStatus() == TemporaryResourceStatus.TIMED_OUT) {
+                            scan.cancelled = true;
                             future.cancel(true);
                         }
                             
@@ -168,6 +120,78 @@ public class MBusDataSourceRestController {
         headers.setLocation(builder.path("/mbus-data-sources/scan/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
 
+    }
+    
+    class MBusScan implements Runnable {
+
+        private volatile boolean cancelled;
+        private final MBusScanRequest requestBody;
+        private final User user;
+        private final TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource;
+
+        public MBusScan(MBusScanRequest requestBody, User user,
+                TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource) {
+            this.requestBody = requestBody;
+            this.user = user;
+            this.resource = resource;
+        }
+
+        @Override
+        public void run() {
+            MBusScanResult result = new MBusScanResult();
+            Connection connection = requestBody.createConnection();
+            CopyOnWriteArrayList<MBusDeviceScanResult> devices = new CopyOnWriteArrayList<>();
+            try (final MBusMaster master = new MBusMaster();){
+                if (connection instanceof SerialPortConnection) {
+                    //replace with buggy jssc
+                    SerialPortConnection spc = (SerialPortConnection) connection;
+                    String owner = "Mango MBus Serial Test Tool by " + user.getUsername();
+                    master.setConnection(new MangoMBusSerialConnection(owner, spc.getPortName(), spc.getBitPerSecond(), 1000));
+                } else {
+                    master.setConnection(connection);
+                }
+                
+                //Open the connection
+                master.open();
+                
+                if(requestBody instanceof MBusAddressScanRequest) {
+                    MBusAddressScanRequest asr = (MBusAddressScanRequest)requestBody;
+                    int position = 0;
+                    int maximum = asr.getLastAddress() - asr.getFirstAddress();
+                    resource.progressOrSuccess(result, position, maximum);
+                    for (byte address = asr.getFirstAddress(); address <= asr.getLastAddress(); address++) {
+                        Frame requestFrame = master.sendRequestUserData(address);
+                        if(requestFrame instanceof UserDataResponse) {
+                            UserDataResponse udResp = (UserDataResponse) requestFrame;
+                            GenericDevice d = new GenericDevice(udResp, requestFrame);
+                            devices.add(new MBusDeviceScanResult(d));
+                            result.setDevices(devices);
+                        }
+                        position++;
+                        if(cancelled)
+                            break;
+                        resource.progressOrSuccess(result, position, maximum);
+                    }
+                }else if(requestBody instanceof MBusSecondaryAddressScanRequest){
+                    //TODO No easy way to get feedback during request without using deprecated APIs
+                    resource.progressOrSuccess(result, 0, 1);
+                    MBusSecondaryAddressScanRequest sasd = (MBusSecondaryAddressScanRequest)requestBody;
+                    Collection<GenericDevice> genericDevices = master.widcardSearch(
+                            sasd.createMaskedId(),
+                            sasd.createMaskedManufacturer(),
+                            sasd.createMaskedVersion(), 
+                            sasd.createMaskedMedium());
+                    for(GenericDevice c : genericDevices)
+                        devices.add(new MBusDeviceScanResult(c));
+                    result.setDevices(devices);
+                    if(cancelled)
+                        return;
+                    resource.progressOrSuccess(result, 1, 1);
+                }
+            }catch(Exception e) {
+                resource.error(new ServerErrorException(e));
+            }
+        }
     }
     
     @ApiOperation(value = "Get a list of current MBus scans", notes = "User can only get their own operations unless they are an admin")
