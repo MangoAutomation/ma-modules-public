@@ -113,7 +113,7 @@ public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
         url.append("http://climate.weather.gc.ca/climate_data/bulk_data_e.html?stationID=").append(
                 vo.getStationId());
         url.append("&Year=").append(dt.getYear());
-        url.append("&Month=").append(dt.getMonthOfYear() + 1);
+        url.append("&Month=").append(dt.getMonthOfYear());
         url.append("&format=xml&timeframe=1");
 
         String data;

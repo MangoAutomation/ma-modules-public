@@ -1,0 +1,27 @@
+<h3>
+    <span ma-tr="dsEdit.envcands"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.envcandsDataSource">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="envcands.stationId"></label>
+        <input name="stationId" type="number" ng-model="$ctrl.dataSource.stationId" required ma-get-ctrl="stationIdChangeModelCtrl = $ngModel">
+        <div ng-messages="stationIdChangeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="stationIdChangeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <label ma-tr="envcands.dataStartTime"></label>
+        <ma-date-picker name="dataStartTime" ng-model="$ctrl.dataStartTime" ng-change="$ctrl.dataSource.dataStartTime = $ctrl.dataStartTime" format="MM/DD/YYYY" mode="date" required ma-get-ctrl="dataStartTimeChangeModelCtrl = $ngModel"></ma-date-picker>
+        <div ng-messages="dataStartTimeChangeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="dataStartTimeChangeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>
