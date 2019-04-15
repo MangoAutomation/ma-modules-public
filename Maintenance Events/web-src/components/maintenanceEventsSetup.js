@@ -60,7 +60,7 @@ class MaintenanceEventsSetupController {
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
-        this.maDataSource.rql({rqlQuery}).$promise.then(dataSources => {
+        this.maDataSource.query({rqlQuery}).$promise.then(dataSources => {
             this.dataSources = dataSources;
         });
     }
@@ -73,7 +73,7 @@ class MaintenanceEventsSetupController {
 
         let rqlQuery = 'in(xid,' + ids.join(',') +')';
 
-        this.maPoint.rql({rqlQuery}).$promise.then(points => {
+        this.maPoint.query({rqlQuery}).$promise.then(points => {
             this.dataPoints = points;
         });
     }
