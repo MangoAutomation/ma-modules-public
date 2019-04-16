@@ -76,7 +76,7 @@ public class EventTypesRestController {
      
      private final DataPointDao dataPointDao;
      private final DataSourceDao<?> dataSourceDao;
-     private final PublisherDao publisherDao;
+     private final PublisherDao<?> publisherDao;
      private final EventDetectorDao<?> eventDetectorDao;
      private final RestModelMapper modelMapper;
 
@@ -84,7 +84,7 @@ public class EventTypesRestController {
      public EventTypesRestController(
              DataPointDao dataPointDao,
              DataSourceDao<?> dataSourceDao,
-             PublisherDao publisherDao,
+             PublisherDao<?> publisherDao,
              EventDetectorDao<?> eventDetectorDao,
              RestModelMapper modelMapper) {
          this.dataPointDao = dataPointDao;

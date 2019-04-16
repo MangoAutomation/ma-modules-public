@@ -39,10 +39,10 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublishedPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -52,12 +52,13 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Publishers", description="Publishers endpoints")
 @RestController()
 @RequestMapping("/publishers")
-public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<PublisherVO<?>, AbstractPublisherModel<?, ?>, PublisherDao>{
+public class PublisherRestV2Controller<T extends PublishedPointVO> extends AbstractMangoVoRestV2Controller<PublisherVO<T>, AbstractPublisherModel<?, ?>, PublisherDao<T>>{
 
     
     
-	public PublisherRestV2Controller(){
-		super(PublisherDao.getInstance());
+	@SuppressWarnings("unchecked")
+    public PublisherRestV2Controller(){
+		super((PublisherDao<T>) PublisherDao.getInstance());
 	}
 
 	@ApiOperation(
@@ -67,7 +68,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 			responseContainer="List"
 			)
 	@RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<QueryDataPageStream<PublisherVO<?>>> queryRQL(@AuthenticationPrincipal User user, HttpServletRequest request) {
+    public ResponseEntity<QueryDataPageStream<PublisherVO<T>>> queryRQL(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
 		ASTNode node = RQLUtils.parseRQLtoAST(request.getQueryString());
 		return new ResponseEntity<>(getPageStream(node, user), HttpStatus.OK);		
@@ -80,7 +81,7 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
     @RequestMapping(method = RequestMethod.GET, value = "/list")
     public ResponseEntity<List<AbstractPublisherModel<?,?>>> getAll(@AuthenticationPrincipal User user, HttpServletRequest request) {
 		assertAdmin(user);
-        List<PublisherVO<?>> publishers = this.dao.getAll();
+        List<PublisherVO<T>> publishers = this.dao.getAll();
         List<AbstractPublisherModel<?,?>> models = new ArrayList<AbstractPublisherModel<?,?>>();
         for(PublisherVO<?> pub : publishers)
    			models.add(pub.asModel());
@@ -197,15 +198,12 @@ public class PublisherRestV2Controller extends AbstractMangoVoRestV2Controller<P
 	 * @param user
 	 */
 	private void assertAdmin(User user){
-		if(!user.isAdmin())
+		if(!user.hasAdminPermission())
 			throw new AccessDeniedException(user.getUsername() + " not admin, permission denied.");
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.MangoVoRestController#createModel(java.lang.Object)
-	 */
 	@Override
-	public AbstractPublisherModel<?,?> createModel(PublisherVO<?> vo) {
+	public AbstractPublisherModel<?,?> createModel(PublisherVO<T> vo) {
 		return vo.asModel();
 	}
 	

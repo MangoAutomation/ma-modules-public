@@ -11,7 +11,8 @@ import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Container to allow adjusting the alarm levels for a given data source's
+ * Container to allow adjusting the alarm levels for a given data source 
+ * or publisher's
  * alarms.
  *
  * @author Terry Packer
@@ -35,13 +36,12 @@ public class EventTypeAlarmLevelModel {
     public EventTypeAlarmLevelModel() { }
 
     /**
-     * @param dataSourceXid
      * @param eventType
      * @param duplicateHandling
      * @param level
      * @param description
      */
-    public EventTypeAlarmLevelModel(String dataSourceXid, String eventType,
+    public EventTypeAlarmLevelModel(String eventType,
             DuplicateHandling duplicateHandling, AlarmLevels level,
             TranslatableMessage description) {
         super();
