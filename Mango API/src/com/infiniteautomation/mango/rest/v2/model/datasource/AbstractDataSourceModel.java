@@ -34,9 +34,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
 
     public static final String MODEL_TYPE = "modelType";
 
-    @JsonIgnore
-    protected DataSourceDefinition definition;
-
     @ApiModelProperty("Read only description of data source connection")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private TranslatableMessage connectionDescription;
@@ -81,7 +78,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
-        this.definition = vo.getDefinition();
         this.connectionDescription = vo.getConnectionDescription();
         this.description = new TranslatableMessage(vo.getDefinition().getDescriptionKey());
 
@@ -92,7 +88,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
         for(EventTypeVO evt : vo.getEventTypes()) {
             DataSourceEventType dsEvt = (DataSourceEventType)evt.getEventType();
             EventTypeAlarmLevelModel model = new EventTypeAlarmLevelModel(
-                    vo.getXid(),
                     eventCodes.getCode(dsEvt.getReferenceId2()),
                     dsEvt.getDuplicateHandling(),
                     dsEvt.getAlarmLevel(),
