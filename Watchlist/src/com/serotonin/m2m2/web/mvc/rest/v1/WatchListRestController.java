@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +53,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedExceptio
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.FilteredPageQueryStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.RestModelMapper;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListSummaryModel;
@@ -74,8 +76,13 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
 
     private static Log LOG = LogFactory.getLog(WatchListRestController.class);
 
-    public WatchListRestController(){
+    private final BiFunction<DataPointVO, User, DataPointModel> map;
+    
+    public WatchListRestController(final RestModelMapper modelMapper){
         super(WatchListDao.getInstance());
+        this.map = (vo, user) -> {
+            return modelMapper.map(vo, DataPointModel.class, user);
+        };
     }
 
     @ApiOperation(
@@ -317,7 +324,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
             throw new PermissionException(new TranslatableMessage("common.default", "Unauthorized access"), user);
         }
 
-        return new WatchListPointsQueryDataPageStream(wl.getId(), user, dp -> new DataPointModel(dp));
+        return new WatchListPointsQueryDataPageStream(wl.getId(), user, dp -> map.apply(dp, user));
     }
 
     @ApiOperation(
@@ -343,7 +350,7 @@ public class WatchListRestController extends MangoVoRestController<WatchListVO, 
             ActionAndModel<DataPointModel> actionAndModel = new ActionAndModel<>();
             actionAndModel.setAction(VoAction.UPDATE);
             actionAndModel.setOriginalXid(dp.getXid());
-            actionAndModel.setModel(new DataPointModel(dp));
+            actionAndModel.setModel(map.apply(dp, user));
             return actionAndModel;
         });
     }

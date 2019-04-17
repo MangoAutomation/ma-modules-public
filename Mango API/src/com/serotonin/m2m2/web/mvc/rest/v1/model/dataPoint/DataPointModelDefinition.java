@@ -13,8 +13,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.DataPointModel;
 /**
  * @author Terry Packer
  *
+ * This class should not be used anymore
  */
-public class DataPointModelDefinition extends ModelDefinition{
+@Deprecated
+public class DataPointModelDefinition extends ModelDefinition {
 	
 	public static final String TYPE_NAME = "DATA_POINT";
 

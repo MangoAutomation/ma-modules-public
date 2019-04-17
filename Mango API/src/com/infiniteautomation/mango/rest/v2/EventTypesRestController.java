@@ -357,7 +357,7 @@ public class EventTypesRestController {
                      //Shortcut to check permissions via event type
                      if(Permissions.hasDataPointReadPermission(user, vo)) {
                          vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
-                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), new DataPointModel(vo));
+                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), modelMapper.map(vo, DataPointModel.class, user));
                          types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                      }
                  }
@@ -462,7 +462,7 @@ public class EventTypesRestController {
                      AbstractPointEventDetectorModel<?> edm =  modelMapper.map(vo, AbstractPointEventDetectorModel.class, user);
                      EventTypeVO type = vo.getEventType();
                      DataPointEventType eventType = (DataPointEventType)type.getEventType();
-                     DataPointEventTypeModel model = new DataPointEventTypeModel(eventType, new DataPointModel(dp), edm);
+                     DataPointEventTypeModel model = new DataPointEventTypeModel(eventType, modelMapper.map(dp, DataPointModel.class, user), edm);
                      types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, type.getDescription(), type.getAlarmLevel(), false, true, true));
                  }
                  found = true;
