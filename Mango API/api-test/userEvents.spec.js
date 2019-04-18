@@ -38,7 +38,7 @@ describe('User Event query tests', function(){
                 }
             }
         }).then(response => {
-          //console.log(response.data);
+            assert.strictEqual(response.status, 200);
         });
     });
 
@@ -51,7 +51,7 @@ describe('User Event query tests', function(){
       });
     });
 
-    it('Query inserted event', () => {
+    it.only('Query inserted event', () => {
       return client.restRequest({
           path: '/rest/v2/user-events?sort(-activeTimestamp)&limit(1)',
           method: 'GET'
