@@ -51,7 +51,7 @@ describe('User Event query tests', function(){
       });
     });
 
-    it.only('Query inserted event', () => {
+    it('Query inserted event', () => {
       return client.restRequest({
           path: '/rest/v2/user-events?sort(-activeTimestamp)&limit(1)',
           method: 'GET'
