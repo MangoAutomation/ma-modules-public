@@ -6,17 +6,12 @@
 </h3>
 
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
-    <md-input-container flex="100" flex-gt-md="50">
-        <md-icon>settings_input_component</md-icon>
-        <label ma-tr="dsEdit.serial.port"></label>
-        <md-select name="commPortId" ng-model="$ctrl.dataSource.commPortId" md-on-open="$ctrl.getSerialPorts()" required ma-get-ctrl="commPortIdModelCtrl = $ngModel">
-            <md-option ng-repeat="serialPort in $ctrl.serialPorts" ng-value="serialPort" ng-bind="serialPort"></md-option>
-        </md-select>
+    <div flex="100" flex-gt-md="50">
+        <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.commPortId" ma-get-ctrl="commPortIdModelCtrl = $ngModel"></ma-serial-port-select>
         <div ng-messages="commPortIdModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="commPortIdModelCtrl.validationMessage"></div>
         </div>
-    </md-input-container>
+    </div>
 
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>storage</md-icon>
