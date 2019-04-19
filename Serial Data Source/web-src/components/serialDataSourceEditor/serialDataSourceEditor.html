@@ -7,10 +7,7 @@
 
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
     <div flex="100" flex-gt-md="50">
-        <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.commPortId" ma-get-ctrl="commPortIdModelCtrl = $ngModel"></ma-serial-port-select>
-        <div ng-messages="commPortIdModelCtrl.$error">
-            <div ng-message="validationMessage" ng-bind="commPortIdModelCtrl.validationMessage"></div>
-        </div>
+        <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.commPortId" required></ma-serial-port-select>
     </div>
 
     <md-input-container flex="100" flex-gt-md="50">
