@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/serial",
-  "version": "3.6.0-beta.3",
+  "version": "3.6.0-SNAPSHOT",
   "description": "Data source to send/receive and parse serial port messages",
   "main": "web/angular/serial.js",
   "dependencies": {},
