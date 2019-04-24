@@ -1,6 +1,7 @@
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
 * Add audit event tracking to non REST initiated changes to Report configurations
+* Fix bug introduced in 3.6.0-beta.1 where reports with text renderer's on their points would fail.  IMPORTANT this will reset the report point's units to match the existing data point
 
 *Version 3.5.1*
 * Adding v2 REST endpoints for CRUD operations on Reports

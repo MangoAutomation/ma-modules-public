@@ -611,10 +611,13 @@ public class ReportChartCreator {
 			
 			addDeviceIfAbsent(pointInfo.getDeviceName());
 
-            point = new PointStatistics(pointInfo.getReportPointId(), DataPointDao.getInstance().getDataPoint(pointInfo.getXid()));
+			DataPointVO vo = DataPointDao.getInstance().getDataPoint(pointInfo.getXid());
+            point = new PointStatistics(pointInfo.getReportPointId(), vo);
             point.setDataType(pointInfo.getDataType());
             point.setDataTypeDescription(DataTypes.getDataTypeMessage(pointInfo.getDataType()).translate(translations));
-            point.setTextRenderer(pointInfo.getTextRenderer());
+
+            point.setTextRenderer(vo.getTextRenderer());
+            
             if (pointInfo.getStartValue() != null) {
                 point.setStartValue(pointInfo.getTextRenderer().getText(pointInfo.getStartValue(),
                         TextRenderer.HINT_SPECIFIC));

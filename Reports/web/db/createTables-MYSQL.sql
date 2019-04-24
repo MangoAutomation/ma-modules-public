@@ -40,6 +40,8 @@ create table reportInstancePoints (
   dataType int not null,
   startValue varchar(4096),
   textRenderer longblob,
+  unit varchar(255),
+  renderedUnit varchar(255),
   colour varchar(6),
   weight double not null,
   consolidatedChart char(1) not null,

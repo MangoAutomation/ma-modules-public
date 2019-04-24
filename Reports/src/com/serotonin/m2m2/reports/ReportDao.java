@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.measure.unit.Unit;
+
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -51,7 +53,9 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.view.stats.ITime;
+import com.serotonin.m2m2.view.text.ConvertingRenderer;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -346,9 +350,9 @@ public class ReportDao extends AbstractDao<ReportVO> {
      * This method should only be called by the ReportWorkItem.
      */
     private static final String REPORT_INSTANCE_POINTS_INSERT = "insert into reportInstancePoints " //
-            + "(reportInstanceId, deviceName, pointName, xid, dataType, startValue, textRenderer, colour, weight,"
+            + "(reportInstanceId, deviceName, pointName, xid, dataType, startValue, textRenderer, unit, renderedUnit, colour, weight,"
             + " consolidatedChart, plotType) " //
-            + "values (?,?,?,?,?,?,?,?,?,?,?)";
+            + "values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     public static class PointInfo {
         private final DataPointVO point;
@@ -435,15 +439,23 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
             // Insert the reportInstancePoints record
             String name = Functions.truncate(point.getName(), 100);
-
+            String unit = null;
+            String renderedUnit = null;
+            
+            if (point.getTextRenderer() instanceof ConvertingRenderer) {
+                ConvertingRenderer cr = (ConvertingRenderer) point.getTextRenderer();
+                unit = UnitUtil.formatLocal(cr.getUnit());
+                renderedUnit = UnitUtil.formatLocal(cr.getRenderedUnit());
+            }
+            
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
                     new Object[] { instance.getId(), point.getDeviceName(), name, pointInfo.getPoint().getXid(), dataType,
                             DataTypes.valueToString(startValue),
-                            SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
+                            SerializationHelper.writeObject(point.getTextRenderer()), unit, renderedUnit, pointInfo.getColour(),
                             pointInfo.getWeight(), boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType() },
                     new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
-                            Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
 
             // Insert the reportInstanceData records
             String insertSQL = "insert into reportInstanceData " //
@@ -557,7 +569,7 @@ public class ReportDao extends AbstractDao<ReportVO> {
      * ordered), and sorted by time ascending.
      */
     private static final String REPORT_INSTANCE_POINT_SELECT = "select id, deviceName, pointName, xid, dataType, " //
-            + "startValue, textRenderer, colour, weight, consolidatedChart, plotType " //
+            + "startValue, textRenderer, unit, renderedUnit, colour, weight, consolidatedChart, plotType " //
             + "from reportInstancePoints ";
 
     /**
@@ -582,6 +594,21 @@ public class ReportDao extends AbstractDao<ReportVO> {
                     rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
                 rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
                         .getBinaryStream()));
+
+                String unit = rs.getString(++i);
+                String renderedUnit = rs.getString(++i);
+                if(rp.getTextRenderer() instanceof ConvertingRenderer) {
+                    ConvertingRenderer cr = (ConvertingRenderer)rp.getTextRenderer();
+                    if(!org.apache.commons.lang3.StringUtils.isEmpty(unit))
+                        cr.setUnit(UnitUtil.parseUcum(unit));
+                    else
+                        cr.setUnit(Unit.ONE);
+                    if(!org.apache.commons.lang3.StringUtils.isEmpty(renderedUnit))
+                        cr.setRenderedUnit(UnitUtil.parseUcum(renderedUnit));
+                    else
+                        cr.setRenderedUnit(Unit.ONE);
+                }
+                
                 rp.setColour(rs.getString(++i));
                 rp.setWeight(rs.getFloat(++i));
                 rp.setConsolidatedChart(charToBool(rs.getString(++i)));
@@ -615,6 +642,21 @@ public class ReportDao extends AbstractDao<ReportVO> {
                     rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
                 rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
                         .getBinaryStream()));
+                
+                String unit = rs.getString(++i);
+                String renderedUnit = rs.getString(++i);
+                if(rp.getTextRenderer() instanceof ConvertingRenderer) {
+                    ConvertingRenderer cr = (ConvertingRenderer)rp.getTextRenderer();
+                    if(!org.apache.commons.lang3.StringUtils.isEmpty(unit))
+                        cr.setUnit(UnitUtil.parseUcum(unit));
+                    else
+                        cr.setUnit(Unit.ONE);
+                    if(!org.apache.commons.lang3.StringUtils.isEmpty(renderedUnit))
+                        cr.setRenderedUnit(UnitUtil.parseUcum(renderedUnit));
+                    else
+                        cr.setRenderedUnit(Unit.ONE);
+                }
+                
                 rp.setColour(rs.getString(++i));
                 rp.setWeight(rs.getFloat(++i));
                 rp.setConsolidatedChart(charToBool(rs.getString(++i)));
@@ -690,6 +732,21 @@ public class ReportDao extends AbstractDao<ReportVO> {
                     rp.setStartValue(DataValue.stringToValue(startValue, rp.getDataType()));
                 rp.setTextRenderer((TextRenderer) SerializationHelper.readObjectInContext(rs.getBlob(++i)
                         .getBinaryStream()));
+                
+                String unit = rs.getString(++i);
+                String renderedUnit = rs.getString(++i);
+                if(rp.getTextRenderer() instanceof ConvertingRenderer) {
+                    ConvertingRenderer cr = (ConvertingRenderer)rp.getTextRenderer();
+                    if(!org.apache.commons.lang3.StringUtils.isEmpty(unit))
+                        cr.setUnit(UnitUtil.parseUcum(unit));
+                    else
+                        cr.setUnit(Unit.ONE);
+                    if(!org.apache.commons.lang3.StringUtils.isEmpty(renderedUnit))
+                        cr.setRenderedUnit(UnitUtil.parseUcum(renderedUnit));
+                    else
+                        cr.setRenderedUnit(Unit.ONE);
+                }
+                
                 rp.setColour(rs.getString(++i));
                 rp.setWeight(rs.getFloat(++i));
                 rp.setConsolidatedChart(charToBool(rs.getString(++i)));
@@ -874,15 +931,24 @@ public class ReportDao extends AbstractDao<ReportVO> {
 
             // Insert the reportInstancePoints record
             String name = Functions.truncate(point.getName(), 100);
-
+            
+            String unit = null;
+            String renderedUnit = null;
+            
+            if (point.getTextRenderer() instanceof ConvertingRenderer) {
+                ConvertingRenderer cr = (ConvertingRenderer) point.getTextRenderer();
+                unit = UnitUtil.formatLocal(cr.getUnit());
+                renderedUnit = UnitUtil.formatLocal(cr.getRenderedUnit());
+            }
+            
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
                     new Object[] { instance.getId(), point.getDeviceName(), name, pointInfo.getPoint().getXid(), dataType,
                             DataTypes.valueToString(startValue),
-                            SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
+                            SerializationHelper.writeObject(point.getTextRenderer()), unit, renderedUnit, pointInfo.getColour(),
                             pointInfo.getWeight(), boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType() },
                     new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB,
-                            Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.FLOAT, Types.CHAR, Types.INTEGER });
 
             //Keep the info in the map
             pointIdMap.put(pointInfo.getPoint().getId(), reportPointId);

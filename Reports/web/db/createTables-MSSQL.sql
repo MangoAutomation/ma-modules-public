@@ -44,6 +44,8 @@ create table reportInstancePoints (
   dataType int not null,
   startValue nvarchar(4000),
   textRenderer image,
+  unit nvarchar(255),
+  renderedUnit nvarchar(255),
   colour nvarchar(6),
   weight float not null,
   consolidatedChart char(1) not null,
