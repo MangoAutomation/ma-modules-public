@@ -1,8 +1,27 @@
 {
-  "dependencies": {
+  "private": true,
+  "name": "@infinite-automation/mbus",
+  "version": "3.6.0-SNAPSHOT",
+  "description": "Data source for MBus",
+  "main": "web/angular/mbus.js",
+  "dependencies": {},
+  "devDependencies": {
     "@infinite-automation/mango-client": "^0.6.0",
+    "@infinite-automation/mango-module-tools": "~1.2.0",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
     "tmp": "^0.0.33"
+  },
+  "scripts": {
+    "webpack": "webpack --config webpack.config.js"
+  },
+  "author": "Luis Güette <luis@infiniteautomation.com>",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infiniteautomation/ma-modules-public.git"
+  },
+  "com_infiniteautomation": {
+    "moduleName": "mbus"
   }
 }
