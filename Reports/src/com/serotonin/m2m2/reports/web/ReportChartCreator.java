@@ -58,6 +58,7 @@ import com.serotonin.m2m2.view.stats.StartsAndRuntime;
 import com.serotonin.m2m2.view.stats.StartsAndRuntimeList;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.view.stats.ValueChangeCounter;
+import com.serotonin.m2m2.view.text.ConvertingRenderer;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
@@ -615,8 +616,7 @@ public class ReportChartCreator {
             point = new PointStatistics(pointInfo.getReportPointId(), vo);
             point.setDataType(pointInfo.getDataType());
             point.setDataTypeDescription(DataTypes.getDataTypeMessage(pointInfo.getDataType()).translate(translations));
-
-            point.setTextRenderer(vo.getTextRenderer());
+            point.setTextRenderer(pointInfo.getTextRenderer());
             
             if (pointInfo.getStartValue() != null) {
                 point.setStartValue(pointInfo.getTextRenderer().getText(pointInfo.getStartValue(),
