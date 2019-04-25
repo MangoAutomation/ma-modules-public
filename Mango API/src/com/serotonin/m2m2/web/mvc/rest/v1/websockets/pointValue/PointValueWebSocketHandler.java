@@ -165,12 +165,14 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
 
         private void sendNotification(PointValueEventType eventType, PointValueTime pvt) throws JsonProcessingException, Exception {
             boolean enabled = false;
+            boolean pointEnabled = false;
             Map<String,Object> attributes = null;
             Double convertedValue = null;
             String renderedValue = null;
             DataPointRT dprt = rt;
             if (dprt != null) {
                 enabled = true; //We are enabled
+                pointEnabled = true; //Must be if we are running
                 if (pvt == null) {
                     pvt = dprt.getPointValue(); //Get the value
                 }
@@ -179,6 +181,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC && (pvt != null)) {
                     convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
                 }
+            }else {
+              pointEnabled = DataPointDao.getInstance().isEnabled(vo.getId());
             }
 
             PointValueTimeModel pvtModel = null;
@@ -188,7 +192,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                     pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
                 }
             }
-            sendMessage(new PointValueEventModel(vo.getXid(), enabled, attributes, eventType, pvtModel, renderedValue, convertedValue));
+            sendMessage(new PointValueEventModel(vo.getXid(), enabled, pointEnabled, attributes, eventType, pvtModel, renderedValue, convertedValue));
         }
 
         /**
@@ -304,7 +308,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 }
 
                 if (this.eventTypes.contains(PointValueEventType.ATTRIBUTE_CHANGE)) {
-                    sendMessage(new PointValueEventModel(vo.getXid(), true, attributes, PointValueEventType.ATTRIBUTE_CHANGE, null, null, null));
+                    sendMessage(new PointValueEventModel(vo.getXid(), true, true, attributes, PointValueEventType.ATTRIBUTE_CHANGE, null, null, null));
                 }
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
@@ -314,16 +318,15 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
         }
 
         @Override
-        public void pointTerminated() {
+        public void pointTerminated(DataPointVO dp) {
             try {
                 if (!session.isOpen() || getUser(session) == null) {
                     this.terminate();
                 }
 
                 this.rt = null;
-
                 if (this.eventTypes.contains(PointValueEventType.TERMINATE)){
-                    sendMessage(new PointValueEventModel(vo.getXid(), false, null, PointValueEventType.TERMINATE, null, null, null));
+                    sendMessage(new PointValueEventModel(vo.getXid(), false, dp.isEnabled(), null, PointValueEventType.TERMINATE, null, null, null));
                 }
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
