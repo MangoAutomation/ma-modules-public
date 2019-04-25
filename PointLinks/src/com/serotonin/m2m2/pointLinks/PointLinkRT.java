@@ -233,7 +233,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     }
 
     @Override
-    public void pointTerminated() {
+    public void pointTerminated(DataPointVO vo) {
         checkSource();
     }
 
