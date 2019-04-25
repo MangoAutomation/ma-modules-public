@@ -20,6 +20,7 @@ import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
+import com.serotonin.m2m2.i18n.ProcessMessage.Level;
 import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.util.log.LogLevel;
@@ -160,7 +161,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
             try {
                 Common.getBean(MangoJavaScriptService.class).compile(script, true, scriptPermissions);
             } catch(ScriptError e) {
-                response.addContextualMessage("script", "pointLinks.validate.scriptError", e.getMessage());
+                response.addMessage(Level.error, "script", e.getTranslatableMessage());
             }
         }
         User user = Common.getHttpUser();
