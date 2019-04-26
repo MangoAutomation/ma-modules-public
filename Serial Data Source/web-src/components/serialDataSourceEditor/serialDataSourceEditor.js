@@ -5,21 +5,18 @@
 
 import componentTemplate from './serialDataSourceEditor.html';
 
-const $inject = Object.freeze(['maSerialDataSource', 'maDialogHelper']);
+const $inject = Object.freeze(['maDialogHelper']);
 
 class serialDataSourceEditorController {
 
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor(maSerialDataSource, maDialogHelper) {
-        this.maSerialDataSource = maSerialDataSource;
+    constructor(maDialogHelper) {
         this.maDialogHelper = maDialogHelper;
    }
 
-    $onInit() {
-        this.getSerialPorts();
-    }
+    $onInit() {}
     
     validateString() {
         const data = {
@@ -39,13 +36,6 @@ class serialDataSourceEditorController {
             this.maDialogHelper.errorToast(['dsEdit.serial.testStringError', error.data.localizedMessage]);
         });
     }
-
-    getSerialPorts() {
-        return this.maSerialDataSource.getSerialPorts().then(serialPorts => {
-            this.serialPorts = serialPorts;
-        });
-    }
-
 }
 
 export default {
