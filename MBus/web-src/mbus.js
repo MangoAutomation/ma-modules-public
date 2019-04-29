@@ -59,7 +59,28 @@ const mbusSourceModule = angular.module('maMbusDataSource', ['maUiApp'])
         defaultDataPoint: {
             dataSourceTypeName: 'MBUS',
             enabled: false,
-            pointLocator: {}
+            pointLocator: {
+                dbIndex: 0,
+                effectiveSiPrefix: '',
+                address: '0x00',
+                identNumber: 0,
+                medium: 'Other',
+                manufacturer: '',
+                version: '',
+                responseFrame: '',
+                difCode: '12 digit BCD',
+                functionField: 'Instantaneous value',
+                subUnit: '',
+                tariff: 0,
+                storageNumber: 0,
+                vifType: '',
+                vifLabel: '',
+                unitOfMeasurement: '',
+                siPrefix: '',
+                exponent: '',
+                vifeTypes: '',
+                vifeLabels: '',
+            }
         },
         bulkEditorColumns: []
     });

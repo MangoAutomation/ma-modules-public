@@ -1,0 +1,232 @@
+<h3>
+    <span ma-tr="dsEdit.mbusPoint"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.mbusDataPoint">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.dbIndex"></label>
+        <input name="dbIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.dbIndex" required ma-get-ctrl="dbIndexModelCtrl = $ngModel">
+        <div ng-messages="dbIndexModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="dbIndexModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.effectiveSiPrefix"></label>
+        <input name="effectiveSiPrefix" ng-model="$ctrl.dataPoint.pointLocator.effectiveSiPrefix" required ma-get-ctrl="effectiveSiPrefixModelCtrl = $ngModel">
+        <div ng-messages="effectiveSiPrefixModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="effectiveSiPrefixModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.addressHex"></label>
+        <input name="address" ng-model="$ctrl.dataPoint.pointLocator.address" required ma-get-ctrl="addressModelCtrl = $ngModel">
+        <div ng-messages="addressModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="addressModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.identNumber"></label>
+        <input name="identNumber" type="number" ng-model="$ctrl.dataPoint.pointLocator.identNumber" required ma-get-ctrl="identNumberModelCtrl = $ngModel">
+        <div ng-messages="identNumberModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="identNumberModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.medium"></label>
+        <input name="medium" ng-model="$ctrl.dataPoint.pointLocator.medium" required ma-get-ctrl="mediumModelCtrl = $ngModel">
+        <div ng-messages="mediumModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="mediumModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.manufacturer"></label>
+        <input name="manufacturer" ng-model="$ctrl.dataPoint.pointLocator.manufacturer" required ma-get-ctrl="manufacturerModelCtrl = $ngModel">
+        <div ng-messages="manufacturerModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="manufacturerModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.version"></label>
+        <input name="version" ng-model="$ctrl.dataPoint.pointLocator.version" required ma-get-ctrl="versionModelCtrl = $ngModel">
+        <div ng-messages="versionModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="versionModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.responseFrame"></label>
+        <input name="responseFrame" ng-model="$ctrl.dataPoint.pointLocator.responseFrame" required ma-get-ctrl="responseFrameModelCtrl = $ngModel">
+        <div ng-messages="responseFrameModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="responseFrameModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>edit</md-icon>
+        <label ma-tr="dsEdit.mbus.difCode"></label>
+        <md-select name="difCode" ng-model="$ctrl.dataPoint.pointLocator.difCode" required ma-get-ctrl="difCodeModelCtrl = $ngModel">
+            <md-option ng-value="'_12_DIGIT_BCD'" ma-tr="dsEdit.snmp.difCode.12DigitBcd"></md-option>
+            <md-option ng-value="'_16_BIT_INTEGER'" ma-tr="dsEdit.snmp.difCode.16BitInteger"></md-option>
+            <md-option ng-value="'_24_BIT_INTEGER'" ma-tr="dsEdit.snmp.difCode.24BitInteger"></md-option>
+            <md-option ng-value="'_2_DIGIT_BCD'" ma-tr="dsEdit.snmp.difCode.2DigitBcd"></md-option>
+            <md-option ng-value="'_32_BIT_INTEGER'" ma-tr="dsEdit.snmp.difCode.32BitInteger"></md-option>
+            <md-option ng-value="'_32_BIT_REAL'" ma-tr="dsEdit.snmp.difCode.32BitReal"></md-option>
+            <md-option ng-value="'_48_BIT_INTEGER'" ma-tr="dsEdit.snmp.difCode.48BitInteger"></md-option>
+            <md-option ng-value="'_4_DIGIT_BCD'" ma-tr="dsEdit.snmp.difCode.4DigitBcd"></md-option>
+            <md-option ng-value="'_64_BIT_INTEGER'" ma-tr="dsEdit.snmp.difCode.64BitInteger"></md-option>
+            <md-option ng-value="'_6_DIGIT_BCD'" ma-tr="dsEdit.snmp.difCode.6DigitBcd"></md-option>
+            <md-option ng-value="'_8_BIT_INTEGER'" ma-tr="dsEdit.snmp.difCode.8BitInteger"></md-option>
+            <md-option ng-value="'_8_DIGIT_BCD'" ma-tr="dsEdit.snmp.difCode.8DigitBcd"></md-option>
+            <md-option ng-value="'VARIABLE_LENGTH'" ma-tr="dsEdit.snmp.difCode.variableLength"></md-option>
+        </md-select>
+        <div ng-messages="difCodeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="difCodeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.functionField"></label>
+        <input name="functionField" ng-model="$ctrl.dataPoint.pointLocator.functionField" required ma-get-ctrl="functionFieldModelCtrl = $ngModel">
+        <div ng-messages="functionFieldModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="functionFieldModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.deviceUnit"></label>
+        <input name="deviceUnit" ng-model="$ctrl.dataPoint.pointLocator.deviceUnit" required ma-get-ctrl="deviceUnitModelCtrl = $ngModel">
+        <div ng-messages="deviceUnitModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="deviceUnitModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.tariff"></label>
+        <input name="tariff" type="number" ng-model="$ctrl.dataPoint.pointLocator.tariff" required ma-get-ctrl="tariffModelCtrl = $ngModel">
+        <div ng-messages="tariffModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="tariffModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.storageNumber"></label>
+        <input name="storageNumber" type="number" ng-model="$ctrl.dataPoint.pointLocator.storageNumber" required ma-get-ctrl="storageNumberModelCtrl = $ngModel">
+        <div ng-messages="storageNumberModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="storageNumberModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.vifType"></label>
+        <input name="vifType" ng-model="$ctrl.dataPoint.pointLocator.vifType" required ma-get-ctrl="vifTypeModelCtrl = $ngModel">
+        <div ng-messages="vifTypeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="vifTypeModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.vifLabel"></label>
+        <input name="vifLabel" ng-model="$ctrl.dataPoint.pointLocator.vifLabel" required ma-get-ctrl="vifLabelModelCtrl = $ngModel">
+        <div ng-messages="vifLabelModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="vifLabelModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+    
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.unitOfMeasurement"></label>
+        <input name="unitOfMeasurement" ng-model="$ctrl.dataPoint.pointLocator.unitOfMeasurement" required ma-get-ctrl="unitOfMeasurementModelCtrl = $ngModel">
+        <div ng-messages="unitOfMeasurementModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="unitOfMeasurementModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.siPrefix"></label>
+        <input name="siPrefix" ng-model="$ctrl.dataPoint.pointLocator.siPrefix" required ma-get-ctrl="siPrefixModelCtrl = $ngModel">
+        <div ng-messages="siPrefixModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="siPrefixModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.exponent"></label>
+        <input name="exponent" ng-model="$ctrl.dataPoint.pointLocator.exponent" required ma-get-ctrl="exponentModelCtrl = $ngModel">
+        <div ng-messages="exponentModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="exponentModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.vifeTypes"></label>
+        <input name="vifeTypes" ng-model="$ctrl.dataPoint.pointLocator.vifeTypes" required ma-get-ctrl="vifeTypesModelCtrl = $ngModel">
+        <div ng-messages="vifeTypesModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="vifeTypesModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.vifeTypes"></label>
+        <input name="vifeTypes" ng-model="$ctrl.dataPoint.pointLocator.vifeTypes" required ma-get-ctrl="vifeTypesModelCtrl = $ngModel">
+        <div ng-messages="vifeTypesModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="vifeTypesModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>label</md-icon>
+        <label ma-tr="dsEdit.mbus.vifeLabels"></label>
+        <input name="vifeLabels" ng-model="$ctrl.dataPoint.pointLocator.vifeLabels" required ma-get-ctrl="vifeLabelsModelCtrl = $ngModel">
+        <div ng-messages="vifeLabelsModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="vifeLabelsModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+</div>
