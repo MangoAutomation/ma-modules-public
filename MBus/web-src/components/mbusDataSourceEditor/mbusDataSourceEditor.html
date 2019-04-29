@@ -63,7 +63,7 @@
         </div>
     </md-input-container>
 
-    <div flex="100" flex-gt-md="50">
+    <div flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.connection.modelType === 'mbusSerial'">
         <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.connection.commPortId" required></ma-serial-port-select>
     </div>
 </div>
