@@ -1,0 +1,69 @@
+<h3>
+    <span ma-tr="dsEdit.mbus"></span>
+    <md-button class="md-icon-button ma-small-button ma-no-margin" ui-sref="ui.help.mbusDataSource">
+        <md-icon>help</md-icon>
+    </md-button>
+</h3>
+
+<div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>linear_scale</md-icon>
+        <label ma-tr="dsEdit.mbus.bitPerSecond"></label>
+        <md-select name="bitPerSecond" ng-model="$ctrl.dataSource.connection.bitPerSecond" required ma-get-ctrl="bitPerSecondModelCtrl = $ngModel">
+            <md-option ng-value="300" ng-bind="300"></md-option>
+            <md-option ng-value="2400" ng-bind="2400"></md-option>
+            <md-option ng-value="3600" ng-bind="3600"></md-option>
+        </md-select>
+        <div ng-messages="bitPerSecondModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="bitPerSecondModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>av_timer</md-icon>
+        <label ma-tr="dsEdit.mbus.responseTimeOutOffset"></label>
+        <input name="responseTimeoutOffset" type="number" ng-model="$ctrl.dataSource.connection.responseTimeoutOffset" required ma-get-ctrl="responseTimeoutOffsetModelCtrl = $ngModel">
+        <div ng-messages="responseTimeoutOffsetModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="responseTimeoutOffsetModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-icon>storage</md-icon>
+        <label ma-tr="dsEdit.mbus.connectionType"></label>
+        <md-select name="modelType" ng-model="$ctrl.dataSource.connection.modelType" required ma-get-ctrl="modelTypeModelCtrl = $ngModel">
+            <md-option ng-value="'mbusTcpIp'" ma-tr="dsEdit.mbus.useTcpIpConnection"></md-option>
+            <md-option ng-value="'mbusSerial'" ma-tr="dsEdit.mbus.useDirectConnection"></md-option>
+        </md-select>
+        <div ng-messages="modelTypeModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="bitPerSecondModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.connection.modelType === 'mbusTcpIp'">
+        <md-icon>http</md-icon>
+        <label ma-tr="dsEdit.mbus.tcpAddr"></label>
+        <input name="host" ng-model="$ctrl.dataSource.connection.host" required ma-get-ctrl="hostModelCtrl = $ngModel">
+        <div ng-messages="hostModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="hostModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.connection.modelType === 'mbusTcpIp'">
+        <md-icon>settings_input_component</md-icon>
+        <label ma-tr="dsEdit.mbus.tcpPort"></label>
+        <input name="port" type="number" ng-model="$ctrl.dataSource.connection.port" required ma-get-ctrl="portModelCtrl = $ngModel">
+        <div ng-messages="portModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="portModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <div flex="100" flex-gt-md="50">
+        <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.connection.commPortId" required></ma-serial-port-select>
+    </div>
+</div>
