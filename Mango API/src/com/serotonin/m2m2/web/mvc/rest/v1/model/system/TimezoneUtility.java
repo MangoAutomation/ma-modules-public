@@ -14,9 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 
 
 /**
+ * 
+ * This class should not filter on continent and thus should not be used.
+ * 
  * @author Terry Packer
  *
  */
+@Deprecated
 public class TimezoneUtility {
     public static final String[] TZ_CONTINENTS = { "Africa", "America", "Antarctica", "Arctic", "Asia", "Atlantic",
         "Australia", "Europe", "Indian", "Pacific", };
