@@ -59,7 +59,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>location_city</md-icon>
         <label ma-tr="dsEdit.mbus.manufacturer"></label>
-        <input name="manufacturer" ng-model="$ctrl.dataPoint.pointLocator.manufacturer" ma-get-ctrl="manufacturerModelCtrl = $ngModel">
+        <input name="manufacturer" ng-model="$ctrl.dataPoint.pointLocator.manufacturer" required ma-get-ctrl="manufacturerModelCtrl = $ngModel">
         <div ng-messages="manufacturerModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="manufacturerModelCtrl.validationMessage"></div>
@@ -79,7 +79,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>photo_size_select_small</md-icon>
         <label ma-tr="dsEdit.mbus.responseFrame"></label>
-        <input name="responseFrame" ng-model="$ctrl.dataPoint.pointLocator.responseFrame" ma-get-ctrl="responseFrameModelCtrl = $ngModel">
+        <input name="responseFrame" ng-model="$ctrl.dataPoint.pointLocator.responseFrame" required ma-get-ctrl="responseFrameModelCtrl = $ngModel">
         <div ng-messages="responseFrameModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="responseFrameModelCtrl.validationMessage"></div>
@@ -157,7 +157,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>reorder</md-icon>
         <label ma-tr="dsEdit.mbus.vifType"></label>
-        <input name="vifType" ng-model="$ctrl.dataPoint.pointLocator.vifType" ma-get-ctrl="vifTypeModelCtrl = $ngModel">
+        <input name="vifType" ng-model="$ctrl.dataPoint.pointLocator.vifType" required ma-get-ctrl="vifTypeModelCtrl = $ngModel">
         <div ng-messages="vifTypeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="vifTypeModelCtrl.validationMessage"></div>
@@ -167,7 +167,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>label</md-icon>
         <label ma-tr="dsEdit.mbus.vifLabel"></label>
-        <input name="vifLabel" ng-model="$ctrl.dataPoint.pointLocator.vifLabel" ma-get-ctrl="vifLabelModelCtrl = $ngModel">
+        <input name="vifLabel" ng-model="$ctrl.dataPoint.pointLocator.vifLabel" required ma-get-ctrl="vifLabelModelCtrl = $ngModel">
         <div ng-messages="vifLabelModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="vifLabelModelCtrl.validationMessage"></div>
