@@ -69,7 +69,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>sms</md-icon>
         <label ma-tr="dsEdit.mbus.version"></label>
-        <input name="version" ng-model="$ctrl.dataPoint.pointLocator.version" ma-get-ctrl="versionModelCtrl = $ngModel">
+        <input name="version" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.version" ma-get-ctrl="versionModelCtrl = $ngModel">
         <div ng-messages="versionModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="versionModelCtrl.validationMessage"></div>
@@ -89,7 +89,25 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>more</md-icon>
         <label ma-tr="dsEdit.mbus.difCode"></label>
-        <input name="difCode" ng-model="$ctrl.dataPoint.pointLocator.difCode" required ma-get-ctrl="difCodeModelCtrl = $ngModel">
+        <md-select name="difCode" ng-model="$ctrl.dataPoint.pointLocator.difCode" required ma-get-ctrl="difCodeModelCtrl = $ngModel" ng-change="$ctrl.difCodeChange()">
+            <md-option ng-value="'8 Bit Integer'" ma-tr="dsEdit.mbus.difCode.8BitInteger"></md-option>
+            <md-option ng-value="'16 Bit Integer'" ma-tr="dsEdit.mbus.difCode.16BitInteger"></md-option>
+            <md-option ng-value="'24 Bit Integer'" ma-tr="dsEdit.mbus.difCode.24BitInteger"></md-option>
+            <md-option ng-value="'32 Bit Integer'" ma-tr="dsEdit.mbus.difCode.32BitInteger"></md-option>
+            <md-option ng-value="'48 Bit Integer'" ma-tr="dsEdit.mbus.difCode.48BitInteger"></md-option>
+            <md-option ng-value="'64 Bit Integer'" ma-tr="dsEdit.mbus.difCode.64BitInteger"></md-option>
+            <md-option ng-value="'32 Bit Real'" ma-tr="dsEdit.mbus.difCode.32BitReal"></md-option>
+            <md-option ng-value="'selection for readout'" ma-tr="dsEdit.mbus.difCode.selectionForReadout"></md-option>
+            <md-option ng-value="'2 digit BCD'" ma-tr="dsEdit.mbus.difCode.2DigitBcd"></md-option>
+            <md-option ng-value="'4 digit BCD'" ma-tr="dsEdit.mbus.difCode.4DigitBcd"></md-option>
+            <md-option ng-value="'6 digit BCD'" ma-tr="dsEdit.mbus.difCode.6DigitBcd"></md-option>
+            <md-option ng-value="'8 digit BCD'" ma-tr="dsEdit.mbus.difCode.8DigitBcd"></md-option>
+            <md-option ng-value="'12 digit BCD'" ma-tr="dsEdit.mbus.difCode.12DigitBcd"></md-option>
+            <md-option ng-value="'Special Function Manufacturer specific data'" ma-tr="dsEdit.mbus.difCode.specialFunctionManSpecDataLastPacket"></md-option>
+            <md-option ng-value="'Special Function Manufacturer specific data more records follow in next telegram'" ma-tr="dsEdit.mbus.difCode.specialFunctionManSpecDataPacketsFollows"></md-option>
+            <md-option ng-value="'Special Function Idle filler'" ma-tr="dsEdit.mbus.difCode.specialFunctionIdleFiller"></md-option>
+            <md-option ng-value="'Special Function Global readout request'" ma-tr="dsEdit.mbus.difCode.specialFunctionGlobalReadoutRequest"></md-option>
+        </md-select>
         <div ng-messages="difCodeModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="difCodeModelCtrl.validationMessage"></div>
@@ -109,10 +127,10 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>smartphone</md-icon>
         <label ma-tr="dsEdit.mbus.deviceUnit"></label>
-        <input name="deviceUnit" ng-model="$ctrl.dataPoint.pointLocator.deviceUnit" ma-get-ctrl="deviceUnitModelCtrl = $ngModel">
-        <div ng-messages="deviceUnitModelCtrl.$error">
+        <input name="subUnit" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.subUnit" ma-get-ctrl="subUnitModelCtrl = $ngModel">
+        <div ng-messages="subUnitModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
-            <div ng-message="validationMessage" ng-bind="deviceUnitModelCtrl.validationMessage"></div>
+            <div ng-message="validationMessage" ng-bind="subUnitModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
 
