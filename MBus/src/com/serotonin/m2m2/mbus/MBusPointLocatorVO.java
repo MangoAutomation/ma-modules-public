@@ -44,6 +44,12 @@ import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
 import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
 import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 import net.sf.mbus4j.dataframes.datablocks.vif.UnitOfMeasurement;
+import net.sf.mbus4j.dataframes.datablocks.vif.VifAscii;
+import net.sf.mbus4j.dataframes.datablocks.vif.VifFB;
+import net.sf.mbus4j.dataframes.datablocks.vif.VifFD;
+import net.sf.mbus4j.dataframes.datablocks.vif.VifManufacturerSpecific;
+import net.sf.mbus4j.dataframes.datablocks.vif.VifPrimary;
+import net.sf.mbus4j.dataframes.datablocks.vif.VifTypes;
 
 public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorVO> implements JsonSerializable{
 
@@ -131,13 +137,6 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
         return new MBusPointLocatorRT(this);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.
-     * ProcessResult, com.serotonin.m2m2.vo.DataPointVO,
-     * com.serotonin.m2m2.vo.dataSource.DataSourceVO)
-     */
     @Override
     public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
         if (!(dsvo instanceof MBusDataSourceVO))
@@ -155,7 +154,6 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
                         response.addContextualMessage("address", "validate.required");
                 }
                 break;
-
         }
 
         if (subUnit < 0) {
@@ -169,22 +167,54 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
         if (storageNumber < 0) {
             response.addContextualMessage("storageNumber", "validate.required");
         }
-
-        try {
-            DataBlock.getVif(vifType, vifLabel, unitOfMeasurement, siPrefix, exponent);
-        } catch (IllegalArgumentException ex) {
-            response.addContextualMessage("vif", "validate.required");
+        
+        try{
+           VifTypes t = VifTypes.fromLabel(vifType);
+           switch(t) {
+               case PRIMARY:
+                   try{
+                       VifPrimary.assemble(vifLabel, unitOfMeasurement, siPrefix, exponent);
+                   }catch(Exception e) {
+                       response.addContextualMessage("vifLabel", "validate.invalidValue");
+                   }
+                   break;
+               case FB_EXTENTION:
+                   try{
+                       VifFB.assemble(vifLabel, unitOfMeasurement, siPrefix, exponent);
+                   }catch(Exception e) {
+                       response.addContextualMessage("vifLabel", "validate.invalidValue");
+                   }
+                   break;
+               case FD_EXTENTION:
+                   try{
+                       VifFD.assemble(vifLabel, unitOfMeasurement, siPrefix, exponent);
+                   }catch(Exception e) {
+                       response.addContextualMessage("vifLabel", "validate.invalidValue");
+                   }
+                   break;
+               case ASCII:
+               case MANUFACTURER_SPECIFIC:
+                   break;
+               default:
+                   throw new IllegalArgumentException("Unknown vifType: " + t);
+               }
+           
+           
+        }catch(Exception e) {
+            response.addContextualMessage("vifType", "validate.invalidValue");
         }
 
         if (vifeLabels.length > 0) {
             if (vifeLabels.length != vifeTypes.length) {
-                response.addContextualMessage("vife and vifetype lenght mismatch", "validate.required");
+                response.addContextualMessage("vifeLabels", "mbus.validate.vifeLengthsInvalid");
+                response.addContextualMessage("vifeTypes", "mbus.validate.vifeLengthsInvalid");
             }
             for (int i = 0; i < vifeLabels.length; i++) {
                 try {
                     DataBlock.getVife(vifeTypes[i], vifeLabels[i]);
                 } catch (IllegalArgumentException ex) {
-                    response.addContextualMessage("vife", "validate.required");
+                    response.addContextualMessage("vifeTypes[" + i + "]", "validate.invalidValue");
+                    response.addContextualMessage("vifeLabels[" + i + "]", "validate.invalidValue");
                 }
             }
         }
