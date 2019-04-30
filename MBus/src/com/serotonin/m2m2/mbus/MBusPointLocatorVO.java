@@ -225,10 +225,10 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
             response.addContextualMessage("version", "validate.required");
         }
         if (identNumber < 0) {
-            response.addContextualMessage("id", "validate.required");
+            response.addContextualMessage("identNumber", "validate.required");
         }
         if ((manufacturer == null) || (manufacturer.length() != 3)) {
-            response.addContextualMessage("man", "validate.required");
+            response.addContextualMessage("manufacturer", "validate.required");
         }
     }
     //
