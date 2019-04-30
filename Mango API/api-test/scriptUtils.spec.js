@@ -174,7 +174,7 @@ describe('Test Script Utility Endpoints', function() {
             assert.isNull(response.data.errors[0].lineNumber);
             assert.isNull(response.data.errors[0].columnNumber);
             assert.strictEqual(response.data.errors[0].message, 'Could not convert result "testing" to Numeric');
-            assert.isNull(response.data.result);
+            assert.strictEqual(response.data.result, 'testing');
         });
       });
 });
