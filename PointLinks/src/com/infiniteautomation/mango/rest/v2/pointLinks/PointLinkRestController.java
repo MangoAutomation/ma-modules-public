@@ -70,7 +70,7 @@ public class PointLinkRestController {
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
 
     public ResponseEntity<PointLinkModel> get(
-            @ApiParam(value = "XID of Global Script to update", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of Point Link to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
@@ -98,7 +98,7 @@ public class PointLinkRestController {
     }
     
     @ApiOperation(
-            value = "Update a Global Script",
+            value = "Update a Point Link",
             notes = "Admin Only",
             response=PointLinkModel.class
             )
@@ -120,14 +120,14 @@ public class PointLinkRestController {
     }
     
     @ApiOperation(
-            value = "Delete a Global Script",
+            value = "Delete a Point Link",
             notes = "Admin Only",
             response=PointLinkModel.class
             )
     @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public ResponseEntity<PointLinkModel> delete(
-            @ApiParam(value = "XID of Global Script to update", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of Point Link to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
