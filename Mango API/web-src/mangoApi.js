@@ -11,7 +11,7 @@ import './mangoApi.css';
 const mangoApiModule = angular.module('maApi', [])
 .component('maApiSettings', mangoApiSettings)
 .factory('maApiSettings', mangoApiSettingsFactory)
-.config(['maUiMenuProvider', 'maSystemSettingsProvider', function(maUiMenuProvider, SystemSettingsProvider) {
+.config(['maUiMenuProvider', function(maUiMenuProvider) {
     maUiMenuProvider.registerMenuItems([
         {
             name: 'ui.settings.system.mangoApiSettings',
