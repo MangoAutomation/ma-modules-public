@@ -9,11 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.CompiledScript;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.util.script.CompiledMangoJavaScript;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
@@ -34,7 +33,6 @@ import com.serotonin.m2m2.rt.script.OneTimePointAnnotation;
 import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.rt.script.ScriptLog;
-import com.serotonin.m2m2.rt.script.ScriptPermissionsException;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -51,8 +49,7 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
     private final SystemEventType eventType;
     private final SystemEventType alreadyRunningEvent;
     private ScriptLog scriptLog;
-    private CompiledScript compiledScript;
-    private boolean compiled;
+    private CompiledMangoJavaScript compiledScript;
     private ScriptPointValueSetter setCallback;
     private final List<JsonImportExclusion> importExclusions;
     private final MangoJavaScriptService service;
@@ -66,7 +63,6 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         alreadyRunningEvent = new SystemEventType(PointLinkAlreadyRunningEvent.TYPE_NAME, vo.getId(),
                 DuplicateHandling.IGNORE_SAME_MESSAGE);
         compiledScript = null;
-        compiled = false;
         ready = true;
         setCallback = new SetCallback(vo.getScriptPermissions());
         importExclusions = new ArrayList<>();
@@ -83,19 +79,26 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
         Common.runtimeManager.addDataPointListener(vo.getSourcePointId(), this);
         checkSource();
         try {
-        	compiledScript = service.compile(vo.getScript(), true, vo.getScriptPermissions());
-        	compiled = true;
+            if(vo.getLogLevel() == LogLevel.NONE)
+                scriptLog = new ScriptLog(LOG_FILE_PREFIX + vo.getId());
+            else {
+                int logSize = (int) (vo.getLogSize() * 1000000f);
+                scriptLog = new ScriptLog(LOG_FILE_PREFIX + vo.getId(), vo.getLogLevel(), logSize, vo.getLogCount());
+            }
+            compiledScript = new CompiledMangoJavaScript(
+                    setCallback,
+                    scriptLog,
+                    null, null,
+                    importExclusions,
+                    false,
+                    service,
+                    vo.getScriptPermissions());
+            compiledScript.compile(vo.getScript(), true);
         } catch (ScriptError e) {
-            raiseFailureEvent(Common.timer.currentTimeMillis(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
+            raiseFailureEvent(Common.timer.currentTimeMillis(), e.getTranslatableMessage());
         }
 
-        if(vo.getLogLevel() == LogLevel.NONE)
-            scriptLog = new ScriptLog(LOG_FILE_PREFIX + vo.getId());
-        else {
-            int logSize = (int) (vo.getLogSize() * 1000000f);
-            scriptLog = new ScriptLog(LOG_FILE_PREFIX + vo.getId(), vo.getLogLevel(), logSize, vo.getLogCount());
-        }
-        scriptLog.info("Data point started");
+        scriptLog.info("Point link started");
     }
 
     public void terminate() {
@@ -161,25 +164,16 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
 
         if (!StringUtils.isBlank(vo.getScript())) {
             try {
-            	if(!compiled) {
-            		compiledScript = service.compile(vo.getScript(), true, vo.getScriptPermissions());
-            		compiled = true;
+            	if(!compiledScript.isCompiled()) {
+            		compiledScript.compile(vo.getScript(), true);
             	}
                 Map<String, IDataPointValueSource> context = new HashMap<String, IDataPointValueSource>();
                 context.put(CONTEXT_SOURCE_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getSourcePointId()));
                 context.put(CONTEXT_TARGET_VAR_NAME, Common.runtimeManager.getDataPoint(vo.getTargetPointId()));
-                MangoJavaScriptResult result = new MangoJavaScriptResult();
-                service.execute(
-                        compiledScript, newValue.getTime(), newValue.getTime(), targetDataType,
-                        context,
-                        null,
-                        null,
-                        vo.getScriptPermissions(),
-                        scriptLog,
-                        setCallback,
-                        importExclusions,
-                        result,
-                        false); 
+                //TODO could make the context points listeners and update context map only, not bothering unless we make the HTML5 UI for this module
+                compiledScript.initialize(context);
+                MangoJavaScriptResult result = compiledScript.execute(Common.timer.currentTimeMillis(), newValue.getTime(), targetDataType);
+                
                 PointValueTime pvt = (PointValueTime)result.getResult();
                 if (pvt == null) {
                     raiseFailureEvent(newValue.getTime(), new TranslatableMessage("event.pointLink.nullResult"));
@@ -196,13 +190,8 @@ public class PointLinkRT implements DataPointListener, PointLinkSetPointSource {
                 newValue = pvt;
             }
             catch (ScriptError e) {
-                raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getMessage()));
+                raiseFailureEvent(newValue.getTime(), new TranslatableMessage("pointLinks.validate.scriptError", e.getTranslatableMessage()));
                 ready = true;
-                return;
-            }
-            catch(ScriptPermissionsException e) {
-            	raiseFailureEvent(newValue.getTime(), e.getTranslatableMessage());
-            	ready = true;
                 return;
             }
             catch (ResultTypeException e) {

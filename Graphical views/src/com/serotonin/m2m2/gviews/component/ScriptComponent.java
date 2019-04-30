@@ -14,6 +14,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.serotonin.json.spi.JsonProperty;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.script.ScriptError;
@@ -87,7 +88,7 @@ public class ScriptComponent extends PointComponent {
             }
             catch (ScriptException e) {
                 ScriptError se = ScriptError.create(e);
-                result = se.getMessage();
+                result = se.getTranslatableMessage().translate(Common.getTranslations());
             }
         }
 
