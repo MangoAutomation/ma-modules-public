@@ -67,3 +67,88 @@
         <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.connection.commPortId" required></ma-serial-port-select>
     </div>
 </div>
+
+<md-tab md-on-select="$ctrl.dsEditor.hideSaveButtons = true;" md-on-deselect="$ctrl.dsEditor.hideSaveButtons = false;">
+    <md-tab-label>
+        <span ma-tr="dsEdit.mbus.search"></span>
+    </md-tab-label>
+    <md-tab-body>
+        <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container md-padding">
+            <md-input-container flex="100">
+                <md-icon>storage</md-icon>
+                <label ma-tr="mbus.searchTool.addressingType"></label>
+                <md-select name="addressingType" ng-model="$ctrl.searchTool.addressingType">
+                    <md-option ng-value="'primaryAddressing'" ma-tr="dsEdit.mbus.usePrimaryAddressing"></md-option>
+                    <md-option ng-value="'secondaryAddressing'" ma-tr="dsEdit.mbus.useSecondaryAddressing"></md-option>
+                </md-select>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchTool.addressingType === 'primaryAddressing'">
+                <md-icon>vertical_align_bottom</md-icon>
+                <label ma-tr="dsEdit.mbus.firstHexAddress"></label>
+                <input name="primaryAddressing" ng-model="$ctrl.searchTool.primaryAddressing.from">
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchTool.addressingType === 'primaryAddressing'">
+                <md-icon>vertical_align_top</md-icon>
+                <label ma-tr="dsEdit.mbus.lastHexAddress"></label>
+                <input name="primaryAddressing" ng-model="$ctrl.searchTool.primaryAddressing.to">
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchTool.addressingType === 'secondaryAddressing'">
+                <md-icon>label</md-icon>
+                <label ma-tr="dsEdit.mbus.id"></label>
+                <input name="identNumber" type="number" ng-model="$ctrl.searchTool.secondaryAddressing.identNumber">
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchTool.addressingType === 'secondaryAddressing'">
+                <md-icon>location_city</md-icon>
+                <label ma-tr="dsEdit.mbus.man"></label>
+                <input name="manufacturer" ng-model="$ctrl.searchTool.secondaryAddressing.manufacturer">
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchTool.addressingType === 'secondaryAddressing'">
+                <md-icon>power_input</md-icon>
+                <label ma-tr="dsEdit.mbus.secAddrMedium"></label>
+                <md-select name="medium" ng-model="$ctrl.searchTool.secondaryAddressing.medium">
+                    <md-option ng-value="null"></md-option>
+                    <md-option ng-value="'OTHER'" ma-tr="dsEdit.mbus.medium.other">Other</md-option>
+                    <md-option ng-value="'OIL'" ma-tr="dsEdit.mbus.medium.oil">Oil</md-option>
+                    <md-option ng-value="'ELECTRICITY'" ma-tr="dsEdit.mbus.medium.electricity">Electricity</md-option>
+                    <md-option ng-value="'GAS'" ma-tr="dsEdit.mbus.medium.gas">Gas</md-option>
+                    <md-option ng-value="'HEAT'" ma-tr="dsEdit.mbus.medium.heat">Heat</md-option>
+                    <md-option ng-value="'STEAM'" ma-tr="dsEdit.mbus.medium.steam">Stream</md-option>
+                    <md-option ng-value="'HOT_WATER'" ma-tr="dsEdit.mbus.medium.hotWater">Warm Water (30°C...90°C)</md-option>
+                    <md-option ng-value="'WATER'" ma-tr="dsEdit.mbus.medium.water">Water</md-option>
+                    <md-option ng-value="'HEAT_COST_ALLOCATOR'" ma-tr="dsEdit.mbus.medium.heatCostAllocator">Heat Cost Allocator</md-option>
+                    <md-option ng-value="'COMPRESSED_AIR'" ma-tr="dsEdit.mbus.medium.compressedAir">Compressed Air</md-option>
+                    <md-option ng-value="'COOLING_LOAD_METER_OUTLET'" ma-tr="dsEdit.mbus.medium.coolingLoadMeterOutlet">Cooling load meter (Volume measured at return temperature: outlet)</md-option>
+                    <md-option ng-value="'COOLING_LOAD_METER_INLET'" ma-tr="dsEdit.mbus.medium.coolingLoadMeterInlet">Cooling load meter (Volume measured at flow temperature: inlet)</md-option>
+                    <md-option ng-value="'HEAT_INLET'" ma-tr="dsEdit.mbus.medium.heatInlet">Heat (Volume measured at flow temperature: inlet)</md-option>
+                    <md-option ng-value="'HEAT_COOLING_LOAD_METER'" ma-tr="dsEdit.mbus.medium.heatCoolingLoadMeter">Heat/Cooling load meter</md-option>
+                    <md-option ng-value="'BUS_SYSTEM'" ma-tr="dsEdit.mbus.medium.busSystem">Bus/System component</md-option>
+                    <md-option ng-value="'UNKNOWN_MEDIUM'" ma-tr="dsEdit.mbus.medium.unknownMedium">Unknown Medium</md-option>
+                    <md-option ng-value="'COLD_WATER'" ma-tr="dsEdit.mbus.medium.coldWater">Cold Water</md-option>
+                    <md-option ng-value="'DUAL_WATER'" ma-tr="dsEdit.mbus.medium.dualWater">Dual register (hot/cold) Water meter</md-option>
+                    <md-option ng-value="'PRESSURE'" ma-tr="dsEdit.mbus.medium.pressure">Pressure</md-option>
+                    <md-option ng-value="'AD_CONVERTER'" ma-tr="dsEdit.mbus.medium.adConverter">A/D Converter</md-option>
+                </md-select>
+            </md-input-container>
+
+            <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchTool.addressingType === 'secondaryAddressing'">
+                <md-icon>sms</md-icon>
+                <label ma-tr="dsEdit.mbus.version"></label>
+                <input name="version" type="number" ng-model="$ctrl.searchTool.secondaryAddressing.version">
+            </md-input-container>
+
+            <div flex="100" layout layout-align="start center" class="ma-margin-bottom">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.search($event)">
+                    <span ma-tr="dsEdit.mbus.search"></span>
+                </md-button>
+                <md-button class="md-raised md-warn" ng-click="$ctrl.cancel($event)">
+                    <span ma-tr="common.cancel"></span>
+                </md-button>
+            </div>
+        </div>
+    </md-tab-body>
+</md-tab>

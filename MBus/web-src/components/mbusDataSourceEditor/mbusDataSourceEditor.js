@@ -17,7 +17,13 @@ class mbusDataSourceEditorController {
     }
 
     $onInit() {
-        
+        this.searchTool = {
+            addressingType: 'primaryAddressing',
+            primaryAddressing: {
+                from: '00',
+                to: 'FA'
+            }
+        };
     }
 
 }
@@ -26,7 +32,9 @@ export default {
     bindings: {
         dataSource: '<source'
     },
-    require: {},
+    require: {
+        dsEditor: '^maDataSourceEditor'
+    },
     controller: mbusDataSourceEditorController,
     template: componentTemplate
 };
