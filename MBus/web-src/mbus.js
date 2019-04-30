@@ -80,9 +80,17 @@ const mbusSourceModule = angular.module('maMbusDataSource', ['maUiApp'])
                 exponent: '',
                 vifeTypes: '',
                 vifeLabels: '',
+                dataType: 'NUMERIC'
             }
         },
-        bulkEditorColumns: []
+        bulkEditorColumns: [
+            {name: 'pointLocator.dbIndex', label: 'dsEdit.mbus.dbIndex', selectedByDefault: true},
+            {name: 'pointLocator.effectiveSiPrefix', label: 'dsEdit.mbus.effectiveSiPrefix', selectedByDefault: true},
+            {name: 'pointLocator.manufacturer', label: 'dsEdit.mbus.manufacturer', selectedByDefault: true},
+            {name: 'pointLocator.medium', label: 'dsEdit.mbus.medium', selectedByDefault: true},
+            {name: 'pointLocator.address', label: 'dsEdit.mbus.addressHex', selectedByDefault: true},
+            {name: 'pointLocator.responseFrame', label: 'dsEdit.mbus.responseFrame', selectedByDefault: true},
+        ]
     });
 
     maPointProvider.registerType({
