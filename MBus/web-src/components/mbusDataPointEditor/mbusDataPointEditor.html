@@ -9,7 +9,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>stop</md-icon>
         <label ma-tr="dsEdit.mbus.dbIndex"></label>
-        <input name="dbIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.dbIndex" required ma-get-ctrl="dbIndexModelCtrl = $ngModel">
+        <input name="dbIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.dbIndex" required ma-get-ctrl="dbIndexModelCtrl = $ngModel">
         <div ng-messages="dbIndexModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="dbIndexModelCtrl.validationMessage"></div>
@@ -39,7 +39,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>label</md-icon>
         <label ma-tr="dsEdit.mbus.identNumber"></label>
-        <input name="identNumber" type="number" ng-model="$ctrl.dataPoint.pointLocator.identNumber" required ma-get-ctrl="identNumberModelCtrl = $ngModel">
+        <input name="identNumber" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.identNumber" required ma-get-ctrl="identNumberModelCtrl = $ngModel">
         <div ng-messages="identNumberModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="identNumberModelCtrl.validationMessage"></div>
@@ -119,7 +119,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>attach_money</md-icon>
         <label ma-tr="dsEdit.mbus.tariff"></label>
-        <input name="tariff" type="number" ng-model="$ctrl.dataPoint.pointLocator.tariff" required ma-get-ctrl="tariffModelCtrl = $ngModel">
+        <input name="tariff" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.tariff" required ma-get-ctrl="tariffModelCtrl = $ngModel">
         <div ng-messages="tariffModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="tariffModelCtrl.validationMessage"></div>
@@ -129,7 +129,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>storage</md-icon>
         <label ma-tr="dsEdit.mbus.storageNumber"></label>
-        <input name="storageNumber" type="number" ng-model="$ctrl.dataPoint.pointLocator.storageNumber" required ma-get-ctrl="storageNumberModelCtrl = $ngModel">
+        <input name="storageNumber" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.storageNumber" required ma-get-ctrl="storageNumberModelCtrl = $ngModel">
         <div ng-messages="storageNumberModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="storageNumberModelCtrl.validationMessage"></div>
