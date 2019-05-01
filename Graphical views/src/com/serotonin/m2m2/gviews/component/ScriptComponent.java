@@ -13,6 +13,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
@@ -30,9 +31,6 @@ import com.serotonin.util.SerializationHelper;
 public class ScriptComponent extends PointComponent {
     public static ImplDefinition DEFINITION = new ImplDefinition("script", "SCRIPT", "graphic.script", new int[] {
             DataTypes.BINARY, DataTypes.MULTISTATE, DataTypes.NUMERIC, DataTypes.ALPHANUMERIC });
-
-    private static final String SCRIPT_PREFIX = "function __scriptRenderer__() {";
-    private static final String SCRIPT_SUFFIX = "\r\n}\r\n__scriptRenderer__();";
 
     @JsonProperty
     private String script;
@@ -76,7 +74,7 @@ public class ScriptComponent extends PointComponent {
             engine.put(BaseDwr.MODEL_ATTR_TRANSLATIONS, model.get(BaseDwr.MODEL_ATTR_TRANSLATIONS));
 
             // Create the script.
-            String evalScript = SCRIPT_PREFIX + script + SCRIPT_SUFFIX;
+            String evalScript = MangoJavaScriptService.SCRIPT_PREFIX + script + MangoJavaScriptService.SCRIPT_SUFFIX;
 
             // Execute.
             try {
@@ -87,7 +85,7 @@ public class ScriptComponent extends PointComponent {
                     result = o.toString();
             }
             catch (ScriptException e) {
-                ScriptError se = ScriptError.create(e);
+                ScriptError se = ScriptError.create(e, true);
                 result = se.getTranslatableMessage().translate(Common.getTranslations());
             }
         }
