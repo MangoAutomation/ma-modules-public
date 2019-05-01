@@ -44,10 +44,8 @@ import net.sf.mbus4j.dataframes.datablocks.dif.DataFieldCode;
 import net.sf.mbus4j.dataframes.datablocks.dif.FunctionField;
 import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 import net.sf.mbus4j.dataframes.datablocks.vif.UnitOfMeasurement;
-import net.sf.mbus4j.dataframes.datablocks.vif.VifAscii;
 import net.sf.mbus4j.dataframes.datablocks.vif.VifFB;
 import net.sf.mbus4j.dataframes.datablocks.vif.VifFD;
-import net.sf.mbus4j.dataframes.datablocks.vif.VifManufacturerSpecific;
 import net.sf.mbus4j.dataframes.datablocks.vif.VifPrimary;
 import net.sf.mbus4j.dataframes.datablocks.vif.VifTypes;
 
@@ -145,13 +143,13 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
         switch (getAddressing()) {
             case PRIMARY:
                 if ((address & 0xFF) > (MBusUtils.LAST_REGULAR_PRIMARY_ADDRESS & 0xFF)) {
-                    response.addContextualMessage("address >= 0xFD", "validate.required");
+                    response.addContextualMessage("address", "validate.invalidValue");
                 }
                 break;
             case SECONDARY:
                 if ((address == MBusUtils.BROADCAST_NO_ANSWER_PRIMARY_ADDRESS)
                         || (address == MBusUtils.BROADCAST_WITH_ANSWER_PRIMARY_ADDRESS)) {
-                        response.addContextualMessage("address", "validate.required");
+                        response.addContextualMessage("address", "validate.invalidValue");
                 }
                 break;
         }

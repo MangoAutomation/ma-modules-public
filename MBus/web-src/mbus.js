@@ -53,7 +53,6 @@ const mbusSourceModule = angular.module('maMbusDataSource', ['maUiApp'])
                     level: 'URGENT'
                 }
             ],
-            id: 321,
             modelType: 'MBUS',
             pollPeriod: {periods: 5, type: 'MINUTES'},
             purgeSettings: {override: false, frequency: {periods: 1, type: 'YEARS'}},
