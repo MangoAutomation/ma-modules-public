@@ -12,6 +12,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -98,38 +99,46 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/modules")
 public class ModulesRestController extends MangoRestController {
 
-    private static final String WEB = "/web";
     private static final String MODULES_WEB_DIR = Constants.DIR_WEB + "/" + Constants.DIR_MODULES;
     private static final String WEB_MODULE_PREFIX = MODULES_WEB_DIR + "/" + ModuleUtils.Constants.MODULE_PREFIX;
     private static final File coreDir = new File(Common.MA_HOME);
     private static final File moduleDir = new File(coreDir, MODULES_WEB_DIR);
 
-    public static AngularJSModuleDefinitionGroupModel getAngularJSModules() {
-        List<AngularJSModuleDefinition> definitions = ModuleRegistry.getAngularJSDefinitions();
-        List<String> urls = new ArrayList<String>();
+    private static final String SNAPSHOT = "-SNAPSHOT";
 
-        String snapshot = "-SNAPSHOT";
+    public static AngularJSModuleDefinitionGroupModel getAngularJSModules() {
         // construct a Maven-like snapshot version string
         String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(new Date(Common.START_TIME)) + "-1";
 
-        for (AngularJSModuleDefinition def : definitions) {
-            String version = def.getModule().getVersion().toString();
-            if (version.endsWith(snapshot)) {
-                version = version.substring(0, version.length() - snapshot.length()) + dateString;
+        AngularJSModuleDefinitionGroupModel model = new AngularJSModuleDefinitionGroupModel();
+        URI webUri = Common.MA_HOME_PATH.resolve(Constants.DIR_WEB).toUri();
+
+        for (AngularJSModuleDefinition def : ModuleRegistry.getAngularJSDefinitions()) {
+            Module module = def.getModule();
+
+            String version = module.getVersion().toString();
+            if (version.endsWith(SNAPSHOT)) {
+                version = version.substring(0, version.length() - SNAPSHOT.length()) + dateString;
             }
 
-            String url = UriComponentsBuilder.fromPath(def.getModule().getWebPath())
-                    .path(WEB)
-                    .path(def.getJavaScriptFilename())
+            URI uri = webUri.relativize(def.getAbsoluteJavaScriptPath().toUri());
+
+            String urlWithVersion = UriComponentsBuilder.fromUri(uri)
                     .queryParam("v", version)
                     .build()
                     .toUriString();
 
-            urls.add(url);
-        }
+            AngularJSModuleDefinitionGroupModel.ModuleInfo info = new AngularJSModuleDefinitionGroupModel.ModuleInfo();
+            info.setUrl(uri.toString());
+            info.setVersion(version);
+            info.setName(module.getName());
+            info.setSupportsBundling(def.supportsBundling());
+            info.setPriority(def.priority());
+            info.setAngularJsModuleNames(def.angularJsModuleNames());
+            info.setAmdModuleNames(def.amdModuleNames());
 
-        AngularJSModuleDefinitionGroupModel model = new AngularJSModuleDefinitionGroupModel();
-        model.setUrls(urls);
+            model.add("/" + urlWithVersion, info);
+        }
 
         return model;
     }
@@ -142,6 +151,32 @@ public class ModulesRestController extends MangoRestController {
         AngularJSModuleDefinitionGroupModel model = getAngularJSModules();
         return result.createResponseEntity(model);
     }
+
+    //    @RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/bundle", produces = "application/javascript;charset=UTF-8")
+    //    public FileSystemResource getPublicAngularJSModulesBundle(HttpServletRequest request) throws IOException {
+    //
+    //        File bundle = File.createTempFile("mango-bundle", ".js");
+    //
+    //        try (FileOutputStream bundleOutputStream = new FileOutputStream(bundle, true)) {
+    //            Writer writer = new OutputStreamWriter(bundleOutputStream);
+    //
+    //            for (AngularJSModuleDefinition def : ModuleRegistry.getAngularJSDefinitions()) {
+    //                if (def.supportsBundling()) {
+    //                    Path path = def.getAbsoluteJavaScriptPath();
+    //                    if (java.nio.file.Files.isRegularFile(path) && java.nio.file.Files.isReadable(path)) {
+    //                        writer.write("/* " + Common.MA_HOME_PATH.relativize(path) + " */\n");
+    //                        writer.flush();
+    //
+    //                        java.nio.file.Files.copy(path, bundleOutputStream);
+    //                        writer.write("\n");
+    //                        writer.flush();
+    //                    }
+    //                }
+    //            }
+    //
+    //            return new FileSystemResource(bundle);
+    //        }
+    //    }
 
     @ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version")
     @RequestMapping(method = RequestMethod.GET, value = "/core")
