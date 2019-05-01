@@ -6,12 +6,16 @@
 import angular from 'angular';
 import mbusDataSourceEditor from './components/mbusDataSourceEditor/mbusDataSourceEditor';
 import mbusDataPointEditor from './components/mbusDataPointEditor/mbusDataPointEditor';
+
+import mbusDataSourceFactory from './services/mbusDataSource';
+
 import dsHelpTemplate from './help/dsHelp.html';
 import dpHelpTemplate from './help/dpHelp.html';
 
 const mbusSourceModule = angular.module('maMbusDataSource', ['maUiApp'])
 .component('maMbusDataSourceEditor', mbusDataSourceEditor)
 .component('maMbusDataPointEditor', mbusDataPointEditor)
+.factory('maMbusDataSource', mbusDataSourceFactory)
 .config(['maDataSourceProvider', 'maPointProvider', 'maUiMenuProvider', function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
     maDataSourceProvider.registerType({
         type: 'MBUS',
