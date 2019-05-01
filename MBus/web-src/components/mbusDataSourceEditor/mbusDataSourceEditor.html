@@ -73,7 +73,7 @@
         <span ma-tr="dsEdit.mbus.search"></span>
     </md-tab-label>
     <md-tab-body>
-        <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container md-padding">
+        <div layout="row" layout-wrap layout-align="space-between start" ng-form="$ctrl.searchToolForm" ma-validation-messages="$ctrl.searchToolValidationMessages" class="ma-inputs-container md-padding">
             <md-input-container flex="100">
                 <md-icon>storage</md-icon>
                 <label ma-tr="mbus.searchTool.addressingType"></label>
@@ -86,13 +86,21 @@
             <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchToolData.addressingType === 'MBusTcpIpAddressScanRequest'">
                 <md-icon>vertical_align_bottom</md-icon>
                 <label ma-tr="dsEdit.mbus.firstHexAddress"></label>
-                <input name="firstAddress" type="number" ng-model="$ctrl.searchToolData.primaryAddressing.firstAddress">
+                <input name="firstAddress" ng-model="$ctrl.searchToolData.primaryAddressing.firstAddress">
+                <div ng-messages="$ctrl.searchToolForm.firstAddress.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.searchToolForm.firstAddress.validationMessage"></div>
+                </div>
             </md-input-container>
 
             <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchToolData.addressingType === 'MBusTcpIpAddressScanRequest'">
                 <md-icon>vertical_align_top</md-icon>
                 <label ma-tr="dsEdit.mbus.lastHexAddress"></label>
-                <input name="lastAddress" type="number" ng-model="$ctrl.searchToolData.primaryAddressing.lastAddress">
+                <input name="lastAddress" ng-model="$ctrl.searchToolData.primaryAddressing.lastAddress">
+                <div ng-messages="$ctrl.searchToolForm.lastAddress.$error">
+                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="validationMessage" ng-bind="$ctrl.searchToolForm.lastAddress.validationMessage"></div>
+                </div>
             </md-input-container>
 
             <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.searchToolData.addressingType === 'MBusTcpIpSecondaryAddressScanRequest'">
@@ -141,8 +149,55 @@
                 <input name="version" type="number" ng-model="$ctrl.searchToolData.secondaryAddressing.version">
             </md-input-container>
 
+            <div ng-if="$ctrl.devices" flex="100" class="ma-table-container">
+                <md-table-container>
+                    <table md-table ng-model="$ctrl.page.selected">
+                        <thead md-head>
+                            <tr md-row>
+                                <th md-column ma-tr="dsEdit.mbus.addressHex"></th>
+                                <th md-column ma-tr="dsEdit.mbus.identNumber"></th>
+                                <th md-column ma-tr="dsEdit.mbus.manufacturer"></th>
+                                <th md-column ma-tr="dsEdit.mbus.medium"></th>
+                                <th md-column ma-tr="dsEdit.mbus.version"></th>
+                                <th md-column></th>
+                            </tr>
+                        </thead>
+                        <tbody md-body>
+                            <tr md-row ng-repeat="item in $ctrl.devices | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
+                                <td md-cell flex layout="row" layout-align="center center">
+                                    <md-input-container flex>
+                                        <input name="address" ng-model="item.address" ng-disabled="true">
+                                    </md-input-container>
+                                    <md-button class="md-icon-button ma-small-button ma-no-margin" ng-disabled="true">
+                                        <md-icon>save</md-icon>
+                                    </md-button>
+                                </td>
+                                <td md-cell ng-bind="item.identNumber"></td>
+                                <td md-cell ng-bind="item.manufacturer"></td>
+                                <td md-cell ng-bind="item.medium"></td>
+                                <td md-cell ng-bind="item.version"></td>
+                                <td md-cell>
+                                    <md-button class="md-icon-button ma-small-button ma-no-margin" ng-disabled="true">
+                                        <md-icon>remove_red_eye</md-icon>
+                                    </md-button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </md-table-container>
+                <md-table-pagination 
+                    md-limit="$ctrl.query.limit" 
+                    md-limit-options="[5, 10, 20]" 
+                    md-page="$ctrl.query.page" 
+                    md-total="{{$ctrl.devices.length}}" 
+                    md-on-paginate="$ctrl.getBound"
+                    md-page-select>
+                </md-table-pagination>
+            </div>
+
+
             <div flex="100" layout layout-align="start center" class="ma-margin-bottom">
-                <md-button class="md-raised md-primary" ng-click="$ctrl.search($event)">
+                <md-button class="md-raised md-primary" ng-click="$ctrl.search($event)" ng-disabled="$ctrl.searching">
                     <span ma-tr="dsEdit.mbus.search"></span>
                 </md-button>
                 <md-button class="md-raised md-warn" ng-click="$ctrl.cancelScan($event)">

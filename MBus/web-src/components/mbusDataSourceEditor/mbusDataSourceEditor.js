@@ -18,11 +18,16 @@ class mbusDataSourceEditorController {
     }
 
     $onInit() {
+        this.query = {
+            limit: 10,
+            page: 1
+        };
+
         this.searchToolData = {
             addressingType: 'MBusTcpIpAddressScanRequest',
             primaryAddressing: {
-                firstAddress: 0,
-                lastAddress: 127
+                firstAddress: '00',
+                lastAddress: 'FA'
             },
             secondaryAddress: {
                 id: null,
@@ -36,12 +41,14 @@ class mbusDataSourceEditorController {
 
         this.wsConnection = this.maMbusDataSource.subscribe((event, item) => {
             if (item.status === 'RUNNING') {
+                this.searching = true;
                 this.maDialogHelper.toastOptions(
                     {textTr: ['dsEdit.mbus.searching']}
                 );
 
                 this.devices = item.result.devices;
             } else if (item.status === 'SUCCESS' && item.result) {
+                this.searching = false;
                 this.maDialogHelper.toastOptions(
                     {textTr: ['dsEdit.mbus.searching']}
                 );
@@ -52,6 +59,7 @@ class mbusDataSourceEditorController {
 
                 this.devices = item.result.devices;
             } else if (item.status === 'ERROR') {
+                this.searching = false;
                 this.maDialogHelper.toastOptions(
                     {
                         textTr: ['dsEdit.mbus.searchError', item.error.localizedMessage],
@@ -69,6 +77,9 @@ class mbusDataSourceEditorController {
     }
 
     search() {
+        this.devices = null;
+        this.searching = true;
+
         let data = {
             dataSourceXid: this.dataSource.xid,
             bitsPerSecond: this.dataSource.connection.bitPerSecond,
@@ -79,8 +90,8 @@ class mbusDataSourceEditorController {
         };
 
         if (data.type === 'MBusTcpIpAddressScanRequest') {
-            data.firstAddress = this.searchToolData.primaryAddressing.firstAddress;
-            data.lastAddress = this.searchToolData.primaryAddressing.lastAddress;
+            data.firstAddress = parseInt(this.searchToolData.primaryAddressing.firstAddress, 16);
+            data.lastAddress = parseInt(this.searchToolData.primaryAddressing.lastAddress, 16);
         } else {
             data.id = this.searchToolData.secondaryAddress.id;
             data.version = this.searchToolData.secondaryAddress.version;
@@ -89,13 +100,21 @@ class mbusDataSourceEditorController {
         }
 
         this.getScans().then(scans => {
+            scans = scans.filter(scan => scan.status === 'RUNNING');
             if (scans && scans.length > 0) {
+                console.log(scans);
                 this.maDialogHelper.confirm(event, ['dsEdit.mbus.confirmSearchCancel']).then(() => {
-                    this.cancel(scans[0].id);
-                    this.searchTool.scan(data);
+                    scans.forEach(scan => {
+                        this.cancel(scan.id);
+                    });
+                    this.searchTool.scan(data).catch(error => {
+                        this.searchToolValidationMessages = error.data.result.messages;
+                    });
                 });
             } else {
-                this.searchTool.scan(data);
+                this.searchTool.scan(data).catch(error => {
+                    this.searchToolValidationMessages = error.data.result.messages;
+                });
             }
 
         });
@@ -103,12 +122,16 @@ class mbusDataSourceEditorController {
 
     cancelScan() {
         this.getScans().then(scans => {
-            this.cancel(scans[0].id);
+            scans = scans.filter(scan => scan.status === 'RUNNING');
+            scans.forEach(scan => {
+                this.cancel(scan.id);
+            });
         });
     }
 
     cancel(id) {
         this.searchTool.cancel(id).then(response => {
+            this.searching = false;
             this.maDialogHelper.toastOptions(
                 {textTr: ['dsEdit.mbus.seachStopped']}
             );
