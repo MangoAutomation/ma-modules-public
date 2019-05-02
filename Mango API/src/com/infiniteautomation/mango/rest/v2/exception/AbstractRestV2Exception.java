@@ -35,7 +35,7 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
     }
 
     public AbstractRestV2Exception(HttpStatus httpCode, Throwable cause) {
-        this(httpCode, null, new TranslatableMessage("rest.httpStatus." + httpCode.value()), cause);
+        this(httpCode, null, new TranslatableMessage("rest.httpStatusMessage." + httpCode.value(), cause != null ? cause.toString() : ""), cause);
     }
 
     public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode) {
@@ -43,7 +43,7 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
     }
 
     public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, Throwable cause) {
-        this(httpCode, mangoCode, new TranslatableMessage("rest.httpStatus." + httpCode.value()), cause);
+        this(httpCode, mangoCode, new TranslatableMessage("rest.httpStatusMessage." + httpCode.value(), cause != null ? cause.toString() : ""), cause);
     }
 
     public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message) {
@@ -71,7 +71,7 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
         else
             return -1;
     }
-    
+
     @JsonProperty
     public String getMangoStatusName(){
         if(mangoCode != null)
