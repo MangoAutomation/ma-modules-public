@@ -200,7 +200,7 @@
                 <md-button class="md-raised md-primary" ng-click="$ctrl.search($event)" ng-disabled="$ctrl.searching">
                     <span ma-tr="dsEdit.mbus.search"></span>
                 </md-button>
-                <md-button class="md-raised md-warn" ng-click="$ctrl.cancelScan($event)">
+                <md-button class="md-raised md-warn" ng-click="$ctrl.cancelScan($event)" ng-disabled="!$ctrl.searching">
                     <span ma-tr="common.cancel"></span>
                 </md-button>
             </div>

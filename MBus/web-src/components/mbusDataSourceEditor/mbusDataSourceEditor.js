@@ -78,7 +78,6 @@ class mbusDataSourceEditorController {
 
     search() {
         this.devices = null;
-        this.searching = true;
 
         let data = {
             dataSourceXid: this.dataSource.xid,
@@ -102,12 +101,13 @@ class mbusDataSourceEditorController {
         this.getScans().then(scans => {
             scans = scans.filter(scan => scan.status === 'RUNNING');
             if (scans && scans.length > 0) {
-                console.log(scans);
                 this.maDialogHelper.confirm(event, ['dsEdit.mbus.confirmSearchCancel']).then(() => {
                     scans.forEach(scan => {
                         this.cancel(scan.id);
                     });
+                    this.searching = true;
                     this.searchTool.scan(data).catch(error => {
+                        this.searching = false;
                         this.searchToolValidationMessages = error.data.result.messages;
                     });
                 });
