@@ -39,23 +39,16 @@ class mbusDataSourceEditorController {
 
         this.searchTool = new this.maMbusDataSource();
 
-        this.getScans().then(scans => {
-            scans = scans.filter(scan => scan.status === 'RUNNING');
-            if (scans && scans.length > 0) {
-                this.searchProgress = scans[0].progress;
-                this.searching = true;
-            }
-        });
-
         this.wsConnection = this.maMbusDataSource.subscribe((event, item) => {
             if (item.status === 'RUNNING') {
+                
                 this.searching = true;
-                this.searchProgress = item.progress + 1;
+                this.searchProgress = item.progress === 0 ? item.progress + 1 : item.progress; 
                 this.maDialogHelper.toastOptions(
                     {textTr: ['dsEdit.mbus.searching']}
                 );
-
                 this.devices = item.result.devices;
+
             } else if (item.status === 'SUCCESS' && item.result) {
                 this.searching = false;
                 this.searchProgress = item.progress;
@@ -82,7 +75,7 @@ class mbusDataSourceEditorController {
     }
 
     $onChanges(changes) {
-        if (changes.dataSource) {
+        if (changes.dataSource.previousValue.xid) {
             this.getScans().then(scans => {
                 scans = scans.filter(scan => scan.status === 'RUNNING');
                 scans.forEach(scan => {
@@ -91,6 +84,14 @@ class mbusDataSourceEditorController {
                 this.searchProgress = null;
                 this.searching = false;
                 this.devices = null;
+            });
+        } else {
+            this.getScans().then(scans => {
+                scans = scans.filter(scan => scan.status === 'RUNNING');
+                if (scans && scans.length > 0) {
+                    this.searchProgress = scans[0].progress === 0 ? scans[0].progress + 1 : scans[0].progress;
+                    this.searching = true;
+                }
             });
         }
     }
