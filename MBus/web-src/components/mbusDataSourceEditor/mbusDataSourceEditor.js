@@ -50,7 +50,7 @@ class mbusDataSourceEditorController {
         this.wsConnection = this.maMbusDataSource.subscribe((event, item) => {
             if (item.status === 'RUNNING') {
                 this.searching = true;
-                this.searchProgress = item.progress;
+                this.searchProgress = item.progress + 1;
                 this.maDialogHelper.toastOptions(
                     {textTr: ['dsEdit.mbus.searching']}
                 );
