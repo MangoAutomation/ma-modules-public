@@ -39,6 +39,14 @@ class mbusDataSourceEditorController {
 
         this.searchTool = new this.maMbusDataSource();
 
+        this.getScans().then(scans => {
+            scans = scans.filter(scan => scan.status === 'RUNNING');
+            if (scans && scans.length > 0) {
+                this.searchProgress = scans[0].progress;
+                this.searching = true;
+            }
+        });
+
         this.wsConnection = this.maMbusDataSource.subscribe((event, item) => {
             if (item.status === 'RUNNING') {
                 this.searching = true;
