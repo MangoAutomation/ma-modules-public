@@ -3,8 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
 import com.serotonin.m2m2.rt.event.type.PublisherEventType;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 
 /**
  * @author Terry Packer

@@ -32,6 +32,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
 import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractPointEventDetectorModel;
+import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -58,7 +59,6 @@ import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.publisher.AbstractPublisherModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,9 +68,10 @@ import net.jazdw.rql.parser.ASTNode;
 /**
  * @author Terry Packer
  *
- */@Api(value="Event Types")
- @RestController()
- @RequestMapping("/event-types")
+ */
+@Api(value="Event Types")
+@RestController()
+@RequestMapping("/event-types")
 public class EventTypesRestController {
 
      
@@ -387,7 +388,8 @@ public class EventTypesRestController {
                      break;
                  
                  for(PublisherVO<?> vo : publisherDao.getAll()) {
-                     PublisherEventTypeModel model = new PublisherEventTypeModel(new PublisherEventType(vo.getId(), 0), vo.asModel());
+                     AbstractPublisherModel<?,?> publisherModel = modelMapper.map(vo, AbstractPublisherModel.class, user);
+                     PublisherEventTypeModel model = new PublisherEventTypeModel(new PublisherEventType(vo.getId(), 0), publisherModel);
                      types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                  }
                  found = true;
@@ -500,7 +502,8 @@ public class EventTypesRestController {
                  
                  for(EventTypeVO type : pub.getEventTypes()) {
                      PublisherEventType eventType = (PublisherEventType)type.getEventType();
-                     PublisherEventTypeModel model = new PublisherEventTypeModel(eventType, pub.asModel());
+                     AbstractPublisherModel<?,?> publisherModel = modelMapper.map(pub, AbstractPublisherModel.class, user);
+                     PublisherEventTypeModel model = new PublisherEventTypeModel(eventType, publisherModel);
                      types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, type.getDescription(), type.getAlarmLevel(), false, true, true));
                  }
                  
