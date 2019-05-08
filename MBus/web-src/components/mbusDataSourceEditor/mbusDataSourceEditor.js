@@ -42,6 +42,7 @@ class mbusDataSourceEditorController {
         this.wsConnection = this.maMbusDataSource.subscribe((event, item) => {
             if (item.status === 'RUNNING') {
                 this.searching = true;
+                this.searchProgress = item.progress;
                 this.maDialogHelper.toastOptions(
                     {textTr: ['dsEdit.mbus.searching']}
                 );
@@ -49,6 +50,7 @@ class mbusDataSourceEditorController {
                 this.devices = item.result.devices;
             } else if (item.status === 'SUCCESS' && item.result) {
                 this.searching = false;
+                this.searchProgress = item.progress;
                 this.maDialogHelper.toastOptions(
                     {textTr: ['dsEdit.mbus.searching']}
                 );
@@ -60,6 +62,7 @@ class mbusDataSourceEditorController {
                 this.devices = item.result.devices;
             } else if (item.status === 'ERROR') {
                 this.searching = false;
+                this.searchProgress = null;
                 this.maDialogHelper.toastOptions(
                     {
                         textTr: ['dsEdit.mbus.searchError', item.error.localizedMessage],
@@ -78,6 +81,7 @@ class mbusDataSourceEditorController {
 
     search() {
         this.devices = null;
+        this.searchProgress = null;
 
         let data = {
             dataSourceXid: this.dataSource.xid,
@@ -106,6 +110,7 @@ class mbusDataSourceEditorController {
                         this.cancel(scan.id);
                     });
                     this.searching = true;
+                    this.startNewSearch = true;
                     this.searchTool.scan(data).catch(error => {
                         this.searching = false;
                         this.searchToolValidationMessages = error.data.result.messages;
@@ -131,7 +136,11 @@ class mbusDataSourceEditorController {
 
     cancel(id) {
         this.searchTool.cancel(id).then(response => {
-            this.searching = false;
+            if(this.startNewSearch) {
+                this.startNewSearch = false;
+            } else {
+                this.searching = false;
+            }
             this.maDialogHelper.toastOptions(
                 {textTr: ['dsEdit.mbus.seachStopped']}
             );
