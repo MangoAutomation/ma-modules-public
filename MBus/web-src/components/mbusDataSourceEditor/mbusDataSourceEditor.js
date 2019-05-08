@@ -81,6 +81,22 @@ class mbusDataSourceEditorController {
         });
     }
 
+    $onChanges(changes) {
+        if (changes.dataSource) {
+            this.getScans().then(scans => {
+                scans = scans.filter(scan => scan.status === 'RUNNING');
+                if (scans && scans.length > 0) {
+                    this.searchProgress = scans[0].progress;
+                    this.searching = true;
+                } else {
+                    this.searchProgress = null;
+                    this.searching = false;
+                    this.devices = null;
+                }
+            });
+        }
+    }
+
     getScans() {
         return this.maMbusDataSource.getScans(response => {
             return response;
