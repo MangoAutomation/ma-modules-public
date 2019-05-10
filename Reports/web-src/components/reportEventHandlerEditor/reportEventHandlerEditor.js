@@ -26,16 +26,16 @@ class ReportEventHandlerEditorController {
             return;
         }
         
-        if (this.eventHandler.activeReportId >= 0) {
-            this.maReport.getById(this.eventHandler.activeReportId).then(report => {
+        if (this.eventHandler.activeReportXid) {
+            this.maReport.get(this.eventHandler.activeReportXid).then(report => {
                 this.activeReport = report;
             });
         } else {
             this.activeReport = null;
         }
         
-        if (this.eventHandler.inactiveReportId >= 0) {
-            this.maReport.getById(this.eventHandler.inactiveReportId).then(report => {
+        if (this.eventHandler.inactiveReportXid) {
+            this.maReport.get(this.eventHandler.inactiveReportXid).then(report => {
                 this.inactiveReport = report;
             });
         } else {
@@ -44,8 +44,8 @@ class ReportEventHandlerEditorController {
     }
     
     updateIds() {
-        this.eventHandler.activeReportId = this.activeReport ? this.activeReport.id : -1;
-        this.eventHandler.inactiveReportId = this.inactiveReport ? this.inactiveReport.id : -1;
+        this.eventHandler.activeReportXid = this.activeReport ? this.activeReport.xid : -1;
+        this.eventHandler.inactiveReportXid = this.inactiveReport ? this.inactiveReport.xid : -1;
     }
 }
 
