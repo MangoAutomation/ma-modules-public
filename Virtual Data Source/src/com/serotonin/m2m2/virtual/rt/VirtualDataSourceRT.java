@@ -41,7 +41,7 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
     public void doPoll(long time) {
         if (delay > 0) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(delay);
             } catch (InterruptedException e) {
             }
         }
