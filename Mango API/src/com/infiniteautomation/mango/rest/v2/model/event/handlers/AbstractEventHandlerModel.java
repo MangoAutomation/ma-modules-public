@@ -12,15 +12,12 @@ import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * @author Terry Packer
  *
  */
-@ApiModel(subTypes= {EmailEventHandlerModel.class, SetPointEventHandlerModel.class, ProcessEventHandlerModel.class}, discriminator="handlerType")
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractEventHandlerModel.HANDLER_TYPE)
-public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO<T>> extends AbstractVoModel<T>{
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractEventHandlerModel.HANDLER_TYPE)
+public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO<T>> extends AbstractVoModel<T> {
 
     public static final String HANDLER_TYPE = "handlerType";
     
@@ -28,6 +25,12 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     private List<AbstractEventTypeModel<?,?, ?>> eventTypes;
     
     public AbstractEventHandlerModel() { }
+    
+    /**
+     * The type info for the model
+     * @return
+     */
+    public abstract String getHandlerType();
     
     /**
      * @return the disabled

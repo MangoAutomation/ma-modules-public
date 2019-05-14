@@ -16,8 +16,8 @@ import io.swagger.annotations.ApiModel;
  * @author Terry Packer
  *
  */
-@ApiModel(value="REPORT", parent=AbstractEventHandlerModel.class)
-@JsonTypeName("REPORT")
+@ApiModel(value=ReportEventHandlerDefinition.TYPE_NAME, parent=AbstractEventHandlerModel.class)
+@JsonTypeName(ReportEventHandlerDefinition.TYPE_NAME)
 public class ReportEventHandlerModel extends AbstractEventHandlerModel<ReportEventHandlerVO> {
 
     private String activeReportXid;
@@ -29,6 +29,11 @@ public class ReportEventHandlerModel extends AbstractEventHandlerModel<ReportEve
     
     public ReportEventHandlerModel(ReportEventHandlerVO vo) {
         fromVO(vo);
+    }
+    
+    @Override
+    public String getHandlerType() {
+        return ReportEventHandlerDefinition.TYPE_NAME;
     }
     
     /**
