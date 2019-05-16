@@ -175,7 +175,7 @@ public class DataImportController extends FileUploadController {
 	            
 	        	if(rt == null){
 	        		//Insert Via DAO
-	        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
+	        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null, null);
 	        	}else{
 	        		//Insert Via RT
 	        		rt.savePointValueDirectToCache(pvt, null, true, true);
