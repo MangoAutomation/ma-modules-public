@@ -24,7 +24,7 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
             menuHidden: true,
             params: {
                 helpPage: 'ui.help.reportSettings'
-            },
+            }
         },
         {
             url: '/report-settings',
@@ -36,7 +36,7 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
                 }
             },
             menuTr: 'dox.reportSettings'
-        },
+        }
     ]);
 
         SystemSettingsProvider.addAuditAlarmLevelSettings([{

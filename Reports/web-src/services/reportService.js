@@ -11,7 +11,7 @@ function reportServiceFactory(RestResource) {
     const reportXidPrefix = 'REPORT_';
 
     const defaultProperties = {
-        name: '',
+        name: ''
     };
     
     class Report extends RestResource {
