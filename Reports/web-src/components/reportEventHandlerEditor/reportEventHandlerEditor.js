@@ -20,7 +20,7 @@ class ReportEventHandlerEditorController {
     }
     
     getReports() {
-        if (!this.eventHandler) {
+        if (!this.eventHandler || this.eventHandler.handlerType !== 'REPORT') {
             this.activeReport = null;
             this.inactiveReport = null;
             return;
