@@ -7,18 +7,18 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.module.definitions.event.detectors.HighLimitRateOfChangeDetectorDefinition;
 import com.serotonin.m2m2.vo.event.detector.HighLimitRateOfChangeDetectorVO;
+import com.serotonin.m2m2.vo.event.detector.HighLimitRateOfChangeDetectorVO.ComparisonMode;
 
 /**
  * @author Terry Packer
  *
  */
 public class HighLimitRateOfChangeEventDetectorModel extends TimeoutDetectorModel<HighLimitRateOfChangeDetectorVO> {
-
-    private double change;
-    private double resetChange;
-    private boolean useResetChange;
-    private boolean notHigher;
-    private TimePeriod rocDuration;
+    
+    private double rateOfChangeThreshold;
+    private Double resetThreshold;
+    private TimePeriod rateOfChangeDuration;
+    private ComparisonMode comparisonMode;
     
     public HighLimitRateOfChangeEventDetectorModel(HighLimitRateOfChangeDetectorVO vo) {
         fromVO(vo);
@@ -29,66 +29,54 @@ public class HighLimitRateOfChangeEventDetectorModel extends TimeoutDetectorMode
      @Override
     public void fromVO(HighLimitRateOfChangeDetectorVO vo) {
         super.fromVO(vo);
-        this.change = vo.getChange();
-        this.resetChange = vo.getResetChange();
-        this.useResetChange = vo.isUseResetChange();
-        this.notHigher = vo.isNotHigher();
-        this.rocDuration = new TimePeriod(vo.getRocDuration(), TimePeriodType.convertTo(vo.getRocDurationType()));
+        this.rateOfChangeThreshold = vo.getRateOfChangeThreshold();
+        this.resetThreshold = vo.getResetThreshold();
+        this.comparisonMode = vo.getComparisonMode();
+        this.rateOfChangeDuration = new TimePeriod(vo.getRateOfChangeDurationPeriods(), TimePeriodType.convertTo(vo.getRateOfChangeDurationType()));
     }
     @Override
     public HighLimitRateOfChangeDetectorVO toVO() {
         HighLimitRateOfChangeDetectorVO vo = super.toVO();
-        vo.setChange(change);
-        vo.setResetChange(resetChange);
-        vo.setUseResetChange(useResetChange);
-        vo.setNotHigher(notHigher);
-        if(rocDuration != null) {
-            vo.setRocDuration(rocDuration.getPeriods());
-            vo.setRocDurationType(TimePeriodType.convertFrom(rocDuration.getType()));
+        vo.setRateOfChangeThreshold(rateOfChangeThreshold);
+        vo.setResetThreshold(resetThreshold);
+        vo.setComparisonMode(comparisonMode);
+        if(rateOfChangeDuration != null) {
+            vo.setRateOfChangeDurationPeriods(rateOfChangeDuration.getPeriods());
+            vo.setRateOfChangeDurationType(TimePeriodType.convertFrom(rateOfChangeDuration.getType()));
         }
-        
         return vo;
     }
-     
     
-    public double getChange() {
-        return change;
+    public double getRateOfChangeThreshold() {
+        return rateOfChangeThreshold;
     }
 
-    public void setChange(double change) {
-        this.change = change;
+    public void setRateOfChangeThreshold(double rateOfChangeThreshold) {
+        this.rateOfChangeThreshold = rateOfChangeThreshold;
     }
 
-    public double getResetChange() {
-        return resetChange;
+    public Double getResetThreshold() {
+        return resetThreshold;
     }
 
-    public void setResetChange(double resetChange) {
-        this.resetChange = resetChange;
+    public void setResetThreshold(Double resetThreshold) {
+        this.resetThreshold = resetThreshold;
     }
 
-    public boolean isUseResetChange() {
-        return useResetChange;
+    public TimePeriod getRateOfChangeDuration() {
+        return rateOfChangeDuration;
     }
 
-    public void setUseResetChange(boolean useResetChange) {
-        this.useResetChange = useResetChange;
+    public void setRateOfChangeDuration(TimePeriod rateOfChangeDuration) {
+        this.rateOfChangeDuration = rateOfChangeDuration;
     }
 
-    public boolean isNotHigher() {
-        return notHigher;
+    public ComparisonMode getComparisonMode() {
+        return comparisonMode;
     }
 
-    public void setNotHigher(boolean notHigher) {
-        this.notHigher = notHigher;
-    }
-
-    public TimePeriod getRocDuration() {
-        return rocDuration;
-    }
-
-    public void setRocDuration(TimePeriod rocDuration) {
-        this.rocDuration = rocDuration;
+    public void setComparisonMode(ComparisonMode comparisonMode) {
+        this.comparisonMode = comparisonMode;
     }
 
     @Override
