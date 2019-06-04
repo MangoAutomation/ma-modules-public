@@ -23,7 +23,6 @@ import io.swagger.annotations.ApiModelProperty;
  * @author Terry Packer
  *
  */
-//TODO Add subtypes @ApiModel(subTypes= {EmailEventHandlerModel.class, SetPointEventHandlerModel.class, ProcessEventHandlerModel.class}, discriminator="handlerType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractEventDetectorModel.DETECTOR_TYPE)
 public abstract class AbstractEventDetectorModel<T extends AbstractEventDetectorVO<T>> extends AbstractVoModel<T> {
     public static final String DETECTOR_TYPE = "detectorType";
