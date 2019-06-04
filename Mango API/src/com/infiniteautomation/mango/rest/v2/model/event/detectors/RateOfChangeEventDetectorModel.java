@@ -17,7 +17,7 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
     
     private double rateOfChangeThreshold;
     private Double resetThreshold;
-    private TimePeriod rateOfChangeDuration;
+    private TimePeriod rateOfChangePeriod;
     private ComparisonMode comparisonMode;
     private boolean useAbsoluteValue;
     
@@ -33,7 +33,7 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
         this.rateOfChangeThreshold = vo.getRateOfChangeThreshold();
         this.resetThreshold = vo.getResetThreshold();
         this.comparisonMode = vo.getComparisonMode();
-        this.rateOfChangeDuration = new TimePeriod(vo.getRateOfChangeDurationPeriods(), TimePeriodType.convertTo(vo.getRateOfChangeDurationType()));
+        this.rateOfChangePeriod = new TimePeriod(vo.getRateOfChangePeriods(), TimePeriodType.convertTo(vo.getRateOfChangePeriodType()));
         this.useAbsoluteValue = vo.isUseAbsoluteValue();
      }
     @Override
@@ -42,9 +42,9 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
         vo.setRateOfChangeThreshold(rateOfChangeThreshold);
         vo.setResetThreshold(resetThreshold);
         vo.setComparisonMode(comparisonMode);
-        if(rateOfChangeDuration != null) {
-            vo.setRateOfChangeDurationPeriods(rateOfChangeDuration.getPeriods());
-            vo.setRateOfChangeDurationType(TimePeriodType.convertFrom(rateOfChangeDuration.getType()));
+        if(rateOfChangePeriod != null) {
+            vo.setRateOfChangePeriods(rateOfChangePeriod.getPeriods());
+            vo.setRateOfChangePeriodType(TimePeriodType.convertFrom(rateOfChangePeriod.getType()));
         }
         vo.setUseAbsoluteValue(useAbsoluteValue);
         return vo;
@@ -66,12 +66,12 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
         this.resetThreshold = resetThreshold;
     }
 
-    public TimePeriod getRateOfChangeDuration() {
-        return rateOfChangeDuration;
+    public TimePeriod getRateOfChangePeriod() {
+        return rateOfChangePeriod;
     }
 
-    public void setRateOfChangeDuration(TimePeriod rateOfChangeDuration) {
-        this.rateOfChangeDuration = rateOfChangeDuration;
+    public void setRateOfChangePeriod(TimePeriod rateOfChangePeriod) {
+        this.rateOfChangePeriod = rateOfChangePeriod;
     }
 
     public ComparisonMode getComparisonMode() {
