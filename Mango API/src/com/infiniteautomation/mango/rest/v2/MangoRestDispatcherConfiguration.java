@@ -26,6 +26,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
@@ -60,7 +61,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     final ObjectMapper mapper;
     final PartialUpdateArgumentResolver resolver;
-    
+
     @Autowired
     public MangoRestDispatcherConfiguration(
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
@@ -68,12 +69,14 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             PartialUpdateArgumentResolver resolver) {
         this.mapper = mapper;
         this.resolver = resolver;
-        
-        mapper.registerModule(new MangoRestV2JacksonModule());
+
+        mapper
+        .registerModule(new MangoRestV2JacksonModule())
+        .registerModule(new Jdk8Module());
     }
 
-    
-    
+
+
     /**
      * Create a Path helper that will not URL Decode
      * the context path and request URI but will
@@ -123,7 +126,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
                 .setDateFormat(GenericCSVMessageConverter.EXCEL_DATE_FORMAT)
                 .registerModule(new CsvJacksonModule());
     }
-    
+
     /**
      * Configure the Message Converters for the API
      */
@@ -146,12 +149,12 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
         converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
-        
+
         //Now is a good time to register our Sero Json Converter
         Common.JSON_CONTEXT.addConverter(new AbstractRestModelConverter(), AbstractRestModel.class);
 
     }
-    
+
     /**
      * To inject a singleton into the JSON Import rest controller
      * @return
@@ -160,8 +163,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
         return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
     }
-    
-    
+
+
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(resolver);
