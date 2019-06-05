@@ -147,9 +147,9 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
         String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
-        InternetAddress fromAddress = new InternetAddress(addr, pretty);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream ps = new PrintStream(baos, true, "UTF-8")) {
+        try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
             emailSender.setDebug(ps);
             try{
                 emailSender.send(fromAddress, email, content.getSubject(), content);
