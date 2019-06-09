@@ -8,6 +8,7 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.definitions.event.detectors.RateOfChangeDetectorDefinition;
 import com.serotonin.m2m2.vo.event.detector.RateOfChangeDetectorVO;
+import com.serotonin.m2m2.vo.event.detector.RateOfChangeDetectorVO.CalculationMode;
 import com.serotonin.m2m2.vo.event.detector.RateOfChangeDetectorVO.ComparisonMode;
 
 /**
@@ -15,11 +16,6 @@ import com.serotonin.m2m2.vo.event.detector.RateOfChangeDetectorVO.ComparisonMod
  *
  */
 public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfChangeDetectorVO> {
-
-    public enum CalculationMode {
-        INSTANTANEOUS,
-        AVERAGE
-    }
 
     private double rateOfChangeThreshold;
     private boolean useResetThreshold;
@@ -39,22 +35,11 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
     public void fromVO(RateOfChangeDetectorVO vo) {
         super.fromVO(vo);
         this.rateOfChangeThreshold = vo.getRateOfChangeThreshold();
-
-        Double resetThreshold = vo.getResetThreshold();
-        this.useResetThreshold  = resetThreshold != null;
-        this.resetThreshold = this.useResetThreshold ? resetThreshold : 0;
-
+        this.useResetThreshold = vo.isUseResetThreshold();
+        this.resetThreshold = vo.getResetThreshold();
         this.comparisonMode = vo.getComparisonMode();
-
-        this.calculationMode = CalculationMode.AVERAGE;
-        if (vo.getRateOfChangePeriods() > 0) {
-            this.calculationMode = CalculationMode.AVERAGE;
-            this.rateOfChangePeriod = new TimePeriod(vo.getRateOfChangePeriods(), TimePeriodType.convertTo(vo.getRateOfChangePeriodType()));
-        } else {
-            this.calculationMode = CalculationMode.INSTANTANEOUS;
-            this.rateOfChangePeriod = new TimePeriod(0, TimePeriodType.SECONDS);
-        }
-
+        this.calculationMode = vo.getCalculationMode();
+        this.rateOfChangePeriod = new TimePeriod(vo.getRateOfChangePeriods(), TimePeriodType.convertTo(vo.getRateOfChangePeriodType()));
         this.useAbsoluteValue = vo.isUseAbsoluteValue();
     }
 
@@ -62,13 +47,12 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
     public RateOfChangeDetectorVO toVO() {
         RateOfChangeDetectorVO vo = super.toVO();
         vo.setRateOfChangeThreshold(rateOfChangeThreshold);
-        if (this.useResetThreshold) {
-            vo.setResetThreshold(resetThreshold);
-        } else {
-            vo.setResetThreshold(null);
-        }
+        vo.setUseResetThreshold(useResetThreshold);
+        vo.setResetThreshold(resetThreshold);
         vo.setComparisonMode(comparisonMode);
-        if (this.calculationMode == CalculationMode.AVERAGE) {
+        vo.setCalculationMode(calculationMode);
+        
+        if (this.calculationMode == CalculationMode.AVERAGE && rateOfChangePeriod != null) {
             vo.setRateOfChangePeriods(rateOfChangePeriod.getPeriods());
             vo.setRateOfChangePeriodType(TimePeriodType.convertFrom(rateOfChangePeriod.getType()));
         } else {
