@@ -18,6 +18,7 @@ import com.serotonin.m2m2.vo.event.detector.RateOfChangeDetectorVO.ComparisonMod
 public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfChangeDetectorVO> {
 
     private double rateOfChangeThreshold;
+    private TimePeriod rateOfChangeThresholdPeriod;
     private boolean useResetThreshold;
     private double resetThreshold;
     private CalculationMode calculationMode;
@@ -35,6 +36,7 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
     public void fromVO(RateOfChangeDetectorVO vo) {
         super.fromVO(vo);
         this.rateOfChangeThreshold = vo.getRateOfChangeThreshold();
+        this.rateOfChangeThresholdPeriod = new TimePeriod(vo.getRateOfChangeThresholdPeriods(), TimePeriodType.convertTo(vo.getRateOfChangeThresholdPeriodType()));
         this.useResetThreshold = vo.isUseResetThreshold();
         this.resetThreshold = vo.getResetThreshold();
         this.comparisonMode = vo.getComparisonMode();
@@ -47,6 +49,10 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
     public RateOfChangeDetectorVO toVO() {
         RateOfChangeDetectorVO vo = super.toVO();
         vo.setRateOfChangeThreshold(rateOfChangeThreshold);
+        if(rateOfChangeThresholdPeriod != null) {
+            vo.setRateOfChangeThresholdPeriods(rateOfChangeThresholdPeriod.getPeriods());
+            vo.setRateOfChangeThresholdPeriodType(TimePeriodType.convertFrom(rateOfChangeThresholdPeriod.getType()));
+        }
         vo.setUseResetThreshold(useResetThreshold);
         vo.setResetThreshold(resetThreshold);
         vo.setComparisonMode(comparisonMode);
@@ -69,6 +75,14 @@ public class RateOfChangeEventDetectorModel extends TimeoutDetectorModel<RateOfC
 
     public void setRateOfChangeThreshold(double rateOfChangeThreshold) {
         this.rateOfChangeThreshold = rateOfChangeThreshold;
+    }
+
+    public TimePeriod getRateOfChangeThresholdPeriod() {
+        return rateOfChangeThresholdPeriod;
+    }
+
+    public void setRateOfChangeThresholdPeriod(TimePeriod rateOfChangeThresholdPeriod) {
+        this.rateOfChangeThresholdPeriod = rateOfChangeThresholdPeriod;
     }
 
     public double getResetThreshold() {
