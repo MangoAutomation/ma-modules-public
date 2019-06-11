@@ -384,6 +384,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
                         activeRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
+                        break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
                             
@@ -408,6 +409,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
                         escalationRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
+                        break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
                             
@@ -430,6 +432,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
                         inactiveRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
+                        break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
                             
