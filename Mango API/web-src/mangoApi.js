@@ -30,10 +30,8 @@ const mangoApiModule = angular.module('maApi', [])
         {
             name: 'ui.help.mangoApiSettings',
             url: '/mango-api-settings/help',
-            resolve: {
-                viewTemplate: function() {
-                    return import(/* webpackMode: "eager" */ './help/helpPage.html');
-                }
+            templatePromise() {
+                return import(/* webpackMode: "eager" */ './help/helpPage.html');
             },
             menuTr: 'rest.settings.title'
         },

@@ -29,11 +29,9 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
         {
             url: '/report-settings',
             name: 'ui.help.reportSettings',
-            resolve: {
-                viewTemplate: function() {
-                    return import(/* webpackMode: "lazy", webpackChunkName: "ui.help" */
-                            './help/reportSettings.html');
-                }
+            templatePromise() {
+                return import(/* webpackMode: "lazy", webpackChunkName: "ui.help" */
+                        './help/reportSettings.html');
             },
             menuTr: 'dox.reportSettings'
         }
