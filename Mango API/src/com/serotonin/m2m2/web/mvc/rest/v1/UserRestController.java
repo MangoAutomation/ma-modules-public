@@ -247,8 +247,8 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     }
 
                     //If we are not Admin we cannot modify our own privs
-                    if(!u.isAdmin()){
-                        if(!StringUtils.equals(u.getPermissions(), newUser.getPermissions())){
+                    if(!u.hasAdminPermission()){
+                        if (!u.getPermissionsSet().equals(newUser.getPermissionsSet())) {
                             model.addValidationMessage(new ProcessMessage("permissions", new TranslatableMessage("users.validate.cannotChangePermissions")));
                             result.addRestMessage(this.getValidationFailedError());
                             return result.createResponseEntity(model);
