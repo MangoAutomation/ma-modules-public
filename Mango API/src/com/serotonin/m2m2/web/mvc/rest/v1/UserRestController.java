@@ -48,12 +48,12 @@ import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.user.UserModel;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -515,7 +515,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         //Can't lock your own password
         if(currentUser.getId() == user.getId())
             throw new PermissionException(new TranslatableMessage("users.validate.cannotLockOwnPassword"), currentUser);
-        
+
         UserDao.getInstance().lockPassword(user);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -637,12 +637,10 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         User user = this.checkUser(request, result);
         if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
-            groups.add(Permissions.USER_DEFAULT);
-            if(user.isAdmin()) {
+            groups.addAll(user.getPermissionsSet());
+            if(user.hasAdminPermission()) {
                 for (User u : UserDao.getInstance().getActiveUsers())
-                    groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
-            }else {
-                groups.addAll(user.getPermissionsSet());
+                    groups.addAll(u.getPermissionsSet());
             }
 
             return result.createResponseEntity(groups);
@@ -673,13 +671,12 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
         if (result.isOk()) {
             Set<String> groups = new TreeSet<>();
             //Ensure always available
-            groups.add(Permissions.USER_DEFAULT);
+            groups.addAll(user.getPermissionsSet());
             if(user.hasAdminPermission()) {
                 for (User u : UserDao.getInstance().getActiveUsers())
-                    groups.addAll(Permissions.explodePermissionGroups(u.getPermissions()));
-            }else {
-                groups.addAll(user.getPermissionsSet());
+                    groups.addAll(u.getPermissionsSet());
             }
+
             if (!StringUtils.isEmpty(exclude)) {
                 for (String part : exclude.split(","))
                     groups.remove(part);

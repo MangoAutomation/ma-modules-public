@@ -22,21 +22,22 @@ import com.serotonin.m2m2.reports.ReportDao;
 import com.serotonin.m2m2.reports.ReportPermissionDefinition;
 import com.serotonin.m2m2.reports.vo.ReportVO;
 import com.serotonin.m2m2.reports.web.ReportJob;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
- * 
+ *
  * TODO Add read and edit permissions to the VO for use in this class
  * TODO Mango 3.6 the name field is 100 chars long in the database, it should be 255 to be compatible with base class validation
- * 
+ *
  * @author Terry Packer
  *
  */
 @Service
 public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
-    
+
     public ReportsService(@Autowired ReportDao dao) {
         super(dao);
     }
@@ -56,7 +57,7 @@ public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
 
         ReportJob.scheduleReportJob(host, port, vo);
     }
-    
+
     @Override
     protected ReportVO insert(ReportVO vo, PermissionHolder user, boolean full)
             throws PermissionException, ValidationException {
@@ -64,7 +65,7 @@ public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
         maybeSchedule(saved);
         return saved;
     }
-    
+
     @Override
     protected ReportVO update(ReportVO existing, ReportVO vo, PermissionHolder user, boolean full)
             throws PermissionException, ValidationException {
@@ -82,7 +83,7 @@ public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
         dao.delete(vo.getId());
         return vo;
     }
-    
+
     @Override
     public boolean hasCreatePermission(PermissionHolder user, ReportVO vo) {
         if(user.hasAdminPermission())
@@ -92,7 +93,7 @@ public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
         else
             return false;
     }
-    
+
     protected Set<String> getReportCreatePermissions() {
         String reportCreatePermissions = SystemSettingsDao.instance.getValue(ReportPermissionDefinition.PERMISSION);
         if(reportCreatePermissions == null)
@@ -101,19 +102,19 @@ public class ReportsService extends AbstractVOService<ReportVO, ReportDao> {
             return Permissions.explodePermissionGroups(reportCreatePermissions);
     }
 
-    
+
     @Override
     public boolean hasEditPermission(PermissionHolder user, ReportVO vo) {
-        if(user.getPermissionHolderId() == vo.getId())
+        if (user instanceof User && ((User) user).getId() == vo.getId())
             return true;
         return user.hasAdminPermission();
     }
 
     @Override
     public boolean hasReadPermission(PermissionHolder user, ReportVO vo) {
-        if(user.getPermissionHolderId() == vo.getId())
+        if (user instanceof User && ((User) user).getId() == vo.getId())
             return true;
         return user.hasAdminPermission();
     }
-    
+
 }
