@@ -693,8 +693,10 @@ public class ModulesRestController extends MangoRestController {
             }
         }
 
-        if (restart)
-            ModulesDwr.scheduleRestart();
+        if (restart) {
+            IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
+            lifecycle.scheduleShutdown(null, true, Common.getHttpUser());
+        }
     }
 
     private boolean isModule(File file) throws FileNotFoundException, IOException {

@@ -43,7 +43,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
@@ -57,7 +56,6 @@ import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -67,7 +65,6 @@ import com.serotonin.m2m2.util.HostUtils;
 import com.serotonin.m2m2.util.HostUtils.NICInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
-import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
@@ -167,17 +164,21 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @ApiOperation(value = "Restart Mango",
     notes = "Returns location url in header for status updates while web interface is still active")
     @RequestMapping(method = RequestMethod.PUT, value = "/restart")
-    public ResponseEntity<Void> restart(UriComponentsBuilder builder, HttpServletRequest request) {
-        ProcessResult r = ModulesDwr.scheduleRestart();
-        if (r.getData().get("shutdownUri") != null) {
-            URI location = builder.path("/status/mango").buildAndExpand().toUri();
-            return getResourceCreated(null, location);
-        } else
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    new TranslatableMessage("modules.restartAlreadyScheduled"));
+    public ResponseEntity<Void> restart(
+            @RequestParam(value = "delay", required = false) Long delay,
 
+            @AuthenticationPrincipal User user,
+
+            UriComponentsBuilder builder,
+            HttpServletRequest request) {
+
+        IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
+        lifecycle.scheduleShutdown(delay, true, user);
+
+        URI location = builder.path("/status/mango").buildAndExpand().toUri();
+        return getResourceCreated(null, location);
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Run OS command",
     notes = "Returns the output of the command, admin only")
@@ -186,20 +187,20 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             @RequestBody
             ServerCommandModel command,
             @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder, 
+            UriComponentsBuilder builder,
             HttpServletRequest request) throws IOException {
 
         if (StringUtils.isBlank(command.getCommand()))
             return null;
-        
+
         //Key -> Successful output
         //Value --> error output
         StringStringPair result = ProcessWorkItem.executeProcessCommand(command.getCommand(), command.getTimeout());
         if(result.getValue() != null)
-             throw new ServerErrorException(new TranslatableMessage("common.default", result.getValue()));
+            throw new ServerErrorException(new TranslatableMessage("common.default", result.getValue()));
         else
             return result.getKey();
-            
+
     }
 
     @PreAuthorize("isAdmin()")
@@ -301,7 +302,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
             //Start shutdown timer
             log.fatal("Mango will restart in 15 seconds.");
-            Providers.get(IMangoLifecycle.class).scheduleShutdown(15000, true, user);
+            Providers.get(IMangoLifecycle.class).scheduleShutdown(15000L, true, user);
         }
     }
 
@@ -369,8 +370,8 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         return corsSettings;
     }
-    
-    
+
+
     @ApiOperation(value = "List network interfaces", notes="Requires global data source permission")
     @RequestMapping(method = {RequestMethod.GET}, value = "/network-interfaces")
     @PreAuthorize("hasDataSourcePermission()")
@@ -386,7 +387,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             model.setInterfaceName("");
             models.add(model);
         }
-            
+
         try {
             for (NICInfo ni : HostUtils.getLocalInet4Addresses(includeLoopback)) {
                 NetworkInterfaceModel model = new NetworkInterfaceModel();
@@ -398,7 +399,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         catch (SocketException e) {
             throw new ServerErrorException(new TranslatableMessage("common.default", e.getMessage()), e);
         }
-        
+
         return models;
     }
 
