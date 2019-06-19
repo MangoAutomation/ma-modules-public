@@ -27,7 +27,6 @@ import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.MenuItemDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -70,9 +69,6 @@ public class InternalMenuItem extends MenuItemDefinition {
         return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.instance.getValue(StatusPermissionDef.PERMISSION));
     }
     
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.module.ModuleElementDefinition#postInitialize(boolean, boolean)
-     */
     @Override
     public void postInitialize(boolean install, boolean upgrade) {
         File safeFile = new File(Common.MA_HOME, "SAFE");
@@ -178,7 +174,6 @@ public class InternalMenuItem extends MenuItemDefinition {
 			vo.setUpdatePeriodType(TimePeriods.SECONDS);
 			
 			try {
-                vo.ensureValid();
                 DataSourceDao.getInstance().saveDataSource(vo);
 
                 // Setup the Points
@@ -257,19 +252,10 @@ public class InternalMenuItem extends MenuItemDefinition {
 						break;
 					}
 
-					
-					ProcessResult result = new ProcessResult();
-					dp.validate(result);
-					if(!result.getHasMessages()){
-						if(safe)
-							DataPointDao.getInstance().saveDataPoint(dp);
-						else
-							Common.runtimeManager.saveDataPoint(dp);
-					}else{
-						for(ProcessMessage message : result.getMessages()){
-							LOG.error(message.toString(Common.getTranslations()));
-						}
-					}
+					if(safe)
+						DataPointDao.getInstance().saveDataPoint(dp);
+					else
+						Common.runtimeManager.saveDataPoint(dp);
 				}
 			}
 		}
