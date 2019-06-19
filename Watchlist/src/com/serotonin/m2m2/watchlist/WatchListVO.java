@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,13 +26,11 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.validation.StringValidation;
 
 /**
  * @author Matthew Lohbihler
@@ -204,10 +203,18 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         }
         
         //Using the owner of the report to validate against permissions if there is no current user
-        User currentUser = Common.getUser();
+        User currentUser = Common.getHttpUser();
+        if(currentUser == null)
+            currentUser = Common.getBackgroundContextUser();
         if(currentUser == null)
      	   currentUser = user;
  
+        boolean savedByOwner = false;
+        if(currentUser != null && user != null) {
+            if(currentUser.getId() == user.getId())
+                savedByOwner = true;
+        }
+        
         //Validate Points
         for(DataPointVO vo : pointList)
         	try{
@@ -217,9 +224,25 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         	}
         
         //Validate the permissions
- 		Permissions.validateAddedPermissions(this.readPermission, currentUser, response, "readPermission");
-		Permissions.validateAddedPermissions(this.editPermission, currentUser, response, "editPermission");
-		if(user !=null && currentUser!=null) {
+        Set<String> existingReadPermission;
+        Set<String> existingEditPermission;
+        if(this.id != Common.NEW_ID) {
+            WatchListVO vo = WatchListDao.getInstance().get(id);
+            if(vo != null) {
+                existingReadPermission = Permissions.explodePermissionGroups(vo.getReadPermission());
+                existingEditPermission = Permissions.explodePermissionGroups(vo.getEditPermission());
+            }else {
+                existingReadPermission = null;
+                existingEditPermission = null;
+            }
+        }else {
+            existingReadPermission = null;
+            existingEditPermission = null;
+        }
+        Permissions.validatePermissions(response, "readPermission", currentUser, savedByOwner, existingReadPermission, Permissions.explodePermissionGroups(readPermission));
+        Permissions.validatePermissions(response, "editPermission", currentUser, savedByOwner, existingEditPermission, Permissions.explodePermissionGroups(editPermission));
+
+        if(user !=null && currentUser!=null) {
 		      if(user.getId() != currentUser.getId() && !Permissions.hasPermission(currentUser, editPermission))
 		            response.addContextualMessage("editPermission", "validate.mustHaveEditPermission");
 		}
