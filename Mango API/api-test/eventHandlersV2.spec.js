@@ -33,6 +33,7 @@ describe('Event handlers v2', function() {
                     modelType : 'PL.VIRTUAL',
                     dataType : 'NUMERIC',
                     changeType : 'NO_CHANGE',
+                    settable: true
                 }
             });
         };
