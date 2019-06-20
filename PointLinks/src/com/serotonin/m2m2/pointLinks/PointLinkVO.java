@@ -5,6 +5,8 @@
 package com.serotonin.m2m2.pointLinks;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,15 +20,16 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.i18n.ProcessMessage.Level;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
-import com.serotonin.m2m2.i18n.ProcessMessage.Level;
 import com.serotonin.m2m2.rt.script.ScriptError;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Matthew Lohbihler
@@ -167,7 +170,21 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         User user = Common.getHttpUser();
         if(user == null)
             user = Common.getBackgroundContextUser();
-        this.scriptPermissions.validate(response, user);
+        
+        if(scriptPermissions != null) {
+            Set<String> existingPermissions;
+            boolean owner = false;
+            if(this.id != Common.NEW_ID) {
+                PointLinkVO existing = PointLinkDao.getInstance().get(id);
+                existingPermissions = existing.scriptPermissions != null ? existing.scriptPermissions.getPermissionsSet() : Collections.emptySet();
+                //If it already exists we don't want to check to make sure we have access as we may not already
+                owner = true;
+            }else {
+                existingPermissions = null;
+            }
+            Permissions.validatePermissions(response, "scriptPermissions", user, owner, existingPermissions, scriptPermissions.getPermissionsSet());
+        }
+        
         if (logLevel == null)
             response.addContextualMessage("logLevel", "validate.required");
         if (logSize <= 0)
