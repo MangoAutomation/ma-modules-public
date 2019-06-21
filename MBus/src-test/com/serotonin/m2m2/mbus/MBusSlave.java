@@ -18,6 +18,12 @@ import net.sf.mbus4j.slaves.Slaves;
 
 /**
  * 
+ * This test will not work with version 1.0.0 of mbus4j-slaves which is the only publicly available version.
+ * 
+ * There is a custom version at https://github.com/infiniteautomation/mbus4j which has fixes for the slave to respond properly
+ * but... the code is not mergable into main as all the apis have changed.
+ * 
+ * 
  * Startup an IP Slave to listen on port 8100
  * 
  * For logging tart this Program with vm arg
