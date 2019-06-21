@@ -17,11 +17,11 @@ public abstract class MBusAddressScanRequest extends MBusScanRequest {
     @Override
     public void validate(ProcessResult response) {
         super.validate(response);
-        if(firstAddress < 0)
+        if((firstAddress & 0xFF) < 0)
             response.addContextualMessage("firstAddress", "validate.greaterThanZero");
-        if(lastAddress < 0)
+        if((lastAddress & 0xFF) < 0)
             response.addContextualMessage("firstAddress", "validate.greaterThanZero");
-        if(firstAddress > lastAddress)
+        if((firstAddress & 0xFF) > (lastAddress & 0xFF))
             response.addContextualMessage("lastAddress", "validate.greaterThanOrEqualTo", firstAddress);
     }
 

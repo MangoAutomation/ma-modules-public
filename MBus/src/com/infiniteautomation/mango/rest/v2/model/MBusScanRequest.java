@@ -56,8 +56,14 @@ public abstract class MBusScanRequest implements Validatable {
     
     @Override
     public void validate(ProcessResult response) {
-        if(bitsPerSecond != 2400 || bitsPerSecond != 2400 || bitsPerSecond != 2400)
-            response.addContextualMessage("bitsPerSecond", "validate.required");
+        switch(bitsPerSecond) {
+            case 300:
+            case 2400:
+            case 3600:
+                break;
+            default:
+                response.addContextualMessage("bitsPerSecond", "validate.required");
+        }
     }
     
     public abstract Connection createConnection();

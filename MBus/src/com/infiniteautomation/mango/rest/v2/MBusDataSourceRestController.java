@@ -157,10 +157,12 @@ public class MBusDataSourceRestController {
                 if(requestBody instanceof MBusAddressScanRequest) {
                     MBusAddressScanRequest asr = (MBusAddressScanRequest)requestBody;
                     int position = 0;
-                    int maximum = asr.getLastAddress() - asr.getFirstAddress();
+                    int last = asr.getLastAddress() & 0xFF;
+                    int first = asr.getFirstAddress() & 0xFF;
+                    int maximum = last - first;
                     resource.progressOrSuccess(result, position, maximum);
-                    for (byte address = asr.getFirstAddress(); address <= asr.getLastAddress(); address++) {
-                        Frame requestFrame = master.sendRequestUserData(address);
+                    for (int address = first; address <= last; address++) {
+                        Frame requestFrame = master.sendRequestUserData((byte)address);
                         if(requestFrame instanceof UserDataResponse) {
                             UserDataResponse udResp = (UserDataResponse) requestFrame;
                             GenericDevice d = new GenericDevice(udResp, requestFrame);
