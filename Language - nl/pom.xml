@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.6.0</version>
+        <version>3.6.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>lang-nl</artifactId>
     <name>lang_nl</name>
     <description>Nederlands</description>
-    <version>3.6.0</version>
+    <version>3.6.1-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
