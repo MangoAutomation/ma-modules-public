@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/reports",
-  "version": "3.6.0-SNAPSHOT",
+  "version": "3.6.0",
   "description": "Page for creating and editing point reports",
   "main": "web/angular/reports.js",
   "dependencies": {},
