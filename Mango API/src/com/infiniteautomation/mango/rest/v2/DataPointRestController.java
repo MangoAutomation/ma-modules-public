@@ -343,7 +343,7 @@ public class DataPointRestController {
         return map.apply(dataPoint, user);
     }
 
-    @ApiOperation(value = "Bulk get/create/update/delete data points", 
+    @ApiOperation(value = "Bulk get/create/update/delete data points",
             notes = "User must have read/edit permission for the data point",
             consumes=MediaTypes.CSV_VALUE)
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
@@ -393,6 +393,8 @@ public class DataPointRestController {
 
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
+        } else if (requests.isEmpty()) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.cantBeEmpty", "requests"));
         }
 
         String resourceId = requestBody.getId();
@@ -405,7 +407,7 @@ public class DataPointRestController {
                     DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
                     int i = 0;
 
-                    resource.progress(bulkResponse, i++, requests.size());
+                    resource.progressOrSuccess(bulkResponse, i++, requests.size());
 
                     for (DataPointIndividualRequest request : requests) {
                         UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
@@ -577,7 +579,7 @@ public class DataPointRestController {
             notes = "User must have read permission",
             response=RuntimeStatusModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/export/{xids}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, Object> exportDataSource(            
+    public Map<String, Object> exportDataSource(
             @ApiParam(value="Data point xids to export.")
             @PathVariable String[] xids,
             @AuthenticationPrincipal User user) {
@@ -596,13 +598,13 @@ public class DataPointRestController {
         export.put("dataPoints", points);
         return export;
     }
-    
+
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         return doQuery(rql, user, null);
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
-        
+
         final Function<DataPointVO, Object> transformPoint = item -> {
             DataPointDao.getInstance().loadPartialRelationalData(item);
             DataPointModel pointModel = map.apply(item, user);
@@ -614,7 +616,7 @@ public class DataPointRestController {
 
             return pointModel;
         };
-        
+
         if (user.hasAdminPermission()) {
             return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), rql, transformPoint);
         } else {
