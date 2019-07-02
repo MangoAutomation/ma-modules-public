@@ -112,7 +112,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
         return map.apply(service.getFull(id, user), user);
     }
 
-    @ApiOperation(value = "Save data source")
+    @ApiOperation(value = "Create data source")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractDataSourceModel<?>> save(
             @RequestBody(required=true) AbstractDataSourceModel<T> model,
