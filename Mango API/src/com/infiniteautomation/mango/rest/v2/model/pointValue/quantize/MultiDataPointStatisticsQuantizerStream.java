@@ -32,10 +32,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         this.periodStats = new LinkedHashMap<>();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
-     */
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());        
@@ -45,10 +41,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         quantizer.firstValue(value, index, bookend);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#row(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException {
         updateQuantizers(value);
@@ -57,10 +49,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
@@ -71,9 +59,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
-     */
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
         createQuantizerMap();
@@ -96,13 +81,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         count++;
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.ChildStatisticsGeneratorCallback#quantizedStatistics(com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator)
-     */
     @Override
     public void quantizedStatistics(DataPointStatisticsGenerator generator) throws IOException {
         //Collect the stats for this period
-        if(info.isSingleArray()) {
+        if(info.isSingleArray() && voMap.size() > 1) {
             //Do we have any entries for this period
             List<DataPointValueTime> entries = this.periodStats.get(generator.getGenerator().getPeriodStartTime());
             if(entries == null) {
@@ -116,13 +98,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         }
     }
     
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeQueryStream#finish(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
-     */
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         
-        if(info.isSingleArray()) {
+        if(info.isSingleArray() && voMap.size() > 1) {
             //Fast forward to end to fill any gaps at the end
             for(DataPointStatisticsQuantizer<?> quant : this.quantizerMap.values())
                 if(!quant.isDone())
