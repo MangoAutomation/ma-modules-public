@@ -141,7 +141,6 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
             User user = this.getUser(session);
             JsonNode tree = this.jacksonMapper.readTree(message.getPayload());
             
-            //TODO How does this work for QUERY or SUBSCRIPTION?
             if (!WebSocketMessageType.REQUEST.messageTypeMatches(tree) || tree.get("requestType") == null) {
                 return;
             }
