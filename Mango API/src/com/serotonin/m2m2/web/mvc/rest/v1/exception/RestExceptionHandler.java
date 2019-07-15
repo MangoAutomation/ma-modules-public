@@ -74,13 +74,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
     //Anything that extends our Base Exception
     @ExceptionHandler({
         AbstractRestV2Exception.class,
-        })
+    })
     public ResponseEntity<Object> handleMangoError(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         //Since all Exceptions handled by this method extend AbstractRestV2Exception we don't need to check type
         AbstractRestV2Exception e = (AbstractRestV2Exception)ex;
         return handleExceptionInternal(ex, ex, new HttpHeaders(), e.getStatus(), req);
     }
-    
+
     @ExceptionHandler({
         BaseRestException.class,
         NoSupportingModelException.class,
@@ -92,7 +92,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
         HttpHeaders headers = new HttpHeaders();
         return handleExceptionInternal(e, error, headers, HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
-    
+
     //TODO Handle Permission Exception Here
 
     private final String ACCESS_DENIED = "/exception/accessDenied.jsp";
@@ -242,8 +242,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
 
             //TODO Mango 3.6 Remove?
             headers.set("Messages", "error");
-            headers.set("Errors", trimErrors(ex.getMessage()));
-            
+            if (ex.getMessage() != null) {
+                headers.set("Errors", trimErrors(ex.getMessage()));
+            }
+
             return new ResponseEntity<Object>(body, headers, status);
         }
     }
@@ -260,8 +262,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
         if (sesh != null)
             sesh.setAttribute(Common.SESSION_USER_EXCEPTION, ex);
     }
-    
-    
+
+
     /**
      * Util to remove CR/LF and ensure no longer that 1000 chars
      */
