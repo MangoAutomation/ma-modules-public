@@ -7,8 +7,9 @@ package com.serotonin.m2m2.web.mvc.rest.v1;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -155,9 +156,11 @@ public class SystemSettingsRestController extends MangoRestController {
     }
 
     private Map<String, Object> convertValues(Map<String, JsonNode> input) {
-        return input.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> {
-            return convertValue(entry.getValue());
-        }));
+        Map<String, Object> result = new HashMap<>();
+        for (Entry<String, JsonNode> entry : input.entrySet()) {
+            result.put(entry.getKey(), convertValue(entry.getValue()));
+        }
+        return result;
     }
 
     private Object convertValue(JsonNode value) {

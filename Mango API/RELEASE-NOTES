@@ -1,5 +1,6 @@
 *Version 3.6.1*
 * Improve performance by reducing garbage generation for point value rollup requests on the v2 endpoints
+* Fix NPE when setting multiple system settings
 
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
