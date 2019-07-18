@@ -21,7 +21,6 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
 
     protected final ChildStatisticsGeneratorCallback callback;
     protected AbstractPointValueTimeQuantizer<T> quantizer;
-    protected final DataPointStatisticsGenerator generator;
     protected final DataPointVO vo;
     protected boolean open;
     protected boolean done;
@@ -29,7 +28,6 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     public DataPointStatisticsQuantizer(DataPointVO vo, ChildStatisticsGeneratorCallback callback) {
         this.vo = vo;
         this.callback = callback;
-        this.generator = new DataPointStatisticsGenerator(vo);
         this.open = false;
         this.done = false;
     }
@@ -41,18 +39,29 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
         }
         this.quantizer.fastForward(time);
     }
-
+    /*
+     * (non-Javadoc)
+     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
+     */
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.firstValue(value, index, bookend);
         open = true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#row(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
+     */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException {
         quantizer.row(value, index);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
+     */
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.lastValue(value, index, bookend);
@@ -60,10 +69,12 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
         this.done = true;
     }
     
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.view.quantize3.StatisticsGeneratorQuantizerCallback#quantizedStatistics(com.serotonin.m2m2.view.stats.StatisticsGenerator)
+     */
     @Override
     public void quantizedStatistics(StatisticsGenerator statisticsGenerator) throws IOException {
-        this.generator.setGenerator(statisticsGenerator);
-        this.callback.quantizedStatistics(this.generator);
+        this.callback.quantizedStatistics(new DataPointStatisticsGenerator(vo, statisticsGenerator));
     }
     
     public boolean isOpen() {

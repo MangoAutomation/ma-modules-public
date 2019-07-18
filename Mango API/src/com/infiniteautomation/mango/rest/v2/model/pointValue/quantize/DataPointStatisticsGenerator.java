@@ -14,10 +14,12 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class DataPointStatisticsGenerator {
 
     private final DataPointVO vo;
-    private StatisticsGenerator generator;
+    private final StatisticsGenerator generator;
 
-    public DataPointStatisticsGenerator(DataPointVO vo) {
+    public DataPointStatisticsGenerator(DataPointVO vo, StatisticsGenerator generator) {
+        super();
         this.vo = vo;
+        this.generator = generator;
     }
 
     public DataPointVO getVo() {
@@ -28,7 +30,4 @@ public class DataPointStatisticsGenerator {
         return generator;
     }
     
-    public void setGenerator(StatisticsGenerator generator) {
-        this.generator = generator;
-    }
 }
