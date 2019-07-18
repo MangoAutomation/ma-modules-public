@@ -43,9 +43,6 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
         this.statsMap = new HashMap<>(voMap.size());
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream#processRow(com.serotonin.m2m2.rt.dataImage.IdPointValueTime, int, boolean, boolean, boolean)
-     */
     @Override
     protected void processRow(IdPointValueTime value, int index, boolean firstBookend,
             boolean lastBookend, boolean cached) throws IOException {
@@ -108,17 +105,12 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
         }
     }
     
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream#start(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
-     */
     @Override
     public void start(PointValueTimeWriter writer) throws IOException {
         this.writer = writer;
         this.writer.writeStartObject();
     }
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream#finish(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
-     */
+
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         writer.writeEndObject();

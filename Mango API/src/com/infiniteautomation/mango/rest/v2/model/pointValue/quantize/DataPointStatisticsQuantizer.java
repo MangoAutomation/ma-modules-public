@@ -39,39 +39,25 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
         }
         this.quantizer.fastForward(time);
     }
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
-     */
+
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.firstValue(value, index, bookend);
         open = true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#row(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException {
         quantizer.row(value, index);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.lastValue(value, index, bookend);
         quantizer.done();
         this.done = true;
     }
-    
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.view.quantize3.StatisticsGeneratorQuantizerCallback#quantizedStatistics(com.serotonin.m2m2.view.stats.StatisticsGenerator)
-     */
+
     @Override
     public void quantizedStatistics(StatisticsGenerator statisticsGenerator) throws IOException {
         this.callback.quantizedStatistics(new DataPointStatisticsGenerator(vo, statisticsGenerator));
