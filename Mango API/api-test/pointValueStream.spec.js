@@ -20,75 +20,106 @@
  */
 
 const config = require('@infinite-automation/mango-client/test/setup');
+const uuidV4 = require('uuid/v4');
 
-describe.skip('Point value streaming tests', function() {
-
+describe.skip('Point value streaming load tests', function() {
     before('Login', config.login);
 
-    before('Create data source and point', function() {
-        global.ds = new DataSource({
+    const generateSamples = (xid, startTime, numSamples, pollPeriod) => {
+        const pointValues = [];
+        let time = startTime;
+        let startValue = 0;
+        for (let i = 0; i < numSamples; i++) {
+            pointValues.push({
+                xid: xid,
+                value: startValue + (Math.random() * 20 - 10),
+                timestamp: time,
+                dataType: 'NUMERIC'
+            });
+            time += pollPeriod;
+        }
+        return pointValues;
+    };
+    
+    const newDataPoint = (xid, dsXid) => {
+        return new DataPoint({
+            xid: xid,
+            enabled: true,
+            name: 'Point values test',
+            deviceName: 'Point values test',
+            dataSourceXid : dsXid,
+            pointLocator : {
+                startValue : '0',
+                modelType : 'PL.VIRTUAL',
+                dataType : 'NUMERIC',
+                changeType : 'NO_CHANGE',
+                settable: true
+            },
+            textRenderer: {
+                type: 'textRendererAnalog',
+                format: '0.00',
+                suffix: '',
+                useUnitAsSuffix: false,
+                unit: '',
+                renderedUnit: ''
+            }
+        });
+    };
+    
+    const fileSizeMB = 5000; //rough estimate
+    const numSamples = 20 * 1024 * fileSizeMB;
+    const pollPeriod = 1; //in ms
+    const endTime = new Date().getTime();
+    const isoTo = new Date(endTime).toISOString();
+    const startTime = endTime - (numSamples * pollPeriod);
+    const isoFrom = new Date(startTime).toISOString();
+    
+    const testPointXid1 = uuidV4();
+    const testPointXid2 = uuidV4();
+    
+    const pointValues1 = generateSamples(testPointXid1, endTime - 1000*60*60*24, 24*60, 60000);
+    const pointValues2 = generateSamples(testPointXid2, endTime - 1000*60*60*24, 24*60, 60000);
+    
+    const insertionDelay = 1000;
+    
+    before('Create a virtual data source, points, and insert values', function() {
+        this.timeout(insertionDelay * 2);
+
+        this.ds = new DataSource({
+            xid: uuidV4(),
             name: 'Mango client test',
-            enabled: false,
+            enabled: true,
             modelType: 'VIRTUAL',
-            pollPeriod: { periods: 5, type: 'SECONDS' },
+            pollPeriod: { periods: 5, type: 'HOURS' },
             purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
             alarmLevels: { POLL_ABORTED: 'URGENT' },
             editPermission: null
         });
 
-        return global.ds.save().then((savedDs) => {
-            assert.strictEqual(savedDs, global.ds);
-            assert.equal(savedDs.name, 'Mango client test');
+        return this.ds.save().then((savedDs) => {
+            assert.strictEqual(savedDs.name, 'Mango client test');
             assert.isNumber(savedDs.id);
-            global.ds.xid = savedDs.xid;
-            global.ds.id = savedDs.id;
-
-            global.dp = new DataPoint({
-                  name : 'Virtual Test Point 1',
-                  enabled : false,
-                  dataSourceXid : global.ds.xid,
-                  modelType : 'DATA_POINT',
-                  pointLocator : {
-                    startValue : 0,
-                    modelType : 'PL.VIRTUAL',
-                    dataType : 'NUMERIC',
-                    settable : true,
-                    changeType : 'NO_CHANGE'
-                  }
-            });
-
-            return global.dp.save().then((savedDp) => {
-                assert.equal(savedDp.name, 'Virtual Test Point 1');
-                assert.equal(savedDp.enabled, false);
-                assert.isNumber(savedDp.id);
-                global.dp.id = savedDp.id;
-                global.dp.xid = savedDp.xid;
-            }, (error) => {
-                if(error.status === 422){
-                    var msg = 'Validation Failed: \n';
-                    for(var m in error.data.result.messages)
-                        msg += error.data.result.messages[m].property + '-->' + error.data.result.messages[m].message;
-                    assert.fail(msg);
-                }else{
-                    assert.fail(error);
-                }
-            });
-        });
+        }).then(() => {
+            this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid);
+            this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid);
+            return Promise.all([this.testPoint1.save(), this.testPoint2.save()]);
+        }).then(() => {
+            const valuesToInsert = pointValues1.concat(pointValues2);
+            return client.pointValues.insert(valuesToInsert);
+        }).then(() => config.delay(insertionDelay));
     });
+
+    after('Deletes the new virtual data source and its points', function() {
+        return this.ds.delete();
+    });
+    
     //TODO ALL Statistics make a large memory difference
     
-    it('Can make a MILLISECOND rollup request for a large file', function() {
+    it.skip('Can make a MILLISECOND rollup request for a large JSON file', function() {
         this.timeout(50000000);
-         
-        const fileSizeMB = 500;
-        const numSamples = 20 * 1024 * fileSizeMB;
-        const pollPeriod = 1; //in ms
-        const endTime = new Date().getTime();
-        const startTime = endTime - (numSamples * pollPeriod);
-        const isoFrom = new Date(startTime).toISOString();
         
         return client.restRequest({
-            path: `/rest/v2/point-values/time-period/${global.dp.xid}/FIRST?from=${isoFrom}&timePeriodType=MILLISECONDS&timePeriods=1`,
+            path: `/rest/v2/point-values/time-period/${testPointXid1}/FIRST?from=${isoFrom}&to=${isoTo}&timePeriodType=MILLISECONDS&timePeriods=1`,
             method: 'GET',
             writeToFile: 'pointValues.json'
         }).then(response => {
@@ -97,7 +128,61 @@ describe.skip('Point value streaming tests', function() {
         
     });
     
-    after('Deletes the new virtual data source and its points', () => {
-        return DataSource.delete(global.ds.xid);
+    it.skip('Can make a MILLISECOND rollup request for 2 points for a large JSON file', function() {
+        this.timeout(50000000);
+
+        return client.restRequest({
+            path: `/rest/v2/point-values/single-array/time-period/FIRST`,
+            method: 'POST',
+            data: {
+                dateTimeFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                fields: ["TIMESTAMP", "VALUE"],
+                from: `${isoFrom}`,
+                to: `${isoTo}`,
+                timePeriod: {
+                    periods: 1,
+                    type: 'MILLISECONDS'
+                },
+                xids: [`${testPointXid1}`,`${testPointXid2}`],
+                
+            },
+            writeToFile: 'pointValues.json'
+        }).then(response => {
+            console.log(response);
+        });
+        
+    });
+    
+    it('Can make a MILLISECOND rollup request for 2 points for a CSV large file', function() {
+        this.timeout(50000000);
+         
+        return client.restRequest({
+            path: `/rest/v2/point-values/single-array/time-period/AVERAGE`,
+            method: 'POST',
+            headers: {
+                'Accept': 'text/csv',
+                'Accept-Encoding': 'gzip, deflate'
+            },
+            data: {
+                dateTimeFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                fields: ["TIMESTAMP", "VALUE"],
+                from: `${isoFrom}`,
+                to: `${isoTo}`,
+                timePeriod: {
+                    periods: 1,
+                    type: 'MILLISECONDS'
+                },
+                xids: [`${testPointXid1}`,`${testPointXid2}`],
+                
+            },
+            writeToFile: 'pointValues.csv'
+        }).then(response => {
+            console.log(response);
+            console.log('Query from: ' + isoFrom);
+            console.log('Query to: ' + isoTo);
+            console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
+                    new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+        });
+        
     });
 });

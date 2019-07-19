@@ -33,20 +33,11 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
         this.rollup = rollup;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.goebl.simplify.Point#getX()
-     */
     @Override
     public double getX() {
         return generator.getGenerator().getPeriodStartTime();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.goebl.simplify.Point#isProcessable()
-     */
     @Override
     public boolean isProcessable() {
         StatisticsGenerator statisticsGenerator = generator.getGenerator();
@@ -191,17 +182,11 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.goebl.simplify.SimplifiableValue#getTime()
-     */
     @Override
     public long getTime() {
         return generator.getGenerator().getPeriodStartTime();
     }
     
-    /* (non-Javadoc)
-     * @see com.goebl.simplify.SimplifiableValue#writeValue(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter, boolean, boolean)
-     */
     @Override
     public void writeEntry(PointValueTimeWriter writer, boolean useXid, boolean allowTimestamp)
             throws IOException {        
@@ -212,9 +197,6 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
         } 
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
     @Override
     public int compareTo(Point that) {
         if (getX() < that.getX())
@@ -224,11 +206,13 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
         return 0;
     }
 
-    /* (non-Javadoc)
-     * @see com.goebl.simplify.SimplifiableValue#getVo()
-     */
     @Override
     public DataPointVO getVo() {
         return generator.getVo();
+    }
+    
+    @Override
+    public String toString() {
+        return "XID: " + generator.getVo().getXid();
     }
 }

@@ -54,8 +54,6 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         quantizer.lastValue(value, index, bookend);
-        quantizer.done();
-        this.done = true;
     }
 
     @Override
