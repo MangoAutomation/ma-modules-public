@@ -525,7 +525,7 @@ describe('Point values v2', function() {
         });
     });
     
-    it.skip('Returns the same point values for two points as single array using a FIRST rollup with same time period as poll period', function() {
+    it('Returns the same point values for two points as single array using a FIRST rollup with same time period as poll period', function() {
         return client.pointValues.forTimePeriodAsSingleArray({
             xids: [testPointXid1, testPointXid2],
             from: startTime,
@@ -536,7 +536,6 @@ describe('Point values v2', function() {
                 type: 'SECONDS'
             }
         }).then(result => {
-            console.log(result);
             assert.isArray(result);
             assert.strictEqual(result.length, pointValues1.length);
             

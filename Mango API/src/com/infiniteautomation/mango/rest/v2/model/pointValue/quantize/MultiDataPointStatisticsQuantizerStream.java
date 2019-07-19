@@ -65,40 +65,21 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             //Possibly fast forward as samples come in time order and we will not receive another value at this timestamp
             //this will keep our periodStats to a minimum
             if(lastTime != null && value.getTime() != lastTime) {
-
-                //Fast forward to just before this time
-                BucketCalculator bc; 
-                if(this.info.getTimePeriod() == null) {
-                    bc = new BucketsBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), ZonedDateTime.ofInstant(Instant.ofEpochMilli(value.getTime()), info.getZoneId()), 1);
-                }else{
-                   bc = new TimePeriodBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), ZonedDateTime.ofInstant(Instant.ofEpochMilli(value.getTime()), info.getZoneId()), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
-                }
-                Instant currentPeriodTo = bc.getStartTime().toInstant();
-                Instant end = bc.getEndTime().toInstant();
-                while(currentPeriodTo.isBefore(end)) {
-                    long nextTo = currentPeriodTo.toEpochMilli();
-                    for(DataPointStatisticsQuantizer<?> q : quantizerMap.values()) {
-                        q.fastForward(nextTo);
-                    }
-                    currentPeriodTo = bc.getNextPeriodTo().toInstant();
-                }
                 //Finish by forwarding to the point value time
                 Iterator<Integer> it = this.currentValueTimeMap.keySet().iterator();
                 while(it.hasNext()) {
                     Integer id = it.next();
                     DataPointStatisticsQuantizer<?> q = this.quantizerMap.get(id);
                     IdPointValueTimeRow row = this.currentValueTimeMap.get(id);
-                    if(id == value.getId()) {
-                        q.row(value, index);
+                    it.remove();
+                    if(row == null) {
+                        //No values in this sample period
+                        q.fastForward(lastTime);
                     }else {
-                        if(row == null) {
-                            //No values in this sample period
-                            q.fastForward(value.getTime());
-                        }else {
-                            q.row(row.value, row.index);
-                        }
+                        q.row(row.value, row.index);
                     }
-                } 
+                }
+                currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
             }else {
                 //cache the value so as not to trigger quantization until all values are ready
                 currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
@@ -114,6 +95,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+        IdPointValueTimeRow row = this.currentValueTimeMap.remove(value.getId());
+        if(row != null) {
+            quantizer.row(row.value, row.index);
+        }
         quantizer.lastValue(value, index, bookend);
     }
 
