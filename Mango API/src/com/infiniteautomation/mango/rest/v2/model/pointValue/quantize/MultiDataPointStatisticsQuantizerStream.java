@@ -115,10 +115,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.lastValue(value, index, bookend);
-        if(!info.isSingleArray()) {
-            writer.writeEndArray();
-            count = 0; //Reset for next array
-        }
     }
 
     @Override
@@ -168,7 +164,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         
-        if(info.isSingleArray()  && voMap.size() > 1) {
+        if(info.isSingleArray() && voMap.size() > 1) {
             
             //Fast forward to end to fill any gaps at the end and stream out data in time
             BucketCalculator bc; 
@@ -207,7 +203,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                     quant.done();
             }
             
-            for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values())
+            for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values()) {
                 if(!q.isDone()) {
                     if(contentType == StreamContentType.JSON)
                         this.writer.writeStartArray(q.vo.getXid());
@@ -215,6 +211,9 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                     if(contentType == StreamContentType.JSON)
                         this.writer.writeEndArray();
                 }
+            }
+            if(!info.isSingleArray())
+                writer.writeEndArray();
         }
         super.finish(writer);
     }

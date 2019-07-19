@@ -503,6 +503,51 @@ describe('Point values v2', function() {
             });
         });
     });
+    
+    it('Returns the same point values for as single array using a FIRST rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xid: testPointXid1,
+            from: startTime,
+            to: endTime,
+            rollup: 'FIRST',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it.skip('Returns the same point values for two points as single array using a FIRST rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime,
+            to: endTime,
+            rollup: 'FIRST',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            console.log(result);
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+            
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+                assert.strictEqual(pv[testPointXid2].value, pointValues2[i].value);
+                assert.strictEqual(pv.timestamp, pointValues2[i].timestamp);
+            });
+        });
+    });
 
     it('Returns the correct number of point values when downsampling using a rollup', function() {
         return client.pointValues.forTimePeriod({

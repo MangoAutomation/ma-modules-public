@@ -1156,6 +1156,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
      * @return
      */
     protected Map<Integer, DataPointVO> buildMap(User user, String[] xids, RollupEnum rollup){
+        if(xids == null)
+            throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "xids"));
         //Build the map, check permissions
         Map<Integer, DataPointVO> voMap = new HashMap<Integer, DataPointVO>();
         for(String xid : xids) {

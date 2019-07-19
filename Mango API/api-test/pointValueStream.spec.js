@@ -22,7 +22,7 @@
 const config = require('@infinite-automation/mango-client/test/setup');
 const uuidV4 = require('uuid/v4');
 
-describe.skip('Point value streaming load tests', function() {
+describe('Point value streaming load tests', function() {
     before('Login', config.login);
 
     const generateSamples = (xid, startTime, numSamples, pollPeriod) => {
@@ -66,7 +66,7 @@ describe.skip('Point value streaming load tests', function() {
         });
     };
     
-    const fileSizeMB = 5000; //rough estimate
+    const fileSizeMB = 5; //rough estimate
     const numSamples = 20 * 1024 * fileSizeMB;
     const pollPeriod = 1; //in ms
     const endTime = new Date().getTime();
@@ -115,20 +115,7 @@ describe.skip('Point value streaming load tests', function() {
     
     //TODO ALL Statistics make a large memory difference
     
-    it.skip('Can make a MILLISECOND rollup request for a large JSON file', function() {
-        this.timeout(50000000);
-        
-        return client.restRequest({
-            path: `/rest/v2/point-values/time-period/${testPointXid1}/FIRST?from=${isoFrom}&to=${isoTo}&timePeriodType=MILLISECONDS&timePeriods=1`,
-            method: 'GET',
-            writeToFile: 'pointValues.json'
-        }).then(response => {
-            console.log(response);
-        });
-        
-    });
-    
-    it.skip('Can make a MILLISECOND rollup request for 2 points for a large JSON file', function() {
+    it('Can make a MILLISECOND rollup request for 2 points for a large JSON file', function() {
         this.timeout(50000000);
 
         return client.restRequest({
@@ -149,6 +136,10 @@ describe.skip('Point value streaming load tests', function() {
             writeToFile: 'pointValues.json'
         }).then(response => {
             console.log(response);
+            console.log('Query from: ' + isoFrom);
+            console.log('Query to: ' + isoTo);
+            console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
+                    new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
         });
         
     });
