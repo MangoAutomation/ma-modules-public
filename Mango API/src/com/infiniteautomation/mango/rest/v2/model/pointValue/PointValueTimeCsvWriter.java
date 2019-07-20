@@ -40,7 +40,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
             //We don't want to embed this as an object like the Json Writer does
             value.writeEntry(this, true, true);
         }else {
-            value.writeEntry(this, false, true);
+            value.writeEntry(this, pointCount == 1 ? false : true, true);
         }
         this.jgen.writeEndObject();
     }
@@ -124,10 +124,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
             }
         }
     }   
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter#startWriteArray()
-     */
+
     @Override
     public void writeStartArray(String name) throws IOException {
         //Don't write an array field as this is not supported in CSV
