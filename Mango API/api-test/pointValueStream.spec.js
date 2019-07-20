@@ -22,7 +22,7 @@
 const config = require('@infinite-automation/mango-client/test/setup');
 const uuidV4 = require('uuid/v4');
 
-describe('Point value streaming load tests', function() {
+describe.skip('Point value streaming load tests', function() {
     before('Login', config.login);
 
     const generateSamples = (xid, startTime, numSamples, pollPeriod) => {
@@ -62,11 +62,13 @@ describe('Point value streaming load tests', function() {
                 useUnitAsSuffix: false,
                 unit: '',
                 renderedUnit: ''
-            }
+            },
+            rollup: 'AVERAGE'
         });
     };
     
-    const fileSizeMB = 5; //rough estimate
+    const logOutput = true;
+    const fileSizeMB = 1; //rough estimate per data point
     const numSamples = 20 * 1024 * fileSizeMB;
     const pollPeriod = 1; //in ms
     const endTime = new Date().getTime();
@@ -135,11 +137,44 @@ describe('Point value streaming load tests', function() {
             },
             writeToFile: 'pointValues.json'
         }).then(response => {
-            console.log(response);
-            console.log('Query from: ' + isoFrom);
-            console.log('Query to: ' + isoTo);
-            console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
-                    new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+            if(logOutput === true) {
+                console.log(response);
+                console.log('Query from: ' + isoFrom);
+                console.log('Query to: ' + isoTo);
+                console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
+                        new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+            }
+        });
+        
+    });
+    
+    it('Can make a MILLISECOND default rollup request for 2 points for a large JSON file', function() {
+        this.timeout(50000000);
+
+        return client.restRequest({
+            path: `/rest/v2/point-values/single-array/time-period/POINT_DEFAULT`,
+            method: 'POST',
+            data: {
+                dateTimeFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                fields: ["TIMESTAMP", "VALUE"],
+                from: `${isoFrom}`,
+                to: `${isoTo}`,
+                timePeriod: {
+                    periods: 1,
+                    type: 'MILLISECONDS'
+                },
+                xids: [`${testPointXid1}`,`${testPointXid2}`],
+                
+            },
+            writeToFile: 'pointValues.json'
+        }).then(response => {
+            if(logOutput === true) {
+                console.log(response);
+                console.log('Query from: ' + isoFrom);
+                console.log('Query to: ' + isoTo);
+                console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
+                        new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+            }
         });
         
     });
@@ -164,15 +199,49 @@ describe('Point value streaming load tests', function() {
                     type: 'MILLISECONDS'
                 },
                 xids: [`${testPointXid1}`,`${testPointXid2}`],
-                
             },
             writeToFile: 'pointValues.csv'
         }).then(response => {
-            console.log(response);
-            console.log('Query from: ' + isoFrom);
-            console.log('Query to: ' + isoTo);
-            console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
-                    new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+            if(logOutput === true) {
+                console.log(response);
+                console.log('Query from: ' + isoFrom);
+                console.log('Query to: ' + isoTo);
+                console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
+                        new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+            }
+        });
+    });
+    
+    it('Can make a MILLISECOND default rollup request for 2 points for a CSV large file', function() {
+        this.timeout(50000000);
+         
+        return client.restRequest({
+            path: `/rest/v2/point-values/single-array/time-period/POINT_DEFAULT`,
+            method: 'POST',
+            headers: {
+                'Accept': 'text/csv',
+                'Accept-Encoding': 'gzip, deflate'
+            },
+            data: {
+                dateTimeFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                fields: ["TIMESTAMP", "VALUE"],
+                from: `${isoFrom}`,
+                to: `${isoTo}`,
+                timePeriod: {
+                    periods: 1,
+                    type: 'MILLISECONDS'
+                },
+                xids: [`${testPointXid1}`,`${testPointXid2}`],
+            },
+            writeToFile: 'pointValues.csv'
+        }).then(response => {
+            if(logOutput === true) {
+                console.log(response);
+                console.log('Query from: ' + isoFrom);
+                console.log('Query to: ' + isoTo);
+                console.log('Series1: ' + new Date(pointValues1[0].timestamp).toISOString() + ' to ' + 
+                        new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
+            }
         });
         
     });

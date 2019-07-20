@@ -22,7 +22,7 @@ const moment = require('moment-timezone');
 describe('Point values v2', function() {
     before('Login', config.login);
 
-    const newDataPoint = (xid, dsXid) => {
+    const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {
         return new DataPoint({
             xid: xid,
             enabled: true,
@@ -43,7 +43,10 @@ describe('Point values v2', function() {
                 useUnitAsSuffix: false,
                 unit: '',
                 renderedUnit: ''
-            }
+            },
+            rollup: rollupType,
+            simplifyType: simplifyType,
+            simplifyTolerance: simplifyValue
         });
     };
 
@@ -83,7 +86,7 @@ describe('Point values v2', function() {
         });
     };
 
-    const insertionDelay = 1000;
+    const insertionDelay = 1000 * 4; //Delay to insert the values
 
     const numSamples = 100;
     const pollPeriod = 1000; //in ms
@@ -91,9 +94,13 @@ describe('Point values v2', function() {
     const startTime = endTime - (numSamples * pollPeriod);
     const testPointXid1 = uuidV4();
     const testPointXid2 = uuidV4();
-
+    const testPointXid3 = uuidV4();
+    const testPointXid4 = uuidV4();
+    
     const pointValues1 = generateSamples(testPointXid1, startTime, numSamples, pollPeriod);
     const pointValues2 = generateSamples(testPointXid2, startTime, numSamples, pollPeriod);
+    const pointValues3 = generateSamples(testPointXid3, startTime, numSamples, pollPeriod);
+    const pointValues4 = generateSamples(testPointXid4, startTime, numSamples, pollPeriod);
 
     before('Create a virtual data source, points, and insert values', function() {
         this.timeout(insertionDelay * 2);
@@ -113,11 +120,13 @@ describe('Point values v2', function() {
             assert.strictEqual(savedDs.name, 'Mango client test');
             assert.isNumber(savedDs.id);
         }).then(() => {
-            this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid);
-            this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid);
-            return Promise.all([this.testPoint1.save(), this.testPoint2.save()]);
+            this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid, 'FIRST', 'NONE', 0);
+            this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid, 'FIRST', 'NONE', 0);
+            this.testPoint3 = newDataPoint(testPointXid3, this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
+            this.testPoint4 = newDataPoint(testPointXid4, this.ds.xid, 'COUNT', 'NONE', 0);
+            return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save()]);
         }).then(() => {
-            const valuesToInsert = pointValues1.concat(pointValues2);
+            const valuesToInsert = pointValues1.concat(pointValues2.concat(pointValues3.concat(pointValues4)));
             return client.pointValues.insert(valuesToInsert);
         }).then(() => config.delay(insertionDelay));
     });
@@ -504,9 +513,31 @@ describe('Point values v2', function() {
         });
     });
     
-    it('Returns the same point values for as single array using a FIRST rollup with same time period as poll period', function() {
+    it('Returns the zeros as single array using a COUNT rollup for minute before start time', function() {
         return client.pointValues.forTimePeriodAsSingleArray({
-            xid: testPointXid1,
+            xids: [testPointXid1],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'COUNT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 60);
+            let prevTime = startTime - 60000;
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, 0);
+                assert.strictEqual(pv[testPointXid1].timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values as single array using a FIRST rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1],
             from: startTime,
             to: endTime,
             rollup: 'FIRST',
@@ -519,8 +550,124 @@ describe('Point values v2', function() {
             assert.strictEqual(result.length, pointValues1.length);
 
             result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, pointValues1[i].value);
-                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv[testPointXid1].timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns nulls as single array using a POINT_DEFAULT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 60);
+
+            let prevTime = startTime - 60000;
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, null);
+                assert.strictEqual(pv[testPointXid1].timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values as single array using a POINT_DEFAULT rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv[testPointXid1].timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values as single array using a NONE rollup', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1],
+            from: startTime,
+            to: endTime,
+            rollup: 'NONE',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv[testPointXid1].timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values as single array using POINT_DEFAULT rollup and Simplify with same time period as poll period', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid3],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+
+            assert.isBelow(result.length, pointValues1.length);
+
+            let prevTime = startTime;
+            result.forEach(pv => {
+                assert.isNumber(pv[testPointXid3].value);
+                assert.isNumber(pv[testPointXid3].timestamp);
+                assert.isAtLeast(pv[testPointXid3].timestamp, prevTime);
+                assert.isBelow(pv[testPointXid3].timestamp, endTime);
+                prevTime = pv[testPointXid3].timestamp;
+            });
+
+        });
+    });
+    
+    it('Returns zeros for two points as single array using a COUNT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'COUNT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 60);
+            
+            let prevTime = startTime - 60000;
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, 0);
+                assert.strictEqual(pv.timestamp, prevTime);
+                assert.strictEqual(pv[testPointXid2].value, 0);
+                prevTime += 1000;
             });
         });
     });
@@ -547,7 +694,503 @@ describe('Point values v2', function() {
             });
         });
     });
+    
+    it('Uses correct rollup for two points as single array using a POINT_DEFAULT for minute before start time', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid4],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 60);
+            
+            let prevTime = startTime - 60000;
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                assert.strictEqual(pv[testPointXid4].value, 0);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns null values for two points as single array using a POINT_DEFAULT for minute before start time', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 60);
+            
+            let prevTime = startTime - 60000;
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                assert.strictEqual(pv[testPointXid2].value, null);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values for two points as single array using a POINT_DEFAULT rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+            
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+                assert.strictEqual(pv[testPointXid2].value, pointValues2[i].value);
+                assert.strictEqual(pv.timestamp, pointValues2[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values for two points as single array using a NONE rollup', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime,
+            to: endTime,
+            rollup: 'NONE',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+            
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+                assert.strictEqual(pv[testPointXid2].value, pointValues2[i].value);
+                assert.strictEqual(pv.timestamp, pointValues2[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values for two points as single array using a POINT_DEFAULT rollup and Simplify', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid3],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, pointValues1.length);
+            
+            let testPoint3Count = 0;
+            result.forEach((pv, i) => {
+                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+                if(typeof pv[testPointXid3] !== 'undefined')
+                    testPoint3Count++;
+            });
+            assert.isBelow(testPoint3Count, result.length);
+        });
+    });
 
+    it('Returns zeros as multiple arrays using a COUNT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'COUNT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, 60);
+
+            let prevTime = startTime - 60000;
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, 0);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values as multiple arrays using a FIRST rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1],
+            from: startTime,
+            to: endTime,
+            rollup: 'FIRST',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns null values as multiple arrays using a POINT_DEFAULT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, 60);
+
+            let prevTime = startTime - 60000;
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values as multiple arrays using a POINT_DEFAULT rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values as multiple arrays using a NONE rollup', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1],
+            from: startTime,
+            to: endTime,
+            rollup: 'NONE',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values as multiple arrays using a POINT_DEFAULT rollup and Simplify', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid3],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point3Result = result[testPointXid3];
+            
+            assert.isArray(point3Result);
+            assert.isBelow(point3Result.length, pointValues3.length);
+                        
+            let prevTime = startTime;
+            point3Result.forEach(pv => {
+                assert.isNumber(pv.value);
+                assert.isNumber(pv.timestamp);
+                assert.isAtLeast(pv.timestamp, prevTime);
+                assert.isBelow(pv.timestamp, endTime);
+                prevTime = pv.timestamp;
+            });
+            
+        });
+    });
+    
+    it('Returns zeros for 2 points as multiple arrays using a COUNT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'COUNT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point2Result = result[testPointXid2];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, 60);
+            assert.isArray(point2Result);
+            assert.strictEqual(point2Result.length, 60);
+
+            let prevTime = startTime - 60000;
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, 0);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+            prevTime = startTime - 60000;
+            point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, 0);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values for 2 points as multiple arrays using a FIRST rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime,
+            to: endTime,
+            rollup: 'FIRST',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point2Result = result[testPointXid2];
+            assert.isArray(point1Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+            assert.isArray(point2Result);
+            assert.strictEqual(point2Result.length, pointValues2.length);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+            point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues2[i].value);
+                assert.strictEqual(pv.timestamp, pointValues2[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns null values for 2 points as multiple arrays using a POINT_DEFAULT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point2Result = result[testPointXid2];
+            assert.isArray(point1Result);
+            assert.isArray(point2Result);
+            assert.strictEqual(point1Result.length, 60);
+            assert.strictEqual(point2Result.length, 60);
+            
+            let prevTime = startTime - 60000;
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+            prevTime = startTime - 60000;
+            point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Uses correct rollup for 2 points as multiple arrays using a POINT_DEFAULT rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid4],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point4Result = result[testPointXid4];
+            assert.isArray(point1Result);
+            assert.isArray(point4Result);
+            assert.strictEqual(point1Result.length, 60);
+            assert.strictEqual(point4Result.length, 60);
+            
+            let prevTime = startTime - 60000;
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+            prevTime = startTime - 60000;
+            point4Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, 0);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
+    
+    it('Returns the same point values for 2 points as multiple arrays using a POINT_DEFAULT rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point2Result = result[testPointXid2];
+            assert.isArray(point1Result);
+            assert.isArray(point2Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+            assert.strictEqual(point2Result.length, pointValues2.length);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+            point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues2[i].value);
+                assert.strictEqual(pv.timestamp, pointValues2[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values for 2 points as multiple arrays using a NONE rollup', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime,
+            to: endTime,
+            rollup: 'NONE',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point2Result = result[testPointXid2];
+            assert.isArray(point1Result);
+            assert.isArray(point2Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+            assert.strictEqual(point2Result.length, pointValues2.length);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+            point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues2[i].value);
+                assert.strictEqual(pv.timestamp, pointValues2[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values for 2 points as multiple arrays using a POINT_DEFAULT rollup and Simplify', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid3],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point1Result = result[testPointXid1];
+            let point3Result = result[testPointXid3];
+            
+            assert.isArray(point1Result);
+            assert.isArray(point3Result);
+            assert.strictEqual(point1Result.length, pointValues1.length);
+            assert.isBelow(point3Result.length, pointValues3.length);
+            
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues1[i].value);
+                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+            
+            let prevTime = startTime;
+            point3Result.forEach(pv => {
+                assert.isNumber(pv.value);
+                assert.isNumber(pv.timestamp);
+                assert.isAtLeast(pv.timestamp, prevTime);
+                assert.isBelow(pv.timestamp, endTime);
+                prevTime = pv.timestamp;
+            });
+            
+        });
+    });
+    
     it('Returns the correct number of point values when downsampling using a rollup', function() {
         return client.pointValues.forTimePeriod({
             xid: testPointXid1,
