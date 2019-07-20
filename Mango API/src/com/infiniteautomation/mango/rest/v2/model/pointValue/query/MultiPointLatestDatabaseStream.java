@@ -59,9 +59,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         this.bookends = new ArrayList<>(voMap.size());
     }
     
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
-     */
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
         
@@ -73,17 +70,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         this.dao.getLatestPointValues(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.db.WideStartQueryCallback#row(java.lang.Object, int)
-     */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException{
         processRow(value, index, false, false, false);
     }
     
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream#finish()
-     */
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         //Write out all our current values and the final bookend

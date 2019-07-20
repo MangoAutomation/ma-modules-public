@@ -27,20 +27,31 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
  *
  * @author Terry Packer
  */
-public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO extends ZonedDateTimeRangeQueryInfo> extends AbstractMultiDataPointStatisticsQuantizerStream<T, INFO>{
+public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO extends ZonedDateTimeRangeQueryInfo> extends MultiDataPointStatisticsQuantizerStream<T, INFO>{
 
-    private Map<Integer, List<DataPointStatisticsGenerator>> valueMap;
+    private final Map<Integer, List<DataPointStatisticsGenerator>> valueMap;
+    //If we are required to use simplify then we must cache all the data
+    private final boolean useSimplify;
     
     public MultiDataPointDefaultRollupStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
         this.valueMap = new HashMap<>(voMap.size());
+        boolean useSimp = false;
+        for(DataPointVO vo : voMap.values()) {
+            if(vo.isSimplifyDataSets()) {
+                useSimp = true;
+                break;
+            }
+        }
+        this.useSimplify = useSimp;
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
-     */
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
+        if(!useSimplify) {
+            super.streamData(writer);
+            return;
+        }
         createQuantizerMap();
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     
@@ -90,15 +101,14 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             }
         }else {
             for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
-                //TODO if(contentType == StreamContentType.JSON) to start end array? 
-                if(voMap.size() > 1)
+                if(!info.isSingleArray())
                     this.writer.writeStartArray(entry.getKey().getXid());
                 for(DataPointValueTime value : entry.getValue()) {
                     writer.writeDataPointValue(value);
                     count++;
                 }
-                if(voMap.size() > 1)
-                    this.writer.writeEndArray();
+                if(!info.isSingleArray())
+                    writer.writeEndArray();
             }
         }
     }
@@ -144,43 +154,44 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
         return processed;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
-     */
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+        if(!useSimplify) {
+            super.firstValue(value, index, bookend);
+            return;
+        }
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());        
         updateQuantizers(value);
         quantizer.firstValue(value, index, bookend);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.PVTQueryCallback#row(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
     @Override
     public void row(IdPointValueTime value, int index) throws IOException {
+        if(!useSimplify) {
+            super.row(value, index);
+            return;
+        }
         updateQuantizers(value);
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.row(value, index);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+        if(!useSimplify) {
+            super.lastValue(value, index, bookend);
+            return;
+        }
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         quantizer.lastValue(value, index, bookend);
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.ChildStatisticsGeneratorCallback#quantizedStatistics(com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator)
-     */
     @Override
     public void quantizedStatistics(DataPointStatisticsGenerator generator) throws IOException {
+        if(!useSimplify) {
+            super.quantizedStatistics(generator);
+            return;
+        }
         //Separate them into a lists per data point
         List<DataPointStatisticsGenerator> stats = this.valueMap.get(generator.getVo().getId());
         if(stats == null) {
@@ -189,14 +200,24 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
         }
         stats.add(generator);
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeQueryStream#finish(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
-     */
+
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
-        super.finish(writer);
-        //TODO Any finishing logic?
+        if(!useSimplify) {
+            super.finish(writer);
+            return;
+        }
+
+        if(info.isSingleArray())
+            writer.writeEndArray();
+        else {
+            if(contentType == StreamContentType.JSON)
+                writer.writeEndObject();
+        }
     }
     
+    @Override
+    protected RollupEnum getRollup(DataPointVO vo) {
+        return RollupEnum.convertTo(vo.getRollup());
+    }
 }

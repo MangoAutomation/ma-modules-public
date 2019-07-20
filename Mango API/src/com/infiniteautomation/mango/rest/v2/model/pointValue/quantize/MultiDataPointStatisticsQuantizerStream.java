@@ -24,6 +24,7 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  *  Container to help map multi point queries produce statistics for each point
@@ -100,6 +101,11 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             quantizer.row(row.value, row.index);
         }
         quantizer.lastValue(value, index, bookend);
+        //This will definitely be the last time we see this point
+        if(!info.isSingleArray()) {
+            quantizer.done();
+            writer.writeEndArray();
+        }
     }
 
     @Override
@@ -134,7 +140,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                 entries = new ArrayList<>();
                 this.periodStats.put(generator.getGenerator().getPeriodStartTime(), entries);
             }
-            entries.add(new DataPointRollupPeriodValue(generator, info.getRollup()));
+            entries.add(new DataPointRollupPeriodValue(generator, getRollup(generator.getVo())));
             if(entries.size() == voMap.size()) {
                 this.periodStats.remove(generator.getGenerator().getPeriodStartTime());
                 writePeriodStats(entries);
@@ -142,7 +148,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             }
         }else {
             //Just write it out
-            writePeriodStats(new DataPointRollupPeriodValue(generator, info.getRollup()));
+            writePeriodStats(new DataPointRollupPeriodValue(generator, getRollup(generator.getVo())));
         }
     }
     
@@ -184,23 +190,28 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             //The last data point may not have been done() as well as any with 0 data
             if(currentDataPointId != -1) {
                 DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
-                if(!quant.isDone())
+                if(!quant.isDone()) {
                     quant.done();
-            }
-            
-            for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values()) {
-                if(!q.isDone()) {
-                    if(contentType == StreamContentType.JSON)
-                        this.writer.writeStartArray(q.vo.getXid());
-                    q.done();
-                    if(contentType == StreamContentType.JSON)
-                        this.writer.writeEndArray();
                 }
             }
-            if(!info.isSingleArray())
-                writer.writeEndArray();
+            
+            //For any with 0 data TODO Check for is open?
+            for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values()) {
+                if(!q.isDone()) {
+                    q.done();
+                }
+            }
         }
         super.finish(writer);
+    }
+    
+    /**
+     * Override as necessary, return rollup for this data point
+     * @param vo
+     * @return
+     */
+    protected RollupEnum getRollup(DataPointVO vo) {
+        return info.getRollup();
     }
     
     /**

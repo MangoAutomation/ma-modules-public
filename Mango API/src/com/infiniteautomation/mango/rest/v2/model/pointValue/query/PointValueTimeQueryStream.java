@@ -32,26 +32,16 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
         this.voMap = voMap;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getQueryInfo()
-     */
     @Override
     public INFO getQueryInfo() {
         return info;
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#getVoMap()
-     */
+
     @Override
     public Map<Integer, DataPointVO> getVoMap() {
         return voMap;
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#start()
-     */
+
     @Override
     public void start(PointValueTimeWriter writer) throws IOException {
         if(info.isSingleArray())
@@ -62,9 +52,6 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
         }
     }
     
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream#finish()
-     */
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         if(info.isSingleArray())

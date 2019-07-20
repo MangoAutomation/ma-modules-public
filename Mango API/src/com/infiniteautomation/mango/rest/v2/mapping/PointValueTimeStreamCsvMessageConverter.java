@@ -96,7 +96,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                     .readValue(inputMessage.getBody());
         }
         catch (IOException ex) {
-            throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex);
+            throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex, inputMessage);
         }
     }
 
@@ -156,8 +156,15 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             field.createColumn(builder, null);
                     }
                 }else {
-                    for(PointValueField field : info.getFields())
-                        field.createColumn(builder, null);
+                    for(PointValueField field : info.getFields()) {
+                        if(field == PointValueField.VALUE && stream.getVoMap().size() > 1) {
+                            for(DataPointVO vo: stream.getVoMap().values()) {
+                                field.createColumn(builder, vo.getXid());
+                            }
+                        }else {
+                            field.createColumn(builder, null);
+                        }
+                    }
                 }
             }else if(stream instanceof MultiDataPointStatisticsQuantizerStream || stream instanceof MultiDataPointDefaultRollupStatisticsQuantizerStream) {
                 if(stream.getQueryInfo().isSingleArray()) {
@@ -212,8 +219,15 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                             field.createColumn(builder, null);
                         }
                     }else {
-                        for(PointValueField field : info.getFields())
-                            field.createColumn(builder, null);
+                        for(PointValueField field : info.getFields()) {
+                            if(field == PointValueField.VALUE && stream.getVoMap().size() > 1) {
+                                for(DataPointVO vo: stream.getVoMap().values()) {
+                                    field.createColumn(builder, vo.getXid());
+                                }
+                            }else {
+                                field.createColumn(builder, null);
+                            }
+                        }
                     }
                 }
             }

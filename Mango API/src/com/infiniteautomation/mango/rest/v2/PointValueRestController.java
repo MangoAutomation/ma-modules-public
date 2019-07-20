@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1158,8 +1159,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     protected Map<Integer, DataPointVO> buildMap(User user, String[] xids, RollupEnum rollup){
         if(xids == null)
             throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "xids"));
-        //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = new HashMap<Integer, DataPointVO>();
+        //Build the map, check permissions, we want this map ordered so our results are in order for csv output
+        Map<Integer, DataPointVO> voMap = new LinkedHashMap<Integer, DataPointVO>();
         for(String xid : xids) {
             DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
             if (vo == null) {

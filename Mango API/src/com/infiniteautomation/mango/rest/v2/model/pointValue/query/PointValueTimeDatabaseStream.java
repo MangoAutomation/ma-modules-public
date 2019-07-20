@@ -29,9 +29,6 @@ public abstract class PointValueTimeDatabaseStream<T, INFO extends LatestQueryIn
         this.dao = dao;
     }
     
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeQueryStream#start(com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeWriter)
-     */
     @Override
     public void start(PointValueTimeWriter writer) throws IOException {
         this.writer = writer;
