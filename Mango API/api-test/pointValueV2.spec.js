@@ -376,6 +376,27 @@ describe('Point values v2', function() {
         });
     });
 
+    it('Simplify of single point adds bookends for periods with no data', function() {
+        return client.pointValues.forTimePeriod({
+            xid: testPointXid1,
+            from: startTime - 60000,
+            to: startTime,
+            simplifyTolerance: 10,
+            bookend: true,
+            fields: ['BOOKEND', 'VALUE', 'TIMESTAMP']
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].bookend, true);
+            assert.strictEqual(result[0].value, null);
+            assert.strictEqual(result[0].timestamp, startTime - 60000);
+            
+            assert.strictEqual(result[1].bookend, true);
+            assert.strictEqual(result[1].value, null);
+            assert.strictEqual(result[1].timestamp, startTime);
+        });
+    });
+    
     it('Simplify works for single point, time period and tolerance', function() {
         return client.pointValues.forTimePeriod({
             xid: testPointXid1,
@@ -814,6 +835,68 @@ describe('Point values v2', function() {
         });
     });
 
+    it('Simplify of multiple points as single array adds bookends for periods with no data', function() {
+        return client.pointValues.forTimePeriodAsSingleArray({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime - 60000,
+            to: startTime,
+            fields: ['XID', 'BOOKEND', 'VALUE', 'TIMESTAMP'],
+            bookend: true
+        }).then(result => {
+            assert.isArray(result);
+            assert.strictEqual(result.length, 2);
+            
+            assert.strictEqual(result[0][testPointXid1].bookend, true);
+            assert.strictEqual(result[0][testPointXid1].value, null);
+            assert.strictEqual(result[0][testPointXid2].bookend, true);
+            assert.strictEqual(result[0][testPointXid2].value, null);
+            assert.strictEqual(result[0].timestamp, startTime - 60000);
+            
+            assert.strictEqual(result[1][testPointXid1].bookend, true);
+            assert.strictEqual(result[1][testPointXid1].value, null);
+            assert.strictEqual(result[1][testPointXid2].bookend, true);
+            assert.strictEqual(result[1][testPointXid2].value, null);
+            assert.strictEqual(result[1].timestamp, startTime);
+
+        });
+    });
+    
+    it('Simplify of multiple points as multiple arrays adds bookends for periods with no data', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid1, testPointXid2],
+            from: startTime - 60000,
+            to: startTime,
+            simplifyTolerance: 10,
+            bookend: true,
+            fields: ['BOOKEND', 'VALUE', 'TIMESTAMP']
+        }).then(result => {
+            assert.isObject(result);
+            
+            const point1Result = result[testPointXid1];
+            const point2Result = result[testPointXid2];
+            assert.isArray(point1Result);
+            assert.isArray(point2Result);
+            
+            assert.strictEqual(point1Result.length, 2);
+            assert.strictEqual(point1Result[0].bookend, true);
+            assert.strictEqual(point1Result[0].value, null);
+            assert.strictEqual(point1Result[0].timestamp, startTime - 60000);
+            
+            assert.strictEqual(point1Result[1].bookend, true);
+            assert.strictEqual(point1Result[1].value, null);
+            assert.strictEqual(point1Result[1].timestamp, startTime);
+            
+            assert.strictEqual(point2Result.length, 2);
+            assert.strictEqual(point2Result[0].bookend, true);
+            assert.strictEqual(point2Result[0].value, null);
+            assert.strictEqual(point2Result[0].timestamp, startTime - 60000);
+            
+            assert.strictEqual(point2Result[1].bookend, true);
+            assert.strictEqual(point2Result[1].value, null);
+            assert.strictEqual(point2Result[1].timestamp, startTime);
+        });
+    });
+    
     it('Returns zeros as multiple arrays using a COUNT rollup for minute before start time', function() {
         return client.pointValues.forTimePeriod({
             xids: [testPointXid1],
@@ -826,7 +909,7 @@ describe('Point values v2', function() {
             }
         }).then(result => {
             assert.isObject(result);
-            let point1Result = result[testPointXid1];
+            const point1Result = result[testPointXid1];
             assert.isArray(point1Result);
             assert.strictEqual(point1Result.length, 60);
 

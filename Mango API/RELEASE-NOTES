@@ -1,3 +1,6 @@
+*Version 3.6.2*
+* Fix bug where bookends were not being applied to Simplified data ranges with no values in them
+
 *Version 3.6.1*
 * Improve performance by reducing garbage generation for point value rollup requests on the v2 endpoints
 * Fix NPE when setting multiple system settings

@@ -38,9 +38,6 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
         this.valuesMap = new HashMap<>();
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream#writeValue(com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend)
-     */
     @Override
     protected void writeValue(DataPointVOPointValueTimeBookend value) throws IOException {
         //Store it for now
@@ -52,10 +49,6 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
         values.add(value);
     }
     
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream#finish(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter)
-     */
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         //Write out the values after simplifying

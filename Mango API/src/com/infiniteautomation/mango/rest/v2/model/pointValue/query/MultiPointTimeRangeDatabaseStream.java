@@ -32,9 +32,6 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         super(info, voMap, dao);
     }
     
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream#streamData(com.fasterxml.jackson.core.JsonGenerator)
-     */
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
     
@@ -50,18 +47,12 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         else
             this.dao.getPointValuesBetween(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#firstValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int, boolean)
-     */
+
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         processRow(value, index, bookend, false, false);
     }
-    
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.db.query.BookendQueryCallback#lastValue(com.serotonin.m2m2.rt.dataImage.PointValueTime, int)
-     */
+
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         processRow(value, index, false, bookend, false);
@@ -105,9 +96,6 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream#processCacheOnly()
-     */
     @Override
     protected void processCacheOnly() throws IOException{
       //Performance enhancement to return data within cache only

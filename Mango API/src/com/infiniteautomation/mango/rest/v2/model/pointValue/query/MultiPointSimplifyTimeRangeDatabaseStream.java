@@ -64,7 +64,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
         //Write out the values after simplifying
-        Iterator<Integer> it = valuesMap.keySet().iterator();
+        Iterator<Integer> it = voMap.keySet().iterator();
         if(info.isSingleArray() && voMap.size() > 1) {
             List<DataPointVOPointValueTimeBookend> sorted = new ArrayList<>();
             while(it.hasNext()) {
@@ -72,7 +72,10 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                 BookendPair pair = bookendMap.get(id);
                 if(pair != null && pair.startBookend != null)
                     sorted.add(pair.startBookend);
-                sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(id)));
+                List<DataPointVOPointValueTimeBookend> values = valuesMap.get(id);
+                if(values != null) {
+                    sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, values));
+                }
                 if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
                     sorted.add(pair.endBookend);
             }
@@ -90,11 +93,17 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
         }else {
             while(it.hasNext()) {
                 Integer id = it.next();
-                List<DataPointVOPointValueTimeBookend> values = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(id));
+                List<DataPointVOPointValueTimeBookend> simplified;
+                List<DataPointVOPointValueTimeBookend> values = valuesMap.get(id);
+                if(values == null) {
+                    simplified = Collections.emptyList();
+                }else {
+                    simplified = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, values);
+                }
                 BookendPair pair = bookendMap.get(id);
                 if(pair != null && pair.startBookend != null)
                     super.writeValue(pair.startBookend);
-                for(DataPointVOPointValueTimeBookend value : values)
+                for(DataPointVOPointValueTimeBookend value : simplified)
                     super.writeValue(value);
                 if(pair != null && pair.endBookend != null) //Can be null bookend if limit is hit
                     super.writeValue(pair.endBookend);
