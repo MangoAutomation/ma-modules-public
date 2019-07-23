@@ -73,35 +73,22 @@ public class DataPointVOPointValueTimeBookend implements DataPointValueTime {
         return cached;
     }
     
-    /* (non-Javadoc)
-     * @see com.goebl.simplify.Point#getX()
-     */
     @Override
     public double getX() {
         return pvt.getTime();
     }
 
-    /* (non-Javadoc)
-     * @see com.goebl.simplify.Point#getY()
-     */
     @Override
     public double getY() {
         return pvt.getDoubleValue();
     }
     
-    /*
-     * (non-Javadoc)
-     * @see com.goebl.simplify.Point#isProcessable()
-     */
     @Override
     public boolean isProcessable() {
         //TODO Could check to see if we are image etc.
         return pvt.getValue() != null;
     }
     
-    /* (non-Javadoc)
-     * @see com.goebl.simplify.SimplifiableValue#writeValue(com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter, boolean, boolean)
-     */
     @Override
     public void writeEntry(PointValueTimeWriter writer, boolean useXid, boolean allowTimestamp)
             throws IOException {
@@ -112,9 +99,6 @@ public class DataPointVOPointValueTimeBookend implements DataPointValueTime {
         } 
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
     @Override
     public int compareTo(Point that) {
         if (getX() < that.getX())
@@ -124,9 +108,6 @@ public class DataPointVOPointValueTimeBookend implements DataPointValueTime {
         return 0;
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return vo.getXid() + " - " + pvt.toString();
