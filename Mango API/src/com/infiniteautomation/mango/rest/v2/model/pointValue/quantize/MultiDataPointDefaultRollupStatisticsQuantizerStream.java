@@ -7,9 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.goebl.simplify.SimplifyUtility;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
@@ -69,9 +70,11 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
         if(singleArray) {
             //Combine into single array
             List<DataPointValueTime> values = new ArrayList<>();
-            for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
-                values.addAll(entry.getValue());
+            Iterator<DataPointVO> it = processed.keySet().iterator();
+            while(it.hasNext()) {
+                values.addAll(processed.get(it.next()));
             }
+            
             //Sort by time
             Collections.sort(values);
             //Limit entire list
@@ -100,10 +103,13 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                     writer.writeDataPointValues(currentValues, currentValues.get(0).getTime());
             }
         }else {
-            for(Entry<DataPointVO, List<DataPointValueTime>> entry : processed.entrySet()) {
+            Iterator<DataPointVO> it = processed.keySet().iterator();
+            while(it.hasNext()) {
+                DataPointVO key = it.next();
+                List<DataPointValueTime> values = processed.get(key);
                 if(!info.isSingleArray())
-                    this.writer.writeStartArray(entry.getKey().getXid());
-                for(DataPointValueTime value : entry.getValue()) {
+                    this.writer.writeStartArray(key.getXid());
+                for(DataPointValueTime value : values) {
                     writer.writeDataPointValue(value);
                     count++;
                 }
@@ -119,7 +125,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
      * @return
      */
     private Map<DataPointVO, List<DataPointValueTime>> process(Integer limit) {
-        Map<DataPointVO, List<DataPointValueTime>> processed = new HashMap<>();
+        Map<DataPointVO, List<DataPointValueTime>> processed = new LinkedHashMap<>();
         for(DataPointVO vo : voMap.values()) {
             List<DataPointStatisticsGenerator> generators = valueMap.get(vo.getId());
             List<DataPointValueTime> values = new ArrayList<>();
