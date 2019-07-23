@@ -36,7 +36,7 @@
     	<dependency>
     		<groupId>com.infiniteautomation.mango</groupId>
             <artifactId>mango-api</artifactId>
-            <version>3.6.1-SNAPSHOT</version>
+            <version>3.6.2-SNAPSHOT</version>
             <scope>provided</scope>
     	</dependency>  
     </dependencies>
