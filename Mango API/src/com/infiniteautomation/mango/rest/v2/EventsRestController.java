@@ -4,7 +4,10 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,14 +17,20 @@ import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.EventInstanceDao;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.Api;
 import net.jazdw.rql.parser.ASTNode;
@@ -37,13 +46,15 @@ public class EventsRestController {
 
     private final RestModelMapper modelMapper;
     private final EventInstanceDao eventDao;
+    private final DataPointDao dataPointDao;
     //TODO Build the mappings for model fields to table columns
     //TODO Build the mappings for model fields to SQL statements
     
     @Autowired
-    public EventsRestController(RestModelMapper modelMapper, EventInstanceDao eventDao) {
+    public EventsRestController(RestModelMapper modelMapper, EventInstanceDao eventDao, DataPointDao dataPointDao) {
         this.modelMapper = modelMapper;
         this.eventDao = eventDao;
+        this.dataPointDao = dataPointDao;
     }
     
     public StreamedArrayWithTotal queryRQL(ASTNode rql, User user) {
@@ -62,6 +73,7 @@ public class EventsRestController {
     }
     
     /**
+     * TODO Mango 3.7 Move to Service in Core
      * Get the active summary of events for a user
      * @param user
      * @return
@@ -187,5 +199,35 @@ public class EventsRestController {
                 doNotLogTotal, model));
 
         return list;
+    }
+
+    /**
+     * TODO Mango 3.7 Move to Service in Core
+     * @param dataPointXids
+     * @param user
+     * @return
+     */
+    public Collection<DataPointEventSummaryModel> getDataPointEventSummaries(String[] dataPointXids, User user) {
+        Map<Integer, DataPointEventSummaryModel> map = new HashMap<>();
+        //TODO Do we really want/need these checks?
+        for(String xid : dataPointXids) {
+            DataPointVO point = dataPointDao.getByXid(xid);
+            if(point == null) {
+                throw new NotFoundException();
+            }
+            Permissions.ensureDataPointReadPermission(user, point);
+            map.put(point.getId(), new DataPointEventSummaryModel(xid));
+        }
+        
+        List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
+        for(EventInstance event : events) {
+            if(EventType.EventTypeNames.DATA_POINT.equals(event.getEventType().getEventType())) {
+                DataPointEventSummaryModel model = map.get(event.getEventType().getReferenceId1());
+                if(model != null) {
+                    model.update(event);
+                }
+            }
+        }
+        return map.values();
     }
 }

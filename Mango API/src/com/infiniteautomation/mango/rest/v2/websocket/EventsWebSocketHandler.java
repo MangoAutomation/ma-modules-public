@@ -3,13 +3,15 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -19,11 +21,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.EventsRestController;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
-import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -37,34 +38,34 @@ import com.serotonin.m2m2.vo.Validatable;
  * @author Terry Packer
  *
  */
-@Component
-@WebSocketMapping("/websocket/events")
-public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
+public class EventsWebSocketHandler extends MangoWebSocketHandler implements UserEventListener {
 
+    private final static Log LOG = LogFactory.getLog(EventsWebSocketHandler.class);
+    
     public static final String SUBSCRIPTION_ATTRIBUTE = "EventNotificationSubscription";
     public static final String REQUEST_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
-    public static final String REQUEST_TYPE_QUERY = "QUERY";
+    public static final String REQUEST_TYPE_DATA_POINT_SUMMARY = "DATA_POINT_SUMMARY";
     
     @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="requestType")
     @JsonSubTypes({
         @JsonSubTypes.Type(name = REQUEST_TYPE_SUBSCRIPTION, value = EventsSubscriptionRequest.class),
-        @JsonSubTypes.Type(name = REQUEST_TYPE_QUERY, value = EventsRqlQueryRequest.class)
+        @JsonSubTypes.Type(name = REQUEST_TYPE_DATA_POINT_SUMMARY, value = EventsDataPointSummaryRequest.class)
     })
     public static abstract class EventsWebsocketRequest extends WebSocketRequest implements Validatable {
     }
-    public static class EventsRqlQueryRequest extends EventsWebsocketRequest {
-        private String rqlQuery;
-        
+    public static class EventsDataPointSummaryRequest extends EventsWebsocketRequest {
+        private String[] dataPointXids;
+        public void setDataPointXids(String[] dataPointXids) {
+            this.dataPointXids = dataPointXids;
+        }
+        public String[] getDataPointXids() {
+            return dataPointXids;
+        }
         @Override
         public void validate(ProcessResult response) {
-            // TODO Auto-generated method stub
-        }
-        
-        public String getRqlQuery() {
-            return rqlQuery;
-        }
-        public void setRqlQuery(String rqlQuery) {
-            this.rqlQuery = rqlQuery;
+            if(dataPointXids == null || dataPointXids.length == 0) {
+                response.addContextualMessage("dataPointXids", "validate.invalidValue");
+            }
         }
     }
     
@@ -102,6 +103,12 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
     private final RestModelMapper modelMapper;
     private final EventsRestController controller;
     
+    private volatile Set<AlarmLevels> levels;
+    private volatile EnumSet<EventActionEnum> actions;
+    private WebSocketSession session;
+    private User user;
+    private final Object lock = new Object();
+    
     @Autowired
     public EventsWebSocketHandler(RestModelMapper modelMapper, EventsRestController controller) {
         super(true);
@@ -112,26 +119,44 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // Check for permissions
-        User user = this.getUser(session);
-        if (user == null) {
+        this.user = this.getUser(session);
+        if (this.user == null) {
             return;
         } 
+        this.session = session;
+        session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
         super.afterConnectionEstablished(session);
     }
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        EventsWebSocketListener listener = (EventsWebSocketListener)session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
-        if(listener != null)
-            listener.terminate();
+        synchronized(this.lock) {
+            try {
+                Boolean subscribed = (Boolean)session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
+                if(subscribed) {
+                    terminate();
+                    session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
+                }
+            }catch(Exception e) {
+                LOG.error("Failed to terminate user event lister", e);
+            }
+        }
         super.afterConnectionClosed(session, status);
     }
     
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        EventsWebSocketListener listener = (EventsWebSocketListener)session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
-        if(listener != null)
-            listener.terminate();
+        synchronized(this.lock) {
+            try {
+                Boolean subscribed = (Boolean)session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
+                if(subscribed) {
+                    terminate();
+                    session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
+                }
+            }catch(Exception e) {
+                LOG.error("Failed to terminate user event lister", e);
+            }
+        }
         super.handleTransportError(session, exception);
     }
     
@@ -150,8 +175,6 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
             
             if(request instanceof EventsSubscriptionRequest) {
                 EventsSubscriptionRequest subscription = (EventsSubscriptionRequest)request;
-                //Configure listener
-                EventsWebSocketListener listener = (EventsWebSocketListener)session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
     
                 Set<AlarmLevels> levels = subscription.getLevels();
                 if (levels == null) {
@@ -163,17 +186,24 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
                 }
                 
                 boolean emptySubscriptions = levels.isEmpty() || actions.isEmpty();
-                if(listener == null) {
-                    if(!emptySubscriptions) {
-                        listener = new EventsWebSocketListener(session, user, levels, actions);
-                        listener.initialize();
-                    }
-                }else {
-                    if(emptySubscriptions) {
-                        listener.terminate();
+                synchronized(this.lock) {
+                    //Configure listener
+                    Boolean subscribed = (Boolean)session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
+                    if(subscribed == null || subscribed == Boolean.FALSE) {
+                        if(!emptySubscriptions) {
+                            changeLevels(levels);
+                            changeActions(actions);
+                            initialize();
+                            session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.TRUE);
+                        }
                     }else {
-                        listener.changeActions(actions);
-                        listener.changeLevels(levels);
+                        if(emptySubscriptions) {
+                            terminate();
+                            session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
+                        }else {
+                            changeActions(actions);
+                            changeLevels(levels);
+                        }
                     }
                 }
                 if(subscription.isSendEventLevelSummaries()) {
@@ -183,10 +213,11 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
                 }else {
                     this.sendRawMessage(session, new WebSocketResponse<Void>(request.getSequenceNumber()));
                 }
-            }else if(request instanceof EventsRqlQueryRequest) {
-                EventsRqlQueryRequest query = (EventsRqlQueryRequest)request;
-                WebSocketResponse<StreamedArrayWithTotal> response = new WebSocketResponse<>(request.getSequenceNumber());
-                response.setPayload(controller.queryRQL(RQLUtils.parseRQLtoAST(query.getRqlQuery()), user));
+            }else if(request instanceof EventsDataPointSummaryRequest) {
+                //TODO Try/Catch NotFound/Permissions and send error message
+                EventsDataPointSummaryRequest query = (EventsDataPointSummaryRequest)request;
+                WebSocketResponse<Collection<DataPointEventSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
+                response.setPayload(controller.getDataPointEventSummaries(query.getDataPointXids(), user));
                 this.sendRawMessage(session, response);
             }
         } catch (Exception e) {
@@ -214,155 +245,140 @@ public class EventsWebSocketHandler extends MultiSessionWebSocketHandler {
             }
         }
     }
-    
-    
-    public class EventsWebSocketListener implements UserEventListener {
-        private final WebSocketSession session;
-        private final User user;
-        private volatile Set<AlarmLevels> levels;
-        private volatile EnumSet<EventActionEnum> actions;
 
-        public EventsWebSocketListener(WebSocketSession session, User user, Set<AlarmLevels> levels, Set<EventActionEnum> actions) {
-            this.session = session;
-            this.user = user;
-            this.changeLevels(levels);
-            this.changeActions(actions);
-        }
+    public void initialize() {
+        Common.eventManager.addUserEventListener(this);
+    }
 
-        public void initialize() {
-            Common.eventManager.addUserEventListener(this);
-        }
+    public void terminate(){
+        Common.eventManager.removeUserEventListener(this);
+    }
 
-        public void terminate(){
-            Common.eventManager.removeUserEventListener(this);
-        }
+    public void changeLevels(Set<AlarmLevels> levels) {
+        this.levels = levels;
+    }
 
-        public void changeLevels(Set<AlarmLevels> levels) {
-            this.levels = levels;
-        }
+    public void changeActions(Set<EventActionEnum> actions) {
+        this.actions = EnumSet.copyOf(actions);
+    }
 
-        public void changeActions(Set<EventActionEnum> actions) {
-            this.actions = EnumSet.copyOf(actions);
-        }
+    @Override
+    public int getUserId() {
+        return user.getId();
+    }
 
-        @Override
-        public int getUserId() {
-            return user.getId();
-        }
-
-        @Override
-        public void raised(EventInstance evt) {
-            if (!session.isOpen() || getUser(session) == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Terminating listener for session " + session.getId());
-                }
-                this.terminate();
-                return;
-            }
-
-            if(!this.actions.contains(EventActionEnum.RAISED))
-                return;
-
-            if(!this.levels.contains(evt.getAlarmLevel()))
-                return;
-
+    @Override
+    public void raised(EventInstance evt) {
+        if (!session.isOpen() || getUser(session) == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Event raised, notifying session " + session.getId() + ": " + evt.toString());
+                log.debug("Terminating listener for session " + session.getId());
             }
-
-            try{
-                EventsWebSocketHandler.this.notify(EventActionEnum.RAISED, evt, user, session);
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error notifying of event raised", e);
-                }
-            }
+            this.terminate();
+            return;
         }
 
-        @Override
-        public void returnToNormal(EventInstance evt) {
-            if (!session.isOpen() || getUser(session) == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Terminating listener for session " + session.getId());
-                }
-                this.terminate();
-                return;
-            }
+        if(!this.actions.contains(EventActionEnum.RAISED))
+            return;
 
-            if(!this.actions.contains(EventActionEnum.RETURN_TO_NORMAL))
-                return;
+        if(!this.levels.contains(evt.getAlarmLevel()))
+            return;
 
-            if(!this.levels.contains(evt.getAlarmLevel()))
-                return;
-
-            if (log.isDebugEnabled()) {
-                log.debug("Event return to normal, notifying session " + session.getId() + ": " + evt.toString());
-            }
-
-            try{
-                EventsWebSocketHandler.this.notify(EventActionEnum.RETURN_TO_NORMAL, evt, user, session);
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error notifying of event return to normal", e);
-                }
-            }
+        if (log.isDebugEnabled()) {
+            log.debug("Event raised, notifying session " + session.getId() + ": " + evt.toString());
         }
 
-        @Override
-        public void deactivated(EventInstance evt) {
-            if (!session.isOpen() || getUser(session) == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Terminating listener for session " + session.getId());
-                }
-                this.terminate();
-                return;
-            }
-
-            if(!this.actions.contains(EventActionEnum.DEACTIVATED))
-                return;
-
-            if(!this.levels.contains(evt.getAlarmLevel()))
-                return;
-
+        try{
+            EventsWebSocketHandler.this.notify(EventActionEnum.RAISED, evt, user, session);
+        } catch (Exception e) {
             if (log.isDebugEnabled()) {
-                log.debug("Event deactivated, notifying session " + session.getId() + ": " + evt.toString());
-            }
-
-            try{
-                EventsWebSocketHandler.this.notify(EventActionEnum.DEACTIVATED, evt, user, session);
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error notifying of event deactivated", e);
-                }
+                log.debug("Error notifying of event raised", e);
             }
         }
+    }
 
-        @Override
-        public void acknowledged(EventInstance evt) {
-            if (!session.isOpen() || getUser(session) == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Terminating listener for session " + session.getId());
-                }
-                this.terminate();
-                return;
-            }
-
-            if(!this.actions.contains(EventActionEnum.ACKNOWLEDGED))
-                return;
-
-            if(!this.levels.contains(evt.getAlarmLevel()))
-                return;
-
+    @Override
+    public void returnToNormal(EventInstance evt) {
+        if (!session.isOpen() || getUser(session) == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Event acknowledged, notifying session " + session.getId() + ": " + evt.toString());
+                log.debug("Terminating listener for session " + session.getId());
             }
+            this.terminate();
+            return;
+        }
 
-            try{
-                EventsWebSocketHandler.this.notify(EventActionEnum.ACKNOWLEDGED, evt, user, session);
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error notifying of event acknowledged", e);
-                }
+        if(!this.actions.contains(EventActionEnum.RETURN_TO_NORMAL))
+            return;
+
+        if(!this.levels.contains(evt.getAlarmLevel()))
+            return;
+
+        if (log.isDebugEnabled()) {
+            log.debug("Event return to normal, notifying session " + session.getId() + ": " + evt.toString());
+        }
+
+        try{
+            EventsWebSocketHandler.this.notify(EventActionEnum.RETURN_TO_NORMAL, evt, user, session);
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error notifying of event return to normal", e);
+            }
+        }
+    }
+
+    @Override
+    public void deactivated(EventInstance evt) {
+        if (!session.isOpen() || getUser(session) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Terminating listener for session " + session.getId());
+            }
+            this.terminate();
+            return;
+        }
+
+        if(!this.actions.contains(EventActionEnum.DEACTIVATED))
+            return;
+
+        if(!this.levels.contains(evt.getAlarmLevel()))
+            return;
+
+        if (log.isDebugEnabled()) {
+            log.debug("Event deactivated, notifying session " + session.getId() + ": " + evt.toString());
+        }
+
+        try{
+            EventsWebSocketHandler.this.notify(EventActionEnum.DEACTIVATED, evt, user, session);
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error notifying of event deactivated", e);
+            }
+        }
+    }
+
+    @Override
+    public void acknowledged(EventInstance evt) {
+        if (!session.isOpen() || getUser(session) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Terminating listener for session " + session.getId());
+            }
+            this.terminate();
+            return;
+        }
+
+        if(!this.actions.contains(EventActionEnum.ACKNOWLEDGED))
+            return;
+
+        if(!this.levels.contains(evt.getAlarmLevel()))
+            return;
+
+        if (log.isDebugEnabled()) {
+            log.debug("Event acknowledged, notifying session " + session.getId() + ": " + evt.toString());
+        }
+
+        try{
+            EventsWebSocketHandler.this.notify(EventActionEnum.ACKNOWLEDGED, evt, user, session);
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error notifying of event acknowledged", e);
             }
         }
     }
