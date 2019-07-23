@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/mangoApi",
-  "version": "3.6.1",
+  "version": "3.6.2-SNAPSHOT",
   "description": "Mango API",
   "main": "web/mangoApi.js",
   "dependencies": {
