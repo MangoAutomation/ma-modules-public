@@ -437,29 +437,38 @@ describe('Point values csv v2', function() {
 
     it('Gets latest point values for multiple points as csv', function() {
         return this.csvClient.pointValues.latest({
-            xids: [testPointXid1, testPointXid2]
+            xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP']
         }).then(result => {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
 
             assert.strictEqual(result.length, 200);
             
             const point1Result = result.slice(0, 100).reverse();
             const point2Result = result.slice(100, 200).reverse();
             
+            //Assert xid
+            point1Result.forEach(pv => {
+                assert.strictEqual(pv.xid, testPointXid1);
+            });
+            point2Result.forEach(pv => {
+                assert.strictEqual(pv.xid, testPointXid2);
+            });
+            
             comparePointValues({
                 responseData: point1Result,
                 expectedValues: pointValues1,
-                valueProperty: testPointXid1
+                valueProperty: 'value'
             });
             comparePointValues({
                 responseData: point2Result,
                 expectedValues: pointValues2,
-                valueProperty: testPointXid2
+                valueProperty: 'value'
             });
         });
     });
@@ -520,30 +529,39 @@ describe('Point values csv v2', function() {
     it('Queries time period for multiple points as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime,
             to: endTime
         }).then(result => {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.strictEqual(result.length, 200);
             
             const point1Result = result.slice(0, 100);
             const point2Result = result.slice(100, 200);
             
+            //Assert xid
+            point1Result.forEach(pv => {
+                assert.strictEqual(pv.xid, testPointXid1);
+            });
+            point2Result.forEach(pv => {
+                assert.strictEqual(pv.xid, testPointXid2);
+            });
+            
             comparePointValues({
                 responseData: point1Result,
                 expectedValues: pointValues1,
-                valueProperty: testPointXid1
+                valueProperty: 'value'
             });
             comparePointValues({
                 responseData: point2Result,
                 expectedValues: pointValues2,
-                valueProperty: testPointXid2
+                valueProperty: 'value'
             });
         });
     });
@@ -551,6 +569,7 @@ describe('Point values csv v2', function() {
     it('Queries time period for multiple points with limit 20 as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime,
             to: endTime,
             limit: 20
@@ -558,24 +577,32 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.strictEqual(result.length, 40);
             
             const point1Result = result.slice(0, 20);
             const point2Result = result.slice(20, 40);
             
+            //Assert xid
+            point1Result.forEach(pv => {
+                assert.strictEqual(pv.xid, testPointXid1);
+            });
+            point2Result.forEach(pv => {
+                assert.strictEqual(pv.xid, testPointXid2);
+            });
+            
             comparePointValues({
                 responseData: point1Result,
                 expectedValues: pointValues1.slice(0, 20),
-                valueProperty: testPointXid1
+                valueProperty: 'value'
             });
             comparePointValues({
                 responseData: point2Result,
                 expectedValues: pointValues2.slice(0, 20),
-                valueProperty: testPointXid2
+                valueProperty: 'value'
             });
         });
     });
@@ -1372,6 +1399,7 @@ describe('Point values csv v2', function() {
     it('Returns zeros for 2 points as multiple arrays using a COUNT rollup for minute before start time as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime - 60000,
             to: startTime,
             rollup: 'COUNT',
@@ -1383,9 +1411,9 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
 
             assert.strictEqual(result.length, 120);
             
@@ -1394,13 +1422,15 @@ describe('Point values csv v2', function() {
 
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '0');
+                assert.strictEqual(pv.value, '0');
+                assert.strictEqual(pv.xid, testPointXid1);
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
             prevTime = startTime - 60000;
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid2], '0');
+                assert.strictEqual(pv.value, '0');
+                assert.strictEqual(pv.xid, testPointXid2);
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
@@ -1410,6 +1440,7 @@ describe('Point values csv v2', function() {
     it('Returns the same point values for 2 points as multiple arrays using a FIRST rollup with same time period as poll period as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime,
             to: endTime,
             rollup: 'FIRST',
@@ -1421,9 +1452,9 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.strictEqual(result.length, 200);
             
@@ -1431,15 +1462,15 @@ describe('Point values csv v2', function() {
             const point2Result = result.splice(100, 200);
 
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(Number(pv[testPointXid1]), pointValues1[i].value);
-                assert.strictEqual(pv[testPointXid2], '');
+                assert.strictEqual(Number(pv.value), pointValues1[i].value);
+                assert.strictEqual(pv.xid, testPointXid1);
                 assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
             });
             
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(Number(pv[testPointXid2]), pointValues2[i].value);
-                assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
+                assert.strictEqual(Number(pv.value), pointValues2[i].value);
+                assert.strictEqual(pv.xid, testPointXid2);
+                assert.strictEqual(Number(pv.timestamp), pointValues2[i].timestamp);
             });
         });
     });
@@ -1447,6 +1478,7 @@ describe('Point values csv v2', function() {
     it('Returns null values for 2 points as multiple arrays using a POINT_DEFAULT rollup for minute before start time as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime - 60000,
             to: startTime,
             rollup: 'POINT_DEFAULT',
@@ -1458,9 +1490,9 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.strictEqual(result.length, 120);
             
@@ -1469,14 +1501,14 @@ describe('Point values csv v2', function() {
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(pv[testPointXid2], '');
+                assert.strictEqual(pv.value, '');
+                assert.strictEqual(pv.xid, testPointXid1);
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(pv[testPointXid2], '');
+                assert.strictEqual(pv.value, '');
+                assert.strictEqual(pv.xid, testPointXid2);
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
@@ -1486,6 +1518,7 @@ describe('Point values csv v2', function() {
     it('Uses correct rollup for 2 points as multiple arrays using a POINT_DEFAULT rollup for minute before start time as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid4],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime - 60000,
             to: startTime,
             rollup: 'POINT_DEFAULT',
@@ -1497,9 +1530,9 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid4);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.strictEqual(result.length, 120);
             
@@ -1508,14 +1541,14 @@ describe('Point values csv v2', function() {
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(pv[testPointXid4], '');
+                assert.strictEqual(pv.value, '');
+                assert.strictEqual(pv.xid, testPointXid1);
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(pv[testPointXid4], '');
+                assert.strictEqual(pv.value, '0');
+                assert.strictEqual(pv.xid, testPointXid4);
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
@@ -1525,6 +1558,7 @@ describe('Point values csv v2', function() {
     it('Returns the same point values for 2 points as multiple arrays using a POINT_DEFAULT rollup with same time period as poll period as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime,
             to: endTime,
             rollup: 'POINT_DEFAULT',
@@ -1536,9 +1570,9 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
 
             assert.strictEqual(result.length, 200);
             
@@ -1547,13 +1581,13 @@ describe('Point values csv v2', function() {
 
 
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(Number(pv[testPointXid1]), pointValues1[i].value);
-                assert.strictEqual(pv[testPointXid2], '');
+                assert.strictEqual(Number(pv.value), pointValues1[i].value);
+                assert.strictEqual(pv.xid, testPointXid1);
                 assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
             });
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(Number(pv[testPointXid2]), pointValues2[i].value);
+                assert.strictEqual(Number(pv.value), pointValues2[i].value);
+                assert.strictEqual(pv.xid, testPointXid2);
                 assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
             });
         });
@@ -1562,6 +1596,7 @@ describe('Point values csv v2', function() {
     it('Returns the same point values for 2 points as multiple arrays using a NONE rollup as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid2],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime,
             to: endTime,
             rollup: 'NONE',
@@ -1573,9 +1608,9 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.strictEqual(result.length, 200);
             
@@ -1583,14 +1618,14 @@ describe('Point values csv v2', function() {
             const point2Result = result.splice(100, 200);
             
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(Number(pv[testPointXid1]), pointValues1[i].value);
-                assert.strictEqual(pv[testPointXid2], '');
+                assert.strictEqual(Number(pv.value), pointValues1[i].value);
+                assert.strictEqual(pv.xid, testPointXid1);
                 assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
             });
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1], '');
-                assert.strictEqual(Number(pv[testPointXid2]), pointValues2[i].value);
-                assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
+                assert.strictEqual(Number(pv.value), pointValues2[i].value);
+                assert.strictEqual(pv.xid, testPointXid2);
+                assert.strictEqual(Number(pv.timestamp), pointValues2[i].timestamp);
             });
         });
     });
@@ -1598,6 +1633,7 @@ describe('Point values csv v2', function() {
     it('Returns the same point values for 2 points as multiple arrays using a POINT_DEFAULT rollup and Simplify as csv', function() {
         return this.csvClient.pointValues.forTimePeriod({
             xids: [testPointXid1, testPointXid3],
+            fields: ['XID', 'VALUE', 'TIMESTAMP'],
             from: startTime,
             to: endTime,
             rollup: 'POINT_DEFAULT',
@@ -1609,21 +1645,21 @@ describe('Point values csv v2', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid3);
+            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[1], 'value');
+            assert.strictEqual(headers[2], 'timestamp');
             
             assert.isAbove(result.length, pointValues1.length);
-            
+
             let point3Count = 0;
             result.forEach((pv, i) => {
                 if(i < 100){
-                    assert.strictEqual(Number(pv[testPointXid1]), pointValues1[i].value);
-                    assert.strictEqual(pv[testPointXid3], '');
+                    assert.strictEqual(Number(pv.value), pointValues1[i].value);
+                    assert.strictEqual(pv.xid, testPointXid1);
                     assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
                 }else{
-                    assert.strictEqual(pv[testPointXid1], '');
-                    if(pv[testPointXid3] !== '')
+                    assert.strictEqual(pv.xid, testPointXid3);
+                    if(pv.value !== '')
                         point3Count++;  
                 }
             });

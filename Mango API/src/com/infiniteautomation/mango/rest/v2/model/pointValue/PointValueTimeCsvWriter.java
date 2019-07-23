@@ -40,7 +40,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
             //We don't want to embed this as an object like the Json Writer does
             value.writeEntry(this, true, true);
         }else {
-            value.writeEntry(this, pointCount == 1 ? false : true, true);
+            value.writeEntry(this, false, true);
         }
         this.jgen.writeEndObject();
     }

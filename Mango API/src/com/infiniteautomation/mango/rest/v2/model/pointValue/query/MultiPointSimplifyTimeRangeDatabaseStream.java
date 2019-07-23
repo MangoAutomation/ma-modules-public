@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
     public MultiPointSimplifyTimeRangeDatabaseStream(INFO info, Map<Integer, DataPointVO> voMap,
             PointValueDao dao) {
         super(info, voMap, dao);
-        this.valuesMap = new HashMap<>();
+        this.valuesMap = new LinkedHashMap<>();
         this.bookendMap = new HashMap<>(); 
     }
 
