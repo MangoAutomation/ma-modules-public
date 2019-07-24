@@ -48,6 +48,7 @@ import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.validation.StringValidation;
 
@@ -274,6 +275,9 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
+        //To copy you must have the global management permission
+        Permissions.ensureDataSourcePermission(user);
+        
         //TODO Mango 3.7 move this logic to service
         T existing = service.get(xid, user);
         
