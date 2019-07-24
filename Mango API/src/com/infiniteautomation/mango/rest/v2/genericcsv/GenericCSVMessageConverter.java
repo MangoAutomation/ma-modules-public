@@ -341,10 +341,10 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             return reader.readValue(this.objectMapper.treeAsTokens(rootNode));
         }
         catch (JsonProcessingException ex) {
-            throw new HttpMessageNotReadableException("JSON parse error: " + ex.getOriginalMessage(), ex);
+            throw new HttpMessageNotReadableException("JSON parse error: " + ex.getOriginalMessage(), ex, inputMessage);
         }
         catch (IOException ex) {
-            throw new HttpMessageNotReadableException("I/O error while reading input message", ex);
+            throw new HttpMessageNotReadableException("I/O error while reading input message", ex, inputMessage);
         }
     }
 
