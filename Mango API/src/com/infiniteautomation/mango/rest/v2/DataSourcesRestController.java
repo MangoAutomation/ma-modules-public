@@ -14,6 +14,7 @@ import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,14 +37,19 @@ import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel.
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.db.pair.LongLongPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.web.MediaTypes;
+import com.serotonin.validation.StringValidation;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -251,6 +257,76 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
         return export;
     }
 
+    @ApiOperation(value = "Copy data source", notes="Copy the data source and its points with optional new XID and Name.")
+    @RequestMapping(method = RequestMethod.PUT, value = "/copy/{xid}")
+    public ResponseEntity<AbstractDataSourceModel<?>> copy(
+            @PathVariable String xid,
+            @ApiParam(value = "Copy's new XID", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyXid,
+            @ApiParam(value = "Copy's name", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyName,
+            @ApiParam(value = "Device name for copied points", required = false, defaultValue="null", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="null") String copyDeviceName,
+            @ApiParam(value = "Enable/disabled state of data source", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean enabled,
+            @ApiParam(value = "Copy data points", required = false, defaultValue="false", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="false") boolean copyPoints,
+
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        //TODO Mango 3.7 move this logic to service
+        T existing = service.get(xid, user);
+        
+        //Determine the new name
+        String newName;
+        if(StringUtils.isEmpty(copyName)) {
+            newName = StringUtils.abbreviate(
+                    TranslatableMessage.translate(Common.getTranslations(), "common.copyPrefix", existing.getName()), 40);
+        }else {
+            newName = copyName;
+        }
+        //Determine the new xid
+        String newXid;
+        if(StringUtils.isEmpty(copyXid)) {
+            newXid = DataSourceDao.getInstance().generateUniqueXid();
+        }else {
+            newXid = copyXid;
+        }
+        
+        String newDeviceName;
+        if(StringUtils.isEmpty(copyDeviceName)) {
+            newDeviceName = existing.getName();
+        }else {
+            newDeviceName = copyDeviceName;
+        }
+        //Ensure device name is valid
+        if (StringValidation.isLengthGreaterThan(newDeviceName, 255)) {
+            ProcessResult result = new ProcessResult();
+            result.addMessage("deviceName", new TranslatableMessage("validate.notLongerThan", 255));
+            throw new ValidationException(result);
+        }
+        
+        T copy = existing.copy();
+        copy.setId(Common.NEW_ID);
+        copy.setName(newName);
+        copy.setXid(newXid);
+        copy.setEnabled(enabled);
+        copy.ensureValid();
+        
+        //Save it
+        Common.runtimeManager.saveDataSource(copy);
+        
+        if(copyPoints) {
+            DataSourceDao.getInstance().copyDataSourcePoints(existing.getId(), copy.getId(), newDeviceName);
+        }
+        
+        URI location = builder.path("/data-sources/{xid}").buildAndExpand(newXid).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+
+        return new ResponseEntity<>(map.apply(service.get(newXid, user), user), headers, HttpStatus.OK);
+    }
+    
     /**
      * Perform a query
      * @param rql
