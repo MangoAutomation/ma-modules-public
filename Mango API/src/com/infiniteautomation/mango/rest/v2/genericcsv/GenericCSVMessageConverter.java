@@ -76,16 +76,11 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
     public static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
-    protected final JsonNodeFactory nodeFactory;
+    private final JsonNodeFactory nodeFactory;
 
     public GenericCSVMessageConverter(ObjectMapper objectMapper) {
-        this(objectMapper, MediaTypes.CSV_V2);
-    }
-    
-    public GenericCSVMessageConverter(ObjectMapper objectMapper, MediaType... supportedMediaTypes) {
-        super(objectMapper, supportedMediaTypes);
+        super(objectMapper, MediaTypes.CSV_V2);
         this.nodeFactory = objectMapper.getNodeFactory();
-
     }
 
     @Override
@@ -301,7 +296,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         return readJavaType(javaType, inputMessage);
     }
 
-    protected Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) {
+    private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) {
         try {
             Class<?> deserializationView = null;
             if (inputMessage instanceof MappingJacksonInputMessage) {
@@ -353,7 +348,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
         }
     }
 
-    protected Charset charsetForContentType(MediaType contentType) {
+    private Charset charsetForContentType(MediaType contentType) {
         if (contentType != null) {
             Charset contentTypeCharset = contentType.getCharset();
             if (contentTypeCharset != null) {
@@ -370,7 +365,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @return
      * @throws IOException
      */
-    protected ArrayNode readCSV(CSVReader reader) throws IOException {
+    private ArrayNode readCSV(CSVReader reader) throws IOException {
         ArrayNode root = this.nodeFactory.arrayNode();
 
         String[] header = reader.readNext();
@@ -397,7 +392,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
      * @param row
      * @return
      */
-    protected JsonNode readCSVRow(Map<Integer, String> columnPositions, String[] row) {
+    private JsonNode readCSVRow(Map<Integer, String> columnPositions, String[] row) {
         JsonNode rootNode = null;
 
         for (int i = 0; i < row.length; i++) {
