@@ -16,6 +16,7 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
@@ -72,7 +73,7 @@ public class LatestQueryInfo {
         if (from != null)
             this.from = from.withZoneSameInstant(zoneId);
         else {
-            long current = Common.timer.currentTimeMillis();
+            long current = Common.timer.currentTimeMillis() + SystemSettingsDao.instance.getFutureDateLimit();
             this.from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
         }
         
