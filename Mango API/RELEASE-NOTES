@@ -11,7 +11,10 @@
 * Fix bug where bookends were not being applied to Simplified data ranges with no values in them
 * Add copy endpoint for data sources PUT /rest/v2/data-sources/copy/
 * Set default for v2 point values latest queries to use now plus the future date limit setting so future values can be returned by default
+<<<<<<< Upstream, based on origin/main
 * Bugfix for REST point value v2 requests for point default rollups of NONE
+=======
+>>>>>>> e3b5672 Set default from for pointvalue v2 latest query to use future date limit
 
 *Version 3.6.1*
 * Improve performance by reducing garbage generation for point value rollup requests on the v2 endpoints
