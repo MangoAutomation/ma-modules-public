@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusP
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
+import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeCSVEmportMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
@@ -147,6 +148,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
         converters.add(new PointValueTimeStreamCsvMessageConverter());
         converters.add(new CsvObjectStreamMessageConverter());
+        converters.add(new PointValueTimeCSVEmportMessageConverter(csvObjectMapper()));
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
         converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
 
