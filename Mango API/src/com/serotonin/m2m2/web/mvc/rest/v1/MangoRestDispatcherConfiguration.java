@@ -6,6 +6,7 @@
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,7 +26,12 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
@@ -107,6 +113,18 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
                 .registerModule(new CsvJacksonModule());
     }
 
+    @Bean("csvMapper")
+    public CsvMapper csvMapper() {
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
+        csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
+        csvMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        csvMapper.registerModule(new JavaTimeModule());
+        csvMapper.registerModule(new CsvJacksonModule());
+        csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
+        return csvMapper;
+    }
+    
     /**
      * Configure the Message Converters for the API for now only JSON
      */
@@ -127,7 +145,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new ExceptionCsvMessageConverter());
         converters.add(new SqlMessageConverter());
 
-        converters.add(new PointValueTimeStreamCsvMessageConverter());
+        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
 

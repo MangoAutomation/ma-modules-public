@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeExportQueryModel;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeExportStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeDeleteResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportResult;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -64,34 +63,19 @@ public class PointValueModificationRestController {
     }
 
     @ApiOperation(
-            value = "Delete Point Values for one or many Data Points",
-            notes = "Data Point must exist and user must have write access"
-            )
-    @RequestMapping(method = RequestMethod.DELETE, value="/delete")
-    @Async
-    public PointValueTimeExportStream exportPointValues(
-            @RequestBody  PointValueTimeExportQueryModel model,
-            @AuthenticationPrincipal User user) {
-        
-        //TODO Permissions/Validation?
-        return null;
-    }
-    
-    @ApiOperation(
             value = "Import Point Values for one or many Data Points",
             notes = "Data Point must exist and user must have write access"
             )
     @RequestMapping(method = RequestMethod.POST, value="/import")
     @Async
     public List<PointValueTimeImportResult> importPointValues(
-            @RequestBody PointValueTimeImportStream stream,
+            @RequestBody Stream<XidPointValueTimeModel> stream,
             @AuthenticationPrincipal User user) {
         
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
         Map<String, PointValueTimeImport> results = new HashMap<>();
-        
-        stream.accept((pvt) ->{
-            
+        stream.forEach((pvt) ->{
+
             results.compute(pvt.getXid(), (xidKey, entry) ->{
                 if(entry == null) {
                     entry = new PointValueTimeImport(pvt.getXid(), pointValueDao, dataPointDao, user);
@@ -100,28 +84,25 @@ public class PointValueModificationRestController {
                 return entry;
             });
             
-        }, (error) ->{
-            //TODO select best exception type based on what error is
-            throw new ServerErrorException(error);
         });
         
         return results.values().stream().map((v) -> { 
-            return new PointValueTimeImportResult(v.xid, v.totalQueued, v.totalSkipped, v.result);
+            return new PointValueTimeImportResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
         }).collect(Collectors.toList());
     }
     
     class PointValueTimeImport {
         
-        private String xid;
-        private int totalQueued;
-        private int totalSkipped;
-        private ProcessResult result; 
+        protected String xid;
+        protected int totalProcessed;
+        protected int totalSkipped;
+        protected ProcessResult result; 
         
-        private final boolean valid;
-        private final PointValueDao dao;
-        private DataPointRT rt;
-        private final DataPointVO vo;
-        private final int dataTypeId;
+        protected final boolean valid;
+        protected final PointValueDao dao;
+        protected DataPointRT rt;
+        protected final DataPointVO vo;
+        protected final int dataTypeId;
         
         public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, User user) {
             this.xid = xid;
@@ -163,8 +144,7 @@ public class PointValueModificationRestController {
                 }else {
                     timestamp = date.toInstant().toEpochMilli();
                 }
-                
-                //TODO Better checking of types and error handling
+
                 DataValue dataValue = null;
                 try {
                     switch(dataTypeId) {
@@ -205,14 +185,11 @@ public class PointValueModificationRestController {
                             break;
                         case DataTypes.IMAGE:
                         default:
-                            //TODO Add translation
-                            result.addContextualMessage("dataType", "common.default", "Image data type not supported yet");
+                            result.addContextualMessage("dataType", "rest.validate.imageNotSupported");
                             return;
                     }
                 }catch(Exception e) {
-                    //TODO this could be dangerous maybe make invalid at this point?
-                    //TODO Add translation
-                    result.addContextualMessage("value", "common.default", e.getMessage());
+                    result.addContextualMessage("value", "rest.error.serverError", e.getMessage());
                     totalSkipped++; 
                     return;
                 }
@@ -225,15 +202,63 @@ public class PointValueModificationRestController {
                 }
                 if(rt == null) {
                     dao.savePointValueAsync(vo.getId(), pvt, null);
-                    //TODO Try for next value?
+                    //Try for next value to see if the point is enabled now
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
                 }else {
                     rt.savePointValueDirectToCache(pvt, null, true, true);
                 }
-                totalQueued++;
+                totalProcessed++;
             }else {
                totalSkipped++; 
             }
         }
+    }
+    
+    @ApiOperation(
+            value = "Delete Point Values for one or many Data Points",
+            notes = "Data Point must exist and user must have write access"
+            )
+    @RequestMapping(method = RequestMethod.DELETE, value="/delete")
+    @Async
+    public List<PointValueTimeDeleteResult> deletePointValues(
+            @RequestBody  Stream<XidPointValueTimeModel> stream,
+            @AuthenticationPrincipal User user) {
+        
+        PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
+        Map<String, PointValueTimeDelete> results = new HashMap<>();
+
+        stream.forEach((pvt) ->{
+
+            results.compute(pvt.getXid(), (xidKey, entry) ->{
+                if(entry == null) {
+                    entry = new PointValueTimeDelete(pvt.getXid(), pointValueDao, dataPointDao, user);
+                }
+                entry.deleteValue(pvt.getTimestamp());
+                return entry;
+            });
+            
+        });
+        
+        return results.values().stream().map((v) -> { 
+            return new PointValueTimeDeleteResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
+        }).collect(Collectors.toList());
+        
+    }
+    
+    class PointValueTimeDelete extends PointValueTimeImport {
+        
+        public PointValueTimeDelete(String xid, PointValueDao dao, DataPointDao dataPointDao, User user) {
+           super(xid, dao, dataPointDao, user);
+        }
+        
+        public void deleteValue(ZonedDateTime timestamp) {
+            if(valid && timestamp != null) {
+                //TODO Mango 3.7 This creates a new dao every call (Should be allowed to pass in a Dao
+                totalProcessed += Common.runtimeManager.purgeDataPointValue(vo.getId(), timestamp.toInstant().toEpochMilli());
+            }else {
+                totalSkipped++;
+            }
+        }
+        
     }
 }

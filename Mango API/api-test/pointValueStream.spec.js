@@ -247,7 +247,7 @@ describe('Point value streaming load tests', function() {
         });
     });
     
-    it('Can upload a large CSV file for 2 points in a CSV file with 1 value column', function() {
+    it.skip('Can upload a large CSV file for 2 points in a CSV file with 1 value column', function() {
         this.timeout(50000000);
          
         return client.restRequest({
@@ -278,12 +278,29 @@ describe('Point value streaming load tests', function() {
                 headers: {
                     'Content-Type': 'text/csv;charset=UTF-8'
                 },
-                dataType: 'buffer',
                 data: fs.readFileSync(uploadFileName)
                 //TODO data: fs.createReadStream(uploadFileName)
             }).then(response => {
-                console.log(JSON.parse(response.data.toString('utf8')));
-            });
+                console.log(response);
+            }, error => {console.log('error' + error.data);});
         });
+    });
+    
+    it('Can upload a large JSON file for 2 points', function() {
+        this.timeout(50000000);
+        //We need to ensure the data comes back as an array with value,xid,timestamp 
+        //but we cannot do that for multiple points AFAIK yet.
+        const uploadFileName = path.resolve('pointValues.json');
+        return client.restRequest({
+            path: `/rest/v2/point-value-modification/import`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=UTF-8'
+            },
+            data: fs.readFileSync(uploadFileName)
+            //TODO data: fs.createReadStream(uploadFileName)
+        }).then(response => {
+            console.log(response);
+        }, error => {console.log(error.data);});
     });
 });

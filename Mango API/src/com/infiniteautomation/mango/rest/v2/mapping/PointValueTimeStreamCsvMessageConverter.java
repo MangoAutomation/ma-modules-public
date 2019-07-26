@@ -9,8 +9,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.springframework.core.ResolvableType;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -22,24 +26,17 @@ import org.springframework.http.converter.json.MappingJacksonInputMessage;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream.XidPointValueTime;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
@@ -50,23 +47,14 @@ import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
- *
+ * Message convert to read/write CSV point value data in a streaming way
+ * 
  * @author Jared Wiltshire, Terry Packer
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
 
-    public PointValueTimeStreamCsvMessageConverter() {
-        this(new CsvMapper());
-    }
-
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, MediaTypes.CSV_V1);
-        csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
-        csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
-        csvMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        csvMapper.registerModule(new JavaTimeModule());
-        csvMapper.registerModule(new CsvJacksonModule());
-        csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
     }
 
     @Override
@@ -74,7 +62,14 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         if (!canRead(mediaType))
             return false;
 
-        return type instanceof Class && PointValueTimeImportStream.class.isAssignableFrom((Class<?>) type);
+        //Check to make sure this is a stream of XidPointValueTimeModel objects
+        ResolvableType resolvedType = ResolvableType.forType(type);
+        if(resolvedType.getRawClass() instanceof Class && Stream.class.isAssignableFrom(resolvedType.getRawClass())) {
+            ResolvableType streamType = resolvedType.getGeneric(0);
+            return streamType.getType() instanceof Class && XidPointValueTimeModel.class.isAssignableFrom((Class<?>) streamType.getType());
+        }else {
+            return false;
+        }
     }
 
     @Override
@@ -110,23 +105,16 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         //TODO detect type/schema for the callback
         // could use the type if we add generics to PointValueTimeImportStream
         // could use headers if we want to mark/reset the input stream
-        reader = reader.forType(XidPointValueTime.class);
+        reader = reader.forType(XidPointValueTimeModel.class);
         
         CsvSchema schema = CsvSchema.emptySchema().withHeader().withStrictHeaders(false);
         ObjectReader csvReader = reader.with(schema);
-        
-        PointValueTimeImportStream stream = new PointValueTimeImportStream((consumer, error) -> {
-            try {
-                MappingIterator<XidPointValueTime> it = csvReader.readValues(inputMessage.getBody());
-                while(it.hasNext()) {
-                    consumer.accept(it.next());
-                }
-            }catch(IOException e) {
-                error.accept(e);
-            }
-        });
-
-        return stream;
+        try {
+            Stream<XidPointValueTimeModel> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(csvReader.readValues(inputMessage.getBody()), Spliterator.ORDERED), false); 
+            return stream;
+        }catch (IOException ex) {
+            throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex, inputMessage);
+        }
     }
 
     @Override
