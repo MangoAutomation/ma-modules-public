@@ -64,10 +64,10 @@ public class PointValueModificationRestController {
     }
 
     @ApiOperation(
-            value = "Export Point Values for one or many Data Points",
-            notes = "Data Point must exist and user must have read access"
+            value = "Delete Point Values for one or many Data Points",
+            notes = "Data Point must exist and user must have write access"
             )
-    @RequestMapping(method = RequestMethod.POST, value="/export")
+    @RequestMapping(method = RequestMethod.DELETE, value="/delete")
     @Async
     public PointValueTimeExportStream exportPointValues(
             @RequestBody  PointValueTimeExportQueryModel model,
@@ -76,7 +76,7 @@ public class PointValueModificationRestController {
         //TODO Permissions/Validation?
         return null;
     }
-
+    
     @ApiOperation(
             value = "Import Point Values for one or many Data Points",
             notes = "Data Point must exist and user must have write access"
@@ -106,14 +106,15 @@ public class PointValueModificationRestController {
         });
         
         return results.values().stream().map((v) -> { 
-            return new PointValueTimeImportResult(v.xid, v.total, v.result);
+            return new PointValueTimeImportResult(v.xid, v.totalQueued, v.totalSkipped, v.result);
         }).collect(Collectors.toList());
     }
     
     class PointValueTimeImport {
         
         private String xid;
-        private int total;
+        private int totalQueued;
+        private int totalSkipped;
         private ProcessResult result; 
         
         private final boolean valid;
@@ -143,14 +144,22 @@ public class PointValueModificationRestController {
                 }
             }
         }
-        
-        public void saveValue(Object value, ZonedDateTime date, String annotation) {
+ 
+        /**
+         * 
+         * @param value
+         * @param date
+         * @param annotation
+         */
+        private void saveValue(Object value, ZonedDateTime date, String annotation) {
+            
             if(valid && value != null) {
                 
                 //Validate the model against our point
                 long timestamp;
                 if(date == null || date.toInstant().toEpochMilli() == 0) {
-                    timestamp = Common.timer.currentTimeMillis();
+                    totalSkipped++; 
+                    return;
                 }else {
                     timestamp = date.toInstant().toEpochMilli();
                 }
@@ -179,6 +188,7 @@ public class PointValueModificationRestController {
                                     } catch (Exception e) {
                                         // Lots can go wrong here so let the user know
                                         result.addContextualMessage("value", "event.valueParse.textParse", e.getMessage());
+                                        totalSkipped++; 
                                         return;
                                     }
                                 }
@@ -203,6 +213,7 @@ public class PointValueModificationRestController {
                     //TODO this could be dangerous maybe make invalid at this point?
                     //TODO Add translation
                     result.addContextualMessage("value", "common.default", e.getMessage());
+                    totalSkipped++; 
                     return;
                 }
                 
@@ -219,7 +230,9 @@ public class PointValueModificationRestController {
                 }else {
                     rt.savePointValueDirectToCache(pvt, null, true, true);
                 }
-                total++;
+                totalQueued++;
+            }else {
+               totalSkipped++; 
             }
         }
     }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -21,16 +22,24 @@ import org.springframework.http.converter.json.MappingJacksonInputMessage;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream.XidPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
@@ -52,7 +61,12 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, MediaTypes.CSV_V1);
-        ((CsvMapper)this.objectMapper).configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
+        csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
+        csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
+        csvMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        csvMapper.registerModule(new JavaTimeModule());
+        csvMapper.registerModule(new CsvJacksonModule());
+        csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
     }
 
     @Override
@@ -60,7 +74,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         if (!canRead(mediaType))
             return false;
 
-        return type instanceof Class && PointValueTimeStream.class.isAssignableFrom((Class<?>) type);
+        return type instanceof Class && PointValueTimeImportStream.class.isAssignableFrom((Class<?>) type);
     }
 
     @Override
@@ -80,29 +94,41 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     }
 
     private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) {
-        try {
-            if (inputMessage instanceof MappingJacksonInputMessage) {
-                Class<?> deserializationView = ((MappingJacksonInputMessage) inputMessage).getDeserializationView();
-                if (deserializationView != null) {
-                    return this.objectMapper.readerWithView(deserializationView)
-                            .forType(javaType)
-                            .with(CsvSchema.emptySchema().withHeader())
-                            .readValue(inputMessage.getBody());
+
+        Class<?> deserializationView = null;
+        if (inputMessage instanceof MappingJacksonInputMessage) {
+            deserializationView = ((MappingJacksonInputMessage) inputMessage).getDeserializationView();
+        }
+
+        ObjectReader reader;
+        if (deserializationView != null) {
+            reader = this.objectMapper.readerWithView(deserializationView);
+        } else {
+            reader = this.objectMapper.reader();
+        }
+
+        //TODO detect type/schema for the callback
+        // could use the type if we add generics to PointValueTimeImportStream
+        // could use headers if we want to mark/reset the input stream
+        reader = reader.forType(XidPointValueTime.class);
+        
+        CsvSchema schema = CsvSchema.emptySchema().withHeader().withStrictHeaders(false);
+        ObjectReader csvReader = reader.with(schema);
+        
+        PointValueTimeImportStream stream = new PointValueTimeImportStream((consumer, error) -> {
+            try {
+                MappingIterator<XidPointValueTime> it = csvReader.readValues(inputMessage.getBody());
+                while(it.hasNext()) {
+                    consumer.accept(it.next());
                 }
+            }catch(IOException e) {
+                error.accept(e);
             }
-            return this.objectMapper.reader()
-                    .forType(javaType)
-                    .with(CsvSchema.emptySchema().withHeader())
-                    .readValue(inputMessage.getBody());
-        }
-        catch (IOException ex) {
-            throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex, inputMessage);
-        }
+        });
+
+        return stream;
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
-     */
     @Override
     public boolean canWrite(Class<?> clazz, MediaType mediaType) {
         if (!canWrite(mediaType))

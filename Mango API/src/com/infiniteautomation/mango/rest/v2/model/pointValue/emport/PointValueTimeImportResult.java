@@ -12,13 +12,15 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 public class PointValueTimeImportResult {
 
     private String xid;
-    private int total;
+    private int totalQueued;
+    private int totalSkipped;
     private ProcessResult result;
 
-    public PointValueTimeImportResult(String xid, int total, ProcessResult result) {
+    public PointValueTimeImportResult(String xid, int totalQueued, int totalSkipped, ProcessResult result) {
         super();
         this.xid = xid;
-        this.total = total;
+        this.totalQueued = totalQueued;
+        this.totalSkipped = totalSkipped;
         this.result = result;
     }
     public String getXid() {
@@ -27,11 +29,17 @@ public class PointValueTimeImportResult {
     public void setXid(String xid) {
         this.xid = xid;
     }
-    public int getTotal() {
-        return total;
+    public int getTotalQueued() {
+        return totalQueued;
     }
-    public void setTotal(int total) {
-        this.total = total;
+    public void setTotalQueued(int totalQueued) {
+        this.totalQueued = totalQueued;
+    }
+    public int getTotalSkipped() {
+        return totalSkipped;
+    }
+    public void setTotalSkipped(int totalSkipped) {
+        this.totalSkipped = totalSkipped;
     }
     public ProcessResult getResult() {
         return result;
