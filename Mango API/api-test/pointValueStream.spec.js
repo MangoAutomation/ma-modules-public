@@ -289,18 +289,33 @@ describe('Point value streaming load tests', function() {
     it('Can upload a large JSON file for 2 points', function() {
         this.timeout(50000000);
         //We need to ensure the data comes back as an array with value,xid,timestamp 
-        //but we cannot do that for multiple points AFAIK yet.
-        const uploadFileName = path.resolve('pointValues.json');
+        //but we don't have an endpoint for multiple points that does that AFAIK yet.
         return client.restRequest({
             path: `/rest/v2/point-value-modification/import`,
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json;charset=UTF-8'
+                'Content-Type': 'application/json;charset=utf-8'
             },
-            data: fs.readFileSync(uploadFileName)
-            //TODO data: fs.createReadStream(uploadFileName)
+            data: [ {
+                timestamp : "2000-11-29T14:57:30.240-10:00",
+                xid : "temperature",
+                value : null,
+                name : "Temperature",
+                deviceName : "Dashboard Demo",
+                bookend : true
+              }, {
+                timestamp : "2019-07-24T07:23:09.360-10:00",
+                xid : "temperature",
+                value : 1.0020763454149213,
+                name : "Temperature",
+                deviceName : "Dashboard Demo"
+              }]
         }).then(response => {
+            console.log('stuff');
             console.log(response);
-        }, error => {console.log(error.data);});
+        }, error => {
+            console.log(error);
+            console.log(error.data);
+        });
     });
 });
