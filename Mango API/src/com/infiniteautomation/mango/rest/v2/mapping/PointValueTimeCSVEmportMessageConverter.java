@@ -3,10 +3,12 @@
  */
 package com.infiniteautomation.mango.rest.v2.mapping;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,13 +16,15 @@ import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonInputMessage;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeExportStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportStream.XidPointValueTime;
@@ -32,10 +36,19 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author Terry Packer
  *
  */
-public class PointValueTimeCSVEmportMessageConverter extends GenericCSVMessageConverter {
+public class PointValueTimeCSVEmportMessageConverter extends AbstractJackson2HttpMessageConverter {
 
+    //Match from com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField
+    private static final String XID = "xid";
+    private static final String VALUE = "value";
+    private static final String TIMESTAMP = "timestamp";
+    private static final String ANNOTATION = "annotation";
+    
+    private final JsonNodeFactory nodeFactory;
+    
     public PointValueTimeCSVEmportMessageConverter(ObjectMapper objectMapper) {
         super(objectMapper, MediaTypes.CSV_V2);
+        this.nodeFactory = objectMapper.getNodeFactory();
     }
     
     @Override
@@ -45,7 +58,22 @@ public class PointValueTimeCSVEmportMessageConverter extends GenericCSVMessageCo
     }
 
     @Override
-    protected Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) {
+    protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
+            throws IOException, HttpMessageNotReadableException {
+
+        JavaType javaType = getJavaType(clazz, null);
+        return readJavaType(javaType, inputMessage);
+    }
+
+    @Override
+    public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage)
+            throws IOException, HttpMessageNotReadableException {
+
+        JavaType javaType = getJavaType(type, contextClass);
+        return readJavaType(javaType, inputMessage);
+    }
+    
+    private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) {
         
         PointValueTimeImportStream stream = new PointValueTimeImportStream((consumer, error) -> {
             try {
@@ -86,10 +114,28 @@ public class PointValueTimeCSVEmportMessageConverter extends GenericCSVMessageCo
                                 columnPositions.put(position++, propertyName);
                             }
         
+                            //TODO Validate headers
                             String[] row;
+                            ObjectNode rootNode;
                             while((row = csvReader.readNext()) != null) {
-                                JsonNode node = readCSVRow(columnPositions, row);
-                                consumer.accept(reader.readValue(node));
+                                rootNode = this.nodeFactory.objectNode();
+                                for (int i = 0; i < row.length; i++) {
+                                    String value = row[i];
+                                    String column = columnPositions.get(i);
+                                    switch(column) {
+                                        case XID:
+                                            rootNode.set(XID, this.nodeFactory.textNode(value));
+                                            break;
+                                        case VALUE:
+                                            break;
+                                        case TIMESTAMP:
+                                            break;
+                                        case ANNOTATION:
+                                            rootNode.set(ANNOTATION, this.nodeFactory.textNode(value));
+                                            break;
+                                    }
+                                }
+                                consumer.accept(reader.readValue(rootNode));
                             }
                         }
                     }
@@ -99,6 +145,16 @@ public class PointValueTimeCSVEmportMessageConverter extends GenericCSVMessageCo
             }
         });
         return stream;
+    }
+    
+    private Charset charsetForContentType(MediaType contentType) {
+        if (contentType != null) {
+            Charset contentTypeCharset = contentType.getCharset();
+            if (contentTypeCharset != null) {
+                return contentTypeCharset;
+            }
+        }
+        return StandardCharsets.UTF_8;
     }
     
     @Override
