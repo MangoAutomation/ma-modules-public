@@ -186,10 +186,7 @@ public abstract class PointValueTimeWriter {
             if (value == null) {
                 writeNullField(name);
             } else {
-                if(vo.getRenderedUnit() != Unit.ONE)
-                    writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value));
-                else
-                    writeDoubleField(name, value);
+                writeDoubleField(name, value);
             }
         }
     }
