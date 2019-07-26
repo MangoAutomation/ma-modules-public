@@ -20,6 +20,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.view.stats.IValueTime;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
@@ -503,7 +504,14 @@ public abstract class PointValueTimeWriter {
                     throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
         }else if(statisticsGenerator instanceof NoStatisticsGenerator) {
-            throw new ShouldNeverHappenException("Fix this.");
+            NoStatisticsGenerator stats = (NoStatisticsGenerator)statisticsGenerator;
+            if(stats.getValues().size() > 0) {
+                for(IValueTime v : stats.getValues()) {
+                    writeDataValue(name, vo, v.getValue(), v.getTime(), rendered);
+                }
+            }else {
+                writeNullField(name);
+            }
         }
     }
     

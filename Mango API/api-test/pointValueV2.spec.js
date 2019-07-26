@@ -96,11 +96,13 @@ describe('Point values v2', function() {
     const testPointXid2 = uuidV4();
     const testPointXid3 = uuidV4();
     const testPointXid4 = uuidV4();
+    const testPointXid5 = uuidV4();
     
     const pointValues1 = generateSamples(testPointXid1, startTime, numSamples, pollPeriod);
     const pointValues2 = generateSamples(testPointXid2, startTime, numSamples, pollPeriod);
     const pointValues3 = generateSamples(testPointXid3, startTime, numSamples, pollPeriod);
     const pointValues4 = generateSamples(testPointXid4, startTime, numSamples, pollPeriod);
+    const pointValues5 = generateSamples(testPointXid5, startTime, numSamples, pollPeriod);
 
     before('Create a virtual data source, points, and insert values', function() {
         this.timeout(insertionDelay * 2);
@@ -124,9 +126,10 @@ describe('Point values v2', function() {
             this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid, 'FIRST', 'NONE', 0);
             this.testPoint3 = newDataPoint(testPointXid3, this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
             this.testPoint4 = newDataPoint(testPointXid4, this.ds.xid, 'COUNT', 'NONE', 0);
-            return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save()]);
+            this.testPoint5 = newDataPoint(testPointXid5, this.ds.xid, 'NONE', 'NONE', 0);
+            return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save(), this.testPoint5.save()]);
         }).then(() => {
-            const valuesToInsert = pointValues1.concat(pointValues2.concat(pointValues3.concat(pointValues4)));
+            const valuesToInsert = pointValues1.concat(pointValues2.concat(pointValues3.concat(pointValues4.concat(pointValues5))));
             return client.pointValues.insert(valuesToInsert);
         }).then(() => config.delay(insertionDelay));
     });
@@ -921,6 +924,31 @@ describe('Point values v2', function() {
             });
         });
     });
+
+    it('Returns nulls as multiple arrays using a default NONE rollup for minute before start time', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid5],
+            from: startTime - 60000,
+            to: startTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            const point5Result = result[testPointXid5];
+            assert.isArray(point5Result);
+            assert.strictEqual(point5Result.length, 60);
+
+            let prevTime = startTime - 60000;
+            point5Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+        });
+    });
     
     it('Returns the same point values as multiple arrays using a FIRST rollup with same time period as poll period', function() {
         return client.pointValues.forTimePeriod({
@@ -941,6 +969,29 @@ describe('Point values v2', function() {
             point1Result.forEach((pv, i) => {
                 assert.strictEqual(pv.value, pointValues1[i].value);
                 assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+            });
+        });
+    });
+    
+    it('Returns the same point values as multiple arrays using a default NONE rollup with same time period as poll period', function() {
+        return client.pointValues.forTimePeriod({
+            xids: [testPointXid5],
+            from: startTime,
+            to: endTime,
+            rollup: 'POINT_DEFAULT',
+            timePeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            }
+        }).then(result => {
+            assert.isObject(result);
+            let point5Result = result[testPointXid5];
+            assert.isArray(point5Result);
+            assert.strictEqual(point5Result.length, pointValues5.length);
+
+            point5Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, pointValues5[i].value);
+                assert.strictEqual(pv.timestamp, pointValues5[i].timestamp);
             });
         });
     });
@@ -1109,9 +1160,9 @@ describe('Point values v2', function() {
         });
     });
     
-    it('Returns null values for 2 points as multiple arrays using a POINT_DEFAULT rollup for minute before start time', function() {
+    it('Returns null values for 3 points as multiple arrays using a POINT_DEFAULT rollup for minute before start time', function() {
         return client.pointValues.forTimePeriod({
-            xids: [testPointXid1, testPointXid2],
+            xids: [testPointXid1, testPointXid2, testPointXid5],
             from: startTime - 60000,
             to: startTime,
             rollup: 'POINT_DEFAULT',
@@ -1121,12 +1172,17 @@ describe('Point values v2', function() {
             }
         }).then(result => {
             assert.isObject(result);
-            let point1Result = result[testPointXid1];
-            let point2Result = result[testPointXid2];
+            const point1Result = result[testPointXid1];
+            const point2Result = result[testPointXid2];
+            const point5Result = result[testPointXid5];
+            
             assert.isArray(point1Result);
             assert.isArray(point2Result);
+            assert.isArray(point5Result);
+            
             assert.strictEqual(point1Result.length, 60);
             assert.strictEqual(point2Result.length, 60);
+            assert.strictEqual(point5Result.length, 60);
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
@@ -1134,8 +1190,16 @@ describe('Point values v2', function() {
                 assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
             });
+            
             prevTime = startTime - 60000;
             point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.timestamp, prevTime);
+                prevTime += 1000;
+            });
+            
+            prevTime = startTime - 60000;
+            point5Result.forEach((pv, i) => {
                 assert.strictEqual(pv.value, null);
                 assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
@@ -1343,5 +1407,4 @@ describe('Point values v2', function() {
                     moment.tz(pointValues1[0].timestamp, 'Australia/Sydney').startOf('day').format());
         });
     });
-
 });
