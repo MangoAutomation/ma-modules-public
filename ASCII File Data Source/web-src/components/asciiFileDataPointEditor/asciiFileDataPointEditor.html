@@ -34,7 +34,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.file.pointIdentifierIndex"></label>
-        <input name="pointIdentifierIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifierIndex" ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
+        <input name="pointIdentifierIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifierIndex" ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
         <div ng-messages="pointIdentifierIndexModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
@@ -44,7 +44,7 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.file.valueIndex"></label>
-        <input name="valueIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.valueIndex" ma-get-ctrl="valueIndexModelCtrl = $ngModel">
+        <input name="valueIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.valueIndex" ma-get-ctrl="valueIndexModelCtrl = $ngModel">
         <div ng-messages="valueIndexModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="valueIndexModelCtrl.validationMessage"></div>
@@ -62,7 +62,7 @@
     </md-input-container>
 
     <div flex="100" flex-gt-md="50">
-        <md-checkbox class="ma-margin-input-container" name="hasTimestamp" ng-model="$ctrl.dataPoint.pointLocator.hasTimestamp">
+        <md-checkbox ma-flatten-values="false" class="ma-margin-input-container" name="hasTimestamp" ng-model="$ctrl.dataPoint.pointLocator.hasTimestamp">
             <span ma-tr="dsEdit.file.hasTimestamp"></span>
         </md-checkbox>
     </div>
@@ -70,7 +70,7 @@
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.pointLocator.hasTimestamp">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.file.timestampIndex"></label>
-        <input name="timestampIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.timestampIndex" ma-get-ctrl="timestampIndexModelCtrl = $ngModel">
+        <input name="timestampIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.timestampIndex" ma-get-ctrl="timestampIndexModelCtrl = $ngModel">
         <div ng-messages="timestampIndexModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="timestampIndexModelCtrl.validationMessage"></div>
