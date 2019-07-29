@@ -22,9 +22,9 @@ public class PointLinkSetPointWorkItem extends SetPointWorkItem{
 	 * @param source
 	 */
 	public PointLinkSetPointWorkItem(int targetPointId, PointValueTime pvt,
-			PointLinkSetPointSource plSource, SetPointSource source) {
-		super(targetPointId, pvt, source);
-		this.plSource = plSource;
+			PointLinkSetPointSource source) {
+		super(targetPointId, pvt, (SetPointSource)source);
+		this.plSource = source;
 	}
 	
 	
