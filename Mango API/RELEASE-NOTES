@@ -1,3 +1,6 @@
+*Version 3.6.3*
+* Fix point values v2 endpoint to use rendered unit when writing analog statistics
+
 *Version 3.6.2*
 * Fix bug where bookends were not being applied to Simplified data ranges with no values in them
 * Add copy endpoint for data sources PUT /rest/v2/data-sources/copy/
