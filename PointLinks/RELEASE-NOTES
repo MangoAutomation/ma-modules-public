@@ -1,3 +1,6 @@
+*Version 3.6.1*
+* Fix NPE in REST api for links that don't write annotation 
+
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x
 * Combining all 3 script permission group into a single permission group used globally throughout the script
