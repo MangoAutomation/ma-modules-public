@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -52,7 +53,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
  * @author Jared Wiltshire, Terry Packer
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
-
+    
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, MediaTypes.CSV_V1);
     }
@@ -104,13 +105,22 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 
         //TODO detect type/schema for the callback
         // could use the type if we add generics to PointValueTimeImportStream
-        // could use headers if we want to mark/reset the input stream
         reader = reader.forType(XidPointValueTimeModel.class);
         
         CsvSchema schema = CsvSchema.emptySchema().withHeader().withStrictHeaders(false);
         ObjectReader csvReader = reader.with(schema);
         try {
-            Stream<XidPointValueTimeModel> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(csvReader.readValues(inputMessage.getBody()), Spliterator.ORDERED), false); 
+            MappingIterator<XidPointValueTimeModel> iterator = csvReader.readValues(inputMessage.getBody());
+            CsvSchema fullSchema = (CsvSchema)iterator.getParser().getSchema();
+            if(fullSchema.column(PointValueField.VALUE.getFieldName()) == null) {
+                throw new IOException("Missing required column " + PointValueField.VALUE.getFieldName());
+            }else if(fullSchema.column(PointValueField.XID.getFieldName()) == null) {
+                throw new IOException("Missing required column " + PointValueField.XID.getFieldName());
+            }else if(fullSchema.column(PointValueField.TIMESTAMP.getFieldName()) == null) {
+                throw new IOException("Missing required column " + PointValueField.TIMESTAMP.getFieldName());
+            }
+            fullSchema.column("xid");
+            Stream<XidPointValueTimeModel> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false); 
             return stream;
         }catch (IOException ex) {
             throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex, inputMessage);

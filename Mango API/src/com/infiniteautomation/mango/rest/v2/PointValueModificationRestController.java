@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,8 +74,8 @@ public class PointValueModificationRestController {
             @AuthenticationPrincipal User user) {
         
         PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
-        Map<String, PointValueTimeImport> results = new HashMap<>();
-        stream.forEach((pvt) ->{
+        Map<String, PointValueTimeImport> results = new LinkedHashMap<>();
+        stream.forEach((pvt) -> {
 
             results.compute(pvt.getXid(), (xidKey, entry) ->{
                 if(entry == null) {

@@ -24,7 +24,7 @@ const uuidV4 = require('uuid/v4');
 const path = require('path');
 const fs = require('fs');
 
-describe('Point value streaming load tests', function() {
+describe.skip('Point value streaming load tests', function() {
     before('Login', config.login);
 
     const generateSamples = (xid, startTime, numSamples, pollPeriod) => {
@@ -247,7 +247,7 @@ describe('Point value streaming load tests', function() {
         });
     });
     
-    it.skip('Can upload a large CSV file for 2 points in a CSV file with 1 value column', function() {
+    it('Can upload a large CSV file for 2 points in a CSV file with 1 value column', function() {
         this.timeout(50000000);
          
         return client.restRequest({
