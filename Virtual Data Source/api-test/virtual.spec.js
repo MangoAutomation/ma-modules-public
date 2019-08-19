@@ -16,6 +16,7 @@
  */
 
 const config = require('@infinite-automation/mango-client/test/setup');
+const uuidV4 = require('uuid/v4');
 
 describe('Test Virtual data source', function() {
     before('Login', config.login);
@@ -82,6 +83,42 @@ describe('Test Virtual data source', function() {
           assert.equal(savedDp.pointLocator.startValue, "false");
           assert.equal(savedDp.pointLocator.settable, true);
           assert.isNumber(savedDp.id);
+        });
+      });
+    
+    it('Create sinusoidal data point', () => {
+        const xid = uuidV4();
+        const trigger = new DataPoint({
+              enabled: true,
+              dataSourceXid: 'test_virtual',
+              pointLocator: {
+                modelType: "PL.VIRTUAL",
+                dataType: "NUMERIC",
+                settable: true,
+                changeType: "SINUSOIDAL",
+                offset: 0.1,
+                phaseShift: 1.0,
+                amplitude: 2.0,
+                period: 5
+              },
+              name: "virtual",
+              xid: xid
+            });
+
+        return trigger.save().then((savedDp) => {
+          assert.equal(savedDp.xid, xid);
+          assert.equal(savedDp.name, 'virtual');
+          assert.equal(savedDp.enabled, true);
+          assert.equal(savedDp.pointLocator.settable, true);
+          assert.isNumber(savedDp.id);
+          
+          assert.equal(savedDp.pointLocator.modelType, "PL.VIRTUAL");
+          assert.equal(savedDp.pointLocator.dataType, "NUMERIC");
+          assert.equal(savedDp.pointLocator.changeType, "SINUSOIDAL");
+          assert.equal(savedDp.pointLocator.offset, 0.1);
+          assert.equal(savedDp.pointLocator.phaseShift, 1.0);
+          assert.equal(savedDp.pointLocator.amplitude, 2.0);
+          assert.equal(savedDp.pointLocator.period, 5);
         });
       });
 

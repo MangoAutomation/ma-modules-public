@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.virtual.vo.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -278,7 +277,6 @@ public class VirtualPointLocatorModel extends PointLocatorModel<VirtualPointLoca
 	    this.data.getSinusoidalChange().setPeriod(period);
 	}
 
-	@JsonIgnore
 	@CSVColumnGetter(order=30, header="phaseShift")
 	public double getPhaseShift() {
 	    return this.data.getSinusoidalChange().getPhaseShift();
