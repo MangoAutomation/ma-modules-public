@@ -1,5 +1,6 @@
 *Version 3.6.1*
 * Expose phase shift for sinusoidal points in REST model
+* Fix bug in multistate increment type point to work correctly with only 1 state
 
 *Version 3.6.0*
 * Upgraded to work with core version 3.6.x

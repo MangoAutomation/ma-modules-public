@@ -28,7 +28,7 @@ public class IncrementMultistateChangeRT extends ChangeTypeRT {
             }
         }
 
-        if (index == -1)
+        if (index == -1 || vo.getValues().length == 1)
             return new MultistateValue(vo.getValues()[0]);
 
         if (vo.isRoll()) {
