@@ -66,7 +66,7 @@
     </md-input-container>
     
     <!-- Multistate Inputs -->
-    <div flex="100" id="multiStateValuesContainer" class="values-container" ng-if="$ctrl.dataPoint.dataType === 'MULTISTATE'">
+    <div flex="100" id="multiStateValuesContainer" class="values-container" ng-if="$ctrl.dataPoint.dataType === 'MULTISTATE' && $ctrl.dataPoint.pointLocator.changeType !== 'NO_CHANGE'">
         <label ma-tr="dsEdit.virtual.values"></label>
         <md-chips ng-model="$ctrl.dataPoint.pointLocator.values" ng-change="$ctrl.chipsChanged()" readonly="false" md-removable="true"
             md-separator-keys="$ctrl.separatorKeys" ma-form-exclude ma-get-ctrl="valuesModelCtrl = $ngModel">
@@ -86,7 +86,7 @@
         </div>
     </div>
 
-    <md-input-container id="multiStateStartValuesContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.dataType === 'MULTISTATE'">
+    <md-input-container id="multiStateStartValuesContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.dataType === 'MULTISTATE' && $ctrl.dataPoint.pointLocator.changeType !== 'NO_CHANGE'">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.virtual.startValue"></label>
         <md-select name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required
@@ -98,6 +98,16 @@
                 {{value}}
             </md-option>
         </md-select>
+        <div ng-messages="startValueModelCtrl.$error">
+            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
+
+    <md-input-container id="minValueContainer" flex="100" flex-gt-md="50" ng-if="$ctrl.dataPoint.dataType === 'MULTISTATE' && $ctrl.dataPoint.pointLocator.changeType === 'NO_CHANGE'">
+        <md-icon>looks_one</md-icon>
+        <label ma-tr="dsEdit.virtual.startValue"></label>
+        <input name="pointLocator.startValue" ng-model="$ctrl.dataPoint.pointLocator.startValue" required ma-get-ctrl="startValueModelCtrl = $ngModel">
         <div ng-messages="startValueModelCtrl.$error">
             <div ng-message="required" ma-tr="ui.app.required"></div>
             <div ng-message="validationMessage" ng-bind="startValueModelCtrl.validationMessage"></div>
