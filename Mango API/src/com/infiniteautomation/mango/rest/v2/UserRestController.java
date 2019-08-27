@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +36,7 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdFiel
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.definitions.permissions.RegisterDisabledUserPermission;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionDetails;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
@@ -114,6 +116,32 @@ public class UserRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         User newUser = service.insert(model.toVO(), user);
+        URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(new UserModel(newUser), headers, HttpStatus.OK);
+
+    }
+    
+    @PreAuthorize("isGrantedPermission(" + RegisterDisabledUserPermission.PERMISSION + ")")
+    @ApiOperation(
+            value = "Register a Disabled User",
+            notes = "Requires  register disabled user permission",
+            response=UserModel.class
+            )
+    @RequestMapping(method = RequestMethod.POST, value = "/register/disabled")
+    public ResponseEntity<UserModel> addDisabledUser(
+            @ApiParam(value="User", required=true)
+            @RequestBody(required=true)
+            UserModel model,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        User vo = model.toVO();
+        
+        //Ensure we are disabled
+        vo.setDisabled(true);
+        
+        User newUser = service.insert(vo, user);
         URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);

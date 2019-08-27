@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,8 +48,11 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.model.email.EmailContentModel;
 import com.infiniteautomation.mango.rest.v2.model.server.NetworkInterfaceModel;
 import com.infiniteautomation.mango.rest.v2.model.server.ServerCommandModel;
+import com.infiniteautomation.mango.spring.service.MailingListService;
+import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
@@ -60,16 +65,19 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemInfoDefinition;
+import com.serotonin.m2m2.module.definitions.permissions.SendToMailingListPermission;
 import com.serotonin.m2m2.rt.maint.work.ProcessWorkItem;
 import com.serotonin.m2m2.util.HostUtils;
 import com.serotonin.m2m2.util.HostUtils.NICInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
+import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.provider.Providers;
+import com.serotonin.web.mail.EmailContent;
 import com.serotonin.web.mail.EmailSender;
 
 import freemarker.template.TemplateException;
@@ -92,13 +100,20 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final Log log = LogFactory.getLog(ServerRestV2Controller.class);
 
-    @Autowired
-    MangoSessionRegistry sessionRegistry;
-
+    private final MangoSessionRegistry sessionRegistry;
+    private final MailingListService mailingListService;
+    
+    private final UsersService userService;
+    
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
 
-    public ServerRestV2Controller() {
+    @Autowired
+    public ServerRestV2Controller(UsersService userService, MailingListService mailingListService, MangoSessionRegistry sessionRegistry) {
+        this.userService = userService;
+        this.mailingListService = mailingListService;
+        this.sessionRegistry = sessionRegistry;
+    
         this.allTimezones = TimezoneUtility.getTimeZoneIdsWithOffset();
         this.defaultServerTimezone = new TimezoneModel("",
                 new TranslatableMessage("users.timezone.def").translate(Common.getTranslations()),
@@ -160,6 +175,100 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
                 .translate(Common.getTranslations()), HttpStatus.OK);
     }
 
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Send an email", notes = "Sends email to supplied user")
+    @RequestMapping(method = RequestMethod.POST, value = "/email")
+    public ResponseEntity<String> sendEmail(
+            @RequestBody EmailContentModel contentModel,
+            @RequestParam(value = "username", required = true) String username,
+            @AuthenticationPrincipal User user) throws TemplateException, IOException {
+
+        contentModel.ensureValid();
+        
+        //Ensure permissions and existence
+        User sendTo = userService.get(username, user);
+        
+        //TODO confirm this user has a valid email address
+        EmailContent content = contentModel.toEmailContent();
+        
+        EmailSender emailSender = new EmailSender(
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
+                SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
+                SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_AUTHORIZATION),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_USERNAME),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_PASSWORD),
+                SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_TLS),
+                SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SEND_TIMEOUT));
+
+        String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
+        String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
+        
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
+            emailSender.setDebug(ps);
+            try{
+                emailSender.send(fromAddress, sendTo.getEmail(), contentModel.getSubject(), content);
+            }catch(Exception e) {
+                String debug = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+                throw new SendEmailFailedRestException(e, debug);
+            }
+        }
+
+        return new ResponseEntity<String>(new TranslatableMessage("common.emailSent", sendTo.getEmail())
+                .translate(Common.getTranslations()), HttpStatus.OK);
+    }
+    
+    @PreAuthorize("isGrantedPermission(" + SendToMailingListPermission.PERMISSION + ")")
+    @ApiOperation(value = "Send an email to a mailing list", notes = "Requires mailing list send permission")
+    @RequestMapping(method = RequestMethod.POST, value = "/email/mailing-list/{xid}")
+    public ResponseEntity<String> sendEmailToMailingList(
+            @PathVariable String xid,
+            @RequestBody EmailContentModel contentModel,
+            @AuthenticationPrincipal User user) throws TemplateException, IOException, AddressException {
+
+        contentModel.ensureValid();
+        
+        //Ensure permissions and existence
+        MailingList sendTo = mailingListService.get(xid, user);
+        Set<String> emailUsers = new HashSet<String>();
+        sendTo.appendAddresses(emailUsers, new DateTime(Common.timer.currentTimeMillis()));
+        InternetAddress[] toAddresses = new InternetAddress[emailUsers.size()];
+        int i = 0;
+        for (String email : emailUsers) {
+            toAddresses[i] = new InternetAddress(email);
+            i++;
+        }
+        EmailContent content = contentModel.toEmailContent();
+        
+        EmailSender emailSender = new EmailSender(
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
+                SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
+                SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_AUTHORIZATION),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_USERNAME),
+                SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_PASSWORD),
+                SystemSettingsDao.instance.getBooleanValue(SystemSettingsDao.EMAIL_TLS),
+                SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SEND_TIMEOUT));
+
+        String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
+        String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
+        
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
+            emailSender.setDebug(ps);
+            try{
+                emailSender.send(fromAddress, toAddresses, contentModel.getSubject(), content);
+            }catch(Exception e) {
+                String debug = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+                throw new SendEmailFailedRestException(e, debug);
+            }
+        }
+
+        return new ResponseEntity<String>(new TranslatableMessage("common.emailSentToMailingList", xid)
+                .translate(Common.getTranslations()), HttpStatus.OK);
+    }
+    
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Restart Mango",
     notes = "Returns location url in header for status updates while web interface is still active")
