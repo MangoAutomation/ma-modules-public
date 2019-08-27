@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
@@ -49,7 +50,7 @@ import net.jazdw.rql.parser.ASTNode;
  *
  */
 @Api(value="Users V2 Controller")
-//TODO Mango 3.6.x Enable when ready @RestController("UsersV2RestController")
+@RestController("UsersV2RestController")
 @RequestMapping("/users")
 public class UserRestController {
 

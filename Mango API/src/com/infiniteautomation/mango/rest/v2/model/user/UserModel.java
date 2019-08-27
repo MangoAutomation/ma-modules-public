@@ -43,6 +43,7 @@ public class UserModel extends AbstractVoModel<User> {
     private String hashAlgorithm;
     private boolean sessionExpirationOverride;
     private TimePeriod sessionExpirationPeriod;
+    private String organization;
     
     @ApiModelProperty("List of system settings permission definitions this user has access to")
     private Set<String> grantedPermissions;
@@ -166,6 +167,14 @@ public class UserModel extends AbstractVoModel<User> {
         this.grantedPermissions = grants;
     }
     
+    public String getOrganization() {
+        return organization;
+    }
+    
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+    
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -214,6 +223,7 @@ public class UserModel extends AbstractVoModel<User> {
             for(Permission grant : granted)
                 this.grantedPermissions.add(grant.getTypeName());
         }
+        this.organization = vo.getOrganization();
     }
 
     @Override
@@ -243,6 +253,7 @@ public class UserModel extends AbstractVoModel<User> {
             if(sessionExpirationPeriod.getType() != null)
                 user.setSessionExpirationPeriodType(sessionExpirationPeriod.getType().name());
         }
+        user.setOrganization(organization);
         return user;
     }
 }

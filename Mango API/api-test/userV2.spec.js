@@ -17,35 +17,50 @@
 
 const config = require('@infinite-automation/mango-client/test/setup');
 const MangoClient = require('@infinite-automation/mango-client');
+const uuidV4 = require('uuid/v4');
 
-//TODO Re-enable when ready to use v2 endpoints
-describe.skip('User V2 endpoint tests', function() {
+describe('User V2 endpoint tests', function() {
     before('Login', config.login);
-    before('Create test User', function() {
-        global.testUser = {
+    
+    beforeEach('Create test User', function() {
+        const username = uuidV4();
+        this.testUserPassword = uuidV4();
+        this.testUser = {
             name: 'name',
-            username: 'test',
-            password: 'password',
+            username: username,
+            password: this.testUserPassword,
             email: 'test@test.com',
             phone: '808-888-8888',
             disabled: false,
+            locale: '',
             homeUrl: 'www.google.com',
             receiveAlarmEmails: 'NONE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: ['user', 'test'],
+            permissions: ['testuser', 'test'],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,
                 type: 'SECONDS'
-            }
+            },
+            organization: 'Infinite Automation Systems'
         };
         return client.restRequest({
             path: '/rest/v2/users',
             method: 'POST',
-            data: global.testUser
+            data: this.testUser
         }).then(response => {
-            assert.equal(response.data.username, global.testUser.username);
+            assert.equal(response.data.username, this.testUser.username);
+            assert.strictEqual(response.data.organization, this.testUser.organization);
+        });
+    });
+    
+    afterEach('Deletes the test user', function() {
+        return client.restRequest({
+            path: `/rest/v2/users/${this.testUser.username}`,
+            method: 'DELETE'
+        }).then(response => {
+            assert.equal(response.data.username, this.testUser.username);
         });
     });
     
@@ -53,30 +68,20 @@ describe.skip('User V2 endpoint tests', function() {
         this.sessionTimeoutRef = new MangoClient(config);
     });
     
-    after('Deletes the test user', function() {
-        return client.restRequest({
-            path: `/rest/v2/users/test`,
-            method: 'DELETE'
-        }).then(response => {
-            assert.equal(response.data.username, global.testUser.username);
-        });
-    });
-    
-    it('Fails to create user without password', () =>{
+    it('Fails to create user without password', function() {
         return client.restRequest({
             path: '/rest/v2/users',
             method: 'POST',
             data: {
                 name: 'name',
-                username: 'test',
+                username: this.testUser.username,
                 email: 'test@test.com',
                 phone: '808-888-8888',
                 disabled: false,
                 homeUrl: 'www.google.com',
                 receiveAlarmEmails: 'NONE',
                 receiveOwnAuditEvents: false,
-                muted: false,
-                //permissions: ['user', 'test'],
+                muted: false
             }
         }).then(response => {
             throw new Error('Should not have created user');
@@ -86,17 +91,17 @@ describe.skip('User V2 endpoint tests', function() {
     });
     
     
-    it('Queries to match all user permissions', () => {
+    it('Queries to match all user permissions', function() {
         return client.restRequest({
-            path: `/rest/v2/users?permissionsContainsAll(permissions,user,test)`,
+            path: `/rest/v2/users?permissionsContainsAll(permissions,testuser,test)`,
             method: 'GET'
         }).then(response => {
             assert.equal(response.data.total, 1);
-            assert.equal(response.data.items[0].username, global.testUser.username);
+            assert.equal(response.data.items[0].username, this.testUser.username);
         });
     });
     
-    it('Queries to match one user permission', () => {
+    it('Queries to match one user permission', function() {
         return client.restRequest({
             path: `/rest/v2/users?permissionsContainsAny(permissions,superadmin)`,
             method: 'GET'
@@ -106,24 +111,25 @@ describe.skip('User V2 endpoint tests', function() {
         });
     });
     
-    it('Patch test user', ()=>{
+    it('Patch test user', function() {
         return client.restRequest({
-            path: `/rest/v2/users/test`,
+            path: `/rest/v2/users/${this.testUser.username}`,
             method: 'PATCH',
             data: {
                 name: 'test user'
             }
         }).then(response => {
-            assert.equal(response.data.username, global.testUser.username);
+            assert.equal(response.data.username, this.testUser.username);
             assert.equal(response.data.name, 'test user');
         });
     });
     
     //TODO something is wrong with this as we can't login
-    it.skip('User session timeout override expires session', function() {
+    it('User session timeout override expires session', function() {
+        this.timeout(5000);
         const loginClient = new MangoClient(config);
-        return loginClient.User.login('test', 'password').then(() => {
-            return config.delay(1000);
+        return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
+            return config.delay(2000);
         }).then(() => {
             return loginClient.User.current().then(response => {
                 throw new Error('Session should be expired');

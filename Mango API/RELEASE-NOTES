@@ -1,3 +1,6 @@
+*Version 3.7.0*
+* Expose organization field in User REST v1 and v2 models
+
 *Version 3.6.3*
 * Fix point values v2 endpoint to use rendered unit when writing analog statistics
 

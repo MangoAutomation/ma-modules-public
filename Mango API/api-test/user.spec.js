@@ -59,8 +59,8 @@ describe('User service', () => {
             throw new Error('Timeout cannot be < 1s');
         }, error => {
             assert.strictEqual(error.status, 422);
-        })    
-    })
+        });   
+    });
     
     it('User session timeout override expires session', function() {
         this.timeout(5000);

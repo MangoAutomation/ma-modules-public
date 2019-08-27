@@ -379,6 +379,14 @@ public class UserModel extends AbstractRestModel<User> {
         return new Date(data.getPasswordChangeTimestamp());
     }
 
+    public String getOrganization() {
+        return data.getOrganization();
+    }
+    
+    public void setOrganization(String organization) {
+        this.data.setOrganization(organization);
+    }
+    
     public List<RestValidationMessage> getMessages() {
         return messages;
     }
@@ -386,11 +394,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setMessages(List<RestValidationMessage> messages) {
         this.messages = messages;
     }
-
-    /*
-     * (non-Javadoc)
-     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel#validate(com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult)
-     */
+    
     @Override
     public boolean validate(){
         ProcessResult validation = new ProcessResult();
