@@ -62,6 +62,10 @@ public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, DAO extends Ab
         this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), toModel, loadRelational);
     }
     
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
+        this(service, service.getDao().rqlToCondition(rql), filter, toModel, loadRelational);
+    }
+    
     public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
         this.service = service;
         this.conditions = conditions;

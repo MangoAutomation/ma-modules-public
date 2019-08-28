@@ -10,7 +10,7 @@ public class WebSocketClosedException extends WebSocketSendException {
     private static final long serialVersionUID = 1L;
 
     public WebSocketClosedException() {
-        super();
+        super("Websocket closed");
     }
 
     public WebSocketClosedException(String message, Throwable cause) {
