@@ -219,7 +219,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
                 .translate(Common.getTranslations()), HttpStatus.OK);
     }
     
-    @PreAuthorize("isGrantedPermission(" + SendToMailingListPermission.PERMISSION + ")")
+    @PreAuthorize("isGrantedPermission('" + SendToMailingListPermission.PERMISSION + "')")
     @ApiOperation(value = "Send an email to a mailing list", notes = "Requires mailing list send permission")
     @RequestMapping(method = RequestMethod.POST, value = "/email/mailing-list/{xid}")
     public ResponseEntity<String> sendEmailToMailingList(
@@ -230,7 +230,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         contentModel.ensureValid();
         
         //Ensure permissions and existence
-        MailingList sendTo = mailingListService.get(xid, user);
+        MailingList sendTo = mailingListService.getFull(xid, user);
         Set<String> emailUsers = new HashSet<String>();
         sendTo.appendAddresses(emailUsers, new DateTime(Common.timer.currentTimeMillis()));
         InternetAddress[] toAddresses = new InternetAddress[emailUsers.size()];
