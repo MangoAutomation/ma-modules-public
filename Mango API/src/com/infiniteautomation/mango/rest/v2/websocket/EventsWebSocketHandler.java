@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,20 +20,24 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.EventsRestController;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
+import com.infiniteautomation.mango.spring.service.EventInstanceService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
 import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.rt.event.UserEventListener;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 
 /**
  * @author Terry Packer
@@ -101,7 +106,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     }
     
     private final RestModelMapper modelMapper;
-    private final EventsRestController controller;
+    private final EventInstanceService service;
     
     private volatile Set<AlarmLevels> levels;
     private volatile EnumSet<EventActionEnum> actions;
@@ -110,10 +115,10 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     private final Object lock = new Object();
     
     @Autowired
-    public EventsWebSocketHandler(RestModelMapper modelMapper, EventsRestController controller) {
+    public EventsWebSocketHandler(RestModelMapper modelMapper, EventInstanceService service) {
         super(true);
         this.modelMapper = modelMapper;
-        this.controller = controller;
+        this.service = service;
     }
     
     @Override
@@ -208,17 +213,35 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
                 }
                 if(subscription.isSendEventLevelSummaries()) {
                     WebSocketResponse<List<EventLevelSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                    response.setPayload(controller.getActiveSummary(user));
+                    List<UserEventLevelSummary> summaries = service.getActiveSummary(user);
+                    List<EventLevelSummaryModel> models = summaries.stream().map(s -> { 
+                            EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
+                            return new EventLevelSummaryModel(s.getAlarmLevel(), s.getUnsilencedCount(), instanceModel);
+                        }).collect(Collectors.toList());
+                    response.setPayload(models);
                     this.sendRawMessage(session, response);
                 }else {
                     this.sendRawMessage(session, new WebSocketResponse<Void>(request.getSequenceNumber()));
                 }
             }else if(request instanceof EventsDataPointSummaryRequest) {
-                //TODO Try/Catch NotFound/Permissions and send error message
                 EventsDataPointSummaryRequest query = (EventsDataPointSummaryRequest)request;
-                WebSocketResponse<Collection<DataPointEventSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                response.setPayload(controller.getDataPointEventSummaries(query.getDataPointXids(), user));
+                WebSocketResponse<List<DataPointEventSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
+                Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(query.getDataPointXids(), user);
+                List<DataPointEventSummaryModel> models = summaries.stream().map(s -> new DataPointEventSummaryModel(s.getXid(), s.getCounts())).collect(Collectors.toList());
+                response.setPayload(models);
                 this.sendRawMessage(session, response);
+            }
+        } catch(NotFoundException e) {
+            try {
+                this.sendErrorMessage(session, MangoWebSocketErrorType.NOT_FOUND, e.getTranslatableMessage());
+            } catch (Exception e1) {
+                log.error(e.getMessage(), e);
+            }
+        }catch(PermissionException e) {
+            try {
+                this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED, e.getTranslatableMessage());
+            } catch (Exception e1) {
+                log.error(e.getMessage(), e);
             }
         } catch (Exception e) {
             try {

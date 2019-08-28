@@ -12,6 +12,7 @@ public enum MangoWebSocketErrorType {
 	
 	SERVER_ERROR,
 	NOT_LOGGED_IN,
-	PERMISSION_DENIED
+	PERMISSION_DENIED,
+	NOT_FOUND
 
 }

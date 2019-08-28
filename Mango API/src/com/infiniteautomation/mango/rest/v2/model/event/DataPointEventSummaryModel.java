@@ -3,11 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.EventInstance;
 
 /**
  * @author Terry Packer
@@ -19,9 +17,9 @@ public class DataPointEventSummaryModel {
     
     public DataPointEventSummaryModel() { }
     
-    public DataPointEventSummaryModel(String xid) {
+    public DataPointEventSummaryModel(String xid, Map<AlarmLevels, Integer> counts) {
         this.xid = xid;
-        this.counts = new HashMap<>();
+        this.counts = counts;
     }
     
     public String getXid() {
@@ -38,15 +36,5 @@ public class DataPointEventSummaryModel {
 
     public void setCounts(Map<AlarmLevels, Integer> counts) {
         this.counts = counts;
-    }
-
-    public void update(EventInstance instance) {
-        counts.compute(instance.getAlarmLevel(), (level, count) ->{
-            if(count == null) {
-                return 1;
-            }else {
-                return count++;
-            }
-        });
     }
 }
