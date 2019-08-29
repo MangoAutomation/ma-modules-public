@@ -135,7 +135,7 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
             return this.objectMapper.readerForUpdating(object).readValue(inputMessage.getBody());
         }
         catch (IOException ex) {
-            throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex);
+            throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex, inputMessage);
         }
     }
 

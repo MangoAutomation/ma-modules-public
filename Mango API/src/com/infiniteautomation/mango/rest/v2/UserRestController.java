@@ -150,7 +150,7 @@ public class UserRestController {
 
     @ApiOperation(
             value = "Partially update a User",
-            notes = "Admin or Patch Self onlyy",
+            notes = "Admin or Patch Self only",
             response=UserModel.class
             )
     @RequestMapping(method = RequestMethod.PATCH, value="/{username}")
