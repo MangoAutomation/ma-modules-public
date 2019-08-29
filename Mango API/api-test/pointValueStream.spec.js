@@ -21,6 +21,8 @@
 
 const config = require('@infinite-automation/mango-client/test/setup');
 const uuidV4 = require('uuid/v4');
+const path = require('path');
+const fs = require('fs');
 
 describe.skip('Point value streaming load tests', function() {
     before('Login', config.login);
@@ -117,7 +119,7 @@ describe.skip('Point value streaming load tests', function() {
     
     //TODO ALL Statistics make a large memory difference
     
-    it('Can make a MILLISECOND rollup request for 2 points for a large JSON file', function() {
+    it.skip('Can make a MILLISECOND rollup request for 2 points for a large JSON file', function() {
         this.timeout(50000000);
 
         return client.restRequest({
@@ -148,7 +150,7 @@ describe.skip('Point value streaming load tests', function() {
         
     });
     
-    it('Can make a MILLISECOND default rollup request for 2 points for a large JSON file', function() {
+    it.skip('Can make a MILLISECOND default rollup request for 2 points for a large JSON file', function() {
         this.timeout(50000000);
 
         return client.restRequest({
@@ -179,7 +181,7 @@ describe.skip('Point value streaming load tests', function() {
         
     });
     
-    it('Can make a MILLISECOND rollup request for 2 points for a CSV large file', function() {
+    it.skip('Can make a MILLISECOND rollup request for 2 points for a CSV large file', function() {
         this.timeout(50000000);
          
         return client.restRequest({
@@ -212,7 +214,7 @@ describe.skip('Point value streaming load tests', function() {
         });
     });
     
-    it('Can make a MILLISECOND default rollup request for 2 points for a CSV large file', function() {
+    it.skip('Can make a MILLISECOND default rollup request for 2 points for a CSV large file', function() {
         this.timeout(50000000);
          
         return client.restRequest({
@@ -243,6 +245,77 @@ describe.skip('Point value streaming load tests', function() {
                         new Date(pointValues1[pointValues1.length - 1].timestamp).toISOString());
             }
         });
-        
+    });
+    
+    it('Can upload a large CSV file for 2 points in a CSV file with 1 value column', function() {
+        this.timeout(50000000);
+         
+        return client.restRequest({
+            path: `/rest/v2/point-values/multiple-arrays/time-period/AVERAGE`,
+            method: 'POST',
+            headers: {
+                'Accept': 'text/csv',
+                'Accept-Encoding': 'gzip, deflate'
+            },
+            data: {
+                dateTimeFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                fields: ["TIMESTAMP", "VALUE", "XID"],
+                from: `${isoFrom}`,
+                to: `${isoTo}`,
+                timePeriod: {
+                    periods: 1,
+                    type: 'MILLISECONDS'
+                },
+                xids: ['voltage', 'temperature']
+                //xids: [`${testPointXid1}`,`${testPointXid2}`],
+            },
+            writeToFile: 'pointValues.csv'
+        }).then(response => {
+            const uploadFileName = path.resolve('pointValues.csv');
+            return client.restRequest({
+                path: `/rest/v2/point-value-modification/import`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/csv;charset=UTF-8'
+                },
+                data: fs.readFileSync(uploadFileName)
+                //TODO data: fs.createReadStream(uploadFileName)
+            }).then(response => {
+                console.log(response);
+            }, error => {console.log('error' + error.data);});
+        });
+    });
+    
+    it('Can upload a large JSON file for 2 points', function() {
+        this.timeout(50000000);
+        //We need to ensure the data comes back as an array with value,xid,timestamp 
+        //but we don't have an endpoint for multiple points that does that AFAIK yet.
+        return client.restRequest({
+            path: `/rest/v2/point-value-modification/import`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            data: [ {
+                timestamp : "2000-11-29T14:57:30.240-10:00",
+                xid : "temperature",
+                value : null,
+                name : "Temperature",
+                deviceName : "Dashboard Demo",
+                bookend : true
+              }, {
+                timestamp : "2019-07-24T07:23:09.360-10:00",
+                xid : "temperature",
+                value : 1.0020763454149213,
+                name : "Temperature",
+                deviceName : "Dashboard Demo"
+              }]
+        }).then(response => {
+            console.log('stuff');
+            console.log(response);
+        }, error => {
+            console.log(error);
+            console.log(error.data);
+        });
     });
 });

@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,11 +26,17 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.JsonStreamMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
@@ -126,7 +133,19 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
                 .setDateFormat(GenericCSVMessageConverter.EXCEL_DATE_FORMAT)
                 .registerModule(new CsvJacksonModule());
     }
-
+    
+    @Bean("csvMapper")
+    public CsvMapper csvMapper() {
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
+        csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
+        csvMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        csvMapper.registerModule(new JavaTimeModule());
+        csvMapper.registerModule(new CsvJacksonModule());
+        csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
+        return csvMapper;
+    }
+    
     /**
      * Configure the Message Converters for the API
      */
@@ -136,6 +155,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         // see WebMvcConfigurationSupport.addDefaultHttpMessageConverters()
         converters.add(new ResourceHttpMessageConverter());
         converters.add(new ResourceRegionHttpMessageConverter());
+        converters.add(new JsonStreamMessageConverter(mapper));
         converters.add(new MappingJackson2HttpMessageConverter(mapper));
         converters.add(new CsvMessageConverter());
         converters.add(new CsvRowMessageConverter());
@@ -144,8 +164,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new HtmlHttpMessageConverter());
         converters.add(new SerotoninJsonMessageConverter());
         converters.add(new SqlMessageConverter());
-
-        converters.add(new PointValueTimeStreamCsvMessageConverter());
+        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
         converters.add(new CsvObjectStreamMessageConverter());
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
         converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
