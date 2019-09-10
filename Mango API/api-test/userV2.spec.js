@@ -43,7 +43,14 @@ describe('User V2 endpoint tests', function() {
                 periods: 1,
                 type: 'SECONDS'
             },
-            organization: 'Infinite Automation Systems'
+            organization: 'Infinite Automation Systems',
+            organizationalRole: 'test engineer',
+            data: {
+                stringField: 'some random string',
+                numberField: 123,
+                booleanField: true
+            }
+                
         };
         return client.restRequest({
             path: '/rest/v2/users',
@@ -52,6 +59,10 @@ describe('User V2 endpoint tests', function() {
         }).then(response => {
             assert.equal(response.data.username, this.testUser.username);
             assert.strictEqual(response.data.organization, this.testUser.organization);
+            assert.strictEqual(response.data.organizationalRole, this.testUser.organizationalRole);
+            assert.strictEqual(response.data.data.stringField, this.testUser.data.stringField);
+            assert.strictEqual(response.data.data.numberField, this.testUser.data.numberField);
+            assert.strictEqual(response.data.data.booleanField, this.testUser.data.booleanField);
             this.testUser.id = response.data.id;
         });
     });
@@ -63,7 +74,7 @@ describe('User V2 endpoint tests', function() {
             name: 'admin name',
             username: username,
             password: this.testAdminUserPassword,
-            email: 'test@test.com',
+            email: 'admin@test.com',
             phone: '808-888-8888',
             disabled: false,
             locale: '',

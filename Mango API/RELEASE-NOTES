@@ -4,6 +4,10 @@
 * Add endpoint /v2/server/email/mailing-list/{xid} to allow users to send emails to a mailing list
 * Add endpoint /v2/server/email to allow admins to send email to any Mango user
 * Adding high performant point value import endpoint for CSV and JSON at v2/point-value-modification/import
+* Adding /v2/users/registration/public/send-email to allow public user registration see Core env property web.security.publicRegistrationEnabled to enable
+* Adding /v2/users/registration/send-email for users to request an emailed token to verify their email addresses
+* Adding /v2/users/registration/public/verify-email for users to publicly verify their email addresses
+* Adding /v2/users/registration/verify-email for users to verify their email addresses
 
 *Version 3.6.3*
 * Fix point values v2 endpoint to use rendered unit when writing analog statistics
