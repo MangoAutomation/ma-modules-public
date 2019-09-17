@@ -72,13 +72,13 @@ public class UserRestController {
     private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
-    private final EmailAddressVerificationService emailConfirmationService;
+    private final EmailAddressVerificationService emailVerificationService;
 
     @Autowired
     public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry, EmailAddressVerificationService emailConfirmationService) {
         this.service = service;
         this.sessionRegistry = sessionRegistry;
-        this.emailConfirmationService = emailConfirmationService;
+        this.emailVerificationService = emailConfirmationService;
     }
 
     @ApiOperation(
@@ -313,19 +313,23 @@ public class UserRestController {
         return service.getUserGroups(exclude, user);
     }
 
-    @ApiOperation(value = "Public endpoint that sends an email containing an email confirmation link", notes="This endpoint is for new users, existing users will recieve a warning email")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/public/send-email")
+    /**
+     * CAUTION: This method is public!
+     */
+    @ApiOperation(value = "Public endpoint that sends an email containing an email verification link", notes="This endpoint is for new users, existing users will recieve a warning email")
+    @RequestMapping(method = RequestMethod.POST, value = "/email-verification/send-email")
     public ResponseEntity<Void> sendEmailPublic(
             @RequestBody String emailAddress,
 
             @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
 
-        emailConfirmationService.sendVerificationEmail(emailAddress, null, user);
+        emailVerificationService.sendVerificationEmail(emailAddress, null, user);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @ApiOperation(value = "Sends an email containing an email confirmation link for a given user")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/send-email/{username}")
+    @ApiOperation(value = "Sends an email containing an email verification link for a given user")
+    @RequestMapping(method = RequestMethod.POST, value = "/email-verification/send-email/{username}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> sendEmail(
             @ApiParam(value = "Username of the user to update", required = false, allowMultiple = false)
             @PathVariable String username,
@@ -341,43 +345,51 @@ public class UserRestController {
             userToUpdate = user;
         }
 
-        emailConfirmationService.sendVerificationEmail(emailAddress, userToUpdate, user);
+        emailVerificationService.sendVerificationEmail(emailAddress, userToUpdate, user);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * CAUTION: This method is public!
+     * However the token is cryptographically verified.
+     */
     @ApiOperation(value = "Verifies an email verification token then creates a new user", notes="The new user is created disabled and must be approved by an administrator.")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/public/create-user")
-    public ResponseEntity<Void> verify(
+    @RequestMapping(method = RequestMethod.POST, value = "/email-verification/create-user")
+    public ResponseEntity<UserModel> verifyEmailCreateUser(
             @RequestBody EmailVerificationRequestBody body) {
 
         body.ensureValid();
         try {
             User newUser = body.getUser().toVO();
-            emailConfirmationService.publicCreateNewUser(body.getToken(), newUser);
+            User created = emailVerificationService.publicCreateNewUser(body.getToken(), newUser);
+            return new ResponseEntity<>(new UserModel(created), HttpStatus.OK);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * CAUTION: This method is public!
+     * However the token is cryptographically verified.
+     */
     @ApiOperation(value = "Verifies an email verification token then updates the target user", notes="")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/public/verify-email")
-    public ResponseEntity<Void> verifyPublic(
+    @RequestMapping(method = RequestMethod.POST, value = "/email-verification/update-user")
+    public ResponseEntity<UserModel> verifyEmailUpdateUser(
             @RequestBody String token) {
 
         try {
-            emailConfirmationService.verifyUserEmail(token);
+            User updated = emailVerificationService.verifyUserEmail(token);
+            return new ResponseEntity<>(new UserModel(updated), HttpStatus.OK);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all email verification tokens")
-    @RequestMapping(path="/registration/reset-keys", method = RequestMethod.POST)
+    @RequestMapping(path="/email-verification/reset-keys", method = RequestMethod.POST)
     @PreAuthorize("isAdmin()")
     public ResponseEntity<Void> resetKeys() {
-        emailConfirmationService.resetKeys();
+        emailVerificationService.resetKeys();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
