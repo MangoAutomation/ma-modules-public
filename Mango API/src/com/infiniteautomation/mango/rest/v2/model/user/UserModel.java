@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
@@ -44,6 +45,10 @@ public class UserModel extends AbstractVoModel<User> {
     private boolean sessionExpirationOverride;
     private TimePeriod sessionExpirationPeriod;
     private String organization;
+    private String organizationalRole;
+    private Date created;
+    private Date emailVerified;
+    private JsonNode data;
     
     @ApiModelProperty("List of system settings permission definitions this user has access to")
     private Set<String> grantedPermissions;
@@ -175,6 +180,30 @@ public class UserModel extends AbstractVoModel<User> {
         this.organization = organization;
     }
     
+    public String getOrganizationalRole() {
+        return organizationalRole;
+    }
+    
+    public void setOrganizationalRole(String organizationalRole) {
+        this.organizationalRole = organizationalRole;
+    }
+    
+    public Date getCreated() {
+        return created;
+    }
+    
+    public Date getEmailVerified() {
+        return emailVerified;
+    }
+
+    public JsonNode getData() {
+        return data;
+    }
+    
+    public void setData(JsonNode data) {
+        this.data = data;
+    }
+    
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -224,6 +253,12 @@ public class UserModel extends AbstractVoModel<User> {
                 this.grantedPermissions.add(grant.getTypeName());
         }
         this.organization = vo.getOrganization();
+        this.organizationalRole = vo.getOrganizationalRole();
+        this.created = new Date(vo.getCreatedTs());
+        if(vo.getEmailVerifiedTs() > 0) {
+            this.emailVerified = new Date(vo.getEmailVerifiedTs());
+        }
+        this.data = vo.getData();
     }
 
     @Override
@@ -254,6 +289,9 @@ public class UserModel extends AbstractVoModel<User> {
                 user.setSessionExpirationPeriodType(sessionExpirationPeriod.getType().name());
         }
         user.setOrganization(organization);
+        user.setOrganizationalRole(organizationalRole);
+        user.setData(data);
+        
         return user;
     }
 }

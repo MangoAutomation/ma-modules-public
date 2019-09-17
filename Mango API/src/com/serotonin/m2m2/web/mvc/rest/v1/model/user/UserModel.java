@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -385,6 +386,32 @@ public class UserModel extends AbstractRestModel<User> {
     
     public void setOrganization(String organization) {
         this.data.setOrganization(organization);
+    }
+    
+    public String getOrganizationalRole() {
+        return data.getOrganizationalRole();
+    }
+    
+    public void setOrganizationalRole(String organizationalRole) {
+        this.data.setOrganizationalRole(organizationalRole);
+    }
+    
+    public Date getCreated() {
+        return new Date(this.data.getCreatedTs());
+    }
+    
+    public Date getEmailVerified() {
+        return new Date(this.data.getEmailVerifiedTs());
+    }
+
+    @JsonGetter("data")
+    public JsonNode getUserData() {
+        return this.data.getData();
+    }
+    
+    @JsonSetter("data")
+    public void setUserData(JsonNode data) {
+        this.data.setData(data);
     }
     
     public List<RestValidationMessage> getMessages() {
