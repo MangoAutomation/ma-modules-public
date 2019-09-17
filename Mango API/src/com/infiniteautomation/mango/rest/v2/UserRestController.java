@@ -40,14 +40,11 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdFiel
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
 import com.serotonin.m2m2.vo.permission.PermissionDetails;
-import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
@@ -76,14 +73,14 @@ public class UserRestController {
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
     private final EmailAddressVerificationService emailConfirmationService;
-    
+
     @Autowired
     public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry, EmailAddressVerificationService emailConfirmationService) {
         this.service = service;
         this.sessionRegistry = sessionRegistry;
         this.emailConfirmationService = emailConfirmationService;
     }
-    
+
     @ApiOperation(
             value = "Get User by username",
             notes = "",
@@ -97,8 +94,8 @@ public class UserRestController {
             @AuthenticationPrincipal User user) {
         return new UserModel(service.get(username, user));
     }
-    
-    @ApiOperation(value = "Get current user", 
+
+    @ApiOperation(value = "Get current user",
             notes = "Returns the logged in user")
     @RequestMapping(method = RequestMethod.GET, value = "/current")
     public UserModel getCurrentUser(
@@ -106,7 +103,7 @@ public class UserRestController {
             HttpServletRequest request) {
         return new UserModel(user);
     }
-    
+
     @ApiOperation(
             value = "Query Users",
             notes = "Use RQL formatted query",
@@ -120,7 +117,7 @@ public class UserRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
-    
+
     @ApiOperation(
             value = "Create User",
             notes = "Superadmin or permission to created disabled user required",
@@ -140,7 +137,7 @@ public class UserRestController {
         return new ResponseEntity<>(new UserModel(newUser), headers, HttpStatus.OK);
 
     }
-    
+
     @ApiOperation(
             value = "Update User",
             notes = "Admin or Update Self only",
@@ -156,7 +153,7 @@ public class UserRestController {
             HttpServletRequest request,
             UriComponentsBuilder builder,
             Authentication authentication) {
-        
+
         User update = service.update(username, model.toVO(), user);
         if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
@@ -174,7 +171,7 @@ public class UserRestController {
             response=UserModel.class
             )
     @RequestMapping(method = RequestMethod.PATCH, value="/{username}")
-    
+
     public ResponseEntity<UserModel> patchUser(
             @PathVariable String username,
             @ApiParam(value="User", required=true)
@@ -188,19 +185,19 @@ public class UserRestController {
             HttpServletRequest request,
             UriComponentsBuilder builder,
             Authentication authentication) {
-        
+
         User update = service.update(username, model.toVO(), user);
         if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
 
-        
+
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(value = "Delete a user", notes="Admin only")
     @RequestMapping(method = RequestMethod.DELETE, value = "/{username}")
     public UserModel deleteUser(
@@ -209,7 +206,7 @@ public class UserRestController {
             @AuthenticationPrincipal User user) {
         return new UserModel(service.delete(username, user));
     }
-    
+
 
     @ApiOperation(value = "Update a user's home url")
     @RequestMapping(method = RequestMethod.PUT, value = "/{username}/homepage")
@@ -237,7 +234,7 @@ public class UserRestController {
         headers.setLocation(location);
         return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Update a user's audio mute setting",
             notes = "If you do not provide the mute parameter the current setting will be toggled"
@@ -272,7 +269,7 @@ public class UserRestController {
         return new ResponseEntity<>(new UserModel(update), headers, HttpStatus.OK);
 
     }
-    
+
     @ApiOperation(value = "Locks a user's password", notes = "The user with a locked password cannot login using a username and password. " +
             "However the user's auth tokens will still work and the user can still reset their password using a reset token or email link")
     @RequestMapping(method = RequestMethod.PUT, value = "/{username}/lock-password")
@@ -282,7 +279,7 @@ public class UserRestController {
             @AuthenticationPrincipal User currentUser) {
         service.lockPassword(username, currentUser);
     }
-    
+
     @ApiOperation(value = "Get User Permissions Information for all users")
     @RequestMapping(method = RequestMethod.GET, value = "/permissions")
     public Set<PermissionDetails> getUserPermissions(
@@ -316,62 +313,66 @@ public class UserRestController {
         return service.getUserGroups(exclude, user);
     }
 
-    
-    
     @ApiOperation(value = "Public endpoint that sends an email containing an email confirmation link", notes="This endpoint is for new users, existing users will recieve a warning email")
     @RequestMapping(method = RequestMethod.POST, value = "/registration/public/send-email")
-    public ResponseEntity<Void> sendEmailPublic(@RequestBody String emailAddress) throws AddressException, TemplateException, IOException {
+    public ResponseEntity<Void> sendEmailPublic(
+            @RequestBody String emailAddress,
 
-        //Is the system property set
-        if(!Common.envProps.getBoolean("web.security.publicRegistrationEnabled", false)) {
-            throw new AccessDeniedException();
-        }
-        
-        emailConfirmationService.sendEmail(emailAddress, null);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-    
-    @ApiOperation(value = "Sends an email containing an email confirmation link for a given user")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/send-email")
-    public ResponseEntity<Void> sendEmail(
-            @RequestBody int userId,
             @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
 
-        if(!Permissions.hasAdminPermission(user) && userId != user.getId()) {
-            throw new PermissionException(new TranslatableMessage("rest.error.cannotValidateAnotherUsersEmail"), user);
-        }
-        emailConfirmationService.sendEmail(service.get(userId, user), null);
+        emailConfirmationService.sendVerificationEmail(emailAddress, null, user);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    
-    @ApiOperation(value = "Public endpoint to verify the user's email if the token is correct", notes="If a User model is supplied and this is a new user, a new disabled user is created")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/public/verify-email")
+
+    @ApiOperation(value = "Sends an email containing an email confirmation link for a given user")
+    @RequestMapping(method = RequestMethod.POST, value = "/registration/send-email/{username}")
+    public ResponseEntity<Void> sendEmail(
+            @ApiParam(value = "Username of the user to update", required = false, allowMultiple = false)
+            @PathVariable String username,
+
+            @RequestBody String emailAddress,
+
+            @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
+
+        User userToUpdate = null;
+        if (username != null) {
+            userToUpdate = this.service.get(username, user);
+        } else {
+            userToUpdate = user;
+        }
+
+        emailConfirmationService.sendVerificationEmail(emailAddress, userToUpdate, user);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @ApiOperation(value = "Verifies an email verification token then creates a new user", notes="The new user is created disabled and must be approved by an administrator.")
+    @RequestMapping(method = RequestMethod.POST, value = "/registration/public/create-user")
     public ResponseEntity<Void> verify(
             @RequestBody EmailVerificationRequestBody body) {
 
         body.ensureValid();
         try {
             User newUser = body.getUser().toVO();
-            emailConfirmationService.verifyEmail(body.getToken(), newUser);
-        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
-        }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-    
-    @ApiOperation(value = "Verifies the user's email if the token is correct", notes="")
-    @RequestMapping(method = RequestMethod.POST, value = "/registration/verify-email")
-    public ResponseEntity<Void> verifyPublic(
-            @RequestBody String token) {
-        try {
-            emailConfirmationService.verifyEmail(token);
+            emailConfirmationService.publicCreateNewUser(body.getToken(), newUser);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    
+    @ApiOperation(value = "Verifies an email verification token then updates the target user", notes="")
+    @RequestMapping(method = RequestMethod.POST, value = "/registration/public/verify-email")
+    public ResponseEntity<Void> verifyPublic(
+            @RequestBody String token) {
+
+        try {
+            emailConfirmationService.verifyUserEmail(token);
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all email verification tokens")
     @RequestMapping(path="/registration/reset-keys", method = RequestMethod.POST)
     @PreAuthorize("isAdmin()")
@@ -379,9 +380,9 @@ public class UserRestController {
         emailConfirmationService.resetKeys();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    
+
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        
+
         if (user.hasAdminPermission()) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), false);
         } else {
@@ -389,8 +390,8 @@ public class UserRestController {
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
             return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), false);
         }
-    } 
-    
+    }
+
     public static class EmailVerificationRequestBody implements Validatable {
         private String token;
         private UserModel user;
@@ -415,6 +416,6 @@ public class UserRestController {
                 response.addContextualMessage("user", "validate.required");
             }
         }
-        
+
     }
 }
