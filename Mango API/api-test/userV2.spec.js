@@ -57,12 +57,6 @@ describe('User V2 endpoint tests', function() {
             method: 'POST',
             data: this.testUser
         }).then(response => {
-            assert.equal(response.data.username, this.testUser.username);
-            assert.strictEqual(response.data.organization, this.testUser.organization);
-            assert.strictEqual(response.data.organizationalRole, this.testUser.organizationalRole);
-            assert.strictEqual(response.data.data.stringField, this.testUser.data.stringField);
-            assert.strictEqual(response.data.data.numberField, this.testUser.data.numberField);
-            assert.strictEqual(response.data.data.booleanField, this.testUser.data.booleanField);
             this.testUser.id = response.data.id;
         });
     });
@@ -90,12 +84,12 @@ describe('User V2 endpoint tests', function() {
             },
             organization: 'Infinite Automation Systems'
         };
+        
         return client.restRequest({
             path: '/rest/v2/users',
             method: 'POST',
             data: this.testAdminUser
         }).then(response => {
-            assert.equal(response.data.username, this.testAdminUser.username);
             this.testAdminUser.id = response.data.id;
         });
     });
@@ -120,6 +114,26 @@ describe('User V2 endpoint tests', function() {
     
     before('Create a session reference that uses session authentication', function() {
         this.sessionTimeoutRef = new MangoClient(config);
+    });
+    
+    it('Gets a user', function() {
+        return client.restRequest({
+            path: `/rest/v2/users/${encodeURIComponent(this.testUser.username)}`,
+            method: 'GET'
+        }).then(response => {
+            const user = response.data;
+            
+            assert.equal(user.username, this.testUser.username);
+            assert.strictEqual(user.organization, this.testUser.organization);
+            assert.strictEqual(user.organizationalRole, this.testUser.organizationalRole);
+            assert.strictEqual(user.data.stringField, this.testUser.data.stringField);
+            assert.strictEqual(user.data.numberField, this.testUser.data.numberField);
+            assert.strictEqual(user.data.booleanField, this.testUser.data.booleanField);
+            assert.isNull(user.emailVerified);
+            assert.isString(user.created);
+            const date = new Date(user.created);
+            assert.isAbove(date.valueOf(), 0);
+        });
     });
     
     it('Fails to create user without password', function() {
