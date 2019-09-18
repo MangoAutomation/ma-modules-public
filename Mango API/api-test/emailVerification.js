@@ -96,6 +96,40 @@ describe('Email verification', function() {
             it('Cannot distinguish if the email is already in use', function() {
                 return tryPublicEmailVerify.call(this, this.testUser.email);
             });
+
+            it('Can use a public registration token to register', function() {
+                const newUsername = uuidV4();
+                const newUser = {
+                    username: newUsername,
+                    email: `${newUsername}@example.com`,
+                    name: `${newUsername}`,
+                    permissions: [],
+                    password: newUsername,
+                    locale: '',
+                    receiveAlarmEmails: 'IGNORE'
+                };
+
+                // use default client logged in as admin to generate a token
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {emailAddress: newUser.email}
+                }).then(response => {
+                    assert.isString(response.data.token);
+
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/register`,
+                        method: 'POST',
+                        data: {
+                            token: response.data.token,
+                            user: newUser
+                        }
+                    });
+                }).then(response => {
+                    assert.strictEqual(response.data.username, newUsername);
+                    return User.delete(newUsername);
+                });
+            });
         });
     });
 });
