@@ -16,7 +16,8 @@
     "DataSource": true,
     "DataPoint": true,
     "User": true,
-    "pointValues": true
+    "pointValues": true,
+    "SystemSetting": true
   },
 
   // Define globals exposed by modern browsers.
