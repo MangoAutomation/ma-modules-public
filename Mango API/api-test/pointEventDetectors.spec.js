@@ -36,7 +36,7 @@ describe('Point Event detector service', function() {
                 notHigher: false,
                 detectorType : "HIGH_LIMIT",
             };
-    }
+    };
     
     it('Creates a HIGH_LIMIT event detector', function() {
         const highLimitPed = highLimitDetector();
@@ -280,7 +280,7 @@ describe('Point Event detector service', function() {
     }
 
     //Alphanumeric Regex State
-    const alphaRegexStateDetector = function() {
+    const AlphaRegexStateDetector = function() {
         return {
             name : "When matches",
             alarmLevel : 'URGENT',
@@ -291,10 +291,10 @@ describe('Point Event detector service', function() {
             state: 'TEST',
             detectorType : "ALPHANUMERIC_REGEX_STATE",
         };
-    }
+    };
     
     it('Creates a ALPHANUMERIC_REGEX_STATE event detector', function() {
-        const alphaRegexState = new alphaRegexStateDetector();
+        const alphaRegexState = new AlphaRegexStateDetector();
         alphaRegexState.sourceId = this.alphaDp.id;
         return client.restRequest({
             path: '/rest/v2/full-event-detectors',
@@ -323,7 +323,7 @@ describe('Point Event detector service', function() {
     });
     
     it('Deletes a ALPHANUMERIC_REGEX_STATE event detector', function() {
-        const alphaRegexState = new alphaRegexStateDetector();
+        const alphaRegexState = new AlphaRegexStateDetector();
         alphaRegexState.sourceId = this.alphaDp.id;
         return client.restRequest({
             path: '/rest/v2/full-event-detectors',

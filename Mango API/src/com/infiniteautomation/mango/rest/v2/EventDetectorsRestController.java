@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
+import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
@@ -31,6 +34,7 @@ import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
+import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -69,7 +73,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user);
+        return doQuery(rql, user, vo -> map.apply(vo, user));
     }
     
     @ApiOperation(
@@ -183,12 +187,39 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         return ResponseEntity.ok(map.apply(service.delete(xid, user), user));
     }
     
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    @ApiOperation(value = "Gets a list of event detectors for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.GET, produces=MediaTypes.CSV_VALUE)
+    public StreamedArrayWithTotal queryCsv(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+        return this.queryCsvPost(rql, user);
+    }
+    
+    @ApiOperation(value = "Gets a list of event detectors for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.POST, value = "/query", produces=MediaTypes.CSV_VALUE)
+    public StreamedArrayWithTotal queryCsvPost(
+            @ApiParam(value="RQL query AST", required = true)
+            @RequestBody ASTNode rql,
+
+            @AuthenticationPrincipal User user) {
+
+        return doQuery(rql, user, eventDetectorVO -> {
+            ActionAndModel<AbstractEventDetectorModel<?>> actionAndModel = new ActionAndModel<>();
+            actionAndModel.setAction(VoAction.UPDATE);
+            actionAndModel.setOriginalXid(eventDetectorVO.getXid());
+            actionAndModel.setModel(map.apply(eventDetectorVO, user));
+            return actionAndModel;
+        });
+    }
+    
+    private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<T, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, toModel, true);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, toModel, true);
         }
     }
 }
