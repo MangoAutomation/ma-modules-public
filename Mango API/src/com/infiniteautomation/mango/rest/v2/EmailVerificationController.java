@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Date;
 
 import javax.mail.internet.AddressException;
 
@@ -15,14 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.jwt.JwtSignerVerifier;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService;
 import com.infiniteautomation.mango.spring.service.UsersService;
@@ -63,26 +65,58 @@ public class EmailVerificationController {
      * CAUTION: This method is public!
      */
     @ApiOperation(value = "Public endpoint that sends an email containing an email verification link",
-            notes="This endpoint is for verifying new user's email addresses, if a user is registered with this email address already they will recieve a warning email.")
+            notes="This endpoint is for verifying new user's email addresses only, if a user is registered with this email address already they will recieve a warning email.")
     @RequestMapping(method = RequestMethod.POST, value = "/public/send-email")
     public ResponseEntity<Void> publicSendEmail(
-            @RequestBody String emailAddress,
+            @RequestBody PublicEmailVerificationRequest body) throws AddressException, TemplateException, IOException {
 
-            @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
-
-        emailVerificationService.sendVerificationEmail(emailAddress, null, user);
+        body.ensureValid();
+        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), null, null, null);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @ApiOperation(value = "Creates a token for registering a user with a verified email", notes="Only useful for testing")
-    @RequestMapping(method = RequestMethod.POST, value = "/create")
-    @PreAuthorize("isAdmin()")
-    public ResponseEntity<CreateTokenResponse> createPublicRegistrationToken(
-            @RequestBody String emailAddress,
+    @ApiOperation(value = "Creates a token for verifying an email address and sends it to that email address",
+            notes="If the username is specified then the generated token is used to update that user's email address")
+    @RequestMapping(method = RequestMethod.POST, value = "/send-email")
+    public ResponseEntity<Void> sendEmail(
+            @RequestBody EmailVerificationRequest body,
 
             @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
 
-        String token = emailVerificationService.generateToken(emailAddress, null, null, user);
+        body.ensureValid();
+
+        User userToUpdate = null;
+        String username = body.getUsername();
+        if (username != null && !username.isEmpty()) {
+            userToUpdate = this.service.get(username, user);
+        }
+
+        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, null, user);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @ApiOperation(value = "Creates a token for updating/verifying a user's email address, or for registering a new user if a username is not supplied")
+    @RequestMapping(method = RequestMethod.POST, value = "/create-token")
+    @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
+    public ResponseEntity<CreateTokenResponse> createPublicRegistrationToken(
+            @RequestBody CreateTokenRequest body,
+
+            @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
+
+        body.ensureValid();
+
+        User userToUpdate = null;
+        String username = body.getUsername();
+        if (username != null && !username.isEmpty()) {
+            userToUpdate = this.service.get(username, user);
+        }
+
+        String token;
+        if (body.isSendEmail()) {
+            token = emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, body.getExpiry(), user);
+        } else {
+            token = emailVerificationService.generateToken(body.getEmailAddress(), userToUpdate, body.getExpiry(), user);
+        }
 
         CreateTokenResponse response = new CreateTokenResponse();
         response.setToken(token);
@@ -92,40 +126,19 @@ public class EmailVerificationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Sends an email containing an email verification link for a given user", notes="If username is not supplied, the current user will be updated")
-    @RequestMapping(method = RequestMethod.POST, value = "/send-email/{username}")
-    public ResponseEntity<Void> sendEmail(
-            @ApiParam(value = "Username of the user to update", required = false, allowMultiple = false)
-            @PathVariable String username,
-
-            @RequestBody String emailAddress,
-
-            @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
-
-        User userToUpdate = null;
-        if (username != null) {
-            userToUpdate = this.service.get(username, user);
-        } else {
-            userToUpdate = user;
-        }
-
-        emailVerificationService.sendVerificationEmail(emailAddress, userToUpdate, user);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
     /**
      * CAUTION: This method is public!
-     * However the token is cryptographically verified.
+     * However the token's signature is cryptographically verified.
      */
-    @ApiOperation(value = "Verifies an email verification token then creates a new user", notes="The new user is created disabled and must be approved by an administrator.")
-    @RequestMapping(method = RequestMethod.POST, value = "/public/create-user")
+    @ApiOperation(value = "Registers a new user if the token's signature can be verified", notes="The new user is created disabled and must be approved by an administrator.")
+    @RequestMapping(method = RequestMethod.POST, value = "/public/register")
     public ResponseEntity<UserModel> verifyEmailCreateUser(
-            @RequestBody EmailVerificationRequestBody body) {
+            @RequestBody PublicRegistrationRequest body) {
 
         body.ensureValid();
         try {
             User newUser = body.getUser().toVO();
-            User created = emailVerificationService.publicCreateNewUser(body.getToken(), newUser);
+            User created = emailVerificationService.publicRegisterNewUser(body.getToken(), newUser);
             return new ResponseEntity<>(new UserModel(created), HttpStatus.OK);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
@@ -134,32 +147,95 @@ public class EmailVerificationController {
 
     /**
      * CAUTION: This method is public!
-     * However the token is cryptographically verified.
+     * However the token's signature is cryptographically verified.
      */
-    @ApiOperation(value = "Verifies an email verification token then updates the target user", notes="")
-    @RequestMapping(method = RequestMethod.POST, value = "/public/update-user")
+    @ApiOperation(value = "Updates the target user's email address if the token's signature can be verified")
+    @RequestMapping(method = RequestMethod.POST, value = "/public/update-email")
     public ResponseEntity<UserModel> verifyEmailUpdateUser(
-            @RequestBody String token) {
+            @RequestBody UpdateEmailRequest body) {
 
+        body.ensureValid();
         try {
-            User updated = emailVerificationService.verifyUserEmail(token);
+            User updated = emailVerificationService.updateUserEmailAddress(body.getToken());
             return new ResponseEntity<>(new UserModel(updated), HttpStatus.OK);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
         }
     }
 
+    @ApiOperation(value = "Gets the public key for verifying email verification tokens")
+    @RequestMapping(path="/public-key", method = RequestMethod.GET)
+    public String getPublicKey() {
+        return this.emailVerificationService.getPublicKey();
+    }
+
+    @ApiOperation(value = "Verify the signature and parse an email verification token", notes="Does NOT verify the claims")
+    @RequestMapping(path="/verify", method = RequestMethod.GET)
+    public HeaderClaimsModel verifyToken(
+            @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
+            @RequestParam(required=true) String token) {
+        return new HeaderClaimsModel(this.emailVerificationService.parse(token));
+    }
+
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all email verification tokens")
     @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
-    @PreAuthorize("isAdmin()")
+    @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public ResponseEntity<Void> resetKeys() {
         emailVerificationService.resetKeys();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    public static class EmailVerificationRequestBody implements Validatable {
+    public static class PublicEmailVerificationRequest implements Validatable {
+        String emailAddress;
+
+        @Override
+        public void validate(ProcessResult response) {
+            if (emailAddress == null || emailAddress.isEmpty()) {
+                response.addContextualMessage("emailAddress", "validate.required");
+            }
+        }
+
+        public String getEmailAddress() {
+            return emailAddress;
+        }
+
+        public void setEmailAddress(String emailAddress) {
+            this.emailAddress = emailAddress;
+        }
+    }
+
+    public static class EmailVerificationRequest extends PublicEmailVerificationRequest {
+        String username;
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+    }
+
+    public static class CreateTokenRequest extends EmailVerificationRequest {
+        boolean sendEmail = false;
+        Date expiry;
+
+        public boolean isSendEmail() {
+            return sendEmail;
+        }
+        public void setSendEmail(boolean sendEmail) {
+            this.sendEmail = sendEmail;
+        }
+        public Date getExpiry() {
+            return expiry;
+        }
+        public void setExpiry(Date expiry) {
+            this.expiry = expiry;
+        }
+    }
+
+    public static class UpdateEmailRequest implements Validatable {
         private String token;
-        private UserModel user;
 
         public String getToken() {
             return token;
@@ -167,6 +243,18 @@ public class EmailVerificationController {
         public void setToken(String token) {
             this.token = token;
         }
+
+        @Override
+        public void validate(ProcessResult response) {
+            if (StringUtils.isEmpty(token)) {
+                response.addContextualMessage("token", "validate.required");
+            }
+        }
+    }
+
+    public static class PublicRegistrationRequest extends UpdateEmailRequest {
+        private UserModel user;
+
         public UserModel getUser() {
             return user;
         }
@@ -176,10 +264,8 @@ public class EmailVerificationController {
 
         @Override
         public void validate(ProcessResult response) {
-            if(StringUtils.isEmpty(token)) {
-                response.addContextualMessage("token", "validate.required");
-            }
-            if(user == null) {
+            super.validate(response);
+            if (user == null) {
                 response.addContextualMessage("user", "validate.required");
             }
         }

@@ -58,7 +58,7 @@ describe('Email verification', function() {
             return this.publicClient.restRequest({
                 path: `${emailVerificationUrl}/public/send-email`,
                 method: 'POST',
-                data: randomEmail
+                data: {emailAddress: randomEmail}
             });
         };
         

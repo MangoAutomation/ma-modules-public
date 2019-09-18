@@ -111,7 +111,7 @@ public class PasswordResetController {
         return this.passwordResetService.getPublicKey();
     }
 
-    @ApiOperation(value = "Verify the sigature and parse a password reset token", notes="Does NOT verify the claims")
+    @ApiOperation(value = "Verify the signature and parse a password reset token", notes="Does NOT verify the claims")
     @RequestMapping(path="/verify", method = RequestMethod.GET)
     public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
