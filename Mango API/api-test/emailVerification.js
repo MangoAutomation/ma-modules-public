@@ -20,6 +20,7 @@ const MangoClient = require('@infinite-automation/mango-client');
 const uuidV4 = require('uuid/v4');
 
 const emailVerificationUrl = '/rest/v2/users/email-verification';
+const publicRegistrationSystemSetting = 'users.publicRegistration.enabled';
 
 describe('Email verification', function() {
     before('Login', config.login);
@@ -45,19 +46,46 @@ describe('Email verification', function() {
         this.publicClient = new MangoClient(config);
     });
     
-    describe('With registration disabled', function() {
-        it('Triggers a verification email when not authenticated (public)', function() {
-            const randomEmail = `${uuidV4()}@example.com`;
-            
-            return this.publicClient.restRequest({
-                path: `${emailVerificationUrl}/send-email`,
-                method: 'POST',
-                data: randomEmail
-            }).then(response => {
+    const enablePublicRegistration = function(value) {
+        return client.restRequest({
+            path: `/rest/v1/system-settings/${encodeURIComponent(publicRegistrationSystemSetting)}`,
+            method: 'PUT',
+            params: {type: 'BOOLEAN'},
+            data: !!value
+        });
+    };
+    
+    const tryPublicEmailVerify = function() {
+        const randomEmail = `${uuidV4()}@example.com`;
+        
+        return this.publicClient.restRequest({
+            path: `${emailVerificationUrl}/send-email`,
+            method: 'POST',
+            data: randomEmail
+        });
+    };
+
+    describe('With public registration disabled', function() {
+        before('Disable public registration', function() {
+            return enablePublicRegistration.call(this, false);
+        });
+
+        it('Cannot send a verification email via public endpoint', function() {
+            return tryPublicEmailVerify.call(this).then(response => {
                 throw new Error(`Should not succeed, however got a ${response.status} response`);
             }, error => {
                 assert.strictEqual(error.status, 500);
             });
+        });
+    });
+    
+    describe('With public registration enabled', function() {
+        before('Enable public registration', function() {
+            return enablePublicRegistration.call(this, true);
+        });
+
+        it('Can send a verification email via public endpoint', function() {
+            return tryPublicEmailVerify.call(this);
         });
     });
 });
