@@ -322,7 +322,7 @@ public class UserModel extends AbstractRestModel<User> {
             data.setPasswordHash(this.hashAlgorithm, password);
         }
     }
-    
+
     @JsonGetter
     public Set<String> getGrantedPermissions() {
         try {
@@ -338,7 +338,7 @@ public class UserModel extends AbstractRestModel<User> {
         }
         return null;
     }
-    
+
     public void setGrantedPermissions(Set<String> grants) {
         //no op
     }
@@ -346,25 +346,25 @@ public class UserModel extends AbstractRestModel<User> {
     public boolean isSessionExpirationOverride() {
         return data.isSessionExpirationOverride();
     }
-    
+
     public void setSessionExpirationOverride(boolean sessionExpirationOverride) {
         this.data.setSessionExpirationOverride(sessionExpirationOverride);
     }
-    
+
     public TimePeriod getSessionExpirationPeriod() {
         if(StringUtils.isNotEmpty(this.data.getSessionExpirationPeriodType()))
-                return new TimePeriod(this.data.getSessionExpirationPeriods(), TimePeriodType.valueOf(this.data.getSessionExpirationPeriodType()));
+            return new TimePeriod(this.data.getSessionExpirationPeriods(), TimePeriodType.valueOf(this.data.getSessionExpirationPeriodType()));
         else
             return null;
     }
-    
+
     public void setSessionExpirationPeriod(TimePeriod period) {
         if(period != null) {
             this.data.setSessionExpirationPeriods(period.getPeriods());
             this.data.setSessionExpirationPeriodType(period.getType().name());
         }
     }
-    
+
     public Date getLastLogin() {
         long lastLogin = data.getLastLogin();
 
@@ -383,37 +383,37 @@ public class UserModel extends AbstractRestModel<User> {
     public String getOrganization() {
         return data.getOrganization();
     }
-    
+
     public void setOrganization(String organization) {
         this.data.setOrganization(organization);
     }
-    
+
     public String getOrganizationalRole() {
         return data.getOrganizationalRole();
     }
-    
+
     public void setOrganizationalRole(String organizationalRole) {
         this.data.setOrganizationalRole(organizationalRole);
     }
-    
+
     public Date getCreated() {
-        return new Date(this.data.getCreatedTs());
+        return this.data.getCreated();
     }
-    
+
     public Date getEmailVerified() {
-        return new Date(this.data.getEmailVerifiedTs());
+        return this.data.getEmailVerified();
     }
 
     @JsonGetter("data")
     public JsonNode getUserData() {
         return this.data.getData();
     }
-    
+
     @JsonSetter("data")
     public void setUserData(JsonNode data) {
         this.data.setData(data);
     }
-    
+
     public List<RestValidationMessage> getMessages() {
         return messages;
     }
@@ -421,7 +421,7 @@ public class UserModel extends AbstractRestModel<User> {
     public void setMessages(List<RestValidationMessage> messages) {
         this.messages = messages;
     }
-    
+
     @Override
     public boolean validate(){
         ProcessResult validation = new ProcessResult();

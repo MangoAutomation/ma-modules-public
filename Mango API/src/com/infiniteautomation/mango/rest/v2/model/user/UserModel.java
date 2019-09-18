@@ -49,7 +49,7 @@ public class UserModel extends AbstractVoModel<User> {
     private Date created;
     private Date emailVerified;
     private JsonNode data;
-    
+
     @ApiModelProperty("List of system settings permission definitions this user has access to")
     private Set<String> grantedPermissions;
 
@@ -151,7 +151,7 @@ public class UserModel extends AbstractVoModel<User> {
     public boolean isSessionExpirationOverride() {
         return sessionExpirationOverride;
     }
-    
+
     public void setSessionExpirationOverride(boolean sessionExpirationOverride) {
         this.sessionExpirationOverride = sessionExpirationOverride;
     }
@@ -159,7 +159,7 @@ public class UserModel extends AbstractVoModel<User> {
     public TimePeriod getSessionExpirationPeriod() {
         return sessionExpirationPeriod;
     }
-    
+
     public void setSessionExpirationPeriod(TimePeriod sessionExpirationPeriod) {
         this.sessionExpirationPeriod = sessionExpirationPeriod;
     }
@@ -167,31 +167,31 @@ public class UserModel extends AbstractVoModel<User> {
     public Set<String> getGrantedPermissions() {
         return grantedPermissions;
     }
-    
+
     public void setGrantedPermissions(Set<String> grants) {
         this.grantedPermissions = grants;
     }
-    
+
     public String getOrganization() {
         return organization;
     }
-    
+
     public void setOrganization(String organization) {
         this.organization = organization;
     }
-    
+
     public String getOrganizationalRole() {
         return organizationalRole;
     }
-    
+
     public void setOrganizationalRole(String organizationalRole) {
         this.organizationalRole = organizationalRole;
     }
-    
+
     public Date getCreated() {
         return created;
     }
-    
+
     public Date getEmailVerified() {
         return emailVerified;
     }
@@ -199,11 +199,11 @@ public class UserModel extends AbstractVoModel<User> {
     public JsonNode getData() {
         return data;
     }
-    
+
     public void setData(JsonNode data) {
         this.data = data;
     }
-    
+
     public boolean isOldHashAlgorithm() {
         //New Users have null passwords
         if(password == null)
@@ -254,10 +254,8 @@ public class UserModel extends AbstractVoModel<User> {
         }
         this.organization = vo.getOrganization();
         this.organizationalRole = vo.getOrganizationalRole();
-        this.created = new Date(vo.getCreatedTs());
-        if(vo.getEmailVerifiedTs() > 0) {
-            this.emailVerified = new Date(vo.getEmailVerifiedTs());
-        }
+        this.created = vo.getCreated();
+        this.emailVerified = vo.getEmailVerified();
         this.data = vo.getData();
     }
 
@@ -291,7 +289,7 @@ public class UserModel extends AbstractVoModel<User> {
         user.setOrganization(organization);
         user.setOrganizationalRole(organizationalRole);
         user.setData(data);
-        
+
         return user;
     }
 }
