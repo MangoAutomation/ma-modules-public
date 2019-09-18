@@ -19,7 +19,7 @@ const config = require('@infinite-automation/mango-client/test/setup');
 const MangoClient = require('@infinite-automation/mango-client');
 const uuidV4 = require('uuid/v4');
 
-const emailVerificationUrl = '/rest/v2/users/email-verification';
+const emailVerificationUrl = '/rest/v2/email-verification';
 const publicRegistrationSystemSetting = 'users.publicRegistration.enabled';
 
 describe('Email verification', function() {
@@ -41,51 +41,53 @@ describe('Email verification', function() {
     after('Delete the test user', function() {
         return this.testUser.delete();
     });
-    
-    beforeEach('Create public client', function() {
-        this.publicClient = new MangoClient(config);
-    });
-    
-    const enablePublicRegistration = function(value) {
-        return client.restRequest({
-            path: `/rest/v1/system-settings/${encodeURIComponent(publicRegistrationSystemSetting)}`,
-            method: 'PUT',
-            params: {type: 'BOOLEAN'},
-            data: !!value
-        });
-    };
-    
-    const tryPublicEmailVerify = function() {
-        const randomEmail = `${uuidV4()}@example.com`;
+
+    describe('Public registration email verification', function() {
+        const enablePublicRegistration = function(value) {
+            return client.restRequest({
+                path: `/rest/v1/system-settings/${encodeURIComponent(publicRegistrationSystemSetting)}`,
+                method: 'PUT',
+                params: {type: 'BOOLEAN'},
+                data: !!value
+            });
+        };
         
-        return this.publicClient.restRequest({
-            path: `${emailVerificationUrl}/send-email`,
-            method: 'POST',
-            data: randomEmail
+        const tryPublicEmailVerify = function() {
+            const randomEmail = `${uuidV4()}@example.com`;
+            
+            return this.publicClient.restRequest({
+                path: `${emailVerificationUrl}/public/send-email`,
+                method: 'POST',
+                data: randomEmail
+            });
+        };
+        
+        beforeEach('Create public client', function() {
+            this.publicClient = new MangoClient(config);
         });
-    };
+        
+        describe('With public registration disabled', function() {
+            before('Disable public registration', function() {
+                return enablePublicRegistration.call(this, false);
+            });
 
-    describe('With public registration disabled', function() {
-        before('Disable public registration', function() {
-            return enablePublicRegistration.call(this, false);
-        });
-
-        it('Cannot send a verification email via public endpoint', function() {
-            return tryPublicEmailVerify.call(this).then(response => {
-                throw new Error(`Should not succeed, however got a ${response.status} response`);
-            }, error => {
-                assert.strictEqual(error.status, 500);
+            it('Cannot send a verification email via public endpoint', function() {
+                return tryPublicEmailVerify.call(this).then(response => {
+                    throw new Error(`Should not succeed, however got a ${response.status} response`);
+                }, error => {
+                    assert.strictEqual(error.status, 500);
+                });
             });
         });
-    });
-    
-    describe('With public registration enabled', function() {
-        before('Enable public registration', function() {
-            return enablePublicRegistration.call(this, true);
-        });
+        
+        describe('With public registration enabled', function() {
+            before('Enable public registration', function() {
+                return enablePublicRegistration.call(this, true);
+            });
 
-        it('Can send a verification email via public endpoint', function() {
-            return tryPublicEmailVerify.call(this);
+            it('Can send a verification email via public endpoint', function() {
+                return tryPublicEmailVerify.call(this);
+            });
         });
     });
 });
