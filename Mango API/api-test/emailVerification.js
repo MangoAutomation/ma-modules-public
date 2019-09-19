@@ -22,6 +22,17 @@ const uuidV4 = require('uuid/v4');
 describe('Email verification', function() {
     const emailVerificationUrl = '/rest/v2/email-verification';
 
+    const createUserV1 = function() {
+        const username = uuidV4();
+        return new User({
+            username,
+            email: `${username}@example.com`,
+            name: `${username}`,
+            permissions: '',
+            password: username
+        });
+    };
+    
     const createUserV2 = function() {
         const newUsername = uuidV4();
         return {
@@ -38,20 +49,12 @@ describe('Email verification', function() {
     before('Login', config.login);
     
     before('Create a test user', function() {
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
-        this.testUser = new User({
-            username,
-            email: `${username}@example.com`,
-            name: `${username}`,
-            permissions: '',
-            password: this.testUserPassword
-        });
+        this.testUser = createUserV1();
         return this.testUser.save();
     });
     
     after('Delete the test user', function() {
-        return this.testUser.delete();
+        return this.testUser.delete().catch(e => null);
     });
     
     before('Disable sending email', function() {
@@ -81,6 +84,10 @@ describe('Email verification', function() {
             return this.publicRegistrationSetting.setValue(this.publicRegistrationWasEnabled);
         }
     });
+    
+    beforeEach('Create public client', function() {
+        this.publicClient = new MangoClient(config);
+    });
 
     describe('Public registration email verification', function() {
         const tryPublicEmailVerify = function(emailAddress = `${uuidV4()}@example.com`) {
@@ -90,11 +97,7 @@ describe('Email verification', function() {
                 data: {emailAddress}
             });
         };
-        
-        beforeEach('Create public client', function() {
-            this.publicClient = new MangoClient(config);
-        });
-        
+
         describe('With public registration disabled', function() {
             before('Disable public registration', function() {
                 return this.publicRegistrationSetting.setValue(false);
@@ -284,16 +287,75 @@ describe('Email verification', function() {
     });
 
     describe('Existing user email verification', function() {
+        const createUserAndVerifyEmail = function() {
+            const user = createUserV1();
+            
+            const promise = user.save().then(() => {
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: user.email,
+                        username: user.username
+                    }
+                });
+            }).then(response => {
+                return this.publicClient.restRequest({
+                    path: `${emailVerificationUrl}/public/update-email`,
+                    method: 'POST',
+                    data: {
+                        token: response.data.token
+                    }
+                });
+            }).then(response => {
+                const updatedUser = response.data;
+
+                assert.isString(updatedUser.emailVerified);
+                assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), 0);
+                
+                user.email = updatedUser.email;
+                user.emailVerified = updatedUser.emailVerified;
+                return user;
+            });
+            
+            return {user, promise};
+        };
+        
         it.skip('Sends email for an existing user');
         it.skip('Won\'t send email for a disabled user');
         it.skip('Verifies a user\'s email address');
         it.skip('Updates a user\'s email address');
         it.skip('Doesn\'t allow verifying the same email address twice');
         it.skip('Can\'t use a public registration token to verify a user\'s email address');
-        it.skip('Manually updating email address sets emailVerified property back to null');
+        
+        it('Manually updating email address sets emailVerified property back to null', function() {
+            const {user, promise} = createUserAndVerifyEmail.call(this);
+            return promise.then(user => {
+                user.email = `${uuidV4()}@example.com`;
+                return user.save();
+            }).then(() => {
+                assert.isNull(user.emailVerified);
+            }).finally(() => {
+                return user.delete().catch(e => null);
+            });
+        });
+        
+        it('Manually updating other properties do not set emailVerified property back to null', function() {
+            const {user, promise} = createUserAndVerifyEmail.call(this);
+            return promise.then(user => {
+                user.name = uuidV4();
+                return user.save();
+            }).then(() => {
+                assert.isString(user.emailVerified);
+                assert.isAbove(new Date(user.emailVerified).valueOf(), 0);
+            }).finally(() => {
+                return user.delete().catch(e => null);
+            });
+        });
+        
         it.skip('Administrator can\'t create verification token for email address that is already in use');
     });
     
-    it('Can retrieve the public key');
-    it('Can verify a token');
+    it.skip('Can retrieve the public key');
+    it.skip('Can verify a token');
 });
