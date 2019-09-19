@@ -252,7 +252,7 @@ describe('JSON Web Token authentication', function() {
             assert.isObject(claims);
             claims.id++; // modify the id
             
-            parts[1] = new Buffer(JSON.stringify(claims)).toString('base64');
+            parts[1] = Buffer.from(JSON.stringify(claims)).toString('base64');
             
             const tamperedToken = parts.join('.');
             assert.notEqual(tamperedToken, token);
@@ -310,16 +310,18 @@ describe('JSON Web Token authentication', function() {
 
     it('Rejects a token with mismatching username and id', function() {
         const createUsers = () => {
+            const username1 = uuidV4();
+            const username2 = uuidV4();
             this.firstUser = new User({
-                username: uuidV4(),
-                email: 'abc@example.com',
+                username: username1,
+                email: `${username1}@example.com`,
                 name: 'This is a name',
                 permissions: '',
                 password: uuidV4()
             });
             this.secondUser = new User({
-                username: uuidV4(),
-                email: 'abc@example.com',
+                username: username2,
+                email: `${username2}@example.com`,
                 name: 'This is a name',
                 permissions: '',
                 password: uuidV4()
