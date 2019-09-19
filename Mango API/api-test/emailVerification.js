@@ -21,7 +21,6 @@ const uuidV4 = require('uuid/v4');
 
 describe('Email verification', function() {
     const emailVerificationUrl = '/rest/v2/email-verification';
-    const publicRegistrationSystemSetting = 'users.publicRegistration.enabled';
 
     const createUserV2 = function() {
         const newUsername = uuidV4();
@@ -55,17 +54,31 @@ describe('Email verification', function() {
         return this.testUser.delete();
     });
     
-    before('Disable email sending', function() {
+    before('Disable sending email', function() {
         this.smtpHostSetting = new SystemSetting({id: 'emailSmtpHost'});
+
         return this.smtpHostSetting.getValue().then(value => {
             this.smtpHost = value;
             return this.smtpHostSetting.setValue('disabled.example.com');
         });
     });
     
-    after('Restore email sending', function() {
-        if (this.smtpHost) {
+    after('Restore sending email', function() {
+        if (this.smtpHost != null) {
             return this.smtpHostSetting.setValue(this.smtpHost);
+        }
+    });
+    
+    before('Get public registration setting', function() {
+        this.publicRegistrationSetting = new SystemSetting({id: 'users.publicRegistration.enabled', type: 'BOOLEAN'});
+        return this.publicRegistrationSetting.getValue(value => {
+            this.publicRegistrationWasEnabled = value;
+        });
+    });
+    
+    before('Restore public registration setting', function() {
+        if (this.publicRegistrationWasEnabled != null) {
+            return this.publicRegistrationSetting.setValue(this.publicRegistrationWasEnabled);
         }
     });
 
@@ -84,7 +97,7 @@ describe('Email verification', function() {
         
         describe('With public registration disabled', function() {
             before('Disable public registration', function() {
-                return SystemSetting.setValue(publicRegistrationSystemSetting, false, 'BOOLEAN');
+                return this.publicRegistrationSetting.setValue(false);
             });
 
             it('Cannot send a verification email via public endpoint', function() {
@@ -110,7 +123,7 @@ describe('Email verification', function() {
         
         describe('With public registration enabled', function() {
             before('Enable public registration', function() {
-                return SystemSetting.setValue(publicRegistrationSystemSetting, true, 'BOOLEAN');
+                return this.publicRegistrationSetting.setValue(true);
             });
 
             it('Can send a verification email via public endpoint', function() {
