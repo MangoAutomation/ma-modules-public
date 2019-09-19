@@ -23,7 +23,20 @@ const emailVerificationUrl = '/rest/v2/email-verification';
 const publicRegistrationSystemSetting = 'users.publicRegistration.enabled';
 
 describe('Email verification', function() {
-
+    const createUserV2 = function() {
+        const newUsername = uuidV4();
+        return {
+            username: newUsername,
+            email: `${newUsername}@example.com`,
+            name: `${newUsername}`,
+            permissions: [],
+            password: newUsername,
+            locale: '',
+            receiveAlarmEmails: 'IGNORE'
+        };
+    };
+    
+    
     before('Login', config.login);
     
     before('Create a test user', function() {
@@ -77,7 +90,7 @@ describe('Email verification', function() {
 
             it('Cannot send a verification email via public endpoint', function() {
                 return tryPublicEmailVerify.call(this).then(response => {
-                    throw new Error(`Should not succeed, however got a ${response.status} response`);
+                    assert.fail('Sending verification email should not have succeeded');
                 }, error => {
                     assert.strictEqual(error.status, 500);
                 });
@@ -98,16 +111,7 @@ describe('Email verification', function() {
             });
 
             it('Can use a public registration token to register', function() {
-                const newUsername = uuidV4();
-                const newUser = {
-                    username: newUsername,
-                    email: `${newUsername}@example.com`,
-                    name: `${newUsername}`,
-                    permissions: [],
-                    password: newUsername,
-                    locale: '',
-                    receiveAlarmEmails: 'IGNORE'
-                };
+                const newUser = createUserV2();
 
                 // use default client logged in as admin to generate a token
                 return client.restRequest({
@@ -117,6 +121,7 @@ describe('Email verification', function() {
                 }).then(response => {
                     assert.isString(response.data.token);
 
+                    // use the public client to actually register the new user using the token
                     return this.publicClient.restRequest({
                         path: `${emailVerificationUrl}/public/register`,
                         method: 'POST',
@@ -126,8 +131,53 @@ describe('Email verification', function() {
                         }
                     });
                 }).then(response => {
-                    assert.strictEqual(response.data.username, newUsername);
-                    return User.delete(newUsername);
+                    assert.strictEqual(response.data.username, newUser.username);
+                }).finally(() => {
+                    return User.delete(newUser.username).catch(e => null);
+                });
+            });
+
+            it('Administrator can\'t create registration token for email address that is already in use', function() {
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {emailAddress: this.testUser.email}
+                }).then(response => {
+                    assert.fail('Creating token should not have succeeded');
+                }, error => {
+                    assert.strictEqual(error.status, 500);
+                });
+            });
+
+            it('Can\'t use a user token for public registration', function() {
+                const newUser = createUserV2();
+
+                // use default client logged in as admin to generate a token
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: newUser.email,
+                        username: this.testUser.username
+                    }
+                }).then(response => {
+                    assert.isString(response.data.token);
+
+                    // use the public client to actually register the new user using the token
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/register`,
+                        method: 'POST',
+                        data: {
+                            token: response.data.token,
+                            user: newUser
+                        }
+                    });
+                }).then(response => {
+                    assert.fail('Creating user should not have succeeded');
+                }, error => {
+                    assert.strictEqual(error.status, 400);
+                }).finally(() => {
+                    return User.delete(newUser.username).catch(e => null);
                 });
             });
         });
