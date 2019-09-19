@@ -1,13 +1,10 @@
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
-* Expose organization field in User REST v1 and v2 models
+* Expose organization and organizationalRole field in User REST v1 and v2 models
 * Add endpoint /v2/server/email/mailing-list/{xid} to allow users to send emails to a mailing list
 * Add endpoint /v2/server/email to allow admins to send email to any Mango user
-* Adding high performant point value import endpoint for CSV and JSON at v2/point-value-modification/import
-* Adding /v2/users/registration/public/send-email to allow public user registration see Core env property web.security.publicRegistrationEnabled to enable
-* Adding /v2/users/registration/send-email for users to request an emailed token to verify their email addresses
-* Adding /v2/users/registration/public/verify-email for users to publicly verify their email addresses
-* Adding /v2/users/registration/verify-email for users to verify their email addresses
+* Added high performance point value import endpoint for CSV and JSON at /v2/point-value-modification/import
+* Added endpoints under /v2/email-verification for verifying a user's email addresses and for public user registration (disabled by default)
 * Adding /v2/full-event-detectors/bulk endpoints for bulk editing event detectors
 * Adding CSV support for event detectors on GET /v2/full-event-detectors
 
