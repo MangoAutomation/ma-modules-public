@@ -78,9 +78,10 @@ describe('Password reset', function() {
     });
 
     it(`Won't send emails for disabled users`, function() {
+        const disabledUsername = uuidV4();
         const disabledUser = new User({
-            username: uuidV4(),
-            email: 'abc@example.com',
+            username: disabledUsername,
+            email: `${disabledUsername}@example.com`,
             name: 'This is a name',
             permissions: '',
             password: uuidV4(),
