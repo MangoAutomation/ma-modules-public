@@ -29,7 +29,7 @@ describe('User V2 endpoint tests', function() {
             name: 'name',
             username: username,
             password: this.testUserPassword,
-            email: 'test@test.com',
+            email: `${username}@example.com`,
             phone: '808-888-8888',
             disabled: false,
             locale: '',
@@ -68,7 +68,7 @@ describe('User V2 endpoint tests', function() {
             name: 'admin name',
             username: username,
             password: this.testAdminUserPassword,
-            email: 'admin@test.com',
+            email: `${username}@example.com`,
             phone: '808-888-8888',
             disabled: false,
             locale: '',
@@ -137,13 +137,14 @@ describe('User V2 endpoint tests', function() {
     });
     
     it('Fails to create user without password', function() {
+        const username = uuidV4();
         return client.restRequest({
             path: '/rest/v2/users',
             method: 'POST',
             data: {
                 name: 'name',
-                username: this.testUser.username,
-                email: 'test@test.com',
+                username: username,
+                email: `${username}@example.com`,
                 phone: '808-888-8888',
                 disabled: false,
                 homeUrl: 'www.google.com',
