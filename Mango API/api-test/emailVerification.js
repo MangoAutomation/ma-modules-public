@@ -282,4 +282,18 @@ describe('Email verification', function() {
             });
         });
     });
+
+    describe('Existing user email verification', function() {
+        it.skip('Sends email for an existing user');
+        it.skip('Won\'t send email for a disabled user');
+        it.skip('Verifies a user\'s email address');
+        it.skip('Updates a user\'s email address');
+        it.skip('Doesn\'t allow verifying the same email address twice');
+        it.skip('Can\'t use a public registration token to verify a user\'s email address');
+        it.skip('Manually updating email address sets emailVerified property back to null');
+        it.skip('Administrator can\'t create verification token for email address that is already in use');
+    });
+    
+    it('Can retrieve the public key');
+    it('Can verify a token');
 });

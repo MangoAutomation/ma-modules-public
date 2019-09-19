@@ -172,7 +172,7 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
-    it('Can not lock own password', function() {
+    it('Can\'t lock own password', function() {
         this.timeout(5000);
         const loginClient = new MangoClient(config);
         return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
@@ -187,7 +187,7 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
-    it('Can not make self non admin', function() {
+    it('Can\'t make self non admin', function() {
         this.timeout(5000);
         const loginClient = new MangoClient(config);
         return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
@@ -205,7 +205,7 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
-    it('Can not disable self', function() {
+    it('Can\'t disable self', function() {
         this.timeout(5000);
         const loginClient = new MangoClient(config);
         return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
@@ -223,7 +223,7 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
-    it('Can not update permissions', function() {
+    it('Can\'t update permissions', function() {
         this.timeout(5000);
         const loginClient = new MangoClient(config);
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
@@ -241,7 +241,7 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
-    it('Can not rename to existing user', function() {
+    it('Can\'t rename to existing user', function() {
         this.timeout(5000);
         const loginClient = new MangoClient(config);
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
@@ -342,5 +342,7 @@ describe('User V2 endpoint tests', function() {
             });
         });
     });
-    
+
+    it.skip('Can\'t manually set the emailVerified or created property when creating user');
+    it.skip('Can\'t manually update the emailVerified or created property');
 });
