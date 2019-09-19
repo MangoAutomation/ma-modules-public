@@ -8,6 +8,8 @@
 * Adding /v2/users/registration/send-email for users to request an emailed token to verify their email addresses
 * Adding /v2/users/registration/public/verify-email for users to publicly verify their email addresses
 * Adding /v2/users/registration/verify-email for users to verify their email addresses
+* Adding /v2/full-event-detectors/bulk endpoints for bulk editing event detectors
+* Adding CSV support for event detectors on GET /v2/full-event-detectors
 
 *Version 3.6.3*
 * Fix point values v2 endpoint to use rendered unit when writing analog statistics
