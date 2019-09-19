@@ -51,6 +51,7 @@ import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.mvc.rest.v1.csv.CSVException;
+import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.RestErrorModel;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
@@ -243,7 +244,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
             //TODO Mango 3.6 Remove?
             headers.set("Messages", "error");
             if (ex.getMessage() != null) {
-                headers.set("Errors", trimErrors(ex.getMessage()));
+                headers.set("Errors", RestProcessResult.stripAndTrimHeader(ex.getMessage(), 200));
             }
 
             return new ResponseEntity<Object>(body, headers, status);
@@ -261,17 +262,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
         HttpSession sesh = request.getSession(false);
         if (sesh != null)
             sesh.setAttribute(Common.SESSION_USER_EXCEPTION, ex);
-    }
-
-
-    /**
-     * Util to remove CR/LF and ensure no longer that 1000 chars
-     */
-    private String trimErrors(String message) {
-        message = message.replaceAll("(\\r|\\n)", " ");
-        if(message.length() > 1000)
-            message = message.substring(0, 1000);
-        return message;
     }
 
 }
