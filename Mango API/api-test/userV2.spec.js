@@ -131,8 +131,8 @@ describe('User V2 endpoint tests', function() {
             assert.strictEqual(user.data.booleanField, this.testUser.data.booleanField);
             assert.isNull(user.emailVerified);
             assert.isString(user.created);
-            const date = new Date(user.created);
-            assert.isAbove(date.valueOf(), 0);
+            assert.isAbove(new Date(user.created).valueOf(), 0);
+            assert.include(user.permissions, 'user');
         });
     });
     

@@ -155,7 +155,11 @@ describe('Email verification', function() {
                         }
                     });
                 }).then(response => {
-                    assert.strictEqual(response.data.username, newUser.username);
+                    const createdUser = response.data;
+                    assert.strictEqual(createdUser.username, newUser.username);
+                    assert.isTrue(createdUser.disabled);
+                    assert.isString(createdUser.emailVerified);
+                    assert.isAbove(new Date(createdUser.emailVerified).valueOf(), 0);
                 }).finally(() => {
                     return User.delete(newUser.username).catch(e => null);
                 });
@@ -235,6 +239,43 @@ describe('Email verification', function() {
                     assert.strictEqual(error.data.mangoStatusName, 'VALIDATION_FAILED');
                     assert.isArray(error.data.result.messages);
                     assert.isObject(error.data.result.messages.find(m => m.property === 'password'));
+                }).finally(() => {
+                    return User.delete(newUser.username).catch(e => null);
+                });
+            });
+            
+            it('Can\'t set permissions when registering', function() {
+                const newUser = createUserV2();
+                newUser.disabled = false;
+                newUser.permissions = ['naughty-permission'];
+
+                // use default client logged in as admin to generate a token
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: newUser.email
+                    }
+                }).then(response => {
+                    assert.isString(response.data.token);
+
+                    // use the public client to actually register the new user using the token
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/register`,
+                        method: 'POST',
+                        data: {
+                            token: response.data.token,
+                            user: newUser
+                        }
+                    });
+                }).then(response => {
+                    const createdUser = response.data;
+                    assert.strictEqual(createdUser.username, newUser.username);
+                    assert.isTrue(createdUser.disabled);
+                    assert.isString(createdUser.emailVerified);
+                    assert.isAbove(new Date(createdUser.emailVerified).valueOf(), 0);
+                    assert.lengthOf(createdUser.permissions, 1);
+                    assert.include(createdUser.permissions, 'user');
                 }).finally(() => {
                     return User.delete(newUser.username).catch(e => null);
                 });
