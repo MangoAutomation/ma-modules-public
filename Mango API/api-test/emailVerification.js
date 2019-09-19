@@ -19,10 +19,10 @@ const config = require('@infinite-automation/mango-client/test/setup');
 const MangoClient = require('@infinite-automation/mango-client');
 const uuidV4 = require('uuid/v4');
 
-const emailVerificationUrl = '/rest/v2/email-verification';
-const publicRegistrationSystemSetting = 'users.publicRegistration.enabled';
-
 describe('Email verification', function() {
+    const emailVerificationUrl = '/rest/v2/email-verification';
+    const publicRegistrationSystemSetting = 'users.publicRegistration.enabled';
+
     const createUserV2 = function() {
         const newUsername = uuidV4();
         return {
@@ -35,8 +35,7 @@ describe('Email verification', function() {
             receiveAlarmEmails: 'IGNORE'
         };
     };
-    
-    
+
     before('Login', config.login);
     
     before('Create a test user', function() {
@@ -85,7 +84,7 @@ describe('Email verification', function() {
         
         describe('With public registration disabled', function() {
             before('Disable public registration', function() {
-                SystemSetting.setValue(publicRegistrationSystemSetting, false, 'BOOLEAN');
+                return SystemSetting.setValue(publicRegistrationSystemSetting, false, 'BOOLEAN');
             });
 
             it('Cannot send a verification email via public endpoint', function() {
@@ -95,11 +94,23 @@ describe('Email verification', function() {
                     assert.strictEqual(error.status, 500);
                 });
             });
+            
+            it('Administrator can\'t create registration token', function() {
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {emailAddress: `${uuidV4()}@example.com`}
+                }).then(response => {
+                    assert.fail('Creating token should not have succeeded');
+                }, error => {
+                    assert.strictEqual(error.status, 500);
+                });
+            });
         });
         
         describe('With public registration enabled', function() {
             before('Enable public registration', function() {
-                SystemSetting.setValue(publicRegistrationSystemSetting, true, 'BOOLEAN');
+                return SystemSetting.setValue(publicRegistrationSystemSetting, true, 'BOOLEAN');
             });
 
             it('Can send a verification email via public endpoint', function() {
@@ -176,6 +187,41 @@ describe('Email verification', function() {
                     assert.fail('Creating user should not have succeeded');
                 }, error => {
                     assert.strictEqual(error.status, 400);
+                }).finally(() => {
+                    return User.delete(newUser.username).catch(e => null);
+                });
+            });
+            
+            it('Validation works when creating new users', function() {
+                const newUser = createUserV2();
+                newUser.password = '';
+
+                // use default client logged in as admin to generate a token
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: newUser.email
+                    }
+                }).then(response => {
+                    assert.isString(response.data.token);
+
+                    // use the public client to actually register the new user using the token
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/register`,
+                        method: 'POST',
+                        data: {
+                            token: response.data.token,
+                            user: newUser
+                        }
+                    });
+                }).then(response => {
+                    assert.fail('Creating user should not have succeeded');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                    assert.strictEqual(error.data.mangoStatusName, 'VALIDATION_FAILED');
+                    assert.isArray(error.data.result.messages);
+                    assert.isObject(error.data.result.messages.find(m => m.property === 'password'));
                 }).finally(() => {
                     return User.delete(newUser.username).catch(e => null);
                 });
