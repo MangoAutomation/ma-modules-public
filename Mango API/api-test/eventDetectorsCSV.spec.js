@@ -138,7 +138,7 @@ describe('Event detectors CSV format', () => {
     
     it('Can download csv file for both event detectors', function() {
         return this.csvClient.restRequest({
-            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(sourceId)`,
+            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(id)`,
             method: 'GET'
         }).then(response => {
             const result = [];
