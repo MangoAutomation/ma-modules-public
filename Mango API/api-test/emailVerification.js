@@ -345,10 +345,32 @@ describe('Email verification', function() {
             });
         });
         
-        it.skip('Won\'t send email for a disabled user');
+        it.skip('Won\'t send email for a disabled user', function() {
+            const user = createUserV1();
+            user.disabled = true;
+            return user.save().then(() => {
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/send-email`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: this.testUser.email,
+                        username: this.testUser.username
+                    }
+                });
+            }).then(response => {
+                assert.fail('Request should fail');
+            }, error => {
+                assert.strictEqual(error.status, 500);
+            }).finally(() => {
+                return user.delete().catch(e => null);
+            });
+        });
         
         it('Verifies a user\'s email address', function() {
-            return createUserAndVerifyEmail.call(this);
+            const {user, promise} = createUserAndVerifyEmail.call(this);
+            return promise.finally(() => {
+                return user.delete().catch(e => null);
+            });
         });
         
         it('Updates a user\'s email address', function() {
@@ -378,6 +400,8 @@ describe('Email verification', function() {
                 assert.strictEqual(updatedUser.email, newEmailAddress);
                 assert.isString(updatedUser.emailVerified);
                 assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), 0);
+            }).finally(() => {
+                return user.delete().catch(e => null);
             });
         });
         
@@ -408,6 +432,8 @@ describe('Email verification', function() {
                     assert.isString(updatedUser.emailVerified);
                     assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), dateFirstVerified.valueOf());
                 });
+            }).finally(() => {
+                return user.delete().catch(e => null);
             });
         });
         
