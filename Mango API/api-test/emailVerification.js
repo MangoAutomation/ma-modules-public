@@ -310,6 +310,7 @@ describe('Email verification', function() {
             }).then(response => {
                 const updatedUser = response.data;
 
+                assert.strictEqual(updatedUser.email, user.email);
                 assert.isString(updatedUser.emailVerified);
                 assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), 0);
                 
@@ -345,10 +346,70 @@ describe('Email verification', function() {
         });
         
         it.skip('Won\'t send email for a disabled user');
-        it.skip('Verifies a user\'s email address');
-        it.skip('Updates a user\'s email address');
-        it.skip('Doesn\'t allow verifying the same email address twice');
-        it.skip('Can\'t use a public registration token to verify a user\'s email address');
+        
+        it('Verifies a user\'s email address', function() {
+            return createUserAndVerifyEmail.call(this);
+        });
+        
+        it('Updates a user\'s email address', function() {
+            const user = createUserV1();
+            const newEmailAddress = `${uuidV4()}@example.com`;
+            
+            return user.save().then(() => {
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: newEmailAddress,
+                        username: user.username
+                    }
+                });
+            }).then(response => {
+                return this.publicClient.restRequest({
+                    path: `${emailVerificationUrl}/public/update-email`,
+                    method: 'POST',
+                    data: {
+                        token: response.data.token
+                    }
+                });
+            }).then(response => {
+                const updatedUser = response.data;
+
+                assert.strictEqual(updatedUser.email, newEmailAddress);
+                assert.isString(updatedUser.emailVerified);
+                assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), 0);
+            });
+        });
+        
+        it('Verified date updates if user re-verifies their email', function() {
+            const {user, promise} = createUserAndVerifyEmail.call(this);
+            return promise.then(() => {
+                const dateFirstVerified = new Date(user.emailVerified);
+                
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress: user.email,
+                        username: user.username
+                    }
+                }).then(response => {
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/update-email`,
+                        method: 'POST',
+                        data: {
+                            token: response.data.token
+                        }
+                    });
+                }).then(response => {
+                    const updatedUser = response.data;
+
+                    assert.strictEqual(updatedUser.email, user.email);
+                    assert.isString(updatedUser.emailVerified);
+                    assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), dateFirstVerified.valueOf());
+                });
+            });
+        });
         
         it('Manually updating email address sets emailVerified property back to null', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
