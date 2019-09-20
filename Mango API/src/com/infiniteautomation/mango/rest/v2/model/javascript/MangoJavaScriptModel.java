@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.javascript;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,6 +34,9 @@ public class MangoJavaScriptModel {
     private LogLevel logLevel;
     @ApiModelProperty("If non-null coerce the result into a PointValueTime with this data type")
     private String resultDataType; 
+    
+    @ApiModelProperty("Any additional context to be added to the script during exeuction/testing")
+    private Map<String, Object> additionalContext;
     
     public MangoJavaScriptModel() {
         
@@ -115,6 +119,14 @@ public class MangoJavaScriptModel {
         this.resultDataType = resultDataTypeId;
     }
     
+    public Map<String, Object> getAdditionalContext() {
+        return additionalContext;
+    }
+
+    public void setAdditionalContext(Map<String, Object> additionalContext) {
+        this.additionalContext = additionalContext;
+    }
+
     public MangoJavaScript toVO() {
         MangoJavaScript vo = new MangoJavaScript();
         vo.setWrapInFunction(wrapInFunction);
@@ -124,6 +136,7 @@ public class MangoJavaScriptModel {
         if(resultDataType != null)
             vo.setResultDataTypeId(DataTypes.CODES.getId(resultDataType));
         vo.setScript(script);
+        vo.setAdditionalContext(additionalContext);
         return vo;
     }
     

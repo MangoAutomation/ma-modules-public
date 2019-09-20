@@ -345,4 +345,5 @@ describe('User V2 endpoint tests', function() {
 
     it.skip('Can\'t manually set the emailVerified or created property when creating user');
     it.skip('Can\'t manually update the emailVerified or created property');
+    it.skip('Can\'t set email to a used email address');
 });
