@@ -116,7 +116,12 @@ public class PasswordResetController {
     public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
-        return new HeaderClaimsModel(this.passwordResetService.parse(token));
+
+        try {
+            return new HeaderClaimsModel(this.passwordResetService.parse(token));
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidPasswordResetToken"), e);
+        }
     }
 
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all password reset tokens")

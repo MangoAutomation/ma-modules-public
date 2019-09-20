@@ -163,18 +163,29 @@ public class EmailVerificationController {
         }
     }
 
+    /**
+     * CAUTION: This method is public!
+     */
     @ApiOperation(value = "Gets the public key for verifying email verification tokens")
-    @RequestMapping(path="/public-key", method = RequestMethod.GET)
+    @RequestMapping(path="/public/public-key", method = RequestMethod.GET)
     public String getPublicKey() {
         return this.emailVerificationService.getPublicKey();
     }
 
+    /**
+     * CAUTION: This method is public!
+     */
     @ApiOperation(value = "Verify the signature and parse an email verification token", notes="Does NOT verify the claims")
-    @RequestMapping(path="/verify", method = RequestMethod.GET)
+    @RequestMapping(path="/public/verify", method = RequestMethod.GET)
     public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
-        return new HeaderClaimsModel(this.emailVerificationService.parse(token));
+
+        try {
+            return new HeaderClaimsModel(this.emailVerificationService.parse(token));
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
+        }
     }
 
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all email verification tokens")

@@ -31,7 +31,13 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.MissingClaimException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -130,8 +136,12 @@ public class AuthenticationTokenRestController {
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
 
-        Jws<Claims> jwsToken = this.tokenAuthService.parse(token);
-        return new HeaderClaimsModel(jwsToken);
+        try {
+            Jws<Claims> jwsToken = this.tokenAuthService.parse(token);
+            return new HeaderClaimsModel(jwsToken);
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.invalidAuthenticationToken;"), e);
+        }
     }
 
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all authentication tokens")
