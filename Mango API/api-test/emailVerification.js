@@ -321,7 +321,29 @@ describe('Email verification', function() {
             return {user, promise};
         };
         
-        it.skip('Sends email for an existing user');
+        it('Wont send email without specifing the username', function() {
+            return client.restRequest({
+                path: `${emailVerificationUrl}/send-email`,
+                method: 'POST',
+                data: {emailAddress: this.testUser.email}
+            }).then(response => {
+                assert.fail('Request should fail');
+            }, error => {
+                assert.strictEqual(error.status, 500);
+            });
+        });
+        
+        it('Sends email for an existing user', function() {
+            return client.restRequest({
+                path: `${emailVerificationUrl}/send-email`,
+                method: 'POST',
+                data: {
+                    emailAddress: this.testUser.email,
+                    username: this.testUser.username
+                }
+            });
+        });
+        
         it.skip('Won\'t send email for a disabled user');
         it.skip('Verifies a user\'s email address');
         it.skip('Updates a user\'s email address');
@@ -353,7 +375,19 @@ describe('Email verification', function() {
             });
         });
         
-        it.skip('Administrator can\'t create verification token for email address that is already in use');
+        it('Administrator can\'t create verification token for email address that is already in use', function() {
+            return client.restRequest({
+                path: `${emailVerificationUrl}/create-token`,
+                method: 'POST',
+                data: {
+                    emailAddress: this.testUser.email
+                }
+            }).then(response => {
+                assert.fail('Request should fail');
+            }, error => {
+                assert.strictEqual(error.status, 500);
+            });
+        });
     });
     
     it('Can retrieve the public key', function() {
