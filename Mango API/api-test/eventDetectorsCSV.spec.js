@@ -87,8 +87,8 @@ describe('Event detectors CSV format', () => {
     
     const testPointXid1 = uuidV4();
     const testPointXid2 = uuidV4();
-    const testDetectorXid1 = uuidV4();
-    const testDetectorXid2 = uuidV4();
+    const testDetectorXid1 = 'AAA' + uuidV4();
+    const testDetectorXid2 = 'ZZZ' + uuidV4();
     
     before('Create a virtual data source and points', function() {
 
@@ -138,7 +138,7 @@ describe('Event detectors CSV format', () => {
     
     it('Can download csv file for both event detectors', function() {
         return this.csvClient.restRequest({
-            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(id)`,
+            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`,
             method: 'GET'
         }).then(response => {
             const result = [];
