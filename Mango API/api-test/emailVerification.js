@@ -107,7 +107,7 @@ describe('Email verification', function() {
                 return tryPublicEmailVerify.call(this).then(response => {
                     assert.fail('Sending verification email should not have succeeded');
                 }, error => {
-                    assert.strictEqual(error.status, 500);
+                    assert.strictEqual(error.status, 409);
                 });
             });
             
@@ -119,7 +119,7 @@ describe('Email verification', function() {
                 }).then(response => {
                     assert.fail('Creating token should not have succeeded');
                 }, error => {
-                    assert.strictEqual(error.status, 500);
+                    assert.strictEqual(error.status, 409);
                 });
             });
         });
@@ -176,7 +176,7 @@ describe('Email verification', function() {
                 }).then(response => {
                     assert.fail('Creating token should not have succeeded');
                 }, error => {
-                    assert.strictEqual(error.status, 500);
+                    assert.strictEqual(error.status, 409);
                 });
             });
 
@@ -330,7 +330,7 @@ describe('Email verification', function() {
             }).then(response => {
                 assert.fail('Request should fail');
             }, error => {
-                assert.strictEqual(error.status, 500);
+                assert.strictEqual(error.status, 409);
             });
         });
         
@@ -472,7 +472,7 @@ describe('Email verification', function() {
             }).then(response => {
                 assert.fail('Request should fail');
             }, error => {
-                assert.strictEqual(error.status, 500);
+                assert.strictEqual(error.status, 409);
             });
         });
     });

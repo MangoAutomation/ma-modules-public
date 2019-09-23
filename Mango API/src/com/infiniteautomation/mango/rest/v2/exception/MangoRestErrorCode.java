@@ -47,6 +47,11 @@ public enum MangoRestErrorCode implements IMangoRestErrorCode {
     PASSWORD_CHANGE_FAILED(4012),
     RQL_VISIT_ERROR(4013),
 
+    GENERIC_CONFILICT(4090),
+    DB_ID_CONFLICT(4091),
+    DB_VERSION_CONFLICT(4092),
+    FEATURE_DISABLED(4093),
+
     //***** 5000 Series *****
     GENERIC_500(5000);
 

@@ -34,8 +34,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
+import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
+import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
 import com.infiniteautomation.mango.util.exception.InvalidRQLException;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -138,6 +141,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     })
     public ResponseEntity<Object> handleTranslatableIllegalStateException(HttpServletRequest request, HttpServletResponse response, TranslatableIllegalStateException ex, WebRequest req) {
         return handleExceptionInternal(ex, new IllegalStateRestException(ex.getTranslatableMessage(), ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
+    }
+
+    @ExceptionHandler({
+        EmailAddressInUseException.class,
+        FeatureDisabledException.class
+    })
+    public ResponseEntity<Object> handleConflictExceptions(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
+        ConfictRestException body;
+        if (ex instanceof FeatureDisabledException) {
+            body = new ConfictRestException(MangoRestErrorCode.FEATURE_DISABLED, ((FeatureDisabledException) ex).getTranslatableMessage(), ex);
+        } else if (ex instanceof TranslatableExceptionI) {
+            body = new ConfictRestException(((TranslatableExceptionI) ex).getTranslatableMessage(), ex);
+        } else {
+            body = new ConfictRestException(ex);
+        }
+        return handleExceptionInternal(ex, body, new HttpHeaders(), body.getStatus(), req);
     }
 
     @ExceptionHandler({
