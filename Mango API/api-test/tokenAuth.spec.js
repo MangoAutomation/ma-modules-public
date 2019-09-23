@@ -434,4 +434,36 @@ describe('JSON Web Token authentication', function() {
             assert.strictEqual(error.status, 403);
         });
     });
+    
+    //User Token Tests
+    it.skip('Can\'t use home url setting endpoint with token', function() {
+        return this.createToken({username: this.testUser.username}).then(token => {
+            const jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.User.current();
+        }).then(user => {
+            assert.strictEqual(user.username, this.testUser.username);
+        });
+    });
+    it.skip('Can\'t Patch self using token');
+    it.skip('Can\'t Update self using token');
+
+    it.skip('Can\'t use audio mute setting endpoint using token');
+    
+    it.skip('Can\'t Update self using token', function() {
+        return this.createToken().then(token => {
+            this.jwtClient = new MangoClient(this.noCookieConfig);
+            this.jwtClient.setBearerAuthentication(token);
+            return this.jwtClient.User.current();
+        }).then(user => {
+            this.testUser.name = 'Not possible';
+            return this.jwtClient.restRequest({
+                path: `/rest/v2/users/${this.testUser.username}`,
+                method: 'PUT',
+                data: this.testUser
+            }).then(response => {
+                assert.equal(response.data.mute, !this.testUser.mute);
+            });
+        });
+    });
 });

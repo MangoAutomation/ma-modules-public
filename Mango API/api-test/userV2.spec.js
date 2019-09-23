@@ -19,13 +19,83 @@ const config = require('@infinite-automation/mango-client/test/setup');
 const MangoClient = require('@infinite-automation/mango-client');
 const uuidV4 = require('uuid/v4');
 
+function userV2Factory(client) {
+    const MangoObject = client.MangoObject;
+    
+    return class UserV2 extends MangoObject {
+        static get baseUrl() {
+            return '/rest/v2/users';
+        }
+
+        static get idProperty() {
+            return 'username';
+        }
+        
+        static login(username, password, retries, retryDelay) {
+            return client.restRequest({
+                path: '/rest/v2/login',
+                method: 'POST',
+                data: {username, password},
+                retries: retries || 0,
+                retryDelay: retryDelay || 5000
+            }).then(response => {
+                return (new UserV2()).updateSelf(response);
+            });
+        }
+        
+        static logout() {
+            return client.restRequest({
+                path: '/rest/v2/logout',
+                method: 'POST'
+            });
+        }
+
+        static current() {
+            return client.restRequest({
+                path: this.baseUrl + '/current'
+            }).then(response => {
+                return (new UserV2()).updateSelf(response);
+            });
+        }
+        
+        patch(values) {
+            return client.restRequest({
+                path: this.constructor.baseUrl + '/' + encodeURIComponent(this[this.constructor.idProperty]),
+                method: 'PATCH',
+                data: values
+            }).then(response => {
+                return this.updateSelf(response);
+            });
+        }
+        
+        lockPassword(username) {
+            return client.restRequest({
+               path: this.constructor.baseUrl + '/' + encodeURIComponent(`${username}`) + '/lock-password',
+               method: 'PUT'
+            });
+        }
+    };
+}
+const UserV2 = userV2Factory(client);
 describe('User V2 endpoint tests', function() {
     before('Login', config.login);
+    
+    before('Helper functions', function() {
+        //Setup login using a given configuration
+        this.login = function(localConfig, LocalUser) {
+            this.timeout(localConfig.loginRetries * localConfig.loginRetryDelay + 5000);
+            return LocalUser.login(localConfig.username, localConfig.password, localConfig.loginRetries, localConfig.loginRetryDelay);
+        };
+        //TODO Remove?
+        this.UserV2 = userV2Factory(client);
+        this.clients = {};
+        this.configs = {};
+    });
     
     beforeEach('Create test User', function() {
         const username = uuidV4();
         this.testUserPassword = uuidV4();
-        this.testUser = {
+        this.testUser = new UserV2({
             name: 'name',
             username: username,
             password: this.testUserPassword,
@@ -51,20 +121,26 @@ describe('User V2 endpoint tests', function() {
                 booleanField: true
             }
                 
-        };
-        return client.restRequest({
-            path: '/rest/v2/users',
-            method: 'POST',
-            data: this.testUser
-        }).then(response => {
-            this.testUser.id = response.data.id;
+        });
+        
+        //Save user and setup a session user for it
+        return this.testUser.save().then(user => {
+            assert.equal(user.username, username);
+            this.configs.user = Object.assign({}, config, {
+                    username: username,
+                    password: this.testUserPassword
+            });
+            this.clients.user = new MangoClient(this.configs.user);
+            this.clients.user.User = userV2Factory(this.clients.user);
+            this.clients.user.user = new this.clients.user.User(user);
+            return this.login(this.configs.user, this.clients.user.User);
         });
     });
     
     beforeEach('Create test admin User', function() {
         const username = uuidV4();
         this.testAdminUserPassword = uuidV4();
-        this.testAdminUser = {
+        this.testAdminUser = new UserV2({
             name: 'admin name',
             username: username,
             password: this.testAdminUserPassword,
@@ -83,32 +159,31 @@ describe('User V2 endpoint tests', function() {
                 type: 'HOURS'
             },
             organization: 'Infinite Automation Systems'
-        };
+        });
         
-        return client.restRequest({
-            path: '/rest/v2/users',
-            method: 'POST',
-            data: this.testAdminUser
-        }).then(response => {
-            this.testAdminUser.id = response.data.id;
+        //Save user and setup a session user for it
+        return this.testAdminUser.save().then(user => {
+            assert.equal(user.username, username);
+            this.configs.admin = Object.assign({}, config, {
+                    username: username,
+                    password: this.testAdminUserPassword
+            });
+            this.clients.admin = new MangoClient(this.configs.admin);
+            this.clients.admin.User = userV2Factory(this.clients.admin);
+            this.clients.admin.user = new this.clients.admin.User(user);
+            return this.login(this.configs.admin, this.clients.admin.User);
         });
     });
     
     afterEach('Deletes the test user', function() {
-        return client.restRequest({
-            path: `/rest/v2/users/${this.testUser.username}`,
-            method: 'DELETE'
-        }).then(response => {
-            assert.equal(response.data.username, this.testUser.username);
+        return this.testUser.delete().then(user => {
+            assert.equal(user.username, this.testUser.username);
         });
     });
     
     afterEach('Deletes the test admin user', function() {
-        return client.restRequest({
-            path: `/rest/v2/users/${this.testAdminUser.username}`,
-            method: 'DELETE'
-        }).then(response => {
-            assert.equal(response.data.username, this.testAdminUser.username);
+        return this.testAdminUser.delete().then(user => {
+            assert.equal(user.username, this.testAdminUser.username);
         });
     });
     
@@ -116,13 +191,8 @@ describe('User V2 endpoint tests', function() {
         this.sessionTimeoutRef = new MangoClient(config);
     });
     
-    it('Gets a user', function() {
-        return client.restRequest({
-            path: `/rest/v2/users/${encodeURIComponent(this.testUser.username)}`,
-            method: 'GET'
-        }).then(response => {
-            const user = response.data;
-            
+    it('Gets self as non admin', function() {
+        return this.clients.user.user.get().then(user => {
             assert.equal(user.username, this.testUser.username);
             assert.strictEqual(user.organization, this.testUser.organization);
             assert.strictEqual(user.organizationalRole, this.testUser.organizationalRole);
@@ -138,10 +208,7 @@ describe('User V2 endpoint tests', function() {
     
     it('Fails to create user without password', function() {
         const username = uuidV4();
-        return client.restRequest({
-            path: '/rest/v2/users',
-            method: 'POST',
-            data: {
+        const invalidUser = new UserV2({
                 name: 'name',
                 username: username,
                 email: `${username}@example.com`,
@@ -150,182 +217,149 @@ describe('User V2 endpoint tests', function() {
                 homeUrl: 'www.google.com',
                 receiveAlarmEmails: 'NONE',
                 receiveOwnAuditEvents: false,
-                muted: false
-            }
-        }).then(response => {
+                muted: false,
+                locale: ''
+            });
+        return invalidUser.save().then(response => {
             throw new Error('Should not have created user');
         }, error => {
-           assert.strictEqual(error.status, 422); 
+            assert.strictEqual(error.status, 422);
+            assert.strictEqual(error.data.result.messages.length, 1);
+            assert.strictEqual(error.data.result.messages[0].property, 'password');
         });
     });
     
-    it('Can lock other users password', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testUser.username}/lock-password`,
-                method: 'PUT',
-            }).then(response => {
-                assert.strictEqual(response.status, 200); 
-            });            
-        });
-    });
-    
-    it('Can\'t lock own password', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testAdminUser.username}/lock-password`,
-                method: 'PUT',
-            }).then(response => {
-                throw new Error('Should not have locked password');
+    it('Can lock other users password as admin ', function() {
+        return this.clients.admin.user.lockPassword(this.clients.user.user.username).then(response => {
+            assert.strictEqual(response.status, 200);
+            return this.login(this.configs.user, this.clients.user.User).then(response => {
+                throw new Error('Should not have logged in');
             }, error => {
-               assert.strictEqual(error.status, 403); 
-            });            
-        });
-    });
-    
-    it('Can\'t make self non admin', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testAdminUser.username}`,
-                method: 'PATCH',
-                data: {
-                    permissions: ['test']
-                }
-            }).then(response => {
-                throw new Error('Should not have updated user');
-            }, error => {
-               assert.strictEqual(error.status, 422); 
-            });            
-        });
-    });
-    
-    it('Can\'t disable self', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testAdminUser.username, this.testAdminUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testAdminUser.username}`,
-                method: 'PATCH',
-                data: {
-                    disabled: true
-                }
-            }).then(response => {
-                throw new Error('Should not have updated user');
-            }, error => {
-               assert.strictEqual(error.status, 422); 
-            });            
-        });
-    });
-    
-    it('Can\'t update permissions', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testUser.username}`,
-                method: 'PATCH',
-                data: {
-                    permissions: ['new,permissions']
-                }
-            }).then(response => {
-                throw new Error('Should not have updated user');
-            }, error => {
-               assert.strictEqual(error.status, 422); 
-            });            
-        });
-    });
-    
-    it('Can\'t rename to existing user', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testUser.username}`,
-                method: 'PATCH',
-                data: {
-                    username: this.testAdminUser.username
-                }
-            }).then(response => {
-                throw new Error('Should not have updated user');
-            }, error => {
-               assert.strictEqual(error.status, 422); 
-            });            
-        });
-    });
-    
-    it('Can rename self as non admin', function() {
-        this.timeout(5000);
-        const loginClient = new MangoClient(config);
-        return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            return loginClient.restRequest({
-                path: `/rest/v2/users/${this.testUser.username}`,
-                method: 'PATCH',
-                data: {
-                    username: 'Iamnew'
-                }
-            }).then(response => {
-                assert.strictEqual(response.data.username, 'Iamnew');
-                this.testUser.username = 'Iamnew';
-            });            
-        });
-    });
-    
-    it('Queries to match all user permissions', function() {
-        return client.restRequest({
-            path: `/rest/v2/users?permissionsContainsAll(permissions,testuser,test)`,
-            method: 'GET'
-        }).then(response => {
-            assert.equal(response.data.total, 1);
-            assert.equal(response.data.items[0].username, this.testUser.username);
-        });
-    });
-    
-    it('Queries to match one user permission', function() {
-        return client.restRequest({
-            path: `/rest/v2/users?permissionsContainsAny(permissions,testuser)`,
-            method: 'GET'
-        }).then(response => {
-            assert.equal(response.data.total, 1);
-            assert.equal(response.data.items[0].username, this.testUser.username);
-        });
-    });
-    
-    it('Queries for disabled users', function() {
-        return client.restRequest({
-            path: `/rest/v2/users/${this.testUser.username}`,
-            method: 'PATCH',
-            data: {
-                disabled: true
-            }
-        }).then(response => {
-            assert.equal(response.data.username, this.testUser.username);
-            assert.equal(response.data.disabled, true);
-            return client.restRequest({
-                path: `/rest/v2/users?disabled=true`,
-                method: 'GET'
-            }).then(response => {
-                assert.equal(response.data.total, 1);
-                assert.equal(response.data.items[0].username, this.testUser.username);
+                assert.strictEqual(error.status, 401); 
             });
         });
     });
     
-    it('Patch test user', function() {
-        return client.restRequest({
-            path: `/rest/v2/users/${this.testUser.username}`,
-            method: 'PATCH',
-            data: {
-                name: 'test user'
-            }
+    it('Can\'t lock other users password as user ', function() {
+        return this.clients.user.user.lockPassword(this.clients.admin.user.username).then(response => {
+            throw new Error('Should not have locked password');
+        }, error => {
+            assert.strictEqual(error.status, 403); 
+        });
+    });
+    
+    it('Can\'t lock own password', function() {
+        return this.clients.admin.user.lockPassword(this.clients.admin.user.username).then(response => {
+            throw new Error('Should not have locked password');
+        }, error => {
+            assert.strictEqual(error.status, 403); 
+        });
+    });
+    
+    it('Can\'t make self non admin', function() {
+        return this.clients.admin.user.patch({
+            permissions: ['test']
         }).then(response => {
-            assert.equal(response.data.username, this.testUser.username);
-            assert.equal(response.data.name, 'test user');
+            throw new Error('Should not have updated user');
+        }, error => {
+           assert.strictEqual(error.status, 422);
+           assert.strictEqual(error.data.result.messages.length, 1);
+           assert.strictEqual(error.data.result.messages[0].property, 'permissions');
+        });  
+    });
+    
+    it('Can\'t disable self as admin', function() {
+        return this.clients.admin.user.patch({
+            disabled: true
+        }).then(response => {
+            throw new Error('Should not have updated user');
+        }, error => {
+           assert.strictEqual(error.status, 422); 
+           assert.strictEqual(error.data.result.messages.length, 1);
+           assert.strictEqual(error.data.result.messages[0].property, 'disabled');
+        }); 
+    });
+    
+    it('Can\'t disable self as user', function() {
+        return this.clients.user.user.patch({
+            disabled: true
+        }).then(response => {
+            throw new Error('Should not have updated user');
+        }, error => {
+           assert.strictEqual(error.status, 422); 
+           assert.strictEqual(error.data.result.messages.length, 1);
+           assert.strictEqual(error.data.result.messages[0].property, 'disabled');
+        }); 
+    });
+    
+    it('Can\'t update permissions as user', function() {
+        return this.clients.user.user.patch({
+            permissions: ['new', 'permissions']
+        }).then(response => {
+            throw new Error('Should not have updated user');
+        }, error => {
+           assert.strictEqual(error.status, 422);
+           assert.strictEqual(error.status, 422); 
+           assert.strictEqual(error.data.result.messages.length, 1);
+           assert.strictEqual(error.data.result.messages[0].property, 'permissions');
+        }); 
+    });
+    
+    it('Can\'t rename self to existing user as user', function() {
+        return this.clients.user.user.patch({
+            username: this.clients.admin.user.username,
+        }).then(response => {
+            throw new Error('Should not have updated user');
+        }, error => {
+           assert.strictEqual(error.status, 422); 
+           assert.strictEqual(error.data.result.messages.length, 1);
+           assert.strictEqual(error.data.result.messages[0].property, 'username');
+        }); 
+    });
+
+    it('Can rename self as user', function() {
+        return this.clients.user.user.patch({
+            username: 'Iamnew'
+        }).then(user => {
+            assert.strictEqual(user.username, 'Iamnew');
+            this.testUser.username = 'Iamnew';
+        });
+    });
+    
+    it('Queries to match all user permissions as admin', function() {
+        return this.clients.admin.User.query('permissionsContainsAll(permissions,testuser,test)').then(result => {
+            assert.equal(result.total, 1);
+            assert.equal(result[0].username, this.testUser.username);
+        });
+    });
+    
+    it('Queries to match one user permission as admin', function() {
+        return this.clients.admin.User.query('permissionsContainsAny(permissions,testuser)').then(result => {
+            assert.equal(result.total, 1);
+            assert.equal(result[0].username, this.testUser.username);
+        });
+    });
+    
+    it('Queries for disabled users as admin', function() {
+        //First disable the test user
+        return this.testUser.patch({
+            disabled: true
+        }).then(user => {
+            assert.equal(user.username, this.testUser.username);
+            assert.equal(user.disabled, true);
+            return this.clients.admin.User.query('disabled=true').then(result => {
+                assert.equal(result.total, 1);
+                assert.equal(result[0].username, this.testUser.username);
+            });
+        });
+    });
+    
+    it('Patch test user as user', function() {
+        return this.clients.user.user.patch({
+            name: 'test user'
+        }).then(user => {
+            assert.equal(user.username, this.testUser.username);
+            assert.equal(user.name, 'test user');
         });
     });
     
@@ -343,7 +377,36 @@ describe('User V2 endpoint tests', function() {
         });
     });
 
+    it('Non admin can update self', function() {
+        this.clients.user.user.name = 'test user'; 
+        return this.clients.user.user.save().then(user => {
+            assert.equal(user.username, this.clients.user.user.username);
+            return this.clients.user.user.get().then(user => {
+                assert.strictEqual(user.name, 'test user');
+            });
+        });
+    });
+    it('Admin can update self', function() {
+        this.clients.admin.user.name = 'test user'; 
+        return this.clients.admin.user.save().then(user => {
+            assert.equal(user.username, this.clients.admin.user.username);
+            return this.clients.admin.user.get().then(user => {
+                assert.strictEqual(user.name, 'test user');
+            });
+        });
+    });
     it.skip('Can\'t manually set the emailVerified or created property when creating user');
     it.skip('Can\'t manually update the emailVerified or created property');
     it.skip('Can\'t set email to a used email address');
+
+    it.skip('Can update own home url as non admin');
+    it.skip('Can toggle audio mute setting as non admin', function() {
+        return client.restRequest({
+            path: `/rest/v2/users/${this.testUser.username}/mute`,
+            method: 'PUT'
+        }).then(response => {
+            assert.equal(response.data.mute, !this.testUser.mute);
+        });
+    });
+
 });

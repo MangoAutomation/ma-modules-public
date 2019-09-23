@@ -103,7 +103,7 @@ public class UserRestController {
 
     @ApiOperation(
             value = "Create User",
-            notes = "Superadmin or permission to created disabled user required",
+            notes = "Superadmin permission required",
             response=UserModel.class
             )
     @RequestMapping(method = RequestMethod.POST)
@@ -137,9 +137,11 @@ public class UserRestController {
             UriComponentsBuilder builder,
             Authentication authentication) {
 
-        User update = service.update(username, model.toVO(), user);
-        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+        User existing = service.get(username, user);
+        if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+
+        User update = service.update(existing, model.toVO(), user);
 
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
@@ -154,7 +156,6 @@ public class UserRestController {
             response=UserModel.class
             )
     @RequestMapping(method = RequestMethod.PATCH, value="/{username}")
-
     public ResponseEntity<UserModel> patchUser(
             @PathVariable String username,
             @ApiParam(value="User", required=true)
@@ -169,10 +170,11 @@ public class UserRestController {
             UriComponentsBuilder builder,
             Authentication authentication) {
 
-        User update = service.update(username, model.toVO(), user);
-        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+        User existing = service.get(username, user);
+        if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
 
+        User update = service.update(existing, model.toVO(), user);
 
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
@@ -276,7 +278,6 @@ public class UserRestController {
             @ApiParam(value = "Query of permissions to show as already added", required = true, allowMultiple = false)
             @PathVariable String query,
             @AuthenticationPrincipal User user) {
-
         return service.getPermissionDetails(query, user);
     }
 
