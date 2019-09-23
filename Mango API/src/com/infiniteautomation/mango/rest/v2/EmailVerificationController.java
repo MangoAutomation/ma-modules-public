@@ -98,7 +98,7 @@ public class EmailVerificationController {
     @ApiOperation(value = "Creates a token for updating/verifying a user's email address, or for registering a new user if a username is not supplied")
     @RequestMapping(method = RequestMethod.POST, value = "/create-token")
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
-    public ResponseEntity<CreateTokenResponse> createPublicRegistrationToken(
+    public ResponseEntity<CreateTokenResponse> createToken(
             @RequestBody CreateTokenRequest body,
 
             @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
@@ -132,7 +132,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Registers a new user if the token's signature can be verified", notes="The new user is created disabled and must be approved by an administrator.")
     @RequestMapping(method = RequestMethod.POST, value = "/public/register")
-    public ResponseEntity<UserModel> verifyEmailCreateUser(
+    public ResponseEntity<UserModel> publicRegisterUser(
             @RequestBody PublicRegistrationRequest body) {
 
         body.ensureValid();
@@ -151,7 +151,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Updates the target user's email address if the token's signature can be verified")
     @RequestMapping(method = RequestMethod.POST, value = "/public/update-email")
-    public ResponseEntity<UserModel> verifyEmailUpdateUser(
+    public ResponseEntity<UserModel> publicUpdateEmail(
             @RequestBody UpdateEmailRequest body) {
 
         body.ensureValid();
@@ -177,7 +177,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Verify the signature and parse an email verification token", notes="Does NOT verify the claims")
     @RequestMapping(path="/public/verify", method = RequestMethod.GET)
-    public HeaderClaimsModel verifyToken(
+    public HeaderClaimsModel publicVerifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
 
