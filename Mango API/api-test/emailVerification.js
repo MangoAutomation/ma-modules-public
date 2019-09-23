@@ -344,28 +344,7 @@ describe('Email verification', function() {
                 }
             });
         });
-        
-        it.skip('Won\'t send email for a disabled user', function() {
-            const user = createUserV1();
-            user.disabled = true;
-            return user.save().then(() => {
-                return client.restRequest({
-                    path: `${emailVerificationUrl}/send-email`,
-                    method: 'POST',
-                    data: {
-                        emailAddress: this.testUser.email,
-                        username: this.testUser.username
-                    }
-                });
-            }).then(response => {
-                assert.fail('Request should fail');
-            }, error => {
-                assert.strictEqual(error.status, 500);
-            }).finally(() => {
-                return user.delete().catch(e => null);
-            });
-        });
-        
+
         it('Verifies a user\'s email address', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
             return promise.finally(() => {
