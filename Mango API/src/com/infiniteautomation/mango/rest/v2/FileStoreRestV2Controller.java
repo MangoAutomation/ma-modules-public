@@ -71,7 +71,7 @@ import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.filter.MangoShallowEtagHeaderFilter;
+import com.serotonin.m2m2.web.filter.MangoCacheControlHeaderFilter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -93,7 +93,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
     @Autowired
     public FileStoreRestV2Controller(FileStoreDao fileStoreDao) {
         // use the rest max age setting but dont honor the nocache setting
-        cacheControlHeader = String.format(MangoShallowEtagHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.rest", 0L));
+        cacheControlHeader = String.format(MangoCacheControlHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.rest", 0L));
         this.fileStoreDao = fileStoreDao;
     }
 
