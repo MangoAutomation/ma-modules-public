@@ -435,35 +435,134 @@ describe('JSON Web Token authentication', function() {
         });
     });
     
-    //User Token Tests
-    it.skip('Can\'t use home url setting endpoint with token', function() {
+    //User Token Tests v2
+    //TODO use UserV2 class when available
+    it('Can\'t use home url setting endpoint with token', function() {
+        let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = new MangoClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
             assert.strictEqual(user.username, this.testUser.username);
-        });
-    });
-    it.skip('Can\'t Patch self using token');
-    it.skip('Can\'t Update self using token');
-
-    it.skip('Can\'t use audio mute setting endpoint using token');
-    
-    it.skip('Can\'t Update self using token', function() {
-        return this.createToken().then(token => {
-            this.jwtClient = new MangoClient(this.noCookieConfig);
-            this.jwtClient.setBearerAuthentication(token);
-            return this.jwtClient.User.current();
-        }).then(user => {
-            this.testUser.name = 'Not possible';
-            return this.jwtClient.restRequest({
-                path: `/rest/v2/users/${this.testUser.username}`,
-                method: 'PUT',
-                data: this.testUser
+            return jwtClient.restRequest({
+                path: `/rest/v2/users/${user.username}/homepage?url=/anything`,
+                method: 'PUT'
             }).then(response => {
-                assert.equal(response.data.mute, !this.testUser.mute);
+                throw new Error('Shouldnt be able to update home url');
+            }, error => {
+                assert.strictEqual(error.status, 403);
             });
         });
     });
+    
+    it('Can\'t use audio mute setting endpoint with token', function() {
+        let jwtClient;
+        return this.createToken({username: this.testUser.username}).then(token => {
+            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.User.current();
+        }).then(user => {
+            assert.strictEqual(user.username, this.testUser.username);
+            return jwtClient.restRequest({
+                path: `/rest/v2/users/${user.username}/mute?mute=true`,
+                method: 'PUT'
+            }).then(response => {
+                throw new Error('Shouldnt be able to update muted');
+            }, error => {
+                assert.strictEqual(error.status, 403);
+            });
+        });
+    });
+    
+    it('Standard user can\'t edit own user using token authentication v2', function() {
+        let jwtClient;
+        return this.createToken({username: this.testUser.username}).then(token => {
+            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.User.current();
+        }).then(user => {
+            assert.strictEqual(user.username, this.testUser.username);
+            user.name = 'Joe';
+            //Fix permissions to be a set (v1 users use a string)
+            user.permissions = ['permissions'];
+            return jwtClient.restRequest({
+                path: `/rest/v2/users/${user.username}`,
+                method: 'PUT',
+                data: user
+            }).then(user => {
+                throw new Error('Edited own user using a token authentication');
+            }, error => {
+                assert.strictEqual(error.status, 403);
+            });
+        });
+    });
+    
+    it('Admin can\'t edit own user using token authentication v2', function() {
+        let jwtClient;
+        return this.createToken().then(token => {
+            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.User.current();
+        }).then(user => {
+            assert.strictEqual(user.username, config.username);
+            user.name = 'Joe';
+            //Fix permissions to be a set (v1 users use a string)
+            user.permissions = ['superamdin'];
+            return jwtClient.restRequest({
+                path: `/rest/v2/users/${user.username}`,
+                method: 'PUT',
+                data: user
+            }).then(user => {
+                throw new Error('Edited own user using a token authentication');
+            }, error => {
+                assert.strictEqual(error.status, 403);
+            });
+        });
+    });
+    
+    it('Standard user can\'t patch self using token authentication v2', function() {
+        let jwtClient;
+        return this.createToken({username: this.testUser.username}).then(token => {
+            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.User.current();
+        }).then(user => {
+            assert.strictEqual(user.username, this.testUser.username);
+            return jwtClient.restRequest({
+                path: `/rest/v2/users/${user.username}`,
+                method: 'PATCH',
+                data: {
+                    name: 'Joe'
+                }
+            }).then(user => {
+                throw new Error('Patching own user using a token authentication');
+            }, error => {
+                assert.strictEqual(error.status, 403);
+            });
+        });
+    });
+    
+    it('Admin can\'t edit own user using token authentication v2', function() {
+        let jwtClient;
+        return this.createToken().then(token => {
+            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.User.current();
+        }).then(user => {
+            assert.strictEqual(user.username, config.username);
+            return jwtClient.restRequest({
+                path: `/rest/v2/users/${user.username}`,
+                method: 'PATCH',
+                data: {
+                    name: 'Joe'
+                }
+            }).then(user => {
+                throw new Error('Edited own user using a token authentication');
+            }, error => {
+                assert.strictEqual(error.status, 403);
+            });
+        });
+    });
+
 });
