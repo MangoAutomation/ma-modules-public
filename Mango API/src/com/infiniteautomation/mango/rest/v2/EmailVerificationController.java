@@ -28,6 +28,7 @@ import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService;
 import com.infiniteautomation.mango.spring.service.UsersService;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -136,12 +137,15 @@ public class EmailVerificationController {
             @RequestBody PublicRegistrationRequest body) {
 
         body.ensureValid();
+        User newUser = body.getUser().toVO();
         try {
-            User newUser = body.getUser().toVO();
             User created = emailVerificationService.publicRegisterNewUser(body.getToken(), newUser);
             return new ResponseEntity<>(new UserModel(created), HttpStatus.OK);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
             throw new BadRequestException(new TranslatableMessage("rest.error.invalidEmailVerificationToken"), e);
+        } catch (ValidationException e) {
+            e.getValidationResult().prefixContextKey("user");
+            throw e;
         }
     }
 
