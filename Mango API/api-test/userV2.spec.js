@@ -258,6 +258,29 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
+    it('Strips empty strings and nulls from permission', function() {
+        const username = uuidV4();
+        const testUser = new UserV2({
+                name: 'name',
+                username: username,
+                email: `${username}@example.com`,
+                password: 'testing1234',
+                phone: '808-888-8888',
+                disabled: false,
+                homeUrl: 'www.google.com',
+                receiveAlarmEmails: 'NONE',
+                receiveOwnAuditEvents: false,
+                permissions: [null, '','test'],
+                muted: false,
+                locale: ''
+            });
+        return testUser.save().then(user => {
+            assert.strictEqual(user.permissions.length, 2);
+            assert.notEqual(-1, user.permissions.indexOf('test'));
+            assert.notEqual(-1, user.permissions.indexOf('user'));
+        });
+    });
+    
     it('Can lock other users password as admin ', function() {
         return this.clients.admin.User.lockPassword(this.clients.user.user.username).then(response => {
             assert.strictEqual(response.status, 200);

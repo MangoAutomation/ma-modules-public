@@ -17,6 +17,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permission;
+import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -271,8 +272,11 @@ public class UserModel extends AbstractVoModel<User> {
         user.setTimezone(timezone);
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
-        if(permissions != null)
+        if(permissions != null) {
+            //Clean them in case we received totally invalid permissions
+            Permissions.cleanPermissionSet(permissions);
             user.setPermissionsSet(permissions);
+        }
         user.setLocale(locale);
         if(!StringUtils.isEmpty(hashAlgorithm)) {
             String password = this.password != null ? this.password : "";
