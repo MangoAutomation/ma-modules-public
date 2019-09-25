@@ -8,6 +8,7 @@
 * Adding /v2/full-event-detectors/bulk endpoints for bulk editing event detectors
 * Adding CSV support for event detectors on GET /v2/full-event-detectors
 * Expose addtional context for MangoJavaScript model to pass in a map of object to the script context, useful for validation
+* Add endpoint for approving many publicly registered users
 
 *Version 3.6.3*
 * Fix point values v2 endpoint to use rendered unit when writing analog statistics

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,11 +30,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.user.ApproveUsersModel;
+import com.infiniteautomation.mango.rest.v2.model.user.ApprovedUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionDetails;
@@ -297,6 +301,34 @@ public class UserRestController {
         return service.getUserGroups(exclude, user);
     }
 
+    @ApiOperation(
+            value = "Approve publicly registered User(s)",
+            notes = "Superadmin permission required",
+            response=UserModel.class
+            )
+    @RequestMapping(method = RequestMethod.POST)
+    @PreAuthorize("isAdmin()")
+    public ApprovedUsersModel approveUsers(
+            @RequestBody()
+            ApproveUsersModel model,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        ApprovedUsersModel result = new ApprovedUsersModel();
+        for(String username : model.getUsernames()) {
+            try {
+                User approved = service.approveUser(username, model.isSendEmail(), user);
+                result.addApproved(approved.getUsername());
+            }catch(Exception e) {
+                if(e instanceof TranslatableExceptionI) {
+                    result.addFailedApproval(username, ((TranslatableExceptionI)e).getTranslatableMessage());
+                }else {
+                    result.addFailedApproval(username, new TranslatableMessage("common.default", e.getMessage()));
+                }
+            }
+        }
+        return result;
+    }
+    
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
 
         if (user.hasAdminPermission()) {
