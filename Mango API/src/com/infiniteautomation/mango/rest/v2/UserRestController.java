@@ -306,7 +306,7 @@ public class UserRestController {
             notes = "Superadmin permission required",
             response=UserModel.class
             )
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST, value="/approve-users")
     @PreAuthorize("isAdmin()")
     public ApprovedUsersModel approveUsers(
             @RequestBody()
