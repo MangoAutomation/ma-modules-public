@@ -45,6 +45,13 @@ describe('Email verification', function() {
             receiveAlarmEmails: 'IGNORE'
         };
     };
+    
+    const deleteUser = (result, user) => {
+        return User.delete(user.username).catch(e => null).then(() => result);
+    };
+    const deleteUserReject = (error, user) => {
+        return User.delete(user.username).catch(e => null).then(() => Promise.reject(error));
+    };
 
     before('Login', config.login);
     
@@ -163,9 +170,7 @@ describe('Email verification', function() {
                     assert.isTrue(createdUser.disabled);
                     assert.isString(createdUser.emailVerified);
                     assert.isAbove(new Date(createdUser.emailVerified).valueOf(), 0);
-                }).finally(() => {
-                    return User.delete(newUser.username).catch(e => null);
-                });
+                }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
 
             it('Administrator can\'t create registration token for email address that is already in use', function() {
@@ -207,9 +212,7 @@ describe('Email verification', function() {
                     assert.fail('Creating user should not have succeeded');
                 }, error => {
                     assert.strictEqual(error.status, 400);
-                }).finally(() => {
-                    return User.delete(newUser.username).catch(e => null);
-                });
+                }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
             
             it('Validation works when creating new users', function() {
@@ -242,9 +245,7 @@ describe('Email verification', function() {
                     assert.strictEqual(error.data.mangoStatusName, 'VALIDATION_FAILED');
                     assert.isArray(error.data.result.messages);
                     assert.isObject(error.data.result.messages.find(m => m.property === 'password'));
-                }).finally(() => {
-                    return User.delete(newUser.username).catch(e => null);
-                });
+                }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
             
             it('Can\'t set permissions when registering', function() {
@@ -279,9 +280,7 @@ describe('Email verification', function() {
                     assert.isAbove(new Date(createdUser.emailVerified).valueOf(), 0);
                     assert.lengthOf(createdUser.permissions, 1);
                     assert.include(createdUser.permissions, 'user');
-                }).finally(() => {
-                    return User.delete(newUser.username).catch(e => null);
-                });
+                }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
         });
     });
@@ -347,15 +346,13 @@ describe('Email verification', function() {
 
         it('Verifies a user\'s email address', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
-            return promise.finally(() => {
-                return user.delete().catch(e => null);
-            });
+            return promise.then(s => deleteUser(s, user), e => deleteUserReject(e, user));
         });
         
         it('Updates a user\'s email address', function() {
             const user = createUserV1();
             const newEmailAddress = `${uuidV4()}@example.com`;
-            
+
             return user.save().then(() => {
                 return client.restRequest({
                     path: `${emailVerificationUrl}/create-token`,
@@ -379,13 +376,12 @@ describe('Email verification', function() {
                 assert.strictEqual(updatedUser.email, newEmailAddress);
                 assert.isString(updatedUser.emailVerified);
                 assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), 0);
-            }).finally(() => {
-                return user.delete().catch(e => null);
-            });
+            }).then(s => deleteUser(s, user), e => deleteUserReject(e, user));
         });
         
         it('Verified date updates if user re-verifies their email', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
+
             return promise.then(() => {
                 const dateFirstVerified = new Date(user.emailVerified);
                 
@@ -411,34 +407,30 @@ describe('Email verification', function() {
                     assert.isString(updatedUser.emailVerified);
                     assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), dateFirstVerified.valueOf());
                 });
-            }).finally(() => {
-                return user.delete().catch(e => null);
-            });
+            }).then(s => deleteUser(s, user), e => deleteUserReject(e, user));
         });
         
         it('Manually updating email address sets emailVerified property back to null', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
+
             return promise.then(user => {
                 user.email = `${uuidV4()}@example.com`;
                 return user.save();
             }).then(() => {
                 assert.isNull(user.emailVerified);
-            }).finally(() => {
-                return user.delete().catch(e => null);
-            });
+            }).then(s => deleteUser(s, user), e => deleteUserReject(e, user));
         });
         
         it('Manually updating other properties do not set emailVerified property back to null', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
+
             return promise.then(user => {
                 user.name = uuidV4();
                 return user.save();
             }).then(() => {
                 assert.isString(user.emailVerified);
                 assert.isAbove(new Date(user.emailVerified).valueOf(), 0);
-            }).finally(() => {
-                return user.delete().catch(e => null);
-            });
+            }).then(s => deleteUser(s, user), e => deleteUserReject(e, user));
         });
         
         it('Administrator can\'t create verification token for email address that is already in use', function() {
