@@ -288,6 +288,7 @@ describe('Email verification', function() {
     describe('Existing user email verification', function() {
         const createUserAndVerifyEmail = function() {
             const user = createUserV1();
+            let token;
             
             const promise = user.save().then(() => {
                 return client.restRequest({
@@ -299,11 +300,12 @@ describe('Email verification', function() {
                     }
                 });
             }).then(response => {
+                token = response.data.token;
                 return this.publicClient.restRequest({
                     path: `${emailVerificationUrl}/public/update-email`,
                     method: 'POST',
                     data: {
-                        token: response.data.token
+                        token
                     }
                 });
             }).then(response => {
@@ -318,7 +320,7 @@ describe('Email verification', function() {
                 return user;
             });
             
-            return {user, promise};
+            return {user, promise, token};
         };
         
         it('Wont send email without specifing the username', function() {
@@ -406,6 +408,28 @@ describe('Email verification', function() {
                     assert.strictEqual(updatedUser.email, user.email);
                     assert.isString(updatedUser.emailVerified);
                     assert.isAbove(new Date(updatedUser.emailVerified).valueOf(), dateFirstVerified.valueOf());
+                });
+            }).then(s => deleteUser(s, user), e => deleteUserReject(e, user));
+        });
+        
+        it('Reusing the same token does not update the verification date', function() {
+            const {user, promise, token} = createUserAndVerifyEmail.call(this);
+
+            return promise.then(() => {
+                const dateFirstVerified = new Date(user.emailVerified);
+                
+                return this.publicClient.restRequest({
+                    path: `${emailVerificationUrl}/public/update-email`,
+                    method: 'POST',
+                    data: {
+                        token
+                    }
+                }).then(response => {
+                    const updatedUser = response.data;
+
+                    assert.strictEqual(updatedUser.email, user.email);
+                    assert.isString(updatedUser.emailVerified);
+                    assert.strictEqual(new Date(updatedUser.emailVerified).valueOf(), dateFirstVerified.valueOf());
                 });
             }).then(s => deleteUser(s, user), e => deleteUserReject(e, user));
         });
