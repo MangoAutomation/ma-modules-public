@@ -244,7 +244,7 @@ describe('Email verification', function() {
                     assert.strictEqual(error.status, 422);
                     assert.strictEqual(error.data.mangoStatusName, 'VALIDATION_FAILED');
                     assert.isArray(error.data.result.messages);
-                    assert.isObject(error.data.result.messages.find(m => m.property === 'password'));
+                    assert.isObject(error.data.result.messages.find(m => m.property === 'user.password'));
                 }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
             
@@ -319,7 +319,6 @@ describe('Email verification', function() {
                 user.emailVerified = updatedUser.emailVerified;
                 return user;
             });
-            
             return {user, promise, token};
         };
         
@@ -385,6 +384,12 @@ describe('Email verification', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
 
             return promise.then(() => {
+                //TODO For REVIEW EmailAddressVerificationService.updateUserEmailAddress()
+                // uses the token issue date/time to set the email verified date
+                //Because token issued dates are rounded to the second this test was failing without
+                //  this delay
+                return config.delay(1100);
+            }).then(() => {
                 const dateFirstVerified = new Date(user.emailVerified);
                 
                 return client.restRequest({
