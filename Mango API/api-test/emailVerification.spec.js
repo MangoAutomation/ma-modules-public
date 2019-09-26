@@ -288,7 +288,7 @@ describe('Email verification', function() {
     describe('Existing user email verification', function() {
         const createUserAndVerifyEmail = function() {
             const user = createUserV1();
-            let token;
+            const token = {};
             
             const promise = user.save().then(() => {
                 return client.restRequest({
@@ -300,13 +300,11 @@ describe('Email verification', function() {
                     }
                 });
             }).then(response => {
-                token = response.data.token;
+                Object.assign(token, response.data);
                 return this.publicClient.restRequest({
                     path: `${emailVerificationUrl}/public/update-email`,
                     method: 'POST',
-                    data: {
-                        token
-                    }
+                    data: token
                 });
             }).then(response => {
                 const updatedUser = response.data;
@@ -381,13 +379,12 @@ describe('Email verification', function() {
         });
         
         it('Verified date updates if user re-verifies their email', function() {
+            this.timeout(3000);
+            
             const {user, promise} = createUserAndVerifyEmail.call(this);
 
             return promise.then(() => {
-                //TODO For REVIEW EmailAddressVerificationService.updateUserEmailAddress()
-                // uses the token issue date/time to set the email verified date
-                //Because token issued dates are rounded to the second this test was failing without
-                //  this delay
+                // delay for >1 second as the JWT issued at claim is only precise to the nearest 1 second
                 return config.delay(1100);
             }).then(() => {
                 const dateFirstVerified = new Date(user.emailVerified);
@@ -426,9 +423,7 @@ describe('Email verification', function() {
                 return this.publicClient.restRequest({
                     path: `${emailVerificationUrl}/public/update-email`,
                     method: 'POST',
-                    data: {
-                        token
-                    }
+                    data: token
                 }).then(response => {
                     const updatedUser = response.data;
 
