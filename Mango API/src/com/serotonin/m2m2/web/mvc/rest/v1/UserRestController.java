@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -67,11 +68,13 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
 
     private static Log LOG = LogFactory.getLog(UserRestController.class);
     private final MangoSessionRegistry sessionRegistry;
-
+    private final UsersService service;
+    
     @Autowired
-    public UserRestController(MangoSessionRegistry sessionRegistry) {
+    public UserRestController(MangoSessionRegistry sessionRegistry, UsersService service) {
         super(UserDao.getInstance());
         this.sessionRegistry = sessionRegistry;
+        this.service = service;
     }
 
     @ApiOperation(value = "Get all users", notes = "Returns a list of all users")
@@ -218,11 +221,11 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     // just use the old password
                     newUser.setPassword(u.getPassword());
                 }
-
+                
                 if(!model.validate()){
                     result.addRestMessage(this.getValidationFailedError());
                 }else{
-                    UserDao.getInstance().saveUser(newUser);
+                    service.update(u, newUser, user);
                     sessionRegistry.userUpdated(request, newUser);
                 }
                 return result.createResponseEntity(model);
@@ -245,7 +248,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                         // just use the old password
                         newUser.setPassword(u.getPassword());
                     }
-
+                    
                     //If we are not Admin we cannot modify our own privs
                     if(!u.hasAdminPermission()){
                         if (!u.getPermissionsSet().equals(newUser.getPermissionsSet())) {
@@ -287,7 +290,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                             }
                         }
 
-                        UserDao.getInstance().saveUser(newUser);
+                        service.update(u, newUser, user);
                         sessionRegistry.userUpdated(request, newUser);
                         URI location = builder.path("/users/{username}").buildAndExpand(model.getUsername()).toUri();
                         result.addRestMessage(getResourceCreatedMessage(location));
@@ -335,7 +338,7 @@ public class UserRestController extends MangoVoRestController<User, UserModel, U
                     if(model.validate()){
                         try{
                             User newUser = model.getData();
-                            UserDao.getInstance().saveUser(newUser);
+                            service.insert(newUser, user);
 
                             URI location = builder.path("/users/{username}").buildAndExpand(model.getUsername()).toUri();
                             result.addRestMessage(getResourceCreatedMessage(location));
