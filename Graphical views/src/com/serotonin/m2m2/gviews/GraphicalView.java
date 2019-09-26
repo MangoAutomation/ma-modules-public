@@ -34,6 +34,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.view.ShareUser;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.validation.StringValidation;
 
@@ -253,20 +254,25 @@ public class GraphicalView implements Serializable, JsonSerializable {
             vc.validate(response);
 
         //Validate the permissions
-        User user = Common.getUser();
+        User savingUser = Common.getUser();
+        PermissionHolder savingPermissionHolder = savingUser;
+        if(savingUser == null) {
+            savingPermissionHolder = Common.getBackgroundContextPermissionHolder();
+        }
+        
         GraphicalView existingView = null;
         if(this.id != Common.NEW_ID){
             existingView = new GraphicalViewDao().getView(id);
         }
 
         if(existingView == null){
-            Permissions.validatePermissions(response, "readPermission", user, false, null, Permissions.explodePermissionGroups(this.readPermission));
-            Permissions.validatePermissions(response, "setPermission", user, false, null, Permissions.explodePermissionGroups(this.setPermission));
-            Permissions.validatePermissions(response, "editPermission", user, false, null, Permissions.explodePermissionGroups(this.editPermission));
+            Permissions.validatePermissions(response, "readPermission", savingPermissionHolder, false, null, Permissions.explodePermissionGroups(this.readPermission));
+            Permissions.validatePermissions(response, "setPermission", savingPermissionHolder, false, null, Permissions.explodePermissionGroups(this.setPermission));
+            Permissions.validatePermissions(response, "editPermission", savingPermissionHolder, false, null, Permissions.explodePermissionGroups(this.editPermission));
         }else{
-            Permissions.validatePermissions(response, "readPermission", user, false, Permissions.explodePermissionGroups(existingView.readPermission), Permissions.explodePermissionGroups(this.readPermission));
-            Permissions.validatePermissions(response, "setPermission", user, false, Permissions.explodePermissionGroups(existingView.setPermission), Permissions.explodePermissionGroups(this.setPermission));
-            Permissions.validatePermissions(response, "editPermission", user, false, Permissions.explodePermissionGroups(existingView.editPermission), Permissions.explodePermissionGroups(this.editPermission));
+            Permissions.validatePermissions(response, "readPermission", savingPermissionHolder, false, Permissions.explodePermissionGroups(existingView.readPermission), Permissions.explodePermissionGroups(this.readPermission));
+            Permissions.validatePermissions(response, "setPermission", savingPermissionHolder, false, Permissions.explodePermissionGroups(existingView.setPermission), Permissions.explodePermissionGroups(this.setPermission));
+            Permissions.validatePermissions(response, "editPermission", savingPermissionHolder, false, Permissions.explodePermissionGroups(existingView.editPermission), Permissions.explodePermissionGroups(this.editPermission));
         }
     }
 

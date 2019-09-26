@@ -12,6 +12,7 @@ import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.module.EmportDefinition;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class GraphicalViewEmportDefinition extends EmportDefinition {
@@ -34,7 +35,7 @@ public class GraphicalViewEmportDefinition extends EmportDefinition {
     }
 
     @Override
-    public void doImport(JsonValue jsonValue, ImportContext importContext) throws JsonException {
+    public void doImport(JsonValue jsonValue, ImportContext importContext, PermissionHolder importer) throws JsonException {
         JsonObject viewJson = jsonValue.toJsonObject();
 
         String xid = viewJson.getString("xid");

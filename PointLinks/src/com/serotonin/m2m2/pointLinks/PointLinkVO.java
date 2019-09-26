@@ -29,6 +29,7 @@ import com.serotonin.m2m2.util.log.LogLevel;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
@@ -167,11 +168,13 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
                 response.addMessage(Level.error, "script", e.getTranslatableMessage());
             }
         }
-        User user = Common.getHttpUser();
-        if(user == null)
-            user = Common.getBackgroundContextUser();
         
         if(scriptPermissions != null) {
+            User savingUser = Common.getUser();
+            PermissionHolder savingPermissionHolder = savingUser;
+            if(savingUser == null) {
+                savingPermissionHolder = Common.getBackgroundContextPermissionHolder();
+            }
             Set<String> existingPermissions;
             boolean owner = false;
             if(this.id != Common.NEW_ID) {
@@ -182,7 +185,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
             }else {
                 existingPermissions = null;
             }
-            Permissions.validatePermissions(response, "scriptPermissions", user, owner, existingPermissions, scriptPermissions.getPermissionsSet());
+            Permissions.validatePermissions(response, "scriptPermissions", savingPermissionHolder, owner, existingPermissions, scriptPermissions.getPermissionsSet());
         }
         
         if (logLevel == null)

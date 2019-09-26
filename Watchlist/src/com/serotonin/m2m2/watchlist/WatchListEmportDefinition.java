@@ -15,6 +15,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.module.EmportDefinition;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class WatchListEmportDefinition extends EmportDefinition {
@@ -39,7 +40,7 @@ public class WatchListEmportDefinition extends EmportDefinition {
     }
 
     @Override
-    public void doImport(JsonValue jsonValue, ImportContext importContext) throws JsonException {
+    public void doImport(JsonValue jsonValue, ImportContext importContext, PermissionHolder importer) throws JsonException {
         JsonObject watchListJson = jsonValue.toJsonObject();
 
         String xid = watchListJson.getString("xid");

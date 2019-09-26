@@ -30,6 +30,7 @@ import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
@@ -202,17 +203,14 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
             response.addContextualMessage("userId", "watchlists.validate.userDNE");
         }
         
-        //Using the owner of the report to validate against permissions if there is no current user
-        User currentUser = Common.getHttpUser();
-        if(currentUser == null)
-            currentUser = Common.getBackgroundContextUser();
-        if(currentUser == null)
-     	   currentUser = user;
- 
         boolean savedByOwner = false;
-        if(currentUser != null && user != null) {
-            if(currentUser.getId() == user.getId())
-                savedByOwner = true;
+        User savingUser = Common.getUser();
+        PermissionHolder savingPermissionHolder = savingUser;
+        if(savingUser == null) {
+            savingPermissionHolder = Common.getBackgroundContextPermissionHolder();
+        }
+        if(user != null && savingPermissionHolder != null && StringUtils.equals(savingPermissionHolder.getPermissionHolderName(), user.getUsername())) {
+            savedByOwner = true;
         }
         
         //Validate Points
@@ -239,13 +237,11 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
             existingReadPermission = null;
             existingEditPermission = null;
         }
-        Permissions.validatePermissions(response, "readPermission", currentUser, savedByOwner, existingReadPermission, Permissions.explodePermissionGroups(readPermission));
-        Permissions.validatePermissions(response, "editPermission", currentUser, savedByOwner, existingEditPermission, Permissions.explodePermissionGroups(editPermission));
+        Permissions.validatePermissions(response, "readPermission", savingPermissionHolder, savedByOwner, existingReadPermission, Permissions.explodePermissionGroups(readPermission));
+        Permissions.validatePermissions(response, "editPermission", savingPermissionHolder, savedByOwner, existingEditPermission, Permissions.explodePermissionGroups(editPermission));
 
-        if(user !=null && currentUser!=null) {
-		      if(user.getId() != currentUser.getId() && !Permissions.hasPermission(currentUser, editPermission))
-		            response.addContextualMessage("editPermission", "validate.mustHaveEditPermission");
-		}
+        if(!savedByOwner && !Permissions.hasPermission(savingPermissionHolder, editPermission))
+            response.addContextualMessage("editPermission", "validate.mustHaveEditPermission");
 
 		
 		//TODO Validate new members

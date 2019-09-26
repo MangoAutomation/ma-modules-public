@@ -13,11 +13,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permission;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -273,8 +274,14 @@ public class UserModel extends AbstractVoModel<User> {
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
         if(permissions != null) {
-            //Clean them in case we received totally invalid permissions
-            Permissions.cleanPermissionSet(permissions);
+            //Verify that they can be imploded (not null and not empty)
+            for (String requiredPermission : permissions) {
+                if (requiredPermission == null || requiredPermission.isEmpty()) {
+                    ProcessResult result = new ProcessResult();
+                    result.addContextualMessage("permissions", "validate.invalidPermissionEmpty");
+                    throw new ValidationException(result);
+                }
+            }
             user.setPermissionsSet(permissions);
         }
         user.setLocale(locale);

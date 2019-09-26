@@ -258,7 +258,7 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
-    it('Strips empty strings and nulls from permission', function() {
+    it('Cannot use empty strings and nulls in permission', function() {
         const username = uuidV4();
         const testUser = new UserV2({
                 name: 'name',
@@ -275,9 +275,11 @@ describe('User V2 endpoint tests', function() {
                 locale: ''
             });
         return testUser.save().then(user => {
-            assert.strictEqual(user.permissions.length, 2);
-            assert.notEqual(-1, user.permissions.indexOf('test'));
-            assert.notEqual(-1, user.permissions.indexOf('user'));
+            throw new Error('Should not have created user');
+        }, error => {
+            assert.strictEqual(error.status, 422);
+            assert.strictEqual(error.data.result.messages.length, 1);
+            assert.strictEqual(error.data.result.messages[0].property, 'permissions');
         });
     });
     
