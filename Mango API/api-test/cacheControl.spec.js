@@ -28,7 +28,7 @@ describe('Cache control verification', function() {
                 'Accept': '*/*'
             }    
         }).then(response => {
-            assert.strictEqual(response.headers['cache-control'], 'max-age=86400, must-revalidate');
+            assert.strictEqual(response.headers['cache-control'], 'max-age=86400');
             assert.exists(response.headers['last-modified']);
         });
     });
@@ -41,7 +41,7 @@ describe('Cache control verification', function() {
                 'Accept': '*/*'
             }    
         }).then(response => {
-            assert.strictEqual(response.headers['cache-control'], 'max-age=86400, must-revalidate');
+            assert.strictEqual(response.headers['cache-control'], 'max-age=86400');
             assert.exists(response.headers['last-modified']);
         });
     });
@@ -54,12 +54,12 @@ describe('Cache control verification', function() {
                 'Accept': '*/*'
             }    
         }).then(response => {
-            assert.strictEqual(response.headers['cache-control'], 'max-age=86400, must-revalidate');
+            assert.strictEqual(response.headers['cache-control'], 'max-age=86400');
             assert.exists(response.headers['last-modified']);
         });
     });
     
-    it('Gets default resource cache-control header for ui non resource request', function() {
+    it('Gets default resource cache-control header for ui/login request', function() {
         return client.restRequest({
             path: '/ui/login',
             dataType: 'buffer',
@@ -67,8 +67,8 @@ describe('Cache control verification', function() {
                 'Accept': 'text/html'
             }    
         }).then(response => {
-            assert.strictEqual(response.headers['cache-control'], 'max-age=86400, must-revalidate');
-            assert.notExists(response.headers['last-modified']);
+            assert.strictEqual(response.headers['cache-control'], 'max-age=0');
+            assert.exists(response.headers['last-modified']);
         });
     });
     
@@ -80,7 +80,7 @@ describe('Cache control verification', function() {
                 'Accept': '*/*'
             }    
         }).then(response => {
-            assert.strictEqual(response.headers['cache-control'], 'no-store, must-revalidate');
+            assert.strictEqual(response.headers['cache-control'], 'no-store');
             assert.notExists(response.headers['last-modified']);
         });
     });
