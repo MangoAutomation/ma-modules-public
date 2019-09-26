@@ -175,7 +175,7 @@ describe('Log file query tests', function(){
           }
       }).then(response => {
           assert.match(response.headers['content-type'], /text\/plain.*/);
-          assert.strictEqual(response.headers['cache-control'], 'no-store, must-revalidate');
+          assert.strictEqual(response.headers['cache-control'], 'no-store');
           assert.strictEqual(response.headers['content-disposition'], 'attachment');
           assert.isAbove(response.data.length, 0);
       });
@@ -194,7 +194,7 @@ describe('Log file query tests', function(){
           }
       }).then(response => {
           assert.match(response.headers['content-type'], /text\/plain.*/);
-          assert.strictEqual(response.headers['cache-control'], 'no-store, must-revalidate');
+          assert.strictEqual(response.headers['cache-control'], 'no-store');
           assert.strictEqual(response.headers['content-disposition'], 'inline');
           assert.isAbove(response.data.length, 0);
       });
