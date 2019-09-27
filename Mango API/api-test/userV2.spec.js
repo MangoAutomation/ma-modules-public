@@ -104,7 +104,7 @@ function userV2Factory(client) {
         }
     };
 }
-const UserV2 = userV2Factory(client);
+
 describe('User V2 endpoint tests', function() {
     before('Login', config.login);
     
@@ -116,6 +116,7 @@ describe('User V2 endpoint tests', function() {
         };
         this.clients = {};
         this.configs = {};
+        this.UserV2 = userV2Factory(client);
     });
     
     beforeEach('Create test User', function() {
@@ -149,7 +150,7 @@ describe('User V2 endpoint tests', function() {
                     
             };
         
-        const testUser = new UserV2(this.testUserSettings);
+        const testUser = new this.UserV2(this.testUserSettings);
         
         //Save user and setup a session user for it
         return testUser.save().then(user => {
@@ -188,7 +189,7 @@ describe('User V2 endpoint tests', function() {
                 },
                 organization: 'Infinite Automation Systems'
             };
-        const testAdminUser = new UserV2(this.adminUserSettings);
+        const testAdminUser = new this.UserV2(this.adminUserSettings);
         
         //Save user and setup a session user for it
         return testAdminUser.save().then(user => {
@@ -237,7 +238,7 @@ describe('User V2 endpoint tests', function() {
     
     it('Fails to create user without password', function() {
         const username = uuidV4();
-        const invalidUser = new UserV2({
+        const invalidUser = new this.UserV2({
                 name: 'name',
                 username: username,
                 email: `${username}@example.com`,
@@ -260,7 +261,7 @@ describe('User V2 endpoint tests', function() {
     
     it('Cannot use empty strings and nulls in permission', function() {
         const username = uuidV4();
-        const testUser = new UserV2({
+        const testUser = new this.UserV2({
                 name: 'name',
                 username: username,
                 email: `${username}@example.com`,
@@ -455,7 +456,7 @@ describe('User V2 endpoint tests', function() {
         const dateCreated = new Date(100000).toISOString();
         const emailVerified = new Date(100000).toISOString();
         
-        const invalidUser = new UserV2({
+        const invalidUser = new this.UserV2({
             name: 'name',
             username: username,
             password: uuidV4(),
