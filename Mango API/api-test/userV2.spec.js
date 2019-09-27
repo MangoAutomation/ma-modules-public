@@ -71,6 +71,26 @@ function userV2Factory(client) {
             return (new this(options).patch(values));
         }
         
+        su(username) {
+            let url = '/rest/v2/login/su?username=' + encodeURIComponent(`${username}`);
+            return client.restRequest({
+                path: url,
+                method: 'POST'
+             }).then(response => {
+                 return this.updateSelf(response);
+             });
+        }
+        
+        exitSu() {
+            let url = '/rest/v2/login/exit-su';
+            return client.restRequest({
+                path: url,
+                method: 'POST'
+             }).then(response => {
+                 return this.updateSelf(response);
+             });
+        }
+        
         patch(values) {
             return client.restRequest({
                 path: this.constructor.baseUrl + '/' + encodeURIComponent(this[this.constructor.idProperty]),
@@ -533,6 +553,15 @@ describe('User V2 endpoint tests', function() {
         assert.strictEqual(this.clients.user.user.muted, false);
         return this.clients.user.user.toggleMuted().then(user => {
             assert.strictEqual(user.muted, true);
+        });
+    });
+    
+    it('Can switch user from admin to other user and back', function() {
+        return this.clients.admin.user.su(this.clients.user.user.username).then(user => {
+            assert.strictEqual(user.username, this.clients.user.user.username);
+            return this.clients.admin.user.exitSu().then(user => {
+                assert.strictEqual(user.username, this.clients.admin.user.username);
+            });
         });
     });
     
