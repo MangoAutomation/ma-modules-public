@@ -65,7 +65,7 @@ describe('Email verification', function() {
     });
     
     before('Disable sending email', function() {
-        this.smtpHostSetting = new client.SystemSetting({id: 'emailSmtpHost'});
+        this.smtpHostSetting = new SystemSetting({id: 'emailSmtpHost'});
 
         return this.smtpHostSetting.getValue().then(value => {
             this.smtpHost = value;
