@@ -3,9 +3,9 @@
 
 
 "@infinite-automation/mango-client@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-0.8.0.tgz#7ceba74058748c960353ed385b16aafbcb9b192b"
-  integrity sha512-I/GnDqXRjyaEDabtJY3zZTVtu7nV9QqaYmkF8Dcf/c1ZttyeQ9V84u4xk+1YnB1J16h7HW4KdWp62YV9V5nseg==
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-0.8.1.tgz#00f364ff0d4ecc217ebecb5790619168dfa4f20d"
+  integrity sha512-dpuMr7SqhApun7+tJhC7q6TBOVgUwFwi/wxp0vgCET9juVSGbmWc8u8L0sTMj+crigEdMCRtKJ2iADESD5yCWQ==
   dependencies:
     form-data "^2.3.0"
     moment "^2.19.0"
