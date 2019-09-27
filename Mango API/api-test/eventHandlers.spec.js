@@ -21,7 +21,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe('Test Event Handlers Endpoints', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     before('create data source and points', () => {
     	global.ds = new DataSource({

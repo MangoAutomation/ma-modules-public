@@ -19,7 +19,7 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('Audit endpoint tests', function(){
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Gets entire audit table', () => {
       return client.restRequest({

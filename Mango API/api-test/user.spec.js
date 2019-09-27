@@ -20,7 +20,7 @@ const client = createClient();
 const User = client.User;
 
 describe('User service', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     beforeEach('Create a test user', function() {
         const username = uuid();

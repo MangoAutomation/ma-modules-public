@@ -19,7 +19,7 @@ const {createClient, login, defer, delay} = require('@infinite-automation/mango-
 const client = createClient();
 
 describe('Mailing lists', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Creates a mailing list of type address', () => {
       global.addressMailingList = {

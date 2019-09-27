@@ -77,7 +77,7 @@ describe('Point value purge', function() {
     const pointValues2 = generateSamples(testPointXid2, startTime, numSamples, pollPeriod);
     const pointValues3 = generateSamples(testPointXid3, startTime, numSamples, pollPeriod);
 
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Purges data for a single data point by time period', function(){
         this.timeout(5000);

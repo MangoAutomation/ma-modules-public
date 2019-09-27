@@ -19,7 +19,7 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('Background processing settings', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Sets high priority pool settings', () => {
         return client.restRequest({

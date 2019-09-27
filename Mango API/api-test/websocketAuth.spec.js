@@ -30,7 +30,7 @@ const USER_AUTH_TOKEN_EXPIRED = 4104;
 //const AUTH_TOKENS_REVOKED = 4105;
 
 describe('Websocket authentication', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     before('Create a test user', function() {
         this.clients = {};

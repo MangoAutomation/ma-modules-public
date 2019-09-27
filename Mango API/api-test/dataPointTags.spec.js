@@ -21,7 +21,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe('Data point tags', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     before('Create a DS', function() {
         this.pointWithTags = (tags = {}) => {

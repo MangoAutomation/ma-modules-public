@@ -21,7 +21,7 @@ const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
 describe('Event types', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     //Setup Data Point With Event Detector
     

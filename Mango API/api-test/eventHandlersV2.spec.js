@@ -21,7 +21,7 @@ const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
 describe('Event handlers v2', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     before('Create DS 1', function() {
         this.point = (name) => {

@@ -125,7 +125,7 @@ function userV2Factory(client) {
 }
 
 describe('User V2 endpoint tests', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     before('Helper functions', function() {
         //Setup login using a given configuration

@@ -19,7 +19,7 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('Test Script Utility Endpoints', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Validate wrapped PointValueTime result script', () => {
       return client.restRequest({

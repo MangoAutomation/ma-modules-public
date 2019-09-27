@@ -21,7 +21,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe('Data source service', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {
         return new DataPoint({

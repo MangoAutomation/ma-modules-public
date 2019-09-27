@@ -21,7 +21,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe('Publisher service', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     before('Create data source and point', function() {
       global.ds = new DataSource({
           xid: 'mango_client_test',

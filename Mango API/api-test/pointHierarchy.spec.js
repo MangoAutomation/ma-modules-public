@@ -21,7 +21,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe.skip('Point Hierarchy service', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Creates a new virtual data source', () => {
         const ds = new DataSource({

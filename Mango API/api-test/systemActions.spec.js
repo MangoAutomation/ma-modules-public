@@ -19,7 +19,7 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('System Action Endpoints', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     this.timeout(20000);
 
     it('Lists available actions', () => {

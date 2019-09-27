@@ -20,7 +20,7 @@ const client = createClient();
 const uuidV4 = require('uuid/v4');
 
 describe('JSON store', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     const createJsonStoreItem = (jsonData) => {
         const xid = uuidV4();

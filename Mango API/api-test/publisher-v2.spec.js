@@ -19,7 +19,7 @@ const {createClient, login, defer, delay} = require('@infinite-automation/mango-
 const client = createClient();
 
 describe('Publishers v2 service', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     const httpPublisher = {
             enabled : false,

@@ -22,7 +22,7 @@ const User = client.User;
 const jwtUrl = '/rest/v2/auth-tokens';
 
 describe('JSON Web Token authentication', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     before('Create a test user', function() {
         const username = uuid();

@@ -21,7 +21,7 @@ const User = client.User;
 const uuidV4 = require('uuid/v4');
 
 describe('Basic authentication', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     before('Create a test user', function() {
         const username = uuidV4();

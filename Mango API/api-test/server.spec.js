@@ -19,7 +19,7 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('Server endpoint tests', function(){
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     //TODO test query timezones
     //TODO test send email

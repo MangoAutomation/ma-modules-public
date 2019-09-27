@@ -22,7 +22,7 @@ const User = client.User;
 const resetUrl = '/rest/v2/password-reset';
 
 describe('Password reset', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     before('Create a test user', function() {
         const username = uuid();

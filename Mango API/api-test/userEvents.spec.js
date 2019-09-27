@@ -19,7 +19,7 @@ const {createClient, login, uuid, defer, delay} = require('@infinite-automation/
 const client = createClient();
 
 describe('User Event query tests', function(){
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     before('Insert a User Event', function(){
         return client.restRequest({

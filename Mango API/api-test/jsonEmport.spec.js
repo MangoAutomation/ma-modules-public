@@ -19,7 +19,7 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('JSON emport endpoints', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     this.timeout(20000);
 
     it('Tests expiration of temp resource', () => {

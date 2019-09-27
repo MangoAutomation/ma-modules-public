@@ -43,7 +43,7 @@ describe('Email verification', function() {
         return User.delete(user.username).catch(e => null).then(() => Promise.reject(error));
     };
 
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     
     before('Create a test user', function() {
         this.testUser = createUser(client);

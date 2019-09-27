@@ -27,7 +27,7 @@ const path = require('path');
 const fs = require('fs');
 
 describe('Point value emport tests', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     const generateSamples = (xid, startTime, numSamples, pollPeriod) => {
         const pointValues = [];

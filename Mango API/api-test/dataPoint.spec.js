@@ -21,7 +21,7 @@ const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
 describe('Data point service', () => {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
 
     it('Creates a new virtual data source', () => {
         const ds = new DataSource({

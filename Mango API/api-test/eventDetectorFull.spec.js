@@ -22,7 +22,7 @@ const DataSource = client.DataSource;
 
 describe('Full event detector service', function() {
     this.timeout(5000);
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     before('Create data source and points', function() {
       global.ds = new DataSource({
           xid: 'mango_client_test',

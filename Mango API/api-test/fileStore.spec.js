@@ -23,7 +23,7 @@ const crypto = require('crypto');
 const path = require('path');
 
 describe('Test File Store endpoints', function() {
-    before('Login', login.bind(this, client));
+    before('Login', function() { return login.call(this, client); });
     this.timeout(5000);
 
     it('Lists all file stores', () => {
