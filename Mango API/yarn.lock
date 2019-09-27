@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@infinite-automation/mango-client@~0.7.4":
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-0.7.4.tgz#6ea28e7778f68a98228f305d73fcd539ceea1881"
-  integrity sha512-S1MV8q0VFQkNNiQOPJ/0D/bVIkKbyAZW7bIq1P6bsK/mJFaAr71MSUL++errycuyQGx5wniDoVPQ51Pb7F8MPA==
+"@infinite-automation/mango-client@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-0.8.0.tgz#7ceba74058748c960353ed385b16aafbcb9b192b"
+  integrity sha512-I/GnDqXRjyaEDabtJY3zZTVtu7nV9QqaYmkF8Dcf/c1ZttyeQ9V84u4xk+1YnB1J16h7HW4KdWp62YV9V5nseg==
   dependencies:
     form-data "^2.3.0"
     moment "^2.19.0"
