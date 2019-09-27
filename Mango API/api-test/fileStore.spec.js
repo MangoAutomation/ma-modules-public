@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 const fs = require('fs');
 const tmp = require('tmp');
 const crypto = require('crypto');
 const path = require('path');
 
 describe('Test File Store endpoints', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     this.timeout(5000);
 
     it('Lists all file stores', () => {

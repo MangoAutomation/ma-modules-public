@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('User Event query tests', function(){
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     before('Insert a User Event', function(){
         return client.restRequest({
@@ -72,10 +72,10 @@ describe('User Event query tests', function(){
             levels: ['NONE']
         };
         
-        const socketOpenDeferred = config.defer();
-        const gotEventDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const gotEventDeferred = defer();
         
-        const testId = uuidV4();
+        const testId = uuid();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -116,7 +116,7 @@ describe('User Event query tests', function(){
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -127,7 +127,7 @@ describe('User Event query tests', function(){
             return send.promise;
             
             // wait a second after sending subscription, test fails otherwise on a cold start
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             return client.restRequest({
                 path: '/rest/v2/example/raise-event',
                 method: 'POST',

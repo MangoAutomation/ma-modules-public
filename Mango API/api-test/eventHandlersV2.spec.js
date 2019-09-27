@@ -15,11 +15,13 @@
  * the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Event handlers v2', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     before('Create DS 1', function() {
         this.point = (name) => {
@@ -124,7 +126,7 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.name, global.staticValueSetPointEventHandler.name);
             assert.strictEqual(response.data.disabled, global.staticValueSetPointEventHandler.disabled);
             assert.strictEqual(response.data.eventTypes.length, global.staticValueSetPointEventHandler.eventTypes.length);
-            for(var i=0; i<response.data.eventTypes.length; i++){
+            for(let i=0; i<response.data.eventTypes.length; i++){
                 assert.strictEqual(response.data.eventTypes[i].eventType, global.staticValueSetPointEventHandler.eventTypes[i].eventType);
                 assert.strictEqual(response.data.eventTypes[0].referenceId1, global.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
                 assert.strictEqual(response.data.eventTypes[0].referenceId2, global.staticValueSetPointEventHandler.eventTypes[i].referenceId2);
@@ -141,11 +143,11 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.inactiveScript, global.staticValueSetPointEventHandler.inactiveScript);
             
             assert.strictEqual(response.data.scriptContext.length, global.staticValueSetPointEventHandler.scriptContext.length);
-            for(var i=0; i<response.data.scriptContext.length; i++){
+            for(let i=0; i<response.data.scriptContext.length; i++){
                 assert.strictEqual(response.data.scriptContext[i].xid, global.staticValueSetPointEventHandler.scriptContext[i].xid);
                 assert.strictEqual(response.data.scriptContext[i].variableName, global.staticValueSetPointEventHandler.scriptContext[i].variableName);
             }
-            for(var i=0; i<response.data.scriptPermissions.length; i++)
+            for(let i=0; i<response.data.scriptPermissions.length; i++)
                 assert.include(global.staticValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);
@@ -164,7 +166,7 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.items[0].disabled, global.staticValueSetPointEventHandler.disabled);
             
             assert.strictEqual(response.data.items[0].eventTypes.length, global.staticValueSetPointEventHandler.eventTypes.length);
-            for(var i=0; i<response.data.items[0].eventTypes.length; i++){
+            for(let i=0; i<response.data.items[0].eventTypes.length; i++){
                 assert.strictEqual(response.data.items[0].eventTypes[i].eventType, global.staticValueSetPointEventHandler.eventTypes[i].eventType);
                 assert.strictEqual(response.data.items[0].eventTypes[0].subType, global.staticValueSetPointEventHandler.eventTypes[i].subType);
                 assert.strictEqual(response.data.items[0].eventTypes[0].referenceId1, global.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
@@ -182,11 +184,11 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.items[0].inactiveScript, global.staticValueSetPointEventHandler.inactiveScript);
             
             assert.strictEqual(response.data.items[0].scriptContext.length, global.staticValueSetPointEventHandler.scriptContext.length);
-            for(var i=0; i<response.data.items[0].scriptContext.length; i++){
+            for(let i=0; i<response.data.items[0].scriptContext.length; i++){
                 assert.strictEqual(response.data.items[0].scriptContext[i].xid, global.staticValueSetPointEventHandler.scriptContext[i].xid);
                 assert.strictEqual(response.data.items[0].scriptContext[i].variableName, global.staticValueSetPointEventHandler.scriptContext[i].variableName);
             }
-            for(var i=0; i<response.data.items[0].scriptPermissions.length; i++)
+            for(let i=0; i<response.data.items[0].scriptPermissions.length; i++)
                 assert.include(global.staticValueSetPointEventHandler.scriptPermissions, response.data.items[0].scriptPermissions[i]);
 
             assert.isNumber(response.data.items[0].id);
@@ -240,11 +242,11 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.inactiveScript, global.pointValueSetPointEventHandler.inactiveScript);
             
             assert.strictEqual(response.data.scriptContext.length, global.pointValueSetPointEventHandler.scriptContext.length);
-            for(var i=0; i<response.data.scriptContext.length; i++){
+            for(let i=0; i<response.data.scriptContext.length; i++){
                 assert.strictEqual(response.data.scriptContext[i].xid, global.pointValueSetPointEventHandler.scriptContext[i].xid);
                 assert.strictEqual(response.data.scriptContext[i].variableName, global.pointValueSetPointEventHandler.scriptContext[i].variableName);
             }
-            for(var i=0; i<response.data.scriptPermissions.length; i++)
+            for(let i=0; i<response.data.scriptPermissions.length; i++)
                 assert.include(global.pointValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);
@@ -304,10 +306,8 @@ describe('Event handlers v2', function() {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
-        
-        const testId = uuidV4();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -349,7 +349,7 @@ describe('Event handlers v2', function() {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -359,7 +359,7 @@ describe('Event handlers v2', function() {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
                 path: `/rest/v2/event-handlers/${global.pointValueSetPointEventHandler.xid}`,
@@ -380,11 +380,11 @@ describe('Event handlers v2', function() {
                 assert.strictEqual(response.data.inactiveScript, global.pointValueSetPointEventHandler.inactiveScript);
                 
                 assert.strictEqual(response.data.scriptContext.length, global.pointValueSetPointEventHandler.scriptContext.length);
-                for(var i=0; i<response.data.scriptContext.length; i++){
+                for(let i=0; i<response.data.scriptContext.length; i++){
                     assert.strictEqual(response.data.scriptContext[i].xid, global.pointValueSetPointEventHandler.scriptContext[i].xid);
                     assert.strictEqual(response.data.scriptContext[i].variableName, global.pointValueSetPointEventHandler.scriptContext[i].variableName);
                 }
-                for(var i=0; i<response.data.scriptPermissions.length; i++)
+                for(let i=0; i<response.data.scriptPermissions.length; i++)
                     assert.include(global.pointValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
     
                 assert.isNumber(response.data.id);
@@ -406,10 +406,8 @@ describe('Event handlers v2', function() {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
-        
-        const testId = uuidV4();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -447,7 +445,7 @@ describe('Event handlers v2', function() {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -457,7 +455,7 @@ describe('Event handlers v2', function() {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             return client.restRequest({
                 path: `/rest/v2/event-handlers/${global.pointValueSetPointEventHandler.xid}`,
                 method: 'DELETE',
@@ -610,11 +608,11 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.customTemplate, global.emailEventHandler.customTemplate);
             
             assert.strictEqual(response.data.scriptContext.length, global.emailEventHandler.scriptContext.length);
-            for(var i=0; i<response.data.scriptContext.length; i++){
+            for(let i=0; i<response.data.scriptContext.length; i++){
                 assert.strictEqual(response.data.scriptContext[i].xid, global.emailEventHandler.scriptContext[i].xid);
                 assert.strictEqual(response.data.scriptContext[i].variableName, global.emailEventHandler.scriptContext[i].variableName);
             }
-            for(var i=0; i<response.data.scriptPermissions.length; i++)
+            for(let i=0; i<response.data.scriptPermissions.length; i++)
                 assert.include(global.emailEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);

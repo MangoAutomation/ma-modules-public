@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
-const MangoClient = require('@infinite-automation/mango-client');
+const {createClient, login, uuid, config, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
 
 const jwtUrl = '/rest/v2/auth-tokens';
 
 describe('JSON Web Token authentication', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     before('Create a test user', function() {
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
+        const username = uuid();
+        this.testUserPassword = uuid();
         this.testUser = new User({
             username,
             email: `${username}@example.com`,
@@ -52,9 +52,9 @@ describe('JSON Web Token authentication', function() {
             });
         };
         
-        this.noCookieConfig = Object.assign({
+        this.noCookieConfig = {
             enableCookies: false
-        }, config);
+        };
         
         this.parseClaims = function(token) {
             const parts = token.split('.');
@@ -72,7 +72,7 @@ describe('JSON Web Token authentication', function() {
         return this.createToken().then(token => {
             //console.log(Buffer.from(token.split('.')[1], 'base64').toString());
             
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -82,7 +82,7 @@ describe('JSON Web Token authentication', function() {
     
     it('Can create an authentication token for another user', function() {
         return this.createToken({username: this.testUser.username}).then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -94,7 +94,7 @@ describe('JSON Web Token authentication', function() {
         return this.createToken().then(token => {
             //console.log(Buffer.from(token.split('.')[1], 'base64').toString());
             
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             
             return this.createToken({}, jwtClient);
@@ -106,7 +106,7 @@ describe('JSON Web Token authentication', function() {
     });
     
     it('Can retrieve the public key', function() {
-        const publicClient = new MangoClient(config);
+        const publicClient = createClient();
         
         return publicClient.restRequest({
             path: `${jwtUrl}/public-key`,
@@ -119,7 +119,7 @@ describe('JSON Web Token authentication', function() {
 
     it('Can verify a token', function() {
         return this.createToken().then(token => {
-            const publicClient = new MangoClient(config);
+            const publicClient = createClient();
             return publicClient.restRequest({
                 path: `${jwtUrl}/verify`,
                 method: 'GET',
@@ -146,7 +146,7 @@ describe('JSON Web Token authentication', function() {
     
     it('Admin can edit another user using token authentication', function() {
         return this.createToken().then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.get(this.testUser.username);
         }).then(user => {
@@ -160,7 +160,7 @@ describe('JSON Web Token authentication', function() {
     
     it('Standard user can\'t edit own user using token authentication', function() {
         return this.createToken({username: this.testUser.username}).then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -177,7 +177,7 @@ describe('JSON Web Token authentication', function() {
     
     it('Admin can\'t edit own user using token authentication', function() {
         return this.createToken().then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -193,11 +193,11 @@ describe('JSON Web Token authentication', function() {
     });
 
     it('Can create an authentication token using basic authentication', function() {
-        const basicAuthClient = new MangoClient(this.noCookieConfig);
+        const basicAuthClient = createClient(this.noCookieConfig);
         basicAuthClient.setBasicAuthentication(this.testUser.username, this.testUserPassword);
         
         return this.createToken({}, basicAuthClient).then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -211,12 +211,12 @@ describe('JSON Web Token authentication', function() {
         const expiry = new Date(Date.now() + 5000);
         
         return this.createToken({expiry}).then(token => {
-            this.jwtClient = new MangoClient(this.noCookieConfig);
+            this.jwtClient = createClient(this.noCookieConfig);
             this.jwtClient.setBearerAuthentication(token);
             return this.jwtClient.User.current();
         }).then(user => {
             assert.strictEqual(user.username, config.username);
-            return config.delay(6000);
+            return delay(6000);
         }).then(() => {
             return this.jwtClient.User.current().then(user => {
                 throw new Error('Expired token worked');
@@ -257,7 +257,7 @@ describe('JSON Web Token authentication', function() {
             const tamperedToken = parts.join('.');
             assert.notEqual(tamperedToken, token);
             
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(tamperedToken);
             return jwtClient.User.current().then(user => {
                 throw new Error('Invalid token worked');
@@ -297,7 +297,7 @@ describe('JSON Web Token authentication', function() {
                 method: 'POST'
             });
         }).then(() => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(this.token);
             
             return jwtClient.User.current().then(user => {
@@ -310,21 +310,21 @@ describe('JSON Web Token authentication', function() {
 
     it('Rejects a token with mismatching username and id', function() {
         const createUsers = () => {
-            const username1 = uuidV4();
-            const username2 = uuidV4();
+            const username1 = uuid();
+            const username2 = uuid();
             this.firstUser = new User({
                 username: username1,
                 email: `${username1}@example.com`,
                 name: 'This is a name',
                 permissions: '',
-                password: uuidV4()
+                password: uuid()
             });
             this.secondUser = new User({
                 username: username2,
                 email: `${username2}@example.com`,
                 name: 'This is a name',
                 permissions: '',
-                password: uuidV4()
+                password: uuid()
             });
             return Promise.all([this.firstUser.save(), this.secondUser.save()]);
         };
@@ -345,7 +345,7 @@ describe('JSON Web Token authentication', function() {
             this.secondUser.username = this.firstUsername;
             return this.secondUser.save();
         }).then(() => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(this.token);
             
             return jwtClient.User.current().then(user => {
@@ -362,7 +362,7 @@ describe('JSON Web Token authentication', function() {
 
     it('Doesn\'t create sessions when using authentication tokens', function() {
         return this.createToken().then(token => {
-            const jwtClient = new MangoClient(this.noCookieConfig);
+            const jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             
             return jwtClient.restRequest({
@@ -376,7 +376,7 @@ describe('JSON Web Token authentication', function() {
     it('Rejects revoked tokens', function() {
         let jwtClient;
         return this.createToken().then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -401,7 +401,7 @@ describe('JSON Web Token authentication', function() {
         let jwtClient;
 
         return this.createToken({username: this.testUser.username}).then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -423,7 +423,7 @@ describe('JSON Web Token authentication', function() {
     });
 
     it('Non-admins can\'t create authentication tokens for other users', function() {
-        const client2 = new MangoClient(config);
+        const client2 = createClient(config);
         
         return client2.User.login(this.testUser.username, this.testUserPassword).then(user => {
             // use new client (logged in as the test user) to try and create a token for the admin user
@@ -440,7 +440,7 @@ describe('JSON Web Token authentication', function() {
     it('Can\'t use home url setting endpoint with token', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -459,7 +459,7 @@ describe('JSON Web Token authentication', function() {
     it('Can\'t use audio mute setting endpoint with token', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -478,7 +478,7 @@ describe('JSON Web Token authentication', function() {
     it('Standard user can\'t edit own user using token authentication v2', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -501,7 +501,7 @@ describe('JSON Web Token authentication', function() {
     it('Admin can\'t edit own user using token authentication v2', function() {
         let jwtClient;
         return this.createToken().then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -524,7 +524,7 @@ describe('JSON Web Token authentication', function() {
     it('Standard user can\'t patch self using token authentication v2', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {
@@ -546,7 +546,7 @@ describe('JSON Web Token authentication', function() {
     it('Admin can\'t edit own user using token authentication v2', function() {
         let jwtClient;
         return this.createToken().then(token => {
-            jwtClient = new MangoClient(this.noCookieConfig);
+            jwtClient = createClient(this.noCookieConfig);
             jwtClient.setBearerAuthentication(token);
             return jwtClient.User.current();
         }).then(user => {

@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('Cache control verification', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     it('Gets default cache-control header for core resource request', function() {
         return client.restRequest({

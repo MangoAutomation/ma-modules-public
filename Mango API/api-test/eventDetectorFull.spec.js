@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
 describe('Full event detector service', function() {
     this.timeout(5000);
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     before('Create data source and points', function() {
       global.ds = new DataSource({
           xid: 'mango_client_test',

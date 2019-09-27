@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('Publishers v2 service', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const httpPublisher = {
             enabled : false,
@@ -54,8 +55,8 @@ describe('Publishers v2 service', () => {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -93,7 +94,7 @@ describe('Publishers v2 service', () => {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -103,7 +104,7 @@ describe('Publishers v2 service', () => {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
                 path: `/rest/v2/publishers-v2`,
@@ -130,8 +131,8 @@ describe('Publishers v2 service', () => {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -169,7 +170,7 @@ describe('Publishers v2 service', () => {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -179,7 +180,7 @@ describe('Publishers v2 service', () => {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             httpPublisher.name = "new name";
             return client.restRequest({
@@ -206,8 +207,8 @@ describe('Publishers v2 service', () => {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -245,7 +246,7 @@ describe('Publishers v2 service', () => {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -255,7 +256,7 @@ describe('Publishers v2 service', () => {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             httpPublisher.name = "new name";
             return client.restRequest({

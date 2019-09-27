@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
-const MangoClient = require('@infinite-automation/mango-client');
+const {createClient, login, uuid, noop} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
 
 const resetUrl = '/rest/v2/password-reset';
 
 describe('Password reset', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     before('Create a test user', function() {
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
+        const username = uuid();
+        this.testUserPassword = uuid();
         this.testUser = new User({
             username,
             email: `${username}@example.com`,
@@ -42,7 +42,7 @@ describe('Password reset', function() {
     });
     
     before('Helpers', function() {
-        this.publicClient = new MangoClient(config);
+        this.publicClient = createClient();
     });
 
     it('Can trigger a password reset email', function() {
@@ -78,17 +78,17 @@ describe('Password reset', function() {
     });
 
     it(`Won't send emails for disabled users`, function() {
-        const disabledUsername = uuidV4();
+        const disabledUsername = uuid();
         const disabledUser = new User({
             username: disabledUsername,
             email: `${disabledUsername}@example.com`,
             name: 'This is a name',
             permissions: '',
-            password: uuidV4(),
+            password: uuid(),
             disabled: true
         });
         const deleteDisabledUser = () => {
-            return disabledUser.delete().then(null, config.noop);
+            return disabledUser.delete().then(null, noop);
         };
         
         return disabledUser.save().then(() => {
@@ -180,7 +180,7 @@ describe('Password reset', function() {
     });
     
     it('Can reset a user\'s password with a token', function() {
-        const newPassword = uuidV4();
+        const newPassword = uuid();
         
         return client.restRequest({
             path: `${resetUrl}/create`,
@@ -206,7 +206,7 @@ describe('Password reset', function() {
         }).then(response => {
             assert.strictEqual(response.status, 204);
 
-            const loginClient = new MangoClient(config);
+            const loginClient = createClient();
             return loginClient.User.login(this.testUser.username, newPassword);
         });
     });
@@ -234,7 +234,7 @@ describe('Password reset', function() {
                 method: 'POST',
                 data: {
                     token: resetToken,
-                    newPassword: uuidV4()
+                    newPassword: uuid()
                 }
             });
         }).then(response => {
@@ -245,7 +245,7 @@ describe('Password reset', function() {
                 method: 'POST',
                 data: {
                     token: resetToken,
-                    newPassword: uuidV4()
+                    newPassword: uuid()
                 }
             });
         }).then(response => {
@@ -277,7 +277,7 @@ describe('Password reset', function() {
             resetToken = response.data.token;
             
             // change the test user's password
-            this.testUserPassword = uuidV4();
+            this.testUserPassword = uuid();
             this.testUser.password = this.testUserPassword;
             return this.testUser.save();
         }).then(user => {
@@ -288,7 +288,7 @@ describe('Password reset', function() {
                 method: 'POST',
                 data: {
                     token: resetToken,
-                    newPassword: uuidV4()
+                    newPassword: uuid()
                 }
             });
         }).then(response => {
@@ -301,11 +301,11 @@ describe('Password reset', function() {
     });
     
     it('Locks a user\'s password (by default) when an admin creates a reset token', function() {
-        const newPassword = uuidV4();
+        const newPassword = uuid();
         let resetToken;
         
         // ensure we have a known password beforehand
-        this.testUserPassword = uuidV4();
+        this.testUserPassword = uuid();
         this.testUser.password = this.testUserPassword;
         
         return this.testUser.save().then(() => {
@@ -325,7 +325,7 @@ describe('Password reset', function() {
             
             resetToken = response.data.token;
             
-            const loginClient = new MangoClient(config);
+            const loginClient = createClient();
             return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
                 throw new Error('Password should be locked');
             }, error => {
@@ -345,7 +345,7 @@ describe('Password reset', function() {
 
             this.testUserPassword = newPassword;
             
-            const loginClient = new MangoClient(config);
+            const loginClient = createClient();
             return loginClient.User.login(this.testUser.username, newPassword);
         });
     });

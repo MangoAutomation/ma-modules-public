@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const MangoClient = require('@infinite-automation/mango-client');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 function userV2Factory(client) {
     const MangoObject = client.MangoObject;
@@ -126,7 +125,7 @@ function userV2Factory(client) {
 }
 
 describe('User V2 endpoint tests', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     before('Helper functions', function() {
         //Setup login using a given configuration
@@ -140,46 +139,45 @@ describe('User V2 endpoint tests', function() {
     });
     
     beforeEach('Create test User', function() {
-        const username = uuidV4();
-        const testUserPassword = uuidV4();
+        const username = uuid();
+        const testUserPassword = uuid();
         this.testUserSettings = {
-                name: 'name',
-                username: username,
-                password: testUserPassword,
-                email: `${username}@example.com`,
-                phone: '808-888-8888',
-                disabled: false,
-                locale: '',
-                homeUrl: 'www.google.com',
-                receiveAlarmEmails: 'IGNORE',
-                receiveOwnAuditEvents: false,
-                muted: false,
-                permissions: ['testuser', 'test'],
-                sessionExpirationOverride: true,
-                sessionExpirationPeriod: {
-                    periods: 1,
-                    type: 'SECONDS'
-                },
-                organization: 'Infinite Automation Systems',
-                organizationalRole: 'test engineer',
-                data: {
-                    stringField: 'some random string',
-                    numberField: 123,
-                    booleanField: true
-                }
-                    
-            };
+            name: 'name',
+            username: username,
+            password: testUserPassword,
+            email: `${username}@example.com`,
+            phone: '808-888-8888',
+            disabled: false,
+            locale: '',
+            homeUrl: 'www.google.com',
+            receiveAlarmEmails: 'IGNORE',
+            receiveOwnAuditEvents: false,
+            muted: false,
+            permissions: ['testuser', 'test'],
+            sessionExpirationOverride: true,
+            sessionExpirationPeriod: {
+                periods: 1,
+                type: 'SECONDS'
+            },
+            organization: 'Infinite Automation Systems',
+            organizationalRole: 'test engineer',
+            data: {
+                stringField: 'some random string',
+                numberField: 123,
+                booleanField: true
+            } 
+        };
         
         const testUser = new this.UserV2(this.testUserSettings);
         
         //Save user and setup a session user for it
         return testUser.save().then(user => {
             assert.equal(user.username, username);
-            this.configs.user = Object.assign({}, config, {
+            this.configs.user = {
                     username: username,
                     password: testUserPassword
-            });
-            this.clients.user = new MangoClient(this.configs.user);
+            };
+            this.clients.user = createClient(this.configs.user);
             this.clients.user.User = userV2Factory(this.clients.user);
             this.clients.user.user = new this.clients.user.User(user);
             return this.login(this.configs.user, this.clients.user.User);
@@ -187,8 +185,8 @@ describe('User V2 endpoint tests', function() {
     });
     
     beforeEach('Create test admin User', function() {
-        const username = uuidV4();
-        const testAdminUserPassword = uuidV4();
+        const username = uuid();
+        const testAdminUserPassword = uuid();
         this.adminUserSettings = {
                 name: 'admin name',
                 username: username,
@@ -214,11 +212,11 @@ describe('User V2 endpoint tests', function() {
         //Save user and setup a session user for it
         return testAdminUser.save().then(user => {
             assert.equal(user.username, username);
-            this.configs.admin = Object.assign({}, config, {
+            this.configs.admin = {
                     username: username,
                     password: testAdminUserPassword
-            });
-            this.clients.admin = new MangoClient(this.configs.admin);
+            };
+            this.clients.admin = createClient(this.configs.admin);
             this.clients.admin.User = userV2Factory(this.clients.admin);
             this.clients.admin.user = new this.clients.admin.User(user);
             return this.login(this.configs.admin, this.clients.admin.User);
@@ -238,7 +236,7 @@ describe('User V2 endpoint tests', function() {
     });
     
     before('Create a session reference that uses session authentication', function() {
-        this.sessionTimeoutRef = new MangoClient(config);
+        this.sessionTimeoutRef = createClient();
     });
     
     it('Gets self as non admin', function() {
@@ -257,7 +255,7 @@ describe('User V2 endpoint tests', function() {
     });
     
     it('Fails to create user without password', function() {
-        const username = uuidV4();
+        const username = uuid();
         const invalidUser = new this.UserV2({
                 name: 'name',
                 username: username,
@@ -280,7 +278,7 @@ describe('User V2 endpoint tests', function() {
     });
     
     it('Cannot use empty strings and nulls in permission', function() {
-        const username = uuidV4();
+        const username = uuid();
         const testUser = new this.UserV2({
                 name: 'name',
                 username: username,
@@ -439,9 +437,9 @@ describe('User V2 endpoint tests', function() {
     
     it('User session timeout override expires session', function() {
         this.timeout(5000);
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
         return loginClient.User.login(this.testUserSettings.username, this.testUserSettings.password).then(() => {
-            return config.delay(2000);
+            return delay(2000);
         }).then(() => {
             return loginClient.User.current().then(response => {
                 throw new Error('Session should be expired');
@@ -472,14 +470,14 @@ describe('User V2 endpoint tests', function() {
     
     it('Can\'t manually set the emailVerified or created property when creating user', function() {
     
-        const username = uuidV4();
+        const username = uuid();
         const dateCreated = new Date(100000).toISOString();
         const emailVerified = new Date(100000).toISOString();
         
         const invalidUser = new this.UserV2({
             name: 'name',
             username: username,
-            password: uuidV4(),
+            password: uuid(),
             email: `${username}@example.com`,
             emailVerified: emailVerified,
             created: dateCreated,

@@ -10,14 +10,9 @@
     "beforeEach": true,
     "afterEach": true,
     "it": true,
+    "chai": true,
     "assert": true,
-    "expect": true,
-    "client": true,
-    "DataSource": true,
-    "DataPoint": true,
-    "User": true,
-    "pointValues": true,
-    "SystemSetting": true
+    "expect": true
   },
 
   // Define globals exposed by modern browsers.

@@ -19,13 +19,15 @@
  * 
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 const path = require('path');
 const fs = require('fs');
 
 describe('Point value emport tests', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const generateSamples = (xid, startTime, numSamples, pollPeriod) => {
         const pointValues = [];
@@ -76,8 +78,8 @@ describe('Point value emport tests', function() {
     const startTime = endTime - (numSamples * pollPeriod);
     const isoFrom = new Date(startTime).toISOString();
     
-    const testPointXid1 = uuidV4();
-    const testPointXid2 = uuidV4();
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
     
     const pointValues1 = generateSamples(testPointXid1, endTime - 1000*60*60*24, 24*60, 60000);
     const pointValues2 = generateSamples(testPointXid2, endTime - 1000*60*60*24, 24*60, 60000);
@@ -88,7 +90,7 @@ describe('Point value emport tests', function() {
         this.timeout(insertionDelay * 2);
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -108,7 +110,7 @@ describe('Point value emport tests', function() {
         }).then(() => {
             const valuesToInsert = pointValues1.concat(pointValues2);
             return client.pointValues.insert(valuesToInsert);
-        }).then(() => config.delay(insertionDelay));
+        }).then(() => delay(insertionDelay));
     });
 
     after('Deletes the new virtual data source and its points', function() {
@@ -137,7 +139,7 @@ describe('Point value emport tests', function() {
                 xids: [`${testPointXid1}`,`${testPointXid2}`],
             },
             writeToFile: 'pointValues.csv'
-        }).then(() => config.delay(1000)).then(response => {
+        }).then(() => delay(1000)).then(response => {
             const uploadFileName = path.resolve('pointValues.csv');
             return client.restRequest({
                 path: `/rest/v2/point-value-modification/import`,

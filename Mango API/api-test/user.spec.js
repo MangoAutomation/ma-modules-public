@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
-const MangoClient = require('@infinite-automation/mango-client');
+const {createClient, login, uuid, noop, config, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
 
 describe('User service', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     beforeEach('Create a test user', function() {
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
+        const username = uuid();
+        this.testUserPassword = uuid();
         this.testUser = new User({
             username,
             email: `${username}@example.com`,
@@ -41,7 +41,7 @@ describe('User service', () => {
     });
 
     afterEach('Delete the test user', function() {
-        return this.testUser.delete().catch(config.noop);
+        return this.testUser.delete().catch(noop);
     });
     
     it('Returns the current user', () => {
@@ -64,9 +64,9 @@ describe('User service', () => {
     
     it('User session timeout override expires session', function() {
         this.timeout(5000);
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            return config.delay(2000);
+            return delay(2000);
         }).then(() => {
             return loginClient.User.current().then(response => {
                 throw new Error('Session should be expired');

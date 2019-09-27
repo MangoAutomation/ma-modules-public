@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
 const uuidV4 = require('uuid/v4');
-const MangoClient = require('@infinite-automation/mango-client');
 
 describe('Basic authentication', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     before('Create a test user', function() {
         const username = uuidV4();
@@ -36,10 +37,9 @@ describe('Basic authentication', function() {
     });
     
     before('Create a client that uses basic authentication', function() {
-        const noCookieConfig = Object.assign({
+        this.basicAuthClient = createClient({
             enableCookies: false
-        }, config);
-        this.basicAuthClient = new MangoClient(noCookieConfig);
+        });
         this.basicAuthClient.setBasicAuthentication(this.testUser.username, this.testUserPassword);
     });
     

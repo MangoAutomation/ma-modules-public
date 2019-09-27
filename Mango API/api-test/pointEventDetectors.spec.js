@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-const uuidV4 = require('uuid/v4');
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login, defer, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Point Event detector service', function() {
     this.timeout(5000);
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     const highLimitDetector = function() {
             return {
@@ -356,7 +358,7 @@ describe('Point Event detector service', function() {
     it('Gets websocket notifications for create', function() {
         
         const ed = {
-                xid: uuidV4(),
+                xid: uuid(),
                 name : "When matches",
                 alarmLevel : 'URGENT',
                 duration : {
@@ -373,8 +375,8 @@ describe('Point Event detector service', function() {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -412,7 +414,7 @@ describe('Point Event detector service', function() {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -422,7 +424,7 @@ describe('Point Event detector service', function() {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
                 path: `/rest/v2/full-event-detectors`,

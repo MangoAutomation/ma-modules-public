@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const MangoClient = require('@infinite-automation/mango-client');
+const {createClient, login, config} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 const uuidV4 = require('uuid/v4');
 
 describe('Cross Origin Resource Sharing (CORS)', function() {
@@ -30,18 +30,18 @@ describe('Cross Origin Resource Sharing (CORS)', function() {
             return;
         }
         
-        return config.login.call(this).then((...args) => {
-            this.allowedCorsClient = new MangoClient(Object.assign({
+        return login.call(this, client).then(() => {
+            this.allowedCorsClient = createClient({
                 defaultHeaders: {
                     origin: allowedOrigin
                 }
-            }, config));
+            });
             
-            this.notAllowedCorsClient = new MangoClient(Object.assign({
+            this.notAllowedCorsClient = createClient({
                 defaultHeaders: {
                     origin: notAllowedOrigin
                 }
-            }, config));
+            });
             
             // copy the session cookie to the CORS client
             Object.assign(this.allowedCorsClient.cookies, client.cookies);

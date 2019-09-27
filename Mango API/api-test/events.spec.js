@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, defer, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Events v2 tests', function(){
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {
         return new DataPoint({
@@ -50,13 +52,13 @@ describe('Events v2 tests', function(){
     };
     
     const raiseDelay = 1000; //Delay to raise alarm
-    const testPointXid1 = uuidV4();
+    const testPointXid1 = uuid();
     
     before('Create a virtual data source, points, raise event', function() {
         this.timeout(raiseDelay * 200);
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -90,7 +92,7 @@ describe('Events v2 tests', function(){
                     message: 'Dummy Point event'
                 }
             });
-        }).then(() => config.delay(raiseDelay));
+        }).then(() => delay(raiseDelay));
     });
 
     after('Deletes the new virtual data source and its points', function() {
@@ -109,11 +111,11 @@ describe('Events v2 tests', function(){
             requestType: 'SUBSCRIPTION'
         };
         
-        const socketOpenDeferred = config.defer();
-        const gotAlarmSummaries = config.defer();
-        const gotEventDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const gotAlarmSummaries = defer();
+        const gotEventDeferred = defer();
         
-        const testId = uuidV4();
+        const testId = uuid();
 
         return Promise.resolve().then(function() {
             ws = client.openWebSocket({
@@ -158,7 +160,7 @@ describe('Events v2 tests', function(){
             });
             return socketOpenDeferred.promise;
         }).then(function() {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -201,9 +203,9 @@ describe('Events v2 tests', function(){
             requestType: 'SUBSCRIPTION'
         };
         
-        const socketOpenDeferred = config.defer();
-        const gotAlarmSummaries = config.defer();
-        const gotEventQueryResult = config.defer();
+        const socketOpenDeferred = defer();
+        const gotAlarmSummaries = defer();
+        const gotEventQueryResult = defer();
 
         return Promise.resolve().then(function() {
             ws = client.openWebSocket({
@@ -247,7 +249,7 @@ describe('Events v2 tests', function(){
             });
             return socketOpenDeferred.promise;
         }).then(function() {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -257,7 +259,7 @@ describe('Events v2 tests', function(){
             });
             return send.promise;
         }).then(() => gotAlarmSummaries.promise).then(function() {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify({
                 messageType: 'REQUEST',
                 requestType: 'DATA_POINT_SUMMARY',

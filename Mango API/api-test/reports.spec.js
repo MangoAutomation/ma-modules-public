@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe.skip('Test Report Endpoints', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     //TODO Create a Report first to get the XID to use
     // then un-skip the test, we currently don't have a Reports REST controller

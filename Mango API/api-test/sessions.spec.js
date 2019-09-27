@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
-const MangoClient = require('@infinite-automation/mango-client');
+const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
 
 describe('Sessions and expiry', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     beforeEach('Create a test user', function() {
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
+        const username = uuid();
+        this.testUserPassword = uuid();
         this.testUser = new User({
             username,
             email: `${username}@example.com`,
@@ -40,7 +40,7 @@ describe('Sessions and expiry', function() {
     });
 
     it('User\'s sessions are expired when they are disabled', function() {
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
             this.testUser.disabled = true;
@@ -55,10 +55,10 @@ describe('Sessions and expiry', function() {
     });
     
     it('User\'s sessions are expired when their password is changed', function() {
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            this.testUser.password = uuidV4();
+            this.testUser.password = uuid();
             return this.testUser.save();
         }).then(() => {
             return loginClient.User.current().then(response => {
@@ -70,10 +70,10 @@ describe('Sessions and expiry', function() {
     });
     
     it('User\'s sessions are expired when their permissions are changed', function() {
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            this.testUser.permissions = `user,${uuidV4()}`;
+            this.testUser.permissions = `user,${uuid()}`;
             return this.testUser.save();
         }).then(() => {
             return loginClient.User.current().then(response => {
@@ -85,10 +85,10 @@ describe('Sessions and expiry', function() {
     });
     
     it('User\'s sessions are not expired when other details are changed', function() {
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            this.testUser.name = uuidV4();
+            this.testUser.name = uuid();
             return this.testUser.save();
         }).then(() => {
             return loginClient.User.current();
@@ -96,10 +96,10 @@ describe('Sessions and expiry', function() {
     });
     
     it('User\'s current session is not expired when changing own password', function() {
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(user => {
-            user.password = uuidV4();
+            user.password = uuid();
             return user.save();
         }).then(() => {
             return loginClient.User.current();
@@ -107,13 +107,13 @@ describe('Sessions and expiry', function() {
     });
     
     it('User\'s other sessions are expired when changing own password', function() {
-        const loginClient = new MangoClient(config);
-        const loginClient2 = new MangoClient(config);
+        const loginClient = createClient();
+        const loginClient2 = createClient();
 
         return loginClient2.User.login(this.testUser.username, this.testUserPassword).then(() => {
             return loginClient.User.login(this.testUser.username, this.testUserPassword);
         }).then(user => {
-            user.password = uuidV4();
+            user.password = uuid();
             return user.save();
         }).then(() => {
             return loginClient.User.current();
@@ -127,7 +127,7 @@ describe('Sessions and expiry', function() {
     });
     
     it('Session is invalidated when logging out', function() {
-        const loginClient = new MangoClient(config);
+        const loginClient = createClient();
         let oldCookies;
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {

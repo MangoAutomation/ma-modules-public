@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('Mailing lists', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     it('Creates a mailing list of type address', () => {
       global.addressMailingList = {
@@ -59,19 +59,19 @@ describe('Mailing lists', function() {
           assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
           
           assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
-          for(var i=0; i<response.data.readPermissions.length; i++)
+          for(let i=0; i<response.data.readPermissions.length; i++)
               assert.include(global.addressMailingList.readPermissions, response.data.readPermissions[i]);
           
           assert.lengthOf(response.data.editPermissions, global.addressMailingList.editPermissions.length);
-          for(var i=0; i<response.data.editPermissions.length; i++)
+          for(let i=0; i<response.data.editPermissions.length; i++)
               assert.include(global.addressMailingList.editPermissions, response.data.editPermissions[i]);
           
-          assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length)
-          for(var i=0; i<response.data.inactiveSchedule.length; i++){
-              var responseSched = response.data.inactiveSchedule[i];
-              var globalSched = global.addressMailingList.inactiveSchedule[i];
+          assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length);
+          for(let i=0; i<response.data.inactiveSchedule.length; i++){
+              let responseSched = response.data.inactiveSchedule[i];
+              let globalSched = global.addressMailingList.inactiveSchedule[i];
               assert.lengthOf(responseSched, globalSched.length);
-              for(var j=0; j<responseSched.length; j++)
+              for(let j=0; j<responseSched.length; j++)
                   assert.equal(responseSched[j], globalSched[j]);
           }
           
@@ -148,19 +148,19 @@ describe('Mailing lists', function() {
             assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
             
             assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
-            for(var i=0; i<response.data.readPermissions.length; i++)
+            for(let i=0; i<response.data.readPermissions.length; i++)
                 assert.include(global.addressMailingList.readPermissions, response.data.readPermissions[i]);
             
             assert.lengthOf(response.data.editPermissions, global.addressMailingList.editPermissions.length);
-            for(var i=0; i<response.data.editPermissions.length; i++)
+            for(let i=0; i<response.data.editPermissions.length; i++)
                 assert.include(global.addressMailingList.editPermissions, response.data.editPermissions[i]);
             
-            assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length)
-            for(var i=0; i<response.data.inactiveSchedule.length; i++){
-                var responseSched = response.data.inactiveSchedule[i];
-                var globalSched = global.addressMailingList.inactiveSchedule[i];
+            assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length);
+            for(let i=0; i<response.data.inactiveSchedule.length; i++){
+                let responseSched = response.data.inactiveSchedule[i];
+                let globalSched = global.addressMailingList.inactiveSchedule[i];
                 assert.lengthOf(responseSched, globalSched.length);
-                for(var j=0; j<responseSched.length; j++)
+                for(let j=0; j<responseSched.length; j++)
                     assert.equal(responseSched[j], globalSched[j]);
             }
         });
@@ -187,19 +187,19 @@ describe('Mailing lists', function() {
             assert.equal(response.data.receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
             
             assert.lengthOf(response.data.readPermissions, global.addressMailingList.readPermissions.length);
-            for(var i=0; i<response.data.readPermissions.length; i++)
+            for(let i=0; i<response.data.readPermissions.length; i++)
                 assert.include(global.addressMailingList.readPermissions, response.data.readPermissions[i]);
             
             assert.lengthOf(response.data.editPermissions, global.addressMailingList.editPermissions.length);
-            for(var i=0; i<response.data.editPermissions.length; i++)
+            for(let i=0; i<response.data.editPermissions.length; i++)
                 assert.include(global.addressMailingList.editPermissions, response.data.editPermissions[i]);
             
-            assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length)
-            for(var i=0; i<response.data.inactiveSchedule.length; i++){
-                var responseSched = response.data.inactiveSchedule[i];
-                var globalSched = global.addressMailingList.inactiveSchedule[i];
+            assert.equal(response.data.inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length);
+            for(let i=0; i<response.data.inactiveSchedule.length; i++){
+                let responseSched = response.data.inactiveSchedule[i];
+                let globalSched = global.addressMailingList.inactiveSchedule[i];
                 assert.lengthOf(responseSched, globalSched.length);
-                for(var j=0; j<responseSched.length; j++)
+                for(let j=0; j<responseSched.length; j++)
                     assert.equal(responseSched[j], globalSched[j]);
             }
             
@@ -224,19 +224,19 @@ describe('Mailing lists', function() {
             assert.equal(response.data.items[0].receiveAlarmEmails, global.addressMailingList.receiveAlarmEmails);
             
             assert.lengthOf(response.data.items[0].readPermissions, global.addressMailingList.readPermissions.length);
-            for(var i=0; i<response.data.items[0].readPermissions.length; i++)
+            for(let i=0; i<response.data.items[0].readPermissions.length; i++)
                 assert.include(global.addressMailingList.readPermissions, response.data.items[0].readPermissions[i]);
             
             assert.lengthOf(response.data.items[0].editPermissions, global.addressMailingList.editPermissions.length);
-            for(var i=0; i<response.data.items[0].editPermissions.length; i++)
+            for(let i=0; i<response.data.items[0].editPermissions.length; i++)
                 assert.include(global.addressMailingList.editPermissions, response.data.items[0].editPermissions[i]);
             
-            assert.equal(response.data.items[0].inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length)
-            for(var i=0; i<response.data.items[0].inactiveSchedule.length; i++){
-                var responseSched = response.data.items[0].inactiveSchedule[i];
-                var globalSched = global.addressMailingList.inactiveSchedule[i];
+            assert.equal(response.data.items[0].inactiveSchedule.length, global.addressMailingList.inactiveSchedule.length);
+            for(let i=0; i<response.data.items[0].inactiveSchedule.length; i++){
+                let responseSched = response.data.items[0].inactiveSchedule[i];
+                let globalSched = global.addressMailingList.inactiveSchedule[i];
                 assert.lengthOf(responseSched, globalSched.length);
-                for(var j=0; j<responseSched.length; j++)
+                for(let j=0; j<responseSched.length; j++)
                     assert.equal(responseSched[j], globalSched[j]);
             }
         });
@@ -249,10 +249,8 @@ describe('Mailing lists', function() {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
-        
-        const testId = uuidV4();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -290,7 +288,7 @@ describe('Mailing lists', function() {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -300,7 +298,7 @@ describe('Mailing lists', function() {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
                 path: '/rest/v2/mailing-lists/ML_TEST_ADDRESS',
@@ -324,10 +322,8 @@ describe('Mailing lists', function() {
             eventTypes: ['add', 'delete', 'update']
         };
         
-        const socketOpenDeferred = config.defer();
-        const listUpdatedDeferred = config.defer();
-        
-        const testId = uuidV4();
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -365,7 +361,7 @@ describe('Mailing lists', function() {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);
@@ -375,7 +371,7 @@ describe('Mailing lists', function() {
             });
             return send.promise;
             
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             return client.restRequest({
                 path: `/rest/v2/mailing-lists/${global.addressMailingList.xid}`,
                 method: 'DELETE',

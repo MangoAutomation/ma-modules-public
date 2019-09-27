@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('System Action Endpoints', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     this.timeout(20000);
 
     it('Lists available actions', () => {

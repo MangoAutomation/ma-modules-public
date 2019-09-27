@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
 describe('Event detector bulk operations', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const newDataPoint = (xid, dsXid) => {
         return new DataPoint({
@@ -65,15 +67,15 @@ describe('Event detector bulk operations', () => {
         };
     };
     
-    const testPointXid1 = uuidV4();
-    const testPointXid2 = uuidV4();
-    const testDetectorXid1 = uuidV4();
-    const testDetectorXid2 = uuidV4();
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
+    const testDetectorXid1 = uuid();
+    const testDetectorXid2 = uuid();
     
     before('Create a virtual data source and points', function() {
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -148,7 +150,7 @@ describe('Event detector bulk operations', () => {
             assert.notStrictEqual(response.data.status, 'CANCELLED');
             assert.notStrictEqual(response.data.status, 'ERROR');
             
-            return config.delay(500).then(() => {
+            return delay(500).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });

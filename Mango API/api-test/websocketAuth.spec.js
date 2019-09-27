@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
-const MangoClient = require('@infinite-automation/mango-client');
+const {createClient, login, uuid, noop, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
 
-const noCookieConfig = Object.assign({
+const noCookieConfig = {
     enableCookies: false
-}, config);
+};
 
 const SESSION_DESTROYED = 4101;
 const USER_UPDATED = 4102;
@@ -30,13 +30,13 @@ const USER_AUTH_TOKEN_EXPIRED = 4104;
 //const AUTH_TOKENS_REVOKED = 4105;
 
 describe('Websocket authentication', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     before('Create a test user', function() {
         this.clients = {};
         
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
+        const username = uuid();
+        this.testUserPassword = uuid();
         this.testUser = new User({
             username,
             email: `${username}@example.com`,
@@ -47,24 +47,24 @@ describe('Websocket authentication', function() {
     });
     
     after('Delete the test user', function() {
-        return this.testUser.delete().catch(config.noop);
+        return this.testUser.delete().catch(noop);
     });
     
     before('Create a client that uses session authentication', function() {
-        this.clients.session = new MangoClient(config);
+        this.clients.session = createClient();
     });
 
     before('Create a client that uses basic authentication', function() {
-        this.clients.basic = new MangoClient(noCookieConfig);
+        this.clients.basic = createClient(noCookieConfig);
         this.clients.basic.setBasicAuthentication(this.testUser.username, this.testUserPassword);
     });
     
     before('Create a client that uses JWT authentication', function() {
-        this.clients.token = new MangoClient(noCookieConfig);
+        this.clients.token = createClient(noCookieConfig);
     });
 
     beforeEach('Reset the test user', function() {
-        this.testUserPassword = uuidV4();
+        this.testUserPassword = uuid();
         this.clients.basic.setBasicAuthentication(this.testUser.username, this.testUserPassword);
         
         this.testUser.password = this.testUserPassword;
@@ -91,8 +91,8 @@ describe('Websocket authentication', function() {
     });
 
     const testWebSocketsUsingClient = function(client) {
-        const socketOpen = config.defer();
-        const gotResponse = config.defer();
+        const socketOpen = defer();
+        const gotResponse = defer();
         const sequenceNumber = Math.floor(Math.random() * 10000);
 
         const ws = client.openWebSocket({
@@ -126,7 +126,7 @@ describe('Websocket authentication', function() {
         });
 
         return socketOpen.promise.then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify({
                 messageType: 'REQUEST',
                 requestType: 'SUBSCRIPTION',
@@ -145,8 +145,8 @@ describe('Websocket authentication', function() {
     const testWebSocketTermination = function(client, closeAction, checkResponse) {
         this.timeout(5000);
         
-        const socketOpen = config.defer();
-        const socketClose = config.defer();
+        const socketOpen = defer();
+        const socketClose = defer();
 
         const openTimeout = setTimeout(() => {
             socketOpen.reject('Opening websocket timeout');
@@ -174,7 +174,7 @@ describe('Websocket authentication', function() {
         });
 
         return socketOpen.promise
-            .then(ws => config.delay(500).then(() => ws))
+            .then(ws => delay(500).then(() => ws))
             .then(closeAction)
             .then(() => socketClose.promise)
             .then(checkResponse);
@@ -269,7 +269,7 @@ describe('Websocket authentication', function() {
         return testWebSocketTermination.call(this, this.clients.token, (ws) => {
             this.testUser.password = 'xyz12345678';
             return this.testUser.save().then(() => {
-                return config.delay(1000);
+                return delay(1000);
             }).then(() => {
                 ws.close(1000);
             });

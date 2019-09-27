@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('Thread access tests', function(){
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     it('View all threads', () => {
       return client.restRequest({

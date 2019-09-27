@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
 describe('Data point tags', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     before('Create a DS', function() {
         this.pointWithTags = (tags = {}) => {
@@ -69,7 +71,7 @@ describe('Data point tags', function() {
 
     it('Can create a data point with null tags', function() {
         const dp = this.pointWithTags(null);
-        dp.name = uuidV4();
+        dp.name = uuid();
 
         return dp.save().then(dp => {
             assert.isObject(dp.tags);
@@ -243,10 +245,10 @@ describe('Data point tags', function() {
     });
 
     it('Can get possible tag values for a tag key when restricting on another key', function() {
-        const tagKey1 = uuidV4();
-        const tagKey2 = uuidV4();
-        const tagValue1 = uuidV4();
-        const tagValue2 = uuidV4();
+        const tagKey1 = uuid();
+        const tagKey2 = uuid();
+        const tagValue1 = uuid();
+        const tagValue2 = uuid();
 
         const tags = {};
         tags[tagKey1] = tagValue1;
@@ -274,10 +276,10 @@ describe('Data point tags', function() {
     });
 
     it('Can query for data points using tags', function() {
-        const tagKey1 = uuidV4();
-        const tagKey2 = uuidV4();
-        const tagValue1 = uuidV4();
-        const tagValue2 = uuidV4();
+        const tagKey1 = uuid();
+        const tagKey2 = uuid();
+        const tagValue1 = uuid();
+        const tagValue2 = uuid();
 
         const tags = {};
         tags[tagKey1] = tagValue1;
@@ -301,8 +303,8 @@ describe('Data point tags', function() {
     });
 
     it('Can query for data points using tags.name and tags.device', function() {
-        const tagKey1 = uuidV4();
-        const tagValue1 = uuidV4();
+        const tagKey1 = uuid();
+        const tagValue1 = uuid();
 
         const tags = {};
         tags[tagKey1] = tagValue1;
@@ -328,10 +330,10 @@ describe('Data point tags', function() {
     
     it('Can synchronously bulk get tags', function() {
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
@@ -364,10 +366,10 @@ describe('Data point tags', function() {
         this.timeout(5000);
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
@@ -387,7 +389,7 @@ describe('Data point tags', function() {
             assert.notStrictEqual(response.data.status, 'CANCELLED');
             assert.notStrictEqual(response.data.status, 'ERROR');
 
-            return config.delay(500).then(() => {
+            return delay(500).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });
@@ -418,14 +420,14 @@ describe('Data point tags', function() {
         this.timeout(5000);
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         
         const setTags = {
-            xyz: uuidV4()
+            xyz: uuid()
         };
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
@@ -446,7 +448,7 @@ describe('Data point tags', function() {
             assert.notStrictEqual(response.data.status, 'CANCELLED');
             assert.notStrictEqual(response.data.status, 'ERROR');
 
-            return config.delay(500).then(() => {
+            return delay(500).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });
@@ -479,13 +481,13 @@ describe('Data point tags', function() {
         this.timeout(5000);
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         
-        const xyz = uuidV4();
+        const xyz = uuid();
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
@@ -507,7 +509,7 @@ describe('Data point tags', function() {
             assert.notStrictEqual(response.data.status, 'CANCELLED');
             assert.notStrictEqual(response.data.status, 'ERROR');
 
-            return config.delay(500).then(() => {
+            return delay(500).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });
@@ -541,10 +543,10 @@ describe('Data point tags', function() {
         let resourceId;
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
@@ -564,7 +566,7 @@ describe('Data point tags', function() {
 
             resourceId = response.data.id;
             
-            return config.delay(200).then(() => {
+            return delay(200).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });
@@ -590,10 +592,10 @@ describe('Data point tags', function() {
         let resourceId;
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
@@ -612,7 +614,7 @@ describe('Data point tags', function() {
             
             resourceId = response.data.id;
 
-            return config.delay(500).then(() => {
+            return delay(500).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });
@@ -654,10 +656,10 @@ describe('Data point tags', function() {
         let resourceId;
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
@@ -683,7 +685,7 @@ describe('Data point tags', function() {
 
             resourceId = response.data.id;
             
-            return config.delay(100).then(() => {
+            return delay(100).then(() => {
                 return client.restRequest({
                     path: response.headers.location
                 });
@@ -699,10 +701,10 @@ describe('Data point tags', function() {
         let resourceId;
         
         const dp1 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
         const dp2 = this.pointWithTags({
-            site: uuidV4()
+            site: uuid()
         });
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {

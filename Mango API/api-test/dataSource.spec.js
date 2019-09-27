@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
 describe('Data source service', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {
         return new DataPoint({
@@ -112,7 +114,7 @@ describe('Data source service', () => {
     
     it('Copies a data source and points', function() {
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -126,10 +128,10 @@ describe('Data source service', () => {
             assert.strictEqual(savedDs.name, 'Mango client test');
             assert.isNumber(savedDs.id);
         }).then(() => {
-            this.testPoint1 = newDataPoint(uuidV4(), this.ds.xid, 'FIRST', 'NONE', 0);
-            this.testPoint2 = newDataPoint(uuidV4(), this.ds.xid, 'FIRST', 'NONE', 0);
-            this.testPoint3 = newDataPoint(uuidV4(), this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
-            this.testPoint4 = newDataPoint(uuidV4(), this.ds.xid, 'COUNT', 'NONE', 0);
+            this.testPoint1 = newDataPoint(uuid(), this.ds.xid, 'FIRST', 'NONE', 0);
+            this.testPoint2 = newDataPoint(uuid(), this.ds.xid, 'FIRST', 'NONE', 0);
+            this.testPoint3 = newDataPoint(uuid(), this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
+            this.testPoint4 = newDataPoint(uuid(), this.ds.xid, 'COUNT', 'NONE', 0);
             return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save()]);
         }).then(() => {
             return client.restRequest({

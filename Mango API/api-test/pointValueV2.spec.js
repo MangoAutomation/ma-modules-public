@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 const moment = require('moment-timezone');
 
 describe('Point values v2', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {
         return new DataPoint({
@@ -92,11 +94,11 @@ describe('Point values v2', function() {
     const pollPeriod = 1000; //in ms
     const endTime = new Date().getTime();
     const startTime = endTime - (numSamples * pollPeriod);
-    const testPointXid1 = uuidV4();
-    const testPointXid2 = uuidV4();
-    const testPointXid3 = uuidV4();
-    const testPointXid4 = uuidV4();
-    const testPointXid5 = uuidV4();
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
+    const testPointXid3 = uuid();
+    const testPointXid4 = uuid();
+    const testPointXid5 = uuid();
     
     const pointValues1 = generateSamples(testPointXid1, startTime, numSamples, pollPeriod);
     const pointValues2 = generateSamples(testPointXid2, startTime, numSamples, pollPeriod);
@@ -108,7 +110,7 @@ describe('Point values v2', function() {
         this.timeout(insertionDelay * 2);
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -131,7 +133,7 @@ describe('Point values v2', function() {
         }).then(() => {
             const valuesToInsert = pointValues1.concat(pointValues2.concat(pointValues3.concat(pointValues4.concat(pointValues5))));
             return client.pointValues.insert(valuesToInsert);
-        }).then(() => config.delay(insertionDelay));
+        }).then(() => delay(insertionDelay));
     });
 
     after('Deletes the new virtual data source and its points', function() {

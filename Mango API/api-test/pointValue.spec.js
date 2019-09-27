@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Point values v1', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     const insertionDelay = 1000;
     
@@ -30,7 +32,7 @@ describe('Point values v1', function() {
     const pointValues = [];
     const isoFrom = new Date(startTime).toISOString();
     const isoTo = new Date(endTime).toISOString();
-    const testPointXid = uuidV4();
+    const testPointXid = uuid();
     
     let time = startTime;
     for (let i = 0; i < numSamples; i++) {
@@ -67,7 +69,7 @@ describe('Point values v1', function() {
         this.timeout(insertionDelay * 2);
         
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -106,7 +108,7 @@ describe('Point values v1', function() {
             }).then(response => {
                 assert.strictEqual(pointValues.length, response.data.length);
             });
-        }).then(() => config.delay(insertionDelay));
+        }).then(() => delay(insertionDelay));
     });
 
     after('Deletes the new virtual data source and its points', function() {

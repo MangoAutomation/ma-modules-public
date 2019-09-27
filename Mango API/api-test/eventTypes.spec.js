@@ -15,11 +15,13 @@
  * the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Event types', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     //Setup Data Point With Event Detector
     
@@ -47,7 +49,7 @@ describe('Event types', function() {
                 }else if(response.data.items[i].eventType === 'SYSTEM'){
                     assert.isNotNull(response.data.items[i].type.subType);
                     assert.isNotNull(response.data.items[i].alarmLevel);
-                    if(reponse.data.items[i].subType === 'USER_LOGIN')
+                    if(response.data.items[i].subType === 'USER_LOGIN')
                         assert.isTrue(response.data.items[i].supportsReferenceId1);
                     else
                         assert.isFalse(response.data.items[i].supportsReferenceId1);

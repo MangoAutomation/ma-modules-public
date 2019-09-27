@@ -15,26 +15,16 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const MangoClient = require('@infinite-automation/mango-client');
-const uuidV4 = require('uuid/v4');
+const {createClient, createUser, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const User = client.User;
+const SystemSetting = client.SystemSetting;
 
 describe('Email verification', function() {
     const emailVerificationUrl = '/rest/v2/email-verification';
 
-    const createUserV1 = function() {
-        const username = uuidV4();
-        return new User({
-            username,
-            email: `${username}@example.com`,
-            name: `${username}`,
-            permissions: '',
-            password: username
-        });
-    };
-    
     const createUserV2 = function() {
-        const newUsername = uuidV4();
+        const newUsername = uuid();
         return {
             username: newUsername,
             email: `${newUsername}@example.com`,
@@ -53,10 +43,10 @@ describe('Email verification', function() {
         return User.delete(user.username).catch(e => null).then(() => Promise.reject(error));
     };
 
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     
     before('Create a test user', function() {
-        this.testUser = createUserV1();
+        this.testUser = createUser(client);
         return this.testUser.save();
     });
     
@@ -93,11 +83,11 @@ describe('Email verification', function() {
     });
     
     beforeEach('Create public client', function() {
-        this.publicClient = new MangoClient(config);
+        this.publicClient = createClient({username: null, password: null});
     });
 
     describe('Public registration email verification', function() {
-        const tryPublicEmailVerify = function(emailAddress = `${uuidV4()}@example.com`) {
+        const tryPublicEmailVerify = function(emailAddress = `${uuid()}@example.com`) {
             return this.publicClient.restRequest({
                 path: `${emailVerificationUrl}/public/send-email`,
                 method: 'POST',
@@ -122,7 +112,7 @@ describe('Email verification', function() {
                 return client.restRequest({
                     path: `${emailVerificationUrl}/create-token`,
                     method: 'POST',
-                    data: {emailAddress: `${uuidV4()}@example.com`}
+                    data: {emailAddress: `${uuid()}@example.com`}
                 }).then(response => {
                     assert.fail('Creating token should not have succeeded');
                 }, error => {
@@ -287,7 +277,7 @@ describe('Email verification', function() {
 
     describe('Existing user email verification', function() {
         const createUserAndVerifyEmail = function() {
-            const user = createUserV1();
+            const user = createUser(client);
             const token = {};
             
             const promise = user.save().then(() => {
@@ -349,8 +339,8 @@ describe('Email verification', function() {
         });
         
         it('Updates a user\'s email address', function() {
-            const user = createUserV1();
-            const newEmailAddress = `${uuidV4()}@example.com`;
+            const user = createUser(client);
+            const newEmailAddress = `${uuid()}@example.com`;
 
             return user.save().then(() => {
                 return client.restRequest({
@@ -385,7 +375,7 @@ describe('Email verification', function() {
 
             return promise.then(() => {
                 // delay for >1 second as the JWT issued at claim is only precise to the nearest 1 second
-                return config.delay(1100);
+                return delay(1100);
             }).then(() => {
                 const dateFirstVerified = new Date(user.emailVerified);
                 
@@ -438,7 +428,7 @@ describe('Email verification', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
 
             return promise.then(user => {
-                user.email = `${uuidV4()}@example.com`;
+                user.email = `${uuid()}@example.com`;
                 return user.save();
             }).then(() => {
                 assert.isNull(user.emailVerified);
@@ -449,7 +439,7 @@ describe('Email verification', function() {
             const {user, promise} = createUserAndVerifyEmail.call(this);
 
             return promise.then(user => {
-                user.name = uuidV4();
+                user.name = uuid();
                 return user.save();
             }).then(() => {
                 assert.isString(user.emailVerified);
@@ -483,7 +473,7 @@ describe('Email verification', function() {
     });
     
     it('Can verify a token', function() {
-        const emailAddress = `${uuidV4()}@example.com`;
+        const emailAddress = `${uuid()}@example.com`;
         return client.restRequest({
             path: `${emailVerificationUrl}/create-token`,
             method: 'POST',
@@ -520,7 +510,7 @@ describe('Email verification', function() {
     });
     
     it('Token does not verify if tampered with', function() {
-        const emailAddress = `${uuidV4()}@example.com`;
+        const emailAddress = `${uuid()}@example.com`;
         return client.restRequest({
             path: `${emailVerificationUrl}/create-token`,
             method: 'POST',

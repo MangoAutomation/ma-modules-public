@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 
 describe('Background processing settings', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     it('Sets high priority pool settings', () => {
         return client.restRequest({

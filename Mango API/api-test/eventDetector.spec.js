@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
 describe('Event detector service', function() {
     this.timeout(5000);
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
     before('Create data source and points', function() {
       global.ds = new DataSource({
           xid: 'mango_client_test',
@@ -750,10 +753,10 @@ describe('Event detector service', function() {
     it('Gets websocket notifications for event detectors', function() {
       this.timeout(5000);
       
-      const socketOpenDeferred = config.defer();
-      const gotAddEventDeferred = config.defer();
-      const gotUpdateEventDeferred = config.defer();
-      const gotDeleteEventDeferred = config.defer();
+      const socketOpenDeferred = defer();
+      const gotAddEventDeferred = defer();
+      const gotUpdateEventDeferred = defer();
+      const gotDeleteEventDeferred = defer();
 
       return Promise.resolve().then(() => {
           const ws = client.openWebSocket({
@@ -803,7 +806,7 @@ describe('Event detector service', function() {
           });
           
           return socketOpenDeferred.promise;
-        }).then(() => config.delay(500)).then(() => {
+        }).then(() => delay(500)).then(() => {
             //Create the event detector for add message
             //console.log('adding');
             return client.restRequest({

@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
 const uuidV4 = require('uuid/v4');
 
 describe('JSON store', function() {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     const createJsonStoreItem = (jsonData) => {
         const xid = uuidV4();

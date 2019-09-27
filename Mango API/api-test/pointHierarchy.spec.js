@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 //TODO This test is skipped because it currently doesn't test the PH.
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
 describe.skip('Point Hierarchy service', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     it('Creates a new virtual data source', () => {
         const ds = new DataSource({

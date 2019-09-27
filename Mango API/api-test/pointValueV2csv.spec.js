@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const MangoClient = require('@infinite-automation/mango-client');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 const moment = require('moment-timezone');
 const csvParser = require('csv-parser');
 const Readable = require('stream').Readable;
@@ -210,17 +211,18 @@ function pointValuesCsvFactory(client) {
 
 describe('Point values csv v2', function() {
     before('Login', function() {
-        return config.login.call(this).then((...args) => {
-            this.csvClient = new MangoClient(Object.assign({
+        return login.call(this, client).then((...args) => {
+            this.csvClient = createClient({
                 defaultHeaders: {
                     Accept : 'text/csv'
                 }
-            }, config));
+            });
             
             //Override to return strings
+            const restRequest = this.csvClient.restRequest;
             this.csvClient.restRequest = function(optionsArg) {
                 optionsArg.dataType = 'string';
-                return MangoClient.prototype.restRequest.apply(this, arguments);
+                return restRequest.apply(this, arguments);
             };
             const PointValuesCsv = pointValuesCsvFactory(this.csvClient);
             this.csvClient.pointValues = new PointValuesCsv();
@@ -294,10 +296,10 @@ describe('Point values csv v2', function() {
     const pollPeriod = 1000; //in ms
     const endTime = new Date().getTime();
     const startTime = endTime - (numSamples * pollPeriod);
-    const testPointXid1 = uuidV4();
-    const testPointXid2 = uuidV4();
-    const testPointXid3 = uuidV4();
-    const testPointXid4 = uuidV4();
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
+    const testPointXid3 = uuid();
+    const testPointXid4 = uuid();
     
     const pointValues1 = generateSamples(testPointXid1, startTime, numSamples, pollPeriod);
     const pointValues2 = generateSamples(testPointXid2, startTime, numSamples, pollPeriod);
@@ -308,7 +310,7 @@ describe('Point values csv v2', function() {
         this.timeout(insertionDelay * 2);
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -330,7 +332,7 @@ describe('Point values csv v2', function() {
         }).then(() => {
             const valuesToInsert = pointValues1.concat(pointValues2.concat(pointValues3.concat(pointValues4)));
             return client.pointValues.insert(valuesToInsert);
-        }).then(() => config.delay(insertionDelay));
+        }).then(() => delay(insertionDelay));
     });
 
     after('Deletes the new virtual data source and its points', function() {

@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Data point service', () => {
-    before('Login', config.login);
+    before('Login', login.bind(this, client));
 
     it('Creates a new virtual data source', () => {
         const ds = new DataSource({
@@ -276,12 +279,8 @@ describe('Data point service', () => {
         this.timeout(5000);
         
         let ws;
-        const subscription = {
-                eventTypes: ['add', 'delete', 'update']
-            };
-        const testData = {id: ''};
-        const socketOpenDeferred = config.defer();
-        const actionFinishedDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const actionFinishedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -318,7 +317,7 @@ describe('Data point service', () => {
             });
 
             return socketOpenDeferred.promise;
-        }).then(() => config.delay(1000)).then(() => {
+        }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             const dp = new DataPoint({
                 name: 'Node mango client ws',
@@ -341,7 +340,7 @@ describe('Data point service', () => {
             }).then(response => {
                 //TODO Could assert but not really the purpose here
             }, error =>{
-                actionFinishedDeferred.reject(msg);
+                actionFinishedDeferred.reject(error);
             });
             
         }).then(() => actionFinishedDeferred.promise ).then(() => {

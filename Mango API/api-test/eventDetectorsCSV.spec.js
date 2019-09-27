@@ -15,25 +15,27 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const MangoClient = require('@infinite-automation/mango-client');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 const csvParser = require('csv-parser');
 const Readable = require('stream').Readable;
 
 describe('Event detectors CSV format', () => {
     before('Login', function() {
-        return config.login.call(this).then((...args) => {
-            this.csvClient = new MangoClient(Object.assign({
+        return login.call(this, client).then((...args) => {
+            this.csvClient = createClient({
                 defaultHeaders: {
                     Accept : 'text/csv'
                 }
-            }, config));
+            });
             
             //Override to return strings
+            const restRequest = this.csvClient.restRequest;
             this.csvClient.restRequest = function(optionsArg) {
                 optionsArg.dataType = 'string';
-                return MangoClient.prototype.restRequest.apply(this, arguments);
+                return restRequest.apply(this, arguments);
             };
            
             // copy the session cookie to the csv client
@@ -85,15 +87,15 @@ describe('Event detectors CSV format', () => {
         };
     };
     
-    const testPointXid1 = uuidV4();
-    const testPointXid2 = uuidV4();
-    const testDetectorXid1 = 'AAA' + uuidV4();
-    const testDetectorXid2 = 'ZZZ' + uuidV4();
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
+    const testDetectorXid1 = 'AAA' + uuid();
+    const testDetectorXid2 = 'ZZZ' + uuid();
     
     before('Create a virtual data source and points', function() {
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',

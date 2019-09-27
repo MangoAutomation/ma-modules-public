@@ -15,100 +15,12 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
-const uuidV4 = require('uuid/v4');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const client = createClient();
+const DataPoint = client.DataPoint;
+const DataSource = client.DataSource;
 
-
-describe('Point value purge', function() {
-    before('Login', config.login);
-
-    it('Purges data for a single data point by time period', function(){
-        this.timeout(5000);
-        let resourceId;
-        let cutoffTime = new Date().getTime() - 10*60*1000;
-        return client.restRequest({
-            path: '/rest/v2/point-values/purge',
-            method: 'POST',
-            data: {
-                xids: [testPointXid1],
-                duration: {
-                    periods: 10,
-                    type: 'MINUTES'
-                }
-            }
-        }).then(response => {
-            assert.strictEqual(response.status, 201);
-            assert.isString(response.data.id);
-            assert.isString(response.data.status);
-
-            resourceId = response.data.id;
-            
-            return config.delay(2000).then(() => {
-                return client.restRequest({
-                    path: response.headers.location
-                });
-            });
-        }).then(response => {
-            assert.strictEqual(response.data.status, 'SUCCESS');
-            assert.strictEqual(response.data.result.successfullyPurged[0], testPointXid1);
-            assert.strictEqual(response.data.result.noEditPermission.length, 0);
-            assert.strictEqual(response.data.result.notFound.length, 0);
-
-            //Then query to make sure no data exists
-            return client.pointValues.forTimePeriod({
-                xid: testPointXid1,
-                from: startTime,
-                to: cutoffTime
-            }).then(result => {
-                assert.strictEqual(typeof result, 'undefined');
-            });
-        });
-    });
-    
-    it('Purges data for a data source by time range', function(){
-        this.timeout(5000);
-        let resourceId;
-        let cutoffTime = new Date().getTime() - 10*60*1000;
-        return client.restRequest({
-            path: '/rest/v2/point-values/purge',
-            method: 'POST',
-            data: {
-                dataSourceXid: this.ds.xid,
-                useTimeRange: true,
-                timeRange: {
-                    from: startTime,
-                    to: cutoffTime
-                }
-            }
-        }).then(response => {
-            assert.strictEqual(response.status, 201);
-            assert.isString(response.data.id);
-            assert.isString(response.data.status);
-
-            resourceId = response.data.id;
-            
-            return config.delay(2000).then(() => {
-                return client.restRequest({
-                    path: response.headers.location
-                });
-            });
-        }).then(response => {
-            assert.strictEqual(response.data.status, 'SUCCESS');
-            assert.strictEqual(response.data.result.successfullyPurged.length, 3);
-            assert.strictEqual(response.data.result.noEditPermission.length, 0);
-            assert.strictEqual(response.data.result.notFound.length, 0);
-
-            //Then query to make sure no data exists
-            return client.pointValues.forTimePeriod({
-                xids: [testPointXid1, testPointXid2, testPointXid3],
-                from: startTime,
-                to: cutoffTime
-            }).then(result => {
-                assert.deepEqual(result, {})
-            });
-        });
-    });
-    
+describe('Point value purge', function() {    
     const newDataPoint = (xid, dsXid) => {
         return new DataPoint({
             xid: xid,
@@ -157,19 +69,108 @@ describe('Point value purge', function() {
     const pollPeriod = 1000; //in ms
     const endTime = new Date().getTime();
     const startTime = endTime - (numSamples * pollPeriod);
-    const testPointXid1 = uuidV4();
-    const testPointXid2 = uuidV4();
-    const testPointXid3 = uuidV4();
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
+    const testPointXid3 = uuid();
 
     const pointValues1 = generateSamples(testPointXid1, startTime, numSamples, pollPeriod);
     const pointValues2 = generateSamples(testPointXid2, startTime, numSamples, pollPeriod);
     const pointValues3 = generateSamples(testPointXid3, startTime, numSamples, pollPeriod);
 
+    before('Login', login.bind(this, client));
+
+    it('Purges data for a single data point by time period', function(){
+        this.timeout(5000);
+        let resourceId;
+        let cutoffTime = new Date().getTime() - 10*60*1000;
+        return client.restRequest({
+            path: '/rest/v2/point-values/purge',
+            method: 'POST',
+            data: {
+                xids: [testPointXid1],
+                duration: {
+                    periods: 10,
+                    type: 'MINUTES'
+                }
+            }
+        }).then(response => {
+            assert.strictEqual(response.status, 201);
+            assert.isString(response.data.id);
+            assert.isString(response.data.status);
+
+            resourceId = response.data.id;
+            
+            return delay(2000).then(() => {
+                return client.restRequest({
+                    path: response.headers.location
+                });
+            });
+        }).then(response => {
+            assert.strictEqual(response.data.status, 'SUCCESS');
+            assert.strictEqual(response.data.result.successfullyPurged[0], testPointXid1);
+            assert.strictEqual(response.data.result.noEditPermission.length, 0);
+            assert.strictEqual(response.data.result.notFound.length, 0);
+
+            //Then query to make sure no data exists
+            return client.pointValues.forTimePeriod({
+                xid: testPointXid1,
+                from: startTime,
+                to: cutoffTime
+            }).then(result => {
+                assert.strictEqual(typeof result, 'undefined');
+            });
+        });
+    });
+    
+    it('Purges data for a data source by time range', function(){
+        this.timeout(5000);
+        let resourceId;
+        let cutoffTime = new Date().getTime() - 10*60*1000;
+        return client.restRequest({
+            path: '/rest/v2/point-values/purge',
+            method: 'POST',
+            data: {
+                dataSourceXid: this.ds.xid,
+                useTimeRange: true,
+                timeRange: {
+                    from: startTime,
+                    to: cutoffTime
+                }
+            }
+        }).then(response => {
+            assert.strictEqual(response.status, 201);
+            assert.isString(response.data.id);
+            assert.isString(response.data.status);
+
+            resourceId = response.data.id;
+            
+            return delay(2000).then(() => {
+                return client.restRequest({
+                    path: response.headers.location
+                });
+            });
+        }).then(response => {
+            assert.strictEqual(response.data.status, 'SUCCESS');
+            assert.strictEqual(response.data.result.successfullyPurged.length, 3);
+            assert.strictEqual(response.data.result.noEditPermission.length, 0);
+            assert.strictEqual(response.data.result.notFound.length, 0);
+
+            //Then query to make sure no data exists
+            return client.pointValues.forTimePeriod({
+                xids: [testPointXid1, testPointXid2, testPointXid3],
+                from: startTime,
+                to: cutoffTime
+            }).then(result => {
+                assert.deepEqual(result, {});
+            });
+        });
+    });
+
     beforeEach('Create a virtual data source, points, and insert values', function() {
         this.timeout(insertionDelay * 2);
 
         this.ds = new DataSource({
-            xid: uuidV4(),
+            xid: uuid(),
             name: 'Mango client test',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -200,7 +201,7 @@ describe('Point value purge', function() {
             }).then(response => {
                //Assert it was set? 
             });
-        }).then(() => config.delay(insertionDelay));
+        }).then(() => delay(insertionDelay));
     });
     
     afterEach('Deletes the new virtual data source and its points', function() {
