@@ -15,7 +15,7 @@
  * the License.
  */
 
-const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, defer, delay, uuid} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
@@ -45,7 +45,7 @@ describe('Event handlers v2', function() {
         };
 
         testContext.ds1 = new DataSource({
-            xid: 'me_test_1',
+            xid: `DS_${uuid()}`,
             name: 'ME Testing 1',
             enabled: true,
             modelType: 'VIRTUAL',
@@ -60,7 +60,7 @@ describe('Event handlers v2', function() {
 
     before('Create DS 2', function() {
         testContext.ds2 = new DataSource({
-            xid: 'me_test_2',
+            xid: `DS_${uuid()}`,
             name: 'ME Testing 2',
             enabled: true,
             modelType: 'VIRTUAL',
