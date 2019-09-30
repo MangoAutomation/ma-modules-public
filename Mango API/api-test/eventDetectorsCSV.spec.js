@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 const csvParser = require('csv-parser');
 const Readable = require('stream').Readable;
+const path = require('path');
+const fs = require('fs');
 
 describe('Event detectors CSV format', function() {
     before('Login', function() {
@@ -166,6 +168,35 @@ describe('Event detectors CSV format', function() {
                  assert.strictEqual(result[1].originalXid, String(this.ed2.xid));                 
              })
              .on('error', (error) => { assert.fail(error);});
+        });
+    });
+    
+    it('Can upload csv file for both event detectors', function() {
+        this.timeout(5000);
+        return this.csvClient.restRequest({
+            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`,
+            method: 'GET',
+            writeToFile: 'eventDetectors.csv'
+        }).then(() => delay(1000)).then(response => {
+            const uploadFileName = path.resolve('eventDetectors.csv');
+            return this.csvClient.restRequest({
+                path: `/rest/v2/full-event-detectors/bulk`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/csv;charset=UTF-8'
+                },
+                data: fs.readFileSync(uploadFileName)
+            }).then(response => {
+                return delay(1000).then(()=>{
+                    return client.restRequest({
+                        path: response.headers.location
+                    }).then(response => {
+                        assert.strictEqual(response.data.result.hasError, false);
+                        assert.strictEqual(response.data.result.responses[0].xid, this.ed1.xid);
+                        assert.strictEqual(response.data.result.responses[1].xid, this.ed2.xid);
+                    });                    
+                });
+            });
         });
     });
     

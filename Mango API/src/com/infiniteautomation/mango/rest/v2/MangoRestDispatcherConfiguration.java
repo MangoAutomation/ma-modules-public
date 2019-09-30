@@ -39,6 +39,7 @@ import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverte
 import com.infiniteautomation.mango.rest.v2.mapping.JsonStreamMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
@@ -73,13 +74,16 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public MangoRestDispatcherConfiguration(
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
             ObjectMapper mapper,
-            PartialUpdateArgumentResolver resolver) {
+            PartialUpdateArgumentResolver resolver,
+            RestModelMapper modelMapper) {
         this.mapper = mapper;
         this.resolver = resolver;
 
         mapper
         .registerModule(new MangoRestV2JacksonModule())
         .registerModule(new Jdk8Module());
+        
+        modelMapper.addMappings(mapper);
     }
 
 

@@ -7,8 +7,11 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -23,10 +26,18 @@ import io.swagger.annotations.ApiModelProperty;
  * @author Terry Packer
  *
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractEventDetectorModel.DETECTOR_TYPE)
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractEventDetectorModel.DETECTOR_TYPE)
 public abstract class AbstractEventDetectorModel<T extends AbstractEventDetectorVO<T>> extends AbstractVoModel<T> {
     public static final String DETECTOR_TYPE = "detectorType";
 
+    //Hack so that we can import a list via CSV, I wasn't able to get the unwrapped ActionAndModel class to deserialize the model fields into 'model'
+    @ApiModelProperty("Action to use for CSV import")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected VoAction action;    
+    @ApiModelProperty("Original XID for use in CSV import")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected String originalXid;
+    
     protected int sourceId;
     @ApiModelProperty("Read only description of detector")
     protected TranslatableMessage description;
@@ -75,6 +86,7 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
      * The type name of our module element definition
      * @return
      */
+    @JsonGetter("detectorType")
     public abstract String getDetectorType();
     
     /**
@@ -132,4 +144,21 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     public void setHandlerXids(List<String> handlers) {
         this.handlerXids = handlers;
     }
+
+    public VoAction getAction() {
+        return action;
+    }
+
+    public void setAction(VoAction action) {
+        this.action = action;
+    }
+
+    public String getOriginalXid() {
+        return originalXid;
+    }
+
+    public void setOriginalXid(String originalXid) {
+        this.originalXid = originalXid;
+    }
+    
 }

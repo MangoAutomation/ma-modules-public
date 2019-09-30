@@ -255,7 +255,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> bulkEventDetectorOperationCSV(
             @RequestBody
-            List<ActionAndModel<AbstractEventDetectorModel<T>>> eds,
+            List<AbstractEventDetectorModel<T>> eds,
 
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
@@ -268,7 +268,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         EventDetectorBulkRequest<T> bulkRequest = new EventDetectorBulkRequest<T>();
 
         bulkRequest.setRequests(eds.stream().map(actionAndModel -> {
-            AbstractEventDetectorModel<T> ed = actionAndModel.getModel();
+            AbstractEventDetectorModel<T> ed = actionAndModel;
             VoAction action = actionAndModel.getAction();
             String originalXid = actionAndModel.getOriginalXid();
             if (originalXid == null && ed != null) {
