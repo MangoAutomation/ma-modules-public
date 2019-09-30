@@ -88,7 +88,7 @@ describe('Point values v2', function() {
         });
     };
 
-    const insertionDelay = 1000 * 4; //Delay to insert the values
+    const insertionDelay = 5000 + 500 * 5; //Delay to insert the values
 
     const numSamples = 100;
     const pollPeriod = 1000; //in ms
