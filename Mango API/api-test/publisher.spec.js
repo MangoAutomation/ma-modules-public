@@ -21,9 +21,13 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe('Publisher service', function() {
+    
+    // create a context object to replace global which was previously used throughout this suite
+    const testContext = {};
+    
     before('Login', function() { return login.call(this, client); });
     before('Create data source and point', function() {
-      global.ds = new DataSource({
+      testContext.ds = new DataSource({
           xid: 'mango_client_test',
           name: 'Mango client test',
           enabled: true,
@@ -34,14 +38,14 @@ describe('Publisher service', function() {
           editPermission: null
       });
 
-      return global.ds.save().then((savedDs) => {
-          assert.strictEqual(savedDs, global.ds);
+      return testContext.ds.save().then((savedDs) => {
+          assert.strictEqual(savedDs, testContext.ds);
           assert.equal(savedDs.xid, 'mango_client_test');
           assert.equal(savedDs.name, 'Mango client test');
           assert.isNumber(savedDs.id);
-          global.ds.id = savedDs.id;
+          testContext.ds.id = savedDs.id;
 
-          global.dp = new DataPoint({
+          testContext.dp = new DataPoint({
                 xid : "dp_mango_client_test",
                 deviceName : "_",
                 name : "Virtual Test Point 1",
@@ -101,19 +105,19 @@ describe('Publisher service', function() {
                 }
               });
 
-          return global.dp.save().then((savedDp) => {
+          return testContext.dp.save().then((savedDp) => {
             assert.equal(savedDp.xid, 'dp_mango_client_test');
             assert.equal(savedDp.name, 'Virtual Test Point 1');
             assert.equal(savedDp.enabled, false);
             assert.isNumber(savedDp.id);
-            global.dp.id = savedDp.id; //Save the ID for later
+            testContext.dp.id = savedDp.id; //Save the ID for later
           });
 
       });
     });
 
     it('Creates an HTTP Sender publisher', () => {
-      global.publisher = {
+      testContext.publisher = {
         enabled : false,
         dateFormat : "DATE_FORMAT_BASIC",
         url : "http://www.terrypacker.com",
@@ -133,7 +137,7 @@ describe('Publisher service', function() {
           parameterName : "Meter 3 - Power Factor A",
           includeTimestamp : true,
           modelType : "PUB-POINT-HTTP_SENDER",
-          dataPointXid : global.dp.xid
+          dataPointXid : testContext.dp.xid
         } ],
         publishType : "ALL",
         cacheWarningSize : 100,
@@ -148,18 +152,18 @@ describe('Publisher service', function() {
       return client.restRequest({
           path: '/rest/v2/publishers',
           method: 'POST',
-          data: global.publisher
+          data: testContext.publisher
       }).then(response => {
-        global.publisher.id = response.data.id;
+        testContext.publisher.id = response.data.id;
       });
     });
 
     it('Updates an HTTP Sender publisher', () => {
-      global.publisher.name = "HTTP-Modified";
+      testContext.publisher.name = "HTTP-Modified";
       return client.restRequest({
-          path: `/rest/v2/publishers/${global.publisher.xid}`,
+          path: `/rest/v2/publishers/${testContext.publisher.xid}`,
           method: 'PUT',
-          data: global.publisher
+          data: testContext.publisher
       }).then(response => {
         assert.equal(response.data.name, "HTTP-Modified");
       });
@@ -180,11 +184,11 @@ describe('Publisher service', function() {
 
     it('Deletes the HTTP Sender publisher', () => {
       return client.restRequest({
-          path: `/rest/v2/publishers/${global.publisher.xid}`,
+          path: `/rest/v2/publishers/${testContext.publisher.xid}`,
           method: 'DELETE',
           data: {}
       }).then(response => {
-          assert.equal(response.data.id, global.publisher.id);
+          assert.equal(response.data.id, testContext.publisher.id);
       });
     });
 

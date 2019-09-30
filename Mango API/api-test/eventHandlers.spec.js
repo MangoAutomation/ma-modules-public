@@ -21,10 +21,14 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
 describe('Test Event Handlers Endpoints', function() {
+    
+    // create a context object to replace global which was previously used throughout this suite
+    const testContext = {};
+    
     before('Login', function() { return login.call(this, client); });
 
     before('create data source and points', () => {
-    	global.ds = new DataSource({
+    	testContext.ds = new DataSource({
             xid: 'mango_client_test',
             name: 'Mango client test',
             enabled: true,
@@ -35,15 +39,15 @@ describe('Test Event Handlers Endpoints', function() {
             editPermission: null
         });
 
-    	return global.ds.save().then((savedDs) => {
-            assert.strictEqual(savedDs, global.ds);
+    	return testContext.ds.save().then((savedDs) => {
+            assert.strictEqual(savedDs, testContext.ds);
             assert.equal(savedDs.xid, 'mango_client_test');
             assert.equal(savedDs.name, 'Mango client test');
             assert.isNumber(savedDs.id);
-            global.ds.id = savedDs.id;
+            testContext.ds.id = savedDs.id;
 
             let promises = [];
-            global.dp = new DataPoint({
+            testContext.dp = new DataPoint({
                   xid : "dp_mango_client_test",
                   deviceName : "_",
                   name : "Virtual Test Point 1",
@@ -103,12 +107,12 @@ describe('Test Event Handlers Endpoints', function() {
                   }
                 });
 
-            promises.push(global.dp.save().then((savedDp) => {
+            promises.push(testContext.dp.save().then((savedDp) => {
               assert.equal(savedDp.xid, 'dp_mango_client_test');
               assert.equal(savedDp.name, 'Virtual Test Point 1');
               assert.equal(savedDp.enabled, false);
               assert.isNumber(savedDp.id);
-              global.dp.id = savedDp.id; //Save the ID for later
+              testContext.dp.id = savedDp.id; //Save the ID for later
             }));
             return Promise.all(promises);
     	});
@@ -123,9 +127,9 @@ describe('Test Event Handlers Endpoints', function() {
               xid : "EVTH_SET_POINT_TEST",
               name : "Testing setpoint",
               disabled : false,
-              targetPointId : global.dp.id,
-              activePointId : global.dp.id,
-              inactivePointId : global.dp.id,
+              targetPointId : testContext.dp.id,
+              activePointId : testContext.dp.id,
+              inactivePointId : testContext.dp.id,
               activeAction : "STATIC_VALUE",
               inactiveAction : "STATIC_VALUE",
               activeValueToSet : "false",
@@ -134,7 +138,7 @@ describe('Test Event Handlers Endpoints', function() {
               additionalContext: [],
               scriptPermissions: null,
               eventTypes: [{
-                  dataSourceId: global.ds.id,
+                  dataSourceId: testContext.ds.id,
                   dataSourceEventTypeId: 1, //POLL_ABORTED,
                   typeName: 'DATA_SOURCE'
               }],
@@ -143,14 +147,14 @@ describe('Test Event Handlers Endpoints', function() {
       }).then(response => {
         assert.equal(response.data.xid, 'EVTH_SET_POINT_TEST');
         assert.equal(response.data.name, 'Testing setpoint');
-        assert.equal(response.data.targetPointId, global.dp.id);
-        assert.equal(response.data.activePointId, global.dp.id);
-        assert.equal(response.data.inactivePointId, global.dp.id);
+        assert.equal(response.data.targetPointId, testContext.dp.id);
+        assert.equal(response.data.activePointId, testContext.dp.id);
+        assert.equal(response.data.inactivePointId, testContext.dp.id);
         assert.equal(response.data.activeAction, "STATIC_VALUE");
         assert.equal(response.data.inactiveAction, "STATIC_VALUE");
         assert.equal(response.data.activeValueToSet, "false");
         assert.equal(response.data.inactiveValueToSet, "true");
-        assert.equal(response.data.eventTypes[0].dataSourceId, global.ds.id);
+        assert.equal(response.data.eventTypes[0].dataSourceId, testContext.ds.id);
         assert.equal(response.data.eventTypes[0].dataSourceEventTypeId, 1);
         assert.isNumber(response.data.id);
       });

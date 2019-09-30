@@ -19,6 +19,10 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('Log file query tests', function(){
+    
+    // create a context object to replace global which was previously used throughout this suite
+    const testContext = {};
+    
     before('Login', function() { return login.call(this, client); });
     this.timeout(20000);
 
@@ -28,7 +32,7 @@ describe('Log file query tests', function(){
           method: 'GET'
       }).then(response => {
         //Set this for next test
-        global.logfileCount = response.data.length;
+        testContext.logfileCount = response.data.length;
         assert.isAbove(response.data.length, 0);
         for(var i=0; i<response.data.length; i++){
           assert.notEqual(response.data[i].folderPath, null);
@@ -45,10 +49,10 @@ describe('Log file query tests', function(){
           path: '/rest/v1/logging/files',
           method: 'GET',
           params: {
-            limit: global.logfileCount - 1
+            limit: testContext.logfileCount - 1
           }
       }).then(response => {
-        assert.equal(response.data.length, global.logfileCount - 1);
+        assert.equal(response.data.length, testContext.logfileCount - 1);
       });
     });
 
@@ -64,29 +68,29 @@ describe('Log file query tests', function(){
     });
 
     it('Simple time query', () => {
-      global.fiveHourAgo = new Date(new Date().getTime() - 18000000);
+      testContext.fiveHourAgo = new Date(new Date().getTime() - 18000000);
       return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?time=gt=' + global.fiveHourAgo.toISOString() + '&limit(5)',
+          path: '/rest/v1/logging/by-filename/ma.log?time=gt=' + testContext.fiveHourAgo.toISOString() + '&limit(5)',
           method: 'GET'
       }).then(response => {
         //Test that all timestamps are > five min ago
         assert.isAbove(response.data.length, 1);
         for(var i=0; i<response.data.length; i++){
-          assert.isAbove(response.data[i].time, global.fiveHourAgo.getTime());
+          assert.isAbove(response.data[i].time, testContext.fiveHourAgo.getTime());
         }
 
       });
     });
 
     it('Simple classname eq query', () => {
-      global.classname = 'com.serotonin.m2m2.web.mvc.rest.v1.model.logging.MangoLogFilePatternReceiver';
+      testContext.classname = 'com.serotonin.m2m2.web.mvc.rest.v1.model.logging.MangoLogFilePatternReceiver';
       return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?classname=eq=' + global.classname  + '&limit(5)',
+          path: '/rest/v1/logging/by-filename/ma.log?classname=eq=' + testContext.classname  + '&limit(5)',
           method: 'GET'
       }).then(response => {
         assert.isAbove(response.data.length, 1);
         for(var i=0; i<response.data.length; i++){
-          assert.equal(response.data[i].classname, global.classname);
+          assert.equal(response.data[i].classname, testContext.classname);
         }
       });
     });
@@ -104,14 +108,14 @@ describe('Log file query tests', function(){
     });
 
     it('Simple method eq query', () => {
-      global.method = 'run';
+      testContext.method = 'run';
       return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?method=eq=' + global.method + '&limit(5)',
+          path: '/rest/v1/logging/by-filename/ma.log?method=eq=' + testContext.method + '&limit(5)',
           method: 'GET'
       }).then(response => {
         assert.isAbove(response.data.length, 1);
         for(var i=0; i<response.data.length; i++){
-          assert.equal(response.data[i].method, global.method);
+          assert.equal(response.data[i].method, testContext.method);
         }
       });
     });
@@ -129,13 +133,13 @@ describe('Log file query tests', function(){
     });
 
     it('Simple message eq query', () => {
-      global.message = 'activateOptions '; //Message from logfile pattern reciever
+      testContext.message = 'activateOptions '; //Message from logfile pattern reciever
       return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?message=eq=' + encodeURIComponent(global.message) + '&limit(1)',
+          path: '/rest/v1/logging/by-filename/ma.log?message=eq=' + encodeURIComponent(testContext.message) + '&limit(1)',
           method: 'GET'
       }).then(response => {
         assert.equal(response.data.length, 1);
-        assert.equal(response.data[0].message, global.message);
+        assert.equal(response.data[0].message, testContext.message);
       });
     });
 

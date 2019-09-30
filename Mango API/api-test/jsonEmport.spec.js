@@ -19,6 +19,10 @@ const {createClient, login} = require('@infinite-automation/mango-client/test/te
 const client = createClient();
 
 describe('JSON emport endpoints', function() {
+    
+    // create a context object to replace global which was previously used throughout this suite
+    const testContext = {};
+    
     before('Login', function() { return login.call(this, client); });
     this.timeout(20000);
 
@@ -76,16 +80,16 @@ describe('JSON emport endpoints', function() {
           method: 'POST',
           data: configuration
       }).then(response => {
-        global.tempImportResourceLocation = response.headers.location;
+        testContext.tempImportResourceLocation = response.headers.location;
         return client.restRequest({
-          path: global.tempImportResourceLocation,
+          path: testContext.tempImportResourceLocation,
           data: {cancel: true},
           method: 'PUT'
         }).then(response => {
           //TODO Check that it was accepted
           console.log(response.data);
           return client.restRequest({
-            path: global.tempImportResourceLocation,
+            path: testContext.tempImportResourceLocation,
             method: 'GET'
           }).then(response => {
             console.log(response.data);

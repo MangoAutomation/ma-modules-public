@@ -21,6 +21,10 @@ const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
 describe('Event handlers v2', function() {
+    
+    // create a context object to replace global which was previously used throughout this suite
+    const testContext = {};
+    
     before('Login', function() { return login.call(this, client); });
 
     before('Create DS 1', function() {
@@ -29,7 +33,7 @@ describe('Event handlers v2', function() {
                 enabled: true,
                 name: name,
                 deviceName: 'Data point test deviceName',
-                dataSourceXid : global.ds1.xid,
+                dataSourceXid : testContext.ds1.xid,
                 pointLocator : {
                     startValue : '0',
                     modelType : 'PL.VIRTUAL',
@@ -40,7 +44,7 @@ describe('Event handlers v2', function() {
             });
         };
 
-        global.ds1 = new DataSource({
+        testContext.ds1 = new DataSource({
             xid: 'me_test_1',
             name: 'ME Testing 1',
             enabled: true,
@@ -51,11 +55,11 @@ describe('Event handlers v2', function() {
             editPermission: null
         });
 
-        return global.ds1.save();
+        return testContext.ds1.save();
     });
 
     before('Create DS 2', function() {
-        global.ds2 = new DataSource({
+        testContext.ds2 = new DataSource({
             xid: 'me_test_2',
             name: 'ME Testing 2',
             enabled: true,
@@ -66,14 +70,14 @@ describe('Event handlers v2', function() {
             editPermission: null
         });
 
-        return global.ds2.save();
+        return testContext.ds2.save();
     });
     
     before('Create test DP 1', function() {
         const dp1 = this.point('test point 1');
         dp1.pointLocator.dataType = 'BINARY';
         return dp1.save().then(dp =>{
-            global.dp1 = dp;
+            testContext.dp1 = dp;
         });
     });
     
@@ -81,37 +85,37 @@ describe('Event handlers v2', function() {
         const dp2 = this.point('test point 2');
         dp2.pointLocator.dataType = 'BINARY';
         return dp2.save().then(dp =>{
-            global.dp2 = dp;
+            testContext.dp2 = dp;
         });
     });
     
     after('Delete DS 1', function() {
-        return global.ds1.delete();
+        return testContext.ds1.delete();
     });
     after('Delete DS2', function() {
-        return global.ds2.delete();
+        return testContext.ds2.delete();
     });
     
     
     it('Create static set point event handler', () => {
-        global.staticValueSetPointEventHandler = {
+        testContext.staticValueSetPointEventHandler = {
                 xid : "EVTH_SET_POINT_TEST",
                 name : "Testing setpoint",
                 disabled : false,
-                targetPointXid : global.dp1.xid,
+                targetPointXid : testContext.dp1.xid,
                 activeAction : "STATIC_VALUE",
                 inactiveAction : "STATIC_VALUE",
                 activeValueToSet : false,
                 inactiveValueToSet : true,
                 activeScript: 'return 0;',
                 inactiveScript: 'return 1;',
-                scriptContext: [{xid: global.dp2.xid, variableName:'point2'}],
+                scriptContext: [{xid: testContext.dp2.xid, variableName:'point2'}],
                 scriptPermissions: ['admin', 'testing'],
                 eventTypes: [
                     {
                         eventType: 'DATA_SOURCE',
                         subType: null,
-                        referenceId1: global.ds1.id,
+                        referenceId1: testContext.ds1.id,
                         referenceId2: 1 //Poll Aborted
                     }
                 ],
@@ -120,35 +124,35 @@ describe('Event handlers v2', function() {
         return client.restRequest({
             path: '/rest/v2/event-handlers',
             method: 'POST',
-            data: global.staticValueSetPointEventHandler
+            data: testContext.staticValueSetPointEventHandler
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.staticValueSetPointEventHandler.xid);
-            assert.strictEqual(response.data.name, global.staticValueSetPointEventHandler.name);
-            assert.strictEqual(response.data.disabled, global.staticValueSetPointEventHandler.disabled);
-            assert.strictEqual(response.data.eventTypes.length, global.staticValueSetPointEventHandler.eventTypes.length);
+            assert.strictEqual(response.data.xid, testContext.staticValueSetPointEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.staticValueSetPointEventHandler.name);
+            assert.strictEqual(response.data.disabled, testContext.staticValueSetPointEventHandler.disabled);
+            assert.strictEqual(response.data.eventTypes.length, testContext.staticValueSetPointEventHandler.eventTypes.length);
             for(let i=0; i<response.data.eventTypes.length; i++){
-                assert.strictEqual(response.data.eventTypes[i].eventType, global.staticValueSetPointEventHandler.eventTypes[i].eventType);
-                assert.strictEqual(response.data.eventTypes[0].referenceId1, global.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
-                assert.strictEqual(response.data.eventTypes[0].referenceId2, global.staticValueSetPointEventHandler.eventTypes[i].referenceId2);
+                assert.strictEqual(response.data.eventTypes[i].eventType, testContext.staticValueSetPointEventHandler.eventTypes[i].eventType);
+                assert.strictEqual(response.data.eventTypes[0].referenceId1, testContext.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
+                assert.strictEqual(response.data.eventTypes[0].referenceId2, testContext.staticValueSetPointEventHandler.eventTypes[i].referenceId2);
             }
 
-            assert.strictEqual(response.data.activePointXid, global.staticValueSetPointEventHandler.activePointXid);
-            assert.strictEqual(response.data.inactivePointXid, global.staticValueSetPointEventHandler.inactivePointXid);
-            assert.strictEqual(response.data.activeAction, global.staticValueSetPointEventHandler.activeAction);
-            assert.strictEqual(response.data.inactiveAction, global.staticValueSetPointEventHandler.inactiveAction);
-            assert.strictEqual(response.data.activeValueToSet, global.staticValueSetPointEventHandler.activeValueToSet);
-            assert.strictEqual(response.data.inactiveValueToSet, global.staticValueSetPointEventHandler.inactiveValueToSet);
+            assert.strictEqual(response.data.activePointXid, testContext.staticValueSetPointEventHandler.activePointXid);
+            assert.strictEqual(response.data.inactivePointXid, testContext.staticValueSetPointEventHandler.inactivePointXid);
+            assert.strictEqual(response.data.activeAction, testContext.staticValueSetPointEventHandler.activeAction);
+            assert.strictEqual(response.data.inactiveAction, testContext.staticValueSetPointEventHandler.inactiveAction);
+            assert.strictEqual(response.data.activeValueToSet, testContext.staticValueSetPointEventHandler.activeValueToSet);
+            assert.strictEqual(response.data.inactiveValueToSet, testContext.staticValueSetPointEventHandler.inactiveValueToSet);
             
-            assert.strictEqual(response.data.activeScript, global.staticValueSetPointEventHandler.activeScript);
-            assert.strictEqual(response.data.inactiveScript, global.staticValueSetPointEventHandler.inactiveScript);
+            assert.strictEqual(response.data.activeScript, testContext.staticValueSetPointEventHandler.activeScript);
+            assert.strictEqual(response.data.inactiveScript, testContext.staticValueSetPointEventHandler.inactiveScript);
             
-            assert.strictEqual(response.data.scriptContext.length, global.staticValueSetPointEventHandler.scriptContext.length);
+            assert.strictEqual(response.data.scriptContext.length, testContext.staticValueSetPointEventHandler.scriptContext.length);
             for(let i=0; i<response.data.scriptContext.length; i++){
-                assert.strictEqual(response.data.scriptContext[i].xid, global.staticValueSetPointEventHandler.scriptContext[i].xid);
-                assert.strictEqual(response.data.scriptContext[i].variableName, global.staticValueSetPointEventHandler.scriptContext[i].variableName);
+                assert.strictEqual(response.data.scriptContext[i].xid, testContext.staticValueSetPointEventHandler.scriptContext[i].xid);
+                assert.strictEqual(response.data.scriptContext[i].variableName, testContext.staticValueSetPointEventHandler.scriptContext[i].variableName);
             }
             for(let i=0; i<response.data.scriptPermissions.length; i++)
-                assert.include(global.staticValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
+                assert.include(testContext.staticValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);
         });
@@ -156,40 +160,41 @@ describe('Event handlers v2', function() {
     
     it('Query event handlers lists', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers?xid=${global.staticValueSetPointEventHandler.xid}`,
+            path: `/rest/v2/event-handlers?xid=${testContext.staticValueSetPointEventHandler.xid}`,
             method: 'GET',
-            data: global.addressMailingList
+            data: testContext.addressMailingList
         }).then(response => {
             assert.equal(response.data.total, 1);
-            assert.strictEqual(response.data.items[0].xid, global.staticValueSetPointEventHandler.xid);
-            assert.strictEqual(response.data.items[0].name, global.staticValueSetPointEventHandler.name);
-            assert.strictEqual(response.data.items[0].disabled, global.staticValueSetPointEventHandler.disabled);
+            assert.strictEqual(response.data.items[0].xid, testContext.staticValueSetPointEventHandler.xid);
+            assert.strictEqual(response.data.items[0].name, testContext.staticValueSetPointEventHandler.name);
+            assert.strictEqual(response.data.items[0].disabled, testContext.staticValueSetPointEventHandler.disabled);
             
-            assert.strictEqual(response.data.items[0].eventTypes.length, global.staticValueSetPointEventHandler.eventTypes.length);
+            assert.strictEqual(response.data.items[0].eventTypes.length, testContext.staticValueSetPointEventHandler.eventTypes.length);
             for(let i=0; i<response.data.items[0].eventTypes.length; i++){
-                assert.strictEqual(response.data.items[0].eventTypes[i].eventType, global.staticValueSetPointEventHandler.eventTypes[i].eventType);
-                assert.strictEqual(response.data.items[0].eventTypes[0].subType, global.staticValueSetPointEventHandler.eventTypes[i].subType);
-                assert.strictEqual(response.data.items[0].eventTypes[0].referenceId1, global.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
-                assert.strictEqual(response.data.items[0].eventTypes[0].referenceId2, global.staticValueSetPointEventHandler.eventTypes[i].referenceId2);
+                assert.strictEqual(response.data.items[0].eventTypes[i].eventType, testContext.staticValueSetPointEventHandler.eventTypes[i].eventType);
+                assert.strictEqual(response.data.items[0].eventTypes[0].subType, testContext.staticValueSetPointEventHandler.eventTypes[i].subType);
+                assert.strictEqual(response.data.items[0].eventTypes[0].referenceId1, testContext.staticValueSetPointEventHandler.eventTypes[i].referenceId1);
+                assert.strictEqual(response.data.items[0].eventTypes[0].referenceId2, testContext.staticValueSetPointEventHandler.eventTypes[i].referenceId2);
             }
 
-            assert.strictEqual(response.data.items[0].activePointXid, global.staticValueSetPointEventHandler.activePointXid);
-            assert.strictEqual(response.data.items[0].inactivePointXid, global.staticValueSetPointEventHandler.inactivePointXid);
-            assert.strictEqual(response.data.items[0].activeAction, global.staticValueSetPointEventHandler.activeAction);
-            assert.strictEqual(response.data.items[0].inactiveAction, global.staticValueSetPointEventHandler.inactiveAction);
-            assert.strictEqual(response.data.items[0].activeValueToSet, global.staticValueSetPointEventHandler.activeValueToSet);
-            assert.strictEqual(response.data.items[0].inactiveValueToSet, global.staticValueSetPointEventHandler.inactiveValueToSet);
+            assert.strictEqual(response.data.items[0].activePointXid, testContext.staticValueSetPointEventHandler.activePointXid);
+            assert.strictEqual(response.data.items[0].inactivePointXid, testContext.staticValueSetPointEventHandler.inactivePointXid);
+            assert.strictEqual(response.data.items[0].activeAction, testContext.staticValueSetPointEventHandler.activeAction);
+            assert.strictEqual(response.data.items[0].inactiveAction, testContext.staticValueSetPointEventHandler.inactiveAction);
+            assert.strictEqual(response.data.items[0].activeValueToSet, testContext.staticValueSetPointEventHandler.activeValueToSet);
+            assert.strictEqual(response.data.items[0].inactiveValueToSet, testContext.staticValueSetPointEventHandler.inactiveValueToSet);
             
-            assert.strictEqual(response.data.items[0].activeScript, global.staticValueSetPointEventHandler.activeScript);
-            assert.strictEqual(response.data.items[0].inactiveScript, global.staticValueSetPointEventHandler.inactiveScript);
+            assert.strictEqual(response.data.items[0].activeScript, testContext.staticValueSetPointEventHandler.activeScript);
+            assert.strictEqual(response.data.items[0].inactiveScript, testContext.staticValueSetPointEventHandler.inactiveScript);
             
-            assert.strictEqual(response.data.items[0].scriptContext.length, global.staticValueSetPointEventHandler.scriptContext.length);
+            assert.strictEqual(response.data.items[0].scriptContext.length, testContext.staticValueSetPointEventHandler.scriptContext.length);
             for(let i=0; i<response.data.items[0].scriptContext.length; i++){
-                assert.strictEqual(response.data.items[0].scriptContext[i].xid, global.staticValueSetPointEventHandler.scriptContext[i].xid);
-                assert.strictEqual(response.data.items[0].scriptContext[i].variableName, global.staticValueSetPointEventHandler.scriptContext[i].variableName);
+                assert.strictEqual(response.data.items[0].scriptContext[i].xid, testContext.staticValueSetPointEventHandler.scriptContext[i].xid);
+                assert.strictEqual(response.data.items[0].scriptContext[i].variableName,
+                        testContext.staticValueSetPointEventHandler.scriptContext[i].variableName);
             }
             for(let i=0; i<response.data.items[0].scriptPermissions.length; i++)
-                assert.include(global.staticValueSetPointEventHandler.scriptPermissions, response.data.items[0].scriptPermissions[i]);
+                assert.include(testContext.staticValueSetPointEventHandler.scriptPermissions, response.data.items[0].scriptPermissions[i]);
 
             assert.isNumber(response.data.items[0].id);
         });
@@ -197,66 +202,66 @@ describe('Event handlers v2', function() {
     
     it('Delete static set point event handler', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${global.staticValueSetPointEventHandler.xid}`,
+            path: `/rest/v2/event-handlers/${testContext.staticValueSetPointEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
-            assert.equal(response.data.xid, global.staticValueSetPointEventHandler.xid);
-            assert.equal(response.data.name, global.staticValueSetPointEventHandler.name);
+            assert.equal(response.data.xid, testContext.staticValueSetPointEventHandler.xid);
+            assert.equal(response.data.name, testContext.staticValueSetPointEventHandler.name);
             assert.isNumber(response.data.id);
         });
     });
     
     it('Create point set point event handler', () => {
-        global.pointValueSetPointEventHandler = {
+        testContext.pointValueSetPointEventHandler = {
                 xid : "EVTH_SET_POINT_VALUE_TEST",
                 name : "Testing setpoint",
                 disabled : false,
-                targetPointXid : global.dp1.xid,
-                activePointXid : global.dp2.xid,
-                inactivePointXid : global.dp1.xid,
+                targetPointXid : testContext.dp1.xid,
+                activePointXid : testContext.dp2.xid,
+                inactivePointXid : testContext.dp1.xid,
                 activeAction : "POINT_VALUE",
                 inactiveAction : "POINT_VALUE",
                 activeScript: 'return 0;',
                 inactiveScript: 'return 1;',
-                scriptContext: [{xid: global.dp2.xid, variableName:'point2'}],
+                scriptContext: [{xid: testContext.dp2.xid, variableName:'point2'}],
                 scriptPermissions: ['admin', 'testing'],
                 handlerType : "SET_POINT"
               };
         return client.restRequest({
             path: '/rest/v2/event-handlers',
             method: 'POST',
-            data: global.pointValueSetPointEventHandler
+            data: testContext.pointValueSetPointEventHandler
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.pointValueSetPointEventHandler.xid);
-            assert.strictEqual(response.data.name, global.pointValueSetPointEventHandler.name);
-            assert.strictEqual(response.data.disabled, global.pointValueSetPointEventHandler.disabled);
-            assert.strictEqual(response.data.activePointXid, global.pointValueSetPointEventHandler.activePointXid);
-            assert.strictEqual(response.data.inactivePointXid, global.pointValueSetPointEventHandler.inactivePointXid);
-            assert.strictEqual(response.data.activeAction, global.pointValueSetPointEventHandler.activeAction);
-            assert.strictEqual(response.data.inactiveAction, global.pointValueSetPointEventHandler.inactiveAction);
-            assert.strictEqual(response.data.activeValueToSet, global.pointValueSetPointEventHandler.activeValueToSet);
-            assert.strictEqual(response.data.inactiveValueToSet, global.pointValueSetPointEventHandler.inactiveValueToSet);
+            assert.strictEqual(response.data.xid, testContext.pointValueSetPointEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.pointValueSetPointEventHandler.name);
+            assert.strictEqual(response.data.disabled, testContext.pointValueSetPointEventHandler.disabled);
+            assert.strictEqual(response.data.activePointXid, testContext.pointValueSetPointEventHandler.activePointXid);
+            assert.strictEqual(response.data.inactivePointXid, testContext.pointValueSetPointEventHandler.inactivePointXid);
+            assert.strictEqual(response.data.activeAction, testContext.pointValueSetPointEventHandler.activeAction);
+            assert.strictEqual(response.data.inactiveAction, testContext.pointValueSetPointEventHandler.inactiveAction);
+            assert.strictEqual(response.data.activeValueToSet, testContext.pointValueSetPointEventHandler.activeValueToSet);
+            assert.strictEqual(response.data.inactiveValueToSet, testContext.pointValueSetPointEventHandler.inactiveValueToSet);
             
-            assert.strictEqual(response.data.activeScript, global.pointValueSetPointEventHandler.activeScript);
-            assert.strictEqual(response.data.inactiveScript, global.pointValueSetPointEventHandler.inactiveScript);
+            assert.strictEqual(response.data.activeScript, testContext.pointValueSetPointEventHandler.activeScript);
+            assert.strictEqual(response.data.inactiveScript, testContext.pointValueSetPointEventHandler.inactiveScript);
             
-            assert.strictEqual(response.data.scriptContext.length, global.pointValueSetPointEventHandler.scriptContext.length);
+            assert.strictEqual(response.data.scriptContext.length, testContext.pointValueSetPointEventHandler.scriptContext.length);
             for(let i=0; i<response.data.scriptContext.length; i++){
-                assert.strictEqual(response.data.scriptContext[i].xid, global.pointValueSetPointEventHandler.scriptContext[i].xid);
-                assert.strictEqual(response.data.scriptContext[i].variableName, global.pointValueSetPointEventHandler.scriptContext[i].variableName);
+                assert.strictEqual(response.data.scriptContext[i].xid, testContext.pointValueSetPointEventHandler.scriptContext[i].xid);
+                assert.strictEqual(response.data.scriptContext[i].variableName, testContext.pointValueSetPointEventHandler.scriptContext[i].variableName);
             }
             for(let i=0; i<response.data.scriptPermissions.length; i++)
-                assert.include(global.pointValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
+                assert.include(testContext.pointValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);
-            global.pointValueSetPointEventHandler.id = response.data.id;
+            testContext.pointValueSetPointEventHandler.id = response.data.id;
 
         });
     });
     
     it('Test invalid set point event handler', () => {
-        global.invalidSetPointEventHandler = {
+        testContext.invalidSetPointEventHandler = {
                 xid : "EVTH_INVALID_TEST",
                 name : "Testing setpoint",
                 disabled : false,
@@ -274,7 +279,7 @@ describe('Event handlers v2', function() {
         return client.restRequest({
             path: '/rest/v2/event-handlers',
             method: 'POST',
-            data: global.invalidSetPointEventHandler
+            data: testContext.invalidSetPointEventHandler
         }).then(response => {
             throw new Error('Should not have created set point event handler');
         }, error => {
@@ -290,8 +295,8 @@ describe('Event handlers v2', function() {
     
     it('Gets websocket notifications for update', function() {
         
-        global.pointValueSetPointEventHandler.name = 'New event handler name';
-        global.pointValueSetPointEventHandler.eventTypes = [
+        testContext.pointValueSetPointEventHandler.name = 'New event handler name';
+        testContext.pointValueSetPointEventHandler.eventTypes = [
             {
                 eventType: 'SYSTEM',
                 subType: 'USER_LOGIN',
@@ -336,10 +341,10 @@ describe('Event handlers v2', function() {
                     const msg = JSON.parse(msgStr);
                     assert.strictEqual(msg.status, 'OK');
                     assert.strictEqual(msg.payload.action, 'update');
-                    assert.strictEqual(msg.payload.object.xid, global.pointValueSetPointEventHandler.xid);
+                    assert.strictEqual(msg.payload.object.xid, testContext.pointValueSetPointEventHandler.xid);
                     assert.strictEqual(msg.payload.object.eventTypes.length, 1);
-                    assert.strictEqual(msg.payload.object.eventTypes[0].eventType, global.pointValueSetPointEventHandler.eventTypes[0].eventType);
-                    assert.strictEqual(msg.payload.object.eventTypes[0].subType, global.pointValueSetPointEventHandler.eventTypes[0].subType);
+                    assert.strictEqual(msg.payload.object.eventTypes[0].eventType, testContext.pointValueSetPointEventHandler.eventTypes[0].eventType);
+                    assert.strictEqual(msg.payload.object.eventTypes[0].subType, testContext.pointValueSetPointEventHandler.eventTypes[0].subType);
                     
                     listUpdatedDeferred.resolve();   
                 }catch(e){
@@ -362,30 +367,30 @@ describe('Event handlers v2', function() {
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
-                path: `/rest/v2/event-handlers/${global.pointValueSetPointEventHandler.xid}`,
+                path: `/rest/v2/event-handlers/${testContext.pointValueSetPointEventHandler.xid}`,
                 method: 'PUT',
-                data: global.pointValueSetPointEventHandler
+                data: testContext.pointValueSetPointEventHandler
             }).then(response =>{
-                assert.strictEqual(response.data.xid, global.pointValueSetPointEventHandler.xid);
-                assert.strictEqual(response.data.name, global.pointValueSetPointEventHandler.name);
-                assert.strictEqual(response.data.disabled, global.pointValueSetPointEventHandler.disabled);
-                assert.strictEqual(response.data.activePointXid, global.pointValueSetPointEventHandler.activePointXid);
-                assert.strictEqual(response.data.inactivePointXid, global.pointValueSetPointEventHandler.inactivePointXid);
-                assert.strictEqual(response.data.activeAction, global.pointValueSetPointEventHandler.activeAction);
-                assert.strictEqual(response.data.inactiveAction, global.pointValueSetPointEventHandler.inactiveAction);
-                assert.strictEqual(response.data.activeValueToSet, global.pointValueSetPointEventHandler.activeValueToSet);
-                assert.strictEqual(response.data.inactiveValueToSet, global.pointValueSetPointEventHandler.inactiveValueToSet);
+                assert.strictEqual(response.data.xid, testContext.pointValueSetPointEventHandler.xid);
+                assert.strictEqual(response.data.name, testContext.pointValueSetPointEventHandler.name);
+                assert.strictEqual(response.data.disabled, testContext.pointValueSetPointEventHandler.disabled);
+                assert.strictEqual(response.data.activePointXid, testContext.pointValueSetPointEventHandler.activePointXid);
+                assert.strictEqual(response.data.inactivePointXid, testContext.pointValueSetPointEventHandler.inactivePointXid);
+                assert.strictEqual(response.data.activeAction, testContext.pointValueSetPointEventHandler.activeAction);
+                assert.strictEqual(response.data.inactiveAction, testContext.pointValueSetPointEventHandler.inactiveAction);
+                assert.strictEqual(response.data.activeValueToSet, testContext.pointValueSetPointEventHandler.activeValueToSet);
+                assert.strictEqual(response.data.inactiveValueToSet, testContext.pointValueSetPointEventHandler.inactiveValueToSet);
                 
-                assert.strictEqual(response.data.activeScript, global.pointValueSetPointEventHandler.activeScript);
-                assert.strictEqual(response.data.inactiveScript, global.pointValueSetPointEventHandler.inactiveScript);
+                assert.strictEqual(response.data.activeScript, testContext.pointValueSetPointEventHandler.activeScript);
+                assert.strictEqual(response.data.inactiveScript, testContext.pointValueSetPointEventHandler.inactiveScript);
                 
-                assert.strictEqual(response.data.scriptContext.length, global.pointValueSetPointEventHandler.scriptContext.length);
+                assert.strictEqual(response.data.scriptContext.length, testContext.pointValueSetPointEventHandler.scriptContext.length);
                 for(let i=0; i<response.data.scriptContext.length; i++){
-                    assert.strictEqual(response.data.scriptContext[i].xid, global.pointValueSetPointEventHandler.scriptContext[i].xid);
-                    assert.strictEqual(response.data.scriptContext[i].variableName, global.pointValueSetPointEventHandler.scriptContext[i].variableName);
+                    assert.strictEqual(response.data.scriptContext[i].xid, testContext.pointValueSetPointEventHandler.scriptContext[i].xid);
+                    assert.strictEqual(response.data.scriptContext[i].variableName, testContext.pointValueSetPointEventHandler.scriptContext[i].variableName);
                 }
                 for(let i=0; i<response.data.scriptPermissions.length; i++)
-                    assert.include(global.pointValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
+                    assert.include(testContext.pointValueSetPointEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
     
                 assert.isNumber(response.data.id);
             });
@@ -436,7 +441,7 @@ describe('Event handlers v2', function() {
                     const msg = JSON.parse(msgStr);
                     assert.strictEqual(msg.status, 'OK');
                     assert.strictEqual(msg.payload.action, 'delete');
-                    assert.strictEqual(msg.payload.object.xid, global.pointValueSetPointEventHandler.xid);
+                    assert.strictEqual(msg.payload.object.xid, testContext.pointValueSetPointEventHandler.xid);
                     listUpdatedDeferred.resolve();   
                 }catch(e){
                     listUpdatedDeferred.reject(e);
@@ -457,12 +462,12 @@ describe('Event handlers v2', function() {
             
         }).then(() => delay(1000)).then(() => {
             return client.restRequest({
-                path: `/rest/v2/event-handlers/${global.pointValueSetPointEventHandler.xid}`,
+                path: `/rest/v2/event-handlers/${testContext.pointValueSetPointEventHandler.xid}`,
                 method: 'DELETE',
                 data: {}
             }).then(response => {
-                assert.equal(response.data.id, global.pointValueSetPointEventHandler.id);
-                assert.equal(response.data.name, global.pointValueSetPointEventHandler.name);
+                assert.equal(response.data.id, testContext.pointValueSetPointEventHandler.id);
+                assert.equal(response.data.name, testContext.pointValueSetPointEventHandler.name);
                 assert.isNumber(response.data.id);
             });
         }).then(() => listUpdatedDeferred.promise).then((r)=>{
@@ -476,7 +481,7 @@ describe('Event handlers v2', function() {
     
     //Process Event Handler Tests
     it('Create process event handler', () => {
-        global.processEventHandler = {
+        testContext.processEventHandler = {
                 xid : "EVTH_PROCESS_TEST",
                 name : "Testing process",
                 disabled : true,
@@ -489,23 +494,23 @@ describe('Event handlers v2', function() {
         return client.restRequest({
             path: '/rest/v2/event-handlers',
             method: 'POST',
-            data: global.processEventHandler
+            data: testContext.processEventHandler
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.processEventHandler.xid);
-            assert.strictEqual(response.data.name, global.processEventHandler.name);
-            assert.strictEqual(response.data.disabled, global.processEventHandler.disabled);
-            assert.strictEqual(response.data.activeProcessCommand, global.processEventHandler.activeProcessCommand);
-            assert.strictEqual(response.data.activeProcessTimeout, global.processEventHandler.activeProcessTimeout);
-            assert.strictEqual(response.data.inactiveProcessCommand, global.processEventHandler.inactiveProcessCommand);
-            assert.strictEqual(response.data.inactiveProcessTimeout, global.processEventHandler.inactiveProcessTimeout);
+            assert.strictEqual(response.data.xid, testContext.processEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.processEventHandler.name);
+            assert.strictEqual(response.data.disabled, testContext.processEventHandler.disabled);
+            assert.strictEqual(response.data.activeProcessCommand, testContext.processEventHandler.activeProcessCommand);
+            assert.strictEqual(response.data.activeProcessTimeout, testContext.processEventHandler.activeProcessTimeout);
+            assert.strictEqual(response.data.inactiveProcessCommand, testContext.processEventHandler.inactiveProcessCommand);
+            assert.strictEqual(response.data.inactiveProcessTimeout, testContext.processEventHandler.inactiveProcessTimeout);
             
             assert.isNumber(response.data.id);
-            global.processEventHandler.id = response.data.id;
+            testContext.processEventHandler.id = response.data.id;
         });
     });
     
     it('Patch process event handler', () => {
-        global.processEventHandler.disabled = false;
+        testContext.processEventHandler.disabled = false;
         return client.restRequest({
             path: '/rest/v2/event-handlers/EVTH_PROCESS_TEST',
             method: 'PATCH',
@@ -513,34 +518,34 @@ describe('Event handlers v2', function() {
                 disabled: false
             }
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.processEventHandler.xid);
-            assert.strictEqual(response.data.name, global.processEventHandler.name);
-            assert.strictEqual(response.data.disabled, global.processEventHandler.disabled);
-            assert.strictEqual(response.data.activeProcessCommand, global.processEventHandler.activeProcessCommand);
-            assert.strictEqual(response.data.activeProcessTimeout, global.processEventHandler.activeProcessTimeout);
-            assert.strictEqual(response.data.inactiveProcessCommand, global.processEventHandler.inactiveProcessCommand);
-            assert.strictEqual(response.data.inactiveProcessTimeout, global.processEventHandler.inactiveProcessTimeout);
+            assert.strictEqual(response.data.xid, testContext.processEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.processEventHandler.name);
+            assert.strictEqual(response.data.disabled, testContext.processEventHandler.disabled);
+            assert.strictEqual(response.data.activeProcessCommand, testContext.processEventHandler.activeProcessCommand);
+            assert.strictEqual(response.data.activeProcessTimeout, testContext.processEventHandler.activeProcessTimeout);
+            assert.strictEqual(response.data.inactiveProcessCommand, testContext.processEventHandler.inactiveProcessCommand);
+            assert.strictEqual(response.data.inactiveProcessTimeout, testContext.processEventHandler.inactiveProcessTimeout);
             
             assert.isNumber(response.data.id);
-            global.processEventHandler.id = response.data.id;
+            testContext.processEventHandler.id = response.data.id;
         });
     });
     
     it('Delete process event handler', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${global.processEventHandler.xid}`,
+            path: `/rest/v2/event-handlers/${testContext.processEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.processEventHandler.xid);
-            assert.strictEqual(response.data.name, global.processEventHandler.name);
-            assert.strictEqual(response.data.id, global.processEventHandler.id);
+            assert.strictEqual(response.data.xid, testContext.processEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.processEventHandler.name);
+            assert.strictEqual(response.data.id, testContext.processEventHandler.id);
         });
     });
     
     //Email Event Handler Tests
     it('Create email event handler', () => {
-        global.emailEventHandler = {
+        testContext.emailEventHandler = {
                 xid : "EVTH_EMAIL_TEST",
                 name : "Testing email",
                 disabled : false,
@@ -566,8 +571,8 @@ describe('Event handlers v2', function() {
                 includeLogfile: true,
                 customTemplate: '<h2></h2>',
                 scriptContext: [
-                        {xid: global.dp1.xid, variableName:'point1'},
-                        {xid: global.dp2.xid, variableName:'point2'}
+                        {xid: testContext.dp1.xid, variableName:'point1'},
+                        {xid: testContext.dp2.xid, variableName:'point2'}
                     ],
                 scriptPermissions: ['admin', 'testing'],
                 script: 'return 0;',
@@ -577,52 +582,52 @@ describe('Event handlers v2', function() {
         return client.restRequest({
             path: '/rest/v2/event-handlers',
             method: 'POST',
-            data: global.emailEventHandler
+            data: testContext.emailEventHandler
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.emailEventHandler.xid);
-            assert.strictEqual(response.data.name, global.emailEventHandler.name);
-            assert.strictEqual(response.data.disabled, global.emailEventHandler.disabled);
+            assert.strictEqual(response.data.xid, testContext.emailEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.emailEventHandler.name);
+            assert.strictEqual(response.data.disabled, testContext.emailEventHandler.disabled);
             
-            assert.strictEqual(response.data.activeRecipients.length, global.emailEventHandler.activeRecipients.length);
-            assert.strictEqual(response.data.activeRecipients[0].username, global.emailEventHandler.activeRecipients[0].username);
-            assert.strictEqual(response.data.activeRecipients[1].address, global.emailEventHandler.activeRecipients[1].address);
+            assert.strictEqual(response.data.activeRecipients.length, testContext.emailEventHandler.activeRecipients.length);
+            assert.strictEqual(response.data.activeRecipients[0].username, testContext.emailEventHandler.activeRecipients[0].username);
+            assert.strictEqual(response.data.activeRecipients[1].address, testContext.emailEventHandler.activeRecipients[1].address);
             
-            assert.strictEqual(response.data.sendEscalation, global.emailEventHandler.sendEscalation);
-            assert.strictEqual(response.data.repeatEscalations, global.emailEventHandler.repeatEscalations);
-            assert.strictEqual(response.data.escalationDelayType, global.emailEventHandler.escalationDelayType);
-            assert.strictEqual(response.data.escalationDelay, global.emailEventHandler.escalationDelay);
+            assert.strictEqual(response.data.sendEscalation, testContext.emailEventHandler.sendEscalation);
+            assert.strictEqual(response.data.repeatEscalations, testContext.emailEventHandler.repeatEscalations);
+            assert.strictEqual(response.data.escalationDelayType, testContext.emailEventHandler.escalationDelayType);
+            assert.strictEqual(response.data.escalationDelay, testContext.emailEventHandler.escalationDelay);
             
-            assert.strictEqual(response.data.escalationRecipients.length, global.emailEventHandler.escalationRecipients.length);
-            assert.strictEqual(response.data.escalationRecipients[0].username, global.emailEventHandler.escalationRecipients[0].username);
-            assert.strictEqual(response.data.escalationRecipients[1].address, global.emailEventHandler.escalationRecipients[1].address);
+            assert.strictEqual(response.data.escalationRecipients.length, testContext.emailEventHandler.escalationRecipients.length);
+            assert.strictEqual(response.data.escalationRecipients[0].username, testContext.emailEventHandler.escalationRecipients[0].username);
+            assert.strictEqual(response.data.escalationRecipients[1].address, testContext.emailEventHandler.escalationRecipients[1].address);
             
-            assert.strictEqual(response.data.sendInactive, global.emailEventHandler.sendInactive);
-            assert.strictEqual(response.data.inactiveOverride, global.emailEventHandler.inactiveOverride);
+            assert.strictEqual(response.data.sendInactive, testContext.emailEventHandler.sendInactive);
+            assert.strictEqual(response.data.inactiveOverride, testContext.emailEventHandler.inactiveOverride);
             
-            assert.strictEqual(response.data.inactiveRecipients.length, global.emailEventHandler.inactiveRecipients.length);
-            assert.strictEqual(response.data.inactiveRecipients[0].username, global.emailEventHandler.inactiveRecipients[0].username);
-            assert.strictEqual(response.data.inactiveRecipients[1].address, global.emailEventHandler.inactiveRecipients[1].address);
+            assert.strictEqual(response.data.inactiveRecipients.length, testContext.emailEventHandler.inactiveRecipients.length);
+            assert.strictEqual(response.data.inactiveRecipients[0].username, testContext.emailEventHandler.inactiveRecipients[0].username);
+            assert.strictEqual(response.data.inactiveRecipients[1].address, testContext.emailEventHandler.inactiveRecipients[1].address);
             
-            assert.strictEqual(response.data.includeSystemInfo, global.emailEventHandler.includeSystemInfo);
-            assert.strictEqual(response.data.includeLogfile, global.emailEventHandler.includeLogfile);
-            assert.strictEqual(response.data.customTemplate, global.emailEventHandler.customTemplate);
+            assert.strictEqual(response.data.includeSystemInfo, testContext.emailEventHandler.includeSystemInfo);
+            assert.strictEqual(response.data.includeLogfile, testContext.emailEventHandler.includeLogfile);
+            assert.strictEqual(response.data.customTemplate, testContext.emailEventHandler.customTemplate);
             
-            assert.strictEqual(response.data.scriptContext.length, global.emailEventHandler.scriptContext.length);
+            assert.strictEqual(response.data.scriptContext.length, testContext.emailEventHandler.scriptContext.length);
             for(let i=0; i<response.data.scriptContext.length; i++){
-                assert.strictEqual(response.data.scriptContext[i].xid, global.emailEventHandler.scriptContext[i].xid);
-                assert.strictEqual(response.data.scriptContext[i].variableName, global.emailEventHandler.scriptContext[i].variableName);
+                assert.strictEqual(response.data.scriptContext[i].xid, testContext.emailEventHandler.scriptContext[i].xid);
+                assert.strictEqual(response.data.scriptContext[i].variableName, testContext.emailEventHandler.scriptContext[i].variableName);
             }
             for(let i=0; i<response.data.scriptPermissions.length; i++)
-                assert.include(global.emailEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
+                assert.include(testContext.emailEventHandler.scriptPermissions, response.data.scriptPermissions[i]);
 
             assert.isNumber(response.data.id);
             assert.strictEqual(response.data.subject, 'INCLUDE_EVENT_MESSAGE');
-            global.emailEventHandler.id = response.data.id;
+            testContext.emailEventHandler.id = response.data.id;
         });
     });
     
     it('Test invalid email event handler', () => {
-        global.invalidEmailEventHandler = {
+        testContext.invalidEmailEventHandler = {
                 xid : "EVTH_EMAIL_TEST_INVALID",
                 name : "Testing email",
                 disabled : false,
@@ -649,7 +654,7 @@ describe('Event handlers v2', function() {
                 customTemplate: '${empty',
                 scriptContext: [
                         {xid: 'missing', variableName:'point1'},
-                        {xid: global.dp2.xid, variableName:'point2'}
+                        {xid: testContext.dp2.xid, variableName:'point2'}
                     ],
                 scriptPermissions: ['admin', 'testing'],
                 script: 'return 0;',
@@ -658,7 +663,7 @@ describe('Event handlers v2', function() {
         return client.restRequest({
             path: '/rest/v2/event-handlers',
             method: 'POST',
-            data: global.invalidEmailEventHandler
+            data: testContext.invalidEmailEventHandler
         }).then(response => {
             throw new Error('Should not have created email event handler');
         }, error => {
@@ -680,13 +685,13 @@ describe('Event handlers v2', function() {
     
     it('Delete email event handler', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${global.emailEventHandler.xid}`,
+            path: `/rest/v2/event-handlers/${testContext.emailEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
-            assert.strictEqual(response.data.xid, global.emailEventHandler.xid);
-            assert.strictEqual(response.data.name, global.emailEventHandler.name);
-            assert.strictEqual(response.data.id, global.emailEventHandler.id);
+            assert.strictEqual(response.data.xid, testContext.emailEventHandler.xid);
+            assert.strictEqual(response.data.name, testContext.emailEventHandler.name);
+            assert.strictEqual(response.data.id, testContext.emailEventHandler.id);
         });
     });
     

@@ -22,9 +22,13 @@ const DataSource = client.DataSource;
 
 describe('Event detector service', function() {
     this.timeout(5000);
+    
+    // create a context object to replace global which was previously used throughout this suite
+    const testContext = {};
+    
     before('Login', function() { return login.call(this, client); });
     before('Create data source and points', function() {
-      global.ds = new DataSource({
+      testContext.ds = new DataSource({
           xid: 'mango_client_test',
           name: 'Mango client test',
           enabled: true,
@@ -35,15 +39,15 @@ describe('Event detector service', function() {
           editPermission: null
       });
 
-      return global.ds.save().then((savedDs) => {
-          assert.strictEqual(savedDs, global.ds);
+      return testContext.ds.save().then((savedDs) => {
+          assert.strictEqual(savedDs, testContext.ds);
           assert.equal(savedDs.xid, 'mango_client_test');
           assert.equal(savedDs.name, 'Mango client test');
           assert.isNumber(savedDs.id);
-          global.ds.id = savedDs.id;
+          testContext.ds.id = savedDs.id;
 
           let promises = [];
-          global.dp = new DataPoint({
+          testContext.dp = new DataPoint({
                 xid : "dp_mango_client_test",
                 deviceName : "_",
                 name : "Virtual Test Point 1",
@@ -103,15 +107,15 @@ describe('Event detector service', function() {
                 }
               });
 
-          promises.push(global.dp.save().then((savedDp) => {
+          promises.push(testContext.dp.save().then((savedDp) => {
             assert.equal(savedDp.xid, 'dp_mango_client_test');
             assert.equal(savedDp.name, 'Virtual Test Point 1');
             assert.equal(savedDp.enabled, false);
             assert.isNumber(savedDp.id);
-            global.dp.id = savedDp.id; //Save the ID for later
+            testContext.dp.id = savedDp.id; //Save the ID for later
           }));
 
-          global.numDp = new DataPoint({
+          testContext.numDp = new DataPoint({
               xid : "dp_mango_client_test_num",
               deviceName : "_",
               name : "Virtual Test Point 3",
@@ -170,15 +174,15 @@ describe('Event detector service', function() {
               }
             });
 
-          promises.push(global.numDp.save().then((savedDp) => {
+          promises.push(testContext.numDp.save().then((savedDp) => {
           assert.equal(savedDp.xid, 'dp_mango_client_test_num');
           assert.equal(savedDp.name, 'Virtual Test Point 3');
           assert.equal(savedDp.enabled, false);
           assert.isNumber(savedDp.id);
-          global.numDp.id = savedDp.id; //Save the ID for later
+          testContext.numDp.id = savedDp.id; //Save the ID for later
         }));
 
-        global.mulDp = new DataPoint({
+        testContext.mulDp = new DataPoint({
             xid : "dp_mango_client_test_mul",
             deviceName : "_",
             name : "Virtual Test Point 4",
@@ -237,15 +241,15 @@ describe('Event detector service', function() {
             }
           });
 
-    promises.push(global.mulDp.save().then((savedDp) => {
+    promises.push(testContext.mulDp.save().then((savedDp) => {
         assert.equal(savedDp.xid, 'dp_mango_client_test_mul');
         assert.equal(savedDp.name, 'Virtual Test Point 4');
         assert.equal(savedDp.enabled, false);
         assert.isNumber(savedDp.id);
-        global.mulDp.id = savedDp.id; //Save the ID for later
+        testContext.mulDp.id = savedDp.id; //Save the ID for later
       }));
 
-          global.alphaDp = new DataPoint({
+          testContext.alphaDp = new DataPoint({
               xid : "dp_mango_client_test_alpha",
               deviceName : "_",
               name : "Virtual Test Point 2",
@@ -304,19 +308,19 @@ describe('Event detector service', function() {
               }
             });
 
-      promises.push(global.alphaDp.save().then((savedDp) => {
+      promises.push(testContext.alphaDp.save().then((savedDp) => {
           assert.equal(savedDp.xid, 'dp_mango_client_test_alpha');
           assert.equal(savedDp.name, 'Virtual Test Point 2');
           assert.equal(savedDp.enabled, false);
           assert.isNumber(savedDp.id);
-          global.alphaDp.id = savedDp.id; //Save the ID for later
+          testContext.alphaDp.id = savedDp.id; //Save the ID for later
         }));
       return Promise.all(promises);
       });
     });
 
     it('Creates an event detector', () => {
-      global.ped = {
+      testContext.ped = {
         xid : "PED_mango_client_test",
         name : "When true.",
         duration : 10,
@@ -326,24 +330,24 @@ describe('Event detector service', function() {
         rtnApplicable : true,
         state: true,
         detectorSourceType : "DATA_POINT",
-        sourceId : global.dp.id,
+        sourceId : testContext.dp.id,
         detectorType : "BINARY_STATE",
       };
       return client.restRequest({
           path: '/rest/v2/event-detectors',
           method: 'POST',
-          data: global.ped
+          data: testContext.ped
       }).then(response => {
-          global.ped.id = response.data.id;
+          testContext.ped.id = response.data.id;
       });
     });
 
     it('Updates an event detector', () => {
-      global.ped.state = false;
+      testContext.ped.state = false;
       return client.restRequest({
-          path: `/rest/v2/event-detectors/${global.ped.xid}`,
+          path: `/rest/v2/event-detectors/${testContext.ped.xid}`,
           method: 'PUT',
-          data: global.ped
+          data: testContext.ped
       }).then(response => {
         assert.equal(response.data.state, false);
       });
@@ -351,7 +355,7 @@ describe('Event detector service', function() {
 
     /* Validation Testing */
     it('Fails to create a no update detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_zsnu",
     	        name : "No update for zero seconds.",
     	        duration : 0,
@@ -360,13 +364,13 @@ describe('Event detector service', function() {
     	        alias : "No update for zero seconds.",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.dp.id,
+    	        sourceId : testContext.dp.id,
     	        detectorType : "NO_UPDATE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('No update detector created despite having a duration of zero.');
     	}).catch(response => {
@@ -377,7 +381,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create a no change detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_zsnc",
     	        name : "No change for zero seconds.",
     	        duration : 0,
@@ -386,13 +390,13 @@ describe('Event detector service', function() {
     	        alias : "No change for zero seconds.",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.dp.id,
+    	        sourceId : testContext.dp.id,
     	        detectorType : "NO_CHANGE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('No change detector created despite having a duration of zero.');
     	}).catch(response => {
@@ -403,7 +407,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create a state change count detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_sccd",
     	        name : "No change for zero seconds.",
     	        count : 1,
@@ -413,13 +417,13 @@ describe('Event detector service', function() {
     	        alias : "State changes once in zero seconds",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.dp.id,
+    	        sourceId : testContext.dp.id,
     	        detectorType : "STATE_CHANGE_COUNT",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('State change count detector created despite 1 change in 0s');
     	}).catch(response => {
@@ -430,7 +434,7 @@ describe('Event detector service', function() {
     });
 
     it('Creates an alphanumeric regex detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_arsd",
     	        name : "Alphanumeric Regex detector.",
     	        state : ".*",
@@ -440,20 +444,20 @@ describe('Event detector service', function() {
     	        alias : "Any alphanumeric state for ten or more seconds",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.alphaDp.id,
+    	        sourceId : testContext.alphaDp.id,
     	        detectorType : "ALPHANUMERIC_REGEX_STATE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
-    		global.ped.id = response.data.id;
+    		testContext.ped.id = response.data.id;
     	});
     });
 
     it('Fails to create an alphanumeric regex detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_arsd2",
     	        name : "Alphanumeric Regex detector.",
     	        state : "(.*{}",
@@ -463,13 +467,13 @@ describe('Event detector service', function() {
     	        alias : "Illegal state",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.alphaDp.id,
+    	        sourceId : testContext.alphaDp.id,
     	        detectorType : "ALPHANUMERIC_REGEX_STATE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Alphanumeric regex event detector created even without a valid regex.');
     	}).catch(response => {
@@ -482,7 +486,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog change detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_acd",
     	        name : "Analog change detector.",
     	        checkIncrease : false,
@@ -494,13 +498,13 @@ describe('Event detector service', function() {
     	        alias : "UNCHECKED CHANGE",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "ANALOG_CHANGE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Analog change detector created that doesn\'t check for analog changes');
     	}).catch(response => {
@@ -513,7 +517,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog high limit detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_hld",
     	        name : "High limit detector.",
     	        resetLimit : 10, //Cannot be below the limit if notHigher
@@ -526,13 +530,13 @@ describe('Event detector service', function() {
     	        alias : "Infinite Resets",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "HIGH_LIMIT",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('High limit with invalid reset configuration created');
     	}).catch(response => {
@@ -545,7 +549,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog low limit detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_lld",
     	        name : "Low limit detector.",
     	        resetLimit : 10, //Cannot be below the limit if !notLower
@@ -558,13 +562,13 @@ describe('Event detector service', function() {
     	        alias : "Infinite Resets",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "LOW_LIMIT",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Low limit with invalid reset configuration created');
     	}).catch(response => {
@@ -577,7 +581,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog range detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_range",
     	        name : "Range detector.",
     	        high : 10,
@@ -589,13 +593,13 @@ describe('Event detector service', function() {
     	        alias : "Lower high than low",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "RANGE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Analog range detector created with invalid range');
     	}).catch(response => {
@@ -608,7 +612,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog negative cusum detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_ncu",
     	        name : "Range detector.",
     	        limit : 50,
@@ -619,13 +623,13 @@ describe('Event detector service', function() {
     	        alias : "NaN weight",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "NEGATIVE_CUSUM",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Analog negative cusum detector created with invalid weight');
     	}).catch(response => {
@@ -638,7 +642,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog positive cusum detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_pcu",
     	        name : "Range detector.",
     	        limit : "NaN",
@@ -649,13 +653,13 @@ describe('Event detector service', function() {
     	        alias : "NaN limit",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "POSITIVE_CUSUM",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Analog positive cusum detector created with invalid limit');
     	}).catch(response => {
@@ -668,7 +672,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create an analog smoothness detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_smooth",
     	        name : "Range detector.",
     	        limit : "NaN",
@@ -679,13 +683,13 @@ describe('Event detector service', function() {
     	        alias : "Not a short boxcar",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.numDp.id,
+    	        sourceId : testContext.numDp.id,
     	        detectorType : "SMOOTHNESS",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Analog positive cusum detector created with invalid limit');
     	}).catch(response => {
@@ -698,7 +702,7 @@ describe('Event detector service', function() {
     });
 
     it('Fails to create a multistate state detector', () => {
-    	global.ped = {
+    	testContext.ped = {
     	        xid : "PED_mango_client_test_multi",
     	        name : "Range detector.",
     	        state : 1,
@@ -708,13 +712,13 @@ describe('Event detector service', function() {
     	        alias : "Not a valid duration",
     	        rtnApplicable : true,
     	        detectorSourceType : "DATA_POINT",
-    	        sourceId : global.mulDp.id,
+    	        sourceId : testContext.mulDp.id,
     	        detectorType : "MULTISTATE_STATE",
     	      };
     	return client.restRequest({
     		path: '/rest/v2/event-detectors',
             method: 'POST',
-            data: global.ped
+            data: testContext.ped
     	}).then(response => {
     		throw new Error('Multistate state detector created with invalid duration');
     	}).catch(response => {
@@ -822,7 +826,7 @@ describe('Event detector service', function() {
                   rtnApplicable : true,
                   state: true,
                   detectorSourceType : "DATA_POINT",
-                  sourceId : global.dp.id,
+                  sourceId : testContext.dp.id,
                   detectorType : "BINARY_STATE",
                 }
             });
@@ -842,7 +846,7 @@ describe('Event detector service', function() {
                 rtnApplicable : true,
                 state: true,
                 detectorSourceType : "DATA_POINT",
-                sourceId : global.dp.id,
+                sourceId : testContext.dp.id,
                 detectorType : "BINARY_STATE",
               }
           });
