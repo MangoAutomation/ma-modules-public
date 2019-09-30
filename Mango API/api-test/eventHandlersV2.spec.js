@@ -99,7 +99,7 @@ describe('Event handlers v2', function() {
     
     it('Create static set point event handler', () => {
         testContext.staticValueSetPointEventHandler = {
-                xid : "EVTH_SET_POINT_TEST",
+                xid : `DS_${uuid()}`,
                 name : "Testing setpoint",
                 disabled : false,
                 targetPointXid : testContext.dp1.xid,
@@ -214,7 +214,7 @@ describe('Event handlers v2', function() {
     
     it('Create point set point event handler', () => {
         testContext.pointValueSetPointEventHandler = {
-                xid : "EVTH_SET_POINT_VALUE_TEST",
+                xid : `DS_${uuid()}`,
                 name : "Testing setpoint",
                 disabled : false,
                 targetPointXid : testContext.dp1.xid,
@@ -262,7 +262,7 @@ describe('Event handlers v2', function() {
     
     it('Test invalid set point event handler', () => {
         testContext.invalidSetPointEventHandler = {
-                xid : "EVTH_INVALID_TEST",
+                xid : `DS_${uuid()}`,
                 name : "Testing setpoint",
                 disabled : false,
                 targetPointXid : 'missingTarget',
@@ -482,7 +482,7 @@ describe('Event handlers v2', function() {
     //Process Event Handler Tests
     it('Create process event handler', () => {
         testContext.processEventHandler = {
-                xid : "EVTH_PROCESS_TEST",
+                xid : `DS_${uuid()}`,
                 name : "Testing process",
                 disabled : true,
                 activeProcessCommand : 'ls',
@@ -512,7 +512,7 @@ describe('Event handlers v2', function() {
     it('Patch process event handler', () => {
         testContext.processEventHandler.disabled = false;
         return client.restRequest({
-            path: '/rest/v2/event-handlers/EVTH_PROCESS_TEST',
+            path: '/rest/v2/event-handlers/' + testContext.processEventHandler.xid,
             method: 'PATCH',
             data: {
                 disabled: false
@@ -546,7 +546,7 @@ describe('Event handlers v2', function() {
     //Email Event Handler Tests
     it('Create email event handler', () => {
         testContext.emailEventHandler = {
-                xid : "EVTH_EMAIL_TEST",
+                xid : `DS_${uuid()}`,
                 name : "Testing email",
                 disabled : false,
                 activeRecipients: [
@@ -628,7 +628,7 @@ describe('Event handlers v2', function() {
     
     it('Test invalid email event handler', () => {
         testContext.invalidEmailEventHandler = {
-                xid : "EVTH_EMAIL_TEST_INVALID",
+                xid : `DS_${uuid()}`,
                 name : "Testing email",
                 disabled : false,
                 activeRecipients: [
