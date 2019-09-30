@@ -18,7 +18,7 @@
 const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 
-describe('Data source event types', () => {
+describe('Data source event types', function() {
     before('Login', function() { return login.call(this, client); });
 
     it('Get Virtual data source default event types', () => {

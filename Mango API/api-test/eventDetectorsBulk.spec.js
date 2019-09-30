@@ -20,7 +20,7 @@ const client = createClient();
 const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
-describe('Event detector bulk operations', () => {
+describe('Event detector bulk operations', function() {
     before('Login', function() { return login.call(this, client); });
 
     const newDataPoint = (xid, dsXid) => {

@@ -22,7 +22,7 @@ const DataSource = client.DataSource;
 const csvParser = require('csv-parser');
 const Readable = require('stream').Readable;
 
-describe('Event detectors CSV format', () => {
+describe('Event detectors CSV format', function() {
     before('Login', function() {
         return login.call(this, client).then((...args) => {
             this.csvClient = createClient({

@@ -20,7 +20,7 @@ const client = createClient();
 const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 
-describe('Publisher service', () => {
+describe('Publisher service', function() {
     before('Login', function() { return login.call(this, client); });
     before('Create data source and point', function() {
       global.ds = new DataSource({

@@ -20,7 +20,7 @@ const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
-describe('Data point service', () => {
+describe('Data point service', function() {
     before('Login', function() { return login.call(this, client); });
 
     it('Creates a new virtual data source', () => {

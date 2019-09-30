@@ -18,7 +18,7 @@
 const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 
-describe('Background processing settings', () => {
+describe('Background processing settings', function() {
     before('Login', function() { return login.call(this, client); });
 
     it('Sets high priority pool settings', () => {

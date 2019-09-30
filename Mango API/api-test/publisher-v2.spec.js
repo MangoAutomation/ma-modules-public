@@ -18,7 +18,7 @@
 const {createClient, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 
-describe('Publishers v2 service', () => {
+describe('Publishers v2 service', function() {
     before('Login', function() { return login.call(this, client); });
 
     const httpPublisher = {

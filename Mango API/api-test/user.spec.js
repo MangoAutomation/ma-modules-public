@@ -19,7 +19,7 @@ const {createClient, login, uuid, noop, config, delay} = require('@infinite-auto
 const client = createClient();
 const User = client.User;
 
-describe('User service', () => {
+describe('User service', function() {
     before('Login', function() { return login.call(this, client); });
     
     beforeEach('Create a test user', function() {
