@@ -16,7 +16,7 @@
             <md-option ng-repeat="dataType in $ctrl.dataTypes track by dataType.key" ng-value="dataType.key" ma-tr="{{dataType.translation}}"></md-option>
         </md-select>
         <div ng-messages="dataTypeModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="dataTypeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -26,7 +26,7 @@
         <label ma-tr="dsEdit.file.pointIdentifier"></label>
         <input name="pointIdentifier" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifier" ma-get-ctrl="pointIdentifierModelCtrl = $ngModel">
         <div ng-messages="pointIdentifierModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="pointIdentifierModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -36,7 +36,7 @@
         <label ma-tr="dsEdit.file.pointIdentifierIndex"></label>
         <input name="pointIdentifierIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifierIndex" ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
         <div ng-messages="pointIdentifierIndexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -46,7 +46,7 @@
         <label ma-tr="dsEdit.file.valueIndex"></label>
         <input name="valueIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.valueIndex" ma-get-ctrl="valueIndexModelCtrl = $ngModel">
         <div ng-messages="valueIndexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="valueIndexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -56,7 +56,7 @@
         <label ma-tr="dsEdit.file.valueRegex"></label>
         <input name="valueRegex" ng-model="$ctrl.dataPoint.pointLocator.valueRegex" ma-get-ctrl="valueRegexModelCtrl = $ngModel">
         <div ng-messages="valueRegexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="valueRegexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -72,7 +72,7 @@
         <label ma-tr="dsEdit.file.timestampIndex"></label>
         <input name="timestampIndex" type="number" ma-flatten-values="$values.firstNonEmpty()" ng-model="$ctrl.dataPoint.pointLocator.timestampIndex" ma-get-ctrl="timestampIndexModelCtrl = $ngModel">
         <div ng-messages="timestampIndexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="timestampIndexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -82,7 +82,7 @@
         <label ma-tr="dsEdit.file.timestampFormat"></label>
         <input name="timestampFormat" ng-model="$ctrl.dataPoint.pointLocator.timestampFormat" ma-get-ctrl="timestampFormatModelCtrl = $ngModel">
         <div ng-messages="timestampFormatModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="timestampFormatModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>

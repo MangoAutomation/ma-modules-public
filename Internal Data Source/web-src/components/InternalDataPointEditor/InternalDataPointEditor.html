@@ -16,7 +16,7 @@
             <md-option ng-repeat="monitorId in $ctrl.monitorIds track by monitorId.id" ng-value="monitorId.id" ng-bind="monitorId.name"></md-option>
         </md-select>
         <div ng-messages="monitorIdModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>

@@ -11,7 +11,7 @@
         <label ma-tr="envcands.stationId"></label>
         <input name="stationId" type="number" ng-model="$ctrl.dataSource.stationId" required ma-get-ctrl="stationIdChangeModelCtrl = $ngModel">
         <div ng-messages="stationIdChangeModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="stationIdChangeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -20,7 +20,7 @@
         <label ma-tr="envcands.dataStartTime"></label>
         <ma-date-picker name="dataStartTime" ng-model="$ctrl.dataStartTime" ng-change="$ctrl.dataSource.dataStartTime = $ctrl.dataStartTime" format="MM/DD/YYYY" mode="date" required ma-get-ctrl="dataStartTimeChangeModelCtrl = $ngModel"></ma-date-picker>
         <div ng-messages="dataStartTimeChangeModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="dataStartTimeChangeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>

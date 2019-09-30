@@ -29,7 +29,7 @@
             <md-option ng-value="921600">921600</md-option>
         </md-select>
         <div ng-messages="baudRateModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="baudRateModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -43,7 +43,7 @@
             <md-option ng-value="'XONXOFF'" ma-tr="dsEdit.serial.flow.xonXoff"></md-option>
         </md-select>
         <div ng-messages="flowControlInModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="flowControlInModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -57,7 +57,7 @@
             <md-option ng-value="'XONXOFF'" ma-tr="dsEdit.serial.flow.xonXoff"></md-option>
         </md-select>
         <div ng-messages="flowControlOutModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="flowControlOutModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -72,7 +72,7 @@
             <md-option ng-value="'DATA_BITS_8'" ma-tr="dsEdit.serial.dataBits8"></md-option>
         </md-select>
         <div ng-messages="dataBitsModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="dataBitsModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -86,7 +86,7 @@
             <md-option ng-value="'STOP_BITS_2'" ma-tr="dsEdit.serial.stopBits2"></md-option>
         </md-select>
         <div ng-messages="stopBitsModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="stopBitsModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -102,7 +102,7 @@
             <md-option ng-value="'SPACE'" ma-tr="dsEdit.serial.parity.space"></md-option>
         </md-select>
         <div ng-messages="parityModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="parityModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -112,7 +112,7 @@
         <label ma-tr="dsEdit.serial.readTimeout"></label>
         <input name="readTimeout" type="number" ng-model="$ctrl.dataSource.readTimeout" required ma-get-ctrl="readTimeoutModelCtrl = $ngModel">
         <div ng-messages="readTimeoutModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="readTimeoutModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -122,7 +122,7 @@
         <label ma-tr="dsEdit.serial.retries"></label>
         <input name="retries" type="number" ng-model="$ctrl.dataSource.retries" required ma-get-ctrl="retriesModelCtrl = $ngModel">
         <div ng-messages="retriesModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="retriesModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -138,7 +138,7 @@
         <label ma-tr="dsEdit.serial.messageTerminator"></label>
         <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
         <div ng-messages="messageTerminatorModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="messageTerminatorModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -148,7 +148,7 @@
         <label ma-tr="dsEdit.serial.messageRegex"></label>
         <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required ma-get-ctrl="messageRegexModelCtrl = $ngModel">
         <div ng-messages="messageRegexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="messageRegexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -158,7 +158,7 @@
         <label ma-tr="dsEdit.serial.pointIdentifierIndex"></label>
         <input name="pointIdentifierIndex" min="0" type="number" ng-model="$ctrl.dataSource.pointIdentifierIndex" required ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
         <div ng-messages="pointIdentifierIndexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -174,7 +174,7 @@
         <label ma-tr="dsEdit.serial.maxMessageSize"></label>
         <input name="maxMessageSize" min="0" type="number" ng-model="$ctrl.dataSource.maxMessageSize" required ma-get-ctrl="maxMessageSizeModelCtrl = $ngModel">
         <div ng-messages="maxMessageSizeModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="maxMessageSizeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -190,7 +190,7 @@
         <label ma-tr="dsEdit.serial.logIOFileSize"></label>
         <input name="ioLogFileSizeMBytes" type="number" ng-model="$ctrl.dataSource.ioLogFileSizeMBytes" required ma-get-ctrl="ioLogFileSizeMBytesModelCtrl = $ngModel">
         <div ng-messages="ioLogFileSizeMBytesModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="ioLogFileSizeMBytesModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -200,7 +200,7 @@
         <label ma-tr="dsEdit.serial.logIOFiles"></label>
         <input name="maxHistoricalIOLogs" type="number" ng-model="$ctrl.dataSource.maxHistoricalIOLogs" required ma-get-ctrl="maxHistoricalIOLogsModelCtrl = $ngModel">
         <div ng-messages="maxHistoricalIOLogsModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="maxHistoricalIOLogsModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -229,7 +229,7 @@
                 <label ma-tr="dsEdit.serial.messageTerminator"></label>
                 <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
                 <div ng-messages="messageTerminatorModelCtrl.$error">
-                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="messageTerminatorModelCtrl.validationMessage"></div>
                 </div>
             </md-input-container>
@@ -239,7 +239,7 @@
                 <label ma-tr="dsEdit.serial.messageRegex"></label>
                 <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required ma-get-ctrl="messageRegexModelCtrl = $ngModel">
                 <div ng-messages="messageRegexModelCtrl.$error">
-                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="messageRegexModelCtrl.validationMessage"></div>
                 </div>
             </md-input-container>
@@ -249,7 +249,7 @@
                 <label ma-tr="dsEdit.serial.pointIdentifierIndex"></label>
                 <input name="pointIdentifierIndex" min="0" type="number" ng-model="$ctrl.dataSource.pointIdentifierIndex" required ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
                 <div ng-messages="pointIdentifierIndexModelCtrl.$error">
-                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
                 </div>
             </md-input-container>

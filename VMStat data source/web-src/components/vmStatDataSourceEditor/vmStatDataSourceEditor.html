@@ -11,7 +11,7 @@
         <label ma-tr="dsEdit.vmstat.pollSeconds"></label>
         <input name="pollSeconds" ng-model="$ctrl.dataSource.pollSeconds" required ma-get-ctrl="pollSecondsModelCtrl = $ngModel">
         <div ng-messages="pollSecondsModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="pollSecondsModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -27,7 +27,7 @@
             <md-option ng-value="'UPPER_M'" ma-tr="dsEdit.vmstat.scale.M"></md-option>
         </md-select>
         <div ng-messages="outputScaleModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="outputScaleModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>

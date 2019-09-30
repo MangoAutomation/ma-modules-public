@@ -15,7 +15,7 @@
             <md-option ng-repeat="dataType in $ctrl.dataTypes track by dataType.key" ng-value="dataType.key" ma-tr="{{dataType.translation}}"></md-option>
         </md-select>
         <div ng-messages="dataTypeModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="dataTypeModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -25,7 +25,7 @@
         <label ma-tr="dsEdit.serial.pointIdentifier"></label>
         <input name="pointIdentifier" ng-model="$ctrl.dataPoint.pointLocator.pointIdentifier" ma-get-ctrl="pointIdentifierModelCtrl = $ngModel">
         <div ng-messages="pointIdentifierModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="pointIdentifierModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -35,7 +35,7 @@
         <label ma-tr="dsEdit.serial.valueIndex"></label>
         <input name="valueIndex" type="number" ng-model="$ctrl.dataPoint.pointLocator.valueIndex" ma-get-ctrl="valueIndexModelCtrl = $ngModel">
         <div ng-messages="valueIndexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="valueIndexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -45,7 +45,7 @@
         <label ma-tr="dsEdit.serial.valueRegex"></label>
         <input name="valueRegex" ng-model="$ctrl.dataPoint.pointLocator.valueRegex" ma-get-ctrl="valueRegexModelCtrl = $ngModel">
         <div ng-messages="valueRegexModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="valueRegexModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>

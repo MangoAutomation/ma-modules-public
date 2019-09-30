@@ -12,7 +12,7 @@
             <label ma-tr="dsEdit.file.path"></label>
             <input name="filePath" ng-model="$ctrl.dataSource.filePath" ma-get-ctrl="filePathModelCtrl = $ngModel">
             <div ng-messages="filePathModelCtrl.$error">
-                <div ng-message="required" ma-tr="ui.app.required"></div>
+                <div ng-message="required" ma-tr="validate.required"></div>
                 <div ng-message="validationMessage" ng-bind="filePathModelCtrl.validationMessage"></div>
             </div>
         </md-input-container>

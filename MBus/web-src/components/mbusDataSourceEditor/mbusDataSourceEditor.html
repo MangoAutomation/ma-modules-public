@@ -15,7 +15,7 @@
             <md-option ng-value="3600" ng-bind="3600"></md-option>
         </md-select>
         <div ng-messages="bitPerSecondModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="bitPerSecondModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -25,7 +25,7 @@
         <label ma-tr="dsEdit.mbus.responseTimeOutOffset"></label>
         <input name="responseTimeoutOffset" type="number" ng-model="$ctrl.dataSource.connection.responseTimeoutOffset" required ma-get-ctrl="responseTimeoutOffsetModelCtrl = $ngModel">
         <div ng-messages="responseTimeoutOffsetModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="responseTimeoutOffsetModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -38,7 +38,7 @@
             <md-option ng-value="'mbusSerial'" ma-tr="dsEdit.mbus.useDirectConnection"></md-option>
         </md-select>
         <div ng-messages="modelTypeModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="bitPerSecondModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -48,7 +48,7 @@
         <label ma-tr="dsEdit.mbus.tcpAddr"></label>
         <input name="host" ng-model="$ctrl.dataSource.connection.host" required ma-get-ctrl="hostModelCtrl = $ngModel">
         <div ng-messages="hostModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="hostModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -58,7 +58,7 @@
         <label ma-tr="dsEdit.mbus.tcpPort"></label>
         <input name="port" type="number" ng-model="$ctrl.dataSource.connection.port" required ma-get-ctrl="portModelCtrl = $ngModel">
         <div ng-messages="portModelCtrl.$error">
-            <div ng-message="required" ma-tr="ui.app.required"></div>
+            <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="portModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
@@ -94,7 +94,7 @@
                 <label ma-tr="dsEdit.mbus.firstHexAddress"></label>
                 <input name="firstAddress" ng-model="$ctrl.searchToolData.primaryAddressing.firstAddress">
                 <div ng-messages="$ctrl.searchToolForm.firstAddress.$error">
-                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="$ctrl.searchToolForm.firstAddress.validationMessage"></div>
                 </div>
             </md-input-container>
@@ -104,7 +104,7 @@
                 <label ma-tr="dsEdit.mbus.lastHexAddress"></label>
                 <input name="lastAddress" ng-model="$ctrl.searchToolData.primaryAddressing.lastAddress">
                 <div ng-messages="$ctrl.searchToolForm.lastAddress.$error">
-                    <div ng-message="required" ma-tr="ui.app.required"></div>
+                    <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="$ctrl.searchToolForm.lastAddress.validationMessage"></div>
                 </div>
             </md-input-container>
