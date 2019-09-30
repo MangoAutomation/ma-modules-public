@@ -86,6 +86,16 @@ describe('Email verification', function() {
         this.publicClient = createClient({username: null, password: null});
     });
 
+    it('Can retrieve the public key', function() {
+        return this.publicClient.restRequest({
+            path: `${emailVerificationUrl}/public/public-key`,
+            method: 'GET'
+        }).then(response => {
+            assert.strictEqual(response.status, 200);
+            assert.isString(response.data);
+        });
+    });
+
     describe('Public registration email verification', function() {
         const tryPublicEmailVerify = function(emailAddress = `${uuid()}@example.com`) {
             return this.publicClient.restRequest({
@@ -117,6 +127,75 @@ describe('Email verification', function() {
                     assert.fail('Creating token should not have succeeded');
                 }, error => {
                     assert.strictEqual(error.status, 409);
+                });
+            });
+            
+            it('Can verify a token', function() {
+                const emailAddress = `${uuid()}@example.com`;
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress
+                    }
+                }).then(response => {
+                    assert.strictEqual(response.status, 200);
+                    assert.isObject(response.data);
+                    assert.isString(response.data.token);
+                    assert.isString(response.data.relativeUrl);
+                    assert.isString(response.data.fullUrl);
+
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/verify`,
+                        method: 'GET',
+                        params: {
+                            token: response.data.token
+                        }
+                    });
+                }).then(response => {
+                    assert.strictEqual(response.status, 200);
+                    
+                    const parsedToken = response.data;
+                    assert.isObject(parsedToken);
+                    assert.isObject(parsedToken.header);
+                    assert.isObject(parsedToken.body);
+                    assert.notProperty(parsedToken, 'signature');
+                    assert.strictEqual(parsedToken.header.alg, 'ES512');
+                    assert.strictEqual(parsedToken.body.sub, emailAddress);
+                    assert.strictEqual(parsedToken.body.typ, 'emailverify');
+                    assert.isNumber(parsedToken.body.exp);
+                });
+            });
+            
+            it('Token does not verify if tampered with', function() {
+                const emailAddress = `${uuid()}@example.com`;
+                return client.restRequest({
+                    path: `${emailVerificationUrl}/create-token`,
+                    method: 'POST',
+                    data: {
+                        emailAddress
+                    }
+                }).then(response => {
+                    assert.strictEqual(response.status, 200);
+                    assert.isObject(response.data);
+                    assert.isString(response.data.token);
+                    assert.isString(response.data.relativeUrl);
+                    assert.isString(response.data.fullUrl);
+
+                    const token = response.data.token;
+                    const tamperedToken = token.slice(0, -1) + String.fromCharCode(token.charCodeAt(token.length - 1) + 1);
+
+                    return this.publicClient.restRequest({
+                        path: `${emailVerificationUrl}/public/verify`,
+                        method: 'GET',
+                        params: {
+                            token: tamperedToken
+                        }
+                    });
+                }).then(response => {
+                    assert.fail('Token should not verify');
+                }, error => {
+                    assert.strictEqual(error.status, 400);
                 });
             });
         });
@@ -459,85 +538,6 @@ describe('Email verification', function() {
             }, error => {
                 assert.strictEqual(error.status, 409);
             });
-        });
-    });
-    
-    it('Can retrieve the public key', function() {
-        return this.publicClient.restRequest({
-            path: `${emailVerificationUrl}/public/public-key`,
-            method: 'GET'
-        }).then(response => {
-            assert.strictEqual(response.status, 200);
-            assert.isString(response.data);
-        });
-    });
-    
-    it('Can verify a token', function() {
-        const emailAddress = `${uuid()}@example.com`;
-        return client.restRequest({
-            path: `${emailVerificationUrl}/create-token`,
-            method: 'POST',
-            data: {
-                emailAddress
-            }
-        }).then(response => {
-            assert.strictEqual(response.status, 200);
-            assert.isObject(response.data);
-            assert.isString(response.data.token);
-            assert.isString(response.data.relativeUrl);
-            assert.isString(response.data.fullUrl);
-
-            return this.publicClient.restRequest({
-                path: `${emailVerificationUrl}/public/verify`,
-                method: 'GET',
-                params: {
-                    token: response.data.token
-                }
-            });
-        }).then(response => {
-            assert.strictEqual(response.status, 200);
-            
-            const parsedToken = response.data;
-            assert.isObject(parsedToken);
-            assert.isObject(parsedToken.header);
-            assert.isObject(parsedToken.body);
-            assert.notProperty(parsedToken, 'signature');
-            assert.strictEqual(parsedToken.header.alg, 'ES512');
-            assert.strictEqual(parsedToken.body.sub, emailAddress);
-            assert.strictEqual(parsedToken.body.typ, 'emailverify');
-            assert.isNumber(parsedToken.body.exp);
-        });
-    });
-    
-    it('Token does not verify if tampered with', function() {
-        const emailAddress = `${uuid()}@example.com`;
-        return client.restRequest({
-            path: `${emailVerificationUrl}/create-token`,
-            method: 'POST',
-            data: {
-                emailAddress
-            }
-        }).then(response => {
-            assert.strictEqual(response.status, 200);
-            assert.isObject(response.data);
-            assert.isString(response.data.token);
-            assert.isString(response.data.relativeUrl);
-            assert.isString(response.data.fullUrl);
-
-            const token = response.data.token;
-            const tamperedToken = token.slice(0, -1) + String.fromCharCode(token.charCodeAt(token.length - 1) + 1);
-
-            return this.publicClient.restRequest({
-                path: `${emailVerificationUrl}/public/verify`,
-                method: 'GET',
-                params: {
-                    token: tamperedToken
-                }
-            });
-        }).then(response => {
-            assert.fail('Token should not verify');
-        }, error => {
-            assert.strictEqual(error.status, 400);
         });
     });
 });
