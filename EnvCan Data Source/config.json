@@ -1,6 +1,0 @@
-{
-	"protocol": "http",
-    "host": "mango.terrypacker.com",
-    "port": "8081",
-    "rejectUnauthorized": false
-}
