@@ -140,6 +140,12 @@ describe('User Event query tests', function(){
                     message: 'test id ' + testId
                 }
             });
-        }).then(() => gotEventDeferred.promise);
+        }).then(() => gotEventDeferred.promise).then(result => {
+            if (ws) ws.close();
+            return result;
+        }, error => {
+            if (ws) ws.close();
+            return Promise.reject(error);
+        });
     });
 });
