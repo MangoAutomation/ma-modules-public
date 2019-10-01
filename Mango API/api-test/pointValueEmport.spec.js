@@ -191,7 +191,7 @@ describe('Point value emport tests', function() {
     });
     
     it('Can upload a JSON file for 2 points', function() {
-        this.timeout(50000000);
+        this.timeout(5000);
         //We need to ensure the data comes back as an array with value,xid,timestamp 
         //but we don't have an endpoint for multiple points that does that AFAIK yet.
         return client.restRequest({

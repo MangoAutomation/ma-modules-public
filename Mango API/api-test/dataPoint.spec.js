@@ -233,7 +233,7 @@ describe('Data point service', function() {
     });
 
     it('Can update a data point and remove its template', function () {
-        this.timeout(50000000);
+        this.timeout(5000);
         const dp = new DataPoint({
             originalId: 'dp_mango_client_test_3',
             templateXid: null
@@ -249,7 +249,7 @@ describe('Data point service', function() {
     });
 
     it('Can update data point read permissions', function () {
-        this.timeout(50000000);
+        this.timeout(5000);
         return client.restRequest({
             path: `/rest/v1/data-points/bulk-apply-read-permissions?xid=dp_mango_client_test`,
             method: 'POST',
@@ -262,7 +262,7 @@ describe('Data point service', function() {
         });
     });
     it('Can update data point set permissions', function () {
-        this.timeout(50000000);
+        this.timeout(5000);
         return client.restRequest({
             path: `/rest/v1/data-points/bulk-apply-set-permissions?xid=dp_mango_client_test`,
             method: 'POST',
