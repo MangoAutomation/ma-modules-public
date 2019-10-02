@@ -83,77 +83,114 @@ describe('Log file query tests', function(){
     });
 
     it('Simple classname eq query', () => {
-      testContext.classname = 'com.serotonin.m2m2.web.mvc.rest.v1.model.logging.MangoLogFilePatternReceiver';
-      return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?classname=eq=' + testContext.classname  + '&limit(5)',
-          method: 'GET'
-      }).then(response => {
-        assert.isAbove(response.data.length, 1);
-        for(var i=0; i<response.data.length; i++){
-          assert.equal(response.data[i].classname, testContext.classname);
-        }
-      });
+        testContext.classname = 'com.infiniteautomation.mango.rest.v2.ExampleV2RestController';
+        return client.restRequest({
+            path: '/rest/v2/example/log-error-message',
+            method: 'POST',
+            data: 'REST api log query test'
+        }).then(()=> {
+          return client.restRequest({
+              path: '/rest/v1/logging/by-filename/ma.log?classname=eq=' + testContext.classname  + '&limit(5)',
+              method: 'GET'
+          }).then(response => {
+              assert.isAbove(response.data.length, 1);
+              for(var i=0; i<response.data.length; i++){
+              assert.equal(response.data[i].classname, testContext.classname);
+              }
+          });          
+        });
     });
 
     it('Simple classname like query', () => {
-      return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?like(classname,.*m2m2.*)&limit(5)',
-          method: 'GET'
-      }).then(response => {
-        assert.isAbove(response.data.length, 1);
-        for(var i=0; i<response.data.length; i++){
-          assert.match(response.data[i].classname, /.*m2m2.*/);
-        }
-      });
+        return client.restRequest({
+            path: '/rest/v2/example/log-error-message',
+            method: 'POST',
+            data: 'REST api log query test'
+        }).then(()=> {
+            return client.restRequest({
+                path: '/rest/v1/logging/by-filename/ma.log?like(classname,.*infiniteautomation.mango.rest.v2.*)&limit(5)',
+                method: 'GET'
+            }).then(response => {
+                assert.isAbove(response.data.length, 1);
+                for(var i=0; i<response.data.length; i++){
+                    assert.match(response.data[i].classname, /.*infiniteautomation.mango.rest.v2.*/);
+                }
+            });            
+        });
     });
 
     it('Simple method eq query', () => {
-      testContext.method = 'run';
-      return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?method=eq=' + testContext.method + '&limit(5)',
-          method: 'GET'
-      }).then(response => {
-        assert.isAbove(response.data.length, 1);
-        for(var i=0; i<response.data.length; i++){
-          assert.equal(response.data[i].method, testContext.method);
-        }
-      });
+        //Note mispelled method
+        testContext.method = 'logErorMessage';
+        return client.restRequest({
+          path: '/rest/v2/example/log-error-message',
+          method: 'POST',
+          data: 'REST api log query test'
+        }).then(()=> {
+          return client.restRequest({
+              path: '/rest/v1/logging/by-filename/ma.log?method=eq=' + testContext.method + '&limit(5)',
+              method: 'GET'
+          }).then(response => {
+              assert.isAbove(response.data.length, 1);
+              for(var i=0; i<response.data.length; i++){
+                  assert.equal(response.data[i].method, testContext.method);
+              }
+          });          
+        });
     });
 
     it('Simple method like query', () => {
-      return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?like(method,' + encodeURIComponent('init.*') + ')&limit(5)',
-          method: 'GET'
-      }).then(response => {
-        assert.isAbove(response.data.length, 1);
-        for(var i=0; i<response.data.length; i++){
-          assert.match(response.data[i].method, /init.*/);
-        }
-      });
+        //Note mispelled method
+        testContext.method = 'logErorMessage';
+        return client.restRequest({
+          path: '/rest/v2/example/log-error-message',
+          method: 'POST',
+          data: 'REST api log query test'
+        }).then(()=> {
+          return client.restRequest({
+              path: '/rest/v1/logging/by-filename/ma.log?like(method,' + encodeURIComponent('logEr.*') + ')&limit(5)',
+              method: 'GET'
+          }).then(response => {
+              assert.isAbove(response.data.length, 1);
+              for(var i=0; i<response.data.length; i++){
+                  assert.equal(response.data[i].method, testContext.method);
+              }
+          });          
+        });
     });
 
     it('Simple message eq query', () => {
-      testContext.message = 'activateOptions '; //Message from logfile pattern reciever
-      return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?message=eq=' + encodeURIComponent(testContext.message) + '&limit(1)',
-          method: 'GET'
-      }).then(response => {
-        assert.equal(response.data.length, 1);
-        assert.equal(response.data[0].message, testContext.message);
-      });
+        //Known bug that the message has a trailing space when parsed out of the file on the server
+        return client.restRequest({
+            path: '/rest/v2/example/log-error-message',
+            method: 'POST',
+            data: 'REST api log query test '
+        }).then(()=> {
+            return client.restRequest({
+                path: '/rest/v1/logging/by-filename/ma.log?message=eq=' + encodeURIComponent('REST api log query test ') + '&limit(1)',
+                method: 'GET'
+            }).then(response => {
+                assert.equal(response.data.length, 1);
+                assert.equal(response.data[0].message, 'REST api log query test ');
+            });              
+        });
     });
 
     it('Simple message like query', () => {
-      return client.restRequest({
-          path: '/rest/v1/logging/by-filename/ma.log?like(message,' + encodeURIComponent('attempting to load file:.*')  + ')&limit(1)',
-          method: 'GET'
-      }).then(response => {
-        //Should all match loadModules method
-        assert.isAbove(response.data.length, 0);
-        for(var i=0; i<response.data.length; i++){
-          assert.match(response.data[i].message, /attempting to load file:.*/);
-        }
-      });
+        //Known bug that the message has a trailing space when parsed out of the file on the server
+        return client.restRequest({
+            path: '/rest/v2/example/log-error-message',
+            method: 'POST',
+            data: 'REST api log query test'
+        }).then(()=> {
+            return client.restRequest({
+                path: '/rest/v1/logging/by-filename/ma.log?like(message,' + encodeURIComponent('REST api log query.*') + ')&limit(1)',
+                method: 'GET'
+            }).then(response => {
+                assert.equal(response.data.length, 1);
+                assert.equal(response.data[0].message, 'REST api log query test ');
+            });              
+        });
     });
 
     it('Expects 403 when trying to query an existing logfile that is not log4J ', function() {
