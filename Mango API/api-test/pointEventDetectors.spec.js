@@ -262,13 +262,12 @@ describe('Point Event detector service', function() {
             method: 'POST',
             data: highLimitPed
         }).then(response => {
-            highLimitPed.xid = response.data.xid;
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors?detectorSourceType=DATA_POINT`,
+                path: `/rest/v2/full-event-detectors?detectorSourceType=DATA_POINT&limit(1)`,
                 method: 'GET'
             }).then(response => {
-                assert.strictEqual(response.data.total, 1);
-                assert.strictEqual(response.data.items[0].xid, highLimitPed.xid);
+                assert.isAtLeast(response.data.total, 1);
+                assert.strictEqual(response.data.items[0].sourceTypeName, 'DATA_POINT');
             });
         });
       });

@@ -288,7 +288,7 @@ describe('Events v2 tests', function(){
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.items.length, 1);
-            assert.strictEqual(response.data.total, 1);
+            assert.isAtLeast(response.data.total, 1);
         });
     });
     

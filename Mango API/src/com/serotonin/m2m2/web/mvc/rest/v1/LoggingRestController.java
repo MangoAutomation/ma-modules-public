@@ -114,6 +114,7 @@ public class LoggingRestController extends MangoRestController{
             @PathVariable String filename, HttpServletRequest request) {
         File file = new File(Common.getLogsDir(), filename);
         if (file.exists()) {
+            //TODO There is a known bug here where if the file rolls over during download/transmission the request will fail
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
             return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);

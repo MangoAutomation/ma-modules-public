@@ -74,7 +74,7 @@ describe('Log file query tests', function(){
           method: 'GET'
       }).then(response => {
         //Test that all timestamps are > five min ago
-        assert.isAbove(response.data.length, 1);
+        assert.isAtLeast(response.data.length, 1);
         for(var i=0; i<response.data.length; i++){
           assert.isAbove(response.data[i].time, testContext.fiveHourAgo.getTime());
         }
@@ -93,7 +93,7 @@ describe('Log file query tests', function(){
               path: '/rest/v1/logging/by-filename/ma.log?classname=eq=' + testContext.classname  + '&limit(5)',
               method: 'GET'
           }).then(response => {
-              assert.isAbove(response.data.length, 1);
+              assert.isAtLeast(response.data.length, 1);
               for(var i=0; i<response.data.length; i++){
               assert.equal(response.data[i].classname, testContext.classname);
               }
@@ -111,7 +111,7 @@ describe('Log file query tests', function(){
                 path: '/rest/v1/logging/by-filename/ma.log?like(classname,.*infiniteautomation.mango.rest.v2.*)&limit(5)',
                 method: 'GET'
             }).then(response => {
-                assert.isAbove(response.data.length, 1);
+                assert.isAtLeast(response.data.length, 1);
                 for(var i=0; i<response.data.length; i++){
                     assert.match(response.data[i].classname, /.*infiniteautomation.mango.rest.v2.*/);
                 }
@@ -131,7 +131,7 @@ describe('Log file query tests', function(){
               path: '/rest/v1/logging/by-filename/ma.log?method=eq=' + testContext.method + '&limit(5)',
               method: 'GET'
           }).then(response => {
-              assert.isAbove(response.data.length, 1);
+              assert.isAtLeast(response.data.length, 1);
               for(var i=0; i<response.data.length; i++){
                   assert.equal(response.data[i].method, testContext.method);
               }
@@ -151,7 +151,7 @@ describe('Log file query tests', function(){
               path: '/rest/v1/logging/by-filename/ma.log?like(method,' + encodeURIComponent('logEr.*') + ')&limit(5)',
               method: 'GET'
           }).then(response => {
-              assert.isAbove(response.data.length, 1);
+              assert.isAtLeast(response.data.length, 1);
               for(var i=0; i<response.data.length; i++){
                   assert.equal(response.data[i].method, testContext.method);
               }
@@ -170,7 +170,7 @@ describe('Log file query tests', function(){
                 path: '/rest/v1/logging/by-filename/ma.log?message=eq=' + encodeURIComponent('REST api log query test ') + '&limit(1)',
                 method: 'GET'
             }).then(response => {
-                assert.equal(response.data.length, 1);
+                assert.isAtLeast(response.data.length, 1);
                 assert.equal(response.data[0].message, 'REST api log query test ');
             });              
         });
@@ -187,20 +187,9 @@ describe('Log file query tests', function(){
                 path: '/rest/v1/logging/by-filename/ma.log?like(message,' + encodeURIComponent('REST api log query.*') + ')&limit(1)',
                 method: 'GET'
             }).then(response => {
-                assert.equal(response.data.length, 1);
+                assert.isAtLeast(response.data.length, 1);
                 assert.equal(response.data[0].message, 'REST api log query test ');
             });              
-        });
-    });
-
-    it('Expects 403 when trying to query an existing logfile that is not log4J ', function() {
-        return client.restRequest({
-            path: '/rest/v1/logging/by-filename/createTables.log',
-            method: 'GET'
-        }).then(response => {
-            throw new Error('Returned successful response', response.status);
-        }, error => {
-            assert.strictEqual(error.response.statusCode, 403);
         });
     });
 
@@ -240,5 +229,16 @@ describe('Log file query tests', function(){
           assert.strictEqual(response.headers['content-disposition'], 'inline');
           assert.isAbove(response.data.length, 0);
       });
+    });
+    
+    it('Expects 403 when trying to query an existing logfile that is not log4J ', function() {
+        return client.restRequest({
+            path: '/rest/v1/logging/by-filename/createTables.log',
+            method: 'GET'
+        }).then(response => {
+            throw new Error('Returned successful response', response.status);
+        }, error => {
+            assert.strictEqual(error.response.statusCode, 403);
+        });
     });
 });
