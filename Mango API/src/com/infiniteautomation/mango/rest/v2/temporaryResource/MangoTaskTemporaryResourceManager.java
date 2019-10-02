@@ -172,7 +172,13 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             @Override
             public void rejected(RejectedTaskReason reason) {
                 super.rejected(reason);
-                resource.timeOut();
+                try{
+                    resource.timeOut();
+                } catch (StatusUpdateException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tried to time out resource but it was already complete", e);
+                    }
+                }
             }
         });
     }
@@ -190,7 +196,13 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         tasks.expirationTask = new TimeoutTask(expirationDate, new TimeoutClient() {
             @Override
             public void scheduleTimeout(long fireTime) {
-                resource.remove();
+                try {
+                    resource.remove();
+                } catch (StatusUpdateException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tried to remove resource but it was already complete", e);
+                    }
+                }
             }
 
             @Override
@@ -201,7 +213,13 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             @Override
             public void rejected(RejectedTaskReason reason) {
                 super.rejected(reason);
-                resource.remove();
+                try{
+                    resource.remove();
+                } catch (StatusUpdateException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tried to remove resource but it was already complete", e);
+                    }
+                }
             }
         });
     }
