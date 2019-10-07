@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.serotonin.m2m2.module.PermissionDefinition;
-import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.module.definitions.permissions.SuperadminPermissionDefinition;
 
 /**
  * @author Terry Packer
@@ -30,6 +30,6 @@ public class DataImportPermissionDefinition extends PermissionDefinition{
 
     @Override
     public List<String> getDefaultGroups() {
-        return Collections.singletonList(Permissions.USER_DEFAULT);
+        return Collections.singletonList(SuperadminPermissionDefinition.GROUP_NAME);
     }
 }
