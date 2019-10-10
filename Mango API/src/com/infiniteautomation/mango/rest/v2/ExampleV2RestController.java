@@ -6,7 +6,8 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -248,14 +248,33 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Execute a long running request that eventually returns OK")
     @RequestMapping(method = RequestMethod.GET, value = {"/delay-response/{delayMs}"})
-    public Future<String> delayedResponse(
+    public CompletableFuture<String> delayedResponse(
             @ApiParam(value="Delay ms", required=true, allowMultiple=false) @PathVariable int delayMs,
             HttpServletRequest request) throws InterruptedException {
-        try { 
-            Thread.sleep(delayMs); 
-            return AsyncResult.forValue("OK");
-        }catch(InterruptedException e) {
-            return AsyncResult.forExecutionException(e);
-        }
+        return CompletableFuture.supplyAsync(() -> {
+            try { 
+                Thread.sleep(delayMs); 
+                return "OK";
+            }catch(InterruptedException e) {
+                throw new CompletionException(e);
+            } 
+        });
+    }
+    
+    @Async
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Execute a long running request that eventually fails on a runtime exception")
+    @RequestMapping(method = RequestMethod.GET, value = {"/async-failure/{delayMs}"})
+    public CompletableFuture<String> asyncFailure(
+            @ApiParam(value="Delay ms", required=true, allowMultiple=false) @PathVariable int delayMs,
+            HttpServletRequest request) throws InterruptedException {
+        return CompletableFuture.supplyAsync(() -> {
+            try { 
+                Thread.sleep(delayMs);
+                throw new CompletionException(new RuntimeException("I Should Fail"));
+            }catch(InterruptedException e) {
+                throw new CompletionException(e);
+            } 
+        });
     }
 }

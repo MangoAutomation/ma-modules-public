@@ -8,14 +8,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,32 +71,33 @@ public class PointValueModificationRestController {
             )
     @RequestMapping(method = RequestMethod.POST, value="/import")
     @Async
-    public Future<List<PointValueTimeImportResult>> importPointValues(
+    public CompletableFuture<List<PointValueTimeImportResult>> importPointValues(
             @RequestBody Stream<XidPointValueTimeModel> stream,
             @AuthenticationPrincipal User user) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
+                Map<String, PointValueTimeImport> results = new LinkedHashMap<>();
+                stream.forEach((pvt) -> {
         
-        try {
-            PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
-            Map<String, PointValueTimeImport> results = new LinkedHashMap<>();
-            stream.forEach((pvt) -> {
-    
-                results.compute(pvt.getXid(), (xidKey, entry) ->{
-                    if(entry == null) {
-                        entry = new PointValueTimeImport(pvt.getXid(), pointValueDao, dataPointDao, user);
-                    }
-                    entry.saveValue(pvt.getValue(), pvt.getTimestamp(), pvt.getAnnotation());
-                    return entry;
+                    results.compute(pvt.getXid(), (xidKey, entry) ->{
+                        if(entry == null) {
+                            entry = new PointValueTimeImport(pvt.getXid(), pointValueDao, dataPointDao, user);
+                        }
+                        entry.saveValue(pvt.getValue(), pvt.getTimestamp(), pvt.getAnnotation());
+                        return entry;
+                    });
+                    
                 });
                 
-            });
-        
-            return AsyncResult.forValue(results.values().stream().map((v) -> { 
-                return new PointValueTimeImportResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
-            }).collect(Collectors.toList()));
-        
-        }catch(Exception e) {
-            return AsyncResult.forExecutionException(e);
-        }
+                return results.values().stream().map((v) -> { 
+                    return new PointValueTimeImportResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
+                }).collect(Collectors.toList());
+            
+            }catch(Exception e) {
+                throw new CompletionException(e);
+            }
+        });
     }
     
     class PointValueTimeImport {
@@ -228,31 +229,34 @@ public class PointValueModificationRestController {
             )
     @RequestMapping(method = RequestMethod.DELETE, value="/delete")
     @Async
-    public Future<List<PointValueTimeDeleteResult>> deletePointValues(
+    public CompletableFuture<List<PointValueTimeDeleteResult>> deletePointValues(
             @RequestBody  Stream<XidPointValueTimeModel> stream,
             @AuthenticationPrincipal User user) {
-        try {
-            PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
-            Map<String, PointValueTimeDelete> results = new HashMap<>();
-    
-            stream.forEach((pvt) ->{
-    
-                results.compute(pvt.getXid(), (xidKey, entry) ->{
-                    if(entry == null) {
-                        entry = new PointValueTimeDelete(pvt.getXid(), pointValueDao, dataPointDao, user);
-                    }
-                    entry.deleteValue(pvt.getTimestamp());
-                    return entry;
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
+                Map<String, PointValueTimeDelete> results = new HashMap<>();
+        
+                stream.forEach((pvt) ->{
+        
+                    results.compute(pvt.getXid(), (xidKey, entry) ->{
+                        if(entry == null) {
+                            entry = new PointValueTimeDelete(pvt.getXid(), pointValueDao, dataPointDao, user);
+                        }
+                        entry.deleteValue(pvt.getTimestamp());
+                        return entry;
+                    });
+                    
                 });
                 
-            });
-            
-            return AsyncResult.forValue(results.values().stream().map((v) -> { 
-                return new PointValueTimeDeleteResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
-            }).collect(Collectors.toList()));
-        } catch(Exception e) {
-            return AsyncResult.forExecutionException(e);
-        }
+                return results.values().stream().map((v) -> { 
+                    return new PointValueTimeDeleteResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
+                }).collect(Collectors.toList());
+            } catch(Exception e) {
+                throw new CompletionException(e);
+            }
+        });
+        
     }
     
     class PointValueTimeDelete extends PointValueTimeImport {
