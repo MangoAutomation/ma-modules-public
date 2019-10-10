@@ -37,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.AbstractRestModelConverter;
@@ -49,7 +50,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.converter.HtmlHttpMessageConverter;
 import com.serotonin.m2m2.web.mvc.rest.v1.converter.SerotoninJsonMessageConverter;
 import com.serotonin.m2m2.web.mvc.rest.v1.converter.SqlMessageConverter;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
-import com.serotonin.m2m2.web.mvc.spring.MangoCommonConfiguration;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
 
 /**
