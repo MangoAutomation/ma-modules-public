@@ -15,15 +15,14 @@
  * limitations under the License.
  */
 
-const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
-const uuidV4 = require('uuid/v4');
 
 describe('JSON store', function() {
     before('Login', function() { return login.call(this, client); });
 
     const createJsonStoreItem = (jsonData) => {
-        const xid = uuidV4();
+        const xid = uuid();
         const storeItem = {
             name: 'my json store item',
             publicData: false,
@@ -116,7 +115,7 @@ describe('JSON store', function() {
     };
 
     it('Can retrieve an object', () => {
-        const myString = uuidV4();
+        const myString = uuid();
         const data = {
             myString
         };
@@ -130,8 +129,8 @@ describe('JSON store', function() {
     });
 
     it('Can merge data into an object', () => {
-        const string1 = uuidV4();
-        const string2 = uuidV4();
+        const string1 = uuid();
+        const string2 = uuid();
         const data1 = {
             string1
         };
@@ -149,8 +148,8 @@ describe('JSON store', function() {
     });
 
     it('Can appended data into an array', () => {
-        const string1 = uuidV4();
-        const string2 = uuidV4();
+        const string1 = uuid();
+        const string2 = uuid();
         const data = [string1];
 
         return createJsonStoreItem(data).then((storeItem) => {
@@ -163,8 +162,8 @@ describe('JSON store', function() {
     });
 
     it('Can get partial data', () => {
-        const string1 = uuidV4();
-        const string2 = uuidV4();
+        const string1 = uuid();
+        const string2 = uuid();
 
         const data = {
             myString: string1,
@@ -182,8 +181,8 @@ describe('JSON store', function() {
     });
 
     it('Can delete partial data', () => {
-        const string1 = uuidV4();
-        const string2 = uuidV4();
+        const string1 = uuid();
+        const string2 = uuid();
 
         const data = {
             myString: string1,
@@ -201,9 +200,9 @@ describe('JSON store', function() {
     });
 
     it('Can replace partial data', () => {
-        const string1 = uuidV4();
-        const string2 = uuidV4();
-        const string3 = uuidV4();
+        const string1 = uuid();
+        const string2 = uuid();
+        const string3 = uuid();
 
         const data = {
             myString: string1,

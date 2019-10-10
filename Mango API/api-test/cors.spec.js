@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-const {createClient, login, config} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, config, uuid} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
-const uuidV4 = require('uuid/v4');
 
 describe('Cross Origin Resource Sharing (CORS)', function() {
     const allowedOrigin = config.corsTestAllowedOrigin;
-    const notAllowedOrigin = `http://${uuidV4()}`;
+    const notAllowedOrigin = `http://${uuid()}`;
 
     before('Login', function() {
         if (!allowedOrigin) {

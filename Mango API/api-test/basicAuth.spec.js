@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-const {createClient, login} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 const User = client.User;
-const uuidV4 = require('uuid/v4');
 
 describe('Basic authentication', function() {
     before('Login', function() { return login.call(this, client); });
     
     before('Create a test user', function() {
-        const username = uuidV4();
-        this.testUserPassword = uuidV4();
+        const username = uuid();
+        this.testUserPassword = uuid();
         this.testUser = new User({
             username,
             email: `${username}@example.com`,
