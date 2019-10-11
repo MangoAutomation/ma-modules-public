@@ -59,6 +59,7 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
+import com.infiniteautomation.mango.webapp.filters.MangoCacheControlHeaderFilter;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.FileStoreDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -71,7 +72,6 @@ import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.filter.MangoCacheControlHeaderFilter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -352,7 +352,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             HttpServletResponse response) {
         if(!Permissions.hasPermission(user, SystemSettingsDao.instance.getValue(UserFileStoreCreatePermissionDefinition.TYPE_NAME)))
             throw new PermissionException(new TranslatableMessage("filestore.user.createPermissionDenied", user.getUsername()), user);
-        
+
         if(storeName == null || fileStore == null)
             throw new NotFoundRestException();
         fileStore.setStoreName(storeName);
