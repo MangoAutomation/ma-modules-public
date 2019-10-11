@@ -20,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
@@ -33,6 +34,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
@@ -45,6 +47,7 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * 
@@ -72,6 +75,8 @@ public class PointValueModificationRestController {
     @RequestMapping(method = RequestMethod.POST, value="/import")
     @Async
     public CompletableFuture<List<PointValueTimeImportResult>> importPointValues(
+            @ApiParam(value = "Shall data point listeners be notifified, default is NEVER", required = false, allowMultiple = false)
+            @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
             @RequestBody Stream<XidPointValueTimeModel> stream,
             @AuthenticationPrincipal User user) {
         return CompletableFuture.supplyAsync(() -> {
@@ -82,7 +87,7 @@ public class PointValueModificationRestController {
         
                     results.compute(pvt.getXid(), (xidKey, entry) ->{
                         if(entry == null) {
-                            entry = new PointValueTimeImport(pvt.getXid(), pointValueDao, dataPointDao, user);
+                            entry = new PointValueTimeImport(pvt.getXid(), pointValueDao, dataPointDao, fireEvents, user);
                         }
                         entry.saveValue(pvt.getValue(), pvt.getTimestamp(), pvt.getAnnotation());
                         return entry;
@@ -109,14 +114,16 @@ public class PointValueModificationRestController {
         
         protected final boolean valid;
         protected final PointValueDao dao;
+        protected final FireEvents fireEvents;
         protected DataPointRT rt;
         protected final DataPointVO vo;
         protected final int dataTypeId;
         
-        public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, User user) {
+        public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, FireEvents fireEvents, User user) {
             this.xid = xid;
             this.result = new ProcessResult();
             this.dao = dao;
+            this.fireEvents = fireEvents;
             this.vo = dataPointDao.getByXid(xid);
             if(vo == null) {
                 valid = false;
@@ -214,7 +221,7 @@ public class PointValueModificationRestController {
                     //Try for next value to see if the point is enabled now
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
                 }else {
-                    rt.savePointValueDirectToCache(pvt, null, true, true);
+                    rt.savePointValueDirectToCache(pvt, null, true, true, fireEvents);
                 }
                 totalProcessed++;
             }else {
@@ -262,7 +269,7 @@ public class PointValueModificationRestController {
     class PointValueTimeDelete extends PointValueTimeImport {
         
         public PointValueTimeDelete(String xid, PointValueDao dao, DataPointDao dataPointDao, User user) {
-           super(xid, dao, dataPointDao, user);
+           super(xid, dao, dataPointDao, null, user);
         }
         
         public void deleteValue(ZonedDateTime timestamp) {

@@ -56,6 +56,7 @@ import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
@@ -1119,7 +1120,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         }
         
         void saveOnlyToCache(PointValueTime pvt) {
-            rt.savePointValueDirectToCache(pvt, null, false, false);
+            rt.savePointValueDirectToCache(pvt, null, false, false, FireEvents.NEVER);
             values.add(pvt);
             current = pvt;
         }

@@ -73,6 +73,7 @@ import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -821,6 +822,8 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             )
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Collection<PointValueImportResult>> savePointsValues(HttpServletRequest request,
+            @ApiParam(value = "Shall data point listeners be notifified, default is NEVER", required = false, allowMultiple = false)
+            @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
             @RequestBody(required = true) List<XidPointValueTimeModel> models,
             @AuthenticationPrincipal User user
             ) {
@@ -831,7 +834,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         for(XidPointValueTimeModel model : models) {
             PointValueImportResult result = results.get(model.getXid());
             if(result == null) {
-                result = new PointValueImportResult(model.getXid(), dao, user);
+                result = new PointValueImportResult(model.getXid(), dao, fireEvents, user);
                 results.put(model.getXid(), result);
             }
             //Attempt to save it

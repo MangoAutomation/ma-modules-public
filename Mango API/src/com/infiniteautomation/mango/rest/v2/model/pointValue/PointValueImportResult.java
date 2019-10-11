@@ -12,6 +12,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
@@ -40,16 +41,19 @@ public class PointValueImportResult {
     @JsonIgnore
     private PointValueDao dao;
     @JsonIgnore
+    private final FireEvents fireEvents;
+    @JsonIgnore
     private final User user;
     @JsonIgnore
     private DataPointRT rt;
     @JsonIgnore
     private DataPointVO vo;
     
-    public PointValueImportResult(String xid, PointValueDao dao, User user) {
+    public PointValueImportResult(String xid, PointValueDao dao, FireEvents fireEvents, User user) {
         this.xid = xid;
         this.result = new ProcessResult();
         this.dao = dao;
+        this.fireEvents = fireEvents;
         this.user = user;
         vo = DataPointDao.getInstance().getByXid(xid);
         if(vo == null) {
@@ -164,7 +168,7 @@ public class PointValueImportResult {
             if(rt == null) {
                 dao.savePointValueAsync(vo.getId(), pvt, null);
             }else {
-                rt.savePointValueDirectToCache(pvt, null, true, true);
+                rt.savePointValueDirectToCache(pvt, null, true, true, fireEvents);
             }
             total++;
         }
