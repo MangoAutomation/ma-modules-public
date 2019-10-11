@@ -23,6 +23,7 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -178,7 +179,7 @@ public class DataImportController extends FileUploadController {
 	        		pointValueDao.savePointValueAsync(vo.getId(), pvt, null);
 	        	}else{
 	        		//Insert Via RT
-	        		rt.savePointValueDirectToCache(pvt, null, true, true);
+	        		rt.savePointValueDirectToCache(pvt, null, true, true, FireEvents.NEVER);
 	        	}
 	        	rowsImported++;
         	}else if(StringUtils.equalsIgnoreCase("delete", modify)){

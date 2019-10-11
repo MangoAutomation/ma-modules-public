@@ -31,6 +31,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.systemSettings.SystemSettingsEventDispatcher;
 import com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener;
@@ -211,7 +212,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
 								if (!plVo.getHasTimestamp())
 									dp.updatePointValue(value);
 								else
-									dp.savePointValueDirectToCache(value, null, true, true);
+									dp.savePointValueDirectToCache(value, null, true, true, FireEvents.NEVER);
 							}
 
 							@Override
