@@ -22,13 +22,13 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     
     before('Login', function() { return login.call(this, client); });
 
-    it.skip('Honors the headers for a request from localhost', function() {
+    it('Honors the headers for a request from localhost', function() {
         const protocol = 'https';
         const host = 'forwarded-host.example.com';
         const port = '8443';
         
         return client.restRequest({
-            path: '/rest/v1/users/current',
+            path: '/rest/v2/testing/location',
             method: 'GET',
             headers: {
                 'X-Forwarded-Proto': protocol,
@@ -36,9 +36,12 @@ describe('Forwarded and X-Forwarded-* headers', function() {
                 'X-Forwarded-Port': port
             }
         }).then(response => {
-            const url = new Url(response.headers.origin);
-            assert.strictEqual(url.protocol, protocol);
-            assert.strictEqual(url.host, host);
+            assert.isString(response.headers.location);
+            
+            /* global URL:true */
+            const url = new URL(response.headers.location);
+            assert.strictEqual(url.protocol, protocol + ':');
+            assert.strictEqual(url.hostname, host);
             assert.strictEqual(url.port, port);
         });
     });
