@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -59,7 +62,6 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
-import com.infiniteautomation.mango.webapp.filters.MangoCacheControlHeaderFilter;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.FileStoreDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -91,9 +93,9 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
     final String cacheControlHeader;
 
     @Autowired
-    public FileStoreRestV2Controller(FileStoreDao fileStoreDao) {
+    public FileStoreRestV2Controller(FileStoreDao fileStoreDao, @Value("${web.cache.maxAge.rest:0}") long maxAge) {
         // use the rest max age setting but dont honor the nocache setting
-        cacheControlHeader = String.format(MangoCacheControlHeaderFilter.MAX_AGE_TEMPLATE, Common.envProps.getLong("web.cache.maxAge.rest", 0L));
+        cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.fileStoreDao = fileStoreDao;
     }
 
