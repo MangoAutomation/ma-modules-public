@@ -29,9 +29,9 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
-import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.systemSettings.SystemSettingsEventDispatcher;
 import com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener;
@@ -41,330 +41,333 @@ import com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener;
  */
 
 public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSourceVO> implements FileAlterationListener, SystemSettingsListener {
-	private static final Log LOG = LogFactory.getLog(AsciiFileDataSourceRT.class);
+    private static final Log LOG = LogFactory.getLog(AsciiFileDataSourceRT.class);
 
-	public static final int POINT_READ_EXCEPTION_EVENT = 1;
-	public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
-	public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
-	public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
-	public static final int POLL_ABORTED_EVENT = 5;
+    public static final int POINT_READ_EXCEPTION_EVENT = 1;
+    public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
+    public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
+    public static final int POINT_READ_PATTERN_MISMATCH_EVENT = 4;
+    public static final int POLL_ABORTED_EVENT = 5;
 
-	private File file; // File
-	private FileAlterationObserver fobs;
-	private boolean restrictedPath;
+    private File file; // File
+    private FileAlterationObserver fobs;
+    private boolean restrictedPath;
 
-	public AsciiFileDataSourceRT(AsciiFileDataSourceVO vo) {
-		super(vo);
-		this.restrictedPath = isPathRestricted(SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH));
-		SystemSettingsEventDispatcher.addListener(this);
-	}
+    public AsciiFileDataSourceRT(AsciiFileDataSourceVO vo) {
+        super(vo);
+        this.restrictedPath = isPathRestricted(SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH));
+        SystemSettingsEventDispatcher.addListener(this);
+    }
 
-	/**
-	 * Load a file path
-	 * 
-	 * @throws Exception
-	 */
-	public boolean connect() throws Exception {
-		AsciiFileDataSourceVO vo = (AsciiFileDataSourceVO) this.getVo();
+    /**
+     * Load a file path
+     *
+     * @throws Exception
+     */
+    public boolean connect() throws Exception {
+        AsciiFileDataSourceVO vo = this.getVo();
 
-		this.file = new File(vo.getFilePath());
-		if (!file.exists()) {
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.fileNotFound", vo.getFilePath()));
-			return false;
-		} else if (!file.canRead()) {
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.readFailed", vo.getFilePath()));
-			return false;
-		} else {
-			this.fobs = new FileAlterationObserver(this.file);
-			this.fobs.initialize();
-			this.fobs.addListener(this);
+        this.file = new File(vo.getFilePath());
+        if (!file.exists()) {
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.fileNotFound", vo.getFilePath()));
+            return false;
+        } else if (!file.canRead()) {
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.readFailed", vo.getFilePath()));
+            return false;
+        } else {
+            this.fobs = new FileAlterationObserver(this.file);
+            this.fobs.initialize();
+            this.fobs.addListener(this);
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 
-	@Override
-	public void initialize() {
-		boolean connected = false;
-		try {
-			connected = this.connect();
-		} catch (Exception e) {
-			LOG.debug("Error while initializing data source", e);
-			String msg = e.getMessage();
-			if (msg == null) {
-				msg = "Unknown";
-			}
-			raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.readFailed", msg));
+    @Override
+    public void initialize() {
+        boolean connected = false;
+        try {
+            connected = this.connect();
+        } catch (Exception e) {
+            LOG.debug("Error while initializing data source", e);
+            String msg = e.getMessage();
+            if (msg == null) {
+                msg = "Unknown";
+            }
+            raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.readFailed", msg));
 
-		}
+        }
 
-		if (connected) {
-			returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
-		}
-		super.initialize();
+        if (connected) {
+            returnToNormal(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis());
+        }
+        super.initialize();
 
-	}
+    }
 
-	@Override
-	public void terminate() {
-		super.terminate();
-		if (this.file != null) {
-			try {
-				this.fobs.destroy();
-			} catch (Exception e) {
-				LOG.debug("Error destroying file observer");
-				raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-						new TranslatableMessage("file.event.obsDestroy", e.getMessage()));
-			}
-			this.file = null;
-		}
-		SystemSettingsEventDispatcher.removeListener(this);
-	}
+    @Override
+    public void terminate() {
+        try {
+            super.terminate();
+            if (this.file != null) {
+                try {
+                    this.fobs.destroy();
+                } catch (Exception e) {
+                    LOG.debug("Error destroying file observer");
+                    raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                            new TranslatableMessage("file.event.obsDestroy", e.getMessage()));
+                }
+                this.file = null;
+            }
+        } finally {
+            SystemSettingsEventDispatcher.removeListener(this);
+        }
+    }
 
-	@Override
-	public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
-		// TODO: Enable Regex replace
-		// no-op
-	}
+    @Override
+    public void setPointValueImpl(DataPointRT dataPoint, PointValueTime valueTime, SetPointSource source) {
+        // TODO: Enable Regex replace
+        // no-op
+    }
 
-	@Override
-	public void onDirectoryChange(File dir) {
-		fileEvent(dataPoints);
-	}
+    @Override
+    public void onDirectoryChange(File dir) {
+        fileEvent(dataPoints);
+    }
 
-	@Override
-	public void onDirectoryCreate(File dir) {
-		// no-op
-	}
+    @Override
+    public void onDirectoryCreate(File dir) {
+        // no-op
+    }
 
-	@Override
-	public void onDirectoryDelete(File dir) {
-		// no-op
-	}
+    @Override
+    public void onDirectoryDelete(File dir) {
+        // no-op
+    }
 
-	@Override
-	public void onFileCreate(File f) {
-		// no-op
-	}
+    @Override
+    public void onFileCreate(File f) {
+        // no-op
+    }
 
-	@Override
-	public void onFileDelete(File f) {
-		// no-op
-	}
+    @Override
+    public void onFileDelete(File f) {
+        // no-op
+    }
 
-	@Override
-	public void onFileChange(File f) {
-		fileEvent(dataPoints);
-	}
+    @Override
+    public void onFileChange(File f) {
+        fileEvent(dataPoints);
+    }
 
-	@Override
-	public void onStart(FileAlterationObserver obs) {
-		fileEvent(dataPoints);
-	}
+    @Override
+    public void onStart(FileAlterationObserver obs) {
+        fileEvent(dataPoints);
+    }
 
-	@Override
-	public void onStop(FileAlterationObserver obs) {
-		// no-op
-	}
-	
-	@Override //Read the file for only the one point.
-	public void forcePointRead(DataPointRT dataPoint) {
-		List<DataPointRT> dataPoints = new ArrayList<>(1);
-		dataPoints.add(dataPoint);
-		fileEvent(dataPoints);
-	}
+    @Override
+    public void onStop(FileAlterationObserver obs) {
+        // no-op
+    }
 
-	private void fileEvent(List<DataPointRT> dataPoints) {
-		// Should never happen
-		if (this.file == null) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.readFailedFileNotSetup"));
-			return;
-		}
-		
-		if (restrictedPath) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-					new TranslatableMessage("dsEdit.file.pathRestrictedBy", vo.getFilePath()));
-			return;
-		}
+    @Override //Read the file for only the one point.
+    public void forcePointRead(DataPointRT dataPoint) {
+        List<DataPointRT> dataPoints = new ArrayList<>(1);
+        dataPoints.add(dataPoint);
+        fileEvent(dataPoints);
+    }
 
-		// The file is modified or we've just started, so read it.
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(this.file));
+    private void fileEvent(List<DataPointRT> dataPoints) {
+        // Should never happen
+        if (this.file == null) {
+            raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.readFailedFileNotSetup"));
+            return;
+        }
 
-			String msg;
-			if (!dataPoints.isEmpty()) {
+        if (restrictedPath) {
+            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                    new TranslatableMessage("dsEdit.file.pathRestrictedBy", vo.getFilePath()));
+            return;
+        }
 
-				// TODO optimize to be better than numLines*numPoints
-				while ((msg = reader.readLine()) != null) {
-					// Give all points the chance to find their data
-					for (final DataPointRT dp : dataPoints) {
-						AsciiFilePointLocatorRT pl = dp.getPointLocator();
-						final AsciiFilePointLocatorVO plVo = pl.getVo();
+        // The file is modified or we've just started, so read it.
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(this.file));
 
-						MatchCallback callback = new MatchCallback() {
+            String msg;
+            if (!dataPoints.isEmpty()) {
 
-							@Override
-							public void onMatch(String pointIdentifier, PointValueTime value) {
-								if (!plVo.getHasTimestamp())
-									dp.updatePointValue(value);
-								else
-									dp.savePointValueDirectToCache(value, null, true, true, FireEvents.NEVER);
-							}
+                // TODO optimize to be better than numLines*numPoints
+                while ((msg = reader.readLine()) != null) {
+                    // Give all points the chance to find their data
+                    for (final DataPointRT dp : dataPoints) {
+                        AsciiFilePointLocatorRT pl = dp.getPointLocator();
+                        final AsciiFilePointLocatorVO plVo = pl.getVo();
 
-							@Override
-							public void pointPatternMismatch(String message, String pointValueRegex) {
-								//N/A
-							}
+                        MatchCallback callback = new MatchCallback() {
 
-							@Override
-							public void messagePatternMismatch(String message, String messageRegex) {
-								//N/A
-							}
+                            @Override
+                            public void onMatch(String pointIdentifier, PointValueTime value) {
+                                if (!plVo.getHasTimestamp())
+                                    dp.updatePointValue(value);
+                                else
+                                    dp.savePointValueDirectToCache(value, null, true, true, FireEvents.NEVER);
+                            }
 
-							@Override
-							public void pointNotIdentified(String message, String messageRegex,
-									int pointIdentifierIndex) {
-								raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), false,
-										new TranslatableMessage("file.event.insufficientGroups",
-												dp.getVO().getExtendedName()));
-							}
+                            @Override
+                            public void pointPatternMismatch(String message, String pointValueRegex) {
+                                //N/A
+                            }
 
-							@Override
-							public void matchGeneralFailure(Exception e) {
-								if (e instanceof ParseException)
-									raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-											new TranslatableMessage("file.event.dateParseFailed", e.getMessage()));
-								else if (e instanceof NumberFormatException) {
-									raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-											new TranslatableMessage("file.event.notNumber", e.getMessage()));
-								} else
-									raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-											new TranslatableMessage("file.event.readFailed", e.getMessage()));
-							}
+                            @Override
+                            public void messagePatternMismatch(String message, String messageRegex) {
+                                //N/A
+                            }
 
-						};
+                            @Override
+                            public void pointNotIdentified(String message, String messageRegex,
+                                    int pointIdentifierIndex) {
+                                raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), false,
+                                        new TranslatableMessage("file.event.insufficientGroups",
+                                                dp.getVO().getExtendedName()));
+                            }
 
-						matchPointValueTime(msg, pl.getValuePattern(), plVo.getPointIdentifier(),
-								plVo.getPointIdentifierIndex(), plVo.getDataTypeId(),
-								plVo.getValueIndex(), plVo.getHasTimestamp(), plVo.getTimestampIndex(),
-								plVo.getTimestampFormat(), callback);
+                            @Override
+                            public void matchGeneralFailure(Exception e) {
+                                if (e instanceof ParseException)
+                                    raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                                            new TranslatableMessage("file.event.dateParseFailed", e.getMessage()));
+                                else if (e instanceof NumberFormatException) {
+                                    raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                                            new TranslatableMessage("file.event.notNumber", e.getMessage()));
+                                } else
+                                    raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                                            new TranslatableMessage("file.event.readFailed", e.getMessage()));
+                            }
 
-					}
-				}
-				reader.close();
-				returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis());
-			}
-		} catch (FileNotFoundException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.fileNotFound", e.getMessage()));
-		} catch (IOException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.readFailed", e.getMessage()));
-		} catch (NumberFormatException e) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-					new TranslatableMessage("file.event.notNumber", e.getMessage()));
-		}
+                        };
 
-	}
+                        matchPointValueTime(msg, pl.getValuePattern(), plVo.getPointIdentifier(),
+                                plVo.getPointIdentifierIndex(), plVo.getDataTypeId(),
+                                plVo.getValueIndex(), plVo.getHasTimestamp(), plVo.getTimestampIndex(),
+                                plVo.getTimestampFormat(), callback);
 
-	@Override
-	protected void doPoll(long time) {
-		if (restrictedPath) {
-			raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
-					new TranslatableMessage("dsEdit.file.pathRestrictedBy", vo.getFilePath()));
-			return;
-		}
-		if (fobs != null)
-			fobs.checkAndNotify();
+                    }
+                }
+                reader.close();
+                returnToNormal(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis());
+            }
+        } catch (FileNotFoundException e) {
+            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.fileNotFound", e.getMessage()));
+        } catch (IOException e) {
+            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.readFailed", e.getMessage()));
+        } catch (NumberFormatException e) {
+            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                    new TranslatableMessage("file.event.notNumber", e.getMessage()));
+        }
 
-	}
+    }
 
-	public static void matchPointValueTime(String message, Pattern pattern, String pointIdentifier,
-			int pointIdentifierIndex, int dataTypeId, int valueIndex, boolean hasTimestamp, int timestampIndex,
-			String timestampFormat, MatchCallback callback) {
-		Matcher messageMatcher = pattern.matcher(message);
-		if (messageMatcher.find()) {
-			if (LOG.isDebugEnabled())
-				LOG.debug("Message matched regex: " + pattern.pattern());
+    @Override
+    protected void doPoll(long time) {
+        if (restrictedPath) {
+            raiseEvent(POINT_READ_EXCEPTION_EVENT, Common.timer.currentTimeMillis(), true,
+                    new TranslatableMessage("dsEdit.file.pathRestrictedBy", vo.getFilePath()));
+            return;
+        }
+        if (fobs != null)
+            fobs.checkAndNotify();
 
-			// Parse out the Identifier
-			//String matchedPointIdentifier = null;
-			try {
-				if (pointIdentifierIndex > messageMatcher.groupCount() || valueIndex > messageMatcher.groupCount()) {
-					callback.pointNotIdentified(message, pattern.pattern(), pointIdentifierIndex);
-				} else if (pointIdentifier.equals(messageMatcher.group(pointIdentifierIndex))) {
-					if (LOG.isDebugEnabled())
-						LOG.debug("Point Identified: " + messageMatcher.group(pointIdentifierIndex));
+    }
 
-					String value = messageMatcher.group(valueIndex);
-					PointValueTime newValue;
-					Date dt;
-					if (hasTimestamp && !timestampFormat.equals(".")) {
-						SimpleDateFormat fmt = new SimpleDateFormat(timestampFormat);
-						dt = fmt.parse(messageMatcher.group(timestampIndex));
-					} else if (hasTimestamp) {
-						dt = new Date(Long.parseLong(messageMatcher.group(timestampIndex)));
-					} else {
-						dt = new Date();
-					}
+    public static void matchPointValueTime(String message, Pattern pattern, String pointIdentifier,
+            int pointIdentifierIndex, int dataTypeId, int valueIndex, boolean hasTimestamp, int timestampIndex,
+            String timestampFormat, MatchCallback callback) {
+        Matcher messageMatcher = pattern.matcher(message);
+        if (messageMatcher.find()) {
+            if (LOG.isDebugEnabled())
+                LOG.debug("Message matched regex: " + pattern.pattern());
 
-					// Switch on the type
-					switch (dataTypeId) {
-					case DataTypes.ALPHANUMERIC:
-						newValue = new PointValueTime(value, dt.getTime());
-						break;
-					case DataTypes.NUMERIC:
-						newValue = new PointValueTime(Double.parseDouble(value), dt.getTime());
-						break;
-					case DataTypes.MULTISTATE:
-						newValue = new PointValueTime(Integer.parseInt(value), dt.getTime());
-						break;
-					case DataTypes.BINARY:
-						newValue = new PointValueTime(Boolean.parseBoolean(value), dt.getTime());
-						break;
-					default:
-						throw new ShouldNeverHappenException("Uknown Data type for point");
-					}
-					callback.onMatch(messageMatcher.group(pointIdentifierIndex), newValue);
-				}
-			} catch (Exception e) {
-				callback.matchGeneralFailure(e);
-				return;
-			}
-		}
-	}
+            // Parse out the Identifier
+            //String matchedPointIdentifier = null;
+            try {
+                if (pointIdentifierIndex > messageMatcher.groupCount() || valueIndex > messageMatcher.groupCount()) {
+                    callback.pointNotIdentified(message, pattern.pattern(), pointIdentifierIndex);
+                } else if (pointIdentifier.equals(messageMatcher.group(pointIdentifierIndex))) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("Point Identified: " + messageMatcher.group(pointIdentifierIndex));
 
-	@Override
-	public void systemSettingsSaved(String key, String oldValue, String newValue) {
-		this.restrictedPath = isPathRestricted(newValue);
-	}
-	
-	private boolean isPathRestricted(String restrictedPaths) {
-		if(StringUtils.isEmpty(restrictedPaths))
-			return false;
-		for(String rPath : restrictedPaths.split(";")) {
-			if(vo.getFilePath().startsWith(rPath))
-				return true;
-		}
-		return false;
-	}
+                    String value = messageMatcher.group(valueIndex);
+                    PointValueTime newValue;
+                    Date dt;
+                    if (hasTimestamp && !timestampFormat.equals(".")) {
+                        SimpleDateFormat fmt = new SimpleDateFormat(timestampFormat);
+                        dt = fmt.parse(messageMatcher.group(timestampIndex));
+                    } else if (hasTimestamp) {
+                        dt = new Date(Long.parseLong(messageMatcher.group(timestampIndex)));
+                    } else {
+                        dt = new Date();
+                    }
 
-	@Override
-	public void systemSettingsRemoved(String key, String lastValue, String defaultValue) {
-		this.restrictedPath = false;
-	}
+                    // Switch on the type
+                    switch (dataTypeId) {
+                        case DataTypes.ALPHANUMERIC:
+                            newValue = new PointValueTime(value, dt.getTime());
+                            break;
+                        case DataTypes.NUMERIC:
+                            newValue = new PointValueTime(Double.parseDouble(value), dt.getTime());
+                            break;
+                        case DataTypes.MULTISTATE:
+                            newValue = new PointValueTime(Integer.parseInt(value), dt.getTime());
+                            break;
+                        case DataTypes.BINARY:
+                            newValue = new PointValueTime(Boolean.parseBoolean(value), dt.getTime());
+                            break;
+                        default:
+                            throw new ShouldNeverHappenException("Uknown Data type for point");
+                    }
+                    callback.onMatch(messageMatcher.group(pointIdentifierIndex), newValue);
+                }
+            } catch (Exception e) {
+                callback.matchGeneralFailure(e);
+                return;
+            }
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener#getKeys()
-	 */
-	@Override
-	public List<String> getKeys() {
-		List<String> keys = new ArrayList<String>();
-		keys.add(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
-		return keys;
-	}
+    @Override
+    public void systemSettingsSaved(String key, String oldValue, String newValue) {
+        this.restrictedPath = isPathRestricted(newValue);
+    }
+
+    private boolean isPathRestricted(String restrictedPaths) {
+        if(StringUtils.isEmpty(restrictedPaths))
+            return false;
+        for(String rPath : restrictedPaths.split(";")) {
+            if(vo.getFilePath().startsWith(rPath))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void systemSettingsRemoved(String key, String lastValue, String defaultValue) {
+        this.restrictedPath = false;
+    }
+
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener#getKeys()
+     */
+    @Override
+    public List<String> getKeys() {
+        List<String> keys = new ArrayList<String>();
+        keys.add(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+        return keys;
+    }
 }
