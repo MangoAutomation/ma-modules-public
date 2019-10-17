@@ -274,8 +274,7 @@ public class PointValueModificationRestController {
         
         public void deleteValue(ZonedDateTime timestamp) {
             if(valid && timestamp != null) {
-                //TODO Mango 3.7 This creates a new dao every call (Should be allowed to pass in a Dao
-                totalProcessed += Common.runtimeManager.purgeDataPointValue(vo.getId(), timestamp.toInstant().toEpochMilli());
+                totalProcessed += Common.runtimeManager.purgeDataPointValue(vo.getId(), timestamp.toInstant().toEpochMilli(), dao);
             }else {
                 totalSkipped++;
             }

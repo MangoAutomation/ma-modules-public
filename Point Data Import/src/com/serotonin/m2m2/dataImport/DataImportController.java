@@ -185,7 +185,7 @@ public class DataImportController extends FileUploadController {
         	}else if(StringUtils.equalsIgnoreCase("delete", modify)){
         		//Delete this entry
 	            time = ExportCsvStreamer.dtf.parseDateTime(nextLine[3]).getMillis();
-	            rowsDeleted += Common.runtimeManager.purgeDataPointValue(vo.getId(), time);
+	            rowsDeleted += Common.runtimeManager.purgeDataPointValue(vo.getId(), time, pointValueDao);
         	}
         	row++;
         }
