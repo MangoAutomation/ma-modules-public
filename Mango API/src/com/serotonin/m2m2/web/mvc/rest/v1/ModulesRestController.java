@@ -28,6 +28,7 @@ import java.util.zip.ZipInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -256,8 +257,20 @@ public class ModulesRestController extends MangoRestController {
             if (Permissions.hasAdminPermission(user)) {
                 // Do the check
                 try {
-                    JsonValue jsonResponse = ModulesDwr.getAvailableUpgrades();
-                    if (jsonResponse instanceof JsonString) {
+                    JsonValue jsonResponse = null;
+                    //This is handled oddly in the ModulesDwr so check it here for validation
+                    String baseUrl = Common.envProps.getString("store.url");
+                    if(!StringUtils.isEmpty(baseUrl)) {
+                        jsonResponse = ModulesDwr.getAvailableUpgrades();
+                    }else {
+                        result.addRestMessage(HttpStatus.UNPROCESSABLE_ENTITY, new TranslatableMessage("modules.versionCheck.storeNotSet"));
+                        return result.createResponseEntity();
+                    }
+                    
+                    if(jsonResponse == null) {
+                        //Indicates that the store url is not set, which we check for above so this really means the response was a null JSON value
+                        result.addRestMessage(HttpStatus.BAD_REQUEST, new TranslatableMessage("modules.versionCheck.storeResponseEmpty"));
+                    }else if (jsonResponse instanceof JsonString) {
                         result.addRestMessage(getInternalServerErrorMessage(jsonResponse.toString()));
                     } else {
                         List<ModuleUpgradeModel> upgrades = new ArrayList<>();
