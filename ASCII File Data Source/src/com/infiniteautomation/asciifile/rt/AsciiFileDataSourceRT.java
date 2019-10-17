@@ -56,7 +56,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
     public AsciiFileDataSourceRT(AsciiFileDataSourceVO vo) {
         super(vo);
         this.restrictedPath = isPathRestricted(SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH));
-        SystemSettingsEventDispatcher.addListener(this);
+        SystemSettingsEventDispatcher.INSTANCE.addListener(this);
     }
 
     /**
@@ -123,7 +123,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
                 this.file = null;
             }
         } finally {
-            SystemSettingsEventDispatcher.removeListener(this);
+            SystemSettingsEventDispatcher.INSTANCE.removeListener(this);
         }
     }
 
