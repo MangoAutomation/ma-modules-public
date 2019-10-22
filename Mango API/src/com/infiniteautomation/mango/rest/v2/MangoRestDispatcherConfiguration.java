@@ -66,6 +66,8 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 @EnableWebMvc
 @ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.v2" }, excludeFilters = {})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
+    public static final String CONTEXT_ID = "restV2Context";
+    public static final String DISPATCHER_NAME = "restV2DispatcherServlet";
 
     final ObjectMapper mapper;
     final PartialUpdateArgumentResolver resolver;
@@ -82,7 +84,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         mapper
         .registerModule(new MangoRestV2JacksonModule())
         .registerModule(new Jdk8Module());
-        
+
         modelMapper.addMappings(mapper);
     }
 
@@ -137,7 +139,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
                 .setDateFormat(GenericCSVMessageConverter.EXCEL_DATE_FORMAT)
                 .registerModule(new CsvJacksonModule());
     }
-    
+
     @Bean("csvMapper")
     public CsvMapper csvMapper() {
         CsvMapper csvMapper = new CsvMapper();
@@ -149,7 +151,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
         return csvMapper;
     }
-    
+
     /**
      * Configure the Message Converters for the API
      */

@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
- * 
+ *
  * @author Terry Packer
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
@@ -60,11 +60,12 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
  *
  */
 @Configuration
-@Import({MangoCommonConfiguration.class, MangoMethodSecurityConfiguration.class,
-        MangoWebSocketConfiguration.class})
+@Import({MangoCommonConfiguration.class, MangoMethodSecurityConfiguration.class, MangoWebSocketConfiguration.class})
 @EnableWebMvc
 @ComponentScan(basePackages = {"com.serotonin.m2m2.web.mvc.rest", "com.infiniteautomation.mango.rest.v1"})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
+    public static final String CONTEXT_ID = "restV1Context";
+    public static final String DISPATCHER_NAME = "restV1DispatcherServlet";
 
     @Autowired
     @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
@@ -98,12 +99,12 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         // which causes hell for finding acceptable content types
 
         configurer.favorPathExtension(false).ignoreAcceptHeader(false).favorParameter(true)
-                .useRegisteredExtensionsOnly(true)
-                // .mediaType("html", MediaType.TEXT_HTML) TODO should we re-enable this?
-                .mediaType("xml", MediaType.APPLICATION_XML)
-                .mediaType("json", MediaType.APPLICATION_JSON_UTF8)
-                .mediaType("sjson", MediaTypes.SEROTONIN_JSON).mediaType("csv", MediaTypes.CSV_V1)
-                .mediaType("csv1", MediaTypes.CSV_V1).mediaType("csv2", MediaTypes.CSV_V2);
+        .useRegisteredExtensionsOnly(true)
+        // .mediaType("html", MediaType.TEXT_HTML) TODO should we re-enable this?
+        .mediaType("xml", MediaType.APPLICATION_XML)
+        .mediaType("json", MediaType.APPLICATION_JSON_UTF8)
+        .mediaType("sjson", MediaTypes.SEROTONIN_JSON).mediaType("csv", MediaTypes.CSV_V1)
+        .mediaType("csv1", MediaTypes.CSV_V1).mediaType("csv2", MediaTypes.CSV_V2);
     }
 
     @Bean("csvObjectMapper")
@@ -124,7 +125,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
         return csvMapper;
     }
-    
+
     /**
      * Configure the Message Converters for the API for now only JSON
      */
@@ -153,7 +154,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         Common.JSON_CONTEXT.addConverter(new AbstractRestModelConverter(), AbstractRestModel.class);
 
     }
-    
+
     @Bean
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
         return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
