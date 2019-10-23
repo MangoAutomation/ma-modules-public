@@ -22,7 +22,8 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     
     before('Login', function() { return login.call(this, client); });
 
-    it('Honors the X-Forwarded-* headers for a request from localhost', function() {
+    // not supported by Jetty ForwardedRequestCustomizer, but is supported by Spring ForwardedHeaderFilter
+    it.skip('Trusts the X-Forwarded-* headers (port in X-Forwarded-Port)', function() {
         const protocol = 'https';
         const host = 'forwarded-host.example.com';
         const port = '8443';
@@ -46,7 +47,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
         });
     });
 
-    it('Honors the X-Forwarded-* headers for a request from localhost (port in host field)', function() {
+    it('Trusts the X-Forwarded-* headers (port in host field)', function() {
         const protocol = 'https';
         const host = 'forwarded-host.example.com';
         const port = '8443';
@@ -69,7 +70,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
         });
     });
     
-    it('Honors the Forwarded header for a request from localhost', function() {
+    it('Trusts the Forwarded header', function() {
         const protocol = 'https';
         const host = 'forwarded-host.example.com';
         const port = '8443';
@@ -88,6 +89,59 @@ describe('Forwarded and X-Forwarded-* headers', function() {
             assert.strictEqual(url.protocol, protocol + ':');
             assert.strictEqual(url.hostname, host);
             assert.strictEqual(url.port, port);
+        });
+    });
+    
+    it('Trusts the X-Forwarded-For header', function() {
+        const testIp = '10.123.231.213';
+        return client.restRequest({
+            path: '/rest/v2/testing/remote-addr',
+            method: 'GET',
+            headers: {
+                'X-Forwarded-For': testIp
+            }
+        }).then(response => {
+            assert.strictEqual(response.data, testIp);
+        });
+    });
+    
+    it('Trusts the X-Forwarded-For header (IPv6)', function() {
+        const testIp = '9556:caee:3b13:39b4:9dc2:ef7:2807:895';
+        return client.restRequest({
+            path: '/rest/v2/testing/remote-addr',
+            method: 'GET',
+            headers: {
+                'X-Forwarded-For': testIp
+            }
+        }).then(response => {
+            assert.strictEqual(response.data, testIp);
+        });
+    });
+    
+    it('Trusts the Forwarded header "for" component', function() {
+        const testIp = '10.123.231.213';
+        return client.restRequest({
+            path: '/rest/v2/testing/remote-addr',
+            method: 'GET',
+            headers: {
+                Forwarded: `for=${testIp}`
+            }
+        }).then(response => {
+            assert.strictEqual(response.data, testIp);
+        });
+    });
+    
+    // note re. bracket notation - https://github.com/eclipse/jetty.project/issues/1503
+    it('Trusts the Forwarded header "for" component (IPv6)', function() {
+        const testIp = '9556:caee:3b13:39b4:9dc2:ef7:2807:895';
+        return client.restRequest({
+            path: '/rest/v2/testing/remote-addr',
+            method: 'GET',
+            headers: {
+                Forwarded: `for="[${testIp}]"`
+            }
+        }).then(response => {
+            assert.strictEqual(response.data, `[${testIp}]`);
         });
     });
 });
