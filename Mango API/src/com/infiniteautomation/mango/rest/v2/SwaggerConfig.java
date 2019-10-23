@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mangoApi;
+package com.infiniteautomation.mango.rest.v2;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -20,7 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.fasterxml.classmate.TypeResolver;
-import com.infiniteautomation.mango.rest.swagger.MangoRestSwaggerResourceProvider;
+import com.infiniteautomation.mango.spring.ConditionalOnProperty;
+import com.infiniteautomation.mangoApi.rootRest.MangoRestSwaggerResourceProvider;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
@@ -45,26 +46,27 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *
  */
 @Configuration
+@ConditionalOnProperty("${swagger.enabled:false}")
 @EnableSwagger2
-public class SwaggerV2Config {
+public class SwaggerConfig {
     private final String SECURITY_TOKEN_REFERENCE = "Mango Token";
-    
+
     private final TypeResolver typeResolver;
     private final Set<String> defaultMediaTypes = new HashSet<>(Arrays.asList(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
     @Autowired
-    public SwaggerV2Config(TypeResolver typeResolver, MangoRestSwaggerResourceProvider resourceProvider) {
+    public SwaggerConfig(TypeResolver typeResolver, MangoRestSwaggerResourceProvider resourceProvider) {
         this.typeResolver = typeResolver;
-        
+
         SwaggerResource v2 = new SwaggerResource();
         v2.setName("Mango API v2");
         String url = Common.envProps.getString("springfox.documentation.swagger.v2.path", "/swagger/v2/api-docs");
         v2.setUrl("/rest/v2" + url);
         v2.setSwaggerVersion("2.0");
-        resourceProvider.get().add(0,v2);
+        resourceProvider.add(v2);
     }
-    
-    
+
+
     @Bean
     public Docket describe() {
         Docket docket = new Docket(DocumentationType.SWAGGER_2)
@@ -92,10 +94,10 @@ public class SwaggerV2Config {
                 AlternateTypeRules.newRule(typeResolver.resolve(List.class, TranslatableMessage.class), typeResolver.resolve(List.class, String.class)),
                 //Setup Sets of Translatable Messages to appear as Sets of Strings
                 AlternateTypeRules.newRule(typeResolver.resolve(Set.class, TranslatableMessage.class), typeResolver.resolve(Set.class, String.class)))
-                .useDefaultResponseMessages(false);
+        .useDefaultResponseMessages(false);
 
         docket.apiInfo(new ApiInfoBuilder().title("Mango REST V2 API").description(
-                "Support: <a href='http://infiniteautomation.com/forum'>Forum</a> or <a href='https://help-infinite-automation.squarespace.com/explore-the-api/'>Help</a>")
+                "Support: <a href='http://infiniteautomation.com/forum' target='_blank'>Forum</a> or <a href='https://help.infiniteautomation.com/explore-the-api/' target='_blank'>Help</a>")
                 .version("2.0").termsOfServiceUrl("https://infiniteautomation.com/terms/")
                 .contact(new Contact("IAS", "https://infiniteautomation.com",
                         "support@infiniteautomation.com"))
@@ -106,7 +108,7 @@ public class SwaggerV2Config {
 
     /**
      * Setup the security context to allow Tokens to test the API
-     * 
+     *
      * @return
      */
     private SecurityContext securityContext() {

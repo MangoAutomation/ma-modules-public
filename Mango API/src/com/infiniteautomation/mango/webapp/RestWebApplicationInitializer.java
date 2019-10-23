@@ -17,11 +17,9 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import com.infiniteautomation.mango.rest.RootRestDispatcherConfiguration;
-import com.infiniteautomation.mango.rest.swagger.RootSwaggerConfig;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
-import com.infiniteautomation.mangoApi.SwaggerV1Config;
-import com.infiniteautomation.mangoApi.SwaggerV2Config;
+import com.infiniteautomation.mangoApi.rootRest.RootRestDispatcherConfiguration;
+import com.infiniteautomation.mangoApi.rootRest.RootSwaggerConfig;
 
 /**
  * @author Jared Wiltshire
@@ -58,11 +56,12 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         // Register and map the REST dispatcher servlet
         ServletRegistration.Dynamic rootRestDispatcher = context.addServlet(RootRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(rootRestContext));
         rootRestDispatcher.setLoadOnStartup(2);
+        rootRestDispatcher.setAsyncSupported(true);
+        // does not seem to be needed, leave just in case a Controller is registered in this dispatcher
         rootRestDispatcher.addMapping("/rest/*");
 
         if (enableSwagger) {
             rootRestDispatcher.addMapping(
-                    "/swagger/v2/api-docs",
                     "/swagger-resources/configuration/ui",
                     "/swagger-resources/configuration/security",
                     "/swagger-resources");
@@ -76,15 +75,10 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         restV1Context.setParent(rootRestContext);
         restV1Context.register(com.serotonin.m2m2.web.mvc.rest.v1.MangoRestDispatcherConfiguration.class);
 
-        // Register and map the REST dispatcher servlet
         ServletRegistration.Dynamic restV1Dispatcher = context.addServlet(com.serotonin.m2m2.web.mvc.rest.v1.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV1Context));
         restV1Dispatcher.setLoadOnStartup(3);
-        restV1Dispatcher.addMapping("/rest/v1/*");
         restV1Dispatcher.setAsyncSupported(true);
-
-        if (enableSwagger) {
-            restV1Context.register(SwaggerV1Config.class);
-        }
+        restV1Dispatcher.addMapping("/rest/v1/*");
 
         /**
          * REST V2
@@ -94,15 +88,9 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         restV2Context.setParent(rootRestContext);
         restV2Context.register(com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration.class);
 
-        // Register and map the REST dispatcher servlet
-        ServletRegistration.Dynamic restV2Dispatcher =
-                context.addServlet(com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV2Context));
+        ServletRegistration.Dynamic restV2Dispatcher = context.addServlet(com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV2Context));
         restV2Dispatcher.setLoadOnStartup(3);
-        restV2Dispatcher.addMapping("/rest/v2/*");
         restV2Dispatcher.setAsyncSupported(true);
-
-        if (enableSwagger) {
-            restV2Context.register(SwaggerV2Config.class);
-        }
+        restV2Dispatcher.addMapping("/rest/v2/*");
     }
 }
