@@ -14,7 +14,9 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
     .component('maReportSelect', reportSelect)
     .component('maReportEventHandlerEditor', reportEventHandlerEditor)
     .factory('maReport', reportService)
-    .config(['maSystemSettingsProvider', 'maUiMenuProvider', '$injector', function (SystemSettingsProvider, maUiMenuProvider, $injector) {
+    .config(['maSystemSettingsProvider', 'maUiMenuProvider', 'maEventHandlerProvider',
+            function (SystemSettingsProvider, maUiMenuProvider, maEventHandlerProvider) {
+        
         maUiMenuProvider.registerMenuItems([{
             name: 'ui.settings.system.reports',
             url: '/reports',
@@ -42,16 +44,11 @@ const reportsModule = angular.module('maReports', ['maUiApp'])
             translation: 'event.audit.report'
         }]);
 
-        if ($injector.has('maEventHandlerProvider')) {
-            const maEventHandlerProvider = $injector.get('maEventHandlerProvider');
-            if (typeof maEventHandlerProvider.registerEventHandlerType === 'function') {
-                maEventHandlerProvider.registerEventHandlerType({
-                    type: 'REPORT',
-                    description: 'reports.handler',
-                    template: `<ma-report-event-handler-editor event-handler="$ctrl.eventHandler"></ma-report-event-handler-editor>`
-                });
-            }
-        }
+        maEventHandlerProvider.registerEventHandlerType({
+            type: 'REPORT',
+            description: 'reports.handler',
+            template: `<ma-report-event-handler-editor event-handler="$ctrl.eventHandler"></ma-report-event-handler-editor>`
+        });
     }]);
 
 export default reportsModule;
