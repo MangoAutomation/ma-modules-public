@@ -452,6 +452,41 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         }
     }
 
+    /**
+     * WARNING: This end point can be accessed publicly via the /file-stores/* filter
+     */
+    @ApiOperation(value = "Download a file from a store")
+    @RequestMapping(method = RequestMethod.GET, value="/download-file/{name}/**")
+    public ResponseEntity<?> downloadOnly(
+            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @PathVariable("name") String name,
+            @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
+            @RequestParam(required=false, defaultValue="true") boolean download,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
+
+        FileStoreDefinition def = this.fileStoreDao.getFileStoreDefinition(name);
+        if (def == null)
+            throw new ResourceNotFoundException("File store: " + name);
+
+        //Check permissions
+        def.ensureStoreReadPermission(user);
+
+        File root = def.getRoot().getCanonicalFile();
+        String path = parsePath(request);
+        File file = new File(root, path).getCanonicalFile();
+
+        if (!file.toPath().startsWith(root.toPath())) {
+            throw new AccessDeniedException("Path is below file store root");
+        }
+
+        if (!file.isFile()) {
+            throw new ResourceNotFoundException("Can't list directory");
+        }
+        return getFile(file, download, request, response);
+    }
+
     protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
