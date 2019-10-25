@@ -17,9 +17,9 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(subTypes= {UserEntryModel.class, AddressEntryModel.class}, discriminator="recipientType")
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="recipientType")
 @JsonSubTypes({
-    //TODO Mailing list type?
     @JsonSubTypes.Type(value = UserEntryModel.class, name="USER"),
     @JsonSubTypes.Type(value = AddressEntryModel.class, name="ADDRESS"),
+    @JsonSubTypes.Type(value = MailingListEntryModel.class, name="MAILING_LIST"),
 })
 public abstract class EmailRecipientModel {
 
