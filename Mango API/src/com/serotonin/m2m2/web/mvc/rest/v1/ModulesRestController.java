@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -107,9 +109,17 @@ public class ModulesRestController extends MangoRestController {
 
     private static final String SNAPSHOT = "-SNAPSHOT";
 
-    public static AngularJSModuleDefinitionGroupModel getAngularJSModules() {
+    private final Environment env;
+
+    @Autowired
+    public ModulesRestController(Environment env) {
+        this.env = env;
+    }
+
+    public static AngularJSModuleDefinitionGroupModel getAngularJSModules(boolean developmentMode) {
         // construct a Maven-like snapshot version string
-        String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(new Date(Common.START_TIME)) + "-1";
+        Date date = developmentMode ? new Date() : new Date(Common.START_TIME);
+        String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(date) + "-1";
 
         AngularJSModuleDefinitionGroupModel model = new AngularJSModuleDefinitionGroupModel();
         URI webUri = Common.MA_HOME_PATH.resolve(Constants.DIR_WEB).toUri();
@@ -149,7 +159,7 @@ public class ModulesRestController extends MangoRestController {
     public ResponseEntity<AngularJSModuleDefinitionGroupModel> getPublicAngularJSModules(HttpServletRequest request) {
 
         RestProcessResult<AngularJSModuleDefinitionGroupModel> result = new RestProcessResult<>(HttpStatus.OK);
-        AngularJSModuleDefinitionGroupModel model = getAngularJSModules();
+        AngularJSModuleDefinitionGroupModel model = getAngularJSModules(env.getProperty("development.enabled", Boolean.class, false));
         return result.createResponseEntity(model);
     }
 
@@ -266,7 +276,7 @@ public class ModulesRestController extends MangoRestController {
                         result.addRestMessage(HttpStatus.UNPROCESSABLE_ENTITY, new TranslatableMessage("modules.versionCheck.storeNotSet"));
                         return result.createResponseEntity();
                     }
-                    
+
                     if(jsonResponse == null) {
                         //Indicates that the store url is not set, which we check for above so this really means the response was a null JSON value
                         result.addRestMessage(HttpStatus.BAD_REQUEST, new TranslatableMessage("modules.versionCheck.storeResponseEmpty"));
