@@ -19,6 +19,9 @@ public class MailingListEntryModel extends EmailRecipientModel {
     public MailingListEntryModel() { }
     public MailingListEntryModel(MailingList list) {
         this.xid = list.getXid();
+        if(this.xid == null) {
+            this.xid = MailingListDao.getInstance().getXidById(list.getReferenceId());
+        }
     }
     
     public String getXid() {
