@@ -1,3 +1,6 @@
+*Version 3.6.4*
+* Fix mailing list in REST v2 so that it can be used in an email event handler
+
 *Version 3.6.3*
 * Fix point values v2 endpoint to use rendered unit when writing analog statistics
 
