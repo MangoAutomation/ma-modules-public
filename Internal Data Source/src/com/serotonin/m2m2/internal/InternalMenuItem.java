@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
+import com.infiniteautomation.mango.spring.components.ServerMonitoringService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
@@ -31,7 +32,6 @@ import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.MenuItemDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.UpgradeCheck;
-import com.serotonin.m2m2.rt.maint.WorkItemMonitor;
 import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
@@ -140,10 +140,10 @@ public class InternalMenuItem extends MenuItemDefinition {
     	monitors.put(AVAILABLE_UPDATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(UpgradeCheck.UPGRADES_AVAILABLE_MONITOR_ID));
     	
     	//Active User Sessions
-    	monitors.put(ACTIVE_USER_SESSION_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.USER_SESSION_MONITOR_ID));
+    	monitors.put(ACTIVE_USER_SESSION_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(ServerMonitoringService.USER_SESSION_MONITOR_ID));
     	
     	//System Uptime
-    	monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(WorkItemMonitor.SYSTEM_UPTIME_MONITOR_ID));
+    	monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(ServerMonitoringService.SYSTEM_UPTIME_MONITOR_ID));
     	
     	//Get from Modules
     	monitors.put(POINT_LINK_COUNT_POINT_XID, Common.MONITORED_VALUES.getValueMonitor(POINT_LINK_COUNT_MONITOR_ID));
