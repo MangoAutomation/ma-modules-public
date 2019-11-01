@@ -11,6 +11,7 @@
 * Add endpoint for approving many publicly registered users
 * Add additional v2 endpoints to validate event handler scripts
 * More gracefully handle errors in temporary resource timeout and removal
+* Expose name on Mailing list entry model
 
 *Version 3.6.3*
 * Fix point values v2 endpoint to use rendered unit when writing analog statistics

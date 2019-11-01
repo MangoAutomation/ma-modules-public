@@ -15,12 +15,14 @@ import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 public class MailingListEntryModel extends EmailRecipientModel {
 
     private String xid;
+    private String name;
     
     public MailingListEntryModel() { }
     public MailingListEntryModel(MailingList list) {
-        this.xid = list.getXid();
-        if(this.xid == null) {
-            this.xid = MailingListDao.getInstance().getXidById(list.getReferenceId());
+        MailingList fullList = MailingListDao.getInstance().getFull(list.getReferenceId());
+        if(fullList != null) {
+            this.xid = fullList.getXid();
+            this.name = fullList.getName();
         }
     }
     
@@ -29,6 +31,13 @@ public class MailingListEntryModel extends EmailRecipientModel {
     }
     public void setXid(String xid) {
         this.xid = xid;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
     }
     
     @Override

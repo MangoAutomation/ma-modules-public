@@ -383,6 +383,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         activeRecipients.add(new UserEntryModel((UserEntry) bean.createEmailRecipient()));
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
+                        
                         activeRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
                         break;
                     default:
