@@ -56,7 +56,6 @@ import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAu
 @ControllerAdvice(basePackages= {"com.infiniteautomation.mango.rest.v2"})
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final String REST_DEVELOPMENT_MODE = "development";  //Used to show exceptions during development instead of redirects
     private final Log LOG = LogFactory.getLog(RestExceptionHandler.class);
 
     final RequestMatcher browserHtmlRequestMatcher;
@@ -81,13 +80,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleMangoError(HttpServletRequest request, HttpServletResponse response, AbstractRestV2Exception ex, WebRequest req) {
         return handleExceptionInternal(ex, ex, new HttpHeaders(), ex.getStatus(), req);
     }
-
-    //TODO Handle Permission Exception Here
-
-    private final String ACCESS_DENIED = "/exception/accessDenied.jsp";
-    @SuppressWarnings("unused")
-    // XXX Previous code used this page if it was a CSRF exception, but this is not really an invalid session
-    private final String INVALID_SESSION = "/exception/invalidSession.jsp";
 
     @ExceptionHandler({
         org.springframework.security.access.AccessDeniedException.class,
@@ -206,23 +198,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         this.storeException(servletRequest, ex, status);
 
-        if (this.browserHtmlRequestMatcher.matches(servletRequest) && !REST_DEVELOPMENT_MODE.equals(Common.envProps.getString("rest.mode", ""))) {
+        if (this.browserHtmlRequestMatcher.matches(servletRequest) && !Common.envProps.getBoolean("rest.disableErrorRedirects", false)) {
             String uri;
             if (status == HttpStatus.FORBIDDEN) {
                 // browser HTML request
-                uri = ACCESS_DENIED;
-
                 User user = Common.getHttpUser();
-                if (user != null) {
-                    uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse,
-                            user);
-                }
+                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user);
 
                 // Put exception into request scope (perhaps of use to a view)
                 servletRequest.setAttribute(WebAttributes.ACCESS_DENIED_403, ex);
 
                 // Set the 403 status code.
                 servletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            } else if(status == HttpStatus.NOT_FOUND) {
+                uri = DefaultPagesDefinition.getNotFoundUri(servletRequest, servletResponse);
             } else {
                 uri = DefaultPagesDefinition.getErrorUri(servletRequest, servletResponse);
             }
