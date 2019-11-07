@@ -114,7 +114,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
                 'X-Forwarded-For': testIp
             }
         }).then(response => {
-            assert.strictEqual(response.data, testIp);
+            assert.strictEqual(response.data, `[${testIp}]`);
         });
     });
     
