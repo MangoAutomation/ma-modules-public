@@ -29,6 +29,7 @@ describe('System settings service', function() {
             assert.strictEqual(error.status, 422);
         });
     });
+    
     it('Cannot change password max length to less than 1', function() {
         return SystemSettings.setValue('password.rule.lengthMax', 0, 'INTEGER').then(response => {
             throw new Error('Should not have changed max length');
@@ -44,6 +45,7 @@ describe('System settings service', function() {
             assert.strictEqual(error.status, 422);
         });
     });
+    
     it('Cannot change password max length to more than 256', function() {
         return SystemSettings.setValue('password.rule.lengthMax', 256, 'INTEGER').then(response => {
             throw new Error('Should not have changed max length');
@@ -52,4 +54,21 @@ describe('System settings service', function() {
         });
     });
     
+    it('Can set password uppercase requirement', function() {
+        let minLength,maxLength,existingValue;
+        return SystemSettings.getValue('password.rule.lengthMin', 'INTEGER').then(response =>{
+            minLength = response;
+            return SystemSettings.getValue('password.rule.lengthMax', 'INTEGER').then(response =>{
+                maxLength = response;
+                return SystemSettings.getValue('password.rule.upperCaseCount', 'INTEGER').then(response =>{
+                    existingValue = response;
+                    return SystemSettings.setValue('password.rule.upperCaseCount', minLength + 1, 'INTEGER').then(response => {
+                        assert.strictEqual(minLength + 1, response);
+                    }).finally(() =>{
+                        return SystemSettings.setValue('password.rule.upperCaseCount', existingValue, 'INTEGER');
+                    });
+                });
+            });
+        });
+    });
 });

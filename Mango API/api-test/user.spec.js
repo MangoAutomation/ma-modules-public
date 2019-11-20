@@ -79,104 +79,104 @@ describe('User service', function() {
    
     it('Cannot change password to something with too few Uppercase letters', function() {
         this.testUser.password = "testings";
-        return client.restRequest({
-            path: '/rest/v1/system-settings/',
-            method: 'POST',
-            data: {
-                "password.rule.upperCaseCount": 6
-            }
-        }).then(response => {
-            return this.testUser.save().then(response => {
-                throw new Error('Should not have changed password');
-            }, error => {
-                assert.strictEqual(error.status, 422);
-            });  
-        }).finally(() => {
-            return client.restRequest({
-                path: '/rest/v1/system-settings/',
-                method: 'POST',
-                data: {
-                    "password.rule.upperCaseCount": 0
-                }
-            });
-        });  
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.upperCaseCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.upperCaseCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(response => {
+                    throw new Error('Should not have changed password');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.upperCaseCount', currentSettingValue, 'INTEGER');
+            }); 
+        });
     });
     
     it('Cannot change password to something with too few Lowercase letters', function() {
         this.testUser.password = "TESTINGS";
-        return client.restRequest({
-            path: '/rest/v1/system-settings/',
-            method: 'POST',
-            data: {
-                "password.rule.lowerCaseCount": 6
-            }
-        }).then(response => {
-            return this.testUser.save().then(response => {
-                throw new Error('Should not have changed password');
-            }, error => {
-                assert.strictEqual(error.status, 422);
-            });  
-        }).finally(() => {
-            return client.restRequest({
-                path: '/rest/v1/system-settings/',
-                method: 'POST',
-                data: {
-                    "password.rule.lowerCaseCount": 0
-                }
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.lowerCaseCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.lowerCaseCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(response => {
+                    throw new Error('Should not have changed password');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.lowerCaseCount', currentSettingValue, 'INTEGER');
             });
-        });  
+        });
     });
     
     it('Cannot change password to something with too few digits', function() {
         this.testUser.password = "112TESTINGS";
-        return SystemSettings.setValue('password.rule.digitCount', 6, 'INTEGER').then(response => {
-            return this.testUser.save().then(response => {
-                throw new Error('Should not have changed password');
-            }, error => {
-                assert.strictEqual(error.status, 422);
-            });  
-        }).finally(() => {
-            return SystemSettings.setValue('password.rule.digitCount', 0, 'INTEGER');
-        });  
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.digitCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.digitCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(response => {
+                    throw new Error('Should not have changed password');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.digitCount', currentSettingValue, 'INTEGER');
+            }); 
+        });
     });
     
     it('Cannot change password to something with too few special chars', function() {
         this.testUser.password = "%%%&TESTINGS";
-        return SystemSettings.setValue('password.rule.specialCount', 6, 'INTEGER').then(response => {
-            return this.testUser.save().then(response => {
-                throw new Error('Should not have changed password');
-            }, error => {
-                assert.strictEqual(error.status, 422);
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.specialCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.specialCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(response => {
+                    throw new Error('Should not have changed password');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.specialCount', currentSettingValue, 'INTEGER');
             });  
-        }).finally(() => {
-            return SystemSettings.setValue('password.rule.specialCount', 0, 'INTEGER');
-        });  
+        });
     });
     
     it('Cannot change password to something with too short', function() {
         this.testUser.password = "12345678910";
-        return SystemSettings.setValue('password.rule.lengthMin', 12, 'INTEGER').then(response => {
-            return this.testUser.save().then(response => {
-                throw new Error('Should not have changed password');
-            }, error => {
-                assert.strictEqual(error.status, 422);
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.lengthMin', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.lengthMin', 12, 'INTEGER').then(response => {
+                return this.testUser.save().then(response => {
+                    throw new Error('Should not have changed password');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.lengthMin', 8, 'INTEGER');
             });  
-        }).finally(() => {
-            return SystemSettings.setValue('password.rule.lengthMin', 8, 'INTEGER');
-        });  
+        });
     });
     
     it('Cannot change password to something with too long', function() {
         this.testUser.password = "12345678910";
-        return SystemSettings.setValue('password.rule.lengthMax', 8, 'INTEGER').then(response => {
-            return this.testUser.save().then(response => {
-                throw new Error('Should not have changed password');
-            }, error => {
-                assert.strictEqual(error.status, 422);
-            });  
-        }).finally(() => {
-            return SystemSettings.setValue('password.rule.lengthMax', 255, 'INTEGER');
-        });  
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.lengthMax', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.lengthMax', 8, 'INTEGER').then(response => {
+                return this.testUser.save().then(response => {
+                    throw new Error('Should not have changed password');
+                }, error => {
+                    assert.strictEqual(error.status, 422);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.lengthMax', 255, 'INTEGER');
+            }); 
+        });
     });
     
 });
