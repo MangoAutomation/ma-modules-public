@@ -20,9 +20,77 @@ const client = createClient();
 const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 const csvParser = require('csv-parser');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const Readable = require('stream').Readable;
 const path = require('path');
 const fs = require('fs');
+
+function eventDetectorsCsvFactory(client) {
+    return class EventDetectorsCsv {
+        get baseUrl() {
+            return '/rest/v2/full-event-detectors';
+        }
+        
+        download(query) {
+            return client.restRequest({
+                path: `${this.baseUrl}?` + query,
+                method: 'GET'
+            }).then(response => {
+                return new Promise((resolve, reject) => {
+                    const result = [];
+                    const s = new Readable();
+                    s.push(response.data);
+                    s.push(null);
+                    s.pipe(csvParser())
+                     .on('headers', function(headers){result.push(headers);})
+                     .on('data', function (data){
+                         result.push(data);
+                     })
+                     .on('end', function() {
+                         resolve(result);              
+                     })
+                     .on('error', reject);
+                });
+            });
+        }
+        
+        uploadCsvFile(csvFileName) {
+            return client.restRequest({
+                path: `${this.baseUrl}/bulk`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/csv;charset=UTF-8'
+                },
+                data: fs.readFileSync(csvFileName)
+            }).then(response => {
+                return response.headers.location;
+            });
+        }
+        
+        uploadCsvData(csvData) {
+            return client.restRequest({
+                path: `${this.baseUrl}/bulk`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/csv;charset=UTF-8'
+                },
+                data: csvData
+            }).then(response => {
+                return response.headers.location;
+            });
+        }
+        
+        getUploadStatus(location, delayMs) {
+            return delay(delayMs).then(()=>{
+                return client.restRequest({
+                    path: location
+                }).then(response => {
+                    return response.data.result;
+                 });                    
+            });
+        }
+    };
+}
 
 describe('Event detectors CSV format', function() {
     before('Login', function() {
@@ -40,6 +108,8 @@ describe('Event detectors CSV format', function() {
                 return restRequest.apply(this, arguments);
             };
            
+            const EventDetectorsCsv = eventDetectorsCsvFactory(this.csvClient);
+            this.csvClient.eventDetectorsCsv = new EventDetectorsCsv();
             // copy the session cookie to the csv client
             Object.assign(this.csvClient.cookies, client.cookies);
         });
@@ -75,6 +145,8 @@ describe('Event detectors CSV format', function() {
         });
     };
     
+    //Delay after upload before requesting result
+    const uploadDelayMs = 1000;
     const highLimitDetector = (xid, sourceId) => {
         return {
             xid: xid,
@@ -93,13 +165,13 @@ describe('Event detectors CSV format', function() {
         };
     };
     
-    const testPointXid1 = uuid();
-    const testPointXid2 = uuid();
-    const testDetectorXid1 = 'AAA' + uuid();
-    const testDetectorXid2 = 'ZZZ' + uuid();
-    
-    before('Create a virtual data source and points', function() {
+    beforeEach('Create a virtual data source and points', function() {
 
+        this.testPointXid1 = uuid();
+        this.testPointXid2 = uuid();
+        this.testDetectorXid1 = 'AAA' + uuid();
+        this.testDetectorXid2 = 'ZZZ' + uuid();
+        
         this.ds = new DataSource({
             xid: uuid(),
             name: 'Mango client test',
@@ -115,12 +187,12 @@ describe('Event detectors CSV format', function() {
             assert.strictEqual(savedDs.name, 'Mango client test');
             assert.isNumber(savedDs.id);
         }).then(() => {
-            this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid);
-            this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid);
+            this.testPoint1 = newDataPoint(this.testPointXid1, this.ds.xid);
+            this.testPoint2 = newDataPoint(this.testPointXid2, this.ds.xid);
             return Promise.all([this.testPoint1.save(), this.testPoint2.save()]);
         }).then(() => {
-            this.ed1 = highLimitDetector(testDetectorXid1, this.testPoint1.id);
-            this.ed2 = highLimitDetector(testDetectorXid2, this.testPoint2.id);
+            this.ed1 = highLimitDetector(this.testDetectorXid1, this.testPoint1.id);
+            this.ed2 = highLimitDetector(this.testDetectorXid2, this.testPoint2.id);
             return Promise.all([
                 client.restRequest({
                     path: '/rest/v2/full-event-detectors',
@@ -140,69 +212,188 @@ describe('Event detectors CSV format', function() {
         });
     });
 
-    after('Deletes the new virtual data source and its points', function() {
+    afterEach('Deletes the new virtual data source and its points', function() {
         return this.ds.delete();
     });
     
     it('Can download csv file for both event detectors', function() {
-        return this.csvClient.restRequest({
-            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`,
-            method: 'GET'
-        }).then(response => {
-            const result = [];
-            const s = new Readable();
-            s.push(response.data);
-            s.push(null);
-            s.pipe(csvParser())
-             .on('headers', function(headers){result.push(headers);})
-             .on('data', function (data){
-                 result.push(data);
-             })
-             .on('end', () => {
-                 assert.isArray(result);
-                 const headers = result.shift();
-                 //assert.strictEqual(headers[0], "''");
-                 assert.strictEqual(headers[1], 'action');
-                 assert.strictEqual(headers[2], 'originalXid');
-                 assert.strictEqual(headers[3], 'sourceId');
-                 assert.strictEqual(result.length, 2);
-                 assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
-                 assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
-                 assert.strictEqual(result[0].originalXid, String(this.ed1.xid));
-                 assert.strictEqual(result[1].originalXid, String(this.ed2.xid));
-             })
-             .on('error', (error) => { assert.fail(error);});
+        return this.csvClient.eventDetectorsCsv.download(`in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`).then(result => {
+            assert.isArray(result);
+            const headers = result.shift();
+            //assert.strictEqual(headers[0], "''");
+            assert.strictEqual(headers[1], 'action');
+            assert.strictEqual(headers[2], 'originalXid');
+            assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
+            assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
+            assert.strictEqual(result[0].originalXid, String(this.ed1.xid));
+            assert.strictEqual(result[1].originalXid, String(this.ed2.xid));
         });
     });
     
-    it('Can upload csv file for both event detectors', function() {
+    it('Can update both event detectors source point via csv upload file', function() {
         this.timeout(5000);
-        return this.csvClient.restRequest({
-            path: `/rest/v2/full-event-detectors?in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`,
-            method: 'GET',
-            writeToFile: 'eventDetectors.csv'
-        }).then(() => delay(1000)).then(response => {
-            const uploadFileName = path.resolve('eventDetectors.csv');
-            return this.csvClient.restRequest({
-                path: `/rest/v2/full-event-detectors/bulk`,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/csv;charset=UTF-8'
-                },
-                data: fs.readFileSync(uploadFileName)
-            }).then(response => {
-                return delay(1000).then(()=>{
-                    return client.restRequest({
-                        path: response.headers.location
-                    }).then(response => {
-                        assert.strictEqual(response.data.result.hasError, false);
-                        assert.strictEqual(response.data.result.responses[0].xid, this.ed1.xid);
-                        assert.strictEqual(response.data.result.responses[1].xid, this.ed2.xid);
-                    });                    
+        return this.csvClient.eventDetectorsCsv.download(`in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`).then(result => {
+            assert.isArray(result);
+            const headers = result.shift();
+            //assert.strictEqual(headers[0], "''");
+            assert.strictEqual(headers[1], 'action');
+            assert.strictEqual(headers[2], 'originalXid');
+            assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
+            assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
+            assert.strictEqual(result[0].originalXid, String(this.ed1.xid));
+            assert.strictEqual(result[1].originalXid, String(this.ed2.xid));
+            
+            //Modify the source points by swapping them
+            result[0].sourceId = String(this.ed2.sourceId);
+            result[1].sourceId = String (this.ed1.sourceId);
+            //Create the csv data to POST
+            let csvHeaders = [];
+            for(var i=0; i<headers.length; i++){
+                csvHeaders.push({
+                    id: headers[i],
+                    title: headers[i]
                 });
+            }
+            let filename = 'eventDetectors.csv';
+            const csvWriter = createCsvWriter({
+                path: filename,
+                header: csvHeaders
+            });
+            const uploadFileName = path.resolve(filename);
+            return csvWriter.writeRecords(result).then(() => {
+                return this.csvClient.eventDetectorsCsv.uploadCsvFile(uploadFileName).then(location => {
+                    return delay(uploadDelayMs).then(() => {
+                        return client.restRequest({
+                            path: location
+                        }).then(response => {
+                            assert.strictEqual(response.data.result.hasError, false);
+                            assert.strictEqual(response.data.result.responses[0].xid, this.ed1.xid);
+                            assert.strictEqual(response.data.result.responses[1].xid, this.ed2.xid);
+                            //Confirm the change
+                            assert.strictEqual(response.data.result.responses[0].body.sourceId, this.ed2.sourceId);
+                            assert.strictEqual(response.data.result.responses[1].body.sourceId, this.ed1.sourceId);
+                        });                    
+                    });
+                });
+            }).finally(() => {
+                //Delete the file
+                fs.unlinkSync(uploadFileName);
             });
         });
     });
     
-    //TODO Test Upload to /bulk of modified detectors
+    it('Can modify xid of existing event detector', function() {
+        this.timeout(5000);
+        this.timeout(5000);
+        return this.csvClient.eventDetectorsCsv.download(`in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`).then(result => {
+            assert.isArray(result);
+            const headers = result.shift();
+            //assert.strictEqual(headers[0], "''");
+            assert.strictEqual(headers[1], 'action');
+            assert.strictEqual(headers[2], 'originalXid');
+            assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
+            assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
+            assert.strictEqual(result[0].originalXid, String(this.ed1.xid));
+            assert.strictEqual(result[1].originalXid, String(this.ed2.xid));
+            
+            //Modify the source points by swapping them
+            const ed1Xid = uuid();
+            const ed2Xid = uuid();
+            result[0].xid = ed1Xid;
+            result[1].xid = ed2Xid;
+            //Create the csv data to POST
+            let csvHeaders = [];
+            for(var i=0; i<headers.length; i++){
+                csvHeaders.push({
+                    id: headers[i],
+                    title: headers[i]
+                });
+            }
+            let filename = 'eventDetectors.csv';
+            const csvWriter = createCsvWriter({
+                path: filename,
+                header: csvHeaders
+            });
+            const uploadFileName = path.resolve(filename);
+            return csvWriter.writeRecords(result).then(() => {
+                return this.csvClient.eventDetectorsCsv.uploadCsvFile(uploadFileName).then(location => {
+                    return delay(uploadDelayMs).then(() => {
+                        return client.restRequest({
+                            path: location
+                        }).then(response => {
+                            assert.strictEqual(response.data.result.hasError, false);
+                            assert.strictEqual(response.data.result.responses[0].xid, this.ed1.xid);
+                            assert.strictEqual(response.data.result.responses[1].xid, this.ed2.xid);
+                            //Confirm the change
+                            assert.strictEqual(response.data.result.responses[0].body.xid, ed1Xid);
+                            assert.strictEqual(response.data.result.responses[1].body.xid, ed2Xid);
+                        });                    
+                    });
+                });
+            }).finally(() => {
+                //Delete the file
+                fs.unlinkSync(uploadFileName);
+            });
+        });
+    });
+    
+    it('Fails to update an event detector that does not exist', function() {
+        this.timeout(5000);
+        this.timeout(5000);
+        return this.csvClient.eventDetectorsCsv.download(`in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`).then(result => {
+            assert.isArray(result);
+            const headers = result.shift();
+            //assert.strictEqual(headers[0], "''");
+            assert.strictEqual(headers[1], 'action');
+            assert.strictEqual(headers[2], 'originalXid');
+            assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
+            assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
+            assert.strictEqual(result[0].originalXid, String(this.ed1.xid));
+            assert.strictEqual(result[1].originalXid, String(this.ed2.xid));
+            
+            //Modify the source points by swapping them
+            result[0].originalXid = 'IDONTEXIST';
+            //Create the csv data to POST
+            let csvHeaders = [];
+            for(var i=0; i<headers.length; i++){
+                csvHeaders.push({
+                    id: headers[i],
+                    title: headers[i]
+                });
+            }
+            let filename = 'eventDetectors.csv';
+            const csvWriter = createCsvWriter({
+                path: filename,
+                header: csvHeaders
+            });
+            const uploadFileName = path.resolve(filename);
+            return csvWriter.writeRecords(result).then(() => {
+                return this.csvClient.eventDetectorsCsv.uploadCsvFile(uploadFileName).then(location => {
+                    return delay(uploadDelayMs).then(() => {
+                        return client.restRequest({
+                            path: location
+                        }).then(response => {
+                            assert.strictEqual(response.data.result.hasError, true);
+                            assert.strictEqual(response.data.result.responses[0].xid, 'IDONTEXIST');
+                            assert.strictEqual(response.data.result.responses[0].httpStatus, 404);
+                            
+                            assert.strictEqual(response.data.result.responses[1].xid, this.ed2.xid);
+                            assert.strictEqual(response.data.result.responses[1].error, null);
+                        });                    
+                    });
+                });
+            }).finally(() => {
+                //Delete the file
+                fs.unlinkSync(uploadFileName);
+            });
+        });
+    });
 });

@@ -7,7 +7,8 @@
   "dependencies": {
     "@infinite-automation/mango-client": "^0.8.0",
     "chai": "^4.2.0",
-    "csv-parser": "^2.3.0",
+    "csv-parser": "^2.3.2",
+    "csv-writer": "^1.5.0",
     "mocha": "^5.2.0",
     "tmp": "^0.0.33"
   },
@@ -20,8 +21,8 @@
     "html-loader": "^0.5.5",
     "raw-loader": "^0.5.1",
     "style-loader": "^0.20.2",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2"
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "scripts": {
     "webpack": "webpack --config webpack.config.js"
