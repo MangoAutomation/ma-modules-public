@@ -32,7 +32,7 @@ public interface RestExceptionMapper extends ExceptionMapper<AbstractRestV2Excep
             ValidationException exception = (ValidationException) e;
             return new ValidationFailedRestException(exception.getValidationResult());
         } else if (e instanceof NotFoundException || e instanceof ResourceNotFoundException) {
-            throw new NotFoundRestException(e);
+            return new NotFoundRestException(e);
         } else {
             return new ServerErrorException(e);
         }
