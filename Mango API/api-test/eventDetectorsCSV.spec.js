@@ -67,6 +67,10 @@ describe('Event detectors CSV format', function() {
                 unit: '',
                 renderedUnit: ''
             },
+            tags: {
+                tag1: 'value1',
+                tag2: 'value2'
+            },
             rollup: 'AVERAGE'
         });
     };
@@ -165,7 +169,7 @@ describe('Event detectors CSV format', function() {
                  assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
                  assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
                  assert.strictEqual(result[0].originalXid, String(this.ed1.xid));
-                 assert.strictEqual(result[1].originalXid, String(this.ed2.xid));                 
+                 assert.strictEqual(result[1].originalXid, String(this.ed2.xid));
              })
              .on('error', (error) => { assert.fail(error);});
         });
