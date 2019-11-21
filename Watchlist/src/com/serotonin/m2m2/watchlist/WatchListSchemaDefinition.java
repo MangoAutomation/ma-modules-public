@@ -6,18 +6,13 @@ package com.serotonin.m2m2.watchlist;
 
 import java.util.List;
 
-import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
 
 public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
+
     @Override
-    public void newInstallationCheck(ExtendedJdbcTemplate ejt) {
-        if (!Common.databaseProxy.tableExists(ejt, "watchLists")) {
-            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/createTables-"
-                    + Common.databaseProxy.getType().name() + ".sql";
-            Common.databaseProxy.runScriptFile(path, null);
-        }
+    public String getNewInstallationCheckTableName() {
+        return "watchLists";
     }
 
     @Override
@@ -35,13 +30,5 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
     @Override
     public int getDatabaseSchemaVersion() {
         return 6;
-    }
-
-    @Override
-    public void postRuntimeManagerTerminate(boolean uninstall) {
-        if(uninstall) {
-            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
-            Common.databaseProxy.runScriptFile(path, null);
-        }
     }
 }

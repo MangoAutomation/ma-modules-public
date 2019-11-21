@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;
@@ -58,7 +59,7 @@ public class ScheduledEventTypeDefinition extends EventTypeDefinition {
 
     @Override
     public String getIconPath() {
-        return getModule().webPath() + "web/clock.png";
+        return "/" + Constants.DIR_MODULES + "/" + getModule().getName() + "/web/clock.png";
     }
 
     @Override
@@ -73,7 +74,7 @@ public class ScheduledEventTypeDefinition extends EventTypeDefinition {
         sb.append("<a href='scheduled_events.shtm?seid=");
         sb.append(ref1);
         sb.append("'><img src='");
-        sb.append(getModule().getWebPath()).append("/web/clock.png");
+        sb.append("/" + Constants.DIR_MODULES + "/" + getModule().getName()).append("/web/clock.png");
         sb.append("' alt='").append(alt);
         sb.append("' title='").append(alt);
         sb.append("'/></a>");

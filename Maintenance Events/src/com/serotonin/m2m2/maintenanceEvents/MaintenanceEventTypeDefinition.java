@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;
@@ -58,7 +59,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
 
     @Override
     public String getIconPath() {
-        return getModule().getWebPath() + "/web/hammer.png";
+        return "/" + Constants.DIR_MODULES + "/" + getModule().getName() + "/web/hammer.png";
     }
 
     @Override
@@ -73,7 +74,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
         sb.append("<a href='maintenance_events.shtm?meid=");
         sb.append(ref1);
         sb.append("'><img src='");
-        sb.append(getModule().getWebPath()).append("/web/hammer.png");
+        sb.append("/" + Constants.DIR_MODULES + "/" + getModule().getName()).append("/web/hammer.png");
         sb.append("' alt='").append(alt);
         sb.append("' title='").append(alt);
         sb.append("'/></a>");

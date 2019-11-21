@@ -392,7 +392,6 @@ public class ReportModel extends AbstractVoModel<ReportVO> {
 
         email = vo.isEmail();
         if(email) {
-            //TODO Mango 3.6 update with new mailing list format?
             recipients = new ArrayList<>();
             for(RecipientListEntryBean r : vo.getRecipients()) {
                 EmailRecipientModel<?> model = EmailRecipientModel.createModel(r);
@@ -472,7 +471,6 @@ public class ReportModel extends AbstractVoModel<ReportVO> {
         }
         vo.setEmail(email);
         if(email) {
-            //TODO Mango 3.6 update with new mailing list format?
             if(recipients != null) {
                 for(EmailRecipientModel<?> model : recipients)
                     vo.getRecipients().add(EmailRecipientModel.createBean(model));

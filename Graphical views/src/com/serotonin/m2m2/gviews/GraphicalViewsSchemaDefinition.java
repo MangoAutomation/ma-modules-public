@@ -7,7 +7,6 @@ package com.serotonin.m2m2.gviews;
 import java.io.File;
 import java.util.List;
 
-import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.gviews.component.ViewComponent;
 import com.serotonin.m2m2.gviews.edit.ImageUploadServletDefinition;
@@ -20,12 +19,8 @@ public class GraphicalViewsSchemaDefinition extends DatabaseSchemaDefinition {
     }
 
     @Override
-    public void newInstallationCheck(ExtendedJdbcTemplate ejt) {
-        if (!Common.databaseProxy.tableExists(ejt, "graphicalViews")) {
-            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/createTables-"
-                    + Common.databaseProxy.getType().name() + ".sql";
-            Common.databaseProxy.runScriptFile(path, null);
-        }
+    public String getNewInstallationCheckTableName() {
+        return "graphicalViews";
     }
 
     @Override
@@ -40,13 +35,13 @@ public class GraphicalViewsSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public void postRuntimeManagerTerminate(boolean uninstall) {
+        super.postRuntimeManagerTerminate(uninstall);
+        // Remove the background image upload directory.
         if(uninstall) {
-            // Remove the database tables.
-            String path = Common.MA_HOME + getModule().getDirectoryPath() + "/web/db/uninstall.sql";
-            Common.databaseProxy.runScriptFile(path, null);
-    
-            // Remove the background image upload directory.
-            DirectoryUtils.deleteDirectory(new File(ImageUploadServletDefinition.UPLOAD_DIR));
+            File uploadDir = new File(ImageUploadServletDefinition.UPLOAD_DIR);
+            if(uploadDir.exists()) {
+                DirectoryUtils.deleteDirectory(uploadDir);
+            }
         }
     }
 

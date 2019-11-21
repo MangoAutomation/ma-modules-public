@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
@@ -40,7 +41,7 @@ public class SystemEvent extends SystemEventTypeDefinition {
         sb.append("<a href='point_links.shtm?plid=");
         sb.append(ref1);
         sb.append("'><img src='");
-        sb.append(getModule().getWebPath()).append("/web/link.png");
+        sb.append("/" + Constants.DIR_MODULES + "/" + getModule().getName()).append("/web/link.png");
         sb.append("' alt='").append(alt);
         sb.append("' title='").append(alt);
         sb.append("'/></a>");

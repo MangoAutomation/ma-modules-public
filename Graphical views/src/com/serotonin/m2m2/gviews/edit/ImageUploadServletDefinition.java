@@ -6,7 +6,6 @@ package com.serotonin.m2m2.gviews.edit;
 
 import javax.servlet.http.HttpServlet;
 
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.module.ServletDefinition;
 
@@ -27,7 +26,7 @@ public class ImageUploadServletDefinition extends ServletDefinition {
 
     @Override
     public void preInitialize(boolean install, boolean upgrade) {
-        IMAGE_DIR = getModule().getWebPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
-        UPLOAD_DIR = Common.MA_HOME + getModule().getDirectoryPath() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
+        IMAGE_DIR = "/" + Constants.DIR_MODULES + "/" + getModule().getName() + "/" + Constants.DIR_WEB + "/" + IMAGE_DIR_NAME;
+        UPLOAD_DIR = getModule().modulePath().resolve(Constants.DIR_WEB).resolve(IMAGE_DIR_NAME).toAbsolutePath().toString();
     }
 }

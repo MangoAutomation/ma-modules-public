@@ -7,6 +7,7 @@ package com.serotonin.m2m2.reports.web;
 import java.io.File;
 
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.reports.vo.ReportInstance;
@@ -16,8 +17,19 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.Permissions;
 
 public class ReportCommon {
-    public final File OVERRIDE_TEMPLATE_DIR = new File(Common.MA_HOME + "/overrides" + ModuleRegistry.getModule("reports").getDirectoryPath() + "/web/ftl/");
-    public final File TEMPLATE_DIR = new File(Common.MA_HOME + ModuleRegistry.getModule("reports").getDirectoryPath() + "/web/ftl/");
+    
+    
+    public final File OVERRIDE_TEMPLATE_DIR = Common.MA_HOME_PATH
+            .resolve(Constants.DIR_OVERRIDES)
+            .resolve(Constants.DIR_MODULES)
+            .resolve(Constants.DIR_WEB)
+            .resolve(ModuleRegistry.getModule("reports").getName())
+            .resolve(Constants.DIR_WEB)
+            .resolve(Constants.DIR_FTL).toFile();
+    public final File TEMPLATE_DIR = ModuleRegistry.getModule("reports")
+            .modulePath()
+            .resolve(Constants.DIR_WEB)
+            .resolve(Constants.DIR_FTL).toFile();
     
     public static final ReportCommon instance = new ReportCommon();
     //

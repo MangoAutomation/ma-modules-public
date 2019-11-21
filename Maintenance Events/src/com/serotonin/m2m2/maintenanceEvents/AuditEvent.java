@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.maintenanceEvents;
 
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.AuditEventTypeDefinition;
 import com.serotonin.web.taglib.Functions;
@@ -28,7 +29,7 @@ public class AuditEvent extends AuditEventTypeDefinition {
         sb.append("<a href='maintenance_events.shtm?meid=");
         sb.append(ref1);
         sb.append("'><img src='");
-        sb.append(getModule().getWebPath()).append("/web/hammer.png");
+        sb.append("/" + Constants.DIR_MODULES + "/" + getModule().getName()).append("/web/hammer.png");
         sb.append("' alt='").append(alt);
         sb.append("' title='").append(alt);
         sb.append("'/></a>");

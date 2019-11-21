@@ -19,6 +19,7 @@ import org.directwebremoting.WebContextFactory;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.gviews.component.AnalogGraphicComponent;
@@ -728,7 +729,7 @@ public class GraphicalViewDwr extends ModuleDwr {
     }
 
     private String getFullSnippetName(String snippet) {
-        return getModule().getWebPath() + "/web/snippet/" + snippet;
+        return "/" + Constants.DIR_MODULES + "/" + getModule().getName() + "/web/snippet/" + snippet;
     }
     
     @DwrPermission(user = true)

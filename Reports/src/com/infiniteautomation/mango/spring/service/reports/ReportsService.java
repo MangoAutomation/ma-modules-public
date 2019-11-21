@@ -30,7 +30,7 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 /**
  *
  * TODO Add read and edit permissions to the VO for use in this class
- * TODO Mango 3.6 the name field is 100 chars long in the database, it should be 255 to be compatible with base class validation
+ * TODO Mango 4.0 the name field is 100 chars long in the database, it should be 255 to be compatible with base class validation
  *
  * @author Terry Packer
  *

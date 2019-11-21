@@ -21,6 +21,7 @@ import org.joda.time.DateTimeZone;
 
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Constants;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -282,7 +283,9 @@ public class WatchListDwr extends ModuleDwr {
 
         if (state.getValue() != null)
             setChart(pointVO, state, request, model);
-        setMessages(state, request, getModule().getWebPath() + "/web/snippet/watchListMessages.jsp", model);
+        setMessages(state, request, Constants.DIR_WEB 
+                + "/" + Constants.DIR_MODULES 
+                + "/" + getModule().getName() + "/web/snippet/watchListMessages.jsp", model);
 
         return state;
     }
