@@ -862,8 +862,8 @@ describe('Point values csv v2', function() {
             assert.strictEqual(result.length, pointValues1.length);
 
             result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, String(pointValues1[i].value));
-                assert.strictEqual(pv.timestamp, String(pointValues1[i].timestamp));
+                assert.strictEqual(Number(pv.value), pointValues1[i].value);
+                assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
             });
         });
     });
