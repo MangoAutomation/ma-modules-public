@@ -36,7 +36,7 @@ import net.jazdw.rql.parser.RQLParser;
  * @author Terry Packer
  *
  */
-public class WatchlistSqlVisitorTest extends MangoTestBase{
+public class WatchlistSqlVisitorTest extends MangoTestBase {
 
     protected Map<String,String> modelMap = new HashMap<String,String>();
     //Map of Vo member/sql column to value converter

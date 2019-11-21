@@ -13,11 +13,8 @@ import com.serotonin.m2m2.rt.maint.work.WorkItem;
  * @author Terry Packer
  *
  */
-public class MockBackgroundProcessing extends BackgroundProcessingImpl{
+public class MockBackgroundProcessing extends BackgroundProcessingImpl {
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.rt.maint.BackgroundProcessing#addWorkItem(com.serotonin.m2m2.rt.maint.work.WorkItem)
-	 */
 	@Override
 	public void addWorkItem(final WorkItem item) {
 		
