@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/asciiFile",
-  "version": "3.7.0",
+  "version": "3.7.1-SNAPSHOT",
   "description": "ASCII File Reader",
   "main": "web/angular/asciiFile.js",
   "dependencies": {},
