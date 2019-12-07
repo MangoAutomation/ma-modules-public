@@ -1,3 +1,6 @@
+*Version 3.7.1*
+* Allow importing of point links without a name if no name is present it will be set to (Unamed)
+ 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
 * Fix NPE in REST api for links that don't write annotation 
