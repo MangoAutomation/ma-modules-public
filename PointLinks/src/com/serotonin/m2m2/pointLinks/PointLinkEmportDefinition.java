@@ -17,7 +17,7 @@ import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class PointLinkEmportDefinition extends EmportDefinition {
 	static final String POINT_LINKS = "pointLinks";
-	
+	static final String DEFAULT_NAME = "(Unamed)";
     @Override
     public String getElementId() {
         return POINT_LINKS;
@@ -53,6 +53,11 @@ public class PointLinkEmportDefinition extends EmportDefinition {
 
             // Now validate it. Use a new response object so we can distinguish errors in this vo from other errors.
             ProcessResult voResponse = new ProcessResult();
+            
+            //Hack to allow importing point links from old systems without a name
+            if(StringUtils.isEmpty(vo.getName())) {
+                vo.setName(DEFAULT_NAME);
+            }
             vo.validate(voResponse);
             if (voResponse.getHasMessages())
                 // Too bad. Copy the errors into the actual response.

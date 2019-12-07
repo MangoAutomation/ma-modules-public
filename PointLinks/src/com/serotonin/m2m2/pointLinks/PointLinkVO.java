@@ -203,7 +203,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         DataPointDao dataPointDao = DataPointDao.getInstance();
-
+        writer.writeEntry("name", name);
         writer.writeEntry("xid", xid);
 
         DataPointVO dp = dataPointDao.getDataPoint(sourcePointId, false);
@@ -222,7 +222,7 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         DataPointDao dataPointDao = DataPointDao.getInstance();
-
+        name = jsonObject.getString("name");
         String xid = jsonObject.getString("sourcePointId");
         if (xid != null) {
             DataPointVO vo = dataPointDao.getDataPoint(xid);
@@ -260,9 +260,6 @@ public class PointLinkVO extends AbstractVO<PointLinkVO> {
         scriptPermissions = ScriptPermissions.readJsonSafely(jsonObject);
     }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
-	 */
 	@Override
 	protected AbstractDao<PointLinkVO> getDao() {
 		return PointLinkDao.getInstance();
