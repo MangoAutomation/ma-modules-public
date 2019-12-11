@@ -22,7 +22,7 @@ import com.infiniteautomation.mango.spring.ConditionalOnProperty;
  * @author Jared Wiltshire
  */
 @RestController
-@ConditionalOnProperty("${rest.testMode:false}")
+@ConditionalOnProperty(value = {"${testing.enabled:false}", "${testing.restApi.enabled:false}"})
 @PreAuthorize("isAdmin()")
 @RequestMapping("/testing")
 public class TestingRestController {
