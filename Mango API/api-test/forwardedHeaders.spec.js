@@ -21,7 +21,29 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     const client = createClient();
     
     before('Login', function() { return login.call(this, client); });
+    
+    it('Returns the correct location when no forwarded headers are sent', function() {
+        const {protocol, host, port} = client.options;
 
+        return client.restRequest({
+            path: '/rest/v2/testing/location',
+            method: 'GET'
+        }).then(response => {
+            assert.isString(response.headers.location);
+
+            /* global URL:true */
+            const url = new URL(response.headers.location);
+            assert.strictEqual(url.protocol, protocol + ':');
+            assert.strictEqual(url.hostname, host);
+            
+            if (protocol === 'http' && port === 80 || protocol === 'https' && port === 443) {
+                assert.strictEqual(url.port, '');
+            } else {
+                assert.strictEqual(url.port, '' + port);
+            }
+        });
+    });
+    
     // not supported by Jetty ForwardedRequestCustomizer, but is supported by Spring ForwardedHeaderFilter
     it.skip('Trusts the X-Forwarded-* headers (port in X-Forwarded-Port)', function() {
         const protocol = 'https';
