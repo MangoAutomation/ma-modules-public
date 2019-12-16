@@ -7,6 +7,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.management.MBeanServer;
@@ -54,34 +55,40 @@ public class TestingRestController {
     }
 
     @RequestMapping(method = {RequestMethod.POST}, value = "/heap-dump")
-    public String heapDump(@RequestParam("filename") String filename) {
-
-        Exception hotspot;
-        Exception ibm;
-
+    public String heapDump(@RequestParam String filename, @RequestParam boolean overwrite) {
         try {
             Path filenamePath = Common.MA_HOME_PATH.resolve(filename + ".hprof").toAbsolutePath();
+            if (overwrite) {
+                Files.deleteIfExists(filenamePath);
+            }
             MBeanServer server = ManagementFactory.getPlatformMBeanServer();
             Class<?> clazz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");
             Object bean = ManagementFactory.newPlatformMXBeanProxy(server, "com.sun.management:type=HotSpotDiagnostic", clazz);
             clazz.getMethod("dumpHeap", String.class, boolean.class).invoke(bean, filenamePath.toString(), true);
             return filenamePath.toString();
+        } catch (ClassNotFoundException e) {
+            // try IBM method instead
         } catch (Exception e) {
-            hotspot = e;
+            log.info("Error creating heap dump using Hotspot API", e);
+            throw new RuntimeException("Error creating heap dump using Hotspot API", e);
         }
 
         try {
             Path filenamePath = Common.MA_HOME_PATH.resolve(filename + ".phd").toAbsolutePath();
+            if (overwrite) {
+                Files.deleteIfExists(filenamePath);
+            }
             File dumpFile = new File((String) Class.forName("com.ibm.jvm.Dump").getMethod("heapDumpToFile", String.class).invoke(null, filenamePath.toString()));
             return dumpFile.toString();
-        } catch (Exception e) {
-            ibm = e;
+        } catch (ClassNotFoundException e) {
+            // Return different message
+        }  catch (Exception e) {
+            log.info("Error creating heap dump using IBM API", e);
+            throw new RuntimeException("Error creating heap dump using IBM API", e);
         }
 
-        log.info("Hotspot heap dump error", hotspot);
-        log.info("IBM heap dump error", ibm);
-
-        return null;
+        log.info("No heap dump API found");
+        throw new RuntimeException("No heap dump API found");
     }
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/jvm-info")
