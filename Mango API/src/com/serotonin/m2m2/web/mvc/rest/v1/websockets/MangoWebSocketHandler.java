@@ -5,11 +5,15 @@
 package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
 import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -29,10 +33,13 @@ import com.serotonin.m2m2.vo.User;
  */
 public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
+    public static final String RECEIVED_PONG = "receivedPong";
+    public static final String PING_PONG_TRACKER_ATTRIBUTE = "MangoPingPongTracker";
+
     public final static CloseStatus NOT_AUTHENTICATED = new CloseStatus(4001, "Not authenticated");
     public final static CloseStatus NOT_AUTHORIZED = new CloseStatus(4003, "Not authorized");
 
-    public static final int DEFAULT_PING_TIMEOUT_MS = 10000;
+    protected final Log log = LogFactory.getLog(this.getClass());
 
     /**
      * If true, close the socket after our HttpSession is invalidated or when the authentication token is not valid.
@@ -40,25 +47,20 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected final boolean authenticationRequired;
 
     /**
-     * Enable Ping/Pong Connection Tracking
-     */
-    protected final boolean usePingPong;
-    /**
      * Timeout in ms to wait for Pong response before terminating connection
      */
+    @Value("${web.websocket.pingTimeoutMs:10000}")
     protected int pingPongTimeoutMs;
-    public static final String RECEIVED_PONG = "receivedPong";
-    public static final String PING_PONG_TRACKER_ATTRIBUTE = "MangoPingPongTracker";
-
-    protected final Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
     @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
     protected ObjectMapper jacksonMapper;
 
     @Autowired
-    @Qualifier("mangoWebSocketSessionTracker")
     protected MangoWebSocketSessionTracker sessionTracker;
+
+    @Autowired
+    protected ScheduledExecutorService scheduledExecutor;
 
     public MangoWebSocketHandler() {
         this(true);
@@ -66,8 +68,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     public MangoWebSocketHandler(boolean authenticationRequired) {
         this.authenticationRequired = authenticationRequired;
-        this.pingPongTimeoutMs = Common.envProps.getInt("web.websocket.pingTimeoutMs", DEFAULT_PING_TIMEOUT_MS);
-        this.usePingPong = this.pingPongTimeoutMs > 0;
     }
 
     /**
@@ -123,6 +123,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     /**
      * WebSocketSession.sendMessage() is blocking and will throw exceptions on concurrent sends, this method uses the aysnc RemoteEndpoint.sendStringByFuture() method instead
+     * <p>TODO use {@link org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator} instead of Jetty API</p>
      *
      * @param session
      * @param message
@@ -144,7 +145,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected void closeSession(WebSocketSession session, CloseStatus closeStaus) {
         try {
             session.close(closeStaus);
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("Error closing websocket session", e);
             }
@@ -165,7 +166,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
             this.sessionTracker.afterConnectionEstablished(session);
         }
 
-        if (this.usePingPong) {
+        if (this.pingPongTimeoutMs > 0) {
             this.startPingPong(session);
         }
     }
@@ -176,33 +177,29 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
             this.sessionTracker.afterConnectionClosed(session, status);
         }
 
-        if (this.usePingPong) {
-            this.stopPingPong(session);
-        }
+        this.stopPingPong(session);
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        if (session.isOpen()) {
-            closeSession(session, new CloseStatus(CloseStatus.SERVER_ERROR.getCode(), exception.getMessage()));
-        }
+        closeSession(session, new CloseStatus(CloseStatus.SERVER_ERROR.getCode(), exception.getMessage()));
     }
 
     /**
      * Start the Ping/Pong Tracker for this session
      */
     private void startPingPong(WebSocketSession session) throws Exception {
-        MangoPingPongTracker pingPongTracker = new MangoPingPongTracker(session, this.pingPongTimeoutMs);
-        session.getAttributes().put(PING_PONG_TRACKER_ATTRIBUTE, pingPongTracker);
+        ScheduledFuture<?> future = this.scheduledExecutor.scheduleAtFixedRate(new MangoPingPongTracker(session), 0, this.pingPongTimeoutMs, TimeUnit.MILLISECONDS);
+        session.getAttributes().put(PING_PONG_TRACKER_ATTRIBUTE, future);
     }
 
     /**
      * Stop the Ping/Pong Tracker for this session
      */
     private void stopPingPong(WebSocketSession session) throws Exception {
-        Object pingPongTracker = session.getAttributes().get(PING_PONG_TRACKER_ATTRIBUTE);
-        if (pingPongTracker instanceof MangoPingPongTracker) {
-            ((MangoPingPongTracker) pingPongTracker).shutdown();
+        Object future = session.getAttributes().get(PING_PONG_TRACKER_ATTRIBUTE);
+        if (future instanceof ScheduledFuture) {
+            ((ScheduledFuture<?>) future).cancel(true);
         }
     }
 
