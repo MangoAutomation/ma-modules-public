@@ -264,7 +264,7 @@ describe('Stress test', function() {
             return client.restRequest({
                 path: '/rest/v2/testing/heap-dump',
                 method: 'POST',
-                params: {filename: 'logs/heap_dump'}
+                params: {filename: 'logs/heap_dump', readable: true}
             });
         }).then(response => {
             this.heapDumpFile = response.data;

@@ -3,12 +3,16 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.management.MBeanServer;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +43,10 @@ public class TestingRestController {
 
     private final Logger log = LoggerFactory.getLogger(TestingRestController.class);
 
+    private final Set<PosixFilePermission> readablePerms =
+            Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ)
+            .stream().collect(Collectors.toSet());
+
     @RequestMapping(method = {RequestMethod.GET}, value = "/location")
     public ResponseEntity<Void> testLocation(UriComponentsBuilder builder) {
 
@@ -55,40 +63,48 @@ public class TestingRestController {
     }
 
     @RequestMapping(method = {RequestMethod.POST}, value = "/heap-dump")
-    public String heapDump(@RequestParam String filename, @RequestParam boolean overwrite) {
+    public String heapDump(@RequestParam String filename,
+            @RequestParam(required=false, defaultValue="false") boolean overwrite,
+            @RequestParam(required=false, defaultValue="false") boolean readable) throws Exception {
+        boolean ibm = true;
         try {
-            Path filenamePath = Common.MA_HOME_PATH.resolve(filename + ".hprof").toAbsolutePath();
-            if (overwrite) {
-                Files.deleteIfExists(filenamePath);
-            }
+            Class.forName("com.ibm.jvm.Dump");
+        } catch (ClassNotFoundException e) {
+            ibm = false;
+        }
+
+        Path filePath;
+
+        if (ibm) {
+            filePath = Common.MA_HOME_PATH.resolve(filename + ".phd").toAbsolutePath();
+        } else {
+            filePath = Common.MA_HOME_PATH.resolve(filename + ".hprof").toAbsolutePath();
+        }
+
+        log.info("Dumping heap to {}", filePath);
+
+        if (overwrite) {
+            Files.deleteIfExists(filePath);
+        }
+
+        if (ibm) {
+            String newPath = (String) Class.forName("com.ibm.jvm.Dump").getMethod("heapDumpToFile", String.class).invoke(null, filePath.toString());
+            filePath = Paths.get(newPath).toAbsolutePath();
+        } else {
             MBeanServer server = ManagementFactory.getPlatformMBeanServer();
             Class<?> clazz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");
             Object bean = ManagementFactory.newPlatformMXBeanProxy(server, "com.sun.management:type=HotSpotDiagnostic", clazz);
-            clazz.getMethod("dumpHeap", String.class, boolean.class).invoke(bean, filenamePath.toString(), true);
-            return filenamePath.toString();
-        } catch (ClassNotFoundException e) {
-            // try IBM method instead
-        } catch (Exception e) {
-            log.info("Error creating heap dump using Hotspot API", e);
-            throw new RuntimeException("Error creating heap dump using Hotspot API", e);
+            clazz.getMethod("dumpHeap", String.class, boolean.class).invoke(bean, filePath.toString(), true);
         }
 
-        try {
-            Path filenamePath = Common.MA_HOME_PATH.resolve(filename + ".phd").toAbsolutePath();
-            if (overwrite) {
-                Files.deleteIfExists(filenamePath);
-            }
-            File dumpFile = new File((String) Class.forName("com.ibm.jvm.Dump").getMethod("heapDumpToFile", String.class).invoke(null, filenamePath.toString()));
-            return dumpFile.toString();
-        } catch (ClassNotFoundException e) {
-            // Return different message
-        }  catch (Exception e) {
-            log.info("Error creating heap dump using IBM API", e);
-            throw new RuntimeException("Error creating heap dump using IBM API", e);
+        // the dumps are written with only user read perms, enable relaxing the permissions
+        if (readable) {
+            try {
+                Files.setPosixFilePermissions(filePath, readablePerms);
+            } catch (UnsupportedOperationException e) {}
         }
 
-        log.info("No heap dump API found");
-        throw new RuntimeException("No heap dump API found");
+        return filePath.toString();
     }
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/jvm-info")
