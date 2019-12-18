@@ -16,7 +16,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.JsonStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.ObjectStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryArrayStream;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.QueryDataPageStream;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.email.EmailRecipientModel;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -43,7 +42,6 @@ public class MangoApiJacksonModule extends SimpleModule {
         this.addSerializer(ASTNode.class, new ASTNodeSerializer());
         this.addDeserializer(ASTNode.class, new ASTNodeDeserializer());
 
-        this.addDeserializer(EmailRecipientModel.class, new EmailRecipientModelDeserializer());
         this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
 
     }
