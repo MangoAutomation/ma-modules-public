@@ -26,13 +26,4 @@ public class VMStatDataSourceDefinition extends DataSourceDefinition {
         return new VMStatDataSourceVO();
     }
 
-    @Override
-    public String getEditPagePath() {
-        return "web/editVMStat.jsp";
-    }
-
-    @Override
-    public Class<?> getDwrClass() {
-        return VMStatEditDwr.class;
-    }
 }
