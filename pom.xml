@@ -37,10 +37,6 @@
 		<module>Maintenance Events</module>
 		<module>Mango API</module>
 		<module>MBus</module>
-		<module>Point Data Import</module>
-		<module>PointLinks</module>
-		<module>Reports</module>
-		<module>Scheduled Events</module>
 		<module>Serial Data Source</module>
 		<module>SQL console</module>
 		<module>SST Graphics</module>
