@@ -5,7 +5,6 @@
 package com.serotonin.m2m2.virtual;
 
 import com.serotonin.m2m2.module.DataSourceDefinition;
-import com.serotonin.m2m2.virtual.dwr.VirtualEditDwr;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -28,13 +27,4 @@ public class VirtualDataSourceDefinition extends DataSourceDefinition {
         return new VirtualDataSourceVO();
     }
 
-    @Override
-    public String getEditPagePath() {
-        return "web/editVirtual.jspf";
-    }
-
-    @Override
-    public Class<?> getDwrClass() {
-        return VirtualEditDwr.class;
-    }
 }

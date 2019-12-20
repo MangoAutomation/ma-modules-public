@@ -9,8 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import org.directwebremoting.annotations.DataTransferObject;
-
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -24,7 +22,6 @@ import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.util.SerializationHelper;
 
-@DataTransferObject
 abstract public class ChangeTypeVO implements Serializable, JsonSerializable {
     public interface Types {
         public static final int ALTERNATE_BOOLEAN = 1;
