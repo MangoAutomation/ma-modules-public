@@ -91,7 +91,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
 
     @Override
     public TranslatableMessage getConfigurationDescription() {
-    	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(monitorId);
+    	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getMonitor(monitorId);
     	if(monitor != null)
     		return monitor.getName();
     	else

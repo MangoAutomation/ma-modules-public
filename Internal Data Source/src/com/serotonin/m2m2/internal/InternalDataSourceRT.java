@@ -12,10 +12,8 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.infiniteautomation.mango.monitor.AtomicIntegerMonitor;
-import com.infiniteautomation.mango.monitor.DoubleMonitor;
-import com.infiniteautomation.mango.monitor.IntegerMonitor;
-import com.infiniteautomation.mango.monitor.LongMonitor;
+import com.infiniteautomation.mango.monitor.MonitoredValues;
+import com.infiniteautomation.mango.monitor.PollableMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
@@ -42,7 +40,8 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
     private final boolean createsPoints;
     private final Pattern createPointsPattern;
     private final Map<String, Boolean> monitorMap;
-	
+    private final MonitoredValues monitoredValues = Common.MONITORED_VALUES;
+
     public InternalDataSourceRT(InternalDataSourceVO vo) {
         super(vo);
         createsPoints = !StringUtils.isEmpty(vo.getCreatePointsPattern());
@@ -63,69 +62,56 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         }
     }
 
-
     @Override
     public void beginPolling() {
-    	//Ensure have all our points loaded
-    	this.updateChangedPoints(Common.timer.currentTimeMillis());
-    	//Refresh our Monitored Values
-    	for (DataPointRT dataPoint : dataPoints) {
+        long ts = Common.timer.currentTimeMillis();
+        //Ensure have all our points loaded
+        this.updateChangedPoints(ts);
+        //Refresh our Monitored Values
+        for (DataPointRT dataPoint : dataPoints) {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
-            ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
-            if(m != null)
-            	m.reset();
-    	}
-    	super.beginPolling();
+            ValueMonitor<?> m = monitoredValues.getMonitor(locator.getPointLocatorVO().getMonitorId());
+            if (m instanceof PollableMonitor) {
+                ((PollableMonitor<?>) m).poll(ts);
+            }
+        }
+        super.beginPolling();
     }
-    
+
     @Override
     public void forcePointRead(DataPointRT dataPoint) {
-    	InternalPointLocatorRT locator = dataPoint.getPointLocator();
-        ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());        
-        if (m != null){
+        InternalPointLocatorRT locator = dataPoint.getPointLocator();
+        ValueMonitor<?> m = monitoredValues.getMonitor(locator.getPointLocatorVO().getMonitorId());
+        if (m != null) {
             Object value = m.getValue();
-            if(value == null)
-                return;
-            if(m instanceof IntegerMonitor)
-                dataPoint.updatePointValue(new PointValueTime(((IntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
-            else if(m instanceof LongMonitor)
-                dataPoint.updatePointValue(new PointValueTime(((LongMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
-            else if(m instanceof DoubleMonitor)
-                dataPoint.updatePointValue(new PointValueTime(((DoubleMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
-            else if(m instanceof AtomicIntegerMonitor)
-                dataPoint.updatePointValue(new PointValueTime(((AtomicIntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+            if (value instanceof Number) {
+                dataPoint.updatePointValue(new PointValueTime(((Number) value).doubleValue(), Common.timer.currentTimeMillis()));
+            }
         }
     }
-    
+
     @Override
     public void doPoll(long time) {
         if(createsPoints) {
-            for(ValueMonitor<?> m : Common.MONITORED_VALUES.getMonitors()) {
+            for(ValueMonitor<?> m : monitoredValues.getMonitors()) {
                 if(createPointsPattern.matcher(m.getId()).matches() && !monitorMap.containsKey(m.getId()))
                     createMonitorPoint(m);
             }
         }
-        
+
         for (DataPointRT dataPoint : dataPoints) {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
-            ValueMonitor<?> m = Common.MONITORED_VALUES.getValueMonitor(locator.getPointLocatorVO().getMonitorId());
-            
-            if (m != null){
+            ValueMonitor<?> m = monitoredValues.getMonitor(locator.getPointLocatorVO().getMonitorId());
+
+            if (m != null) {
                 Object value = m.getValue();
-                if(value == null)
-                    continue;
-                if(m instanceof IntegerMonitor)
-                    dataPoint.updatePointValue(new PointValueTime(((IntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
-                else if(m instanceof LongMonitor)
-                    dataPoint.updatePointValue(new PointValueTime(((LongMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
-                else if(m instanceof DoubleMonitor)
-                    dataPoint.updatePointValue(new PointValueTime(((DoubleMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
-                else if(m instanceof AtomicIntegerMonitor)
-                    dataPoint.updatePointValue(new PointValueTime(((AtomicIntegerMonitor)m).getValue().doubleValue(), Common.timer.currentTimeMillis()));
+                if (value instanceof Number) {
+                    dataPoint.updatePointValue(new PointValueTime(((Number) value).doubleValue(), time));
+                }
             }
         }
     }
-    
+
     private void createMonitorPoint(ValueMonitor<?> monitor) {
         DataPointVO dpvo = new DataPointVO();
         InternalPointLocatorVO plvo = new InternalPointLocatorVO();
@@ -160,7 +146,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
                     dpvo.setTextRenderer(getIntegerAnalogSuffixRenderer(" ms"));
                 }
             }
-            
+
             //Set the device name base on the XID in the monitor ID....
             String dsXid = monitor.getId().substring(monitor.getId().indexOf('_')+1, monitor.getId().lastIndexOf('_'));
             defaultNewPointToDataSource(dpvo, dsXid);
@@ -196,7 +182,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
                 dpvo.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
                 name = new TranslatableMessage("common.literal", monitor.getId());
             }
-            
+
             //Set the device name base on the XID in the monitor ID....
             if(dsXidIndex > 30) {
                 String dsXid = monitor.getId().substring(dsXidIndex);
@@ -205,7 +191,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
                 //Will happen if new properties are added because the XID scheme isn't great.
                 dpvo.setDeviceName(monitor.getId());
             }
-            
+
             dpvo.setName(name.translate(Common.getTranslations()));
         } else {
             //Default others, including InternalPointLocatorRT.MONITOR_NAMES to ON_CHANGE
@@ -213,20 +199,20 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
             dpvo.setDeviceName(vo.getName());
             dpvo.setName(plvo.getConfigurationDescription().translate(Common.getTranslations()));
         }
-        
+
         dpvo.defaultTextRenderer();
         dpvo.setXid(Common.generateXid("DP_In_"));
         monitorMap.put(monitor.getId(), true);
         Common.runtimeManager.saveDataPoint(dpvo); //Won't appear until next poll, but that's fine.
     }
-    
+
     private void defaultNewPointToDataSource(DataPointVO dpvo, String dsXid) {
         DataSourceVO<?> dsvo = DataSourceDao.getInstance().getDataSource(dsXid);
         if(dsvo == null)
             throw new ShouldNeverHappenException("Error creating point, unknown data source: "+dsXid);
         dpvo.setDeviceName(dsvo.getName());
     }
-    
+
     private AnalogRenderer getIntegerAnalogSuffixRenderer(String suffix) {
         AnalogRenderer result = new AnalogRenderer();
         result.setUseUnitAsSuffix(false);

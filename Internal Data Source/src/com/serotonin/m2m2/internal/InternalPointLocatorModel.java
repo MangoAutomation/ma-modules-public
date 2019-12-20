@@ -45,7 +45,7 @@ public class InternalPointLocatorModel extends PointLocatorModel<InternalPointLo
 	
 	@JsonGetter
 	public TranslatableMessage getDescription() {
-        ValueMonitor<?> monitor = Common.MONITORED_VALUES.getValueMonitor(data.getMonitorId());
+        ValueMonitor<?> monitor = Common.MONITORED_VALUES.getMonitor(data.getMonitorId());
         if (monitor != null)
             return monitor.getName();
         else
