@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.mbus;
 
-import com.serotonin.m2m2.mbus.dwr.MBusEditDwr;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -25,15 +24,5 @@ public class MBusDataSourceDefinition extends DataSourceDefinition {
     @Override
     protected DataSourceVO<?> createDataSourceVO() {
         return new MBusDataSourceVO();
-    }
-
-    @Override
-    public String getEditPagePath() {
-        return "web/editMBus.jsp";
-    }
-
-    @Override
-    public Class<?> getDwrClass() {
-        return MBusEditDwr.class;
     }
 }
