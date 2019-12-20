@@ -15,6 +15,7 @@ import javax.measure.converter.ConversionException;
 
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -24,7 +25,6 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * @author Terry Packer

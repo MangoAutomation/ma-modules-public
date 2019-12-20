@@ -13,8 +13,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
+import com.serotonin.m2m2.vo.mailingList.RecipientListEntryBean;
 import com.serotonin.m2m2.vo.mailingList.UserEntry;
-import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
 
 import io.swagger.annotations.ApiModel;
 

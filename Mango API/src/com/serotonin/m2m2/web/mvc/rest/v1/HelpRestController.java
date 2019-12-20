@@ -29,10 +29,11 @@ import com.serotonin.io.StreamUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.DocumentationItem;
-import com.serotonin.m2m2.web.mvc.controller.ControllerUtils;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.help.HelpModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.help.RelatedHelpItemModel;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -60,7 +61,7 @@ public class HelpRestController extends MangoRestController{
 		
 		RestProcessResult<HelpModel> result = new RestProcessResult<HelpModel>(HttpStatus.OK);
     	
-		this.checkUser(request, result);
+		User user = this.checkUser(request, result);
     	if(result.isOk()){
     		HelpModel model = new HelpModel();
             DocumentationItem item = Common.documentationManifest.getItem(helpId);
@@ -71,7 +72,7 @@ public class HelpRestController extends MangoRestController{
             	model.setTitle(new TranslatableMessage(item.getKey()).translate(Common.getTranslations()));
             	
                 // Find the file appropriate for the locale.
-                Locale locale = ControllerUtils.getLocale(request);
+                Locale locale = user.getLocaleObject();
                 File file = Common.documentationManifest.getDocumentationFile(item, locale.getLanguage(),
                         locale.getCountry(), locale.getVariant());
 

@@ -4,14 +4,15 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1.websockets;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleNotificationListener;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationTypeEnum;
@@ -24,9 +25,10 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.ModuleNotificationTypeEn
 @WebSocketMapping("/websocket/modules")
 public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implements ModuleNotificationListener {
 
-    public ModulesWebSocketHandler() {
+    @Autowired
+    public ModulesWebSocketHandler(ModulesService service) {
         super(true);
-        ModulesDwr.addModuleNotificationListener(this);
+        service.addModuleNotificationListener(this);
     }
 
     @Override

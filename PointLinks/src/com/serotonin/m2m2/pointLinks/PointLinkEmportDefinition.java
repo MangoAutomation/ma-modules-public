@@ -6,6 +6,7 @@ package com.serotonin.m2m2.pointLinks;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.emport.ImportContext;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
@@ -13,7 +14,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 public class PointLinkEmportDefinition extends EmportDefinition {
 	static final String POINT_LINKS = "pointLinks";

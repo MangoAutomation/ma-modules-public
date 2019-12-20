@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.vo.mailingList.AddressEntry;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
-import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
+import com.serotonin.m2m2.vo.mailingList.RecipientListEntryBean;
 
 import io.swagger.annotations.ApiModel;
 

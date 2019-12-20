@@ -38,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.InvalidRQLRestException;
+import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -49,7 +50,6 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.maint.work.EmailWorkItem;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
@@ -60,9 +60,9 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.util.DirectoryInfo;
 import com.serotonin.util.DirectoryUtils;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -76,13 +76,16 @@ public class ServerRestController extends MangoRestController{
 
     private static Log LOG = LogFactory.getLog(ServerRestController.class);
 
-    @Autowired
-    MangoSessionRegistry sessionRegistry;
-
+    private final MangoSessionRegistry sessionRegistry;
+    private final ModulesService modulesService;
+    
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
-
-    public ServerRestController(){
+    @Autowired
+    public ServerRestController(MangoSessionRegistry sessionRegistry, ModulesService modulesService) {
+        this.sessionRegistry = sessionRegistry;
+        this.modulesService = modulesService;
+        
         this.allTimezones  = TimezoneUtility.getTimeZoneIdsWithOffset();
         this.defaultServerTimezone = new TimezoneModel("", new TranslatableMessage("users.timezone.def").translate(Common.getTranslations()), 0);
         //Always add the default to the start of the list
@@ -224,7 +227,7 @@ public class ServerRestController extends MangoRestController{
         User user = this.checkUser(request, result);
         if(result.isOk()){
             if(Permissions.hasAdminPermission(user)){
-                ProcessResult r = ModulesDwr.scheduleRestart();
+                ProcessResult r = modulesService.scheduleRestart();
                 if(r.getData().get("shutdownUri") != null){
                     //TODO Make SystemStatus web socket and push out message around shutdown
                     URI location = builder.path("/status/mango").buildAndExpand().toUri();

@@ -8,6 +8,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
@@ -17,7 +18,6 @@ import com.serotonin.m2m2.view.stats.ValueChangeCounter;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
-import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * @author Terry Packer

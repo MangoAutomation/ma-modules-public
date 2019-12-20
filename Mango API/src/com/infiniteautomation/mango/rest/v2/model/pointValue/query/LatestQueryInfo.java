@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -23,7 +24,6 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
-import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  *

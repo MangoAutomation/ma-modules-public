@@ -7,6 +7,7 @@ package com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
@@ -15,7 +16,6 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.XidTimeJsonWriter;
-import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * 

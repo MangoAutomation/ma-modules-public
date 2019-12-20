@@ -15,6 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -29,7 +30,6 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketErrorType;
 import com.serotonin.m2m2.web.mvc.rest.v1.websockets.MangoWebSocketHandler;
 import com.serotonin.m2m2.web.mvc.rest.v1.websockets.WebSocketSendException;
-import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * Event handler for single web socket session to publish events for multiple data points

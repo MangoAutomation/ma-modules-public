@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
@@ -18,7 +19,6 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.taglib.Functions;
 
 /**
  * @author Terry Packer

@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.infiniteautomation.mango.emport.ImportTask;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
@@ -48,7 +49,6 @@ import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.dwr.emport.ImportTask;
 import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;

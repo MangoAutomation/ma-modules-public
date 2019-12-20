@@ -45,6 +45,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.UsedImagesDirective;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.dataImage.RenderedPointValueTime;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.handlers.EmailHandlerRT;
@@ -54,7 +55,6 @@ import com.serotonin.m2m2.rt.script.EventInstanceWrapper;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.dwr.beans.RenderedPointValueTime;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.workitem.WorkItemModel;
 

@@ -39,6 +39,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestValidationResult;
+import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -84,7 +85,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.statistics.Statistics
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriod;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.TimePeriodType;
-import com.serotonin.m2m2.web.taglib.Functions;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

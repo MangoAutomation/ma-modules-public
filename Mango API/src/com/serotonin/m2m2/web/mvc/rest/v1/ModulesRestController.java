@@ -53,6 +53,7 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
+import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.io.StreamUtils;
@@ -77,7 +78,6 @@ import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.dwr.ModulesDwr;
 import com.serotonin.m2m2.web.mvc.rest.v1.message.RestProcessResult;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.CredentialsModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.modules.AngularJSModuleDefinitionGroupModel;
@@ -110,10 +110,12 @@ public class ModulesRestController extends MangoRestController {
     private static final String SNAPSHOT = "-SNAPSHOT";
 
     private final Environment env;
-
+    private final ModulesService service;
+    
     @Autowired
-    public ModulesRestController(Environment env) {
+    public ModulesRestController(Environment env, ModulesService service) {
         this.env = env;
+        this.service = service;
     }
 
     public static AngularJSModuleDefinitionGroupModel getAngularJSModules(boolean developmentMode) {
@@ -271,7 +273,7 @@ public class ModulesRestController extends MangoRestController {
                     //This is handled oddly in the ModulesDwr so check it here for validation
                     String baseUrl = Common.envProps.getString("store.url");
                     if(!StringUtils.isEmpty(baseUrl)) {
-                        jsonResponse = ModulesDwr.getAvailableUpgrades();
+                        jsonResponse = service.getAvailableUpgrades();
                     }else {
                         result.addRestMessage(HttpStatus.UNPROCESSABLE_ENTITY, new TranslatableMessage("modules.versionCheck.storeNotSet"));
                         return result.createResponseEntity();
@@ -343,7 +345,7 @@ public class ModulesRestController extends MangoRestController {
         if (result.isOk()) {
             if (user.isAdmin()) {
                 // Start Downloads
-                String status = ModulesDwr.startDownloads(model.fullModulesList(), backup, restart);
+                String status = service.startDownloads(model.fullModulesList(), backup, restart);
                 if (status == null) {
                     return result.createResponseEntity();
                 } else {
@@ -366,7 +368,7 @@ public class ModulesRestController extends MangoRestController {
         if (result.isOk()) {
             if (user.isAdmin()) {
                 // Cancel if possible
-                if (ModulesDwr.tryCancelUpgrade()) {
+                if (service.tryCancelUpgrade()) {
                     result.addRestMessage(HttpStatus.OK, new TranslatableMessage("common.cancelled"));
                 } else {
                     result.addRestMessage(HttpStatus.NOT_MODIFIED,
@@ -387,7 +389,7 @@ public class ModulesRestController extends MangoRestController {
         User user = this.checkUser(request, result);
         if (result.isOk()) {
             if (Permissions.hasAdminPermission(user)) {
-                ProcessResult status = ModulesDwr.monitorDownloads();
+                ProcessResult status = service.monitorDownloads();
                 UpgradeStatusModel model = new UpgradeStatusModel();
                 if (status.getHasMessages()) {
                     // Not running

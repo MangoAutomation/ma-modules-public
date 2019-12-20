@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.mailingList;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.web.dwr.beans.RecipientListEntryBean;
+import com.serotonin.m2m2.vo.mailingList.RecipientListEntryBean;
 
 /**
  * @author Terry Packer

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.emport.ImportContext;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
@@ -16,7 +17,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.dwr.emport.ImportContext;
 
 /**
  * This class is to fix a bug introduced where the watchlist JSON export
