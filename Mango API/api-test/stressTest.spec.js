@@ -30,8 +30,9 @@ class Publisher extends MangoObject {
 
 const stressTestConfig = Object.assign({
     duration: 60000,
-    numPoints: 100
-    //resultsFile: 'results.json'
+    numPoints: 100,
+    resultsFile: null,
+    heapDumpFile: null
 }, config.stressTest);
 
 describe('Stress test', function() {
@@ -92,6 +93,30 @@ describe('Stress test', function() {
             useCrc: true
         });
         
+        this.internal = new DataSource({
+            name: 'Stress test internal',
+            enabled: true,
+            modelType: 'INTERNAL',
+            quantize: false,
+            useCron: false,
+            createPointsPattern: null,
+            pollPeriod: {
+              periods: 10,
+              type: 'SECONDS'
+            },
+            alarmLevels: {
+              POLL_ABORTED: 'URGENT'
+            },
+            purgeSettings: {
+              override: false,
+              frequency: {
+                periods: 1,
+                type: 'YEARS'
+              }
+            },
+            editPermission: ''
+        });
+        
         this.publisher = new Publisher({
             name: 'Stress test publisher',
             enabled: false,
@@ -141,26 +166,52 @@ describe('Stress test', function() {
             allowSettable: false
         });
 
-        return Promise.all([this.virtual.save(), this.meta.save(), this.persistent.save()]).then(() => {
-            // Create virtual data points
-            const requests = Array(stressTestConfig.numPoints).fill().map((e, i) => ({
-                body: {
+        return Promise.all([this.virtual.save(), this.meta.save(), this.persistent.save(), this.internal.save()]).then(() => {
+            // Create internal data points
+            const points = [
+                {
                     enabled: true,
-                    name: `Stress test virtual ${('' + i).padStart(3, '0')}`,
-                    dataSourceXid: this.virtual.xid,
+                    name: 'Used memory',
+                    dataSourceXid: this.internal.xid,
                     pointLocator: {
-                        startValue : '50',
-                        modelType : 'PL.VIRTUAL',
-                        dataType : 'NUMERIC',
-                        changeType : 'BROWNIAN',
+                        modelType: 'PL.INTERNAL',
+                        dataType: 'NUMERIC',
                         settable: false,
-                        max: 100,
-                        maxChange: 0.1,
-                        min: 0
+                        monitorId: 'java.lang.Runtime.usedMemory'
                     },
-                    loggingProperties: {
-                        loggingType: 'ALL'
-                    }
+                    loggingProperties: {loggingType: 'ALL'}
+                }
+            ];
+            
+            return client.restRequest({
+                path: '/rest/v2/data-points/bulk',
+                method: 'POST',
+                data: {
+                    action: 'CREATE',
+                    requests: points.map(pt => ({body: pt}))
+                }
+            }).then(waitUntilComplete).then(response => {
+                assert.isFalse(response.data.result.hasError);
+                this.internalXids = response.data.result.responses.map(r => r.body.xid);
+            });
+        }).then(() => {
+            // Create virtual data points
+            const points = Array(stressTestConfig.numPoints).fill().map((e, i) => ({
+                enabled: true,
+                name: `Stress test virtual ${('' + i).padStart(3, '0')}`,
+                dataSourceXid: this.virtual.xid,
+                pointLocator: {
+                    startValue : '50',
+                    modelType : 'PL.VIRTUAL',
+                    dataType : 'NUMERIC',
+                    changeType : 'BROWNIAN',
+                    settable: false,
+                    max: 100,
+                    maxChange: 0.1,
+                    min: 0
+                },
+                loggingProperties: {
+                    loggingType: 'ALL'
                 }
             }));
             
@@ -169,7 +220,7 @@ describe('Stress test', function() {
                 method: 'POST',
                 data: {
                     action: 'CREATE',
-                    requests
+                    requests: points.map(pt => ({body: pt}))
                 }
             }).then(waitUntilComplete).then(response => {
                 assert.isFalse(response.data.result.hasError);
@@ -177,40 +228,38 @@ describe('Stress test', function() {
             });
         }).then(() => {
             // Create meta data points
-            const requests = Array(stressTestConfig.numPoints).fill().map((e, i) => ({
-                body: {
-                    enabled: true,
-                    name: `Stress test meta ${('' + i).padStart(3, '0')}`,
-                    dataSourceXid: this.meta.xid,
-                    pointLocator: {
-                        modelType: 'PL.META',
-                        context: [
-                            {
-                                dataPointXid: this.virtualXids[i],
-                                variableName: 'src',
-                                contextUpdate: true
-                            }
-                        ],
-                        script: 'return src.value * 10 - 100;',
-                        scriptPermissions: [],
-                        executionDelaySeconds: 0,
-                        logCount: 5,
-                        logSize: 1,
-                        logLevel: 'NONE',
-                        scriptEngine: 'JAVASCRIPT',
-                        dataType: 'NUMERIC',
-                        updateEvent: 'NONE',
-                        variableName: 'my',
-                        settable: false,
-                        contextUpdateEvent: 'CONTEXT_UPDATE',
-                        updateCronPattern: '',
-                        relinquishable: false
-                    },
-                    loggingProperties: {
-                        loggingType: 'INTERVAL',
-                        intervalLoggingType: 'AVERAGE',
-                        intervalLoggingPeriod: {periods: 1, type: 'MINUTES'}
-                    }
+            const points = Array(stressTestConfig.numPoints).fill().map((e, i) => ({
+                enabled: true,
+                name: `Stress test meta ${('' + i).padStart(3, '0')}`,
+                dataSourceXid: this.meta.xid,
+                pointLocator: {
+                    modelType: 'PL.META',
+                    context: [
+                        {
+                            dataPointXid: this.virtualXids[i],
+                            variableName: 'src',
+                            contextUpdate: true
+                        }
+                    ],
+                    script: 'return src.value * 10 - 100;',
+                    scriptPermissions: [],
+                    executionDelaySeconds: 0,
+                    logCount: 5,
+                    logSize: 1,
+                    logLevel: 'NONE',
+                    scriptEngine: 'JAVASCRIPT',
+                    dataType: 'NUMERIC',
+                    updateEvent: 'NONE',
+                    variableName: 'my',
+                    settable: false,
+                    contextUpdateEvent: 'CONTEXT_UPDATE',
+                    updateCronPattern: '',
+                    relinquishable: false
+                },
+                loggingProperties: {
+                    loggingType: 'INTERVAL',
+                    intervalLoggingType: 'AVERAGE',
+                    intervalLoggingPeriod: {periods: 1, type: 'MINUTES'}
                 }
             }));
             
@@ -219,7 +268,7 @@ describe('Stress test', function() {
                 method: 'POST',
                 data: {
                     action: 'CREATE',
-                    requests
+                    requests: points.map(pt => ({body: pt}))
                 }
             }).then(waitUntilComplete).then(response => {
                 assert.isFalse(response.data.result.hasError);
@@ -244,12 +293,16 @@ describe('Stress test', function() {
             return this.meta.delete().catch(noop);
         }).then(() => {
             return this.virtual.delete().catch(noop);
+        }).then(() => {
+            return this.internal.delete().catch(noop);
         });
     });
     
     it('Runs the stress test successfully', function() {
         // allow an extra 100 ms per point for data source startup
         this.timeout(30000 + stressTestConfig.numPoints * 100 + stressTestConfig.duration);
+        
+        const results = {};
         
         this.virtual.enabled = true;
         return this.virtual.save().then(() => {
@@ -261,25 +314,22 @@ describe('Stress test', function() {
         }).then(() => {
             return delay(stressTestConfig.duration);
         }).then(() => {
-            return client.restRequest({
-                path: '/rest/v2/testing/heap-dump',
-                method: 'POST',
-                params: {filename: 'logs/heap_dump', readable: true}
-            });
-        }).then(response => {
-            this.heapDumpFile = response.data;
-            
+            if (stressTestConfig.heapDumpFilename) {
+                return client.restRequest({
+                    path: '/rest/v2/testing/heap-dump',
+                    method: 'POST',
+                    params: {filename: stressTestConfig.heapDumpFile, readable: true}
+                }).then(response => {
+                    results.heapDumpFile = response.data;
+                });
+            }
+        }).then(() => {
             return client.restRequest({
                 path: '/rest/v2/testing/jvm-info',
             });
         }).then(response => {
-            const results = {
-                jvmInfo: response.data,
-                heapDumpFile: this.heapDumpFile
-            };
-            
-            console.log(results);
-            
+            results.jvmInfo: response.data;
+
             if (stressTestConfig.resultsFile) {
                 fs.writeFileSync(stressTestConfig.resultsFile, JSON.stringify(results, null, 4));
             }
