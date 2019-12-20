@@ -20,14 +20,4 @@ public class EnvCanDataSourceDefinition extends DataSourceDefinition {
     protected DataSourceVO<?> createDataSourceVO() {
         return new EnvCanDataSourceVO();
     }
-
-    @Override
-    public String getEditPagePath() {
-        return "web/editEnvCan.jsp";
-    }
-
-    @Override
-    public Class<?> getDwrClass() {
-        return EnvCanEditDwr.class;
-    }
 }

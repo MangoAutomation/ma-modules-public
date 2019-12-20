@@ -24,13 +24,4 @@ public class InternalDataSourceDefinition extends DataSourceDefinition {
         return new InternalDataSourceVO();
     }
 
-    @Override
-    public String getEditPagePath() {
-        return "web/editInternal.jsp";
-    }
-
-    @Override
-    public Class<?> getDwrClass() {
-        return InternalEditDwr.class;
-    }
 }

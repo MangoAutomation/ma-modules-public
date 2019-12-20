@@ -1,3 +1,7 @@
+/**
+ * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
+ * @author Terry Packer
+ */
 package com.serotonin.m2m2.internal;
 
 import java.io.File;
@@ -5,9 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,12 +25,11 @@ import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.EventHandlerDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
-import com.serotonin.m2m2.module.MenuItemDefinition;
+import com.serotonin.m2m2.module.LifecycleDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.UpgradeCheck;
 import com.serotonin.m2m2.view.text.AnalogRenderer;
@@ -37,37 +37,16 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 
-public class InternalMenuItem extends MenuItemDefinition {
+/**
+ * 
+ * @author Terry Packer
+ *
+ */
+public class InternalLifecycle extends LifecycleDefinition {
 	
-	private static Log LOG = LogFactory.getLog(InternalMenuItem.class);
-	
-    @Override
-    public Visibility getVisibility() {
-        return Visibility.USER;
-    }
-
-    @Override
-    public String getTextKey(HttpServletRequest request, HttpServletResponse response) {
-        return "internal.status";
-    }
-
-    @Override
-    public String getImage(HttpServletRequest request, HttpServletResponse response) {
-        return "web/system-monitor.png";
-    }
-
-    @Override
-    public String getHref(HttpServletRequest request, HttpServletResponse response) {
-        return "/internal/status.shtm";
-    }
-
-    @Override
-    public boolean isVisible(HttpServletRequest request, HttpServletResponse response) {
-        return Permissions.hasPermission(Common.getHttpUser(), SystemSettingsDao.instance.getValue(StatusPermissionDef.PERMISSION));
-    }
+	private static Log LOG = LogFactory.getLog(InternalLifecycle.class);
     
     @Override
     public void postInitialize(boolean install, boolean upgrade) {
