@@ -25,7 +25,6 @@
 	<modules>
 		<module>ASCII File Data Source</module>
 		<module>EnvCan Data Source</module>
-		<module>Graphical views</module>
 		<module>Internal Data Source</module>
 		<module>Language - de</module>
 		<module>Language - es</module>
