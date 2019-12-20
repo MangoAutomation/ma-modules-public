@@ -20,11 +20,6 @@ public class AsciiFileSystemSettingsDefinition extends SystemSettingsDefinition 
 	}
 
 	@Override
-	public String getSectionJspPath() {
-		return "web/settings.jsp";
-	}
-
-	@Override
 	public Map<String, Object> getDefaultValues() {
 		Map<String, Object> defaults = new HashMap<String, Object>();
 		defaults.put(RESTRICTED_PATH, Common.MA_HOME);
