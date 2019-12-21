@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.detectors.AlphanumericRegexStateEventDetectorDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AlphanumericRegexStateDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class AlphanumericRegexStateEventDetectorModelMapping extends  AbstractPo
     }
 
     @Override
-    public AlphanumericRegexStateEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
+    public AlphanumericRegexStateEventDetectorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         AlphanumericRegexStateDetectorVO detector = (AlphanumericRegexStateDetectorVO)from;
         return loadDataPoint(detector, new AlphanumericRegexStateEventDetectorModel(detector), user, mapper);
     }

@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * Gets a list of RestModelMapping beans from the Spring context and uses them to convert an object to its model.
@@ -42,12 +42,12 @@ public class RestModelMapper {
         }        
     }
     
-    public <T> T map(Object from, Class<T> model, User user) {
+    public <T> T map(Object from, Class<T> model, PermissionHolder user) {
         Objects.requireNonNull(from);
         Objects.requireNonNull(model);
 
         for (RestModelMapping<?,?> mapping : mappings) {
-            if (mapping.supports(from, model)) {
+            if (mapping.supports(from.getClass(), model)) {
                 @SuppressWarnings("unchecked")
                 T result = (T) mapping.map(from, user, this);
                 if (result != null) {
@@ -59,18 +59,35 @@ public class RestModelMapper {
         throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), model));
     }
 
-    public <T> MappingJacksonValue mapWithView(Object from, Class<T> model, User user) {
+    public <T> MappingJacksonValue mapWithView(Object from, Class<T> model, PermissionHolder user) {
         Objects.requireNonNull(from);
         Objects.requireNonNull(model);
 
         for (RestModelMapping<?,?> mapping : mappings) {
-            if (mapping.supports(from, model)) {
+            if (mapping.supports(from.getClass(), model)) {
                 @SuppressWarnings("unchecked")
                 T result = (T) mapping.map(from, user, this);
                 if (result != null) {
                     MappingJacksonValue mappingValue = new MappingJacksonValue(result);
                     mappingValue.setSerializationView(mapping.view(from, user));
                     return mappingValue;
+                }
+            }
+        }
+
+        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), model));
+    }
+    
+    public <T> T unMap(Object from, Class<T> model, PermissionHolder user) {
+        Objects.requireNonNull(from);
+        Objects.requireNonNull(model);
+
+        for (RestModelMapping<?,?> mapping : mappings) {
+            if (mapping.supports(model, from.getClass())) {
+                @SuppressWarnings("unchecked")
+                T result = (T) mapping.unmap(from, user, this);
+                if (result != null) {
+                    return result;
                 }
             }
         }

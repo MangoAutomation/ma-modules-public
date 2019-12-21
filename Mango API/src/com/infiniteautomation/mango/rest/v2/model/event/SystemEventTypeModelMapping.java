@@ -13,6 +13,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -32,7 +33,7 @@ public class SystemEventTypeModelMapping implements RestModelJacksonMapping<Syst
     }
 
     @Override
-    public SystemEventTypeModel map(Object from, User user, RestModelMapper mapper) {
+    public SystemEventTypeModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         SystemEventType type = (SystemEventType) from;
         if(StringUtils.equals(SystemEventType.TYPE_USER_LOGIN, type.getEventSubtype())) {
             UserModel userModel = null;

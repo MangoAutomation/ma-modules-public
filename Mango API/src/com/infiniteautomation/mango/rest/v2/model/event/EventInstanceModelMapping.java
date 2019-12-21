@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.serotonin.m2m2.rt.event.EventInstance;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
     }
 
     @Override
-    public EventInstanceModel map(Object from, User user, RestModelMapper mapper) {
+    public EventInstanceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         EventInstance evt = (EventInstance)from;
         AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user); 
         return new EventInstanceModel(

@@ -22,9 +22,6 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryIn
  */
 public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo> extends JsonSerializer<PointValueTimeStream<T, INFO>>{
 
-    /* (non-Javadoc)
-     * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-     */
     @Override
     public void serialize(PointValueTimeStream<T, INFO> value, JsonGenerator jgen,
             SerializerProvider provider) throws IOException,

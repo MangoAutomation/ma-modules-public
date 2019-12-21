@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.detectors.RateOfChangeDetectorDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.RateOfChangeDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class RateOfChangeEventDetectorModelMapping extends AbstractPointEventDet
     }
 
     @Override
-    public RateOfChangeEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
+    public RateOfChangeEventDetectorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         RateOfChangeDetectorVO detector = (RateOfChangeDetectorVO)from;
         return loadDataPoint(detector, new RateOfChangeEventDetectorModel(detector), user, mapper);
     }

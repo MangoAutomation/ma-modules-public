@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.detectors.PointChangeEventDetectorDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.PointChangeDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class PointChangeEventDetectorModelMapping extends AbstractPointEventDete
     }
 
     @Override
-    public PointChangeEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
+    public PointChangeEventDetectorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         PointChangeDetectorVO detector = (PointChangeDetectorVO)from;
         return loadDataPoint(detector, new PointChangeEventDetectorModel(detector), user, mapper);
     }

@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.AbstractVO;
 
@@ -64,7 +65,7 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
      * Create a vo from our fields
      * @return
      */
-    public VO toVO() {
+    public VO toVO() throws ValidationException {
         VO vo = newVO();
         vo.setId(id == null ? Common.NEW_ID : id);
         vo.setXid(xid);

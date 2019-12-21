@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.detectors.PositiveCusumEventDetectorDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.PositiveCusumDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class PositiveCusumEventDetectorModelMapping extends AbstractPointEventDe
     }
 
     @Override
-    public PositiveCusumEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
+    public PositiveCusumEventDetectorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         PositiveCusumDetectorVO detector = (PositiveCusumDetectorVO)from;
         return loadDataPoint(detector, new PositiveCusumEventDetectorModel(detector), user, mapper);
     }

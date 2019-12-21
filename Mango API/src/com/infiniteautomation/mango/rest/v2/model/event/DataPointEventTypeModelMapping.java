@@ -9,7 +9,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -29,7 +29,7 @@ public class DataPointEventTypeModelMapping implements RestModelJacksonMapping<D
     }
 
     @Override
-    public DataPointEventTypeModel map(Object from, User user, RestModelMapper mapper) {
+    public DataPointEventTypeModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new DataPointEventTypeModel((DataPointEventType) from);
     }
     

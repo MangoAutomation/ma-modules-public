@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.detectors.MultistateStateEventDetectorDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.MultistateStateDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class MultistateStateEventDetectorModelMapping extends AbstractPointEvent
     }
 
     @Override
-    public MultistateStateEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
+    public MultistateStateEventDetectorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         MultistateStateDetectorVO detector = (MultistateStateDetectorVO)from;
         return loadDataPoint(detector, new MultistateStateEventDetectorModel(detector), user, mapper);
     }

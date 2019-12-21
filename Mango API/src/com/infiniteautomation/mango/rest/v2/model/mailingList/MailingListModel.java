@@ -14,10 +14,13 @@ import com.infiniteautomation.mango.scheduling.util.DailySchedule;
 import com.infiniteautomation.mango.scheduling.util.ScheduleUtils;
 import com.infiniteautomation.mango.scheduling.util.TimeValue;
 import com.infiniteautomation.mango.scheduling.util.WeeklySchedule;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 
 /**
+ * Permissions are not filled in the to/from VO methods
+ * 
  * @author Terry Packer
  *
  */
@@ -94,22 +97,13 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     public void fromVO(MailingList vo) {
         super.fromVO(vo);
         this.receiveAlarmEmails = vo.getReceiveAlarmEmails();
-        this.readPermissions = vo.getReadPermissions();
-        this.editPermissions = vo.getEditPermissions();
         this.inactiveSchedule = getInactiveIntervalsAsWeeklySchedule(vo.getInactiveIntervals());
     }
 
     @Override
-    public MailingList toVO() {
+    public MailingList toVO() throws ValidationException {
         MailingList vo = super.toVO();
         vo.setReceiveAlarmEmails(receiveAlarmEmails);
-        vo.setReadPermissions(readPermissions);
-        vo.setEditPermissions(editPermissions);
-        //TODO Do we want to validate the schedule here as we can only validate offsets in the service?
-        //        ProcessResult result = new ProcessResult();
-        //        inactiveSchedule.validate(result);
-        //        if(!result.isValid())
-        //            throw new ValidationException(result);
         vo.setInactiveIntervals(weeklyScheduleToInactiveIntervals(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());

@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModel;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListWithRecipientsModel;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModelMapping;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
@@ -24,10 +24,15 @@ import com.serotonin.m2m2.vo.mailingList.MailingList;
 public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler<MailingList> {
 
     private final MailingListService service;
+    private final MailingListModelMapping mapping;
+    private final RestModelMapper mapper;
 
     @Autowired
-    public MailingListWebSocketHandler(MailingListService service) {
+    public MailingListWebSocketHandler(MailingListService service, MailingListModelMapping mapping, 
+           RestModelMapper mapper) {
         this.service = service;
+        this.mapping = mapping;
+        this.mapper = mapper;
     }
 
     @Override
@@ -42,11 +47,7 @@ public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     protected Object createModel(MailingList vo, User user) {
-        if (service.hasRecipientViewPermission(user, vo)) {
-            return new MailingListWithRecipientsModel(vo);
-        } else {
-            return new MailingListModel(vo);
-        }
+        return mapping.map(vo, user, mapper);
     }
 
     @Override
