@@ -328,7 +328,7 @@ describe('Stress test', function() {
                 path: '/rest/v2/testing/jvm-info',
             });
         }).then(response => {
-            results.jvmInfo: response.data;
+            results.jvmInfo = response.data;
 
             if (stressTestConfig.resultsFile) {
                 fs.writeFileSync(stressTestConfig.resultsFile, JSON.stringify(results, null, 4));
