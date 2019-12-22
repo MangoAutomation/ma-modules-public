@@ -14,8 +14,8 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.gmavenplus</groupId>
-				<artifactId>gmavenplus-plugin</artifactId>
+				<groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+				<artifactId>serviceloader-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
