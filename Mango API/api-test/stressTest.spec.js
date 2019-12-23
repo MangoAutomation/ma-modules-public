@@ -41,15 +41,15 @@ describe('Stress test', function() {
     const waitUntilComplete = (response) => {
         if (response.data.status === 'SUCCESS') {
             return response;
-        } else if (response.data.status === 'RUNNING') {
+        } else if (['TIMED_OUT', 'CANCELLED', 'ERROR'].includes(response.data.status)) {
+            return Promise.reject(new Error(`Bulk create points error ${response.data.status}`));
+        } else {
             return delay(1000).then(() => {
                 return client.restRequest({
                     path: `/rest/v2/data-points/bulk/${encodeURIComponent(response.data.id)}`,
                     method: 'GET'
                 }).then(waitUntilComplete);
             });
-        } else {
-            return Promise.reject(response);
         }
     };
     
