@@ -34,7 +34,6 @@ describe('System Action Endpoints', function() {
           'backupConfiguration',
           'sqlBackup',
           'sqlRestore',
-          'reportPurge',
           'excelReportPurgeUsingSettings',
           'excelReportPurgeAll',
           'noSqlBackup',
@@ -149,24 +148,6 @@ describe('System Action Endpoints', function() {
                   });
               });
             });
-          });
-        });
-      });
-    });
-
-    it('Kick off reportPurge action', () => {
-
-      return client.restRequest({
-          path: '/rest/v2/actions/trigger/reportPurge',
-          method: 'PUT'
-      }).then(response => {
-
-        return delay(3000).then(() => {
-          return client.restRequest({
-            path: response.headers.location,
-            method: 'GET'
-          }).then(response => {
-            assert.equal(response.data.results.finished, true);
           });
         });
       });
