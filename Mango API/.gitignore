@@ -7,3 +7,6 @@
 /web/
 /.vscode/
 /pointValues.csv
+.settings
+.classpath
+.project

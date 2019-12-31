@@ -1,1 +1,4 @@
 /maven-target/
+.settings
+.classpath
+.project

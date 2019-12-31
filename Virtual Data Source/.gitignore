@@ -6,3 +6,6 @@
 /node_modules/
 /config.json
 /.vscode/
+.settings
+.classpath
+.project

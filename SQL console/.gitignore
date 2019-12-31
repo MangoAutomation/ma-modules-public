@@ -6,3 +6,6 @@
 /web/angular/
 /node/
 /.vscode/
+.settings
+.classpath
+.project

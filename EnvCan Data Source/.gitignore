@@ -5,4 +5,6 @@
 /node_modules/
 /node/
 /.vscode/
-/web/angular/
+/web/angular/.settings
+.classpath
+.project
