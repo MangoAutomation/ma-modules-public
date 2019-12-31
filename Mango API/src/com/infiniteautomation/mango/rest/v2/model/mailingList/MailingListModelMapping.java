@@ -16,9 +16,9 @@ import com.infiniteautomation.mango.spring.service.RoleService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.vo.RoleVO;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.role.RoleVO;
 
 /**
  * @author Terry Packer

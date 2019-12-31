@@ -134,28 +134,16 @@ public abstract class AbstractMangoVoRestV2Controller <VO extends AbstractBasicV
 		return model;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.swagger.IMangoVoRestController#getModelMap()
-	 */
 	@Override
 	public Map<String,String> getModelMap(){
 		return this.modelMap;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.swagger.IMangoVoRestController#getAppenders()
-	 */
 	@Override
 	public Map<String, SQLColumnQueryAppender> getAppenders(){
 		return this.appenders;
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.swagger.IMangoVoRestController#createModel(com.serotonin.m2m2.vo.AbstractBasicVO)
-	 */
+
 	@Override
 	public abstract MODEL createModel(VO vo);
 	

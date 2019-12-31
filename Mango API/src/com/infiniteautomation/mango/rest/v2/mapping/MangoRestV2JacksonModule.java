@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2.mapping;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.rest.v2.exception.ExceptionMixin;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
@@ -26,6 +27,7 @@ public class MangoRestV2JacksonModule extends SimpleModule {
 	@Override
 	public void setupModule(SetupContext context) {
 		this.addSerializer(TranslatableMessage.class, new TranslatableMessageSerializer());
+		this.addDeserializer(VirtualSerialPortConfig.class, new VirtualSerialPortConfigDeserializer());
 		super.setupModule(context);
 	}
 }

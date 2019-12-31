@@ -4,7 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.permissions;
 
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.serotonin.m2m2.vo.RoleVO;
+import com.serotonin.m2m2.vo.role.RoleVO;
 
 /**
  * Used to edit the Roles themselves.  To represent a role inside a permission on 
