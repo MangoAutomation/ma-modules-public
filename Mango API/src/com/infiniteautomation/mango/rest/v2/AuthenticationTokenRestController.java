@@ -77,7 +77,7 @@ public class AuthenticationTokenRestController {
 
         User user = currentUser;
         if (username != null && !username.equals(currentUser.getUsername())) {
-            if (!currentUser.hasAdminPermission()) {
+            if (!currentUser.hasAdminRole()) {
                 throw new AccessDeniedException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"));
             }
 

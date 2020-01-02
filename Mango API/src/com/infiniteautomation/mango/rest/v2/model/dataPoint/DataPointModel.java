@@ -8,14 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.role.RoleModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.BaseChartRendererModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.ChartRendererFactory;
@@ -28,7 +26,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRende
  * @author Jared Wiltshire
  *
  */
-public class DataPointModel {
+public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     Integer id;
     String xid;
@@ -36,9 +34,8 @@ public class DataPointModel {
     Boolean enabled;
 
     String deviceName;
-    String readPermission;
-    String setPermission;
-    Integer pointFolderId;
+    Set<RoleModel> readPermission;
+    Set<RoleModel> setPermission;
     Boolean purgeOverride;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     TimePeriodModel purgePeriod;
@@ -53,9 +50,7 @@ public class DataPointModel {
     String chartColour;
     String plotType;
     LoggingPropertiesModel loggingProperties;
-    @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseTextRendererModel<?> textRenderer;
-    @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseChartRendererModel<?> chartRenderer;
     String rollup;
     String simplifyType;
@@ -67,21 +62,11 @@ public class DataPointModel {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Double setExtremeHighLimit;
 
-    /**
-     * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
-     * initialized to null by Java.
-     */
-    @JsonIgnore
-    boolean templateXidWasSet = false;
-    String templateXid;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String templateName;
-
     Integer dataSourceId;
     String dataSourceXid;
     String dataSourceName;
     String dataSourceTypeName;
-    Set<String> dataSourceEditRoles;
+    Set<RoleModel> dataSourceEditRoles;
 
     boolean mergeTags = false;
     Map<String, String> tags;
@@ -94,6 +79,11 @@ public class DataPointModel {
      * @param point
      */
     public DataPointModel(DataPointVO point) {
+        fromVO(point);
+    }
+    
+    @Override
+    public void fromVO(DataPointVO point) {
         this.id = point.getId();
         this.xid = point.getXid();
         this.name = point.getName();
@@ -102,7 +92,6 @@ public class DataPointModel {
         this.deviceName = point.getDeviceName();
         this.readPermission = point.getReadPermission();
         this.setPermission = point.getSetPermission();
-        this.pointFolderId = point.getPointFolderId();
         this.purgeOverride = point.isPurgeOverride();
         if (this.purgeOverride) {
             this.purgePeriod = new TimePeriodModel(point.getPurgePeriod(), point.getPurgeType());
@@ -130,9 +119,6 @@ public class DataPointModel {
         this.dataSourceName = point.getDataSourceName();
         this.dataSourceTypeName = point.getDataSourceTypeName();
 
-        this.templateXid = point.getTemplateXid();
-        this.templateName = point.getTemplateName();
-
         this.rollup = Common.ROLLUP_CODES.getCode(point.getRollup());
         this.simplifyType = DataPointVO.SIMPLIFY_TYPE_CODES.getCode(point.getSimplifyType());
         this.simplifyTolerance = point.getSimplifyTolerance();
@@ -145,8 +131,10 @@ public class DataPointModel {
         }
         this.dataSourceEditRoles = point.getDataSourceEditRoles();
     }
-
-    public void copyPropertiesTo(DataPointVO point) {
+    
+    @Override
+    public DataPointVO toVO() {
+        DataPointVO point = new DataPointVO();
         if (xid != null) {
             point.setXid(xid);
         }
@@ -164,9 +152,6 @@ public class DataPointModel {
         }
         if (setPermission != null) {
             point.setSetPermission(setPermission);
-        }
-        if (pointFolderId != null) {
-            point.setPointFolderId(pointFolderId);
         }
         if (purgeOverride != null) {
             point.setPurgeOverride(purgeOverride);
@@ -186,7 +171,6 @@ public class DataPointModel {
                 point.setUnit(UnitUtil.parseLocal(unit));
             } catch(IllegalArgumentException e) {
                 point.setUnit(null); //Signal to use the unit string
-                point.setUnitString(unit);
             }
         }
         if (useIntegralUnit != null) {
@@ -277,7 +261,7 @@ public class DataPointModel {
         }
         if (this.setExtremeHighLimit != null) {
             point.setSetExtremeHighLimit(this.setExtremeHighLimit);
-        }
+        }        
     }
 
     public Integer getId() {
@@ -456,23 +440,6 @@ public class DataPointModel {
         this.chartRenderer = chartRenderer;
     }
 
-    public String getTemplateXid() {
-        return templateXid;
-    }
-
-    public void setTemplateXid(String templateXid) {
-        this.templateXid = templateXid;
-        this.templateXidWasSet = true;
-    }
-
-    public String getTemplateName() {
-        return templateName;
-    }
-
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
-
     public Integer getDataSourceId() {
         return dataSourceId;
     }
@@ -503,10 +470,6 @@ public class DataPointModel {
 
     public void setDataSourceTypeName(String dataSourceTypeName) {
         this.dataSourceTypeName = dataSourceTypeName;
-    }
-
-    public boolean isTemplateXidWasSet() {
-        return templateXidWasSet;
     }
 
     public String getRollup() {
