@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.web.mvc.rest.v1;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -78,14 +77,14 @@ public class ServerRestController extends MangoRestController{
 
     private final MangoSessionRegistry sessionRegistry;
     private final ModulesService modulesService;
-    
+
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
     @Autowired
     public ServerRestController(MangoSessionRegistry sessionRegistry, ModulesService modulesService) {
         this.sessionRegistry = sessionRegistry;
         this.modulesService = modulesService;
-        
+
         this.allTimezones  = TimezoneUtility.getTimeZoneIdsWithOffset();
         this.defaultServerTimezone = new TimezoneModel("", new TranslatableMessage("users.timezone.def").translate(Common.getTranslations()), 0);
         //Always add the default to the start of the list
@@ -177,7 +176,7 @@ public class ServerRestController extends MangoRestController{
                     model.setNoSqlDbSizeBytes(Common.databaseProxy.getNoSQLProxy().getDatabaseSizeInBytes(pointValueStoreName));
                 }
                 // Filedata data
-                DirectoryInfo fileDatainfo = DirectoryUtils.getSize(new File(Common.getFiledataPath()));
+                DirectoryInfo fileDatainfo = DirectoryUtils.getSize(Common.getFiledataPath().toFile());
                 model.setFileDataSizeBytes(fileDatainfo.getSize());
 
 
