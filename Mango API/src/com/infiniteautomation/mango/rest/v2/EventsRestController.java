@@ -27,6 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.TranslatableMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
@@ -39,7 +40,6 @@ import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.TranslatableMessageModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -58,7 +58,7 @@ public class EventsRestController {
     private final RestModelMapper modelMapper;
     private final EventInstanceService service;
     private final BiFunction<EventInstanceVO, User, EventInstanceModel> map;
-    
+
     @Autowired
     public EventsRestController(RestModelMapper modelMapper, EventInstanceService service) {
         this.modelMapper = modelMapper;
@@ -67,7 +67,7 @@ public class EventsRestController {
             return modelMapper.map(vo, EventInstanceModel.class, user);
         };
     }
-    
+
     @ApiOperation(
             value = "Get the active events summary",
             notes = "List of counts for all active events by type and the most recent active alarm for each."
@@ -75,12 +75,12 @@ public class EventsRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/active-summary")
     public List<EventLevelSummaryModel> getActiveSummary(@AuthenticationPrincipal User user) {
         List<UserEventLevelSummary> summaries = service.getActiveSummary(user);
-        return summaries.stream().map(s -> { 
-                EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
-                return new EventLevelSummaryModel(s.getAlarmLevel(), s.getUnsilencedCount(), instanceModel);
-            }).collect(Collectors.toList());
+        return summaries.stream().map(s -> {
+            EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
+            return new EventLevelSummaryModel(s.getAlarmLevel(), s.getUnsilencedCount(), instanceModel);
+        }).collect(Collectors.toList());
     }
-    
+
     @ApiOperation(
             value = "Get summary of data point events",
             notes = "List of counts for all active events by type and the most recent active alarm for each."
@@ -93,7 +93,7 @@ public class EventsRestController {
         Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(xids, user);
         return summaries.stream().map(s -> new DataPointEventSummaryModel(s.getXid(), s.getCounts())).collect(Collectors.toList());
     }
-    
+
     @ApiOperation(
             value = "Get event by ID",
             notes = ""
@@ -103,9 +103,9 @@ public class EventsRestController {
             @ApiParam(value = "Valid Event ID", required = true, allowMultiple = false)
             @PathVariable Integer id,
             @AuthenticationPrincipal User user) {
-        return map.apply(service.getFull(id, user), user);
+        return map.apply(service.get(id), user);
     }
-    
+
     @ApiOperation(
             value = "Query Events",
             notes = "Use RQL formatted query",
@@ -119,7 +119,7 @@ public class EventsRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
-    
+
     @ApiOperation(
             value = "Acknowledge an existing event",
             notes = ""
@@ -137,10 +137,10 @@ public class EventsRestController {
         URI location = builder.path("/events/{id}").buildAndExpand(id).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        
+
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Acknowledge many existing events",
             notes = ""
@@ -151,20 +151,20 @@ public class EventsRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        
+
         TranslatableMessage tlm;
         if(message != null) {
             tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
         }else {
             tlm = null;
         }
-        
-        if (!user.hasAdminPermission()) {
+
+        if (!user.hasAdminRole()) {
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
         }
         AtomicInteger total = new AtomicInteger();
         long ackTimestamp = Common.timer.currentTimeMillis();
-        service.customizedQueryFull(rql, (EventInstanceVO vo, int index) -> {
+        service.customizedQuery(rql, (EventInstanceVO vo, int index) -> {
             EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, tlm);
             if (event != null && event.isAcknowledged()) {
                 total.incrementAndGet();
@@ -172,14 +172,14 @@ public class EventsRestController {
         });
         return total.get();
     }
-    
+
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
         } else {
             //TODO we may only need this restriction
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
         }
     }
 }

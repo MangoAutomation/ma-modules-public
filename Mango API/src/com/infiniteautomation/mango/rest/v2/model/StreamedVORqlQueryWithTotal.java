@@ -28,52 +28,50 @@ public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, DAO extends Ab
     private final ConditionSortLimit conditions;
     private final Function<T, ?> toModel;
     private final Predicate<T> filter;
-    private final boolean loadRelational;
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, boolean loadRelational) {
-        this(service, conditions, item -> true, Function.identity(), loadRelational);
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions) {
+        this(service, conditions, item -> true, Function.identity());
     }
-    
+
     public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, boolean loadRelational) {
-        this(service, conditions, item -> service.hasReadPermission(holder, item), Function.identity(), loadRelational);
+        this(service, conditions, item -> service.hasReadPermission(holder, item), Function.identity());
     }
 
-    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, conditions, item -> true, toModel, loadRelational);
-    }
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, conditions, item -> service.hasReadPermission(holder, item), toModel, loadRelational);
-    }
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, boolean loadRelational) {
-        this(service, service.getDao().rqlToCondition(rql), item -> true, Function.identity(), loadRelational);
-    }
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, boolean loadRelational) {
-        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), Function.identity(), loadRelational);
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Function<T, ?> toModel) {
+        this(service, conditions, item -> true, toModel);
     }
 
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, service.getDao().rqlToCondition(rql), item -> true, toModel, loadRelational);
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, Function<T, ?> toModel) {
+        this(service, conditions, item -> service.hasReadPermission(holder, item), toModel);
     }
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), toModel, loadRelational);
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql) {
+        this(service, service.getDao().rqlToCondition(rql), item -> true, Function.identity());
     }
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
-        this(service, service.getDao().rqlToCondition(rql), filter, toModel, loadRelational);
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder) {
+        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), Function.identity());
     }
-    
-    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel, boolean loadRelational) {
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql), item -> true, toModel);
+    }
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), toModel);
+    }
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql), filter, toModel);
+    }
+
+    public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel) {
         this.service = service;
         this.conditions = conditions;
         this.toModel = toModel;
         this.filter = filter;
-        this.loadRelational = loadRelational;
     }
-    
+
     @Override
     public StreamedArray getItems() {
         return new StreamedVOArray();
@@ -87,26 +85,15 @@ public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, DAO extends Ab
     private class StreamedVOArray implements JSONStreamedArray {
         @Override
         public void writeArrayValues(JsonGenerator jgen) throws IOException {
-            if(loadRelational)
-                service.customizedQueryFull(conditions, (T item, int index) -> {
-                    if (filter.test(item)) {
-                        try {
-                            jgen.writeObject(toModel.apply(item));
-                        } catch (IOException e) {
-                            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
-                        }
+            service.customizedQuery(conditions, (T item, int index) -> {
+                if (filter.test(item)) {
+                    try {
+                        jgen.writeObject(toModel.apply(item));
+                    } catch (IOException e) {
+                        throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
-                });
-            else
-                service.customizedQuery(conditions, (T item, int index) -> {
-                    if (filter.test(item)) {
-                        try {
-                            jgen.writeObject(toModel.apply(item));
-                        } catch (IOException e) {
-                            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
-                        }
-                    }
-                });
+                }
+            });
         }
     }
 }

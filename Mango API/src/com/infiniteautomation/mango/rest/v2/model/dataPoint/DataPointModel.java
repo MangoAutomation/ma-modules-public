@@ -4,16 +4,18 @@
 package com.infiniteautomation.mango.rest.v2.model.dataPoint;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.v2.model.role.RoleModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.BaseChartRendererModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.ChartRendererFactory;
@@ -34,8 +36,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     Boolean enabled;
 
     String deviceName;
-    Set<RoleModel> readPermission;
-    Set<RoleModel> setPermission;
+    String readPermission;
+    String setPermission;
     Boolean purgeOverride;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     TimePeriodModel purgePeriod;
@@ -66,7 +68,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     String dataSourceXid;
     String dataSourceName;
     String dataSourceTypeName;
-    Set<RoleModel> dataSourceEditRoles;
+    Set<String> dataSourceEditRoles;
 
     boolean mergeTags = false;
     Map<String, String> tags;
@@ -81,17 +83,18 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     public DataPointModel(DataPointVO point) {
         fromVO(point);
     }
-    
+
     @Override
     public void fromVO(DataPointVO point) {
+        PermissionService service = Common.getBean(PermissionService.class);
         this.id = point.getId();
         this.xid = point.getXid();
         this.name = point.getName();
         this.enabled = point.isEnabled();
 
         this.deviceName = point.getDeviceName();
-        this.readPermission = point.getReadPermission();
-        this.setPermission = point.getSetPermission();
+        this.readPermission = service.implodeRoles(point.getReadRoles());
+        this.setPermission = service.implodeRoles(point.getSetRoles());
         this.purgeOverride = point.isPurgeOverride();
         if (this.purgeOverride) {
             this.purgePeriod = new TimePeriodModel(point.getPurgePeriod(), point.getPurgeType());
@@ -129,12 +132,19 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             this.setExtremeLowLimit = point.getSetExtremeLowLimit();
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
-        this.dataSourceEditRoles = point.getDataSourceEditRoles();
+        if(point.getDataSourceEditRoles() != null) {
+            this.dataSourceEditRoles = new HashSet<>();
+            for(Role role : point.getDataSourceEditRoles()) {
+                this.dataSourceEditRoles.add(role.getXid());
+            }
+        }
     }
-    
+
     @Override
     public DataPointVO toVO() {
         DataPointVO point = new DataPointVO();
+        PermissionService service = Common.getBean(PermissionService.class);
+
         if (xid != null) {
             point.setXid(xid);
         }
@@ -148,10 +158,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             point.setDeviceName(deviceName);
         }
         if (readPermission != null) {
-            point.setReadPermission(readPermission);
+            point.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
         }
         if (setPermission != null) {
-            point.setSetPermission(setPermission);
+            point.setSetRoles(service.explodeLegacyPermissionGroupsToRoles(setPermission));
         }
         if (purgeOverride != null) {
             point.setPurgeOverride(purgeOverride);
@@ -180,8 +190,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setIntegralUnit(UnitUtil.parseLocal(integralUnit));
             } catch(IllegalArgumentException e) {
-                point.setIntegralUnit(null); //Signal to use the unit string
-                point.setIntegralUnitString(integralUnit);
+                point.setIntegralUnit(null);
             }
         }
         if (useRenderedUnit != null) {
@@ -191,8 +200,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setRenderedUnit(UnitUtil.parseLocal(renderedUnit));
             } catch(IllegalArgumentException e) {
-                point.setRenderedUnit(null); //Signal to use the unit string
-                point.setRenderedUnitString(renderedUnit);
+                point.setRenderedUnit(null);
             }
         }
         if (chartColour != null) {
@@ -231,14 +239,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             ChartRendererFactory.updateDataPoint(point, chartRenderer);
         }
         if (pointLocator != null) {
-            point.setPointLocator(pointLocator.getData());
-        }
-
-        // template XID is allowed to be null, if it is then clear the template properties on the point
-        if (templateXidWasSet && templateXid == null) {
-            point.setTemplateId(null);
-            point.setTemplateXid(null);
-            point.setTemplateName(null);
+            point.setPointLocator(pointLocator.toVO());
         }
 
         if (this.rollup != null) {
@@ -261,9 +262,11 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         if (this.setExtremeHighLimit != null) {
             point.setSetExtremeHighLimit(this.setExtremeHighLimit);
-        }        
+        }
+        return point;
     }
 
+    @Override
     public Integer getId() {
         return id;
     }
@@ -272,18 +275,22 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.id = id;
     }
 
+    @Override
     public String getXid() {
         return xid;
     }
 
+    @Override
     public void setXid(String xid) {
         this.xid = xid;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -318,14 +325,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public void setSetPermission(String setPermission) {
         this.setPermission = setPermission;
-    }
-
-    public Integer getPointFolderId() {
-        return pointFolderId;
-    }
-
-    public void setPointFolderId(Integer pointFolderId) {
-        this.pointFolderId = pointFolderId;
     }
 
     public Boolean getPurgeOverride() {
@@ -531,12 +530,17 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     public void setSetExtremeHighLimit(Double setExtremeHighLimit) {
         this.setExtremeHighLimit = setExtremeHighLimit;
     }
-    
+
     public Set<String> getDataSourceEditRoles() {
         return dataSourceEditRoles;
     }
 
     public void setDataSourceEditRoles(Set<String> dataSourceEditRoles) {
         //No-op
+    }
+
+    @Override
+    protected DataPointVO newVO() {
+        return new DataPointVO();
     }
 }

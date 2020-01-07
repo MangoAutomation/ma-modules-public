@@ -89,7 +89,7 @@ public class EmailVerificationController {
         User userToUpdate = null;
         String username = body.getUsername();
         if (username != null && !username.isEmpty()) {
-            userToUpdate = this.service.get(username, user);
+            userToUpdate = this.service.get(username);
         }
 
         emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, null, user);
@@ -109,7 +109,7 @@ public class EmailVerificationController {
         User userToUpdate = null;
         String username = body.getUsername();
         if (username != null && !username.isEmpty()) {
-            userToUpdate = this.service.get(username, user);
+            userToUpdate = this.service.get(username);
         }
 
         String token;

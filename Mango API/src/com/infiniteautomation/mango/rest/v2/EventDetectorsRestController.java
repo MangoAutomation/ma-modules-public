@@ -35,6 +35,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
@@ -53,7 +54,6 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
 import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -81,7 +81,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         };
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(websocket);
     }
-    
+
     @ApiOperation(
             value = "Query Event Detectors",
             notes = "Use RQL formatted query, filtered by data point read permissions",
@@ -95,7 +95,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user, vo -> map.apply(vo, user));
     }
-    
+
     @ApiOperation(
             value = "Get an Event Detector by xid",
             notes = "User must have read permission for the data point",
@@ -106,9 +106,9 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @ApiParam(value = "XID of Event detector", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        return map.apply(service.getFull(xid, user), user);
+        return map.apply(service.get(xid), user);
     }
-    
+
     @ApiOperation(
             value = "Get an Event Detector by id",
             notes = "User must have read permission for the data point",
@@ -120,9 +120,9 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @PathVariable int id,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.getFull(id, user), user);
+        return map.apply(service.get(id), user);
     }
-    
+
     @ApiOperation(
             value = "Create an Event Detector",
             notes = "User must have data source edit permission for source of the point",
@@ -135,13 +135,13 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @RequestBody AbstractEventDetectorModel<T> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.insertFull(model.toVO(), user, restart);
+        T vo = service.insertAndReload(model.toVO(), restart);
         URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
     }
-    
+
     @ApiOperation(
             value = "Update an Event Detector",
             notes = "User must have data source edit permission for source of the point",
@@ -157,7 +157,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @RequestParam(required=false, defaultValue="true") boolean restart,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.updateFull(xid, model.toVO(), user, restart);
+        T vo = service.updateAndReload(xid, model.toVO(), restart);
         URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -182,15 +182,15 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        T vo = service.updateFull(xid, model.toVO(), user, restart);
-        
+        T vo = service.updateAndReload(xid, model.toVO(), restart);
+
         URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(
             value = "Delete an Event Detector",
             notes = "User must have data source edit permission for source of the point, data point will restart",
@@ -203,9 +203,9 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(map.apply(service.delete(xid, user), user));
+        return ResponseEntity.ok(map.apply(service.delete(xid), user));
     }
-    
+
     @ApiOperation(value = "Gets a list of event detectors for bulk import via CSV", notes = "Adds an additional action and originalXid column")
     @RequestMapping(method = RequestMethod.GET, produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsv(
@@ -215,7 +215,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return this.queryCsvPost(rql, user);
     }
-    
+
     @ApiOperation(value = "Gets a list of event detectors for bulk import via CSV", notes = "Adds an additional action and originalXid column")
     @RequestMapping(method = RequestMethod.POST, value = "/query", produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsvPost(
@@ -232,7 +232,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             return actionAndModel;
         });
     }
-    
+
     private static final String RESOURCE_TYPE_BULK_EVENT_DETECTOR = "BULK_EVENT_DETECTOR";
 
     public static class EventDetectorIndividualRequest<ED extends AbstractEventDetectorVO<ED>> extends VoIndividualRequest<AbstractEventDetectorModel<ED>> {
@@ -248,7 +248,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
     }
 
     private final TemporaryResourceManager<EventDetectorBulkResponse, AbstractRestV2Exception> bulkResourceManager;
-    
+
     @ApiOperation(value = "Bulk get/create/update/delete event detectors",
             notes = "User must have read permission for the data point or edit permission for the data source",
             consumes=MediaTypes.CSV_VALUE)
@@ -259,7 +259,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
-            
+
             @AuthenticationPrincipal
             User user,
 
@@ -284,8 +284,8 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
         return this.bulkEventDetectorOperation(bulkRequest, restart, user, builder);
     }
-    
-    @ApiOperation(value = "Bulk get/create/update/delete event detectors", 
+
+    @ApiOperation(value = "Bulk get/create/update/delete event detectors",
             notes = "User must have read permission for the data point or edit permission for the data source")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> bulkEventDetectorOperation(
@@ -294,7 +294,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
-            
+
             @AuthenticationPrincipal
             User user,
 
@@ -337,7 +337,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         headers.setLocation(builder.path("/full-event-detectors/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
-    
+
     @ApiOperation(
             value = "Get a list of current bulk event detector operations",
             notes = "User can only get their own bulk operations unless they are an admin")
@@ -350,17 +350,30 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
         List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> preFiltered =
                 this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminPermission() || user.getId() == tr.getUserId())
+                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
-        List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> results = preFiltered;
+        List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> results;
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>>(), preFiltered);
+        }else {
+            results = preFiltered;
         }
 
-        PageQueryResultModel<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> result =
-                new PageQueryResultModel<>(results, preFiltered.size());
+        ListWithTotal<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> result =
+                new ListWithTotal<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>>() {
+
+            @Override
+            public List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> getItems() {
+                return results;
+            }
+
+            @Override
+            public int getTotal() {
+                return results.size();
+            }
+        };
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(result);
@@ -383,7 +396,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -407,7 +420,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -427,13 +440,13 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
         resource.remove();
     }
-    
+
     //TODO improve performance by tracking all data sources that need to be restarted and restart at the end?
     private EventDetectorIndividualResponse doIndividualRequest(EventDetectorIndividualRequest<T> request, boolean restart, VoAction defaultAction, AbstractEventDetectorModel<T> defaultBody, User user, UriComponentsBuilder builder) {
         EventDetectorIndividualResponse result = new EventDetectorIndividualResponse();
@@ -487,13 +500,13 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
         return result;
     }
-    
+
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<T, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, toModel, true);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, toModel);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, toModel, true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, toModel);
         }
     }
 }

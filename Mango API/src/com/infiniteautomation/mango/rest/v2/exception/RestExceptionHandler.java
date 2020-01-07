@@ -47,6 +47,7 @@ import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
 /**
@@ -202,7 +203,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             String uri;
             if (status == HttpStatus.FORBIDDEN) {
                 // browser HTML request
-                User user = Common.getHttpUser();
+                PermissionHolder holder = Common.getUser();
+                User user;
+                if(!(holder instanceof User)) {
+                    user = null;
+                }else {
+                    user = (User)holder;
+                }
                 uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user);
 
                 // Put exception into request scope (perhaps of use to a view)
@@ -231,9 +238,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 body = new GenericRestException(status, ex);
 
             //Add admin view if necessary
-            User user = Common.getHttpUser();
+            PermissionHolder user = Common.getUser();
             MappingJacksonValue value = new MappingJacksonValue(body);
-            if(user != null && user.hasAdminPermission())
+            if(user != null && user.hasAdminRole())
                 value.setSerializationView(AdminView.class);
             else
                 value.setSerializationView(Object.class);

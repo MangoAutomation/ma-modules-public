@@ -39,7 +39,9 @@ import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResu
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.WorkItemInfo;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -55,8 +57,6 @@ import com.serotonin.m2m2.rt.script.EventInstanceWrapper;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.workitem.WorkItemModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -75,11 +75,11 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
     private final EventHandlerService<T> service;
     private final BiFunction<T, User, AbstractEventHandlerModel<T>> map;
     private final MangoJavaScriptService javaScriptService;
-    
+
     @Autowired
     public EventHandlersRestController(EventHandlerService<T> service, MangoJavaScriptService javaScriptService, final RestModelMapper modelMapper) {
         this.service = service;
-        
+
         //Map the event types into the model
         this.map = (vo, user) -> {
             List<AbstractEventTypeModel<?,?, ?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
@@ -121,7 +121,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.getFull(xid, user), user);
+        return map.apply(service.get(xid), user);
     }
 
     @ApiOperation(
@@ -135,7 +135,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.insertFull(model.toVO(), user);
+        T vo = service.insert(model.toVO());
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -156,7 +156,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.updateFull(xid, model.toVO(), user);
+        T vo = service.update(xid, model.toVO());
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -181,8 +181,8 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        T vo = service.updateFull(xid, model.toVO(), user);
-        
+        T vo = service.update(xid, model.toVO());
+
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -202,7 +202,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(map.apply(service.delete(xid, user), user));
+        return ResponseEntity.ok(map.apply(service.delete(xid), user));
     }
 
     @ApiOperation(
@@ -231,7 +231,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) throws IOException, EncryptedDocumentException, InvalidFormatException {
-        
+
         //Add in the additional validation context
         if(model.getAdditionalContext() == null) {
             model.setAdditionalContext(new HashMap<>());
@@ -244,7 +244,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
         });
         return validateScript(model, user);
     }
-    
+
     @ApiOperation(
             value = "Validate an email event handler script",
             notes = "Admin Only"
@@ -255,7 +255,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) throws IOException, EncryptedDocumentException, InvalidFormatException {
-        
+
         //Add in the additional validation context
         if(model.getAdditionalContext() == null) {
             model.setAdditionalContext(new HashMap<>());
@@ -263,7 +263,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
         model.getAdditionalContext().computeIfAbsent(EmailHandlerRT.DO_NOT_SEND_KEY, (k) -> {
             return MangoJavaScriptService.UNCHANGED;
         });
-        
+
         //Setup the email ftl model
         Map<String, Object> emailModel = new HashMap<>();
         emailModel.put(EventInstance.CONTEXT_KEY,  new ValidationEventInstance());
@@ -275,11 +275,11 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
         emailModel.put("instanceDescription", SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
 
         //Get the Work Items
-        List<WorkItemModel> highPriorityWorkItems = Common.backgroundProcessing.getHighPriorityServiceItems();
+        List<WorkItemInfo> highPriorityWorkItems = Common.backgroundProcessing.getHighPriorityServiceItems();
         emailModel.put("highPriorityWorkItems", highPriorityWorkItems);
-        List<WorkItemModel> mediumPriorityWorkItems = Common.backgroundProcessing.getMediumPriorityServiceQueueItems();
+        List<WorkItemInfo> mediumPriorityWorkItems = Common.backgroundProcessing.getMediumPriorityServiceQueueItems();
         emailModel.put("mediumPriorityWorkItems", mediumPriorityWorkItems);
-        List<WorkItemModel> lowPriorityWorkItems = Common.backgroundProcessing.getLowPriorityServiceQueueItems();
+        List<WorkItemInfo> lowPriorityWorkItems = Common.backgroundProcessing.getLowPriorityServiceQueueItems();
         emailModel.put("lowPriorityWorkItems", lowPriorityWorkItems);
         emailModel.put("threadList",  new ArrayList<Map<String,Object>> ());
 
@@ -288,28 +288,28 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
         });
         return validateScript(model, user);
     }
-    
+
     private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, PermissionHolder user) {
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
         return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, user));
     }
-    
+
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
         }
     }
-    
+
     public static class ValidationEventInstance extends EventInstance {
         public ValidationEventInstance() {
             super(new ValidationEventType(), Common.timer.currentTimeMillis(), true, AlarmLevels.URGENT, new TranslatableMessage("common.validate"), new HashMap<>());
         }
     }
-    
+
     public static class ValidationEventType extends EventType {
 
         @Override
@@ -338,14 +338,9 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
         }
 
         @Override
-        public EventTypeModel asModel() {
-            return null;
-        }
-
-        @Override
-        public boolean hasPermission(PermissionHolder user) {
+        public boolean hasPermission(PermissionHolder user, PermissionService service) {
             return true;
         }
-        
+
     }
 }

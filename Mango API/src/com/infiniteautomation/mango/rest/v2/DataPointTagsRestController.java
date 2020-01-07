@@ -35,7 +35,7 @@ import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -44,15 +44,14 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -104,14 +103,17 @@ public class DataPointTagsRestController {
     }
 
     private final TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkResourceManager;
-    private final DataPointDao dataPointDao;
+    private final DataPointService dataPointService;
     private final DataPointTagsDao dataPointTagsDao;
+    private final PermissionService permissionService;
 
     @Autowired
-    public DataPointTagsRestController(TemporaryResourceWebSocketHandler websocket, DataPointDao dataPointDao, DataPointTagsDao dataPointTagsDao) {
+    public DataPointTagsRestController(TemporaryResourceWebSocketHandler websocket, DataPointService dataPointService,
+            DataPointTagsDao dataPointTagsDao, PermissionService permissionService) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(websocket);
-        this.dataPointDao = dataPointDao;
+        this.dataPointService = dataPointService;
         this.dataPointTagsDao = dataPointTagsDao;
+        this.permissionService = permissionService;
     }
 
     @ApiOperation(value = "Query for data point tags using RQL", notes = "User must have read permission for the data points")
@@ -121,13 +123,13 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = dataPointDao.rqlToCondition(rql);
+        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
 
-        if (!user.hasAdminPermission()) {
-            conditions.addCondition(dataPointDao.userHasPermission(user));
+        if (!user.hasAdminRole()) {
+            conditions.addCondition(dataPointService.getDao().userHasPermission(user));
         }
 
-        return new StreamedVOQueryWithTotal<>(dataPointDao, conditions, item -> true, dataPoint -> {
+        return new StreamedVOQueryWithTotal<>(dataPointService.getDao(), conditions, item -> true, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -149,13 +151,13 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = dataPointDao.rqlToCondition(rql);
+        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
 
-        if (!user.hasAdminPermission()) {
-            conditions.addCondition(dataPointDao.userHasPermission(user));
+        if (!user.hasAdminRole()) {
+            conditions.addCondition(dataPointService.getDao().userHasPermission(user));
         }
 
-        return new StreamedVOQueryWithTotal<>(dataPointDao, conditions, item -> true, dataPoint -> {
+        return new StreamedVOQueryWithTotal<>(dataPointService.getDao(), conditions, item -> true, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -184,14 +186,14 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = dataPointDao.rqlToCondition(rql);
-        if (!user.hasAdminPermission()) {
-            conditions.addCondition(dataPointDao.userHasEditPermission(user));
+        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
+        if (!user.hasAdminRole()) {
+            conditions.addCondition(dataPointService.getDao().userHasEditPermission(user));
         }
 
         AtomicInteger count = new AtomicInteger();
 
-        dataPointDao.customizedQuery(conditions, (dataPoint, index) -> {
+        dataPointService.getDao().customizedQuery(conditions, (dataPoint, index) -> {
             dataPoint.setTags(tags);
             dataPointTagsDao.saveDataPointTags(dataPoint);
             count.incrementAndGet();
@@ -214,14 +216,14 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = dataPointDao.rqlToCondition(rql);
-        if (!user.hasAdminPermission()) {
-            conditions.addCondition(dataPointDao.userHasEditPermission(user));
+        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
+        if (!user.hasAdminRole()) {
+            conditions.addCondition(dataPointService.getDao().userHasEditPermission(user));
         }
 
         AtomicInteger count = new AtomicInteger();
 
-        dataPointDao.customizedQuery(conditions, (dataPoint, index) -> {
+        dataPointService.getDao().customizedQuery(conditions, (dataPoint, index) -> {
             dataPointTagsDao.doInTransaction(txStatus -> {
                 Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
@@ -254,11 +256,7 @@ public class DataPointTagsRestController {
 
             @AuthenticationPrincipal User user) {
 
-        DataPointVO dataPoint = dataPointDao.getByXid(xid);
-        if (dataPoint == null) {
-            throw new NotFoundRestException();
-        }
-        Permissions.ensureDataPointReadPermission(user, dataPoint);
+        DataPointVO dataPoint = dataPointService.get(xid);
 
         Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
         dataPoint.setTags(tags);
@@ -280,11 +278,9 @@ public class DataPointTagsRestController {
             User user) {
 
         return dataPointTagsDao.doInTransaction(txStatus -> {
-            DataPointVO dataPoint = dataPointDao.getByXid(xid);
-            if (dataPoint == null) {
-                throw new NotFoundRestException();
-            }
-            Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
+            DataPointVO dataPoint = dataPointService.get(xid);
+
+            permissionService.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
             dataPoint.setTags(tags);
             dataPointTagsDao.saveDataPointTags(dataPoint);
@@ -307,11 +303,8 @@ public class DataPointTagsRestController {
             User user) {
 
         return dataPointTagsDao.doInTransaction(txStatus -> {
-            DataPointVO dataPoint = dataPointDao.getByXid(xid);
-            if (dataPoint == null) {
-                throw new NotFoundRestException();
-            }
-            Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
+            DataPointVO dataPoint = dataPointService.get(xid);
+            permissionService.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
             Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
@@ -511,16 +504,30 @@ public class DataPointTagsRestController {
             HttpServletRequest request) {
 
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminPermission() || user.getId() == tr.getUserId())
+                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
-        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> results = preFiltered;
+        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> results;
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(), preFiltered);
+        }else {
+            results = preFiltered;
         }
 
-        PageQueryResultModel<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> result = new PageQueryResultModel<>(results, preFiltered.size());
+        ListWithTotal<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> result =
+                new ListWithTotal<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>() {
+
+            @Override
+            public List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> getItems() {
+                return results;
+            }
+
+            @Override
+            public int getTotal() {
+                return results.size();
+            }
+        };
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(result);
@@ -543,7 +550,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -567,7 +574,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -587,7 +594,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
