@@ -12,6 +12,8 @@ import static org.junit.Assert.fail;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -24,6 +26,7 @@ import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -77,13 +80,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     protected ZoneId zoneId;
     protected static final TestRuntimeManager runtimeManager = new TestRuntimeManager();
     protected final ImageValueServlet imageServlet = new ImageValueServlet();
-    
+
     public MultiPointStatisticsStreamTest() {
         this.zoneId = ZoneId.systemDefault();
     }
 
     //TODO Test initial values and no initial values
- 
+
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.MangoTestBase#after()
      */
@@ -91,11 +94,18 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     public void after() {
         super.after();
         runtimeManager.points.clear();
+
+        Path filedataPath = Paths.get(Common.envProps.getString("paths.filedata"));
+        try {
+            FileUtils.cleanDirectory(filedataPath.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
     @Test
     public void testSingleImagePointNoCacheNoChangeInitialValue() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -103,12 +113,12 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.IMAGE, 1);
-        
+
         ImageValue v = new ImageValue(createImageBytes(10), ImageValue.TYPE_JPG);
         PointValueTime initialValue = new PointValueTime(v, 0);
-        
-        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp, 
-                initialValue, 
+
+        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
+                initialValue,
                 (value) -> {
                     //No change
                     return value;
@@ -120,11 +130,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     JsonNode stats = root.get(w.vo.getXid());
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
-                    
+
                     JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
-                    
+
                     assertNotNull(stat.get(PointValueTimeWriter.TIMESTAMP));
                     PointValueTime value = w.rt.getPointValueAfter(0);
                     assertEquals(gen.getStartValue(), value.getValue());
@@ -137,14 +147,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
                     assertEquals((long)gen.getFirstTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
                     assertEquals((long)gen.getLastTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
@@ -160,7 +170,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Perform the query
         String dateTimeFormat = null;
         String timezone = zoneId.getId();
@@ -170,10 +180,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     @Test
     public void testSingleImagePointOnlyCacheChange() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -182,13 +192,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.IMAGE, cacheSize);
-        
+
         AtomicInteger imageSize = new AtomicInteger(1);
         ImageValue v = new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
         PointValueTime initialValue = new PointValueTime(v, 0);
-        
-        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp, 
-                initialValue, 
+
+        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
+                initialValue,
                 (value) -> {
                     return new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
                 },
@@ -199,7 +209,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     JsonNode stats = root.get(w.vo.getXid());
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
-                    
+
                     JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
@@ -212,18 +222,18 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue());
                     assertEquals((long)gen.getFirstTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue() );
                     assertEquals((long)gen.getLastTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());                 
+                    assertEquals(gen.getCount(), stat.asInt());
                 });
 
         //Insert the data skipping first day so we get the initial value
@@ -235,7 +245,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Insert some values directly into the cache
         point.values.clear();
         for(int i=0; i<cacheSize; i++) {
@@ -243,7 +253,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             timer.fastForwardTo(time.toInstant().toEpochMilli());
             point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
         }
-        
+
         //Ensure we get all the data
         Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
         to = ZonedDateTime.ofInstant(now, zoneId);
@@ -256,10 +266,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     @Test
     public void testSingleAlphanumericPointNoCacheNoChangeInitialValue() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -267,9 +277,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.ALPHANUMERIC, 1);
-        
-        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp, 
-                new PointValueTime("TESTING", 0), 
+
+        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
+                new PointValueTime("TESTING", 0),
                 (value) -> {
                     //No change
                     return value;
@@ -288,7 +298,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Perform the query
         String dateTimeFormat = null;
         String timezone = zoneId.getId();
@@ -298,7 +308,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     /**
      * Start with a value of 1 at time 0
      * Then insert a value of 1 at midnight every day during Jan 2017
@@ -306,7 +316,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      */
     @Test
     public void testSingleMultistatePointNoCacheNoChangeInitialValue() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -314,9 +324,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, 1);
-        
-        DataPointWrapper<StartsAndRuntimeList> point = new DataPointWrapper<StartsAndRuntimeList>(ds, dp, 
-                new PointValueTime(1, 0), 
+
+        DataPointWrapper<StartsAndRuntimeList> point = new DataPointWrapper<StartsAndRuntimeList>(ds, dp,
+                new PointValueTime(1, 0),
                 (value) -> {
                     //No change
                     return value;
@@ -335,7 +345,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Perform the query
         String dateTimeFormat = null;
         String timezone = zoneId.getId();
@@ -345,11 +355,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
-    
+
+
     @Test
     public void testSingleNumericPointNoCacheNoChangeInitialValue() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -357,9 +367,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
-        
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     //No change
                     return value;
@@ -378,7 +388,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Perform the query
         String dateTimeFormat = null;
         String timezone = zoneId.getId();
@@ -388,10 +398,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     @Test
     public void testSingleNumericPointNoCacheChangeInitialValue() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -399,9 +409,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
-        
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     return new NumericValue(value.getDoubleValue() + 1.0);
                 },
@@ -419,7 +429,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Perform the query
         String dateTimeFormat = null;
         String timezone = zoneId.getId();
@@ -429,10 +439,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     @Test
     public void testSingleNumericPointOnlyCacheChange() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -441,9 +451,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
-        
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     return new NumericValue(value.getDoubleValue() + 1.0);
                 },
@@ -454,11 +464,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     JsonNode stats = root.get(w.vo.getXid());
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
-                    
+
                     JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
-                    
+
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
@@ -468,19 +478,19 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
-                    
+
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
@@ -489,7 +499,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
                     assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
@@ -501,7 +511,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                         fail("Missing " + PointValueTimeWriter.DELTA + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
@@ -515,13 +525,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.SUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
@@ -538,7 +548,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Insert some values directly into the cache
         point.values.clear();
         for(int i=0; i<cacheSize; i++) {
@@ -546,7 +556,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             timer.fastForwardTo(time.toInstant().toEpochMilli());
             point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
         }
-        
+
         //Ensure we get all the data
         Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
         to = ZonedDateTime.ofInstant(now, zoneId);
@@ -559,11 +569,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
-    
+
+
     @Test
     public void testSingleNumericPointOnlyCacheChangeCachedValueAtFrom() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -572,9 +582,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
-        
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     return new NumericValue(value.getDoubleValue() + 1.0);
                 },
@@ -592,7 +602,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Insert some values directly into the cache
         point.values.clear();
         for(int i=0; i<cacheSize; i++) {
@@ -600,7 +610,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             timer.fastForwardTo(time.toInstant().toEpochMilli());
             point.saveOnlyToCache(new AnnotatedPointValueTime(point.getNextValue(), timer.currentTimeMillis(), new TranslatableMessage("common.default", "testing")));
         }
-        
+
         //Ensure we get all the data
         from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(point.values.get(0).getTime()), zoneId);
         Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
@@ -614,10 +624,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     @Test
     public void testSingleNumericPointBothChange() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -626,9 +636,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
-        
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     return new NumericValue(value.getDoubleValue() + 1.0);
                 },
@@ -639,14 +649,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     JsonNode stats = root.get(w.vo.getXid());
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
-                    
+
                     JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
-  
+
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getPeriodStartTime(), value.getTime());
+                    assertEquals(gen.getPeriodStartTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
@@ -654,19 +664,19 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
-                    
+
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
@@ -675,7 +685,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
                     assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
@@ -687,7 +697,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                         fail("Missing " + PointValueTimeWriter.DELTA + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
@@ -701,13 +711,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.SUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
@@ -724,14 +734,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Insert some values directly into the cache
         for(int i=0; i<cacheSize; i++) {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
             point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
         }
-        
+
         //Ensure we get all the data
         Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
         to = ZonedDateTime.ofInstant(now, zoneId);
@@ -744,10 +754,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, point);
     }
-    
+
     @Test
     public void testMultiplePointsNoCacheChangeInitialValue() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -755,9 +765,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO numericDp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
-        
-        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     return new NumericValue(value.getDoubleValue() + 1.0);
                 },
@@ -767,9 +777,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 new AnalogStatisticsVerifier());
 
         DataPointVO multistateDp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, 1);
-        
-        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp, 
-                new PointValueTime(1, 0), 
+
+        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp,
+                new PointValueTime(1, 0),
                 (value) -> {
                     //No change
                     return new MultistateValue(value.getIntegerValue() + 1);
@@ -779,7 +789,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 },
                 new StartsAndRuntimeListVerifier());
 
-        
+
         //Insert the data skipping first day so we get the initial value
         ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
         timer.setStartTime(time.toInstant().toEpochMilli());
@@ -790,7 +800,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Perform the query
         String dateTimeFormat = null;
         String timezone = zoneId.getId();
@@ -800,10 +810,10 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, numericPoint, multistatePoint);
     }
-    
+
     @Test
     public void testMultiplePointsOnlyCacheChange() throws IOException {
-        
+
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
@@ -812,9 +822,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
         DataPointVO numericDp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
-        
-        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp, 
-                new PointValueTime(1.0, 0), 
+
+        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp,
+                new PointValueTime(1.0, 0),
                 (value) -> {
                     return new NumericValue(value.getDoubleValue() + 1.0);
                 },
@@ -825,11 +835,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     JsonNode stats = root.get(w.vo.getXid());
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
-                    
+
                     JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
-                    
+
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
@@ -839,19 +849,19 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
-                    
+
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
@@ -860,7 +870,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
                     assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
@@ -872,7 +882,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                         fail("Missing " + PointValueTimeWriter.DELTA + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
@@ -886,13 +896,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.SUM + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-                    
+
                     stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
@@ -901,8 +911,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 });
 
         DataPointVO multistateDp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, cacheSize);
-        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp, 
-                new PointValueTime(1, 0), 
+        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp,
+                new PointValueTime(1, 0),
                 (value) -> {
                     return new MultistateValue(value.getIntegerValue() + 1);
                 },
@@ -913,11 +923,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     JsonNode stats = root.get(w.vo.getXid());
                     if(stats == null)
                         fail("Missing stats for point " + w.vo.getXid());
-                    
+
                     JsonNode stat = stats.get(PointValueTimeWriter.START);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
-                    
+
                     assertNull(gen.getStartValue());
                     assertTrue(stat.isNull());
 
@@ -927,24 +937,24 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue());
                     assertEquals((long)gen.getFirstTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
                     value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
                     assertEquals(gen.getLastValue(), value.getValue());
                     assertEquals((long)gen.getLastTime(), value.getTime());
-                    
+
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
                     assertEquals(gen.getCount(), stat.asInt());
-                    
+
                     //Test data
                     stat = stats.get(PointValueTimeWriter.STARTS_AND_RUNTIMES);
                     if(stat == null)
                         fail("Missing data entry");
-                    
+
                     for(int i=0; i<gen.getData().size(); i++) {
                         StartsAndRuntime expected = gen.getData().get(i);
                         JsonNode actual = stat.get(i);
@@ -954,7 +964,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                         assertEquals(expected.getProportion(), actual.get(PointValueTimeWriter.PROPORTION).doubleValue(), 0.000001);
                     }
                 });
-        
+
         //Insert the data skipping first day so we get the initial value
         ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
         timer.setStartTime(time.toInstant().toEpochMilli());
@@ -965,7 +975,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
-        
+
         //Insert some values directly into the cache
         numericPoint.values.clear();
         multistatePoint.values.clear();
@@ -975,7 +985,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             numericPoint.saveOnlyToCache(new PointValueTime(numericPoint.getNextValue(), timer.currentTimeMillis()));
             multistatePoint.saveOnlyToCache(new PointValueTime(multistatePoint.getNextValue(), timer.currentTimeMillis()));
         }
-        
+
         //Ensure we get all the data
         Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
         to = ZonedDateTime.ofInstant(now, zoneId);
@@ -988,11 +998,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         test(info, numericPoint, multistatePoint);
     }
-    
+
     /**
      * @param info
      * @param voMap
-     * @throws IOException 
+     * @throws IOException
      */
     private void test(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<?>...points) throws IOException {
         Map<Integer, DataPointVO> voMap = new HashMap<>();
@@ -1006,7 +1016,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     protected PointValueField[] getFields() {
         return PointValueField.values();
     }
-    
+
     protected PointValueTime getPointValueTime(int dataTypeId, JsonNode stat) {
         if(stat.isNull()) {
             return null;
@@ -1042,7 +1052,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 throw new ShouldNeverHappenException("Unsupported data type: " + dataTypeId);
         }
     }
-    
+
     /**
      * Generate a JsonNode from the query
      * @param info
@@ -1052,7 +1062,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      */
     protected JsonNode generateOutput(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap) throws IOException {
         MultiPointStatisticsStream stream = new MultiPointStatisticsStream(info, voMap, Common.databaseProxy.newPointValueDao());
-        
+
         JsonFactory factory = new JsonFactory();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         JsonGenerator jgen = factory.createGenerator(output);
@@ -1062,11 +1072,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         stream.streamData(writer);
         stream.finish(writer);
         jgen.flush();
-        
+
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readTree(output.toString(Common.UTF8));
     }
-    
+
     protected MockDataSourceVO createDataSource() {
         MockDataSourceVO vo = new MockDataSourceVO();
         vo.setXid(DataSourceDao.getInstance().generateUniqueXid());
@@ -1087,7 +1097,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         DataPointDao.getInstance().save(vo);
         return vo;
     }
-    
+
     class DataPointWrapper<T extends StatisticsGenerator> {
         MockDataSourceVO dsVo;
         DataPointVO vo;
@@ -1098,7 +1108,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         Function<DataValue, DataValue> nextValue;
         StatisticsCreator<T> creator;
         StatisticsVerifier<T> verifyResults;
-        
+
         public DataPointWrapper(MockDataSourceVO dsVo, DataPointVO vo, PointValueTime initial,
                 Function<DataValue, DataValue> nextValue,
                 StatisticsCreator<T> creator,
@@ -1112,23 +1122,23 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             this.creator = creator;
             this.verifyResults = verify;
             this.values = new ArrayList<>();
-            
+
             if(initialValue != null) {
                 this.rt.updatePointValue(initialValue, false);
                 this.current = initialValue;
             }
         }
-        
+
         void saveOnlyToCache(PointValueTime pvt) {
             rt.savePointValueDirectToCache(pvt, null, false, false, FireEvents.NEVER);
             values.add(pvt);
             current = pvt;
         }
-        
+
         DataValue getNextValue() {
             return nextValue.apply(current.getValue());
         }
-        
+
         void updatePointValue(PointValueTime pvt) {
             rt.updatePointValue(pvt, false);
             values.add(pvt);
@@ -1147,7 +1157,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     interface StatisticsVerifier<T extends StatisticsGenerator> {
         void verify(DataPointWrapper<T> w, T generator, JsonNode root);
     }
-    
+
     class ValueChangeCounterVerifier implements StatisticsVerifier<ValueChangeCounter> {
 
         /* (non-Javadoc)
@@ -1159,13 +1169,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stats = root.get(w.vo.getXid());
             if(stats == null)
                 fail("Missing stats for point " + w.vo.getXid());
-            
+
             JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.START + " entry");
             PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getStartValue(), value.getValue());
-            assertEquals((long)gen.getPeriodStartTime(), value.getTime());
+            assertEquals(gen.getPeriodStartTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
@@ -1173,21 +1183,21 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getFirstValue(), value.getValue());
             assertEquals((long)gen.getFirstTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.LAST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getLastValue(), value.getValue() );
             assertEquals((long)gen.getLastTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.COUNT + " entry");
             assertEquals(gen.getCount(), stat.asInt());
         }
     }
-    
+
     class StartsAndRuntimeListVerifier implements StatisticsVerifier<StartsAndRuntimeList> {
 
         /* (non-Javadoc)
@@ -1199,13 +1209,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stats = root.get(w.vo.getXid());
             if(stats == null)
                 fail("Missing stats for point " + w.vo.getXid());
-            
+
             JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.START + " entry");
             PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getStartValue(), value.getValue());
-            assertEquals((long)gen.getPeriodStartTime(), value.getTime());
+            assertEquals(gen.getPeriodStartTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
@@ -1213,24 +1223,24 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getFirstValue(), value.getValue());
             assertEquals((long)gen.getFirstTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.LAST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getLastValue(), value.getValue() );
             assertEquals((long)gen.getLastTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.COUNT + " entry");
             assertEquals(gen.getCount(), stat.asInt());
-            
+
             //Test data
             stat = stats.get(PointValueTimeWriter.STARTS_AND_RUNTIMES);
             if(stat == null)
                 fail("Missing data entry");
-            
+
             for(int i=0; i<gen.getData().size(); i++) {
                 StartsAndRuntime expected = gen.getData().get(i);
                 JsonNode actual = stat.get(i);
@@ -1239,9 +1249,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 assertEquals(expected.getRuntime(), actual.get(PointValueTimeWriter.RUNTIME).asLong());
                 assertEquals(expected.getProportion(), actual.get(PointValueTimeWriter.PROPORTION).doubleValue(), 0.000001);
             }
-            
+
         }
-        
+
     }
     class AnalogStatisticsVerifier implements StatisticsVerifier<AnalogStatistics> {
 
@@ -1254,13 +1264,13 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stats = root.get(w.vo.getXid());
             if(stats == null)
                 fail("Missing stats for point " + w.vo.getXid());
-            
+
             JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.START + " entry");
             PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
-            assertEquals((long)gen.getPeriodStartTime(), value.getTime());
+            assertEquals(gen.getPeriodStartTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
@@ -1268,19 +1278,19 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getFirstTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.LAST + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getLastTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.COUNT + " entry");
             assertEquals(gen.getCount(), stat.asInt());
-            
+
             stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
@@ -1289,7 +1299,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             if(accumulatorValue == null)
                 accumulatorValue = gen.getMaximumValue();
             assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-            
+
             stat = stats.get(PointValueTimeWriter.AVERAGE);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
@@ -1301,8 +1311,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 fail("Missing " + PointValueTimeWriter.DELTA + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-            
-            
+
+
             stat = stats.get(PointValueTimeWriter.MINIMUM);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
@@ -1316,22 +1326,22 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getMaximumTime(), value.getTime());
-            
+
             stat = stats.get(PointValueTimeWriter.SUM);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.SUM + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-            
+
             stat = stats.get(PointValueTimeWriter.INTEGRAL);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
             value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
             assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
         }
-        
+
     }
-    
+
     /**
      * Create a random square image with w=h=size
      * @param size
@@ -1362,7 +1372,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         }
         return null;
     }
-    
+
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.MangoTestBase#getLifecycle()
      */
@@ -1370,7 +1380,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     protected MockMangoLifecycle getLifecycle() {
         return new TestLifecycle(modules, enableH2Web, h2WebPort, runtimeManager);
     }
-    
+
     class TestLifecycle extends MockMangoLifecycle {
 
         /**
@@ -1382,13 +1392,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             super(modules, enableWebConsole, webPort);
             this.runtimeManager = runtimeManager;
         }
- 
+
     }
-    
+
     static class TestRuntimeManager extends MockRuntimeManager {
-        
+
         List<DataPointRT> points = new ArrayList<>();
-        
+
+        @Override
         public DataPointRT getDataPoint(int dataPointId) {
             for(DataPointRT rt : points) {
                 if(rt.getVO().getId() == dataPointId)
@@ -1396,7 +1407,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             }
             return null;
         };
-        
-        
+
+
     }
 }
