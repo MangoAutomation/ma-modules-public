@@ -5,8 +5,10 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,21 +29,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.permission.UserRolesDetails;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.permissions.UserRolesDetailsModel;
 import com.infiniteautomation.mango.rest.v2.model.user.ApproveUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.ApprovedUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.PermissionDetails;
-import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
+import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
 import io.swagger.annotations.Api;
@@ -79,7 +83,7 @@ public class UserRestController {
             @ApiParam(value = "Valid username", required = true, allowMultiple = false)
             @PathVariable String username,
             @AuthenticationPrincipal User user) {
-        return new UserModel(service.get(username, user));
+        return new UserModel(service.get(username));
     }
 
     @ApiOperation(value = "Get current user",
@@ -117,7 +121,7 @@ public class UserRestController {
             UserModel model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        User newUser = service.insert(model.toVO(), user);
+        User newUser = service.insert(model.toVO());
         URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -141,11 +145,11 @@ public class UserRestController {
             UriComponentsBuilder builder,
             Authentication authentication) {
 
-        User existing = service.get(username, user);
+        User existing = service.get(username);
         if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
 
-        User update = service.update(existing, model.toVO(), user);
+        User update = service.update(existing, model.toVO());
 
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
@@ -174,11 +178,11 @@ public class UserRestController {
             UriComponentsBuilder builder,
             Authentication authentication) {
 
-        User existing = service.get(username, user);
+        User existing = service.get(username);
         if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
 
-        User update = service.update(existing, model.toVO(), user);
+        User update = service.update(existing, model.toVO());
 
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
@@ -193,7 +197,7 @@ public class UserRestController {
             @ApiParam(value = "Valid username", required = true, allowMultiple = false)
             @PathVariable String username,
             @AuthenticationPrincipal User user) {
-        return new UserModel(service.delete(username, user));
+        return new UserModel(service.delete(username));
     }
 
 
@@ -209,14 +213,14 @@ public class UserRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             UriComponentsBuilder builder,
-            Authentication authentication) throws RestValidationFailedException {
+            Authentication authentication) {
 
-        User update = service.get(username, user);
+        User update = service.get(username);
         if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
 
         update.setHomeUrl(url);
-        update = service.update(username, update, user);
+        update = service.update(username, update);
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -239,9 +243,9 @@ public class UserRestController {
             HttpServletRequest request,
             UriComponentsBuilder builder,
             @AuthenticationPrincipal User user,
-            Authentication authentication) throws RestValidationFailedException {
+            Authentication authentication) {
 
-        User update = service.get(username, user);
+        User update = service.get(username);
         if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
 
@@ -250,7 +254,7 @@ public class UserRestController {
         }else{
             update.setMuted(mute);
         }
-        update = service.update(username, update, user);
+        update = service.update(username, update);
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -266,30 +270,45 @@ public class UserRestController {
             @ApiParam(value = "Username", required = true, allowMultiple = false)
             @PathVariable String username,
             @AuthenticationPrincipal User currentUser) {
-        service.lockPassword(username, currentUser);
+        service.lockPassword(username);
     }
 
     @ApiOperation(value = "Get User Permissions Information for all users")
     @RequestMapping(method = RequestMethod.GET, value = "/permissions")
-    public Set<PermissionDetails> getUserPermissions(
+    public Set<UserRolesDetailsModel> getUserPermissions(
             @AuthenticationPrincipal User user) {
-        return service.getPermissionDetails(null, user);
+        Set<UserRolesDetailsModel> permissions = new TreeSet<>();
+        Set<UserRolesDetails> details = service.getPermissionDetailsForAllUsers();
+        for(UserRolesDetails detail : details) {
+            permissions.add(new UserRolesDetailsModel(detail));
+        }
+        return permissions;
     }
 
     @ApiOperation(value = "Get User Permissions Information for all users, exclude provided groups in query")
     @RequestMapping(method = RequestMethod.GET, value = "/permissions/{query}")
-    public Set<PermissionDetails> getUserPermissions(
+    public Set<UserRolesDetailsModel> getUserPermissions(
             @ApiParam(value = "Query of permissions to show as already added", required = true, allowMultiple = false)
             @PathVariable String query,
             @AuthenticationPrincipal User user) {
-        return service.getPermissionDetails(query, user);
+        Set<UserRolesDetailsModel> permissions = new TreeSet<>();
+        Set<UserRolesDetails> details = service.getPermissionDetailsForAllUsers(PermissionService.explodeLegacyPermissionGroups(query));
+        for(UserRolesDetails detail : details) {
+            permissions.add(new UserRolesDetailsModel(detail));
+        }
+        return permissions;
     }
 
 
     @ApiOperation(value = "Get All User Groups that a user can 'see'")
     @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups")
     public Set<String> getAllUserGroups(@AuthenticationPrincipal User user) {
-        return service.getUserGroups(null, user);
+        Set<Role> roles = service.getUserRoles();
+        Set<String> groups = new HashSet<>();
+        for(Role role : roles) {
+            groups.add(role.getXid());
+        }
+        return groups;
     }
 
     @ApiOperation(value = "Get All User Groups that a user can 'see', Optionally excluding groups")
@@ -298,7 +317,12 @@ public class UserRestController {
             @ApiParam(value = "Exclude Groups comma separated", required = false, allowMultiple = false, defaultValue="")
             @PathVariable List<String> exclude,
             @AuthenticationPrincipal User user) {
-        return service.getUserGroups(exclude, user);
+        Set<Role> roles = service.getUserRoles(exclude);
+        Set<String> groups = new HashSet<>();
+        for(Role role : roles) {
+            groups.add(role.getXid());
+        }
+        return groups;
     }
 
     @ApiOperation(
@@ -316,7 +340,7 @@ public class UserRestController {
         ApprovedUsersModel result = new ApprovedUsersModel();
         for(String username : model.getUsernames()) {
             try {
-                User approved = service.approveUser(username, model.isSendEmail(), user);
+                User approved = service.approveUser(username, model.isSendEmail());
                 result.addApproved(approved.getUsername());
             }catch(Exception e) {
                 if(e instanceof TranslatableExceptionI) {
@@ -328,15 +352,15 @@ public class UserRestController {
         }
         return result;
     }
-    
+
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
 
-        if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), false);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), false);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
         }
     }
 }
