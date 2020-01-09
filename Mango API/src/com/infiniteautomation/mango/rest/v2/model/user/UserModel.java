@@ -10,15 +10,15 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
-import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permission;
+import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -242,17 +242,20 @@ public class UserModel extends AbstractVoModel<User> {
         this.timezone = vo.getTimezone();
         this.muted = vo.isMuted();
         this.receiveOwnAuditEvents = vo.isReceiveOwnAuditEvents();
-        this.permissions = vo.getPermissionsSet();
+        this.permissions = new HashSet<>();
+        for(Role role : vo.getRoles()) {
+            permissions.add(role.getXid());
+        }
         this.locale = vo.getLocale();
         this.passwordLocked = vo.isPasswordLocked();
         this.sessionExpirationOverride = vo.isSessionExpirationOverride();
         if(sessionExpirationOverride)
             this.sessionExpirationPeriod = new TimePeriod(vo.getSessionExpirationPeriods(), TimePeriodType.valueOf(vo.getSessionExpirationPeriodType()));
-        Set<Permission> granted = vo.getGrantedPermissions();
+        Set<MangoPermission> granted = vo.getGrantedPermissions();
         if(granted != null) {
             this.grantedPermissions = new HashSet<>(granted.size());
-            for(Permission grant : granted)
-                this.grantedPermissions.add(grant.getTypeName());
+            for(MangoPermission grant : granted)
+                this.grantedPermissions.add(grant.getPermissionType());
         }
         this.organization = vo.getOrganization();
         this.organizationalRole = vo.getOrganizationalRole();
@@ -274,15 +277,7 @@ public class UserModel extends AbstractVoModel<User> {
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
         if(permissions != null) {
-            //Verify that they can be imploded (not null and not empty)
-            for (String requiredPermission : permissions) {
-                if (requiredPermission == null || requiredPermission.isEmpty()) {
-                    ProcessResult result = new ProcessResult();
-                    result.addContextualMessage("permissions", "validate.invalidPermissionEmpty");
-                    throw new ValidationException(result);
-                }
-            }
-            user.setPermissionsSet(permissions);
+            user.setRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(permissions));
         }
         user.setLocale(locale);
         if(!StringUtils.isEmpty(hashAlgorithm)) {
