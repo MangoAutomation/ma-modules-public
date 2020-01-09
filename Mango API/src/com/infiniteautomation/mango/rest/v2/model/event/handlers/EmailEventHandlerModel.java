@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import com.infiniteautomation.mango.rest.v2.model.mailingList.AddressEntryModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.EmailRecipientModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListEntryModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.UserEntryModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.pair.IntStringPair;
@@ -27,6 +29,7 @@ import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.mailingList.RecipientListEntryBean;
 import com.serotonin.m2m2.vo.mailingList.UserEntry;
+import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModel;
 
@@ -61,18 +64,18 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String script;
     private String subject;
-    
+
     public EmailEventHandlerModel() { }
 
     public EmailEventHandlerModel(EmailEventHandlerVO vo) {
         fromVO(vo);
     }
-    
+
     @Override
     public String getHandlerType() {
         return EmailEventHandlerDefinition.TYPE_NAME;
     }
-    
+
     /**
      * @return the activeRecipients
      */
@@ -296,21 +299,21 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     public void setScript(String script) {
         this.script = script;
     }
-    
+
     /**
      * @return the subject
      */
     public String getSubject() {
         return subject;
     }
-    
+
     /**
      * @param subject the subject to set
      */
     public void setSubject(String subject) {
         this.subject = subject;
     }
-    
+
     @Override
     public EmailEventHandlerVO toVO() {
         EmailEventHandlerVO vo = super.toVO();
@@ -324,7 +327,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
         vo.setRepeatEscalations(repeatEscalations);
         vo.setEscalationDelayType(Common.TIME_PERIOD_CODES.getId(escalationDelayType));
         vo.setEscalationDelay(escalationDelay);
-        
+
         if(escalationRecipients != null) {
             List<RecipientListEntryBean> beans = new ArrayList<>();
             for(EmailRecipientModel model : escalationRecipients)
@@ -339,17 +342,18 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                 beans.add(model.toBean());
             vo.setInactiveRecipients(beans);
         }
-        
+
         vo.setIncludeSystemInfo(includeSystemInfo);
         if(includePointValueCount != null)
             vo.setIncludePointValueCount(includePointValueCount);
-        
+
         vo.setIncludeLogfile(includeLogfile);
         vo.setCustomTemplate(customTemplate);
-        
+
         vo.setScript(script);
-        vo.setScriptPermissions(new ScriptPermissions(scriptPermissions));
-        
+        PermissionService service = Common.getBean(PermissionService.class);
+        vo.setScriptRoles(new ScriptPermissions(service.explodeLegacyPermissionGroupsToRoles(scriptPermissions)));
+
         if(scriptContext != null) {
             List<IntStringPair> additionalContext = new ArrayList<>();
             for(ScriptContextVariableModel var : scriptContext) {
@@ -362,16 +366,16 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
             }
             vo.setAdditionalContext(additionalContext);
         }
-        
+
         vo.setSubject(EmailEventHandlerVO.SUBJECT_INCLUDE_CODES.getId(subject));
-        
+
         return vo;
     }
-    
+
     @Override
     public void fromVO(EmailEventHandlerVO vo) {
         super.fromVO(vo);
-        
+
         if(vo.getActiveRecipients() != null) {
             this.activeRecipients = new ArrayList<>();
             for(RecipientListEntryBean bean : vo.getActiveRecipients()) {
@@ -383,21 +387,21 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         activeRecipients.add(new UserEntryModel((UserEntry) bean.createEmailRecipient()));
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
-                        
+
                         activeRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
                         break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
-                            
+
                 }
             }
         }
-        
+
         this.sendEscalation = vo.isSendEscalation();
         this.escalationDelayType = Common.TIME_PERIOD_CODES.getCode(vo.getEscalationDelayType());
         this.repeatEscalations = vo.isRepeatEscalations();
         this.escalationDelay = vo.getEscalationDelay();
-        
+
         if(vo.getEscalationRecipients() != null) {
             this.escalationRecipients = new ArrayList<>();
             for(RecipientListEntryBean bean : vo.getEscalationRecipients()) {
@@ -413,11 +417,11 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
-                            
+
                 }
             }
         }
-        
+
         this.sendInactive = vo.isSendInactive();
         this.inactiveOverride = vo.isInactiveOverride();
 
@@ -436,7 +440,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
                         break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
-                            
+
                 }
             }
         }
@@ -444,11 +448,14 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
         this.includePointValueCount = vo.getIncludePointValueCount() == 0 ? null : vo.getIncludePointValueCount();
         this.includeLogfile = vo.isIncludeLogfile();
         this.customTemplate = vo.getCustomTemplate();
-        
+
         this.script = vo.getScript();
 
-        if(vo.getScriptPermissions() != null) {
-            this.scriptPermissions = vo.getScriptPermissions().getPermissionsSet();
+        if(vo.getScriptRoles() != null) {
+            this.scriptPermissions = new HashSet<>();
+            for(Role role : vo.getScriptRoles().getRoles()) {
+                this.scriptPermissions.add(role.getXid());
+            }
         }
         if(vo.getAdditionalContext() != null) {
             this.scriptContext = new ArrayList<>();
@@ -461,7 +468,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
         }
         this.subject = EmailEventHandlerVO.SUBJECT_INCLUDE_CODES.getCode(vo.getSubject());
     }
-    
+
     @Override
     protected EmailEventHandlerVO newVO() {
         EmailEventHandlerVO handler = new EmailEventHandlerVO();
