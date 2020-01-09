@@ -50,9 +50,9 @@ public class MailingListRestController {
     private final MailingListService service;
     private final MailingListModelMapping mapping;
     private final RestModelMapper mapper;
-    
+
     @Autowired
-    public MailingListRestController(MailingListService service, MailingListModelMapping mapping, 
+    public MailingListRestController(MailingListService service, MailingListModelMapping mapping,
             RestModelMapper mapper) {
         this.service = service;
         this.mapping = mapping;
@@ -88,7 +88,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(mapping.map(service.getFull(xid, user), user, mapper));
+        return ResponseEntity.ok(mapping.map(service.get(xid), user, mapper));
     }
 
     @ApiOperation(
@@ -102,7 +102,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MailingList vo = service.insertFull(mapping.unmap(model, user, mapper), user);
+        MailingList vo = service.insert(mapping.unmap(model, user, mapper));
         URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -123,7 +123,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MailingList vo = service.updateFull(xid, mapping.unmap(model, user, mapper), user);
+        MailingList vo = service.update(xid, mapping.unmap(model, user, mapper));
         URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -149,7 +149,7 @@ public class MailingListRestController {
             UriComponentsBuilder builder) {
 
 
-        MailingList vo = service.updateFull(xid, mapping.unmap(model, user, mapper), user);
+        MailingList vo = service.update(xid, mapping.unmap(model, user, mapper));
 
         URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -170,7 +170,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(mapping.map(service.delete(xid, user), user, mapper));
+        return ResponseEntity.ok(mapping.map(service.delete(xid), user, mapper));
     }
 
     @ApiOperation(
@@ -188,7 +188,7 @@ public class MailingListRestController {
         service.ensureValid(mapping.unmap(model, user, mapper), user);
     }
     /**
-     * 
+     *
      * @param rql
      * @param user
      * @return
@@ -196,6 +196,6 @@ public class MailingListRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return new StreamedVORqlQueryWithTotal<>(service, rql, user, (item) -> {
             return mapping.map(item, user, mapper);
-        } , true);
+        });
     }
 }
