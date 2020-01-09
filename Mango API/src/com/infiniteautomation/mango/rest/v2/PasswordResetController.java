@@ -68,7 +68,7 @@ public class PasswordResetController {
             SendEmailRequestBody body
             ) throws AddressException, TemplateException, IOException {
 
-        User user = UserDao.getInstance().getUser(body.getUsername());
+        User user = UserDao.getInstance().getByXid(body.getUsername());
         if (user == null) {
             throw new NotFoundRestException();
         }
@@ -146,7 +146,7 @@ public class PasswordResetController {
         boolean sendEmail = requestBody.isSendEmail();
         Date expiry = requestBody.getExpiry();
 
-        User user = UserDao.getInstance().getUser(username);
+        User user = UserDao.getInstance().getByXid(username);
         if (user == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
         }
