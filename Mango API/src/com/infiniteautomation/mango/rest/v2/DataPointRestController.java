@@ -520,7 +520,6 @@ public class DataPointRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
 
         final Function<DataPointVO, Object> transformPoint = item -> {
-            DataPointDao.getInstance().loadPartialRelationalData(item);
             DataPointModel pointModel = map.apply(item, user);
 
             // option to apply a further transformation

@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.spring.db.AbstractTableDefinition;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.vo.AbstractVO;
@@ -18,7 +19,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, DAO extends AbstractDao<T>, SERVICE extends AbstractVOService<T, DAO>> extends StreamedBasicVORqlQueryWithTotal<T, DAO, SERVICE> {
+public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, TABLE extends AbstractTableDefinition, DAO extends AbstractDao<T, TABLE>, SERVICE extends AbstractVOService<T, TABLE, DAO>> extends StreamedBasicVORqlQueryWithTotal<T, TABLE, DAO, SERVICE> {
 
     public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions) {
         this(service, conditions, item -> true, Function.identity());

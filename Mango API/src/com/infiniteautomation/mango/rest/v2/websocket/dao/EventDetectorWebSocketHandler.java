@@ -11,6 +11,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractEventDetectorModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
+import com.infiniteautomation.mango.spring.db.EventDetectorTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.serotonin.m2m2.vo.User;
@@ -22,7 +23,7 @@ import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
  */
 @Component()
 @WebSocketMapping("/websocket/full-event-detectors")
-public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>> extends DaoNotificationWebSocketHandler<T>{
+public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>> extends DaoNotificationWebSocketHandler<T, EventDetectorTableDefinition> {
 
     private final EventDetectorsService<T> service;
     private final RestModelMapper modelMapper;
@@ -50,7 +51,7 @@ public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends T> event) {
+    protected void handleDaoEvent(DaoEvent<? extends T, EventDetectorTableDefinition> event) {
         this.notify(event);
     }
 
@@ -59,6 +60,6 @@ public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>
         return true;
     }
 
-    
-    
+
+
 }

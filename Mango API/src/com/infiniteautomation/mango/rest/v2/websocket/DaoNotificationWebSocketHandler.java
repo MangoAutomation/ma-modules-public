@@ -8,6 +8,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.infiniteautomation.mango.spring.db.AbstractBasicTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -17,7 +18,7 @@ import com.serotonin.m2m2.vo.User;
 /**
  * @author Jared Wiltshire
  */
-public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO> extends MultiSessionWebSocketHandler {
+public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO, TABLE extends AbstractBasicTableDefinition> extends MultiSessionWebSocketHandler {
 
     /**
      * @param action add, update or delete
@@ -115,9 +116,9 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
      * You must annotate the overridden method with @EventListener in order for this to work
      * @param event
      */
-    abstract protected void handleDaoEvent(DaoEvent<? extends T> event);
+    abstract protected void handleDaoEvent(DaoEvent<? extends T, TABLE> event);
 
-    protected void notify(DaoEvent<? extends T> event) {
+    protected void notify(DaoEvent<? extends T, TABLE> event) {
         DaoEventType type = event.getType();
         String action = null;
         switch(type) {

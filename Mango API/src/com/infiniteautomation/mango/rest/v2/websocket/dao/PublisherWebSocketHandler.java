@@ -11,6 +11,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
+import com.infiniteautomation.mango.spring.db.PublisherTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.serotonin.m2m2.vo.User;
@@ -23,7 +24,7 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
  */
 @Component("PublisherWebSocketHandlerV2")
 @WebSocketMapping("/websocket/publishers")
-public class PublisherWebSocketHandler <POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> extends DaoNotificationWebSocketHandler<PUBLISHER>{
+public class PublisherWebSocketHandler <POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> extends DaoNotificationWebSocketHandler<PUBLISHER, PublisherTableDefinition>{
 
     private final PublisherService<POINT> service;
     private final RestModelMapper modelMapper;
@@ -51,7 +52,7 @@ public class PublisherWebSocketHandler <POINT extends PublishedPointVO, PUBLISHE
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends PUBLISHER> event) {
+    protected void handleDaoEvent(DaoEvent<? extends PUBLISHER, PublisherTableDefinition> event) {
         this.notify(event);
     }
 

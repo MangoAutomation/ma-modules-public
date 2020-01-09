@@ -83,7 +83,7 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
         PatchVORequestBody patch = parameter.getParameterAnnotation(PatchVORequestBody.class);
 
         Class<?> serviceClass = patch.service();
-        AbstractVOService<?,?> service = (AbstractVOService<?,?>)context.getBean(serviceClass);
+        AbstractVOService<?,?,?> service = (AbstractVOService<?,?,?>)context.getBean(serviceClass);
         PermissionHolder user = Common.getUser();
         Object vo;
         switch(patch.idType()) {
