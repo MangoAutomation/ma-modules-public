@@ -83,7 +83,7 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
 
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
 
-        if (resource.getUserId() == user.getId() || (user.hasAdminPermission() && !subscription.isOwnResourcesOnly())) {
+        if (resource.getUserId() == user.getId() || (user.hasAdminRole() && !subscription.isOwnResourcesOnly())) {
             Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
             Set<String> resourceTypes = subscription.getResourceTypes();
 

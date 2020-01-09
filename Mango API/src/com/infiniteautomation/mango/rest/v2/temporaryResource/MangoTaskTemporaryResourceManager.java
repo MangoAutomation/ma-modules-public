@@ -15,7 +15,6 @@ import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.util.BackgroundContext;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
@@ -108,13 +107,13 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             @Override
             public void run(long runtime) {
                 try {
-                    BackgroundContext.set(user);
+                    Common.setUser(user);
                     resource.runTask(user);
                 } catch (Exception e) {
                     AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
                     resource.safeError(error);
                 } finally {
-                    BackgroundContext.remove();
+                    Common.removeUser();;
                 }
             }
 
