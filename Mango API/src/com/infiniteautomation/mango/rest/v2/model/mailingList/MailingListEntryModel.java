@@ -16,44 +16,44 @@ public class MailingListEntryModel extends EmailRecipientModel {
 
     private String xid;
     private String name;
-    
+
     public MailingListEntryModel() { }
     public MailingListEntryModel(MailingList list) {
-        MailingList fullList = MailingListDao.getInstance().getFull(list.getReferenceId());
+        MailingList fullList = MailingListDao.getInstance().get(list.getReferenceId());
         if(fullList != null) {
             this.xid = fullList.getXid();
             this.name = fullList.getName();
         }
     }
-    
+
     public String getXid() {
         return xid;
     }
     public void setXid(String xid) {
         this.xid = xid;
     }
-    
+
     public String getName() {
         return name;
     }
     public void setName(String name) {
         this.name = name;
     }
-    
+
     @Override
     public EmailRecipient fromModel() {
-        MailingList vo =  MailingListDao.getInstance().getFullByXid(xid);
+        MailingList vo = MailingListDao.getInstance().getByXid(xid);
         return vo;
     }
-    
+
     @Override
     public RecipientListEntryBean toBean() {
         RecipientListEntryBean bean = new RecipientListEntryBean();
         bean.setRecipientType(EmailRecipient.TYPE_MAILING_LIST);
-        MailingList vo =  MailingListDao.getInstance().getFullByXid(xid);
+        MailingList vo =  MailingListDao.getInstance().getByXid(xid);
         if(vo != null)
             bean.setReferenceId(vo.getId());
         return bean;
     }
-    
+
 }

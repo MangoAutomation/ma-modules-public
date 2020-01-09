@@ -18,7 +18,7 @@ import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.role.RoleVO;
+import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * @author Terry Packer
@@ -29,13 +29,13 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
 
     private final RoleService roleService;
     private final MailingListService mailingListService;
-    
+
     @Autowired
     public MailingListModelMapping(MailingListService mailingListService, RoleService service) {
         this.mailingListService = mailingListService;
         this.roleService = service;
     }
-    
+
     @Override
     public Class<? extends MailingList> fromClass() {
         return MailingList.class;
@@ -57,40 +57,40 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
         }
         Set<String> readPermissions = new HashSet<>();
         model.setReadPermissions(readPermissions);
-        for(RoleVO role : vo.getReadRoles()) {
+        for(Role role : vo.getReadRoles()) {
             readPermissions.add(role.getXid());
         }
         Set<String> editPermissions = new HashSet<>();
         model.setEditPermissions(editPermissions);
-        for(RoleVO role : vo.getEditRoles()) {
+        for(Role role : vo.getEditRoles()) {
             editPermissions.add(role.getXid());
         }
         return model;
     }
-    
+
     @Override
     public MailingList unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
         MailingListModel model = (MailingListModel)from;
         MailingList vo = model.toVO();
         ProcessResult result = new ProcessResult();
         if(model.getReadPermissions() != null) {
-            Set<RoleVO> roles = new HashSet<>();
+            Set<Role> roles = new HashSet<>();
             vo.setReadRoles(roles);
             for(String role : model.getReadPermissions()) {
                 try {
-                    roles.add(roleService.get(role, user));
+                    roles.add(roleService.get(role).getRole());
                 }catch(NotFoundException e) {
                     result.addContextualMessage("readPermissions", "roles.roleNotFound", role);
                 }
             }
         }
-        
+
         if(model.getEditPermissions() != null) {
-            Set<RoleVO> roles = new HashSet<>();
+            Set<Role> roles = new HashSet<>();
             vo.setReadRoles(roles);
             for(String role : model.getEditPermissions()) {
                 try {
-                    roles.add(roleService.get(role, user));
+                    roles.add(roleService.get(role).getRole());
                 }catch(NotFoundException e) {
                     result.addContextualMessage("editPermissions", "roles.roleNotFound", role);
                 }
