@@ -31,13 +31,13 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * PATCH support via the PatchVORequestBody annotation.
- * 
+ *
  * NOTE that the models must be in the model mapper for this to work
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -46,20 +46,20 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
 
     private static final String XID = "xid";
     private static final String ID = "id";
-    
+
     private final ObjectMapper objectMapper;
     private final ApplicationContext context;
     private final RestModelMapper modelMapper;
-    
-    @Autowired 
-    public PartialUpdateArgumentResolver(@Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper objectMapper, 
-            ApplicationContext context, 
+
+    @Autowired
+    public PartialUpdateArgumentResolver(@Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper objectMapper,
+            ApplicationContext context,
             RestModelMapper modelMapper) {
         this.objectMapper = objectMapper;
         this.context = context;
         this.modelMapper = modelMapper;
     }
-    
+
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -74,42 +74,41 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
 
     @Override
     public Object resolveArgument(MethodParameter parameter,
-                                  ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest,
-                                  WebDataBinderFactory binderFactory) throws Exception {
+            ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest,
+            WebDataBinderFactory binderFactory) throws Exception {
 
         ServletServerHttpRequest req = createInputMessage(webRequest);
 
         PatchVORequestBody patch = parameter.getParameterAnnotation(PatchVORequestBody.class);
-        
+
         Class<?> serviceClass = patch.service();
         AbstractVOService<?,?> service = (AbstractVOService<?,?>)context.getBean(serviceClass);
-
-        User user = Common.getHttpUser();
+        PermissionHolder user = Common.getUser();
         Object vo;
         switch(patch.idType()) {
             case ID:
-              Integer id = Integer.parseInt(getPathVariables(webRequest).get(ID));
-              vo = service.getFull(id, user);
-              if(vo == null)
-                  throw new NotFoundRestException();
-              else {
-                  Object model = modelMapper.map(vo, patch.modelClass(), user);
-                  return readJavaType(model, req);
-              }
-            case XID:
-                String xid = getPathVariables(webRequest).get(XID);
-                vo = service.getFull(xid, user);
+                Integer id = Integer.parseInt(getPathVariables(webRequest).get(ID));
+                vo = service.get(id);
                 if(vo == null)
                     throw new NotFoundRestException();
                 else {
                     Object model = modelMapper.map(vo, patch.modelClass(), user);
                     return readJavaType(model, req);
                 }
-                default:
+            case XID:
+                String xid = getPathVariables(webRequest).get(XID);
+                vo = service.get(xid);
+                if(vo == null)
+                    throw new NotFoundRestException();
+                else {
+                    Object model = modelMapper.map(vo, patch.modelClass(), user);
+                    return readJavaType(model, req);
+                }
+            default:
             case OTHER:
                 String other = getPathVariables(webRequest).get(patch.urlPathVariableName());
-                vo = service.getFull(other, user);
+                vo = service.get(other);
                 if(vo == null)
                     throw new NotFoundRestException();
                 else {
