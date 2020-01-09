@@ -48,6 +48,7 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.email.EmailContentModel;
 import com.infiniteautomation.mango.rest.v2.model.server.NetworkInterfaceModel;
 import com.infiniteautomation.mango.rest.v2.model.server.ServerCommandModel;
@@ -72,7 +73,6 @@ import com.serotonin.m2m2.util.HostUtils.NICInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.system.TimezoneUtility;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
@@ -102,9 +102,9 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final MangoSessionRegistry sessionRegistry;
     private final MailingListService mailingListService;
-    
+
     private final UsersService userService;
-    
+
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
 
@@ -113,7 +113,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         this.userService = userService;
         this.mailingListService = mailingListService;
         this.sessionRegistry = sessionRegistry;
-    
+
         this.allTimezones = TimezoneUtility.getTimeZoneIdsWithOffset();
         this.defaultServerTimezone = new TimezoneModel("",
                 new TranslatableMessage("users.timezone.def").translate(Common.getTranslations()),
@@ -125,14 +125,26 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @ApiOperation(value = "Query Timezones", notes = "", response = TimezoneModel.class,
             responseContainer = "Array")
     @RequestMapping(method = RequestMethod.GET, value = "/timezones")
-    public ResponseEntity<PageQueryResultModel<TimezoneModel>> queryTimezone(
+    public ListWithTotal<TimezoneModel> queryTimezone(
             HttpServletRequest request) {
         ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<TimezoneModel> list =
                 root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
-        PageQueryResultModel<TimezoneModel> model =
-                new PageQueryResultModel<TimezoneModel>(list, allTimezones.size() + 1);
-        return new ResponseEntity<PageQueryResultModel<TimezoneModel>>(model, HttpStatus.OK);
+        ListWithTotal<TimezoneModel> model =
+                new ListWithTotal<TimezoneModel>() {
+
+            @Override
+            public List<TimezoneModel> getItems() {
+                return list;
+            }
+
+            @Override
+            public int getTotal() {
+                return allTimezones.size() + 1;
+            }
+
+        };
+        return model;
     }
 
     @PreAuthorize("isAdmin()")
@@ -184,13 +196,13 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             @AuthenticationPrincipal User user) throws TemplateException, IOException {
 
         contentModel.ensureValid();
-        
+
         //Ensure permissions and existence
-        User sendTo = userService.get(username, user);
-        
+        User sendTo = userService.get(username);
+
         //TODO confirm this user has a valid email address
         EmailContent content = contentModel.toEmailContent();
-        
+
         EmailSender emailSender = new EmailSender(
                 SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
                 SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
@@ -203,7 +215,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
         String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
         InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
-        
+
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
             emailSender.setDebug(ps);
@@ -218,7 +230,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         return new ResponseEntity<String>(new TranslatableMessage("common.emailSent", sendTo.getEmail())
                 .translate(Common.getTranslations()), HttpStatus.OK);
     }
-    
+
     @PreAuthorize("isGrantedPermission('" + SendToMailingListPermission.PERMISSION + "')")
     @ApiOperation(value = "Send an email to a mailing list", notes = "Requires mailing list send permission")
     @RequestMapping(method = RequestMethod.POST, value = "/email/mailing-list/{xid}")
@@ -228,9 +240,9 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             @AuthenticationPrincipal User user) throws TemplateException, IOException, AddressException {
 
         contentModel.ensureValid();
-        
+
         //Ensure permissions and existence
-        MailingList sendTo = mailingListService.getFull(xid, user);
+        MailingList sendTo = mailingListService.get(xid);
         Set<String> emailUsers = new HashSet<String>();
         sendTo.appendAddresses(emailUsers, new DateTime(Common.timer.currentTimeMillis()));
         InternetAddress[] toAddresses = new InternetAddress[emailUsers.size()];
@@ -240,7 +252,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             i++;
         }
         EmailContent content = contentModel.toEmailContent();
-        
+
         EmailSender emailSender = new EmailSender(
                 SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
                 SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
@@ -253,7 +265,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
         String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
         InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
-        
+
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
             emailSender.setDebug(ps);
@@ -268,7 +280,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         return new ResponseEntity<String>(new TranslatableMessage("common.emailSentToMailingList", xid)
                 .translate(Common.getTranslations()), HttpStatus.OK);
     }
-    
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Restart Mango",
     notes = "Returns location url in header for status updates while web interface is still active")
