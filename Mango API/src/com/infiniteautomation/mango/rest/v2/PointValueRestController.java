@@ -63,6 +63,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -72,14 +73,13 @@ import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
+import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
@@ -99,10 +99,12 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
     private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;
+    private final PermissionService permissionService;
 
     @Autowired
-    public PointValueRestController(TemporaryResourceWebSocketHandler websocket) {
+    public PointValueRestController(TemporaryResourceWebSocketHandler websocket, PermissionService permissionService) {
         this.resourceManager = new MangoTaskTemporaryResourceManager<>(websocket);
+        this.permissionService = permissionService;
     }
 
     @ApiOperation(
@@ -823,9 +825,9 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Collection<PointValueImportResult>> savePointsValues(HttpServletRequest request,
             @ApiParam(value = "Shall data point listeners be notifified, default is NEVER", required = false, allowMultiple = false)
-            @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
-            @RequestBody(required = true) List<XidPointValueTimeModel> models,
-            @AuthenticationPrincipal User user
+    @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
+    @RequestBody(required = true) List<XidPointValueTimeModel> models,
+    @AuthenticationPrincipal User user
             ) {
 
         //Map of XIDs to results
@@ -879,7 +881,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
-            if(!Permissions.hasDataPointSetPermission(user, vo))
+            if(!permissionService.hasDataPointSetPermission(user, vo))
                 throw new AccessDeniedException();
         }
 
@@ -923,7 +925,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
         if(vo == null)
             throw new NotFoundRestException();
-        Permissions.ensureDataPointSetPermission(user, vo);
+        permissionService.ensureDataPointSetPermission(user, vo);
         DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
         if(rt == null)
             throw new NotFoundRestException();
@@ -978,7 +980,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                         xids = new ArrayList<>();
                         if(ds != null) {
                             dataSourceMap.put(ds.getId(), ds);
-                            List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId(), null, false);
+                            List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId());
                             for(DataPointVO point : points) {
                                 xids.add(point.getXid());
                                 dataPointsMap.put(point.getXid(), point);
@@ -1004,7 +1006,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                                 throw new NotFoundException();
 
                             //Ensure edit permission
-                            Permissions.ensureDataSourcePermission(user, ds);
+                            permissionService.ensureDataSourcePermission(user, ds);
 
                             //Do purge based on settings
                             if(model.isPurgeAll())
@@ -1049,7 +1051,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1074,7 +1076,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1094,7 +1096,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1169,7 +1171,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             if (vo == null) {
                 throw new NotFoundRestException();
             }else {
-                if(!Permissions.hasDataPointReadPermission(user, vo))
+                if(!permissionService.hasDataPointReadPermission(user, vo))
                     throw new AccessDeniedException();
             }
 
