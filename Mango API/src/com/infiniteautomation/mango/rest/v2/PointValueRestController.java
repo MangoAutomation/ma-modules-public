@@ -836,7 +836,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         for(XidPointValueTimeModel model : models) {
             PointValueImportResult result = results.get(model.getXid());
             if(result == null) {
-                result = new PointValueImportResult(model.getXid(), dao, fireEvents, user);
+                result = new PointValueImportResult(model.getXid(), dao, permissionService, fireEvents, user);
                 results.put(model.getXid(), result);
             }
             //Attempt to save it

@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -21,7 +22,6 @@ import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
 
@@ -34,12 +34,14 @@ public class PointValueImportResult {
     private String xid;
     private int total;
     private ProcessResult result;
-    
+
     //Runtime members
     @JsonIgnore
     private boolean valid;
     @JsonIgnore
     private PointValueDao dao;
+    @JsonIgnore
+    private PermissionService service;
     @JsonIgnore
     private final FireEvents fireEvents;
     @JsonIgnore
@@ -48,11 +50,12 @@ public class PointValueImportResult {
     private DataPointRT rt;
     @JsonIgnore
     private DataPointVO vo;
-    
-    public PointValueImportResult(String xid, PointValueDao dao, FireEvents fireEvents, User user) {
+
+    public PointValueImportResult(String xid, PointValueDao dao, PermissionService service, FireEvents fireEvents, User user) {
         this.xid = xid;
         this.result = new ProcessResult();
         this.dao = dao;
+        this.service = service;
         this.fireEvents = fireEvents;
         this.user = user;
         vo = DataPointDao.getInstance().getByXid(xid);
@@ -60,7 +63,8 @@ public class PointValueImportResult {
             valid = false;
             result.addContextualMessage("xid", "emport.error.missingPoint", xid);
         }else {
-            if (Permissions.hasDataPointSetPermission(user, vo)){
+
+            if (service.hasDataPointSetPermission(user, vo)){
                 valid = true;
                 rt = Common.runtimeManager.getDataPoint(vo.getId());
             }else {
@@ -111,14 +115,14 @@ public class PointValueImportResult {
     public void setResult(ProcessResult result) {
         this.result = result;
     }
-    
+
     public boolean isValid() {
         return valid;
     }
-    
+
     public void saveValue(XidPointValueTimeModel model) {
         if(valid) {
-            
+
             //Validate the model against our point
             long timestamp = model.getTimestamp();
             if(timestamp == 0)
@@ -127,7 +131,7 @@ public class PointValueImportResult {
                 result.addContextualMessage("dataType", "event.ds.dataType");
                 return;
             }
-            
+
             DataValue value;
             switch(model.getType()) {
                 case ALPHANUMERIC:
@@ -158,7 +162,7 @@ public class PointValueImportResult {
                     result.addContextualMessage("dataType", "common.default", model.getType() + " data type not supported yet");
                     return;
             }
-            
+
             PointValueTime pvt;
             if(model.getAnnotation() == null) {
                 pvt = new PointValueTime(value, timestamp);
