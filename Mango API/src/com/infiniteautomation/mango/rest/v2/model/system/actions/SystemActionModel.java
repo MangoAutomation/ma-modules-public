@@ -3,16 +3,16 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.system.actions;
 
-import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.vo.Validatable;
 
 /**
  * Base class for all system action inputs
- * 
+ *
  * @author Terry Packer
  *
  */
-public class SystemActionModel {
+public class SystemActionModel implements Validatable {
 
     /* For temporary resource */
     private Long expiration;  //How long after it finishes will the result remain
@@ -42,22 +42,14 @@ public class SystemActionModel {
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
-    
-    /**
-     * @throws ValidationException
-     */
-    public void ensureValid() throws ValidationException {
-        ProcessResult result = new ProcessResult();
-        validate(result);
-        result.ensureValid();
-    }
-    
+
     /**
      * Override as needed
      * @param result
      */
+    @Override
     public void validate(ProcessResult result) {
-        
+
     }
-    
+
 }
