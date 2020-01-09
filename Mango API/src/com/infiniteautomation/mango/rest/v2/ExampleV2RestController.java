@@ -186,7 +186,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
             @RequestBody(required=true) RaiseEventModel model){
         if(model == null)
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
-        Common.eventManager.raiseEvent(model.getEvent().toEventType(), Common.timer.currentTimeMillis(), true, model.getLevel(), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
+        Common.eventManager.raiseEvent(model.getEvent().toVO(), Common.timer.currentTimeMillis(), true, model.getLevel(), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
@@ -243,7 +243,7 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
     public String canGetWithSpaceInPermission() {
         return "OK";
     }
-    
+
     @Async
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Execute a long running request that eventually returns OK")
@@ -252,15 +252,15 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
             @ApiParam(value="Delay ms", required=true, allowMultiple=false) @PathVariable int delayMs,
             HttpServletRequest request) throws InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
-            try { 
-                Thread.sleep(delayMs); 
+            try {
+                Thread.sleep(delayMs);
                 return "OK";
             }catch(InterruptedException e) {
                 throw new CompletionException(e);
-            } 
+            }
         });
     }
-    
+
     @Async
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Execute a long running request that eventually fails on a runtime exception")
@@ -269,12 +269,12 @@ public class ExampleV2RestController extends AbstractMangoRestV2Controller{
             @ApiParam(value="Delay ms", required=true, allowMultiple=false) @PathVariable int delayMs,
             HttpServletRequest request) throws InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
-            try { 
+            try {
                 Thread.sleep(delayMs);
                 throw new CompletionException(new RuntimeException("I Should Fail"));
             }catch(InterruptedException e) {
                 throw new CompletionException(e);
-            } 
+            }
         });
     }
 }
