@@ -11,43 +11,56 @@ import com.serotonin.m2m2.view.text.TimeRenderer;
  * @author Terry Packer
  *
  */
-public class TimeTextRendererModel extends BaseTextRendererModel<TimeTextRendererModel>{
+public class TimeTextRendererModel extends BaseTextRendererModel<TimeRenderer>{
 
     @JsonProperty
     private String format;
-    @JsonProperty 
+    @JsonProperty
     private int conversionExponent;
-    
+
     public TimeTextRendererModel(){ }
-	
-	public TimeTextRendererModel(String format, int conversionExponent) {
-		super();
-		this.format = format;
-		this.conversionExponent = conversionExponent;
-	}
-	
-	public String getFormat() {
-		return format;
-	}
 
-	public void setFormat(String format) {
-		this.format = format;
-	}
+    public TimeTextRendererModel(TimeRenderer vo) {
+        fromVO(vo);
+    }
 
-	public int getConversionExponent() {
-		return conversionExponent;
-	}
+    @Override
+    TimeRenderer newVO() {
+        return new TimeRenderer();
+    }
 
-	public void setConversionExponent(int conversionExponent) {
-		this.conversionExponent = conversionExponent;
-	}
+    @Override
+    public void fromVO(TimeRenderer vo) {
+        this.format = vo.getFormat();
+        this.conversionExponent = vo.getConversionExponent();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.SuperclassModel#getType()
-	 */
-	@Override
-	public String getType() {
-		return TimeRenderer.getDefinition().getName();
-	}
+    @Override
+    public TimeRenderer toVO() {
+        TimeRenderer vo = newVO();
+        vo.setFormat(format);
+        vo.setConversionExponent(conversionExponent);
+        return vo;
+    }
 
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public int getConversionExponent() {
+        return conversionExponent;
+    }
+
+    public void setConversionExponent(int conversionExponent) {
+        this.conversionExponent = conversionExponent;
+    }
+
+    @Override
+    public String getType() {
+        return TimeRenderer.getDefinition().getName();
+    }
 }

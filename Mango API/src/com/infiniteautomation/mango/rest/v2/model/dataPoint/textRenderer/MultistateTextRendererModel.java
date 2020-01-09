@@ -15,31 +15,44 @@ import com.serotonin.m2m2.view.text.MultistateValue;
  * @author Terry Packer
  *
  */
-public class MultistateTextRendererModel extends BaseTextRendererModel<MultistateTextRendererModel>{
+public class MultistateTextRendererModel extends BaseTextRendererModel<MultistateRenderer>{
 
-	@JsonProperty
-	private List<MultistateValue> multistateValues = new ArrayList<MultistateValue>();
-	
-	public MultistateTextRendererModel(){ }
-	
-	public MultistateTextRendererModel(List<MultistateValue> values){
-		this.multistateValues = values;
-	}
-	
-	public List<MultistateValue> getMultistateValues() {
-		return multistateValues;
-	}
+    @JsonProperty
+    private List<MultistateValue> multistateValues = new ArrayList<MultistateValue>();
 
-	public void setMultistateValues(List<MultistateValue> multistateValues) {
-		this.multistateValues = multistateValues;
-	}
+    public MultistateTextRendererModel(){ }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.SuperclassModel#getType()
-	 */
-	@Override
-	public String getType() {
-		return MultistateRenderer.getDefinition().getName();
-	}
+    public MultistateTextRendererModel(MultistateRenderer renderer){
+        fromVO(renderer);
+    }
 
+    @Override
+    MultistateRenderer newVO() {
+        return new MultistateRenderer();
+    }
+
+    @Override
+    public void fromVO(MultistateRenderer vo) {
+        this.multistateValues = vo.getMultistateValues();
+    }
+
+    @Override
+    public MultistateRenderer toVO() {
+        MultistateRenderer vo = newVO();
+        vo.setMultistateValues(multistateValues);
+        return vo;
+    }
+
+    public List<MultistateValue> getMultistateValues() {
+        return multistateValues;
+    }
+
+    public void setMultistateValues(List<MultistateValue> multistateValues) {
+        this.multistateValues = multistateValues;
+    }
+
+    @Override
+    public String getType() {
+        return MultistateRenderer.getDefinition().getName();
+    }
 }

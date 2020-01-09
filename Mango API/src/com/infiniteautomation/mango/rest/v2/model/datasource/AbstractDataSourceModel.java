@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.datasource;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -21,7 +24,7 @@ import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -61,15 +64,15 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
     @SuppressWarnings("unchecked")
     @Override
     protected T newVO() {
-        DataSourceDefinition def = getDefinition();
+        DataSourceDefinition<T> def = getDefinition();
         T vo = (T) def.baseCreateDataSourceVO();
         vo.setDefinition(def);
         return vo;
     }
 
     @JsonIgnore
-    public DataSourceDefinition getDefinition() {
-        DataSourceDefinition definition = ModuleRegistry.getDataSourceDefinition(getModelType());
+    public DataSourceDefinition<T> getDefinition() {
+        DataSourceDefinition<T> definition = ModuleRegistry.getDataSourceDefinition(getModelType());
         if(definition == null)
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("rest.exception.modelNotFound", getModelType()));
         return definition;
@@ -84,7 +87,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
         this.enabled = vo.isEnabled();
         this.eventAlarmLevels = new ArrayList<>();
         ExportCodes eventCodes = vo.getEventCodes();
-        
+
         for(EventTypeVO evt : vo.getEventTypes()) {
             DataSourceEventType dsEvt = (DataSourceEventType)evt.getEventType();
             EventTypeAlarmLevelModel model = new EventTypeAlarmLevelModel(
@@ -97,7 +100,10 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
         }
 
         this.purgeSettings = new PurgeSettings(vo);
-        this.editPermission = Permissions.explodePermissionGroups(vo.getEditPermission());
+        this.editPermission = new HashSet<>();
+        for(Role role : vo.getEditRoles()) {
+            this.editPermission.add(role.getXid());
+        }
     }
 
     @Override
@@ -112,7 +118,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO<T>> extends
 
         if(purgeSettings != null)
             purgeSettings.toVO(vo);
-        vo.setEditPermission(Permissions.implodePermissionGroups(editPermission));
+        PermissionService service = Common.getBean(PermissionService.class);
+        vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
         return vo;
     }
 

@@ -11,49 +11,61 @@ import com.serotonin.m2m2.view.text.AnalogRenderer;
  * @author Terry Packer
  *
  */
-public class AnalogTextRendererModel extends ConvertingTextRendererModel<AnalogTextRendererModel>{
+public class AnalogTextRendererModel extends ConvertingTextRendererModel<AnalogRenderer>{
 
-	@JsonProperty
-	private String format;
-	@JsonProperty
-	private String suffix;
-	
-	public AnalogTextRendererModel(){ }
-	
-	/**
-	 * @param useUnitAsSuffix
-	 * @param unit
-	 * @param renderedUnit
-	 */
-	public AnalogTextRendererModel(boolean useUnitAsSuffix, String unit,
-			String renderedUnit, String format, String suffix) {
-		super(useUnitAsSuffix, unit, renderedUnit);
-		this.format = format;
-		this.suffix = suffix;
-	}
-	
-	public String getFormat() {
-		return format;
-	}
+    @JsonProperty
+    private String format;
+    @JsonProperty
+    private String suffix;
 
-	public void setFormat(String format) {
-		this.format = format;
-	}
+    public AnalogTextRendererModel(){ }
 
-	public String getSuffix() {
-		return suffix;
-	}
+    public AnalogTextRendererModel(AnalogRenderer vo) {
+        fromVO(vo);
+    }
 
-	public void setSuffix(String suffix) {
-		this.suffix = suffix;
-	}
+    @Override
+    public void fromVO(AnalogRenderer vo) {
+        super.fromVO(vo);
+        this.format = vo.getFormat();
+        this.suffix = vo.getSuffix();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.SuperclassModel#getType()
-	 */
-	@Override
-	public String getType() {
-		return AnalogRenderer.getDefinition().getName();
-	}
+    @Override
+    public AnalogRenderer toVO() {
+        AnalogRenderer vo = super.toVO();
+        vo.setFormat(format);
+        vo.setSuffix(suffix);
+        return vo;
+    }
+
+    @Override
+    AnalogRenderer newVO() {
+        return new AnalogRenderer();
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    /* (non-Javadoc)
+     * @see com.serotonin.m2m2.web.mvc.rest.v1.model.SuperclassModel#getType()
+     */
+    @Override
+    public String getType() {
+        return AnalogRenderer.getDefinition().getName();
+    }
 
 }

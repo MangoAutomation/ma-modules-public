@@ -10,14 +10,31 @@ import com.serotonin.m2m2.view.text.NoneRenderer;
  * @author Terry Packer
  *
  */
-public class NoneTextRendererModel extends BaseTextRendererModel<NoneTextRendererModel>{
+public class NoneTextRendererModel extends BaseTextRendererModel<NoneRenderer>{
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.SuperclassModel#getType()
-	 */
-	@Override
-	public String getType() {
-		return NoneRenderer.getDefinition().getName();
-	}
+    public NoneTextRendererModel() { }
+    public NoneTextRendererModel(NoneRenderer vo) {
+        fromVO(vo);
+    }
+
+    @Override
+    public String getType() {
+        return NoneRenderer.getDefinition().getName();
+    }
+
+    @Override
+    NoneRenderer newVO() {
+        return new NoneRenderer();
+    }
+
+    @Override
+    public void fromVO(NoneRenderer vo) {
+
+    }
+
+    @Override
+    public NoneRenderer toVO() {
+        return newVO();
+    }
 
 }

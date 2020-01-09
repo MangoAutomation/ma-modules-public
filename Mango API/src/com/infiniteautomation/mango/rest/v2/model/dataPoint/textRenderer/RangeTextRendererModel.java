@@ -14,49 +14,56 @@ import com.serotonin.m2m2.view.text.RangeValue;
  * @author Terry Packer
  *
  */
-public class RangeTextRendererModel extends ConvertingTextRendererModel<RangeTextRendererModel>{
+public class RangeTextRendererModel extends ConvertingTextRendererModel<RangeRenderer>{
 
-	@JsonProperty
-	private String format;
-	@JsonProperty
-	private List<RangeValue> rangeValues;
-	
-	public RangeTextRendererModel(){ }
-	
-	/**
-	 * @param useUnitAsSuffix
-	 * @param unit
-	 * @param renderedUnit
-	 */
-	public RangeTextRendererModel(boolean useUnitAsSuffix, String unit,
-			String renderedUnit, String format, List<RangeValue> rangeValues) {
-		super(useUnitAsSuffix, unit, renderedUnit);
-		this.format = format;
-		this.rangeValues = rangeValues;
-	}
-	
-	public List<RangeValue> getRangeValues() {
-		return rangeValues;
-	}
+    @JsonProperty
+    private String format;
+    @JsonProperty
+    private List<RangeValue> rangeValues;
 
-	public void setRangeValues(List<RangeValue> rangeValues) {
-		this.rangeValues = rangeValues;
-	}
+    public RangeTextRendererModel(){ }
+    public RangeTextRendererModel(RangeRenderer vo){
+        fromVO(vo);
+    }
 
-	public String getFormat() {
-		return format;
-	}
+    @Override
+    public void fromVO(RangeRenderer vo) {
+        super.fromVO(vo);
+        this.format = vo.getFormat();
+        this.rangeValues = vo.getRangeValues();
+    }
 
-	public void setFormat(String format) {
-		this.format = format;
-	}
+    @Override
+    public RangeRenderer toVO() {
+        RangeRenderer vo = super.toVO();
+        vo.setFormat(format);
+        vo.setRangeValues(rangeValues);
+        return vo;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.web.mvc.rest.v1.model.SuperclassModel#getType()
-	 */
-	@Override
-	public String getType() {
-		return RangeRenderer.getDefinition().getName();
-	}
+    @Override
+    RangeRenderer newVO() {
+        return new RangeRenderer();
+    }
 
+    public List<RangeValue> getRangeValues() {
+        return rangeValues;
+    }
+
+    public void setRangeValues(List<RangeValue> rangeValues) {
+        this.rangeValues = rangeValues;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    @Override
+    public String getType() {
+        return RangeRenderer.getDefinition().getName();
+    }
 }
