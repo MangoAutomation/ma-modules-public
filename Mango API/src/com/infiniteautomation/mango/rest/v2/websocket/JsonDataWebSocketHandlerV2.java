@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.websocket.dao.SubscriptionDaoWebSocketHandler;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
 
 /**
@@ -22,9 +22,14 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
 @WebSocketMapping("/websocket/json-data")
 public class JsonDataWebSocketHandlerV2 extends SubscriptionDaoWebSocketHandler<JsonDataVO> {
 
+    private final PermissionService service;
+    public JsonDataWebSocketHandlerV2(PermissionService service) {
+        this.service = service;
+    }
+
     @Override
     protected boolean hasPermission(User user, JsonDataVO vo) {
-        return Permissions.hasPermission(user, vo.getReadPermission());
+        return service.hasAnyRole(user, vo.getReadRoles());
     }
 
     @Override

@@ -12,10 +12,10 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DataPointTagsUpdatedEvent;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Terry Packer
@@ -28,15 +28,17 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
     public static final String TAGS_UPDATED = "tagsUpdated";
 
     final RestModelMapper mapper;
-    
+    private final PermissionService permissionService;
+
     @Autowired
-    public DataPointWebSocketHandler(RestModelMapper mapper) {
+    public DataPointWebSocketHandler(RestModelMapper mapper, PermissionService permissionService) {
         this.mapper = mapper;
+        this.permissionService = permissionService;
     }
-    
+
     @Override
     protected boolean hasPermission(User user, DataPointVO vo) {
-        return user.hasAdminPermission() || Permissions.hasDataSourcePermission(user, vo.getDataSourceId());
+        return user.hasAdminRole() || permissionService.hasDataSourcePermission(user, vo.getDataSourceId());
     }
 
     @Override
@@ -46,7 +48,7 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
 
     @EventListener
     private void handleDataPointTagsUpdatedEvent(DataPointTagsUpdatedEvent event) {
-        this.notify(TAGS_UPDATED, event.getVo(), null, null);
+        this.notify(TAGS_UPDATED, event.getVo(), null);
     }
 
     @Override
