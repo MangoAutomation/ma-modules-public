@@ -34,9 +34,14 @@ import com.infiniteautomation.mango.emport.ImportTask;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.RestValidationResult.RestMessageLevel;
+import com.infiniteautomation.mango.rest.v2.model.RestValidationResult.RestValidationMessage;
+import com.infiniteautomation.mango.rest.v2.model.emport.JsonConfigImportStateEnum;
+import com.infiniteautomation.mango.rest.v2.model.emport.JsonEmportControlModel;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResource;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.rest.v2.websocket.JsonConfigImportWebSocketHandler;
+import com.infiniteautomation.mango.spring.service.EmportService;
 import com.infiniteautomation.mango.util.ConfigurationExportData;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
@@ -49,11 +54,6 @@ import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.exception.RestValidationFailedException;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestMessageLevel;
-import com.serotonin.m2m2.web.mvc.rest.v1.message.RestValidationMessage;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonConfigImportStateEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.ProgressiveTaskListener;
 
@@ -72,11 +72,15 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
 
     private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
     private final JsonConfigImportWebSocketHandler websocket;
-
+    private final EmportService<?,?,?> service;
     @Autowired
-    public JsonEmportV2Controller(JsonConfigImportWebSocketHandler websocket, MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources) {
+    public JsonEmportV2Controller(
+            JsonConfigImportWebSocketHandler websocket,
+            MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources,
+            EmportService<?,?,?>service) {
         this.websocket = websocket;
         this.importStatusResources = importStatusResources;
+        this.service = service;
     }
 
     @PreAuthorize("isAdmin()")
@@ -110,7 +114,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             @RequestBody(required=true) JsonEmportControlModel model,
             @ApiParam(value="Resource id", required=true, allowMultiple=false)
             @PathVariable String resourceId,
-            UriComponentsBuilder builder) throws RestValidationFailedException {
+            UriComponentsBuilder builder) {
 
         ImportStatusProvider provider = this.importStatusResources.get(resourceId);
         if(provider == null){
@@ -134,14 +138,14 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request,
             @ApiParam(value = "timeout for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
             @RequestParam(value="timeout", required=false) Long timeout,
-            @AuthenticationPrincipal User user) throws RestValidationFailedException, IOException, JsonException {
+            @AuthenticationPrincipal User user) throws IOException, JsonException {
 
         if (!file.isEmpty()) {
             JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
             JsonObject jo = jr.read(JsonObject.class);
 
             String resourceId = importStatusResources.generateResourceId();
-            ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, jo, user);
+            ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, user, jo);
 
             //Setup the Temporary Resource
             this.importStatusResources.put(resourceId, statusProvider);
@@ -166,7 +170,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         if (config instanceof JsonObject) {
             //Setup the Temporary Resource
             String resourceId = importStatusResources.generateResourceId();
-            ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, config.toJsonObject(), user);
+            ImportStatusProvider statusProvider = new ImportStatusProvider(importStatusResources, resourceId, websocket, timeout, user, config.toJsonObject());
             this.importStatusResources.put(resourceId, statusProvider);
             URI location = builder.path("/json-emport/import/{id}").buildAndExpand(resourceId).toUri();
             return getResourceCreated(statusProvider, location);
@@ -211,9 +215,9 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
      *
      * @author Terry Packer
      */
-    public class ImportStatusProvider extends MangoRestTemporaryResource<ImportStatusProvider> implements ProgressiveTaskListener{
+    public class ImportStatusProvider extends MangoRestTemporaryResource<ImportStatusProvider> implements ProgressiveTaskListener {
 
-        private final ImportTask task;
+        private final ImportTask<?,?,?> task;
         private final JsonConfigImportWebSocketHandler websocket;
         private final long expirationMs;
 
@@ -224,7 +228,12 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
         private JsonConfigImportStateEnum state;
         private float progress;
 
-        public ImportStatusProvider(MangoRestTemporaryResourceContainer<ImportStatusProvider> container, String resourceId, JsonConfigImportWebSocketHandler websocket, Long expirationMs, JsonObject root,  User user){
+        public ImportStatusProvider(MangoRestTemporaryResourceContainer<ImportStatusProvider> container,
+                String resourceId,
+                JsonConfigImportWebSocketHandler websocket,
+                Long expirationMs,
+                User user,
+                JsonObject root){
             super(resourceId, container);
             this.websocket = websocket;
             if(expirationMs == null)
@@ -235,7 +244,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             this.start = new Date();
             this.state = JsonConfigImportStateEnum.RUNNING;
             this.progress = 0.0f;
-            this.task = new ImportTask(root, Common.getTranslations(), user, this);
+            this.task = service.getImportTask(root, this, true, user.getTranslations(), user);
         }
 
         @JsonGetter
@@ -343,9 +352,6 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
             schedule(new Date(Common.timer.currentTimeMillis() + expirationMs));
         }
 
-        /* (non-Javadoc)
-         * @see com.serotonin.util.ProgressiveTaskListener#taskRejected(com.serotonin.timer.RejectedTaskReason)
-         */
         @Override
         public void taskRejected(RejectedTaskReason reason) {
             this.finish = new Date();
