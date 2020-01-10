@@ -39,6 +39,7 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataPointValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgePointValuesResponseModel;
@@ -82,7 +83,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

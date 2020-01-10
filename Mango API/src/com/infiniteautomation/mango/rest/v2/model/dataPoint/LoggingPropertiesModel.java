@@ -6,61 +6,61 @@ package com.infiniteautomation.mango.rest.v2.model.dataPoint;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
+
 
 /**
  * @author Jared Wiltshire
  */
 public class LoggingPropertiesModel {
 
-	private String loggingType;
+    private String loggingType;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-	private String intervalLoggingType;
+    private String intervalLoggingType;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-	private TimePeriodModel intervalLoggingPeriod;
-	private Double tolerance;
-	private Boolean discardExtremeValues;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Double discardLowLimit;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Double discardHighLimit;	
-	private Boolean overrideIntervalLoggingSamples;
+    private TimePeriodModel intervalLoggingPeriod;
+    private Double tolerance;
+    private Boolean discardExtremeValues;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-	private Integer intervalLoggingSampleWindowSize;
-	private Integer cacheSize;
+    private Double discardLowLimit;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double discardHighLimit;
+    private Boolean overrideIntervalLoggingSamples;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer intervalLoggingSampleWindowSize;
+    private Integer cacheSize;
 
-	public LoggingPropertiesModel() {
-	}
-	
-	public LoggingPropertiesModel(DataPointVO point) {
-	    this.loggingType = DataPointVO.LOGGING_TYPE_CODES.getCode(point.getLoggingType());
+    public LoggingPropertiesModel() {
+    }
+
+    public LoggingPropertiesModel(DataPointVO point) {
+        this.loggingType = DataPointVO.LOGGING_TYPE_CODES.getCode(point.getLoggingType());
         if (point.getLoggingType() == DataPointVO.LoggingTypes.INTERVAL) {
             this.intervalLoggingType = DataPointVO.INTERVAL_LOGGING_TYPE_CODES.getCode(point.getIntervalLoggingType());
             this.intervalLoggingPeriod = new TimePeriodModel(point.getIntervalLoggingPeriod(), point.getIntervalLoggingPeriodType());
-        } else if (point.getLoggingType() == DataPointVO.LoggingTypes.ON_CHANGE_INTERVAL) { 
+        } else if (point.getLoggingType() == DataPointVO.LoggingTypes.ON_CHANGE_INTERVAL) {
             this.intervalLoggingPeriod = new TimePeriodModel(point.getIntervalLoggingPeriod(), point.getIntervalLoggingPeriodType());
         }
-        
+
         this.tolerance = point.getTolerance();
-        
+
         this.discardExtremeValues = point.isDiscardExtremeValues();
         if (this.discardExtremeValues) {
             this.discardLowLimit = point.getDiscardLowLimit();
             this.discardHighLimit = point.getDiscardHighLimit();
         }
-        
+
         this.overrideIntervalLoggingSamples = point.isOverrideIntervalLoggingSamples();
         if (this.overrideIntervalLoggingSamples) {
             this.intervalLoggingSampleWindowSize = point.getIntervalLoggingSampleWindowSize();
         }
-        
+
         this.cacheSize = point.getDefaultCacheSize();
     }
 
-	public void copyPropertiesTo(DataPointVO point) {
-	    if (this.loggingType != null) {
-	        point.setLoggingType(DataPointVO.LOGGING_TYPE_CODES.getId(this.loggingType));
-	    }
+    public void copyPropertiesTo(DataPointVO point) {
+        if (this.loggingType != null) {
+            point.setLoggingType(DataPointVO.LOGGING_TYPE_CODES.getId(this.loggingType));
+        }
         if (this.intervalLoggingType != null) {
             point.setIntervalLoggingType(DataPointVO.INTERVAL_LOGGING_TYPE_CODES.getId(this.intervalLoggingType));
         }
@@ -89,7 +89,7 @@ public class LoggingPropertiesModel {
         if (this.cacheSize != null) {
             point.setDefaultCacheSize(this.cacheSize);
         }
-	}
+    }
 
     public String getLoggingType() {
         return loggingType;

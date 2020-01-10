@@ -11,16 +11,13 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.role.Role;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.BaseChartRendererModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.ChartRendererFactory;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.BaseTextRendererModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRendererFactory;
+
 
 /**
  * Data point REST model v2
@@ -53,7 +50,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     String plotType;
     LoggingPropertiesModel loggingProperties;
     BaseTextRendererModel<?> textRenderer;
-    BaseChartRendererModel<?> chartRenderer;
     String rollup;
     String simplifyType;
     Double simplifyTolerance;
@@ -114,8 +110,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.tags = point.getTags();
 
         this.loggingProperties = new LoggingPropertiesModel(point);
+        //TODO Use Model Mapper
         this.textRenderer = TextRendererFactory.createModel(point);
-        this.chartRenderer = ChartRendererFactory.createModel(point);
 
         this.dataSourceId = point.getDataSourceId();
         this.dataSourceXid = point.getDataSourceXid();
@@ -233,11 +229,9 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             loggingProperties.copyPropertiesTo(point);
         }
         if (this.textRenderer != null) {
-            TextRendererFactory.updateDataPoint(point, textRenderer);
+            point.setTextRenderer(textRenderer.toVO());
         }
-        if (this.chartRenderer != null) {
-            ChartRendererFactory.updateDataPoint(point, chartRenderer);
-        }
+
         if (pointLocator != null) {
             point.setPointLocator(pointLocator.toVO());
         }
@@ -429,14 +423,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public void setTextRenderer(BaseTextRendererModel<?> textRenderer) {
         this.textRenderer = textRenderer;
-    }
-
-    public BaseChartRendererModel<?> getChartRenderer() {
-        return chartRenderer;
-    }
-
-    public void setChartRenderer(BaseChartRendererModel<?> chartRenderer) {
-        this.chartRenderer = chartRenderer;
     }
 
     public Integer getDataSourceId() {

@@ -56,6 +56,7 @@ import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.v2.model.CredentialsModel;
 import com.infiniteautomation.mango.rest.v2.model.modules.AngularJSModuleDefinitionGroupModel;
 import com.infiniteautomation.mango.rest.v2.model.modules.CoreModuleModel;
 import com.infiniteautomation.mango.rest.v2.model.modules.ModuleModel;
@@ -88,7 +89,6 @@ import com.serotonin.m2m2.rt.maint.work.BackupWorkItem;
 import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.CredentialsModel;
 import com.serotonin.provider.Providers;
 
 import io.swagger.annotations.Api;
