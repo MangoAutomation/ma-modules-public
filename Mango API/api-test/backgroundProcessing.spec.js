@@ -23,7 +23,7 @@ describe('Background processing settings', function() {
 
     it('Sets high priority pool settings', () => {
         return client.restRequest({
-            path: '/rest/v1/background-processing/high-priority-thread-pool-settings',
+            path: '/rest/v2/background-processing/high-priority-thread-pool-settings',
             method: 'PUT',
             data: {
                 corePoolSize: 3,
@@ -36,7 +36,7 @@ describe('Background processing settings', function() {
 
     it('Gets high priority pool settings', () => {
         return client.restRequest({
-            path: '/rest/v1/background-processing/high-priority-thread-pool-settings',
+            path: '/rest/v2/background-processing/high-priority-thread-pool-settings',
             method: 'GET'
         }).then(response => {
             assert.equal(response.data.corePoolSize, 3);
@@ -46,19 +46,19 @@ describe('Background processing settings', function() {
 
     it('Sets medium priority pool settings', () => {
         return client.restRequest({
-            path: '/rest/v1/background-processing/medium-priority-thread-pool-settings',
+            path: '/rest/v2/background-processing/medium-priority-thread-pool-settings',
             method: 'PUT',
             data: {
                 corePoolSize: 4
             }
         }).then(response => {
-          //console.log(response.data);
+            assert.equal(response.data.corePoolSize, 4);
         });
     });
 
     it('Gets medium priority pool settings', () => {
         return client.restRequest({
-            path: '/rest/v1/background-processing/medium-priority-thread-pool-settings',
+            path: '/rest/v2/background-processing/medium-priority-thread-pool-settings',
             method: 'GET'
         }).then(response => {
           assert.equal(response.data.corePoolSize, 4);
@@ -67,22 +67,22 @@ describe('Background processing settings', function() {
 
     it('Sets low priority pool settings', () => {
         return client.restRequest({
-            path: '/rest/v1/background-processing/low-priority-thread-pool-settings',
+            path: '/rest/v2/background-processing/low-priority-thread-pool-settings',
             method: 'PUT',
             data: {
                 corePoolSize: 2
             }
         }).then(response => {
-          //console.log(response.data);
+            assert.equal(response.data.corePoolSize, 2);
         });
     });
 
     it('Gets low priority pool settings', () => {
         return client.restRequest({
-            path: '/rest/v1/background-processing/low-priority-thread-pool-settings',
+            path: '/rest/v2/background-processing/low-priority-thread-pool-settings',
             method: 'GET'
         }).then(response => {
-          assert.equal(response.data.corePoolSize, 2);
+            assert.equal(response.data.corePoolSize, 2);
         });
     });
 

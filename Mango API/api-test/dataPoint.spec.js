@@ -33,7 +33,7 @@ describe('Data point service', function() {
             pollPeriod: { periods: 5, type: 'SECONDS' },
             purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
             alarmLevels: { POLL_ABORTED: 'URGENT' },
-            editPermission: null
+            editPermission: 'superadmin'
         });
 
         return ds.save().then((savedDs) => {
@@ -80,8 +80,8 @@ describe('Data point service', function() {
             dataSourceXid : "mango_client_test",
             useIntegralUnit : false,
             useRenderedUnit : false,
-            readPermission : "read",
-            setPermission : "write",
+            readPermission : '',
+            setPermission : 'superadmin',
             chartColour : "",
             rollup : "NONE",
             plotType : "STEP",
@@ -251,20 +251,20 @@ describe('Data point service', function() {
     it('Can update data point read permissions', function () {
         this.timeout(5000);
         return client.restRequest({
-            path: `/rest/v1/data-points/bulk-apply-read-permissions?xid=dp_mango_client_test`,
+            path: `/rest/v2/data-points/bulk-apply-read-permissions?xid=dp_mango_client_test`,
             method: 'POST',
-            data: 'permission1,permission2'
+            data: 'user,superadmin'
         }).then(response => {
             assert.equal(response.data, 1);
             return DataPoint.get('dp_mango_client_test').then(point => {
-                assert.strictEqual(point.readPermission, 'permission1,permission2,read');
+                assert.strictEqual(point.readPermission, 'user,superadmin');
             });
         });
     });
     it('Can update data point set permissions', function () {
         this.timeout(5000);
         return client.restRequest({
-            path: `/rest/v1/data-points/bulk-apply-set-permissions?xid=dp_mango_client_test`,
+            path: `/rest/v2/data-points/bulk-apply-set-permissions?xid=dp_mango_client_test`,
             method: 'POST',
             data: 'permission1,permission2'
         }).then(response => {

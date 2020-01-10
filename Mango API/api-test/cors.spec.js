@@ -49,7 +49,7 @@ describe('Cross Origin Resource Sharing (CORS)', function() {
 
     it('Can make a CORS OPTION request', function() {
         return this.allowedCorsClient.restRequest({
-            path: '/rest/v1/users/current',
+            path: '/rest/v2/users/current',
             method: 'OPTIONS'
         }).then(response => {
             assert.strictEqual(response.headers['access-control-allow-origin'], allowedOrigin);
@@ -59,7 +59,7 @@ describe('Cross Origin Resource Sharing (CORS)', function() {
 
     it('Can make a CORS GET request', function() {
         return this.allowedCorsClient.restRequest({
-            path: '/rest/v1/users/current'
+            path: '/rest/v2/users/current'
         }).then(response => {
             assert.strictEqual(response.data.username, config.username);
             assert.strictEqual(response.headers['access-control-allow-origin'], allowedOrigin);
@@ -69,7 +69,7 @@ describe('Cross Origin Resource Sharing (CORS)', function() {
 
     it('Disallows origins that aren\'t whitelisted', function() {
         return this.notAllowedCorsClient.restRequest({
-            path: '/rest/v1/users/current',
+            path: '/rest/v2/users/current',
             dataType: 'string'
         }).then(response => {
             throw new Error(`Received a succcessful reponse: ${response.status}`);
