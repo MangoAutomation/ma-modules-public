@@ -42,11 +42,6 @@ public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler
     }
 
     @Override
-    protected Object createModel(MailingList vo) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Object createModel(MailingList vo, User user) {
         return mapping.map(vo, user, mapper);
     }

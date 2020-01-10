@@ -41,11 +41,6 @@ public class PublisherWebSocketHandler <POINT extends PublishedPointVO, PUBLISHE
     }
 
     @Override
-    protected Object createModel(PUBLISHER vo) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Object createModel(PUBLISHER vo, User user) {
         return modelMapper.map(vo, AbstractPublisherModel.class, user);
     }

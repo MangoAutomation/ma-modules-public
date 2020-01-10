@@ -40,11 +40,6 @@ public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>
     }
 
     @Override
-    protected Object createModel(T vo) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Object createModel(T vo, User user) {
         return modelMapper.map(vo, AbstractEventDetectorModel.class, user);
     }

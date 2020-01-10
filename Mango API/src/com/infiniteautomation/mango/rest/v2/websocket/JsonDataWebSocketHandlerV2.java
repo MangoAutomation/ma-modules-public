@@ -7,13 +7,14 @@ package com.infiniteautomation.mango.rest.v2.websocket;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
 import com.infiniteautomation.mango.rest.v2.websocket.dao.SubscriptionDaoWebSocketHandler;
 import com.infiniteautomation.mango.spring.db.JsonDataTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
+
 
 /**
  * @author Terry Packer
@@ -34,7 +35,7 @@ public class JsonDataWebSocketHandlerV2 extends SubscriptionDaoWebSocketHandler<
     }
 
     @Override
-    protected Object createModel(JsonDataVO vo) {
+    protected Object createModel(JsonDataVO vo, User user) {
         return new JsonDataModel(vo);
     }
 

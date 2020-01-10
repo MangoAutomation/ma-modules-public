@@ -86,11 +86,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO,
     }
 
     abstract protected boolean hasPermission(User user, T vo);
-    abstract protected Object createModel(T vo);
-
-    protected Object createModel(T vo, User user) {
-        return createModel(vo);
-    }
+    abstract protected Object createModel(T vo, User user);
 
     protected boolean isModelPerUser() {
         return false;

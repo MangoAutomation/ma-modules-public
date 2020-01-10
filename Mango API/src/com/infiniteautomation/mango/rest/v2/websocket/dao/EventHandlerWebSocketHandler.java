@@ -53,11 +53,6 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> e
     }
 
     @Override
-    protected Object createModel(T vo) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Object createModel(T vo, User user) {
         return this.map.apply(vo, user);
     }

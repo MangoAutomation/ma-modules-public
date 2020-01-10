@@ -14,7 +14,6 @@ import com.infiniteautomation.mango.spring.db.DataPointTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DataPointTagsUpdatedEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 
@@ -56,10 +55,5 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
     @EventListener
     protected void handleDaoEvent(DaoEvent<? extends DataPointVO, DataPointTableDefinition> event) {
         this.notify(event);
-    }
-
-    @Override
-    protected Object createModel(DataPointVO vo) {
-        throw new ShouldNeverHappenException("Should have user available.");
     }
 }

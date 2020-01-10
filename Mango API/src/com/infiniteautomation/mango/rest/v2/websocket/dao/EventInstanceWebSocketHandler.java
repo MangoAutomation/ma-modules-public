@@ -4,16 +4,20 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket.dao;
 
+import java.util.function.BiFunction;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
 
 /**
  * @author Terry Packer
@@ -21,7 +25,16 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
  */
 @Component
 @WebSocketMapping("/websocket/event-instances")
-public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandler<EventInstanceVO, EventInstanceTableDefinition>{
+public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandler<EventInstanceVO, EventInstanceTableDefinition> {
+
+    private final BiFunction<EventInstanceVO, User, EventInstanceModel> map;
+
+    @Autowired
+    public EventInstanceWebSocketHandler(RestModelMapper modelMapper) {
+        this.map = (vo, user) -> {
+            return modelMapper.map(vo, EventInstanceModel.class, user);
+        };
+    }
 
     @Override
     protected boolean hasPermission(User user, EventInstanceVO vo) {
@@ -33,8 +46,8 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
     }
 
     @Override
-    protected Object createModel(EventInstanceVO vo) {
-        return new EventInstanceModel(vo);
+    protected Object createModel(EventInstanceVO vo, User user) {
+        return map.apply(vo, user);
     }
 
     @Override

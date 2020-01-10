@@ -68,19 +68,6 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         }
 
         /**
-         * REST V1
-         */
-        AnnotationConfigWebApplicationContext restV1Context = new AnnotationConfigWebApplicationContext();
-        restV1Context.setId(com.serotonin.m2m2.web.mvc.rest.v1.MangoRestDispatcherConfiguration.CONTEXT_ID);
-        restV1Context.setParent(rootRestContext);
-        restV1Context.register(com.serotonin.m2m2.web.mvc.rest.v1.MangoRestDispatcherConfiguration.class);
-
-        ServletRegistration.Dynamic restV1Dispatcher = context.addServlet(com.serotonin.m2m2.web.mvc.rest.v1.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV1Context));
-        restV1Dispatcher.setLoadOnStartup(3);
-        restV1Dispatcher.setAsyncSupported(true);
-        restV1Dispatcher.addMapping("/rest/v1/*");
-
-        /**
          * REST V2
          */
         AnnotationConfigWebApplicationContext restV2Context = new AnnotationConfigWebApplicationContext();

@@ -40,11 +40,6 @@ public class DataSourceWebSocketHandler<T extends DataSourceVO<T>> extends DaoNo
     }
 
     @Override
-    protected Object createModel(T vo) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Object createModel(T vo, User user) {
         return modelMapper.map(vo, AbstractDataSourceModel.class, user);
     }

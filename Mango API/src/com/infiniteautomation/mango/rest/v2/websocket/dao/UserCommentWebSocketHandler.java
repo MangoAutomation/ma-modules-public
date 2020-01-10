@@ -7,13 +7,13 @@ package com.infiniteautomation.mango.rest.v2.websocket.dao;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
+import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.db.UserCommentTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.WebSocketMapping;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.comment.UserCommentModel;
 
 /**
  * @author Terry Packer
@@ -32,7 +32,7 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
     }
 
     @Override
-    protected Object createModel(UserCommentVO vo) {
+    protected Object createModel(UserCommentVO vo, User user) {
         return new UserCommentModel(vo);
     }
 
