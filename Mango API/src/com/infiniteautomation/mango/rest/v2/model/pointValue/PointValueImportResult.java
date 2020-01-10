@@ -22,8 +22,7 @@ import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.DataTypeEnum;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
+
 
 /**
  *
@@ -124,7 +123,7 @@ public class PointValueImportResult {
         if(valid) {
 
             //Validate the model against our point
-            long timestamp = model.getTimestamp();
+            long timestamp = model.getTimestamp().toInstant().toEpochMilli();
             if(timestamp == 0)
                 timestamp = Common.timer.currentTimeMillis();
             if ((model.getType() == null ) || (DataTypeEnum.convertFrom(model.getType()) != vo.getPointLocator().getDataTypeId())) {

@@ -2,27 +2,28 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
 
-package com.serotonin.m2m2.web.mvc.rest.v1.model;
+package com.infiniteautomation.mango.rest.v2.model.permissions;
 
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
 
 /**
- * @author Jared Wiltshire
+ * @author Terry Packer
  */
 public class PermissionDefinitionModel {
     String systemSettingName;
-    String translationKey;
+    TranslatableMessage description;
 
     public PermissionDefinitionModel() {}
 
-    public PermissionDefinitionModel(String systemSettingName, String translationKey) {
+    public PermissionDefinitionModel(String systemSettingName, TranslatableMessage description) {
         this.systemSettingName = systemSettingName;
-        this.translationKey = translationKey;
+        this.description = description;
     }
 
     public PermissionDefinitionModel(PermissionDefinition def) {
         this.systemSettingName = def.getPermissionTypeName();
-        this.translationKey = def.
+        this.description = def.getDescription();
     }
 
     public String getSystemSettingName() {
@@ -33,11 +34,11 @@ public class PermissionDefinitionModel {
         this.systemSettingName = systemSettingName;
     }
 
-    public String getTranslationKey() {
-        return translationKey;
+    public TranslatableMessage getDescription() {
+        return description;
     }
 
-    public void setTranslationKey(String translationKey) {
-        this.translationKey = translationKey;
+    public void setDescription(TranslatableMessage description) {
+        this.description = description;
     }
 }

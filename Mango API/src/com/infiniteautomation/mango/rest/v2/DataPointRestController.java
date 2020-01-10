@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,13 +53,18 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceM
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -92,11 +98,14 @@ public class DataPointRestController {
     private final BiFunction<DataPointVO, User, DataPointModel> map;
 
     private final DataPointService service;
+    private final PermissionService permissionService;
+
     @Autowired
     public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper,
-            DataPointService service) {
+            DataPointService service, PermissionService permissionService) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
         this.service = service;
+        this.permissionService = permissionService;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, DataPointModel.class, user);
         };
@@ -550,6 +559,80 @@ public class DataPointRestController {
                 return true;
             }, transformPoint);
         }
+    }
+
+    public class DataPointFilter {
+
+        protected PermissionHolder user;
+        protected Map<Integer, DataSourceSummary> dsIdMap;
+
+        public DataPointFilter(PermissionHolder user){
+            this.user = user;
+
+            this.dsIdMap = new HashMap<Integer, DataSourceSummary>();
+            for(DataSourceVO<?> ds : DataSourceDao.getInstance().getAll()){
+                dsIdMap.put(ds.getId(), new DataSourceSummary(ds.getId(), ds.getXid(), ds.getEditRoles()));
+            }
+        }
+
+        public boolean hasDataPointReadPermission(Set<Role> userRoles, Set<Role> dataPointReadRoles, Set<Role> dataPointSetRoles, Set<Role> dataSourceEditRoles){
+            //Is the user superadmin
+            if(user.hasAdminRole())
+                return true;
+
+            //Check point read permissions
+            else if(permissionService.hasAnyRole(user, dataPointReadRoles))
+                return true;
+
+            //Check set permissions
+            else if(permissionService.hasAnyRole(user, dataPointSetRoles))
+                return true;
+
+            //Check data source edit permissions
+            else if(permissionService.hasAnyRole(user, dataSourceEditRoles))
+                return true;
+            else
+                return false;
+        }
+
+        public boolean hasDataPointReadPermission(DataPointSummary dp){
+            return hasDataPointReadPermission(user.getRoles(), dp.getReadRoles(), dp.getSetRoles(), this.dsIdMap.get(dp.getDataSourceId()).getEditRoles());
+        }
+
+        public boolean hasDataPointReadPermission(DataPointSummary dp, DataSourceSummary ds){
+            return hasDataPointReadPermission(user.getRoles(), dp.getReadRoles(), dp.getSetRoles(), ds.getEditRoles());
+        }
+
+        public boolean hasDataPointReadPermission(DataPointVO vo){
+            return hasDataPointReadPermission(user.getRoles(), vo.getReadRoles(),
+                    vo.getSetRoles(), this.dsIdMap.get(vo.getDataSourceId()).getEditRoles());
+        }
+    }
+
+    public class DataSourceSummary {
+
+        private int id;
+        private String xid;
+        private Set<Role> editRoles;
+
+        public DataSourceSummary(int id, String xid, Set<Role> editRoles){
+            this.id = id;
+            this.xid = xid;
+            this.editRoles = editRoles;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getXid() {
+            return xid;
+        }
+
+        public Set<Role> getEditRoles() {
+            return editRoles;
+        }
+
     }
 
 }

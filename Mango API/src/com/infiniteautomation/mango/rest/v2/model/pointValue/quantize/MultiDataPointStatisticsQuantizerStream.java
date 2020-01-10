@@ -19,12 +19,12 @@ import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
 import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  *  Container to help map multi point queries produce statistics for each point
@@ -35,15 +35,15 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
 
     //Cached statistic values intra period until all points are ready to be flushed at a timestamp
     protected final LinkedHashMap<Long,List<DataPointValueTime>> periodStats;
-    
+
     private final Map<Integer, IdPointValueTimeRow> currentValueTimeMap;
     //So we can finish the statistics efficiently
     private long lastFullPeriodToMillis;
     //Track when we are moving to a new timestamp within time ordered queries
     private Long lastTime;
-    
+
     public MultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
-        super(info, voMap, dao);        
+        super(info, voMap, dao);
         this.periodStats = new LinkedHashMap<>();
         this.currentValueTimeMap = new HashMap<>();
         this.lastFullPeriodToMillis = periodToMillis;
@@ -51,7 +51,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
 
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());        
+        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         if(!info.isSingleArray())
             writer.writeStartArray(quantizer.vo.getXid());
         updateQuantizers(value);
@@ -61,7 +61,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void row(IdPointValueTime value, int index) throws IOException {
         updateQuantizers(value);
-        
+
         if(info.isSingleArray() && voMap.size() > 1) {
             //Possibly fast forward as samples come in time order and we will not receive another value at this timestamp
             //this will keep our periodStats to a minimum
@@ -113,13 +113,13 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         createQuantizerMap();
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     }
-    
+
     protected void writePeriodStats(List<DataPointValueTime> generators) throws IOException {
         //Code limit
         //TODO Cancel query via Exception
         if(info.getLimit() != null && count >= info.getLimit())
             return;
-        
+
         if(info.isSingleArray() && voMap.size() > 1) {
             if(generators.size() > 0)
                 this.writer.writeDataPointValues(generators, generators.get(0).getTime());
@@ -151,18 +151,18 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             writePeriodStats(new DataPointRollupPeriodValue(generator, getRollup(generator.getVo())));
         }
     }
-    
+
     @Override
     public void finish(PointValueTimeWriter writer) throws IOException {
-        
+
         if(info.isSingleArray() && voMap.size() > 1) {
-            
+
             //Fast forward to end to fill any gaps at the end and stream out data in time
-            BucketCalculator bc; 
+            BucketCalculator bc;
             if(this.info.getTimePeriod() == null) {
                 bc = new BucketsBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), info.getTo(), 1);
             }else{
-               bc = new TimePeriodBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
+                bc = new TimePeriodBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
             }
             Instant currentPeriodTo = bc.getStartTime().toInstant();
             Instant end = bc.getEndTime().toInstant();
@@ -173,12 +173,12 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                 }
                 currentPeriodTo = bc.getNextPeriodTo().toInstant();
             }
-            
+
             for(DataPointStatisticsQuantizer<?> quant : this.quantizerMap.values()) {
                 if(!quant.isDone())
                     quant.done();
             }
-            
+
             //TODO This is likely not necessary
             Iterator<Long> it = this.periodStats.keySet().iterator();
             while(it.hasNext()) {
@@ -194,7 +194,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                     quant.done();
                 }
             }
-            
+
             //For any with 0 data TODO Check for is open?
             for(DataPointStatisticsQuantizer<?> q : this.quantizerMap.values()) {
                 if(!q.isDone()) {
@@ -204,7 +204,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
         }
         super.finish(writer);
     }
-    
+
     /**
      * Override as necessary, return rollup for this data point
      * @param vo
@@ -213,22 +213,22 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     protected RollupEnum getRollup(DataPointVO vo) {
         return info.getRollup();
     }
-    
+
     /**
-     * 
+     *
      * Container for intra interval samples
-     * 
+     *
      * @author Terry Packer
      *
      */
     private static final class IdPointValueTimeRow {
         final IdPointValueTime value;
         final int index;
-        
+
         public IdPointValueTimeRow(IdPointValueTime value, int index) {
             this.value = value;
             this.index = index;
         }
-        
+
     }
 }

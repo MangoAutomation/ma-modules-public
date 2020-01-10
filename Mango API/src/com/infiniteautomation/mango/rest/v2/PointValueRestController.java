@@ -42,6 +42,8 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportRes
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataPointValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgePointValuesResponseModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
@@ -81,8 +83,6 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

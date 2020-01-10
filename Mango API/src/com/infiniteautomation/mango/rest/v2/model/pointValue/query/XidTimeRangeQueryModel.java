@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 
 /**
  *
@@ -24,12 +24,12 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public XidTimeRangeQueryModel() {
 
     }
-    
+
     public XidTimeRangeQueryModel(String[] xids, String dateTimeFormat,
             String timezone, ZonedDateTime from, ZonedDateTime to, Integer limit,
-            boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance, 
+            boolean bookend, PointValueTimeCacheControl useCache, Double simplifyTolerance,
             Integer simplifyTarget, PointValueField[] fields) {
-        super(xids, dateTimeFormat, timezone, limit, 
+        super(xids, dateTimeFormat, timezone, limit,
                 simplifyTolerance, simplifyTarget, fields);
         this.from = from;
         this.to = to;
@@ -37,7 +37,7 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
         this.bookend = bookend;
         this.useCache = useCache;
     }
-    
+
     /**
      * @return the from
      */
@@ -105,8 +105,8 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
-                RollupEnum.NONE, null, limit, bookend, multiplePointsPerArray, 
+                RollupEnum.NONE, null, limit, bookend, multiplePointsPerArray,
                 singleArray, useCache, simplifyTolerance, simplifyTarget, false, fields);
     };
-    
+
 }

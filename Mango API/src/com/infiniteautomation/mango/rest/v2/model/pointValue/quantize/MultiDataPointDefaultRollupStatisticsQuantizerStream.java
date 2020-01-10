@@ -16,13 +16,13 @@ import com.goebl.simplify.SimplifyUtility;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.view.stats.IValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  *
@@ -33,7 +33,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     private final Map<Integer, List<DataPointStatisticsGenerator>> valueMap;
     //If we are required to use simplify then we must cache all the data
     private final boolean useSimplify;
-    
+
     public MultiDataPointDefaultRollupStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
         this.valueMap = new HashMap<>(voMap.size());
@@ -55,18 +55,18 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
         }
         createQuantizerMap();
         dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
-    
+
         //Fast forward to end to fill any gaps at the end
         for(DataPointStatisticsQuantizer<?> quant : this.quantizerMap.values()) {
             if(!quant.isDone())
                 quant.done();
         }
-        
+
         boolean singleArray = info.isSingleArray() && voMap.size() > 1;
-        
+
         //Process the data into lists per data point, limit and simplify if necessary.
         Map<DataPointVO, List<DataPointValueTime>> processed = process(singleArray ? null : info.getLimit());
-        
+
         if(singleArray) {
             //Combine into single array
             List<DataPointValueTime> values = new ArrayList<>();
@@ -74,13 +74,13 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             while(it.hasNext()) {
                 values.addAll(processed.get(it.next()));
             }
-            
+
             //Sort by time
             Collections.sort(values);
             //Limit entire list
             if(info.getLimit() != null)
                 values = values.subList(0, info.getLimit());
-            
+
             //Reset current time and write out
             if(values.size() > 0) {
                 long currentTime = values.get(0).getTime();
@@ -97,7 +97,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                         currentValues.add(value);
                     }
                 }
-                
+
                 //Finish the current values
                 if(currentValues.size() > 0)
                     writer.writeDataPointValues(currentValues, currentValues.get(0).getTime());
@@ -118,7 +118,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             }
         }
     }
-    
+
     /**
      * Process the data into lists per data point, simplify if necessary
      * @param limit
@@ -134,7 +134,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 for(DataPointStatisticsGenerator gen : generators) {
                     NoStatisticsGenerator noGen = (NoStatisticsGenerator)gen.getGenerator();
                     for(IValueTime value : noGen.getValues()) {
-                       values.add(new DataPointVOPointValueTimeBookend(vo, (IdPointValueTime)value));
+                        values.add(new DataPointVOPointValueTimeBookend(vo, (IdPointValueTime)value));
                     }
                 }
             }else {
@@ -143,11 +143,11 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 }
             }
             if(values.size() > 0) {
-                
+
                 //As the other endpoints, limit before simplification
                 if(limit != null)
                     values = values.subList(0, limit);
-                
+
                 if(vo.isSimplifyDataSets()) {
                     if(vo.getSimplifyType() == DataPointVO.SimplifyTypes.TARGET)
                         values = SimplifyUtility.simplify(null, vo.getSimplifyTarget(), true, true, values);
@@ -159,14 +159,14 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
         }
         return processed;
     }
-    
+
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         if(!useSimplify) {
             super.firstValue(value, index, bookend);
             return;
         }
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());        
+        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
         updateQuantizers(value);
         quantizer.firstValue(value, index, bookend);
     }
@@ -221,7 +221,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 writer.writeEndObject();
         }
     }
-    
+
     @Override
     protected RollupEnum getRollup(DataPointVO vo) {
         return RollupEnum.convertTo(vo.getRollup());

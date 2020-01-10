@@ -13,6 +13,7 @@ import com.infiniteautomation.mango.db.query.BookendQueryCallback;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
 import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeDatabaseStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
@@ -20,7 +21,6 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 
 /**
@@ -39,12 +39,12 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
     protected long periodToMillis; //For performance
     protected long currentTime;
     protected int currentDataPointId; //Track point change in order by ID queries
-    
+
     public AbstractMultiDataPointStatisticsQuantizerStream(INFO info, Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
         this.quantizerMap = new HashMap<>(voMap.size());
         this.count = 0;
-        
+
         //Setup for parent quantization, to fill gaps ect.
         this.bucketCalculator = getBucketCalculator();
         this.periodFrom = bucketCalculator.getStartTime().toInstant();
@@ -53,7 +53,7 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
         this.currentTime = periodFrom.toEpochMilli();
         this.currentDataPointId = -1;
     }
-    
+
     /**
      * Check limit and maybe write the period stats
      * @param generator
@@ -67,19 +67,19 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
         this.writer.writeDataPointValue(generator);
         count++;
     }
-    
+
     /**
-     * Track and advance the quantizers to ensure when 
+     * Track and advance the quantizers to ensure when
      * we change points we finish the quantizer to fill in the periods
-     * 
+     *
      * @param value
-     * @throws IOException 
+     * @throws IOException
      */
     protected void updateQuantizers(IdPointValueTime value) throws IOException {
         long time = value.getTime();
         if(!info.isSingleArray()) {
             //In this query the values are returned in data point ID and time order
-            //Advance the previous quantizer 
+            //Advance the previous quantizer
             if(currentDataPointId != -1 && currentDataPointId != value.getId()) {
                 DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
                 if(!quant.isDone())
@@ -102,14 +102,14 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
                     case DataTypes.ALPHANUMERIC:
                     case DataTypes.IMAGE:
                         quantizer = new ValueChangeCounterDataPointQuantizer(vo, getBucketCalculator(), this);
-                    break;
+                        break;
                     case DataTypes.BINARY:
                     case DataTypes.MULTISTATE:
                         quantizer = new StartsAndRuntimeListDataPointQuantizer(vo, getBucketCalculator(), this);
-                    break;
+                        break;
                     case DataTypes.NUMERIC:
                         quantizer = new AnalogStatisticsDataPointQuantizer(vo, getBucketCalculator(), this);
-                    break;
+                        break;
                     default:
                         throw new RuntimeException("Unknown Data Type: " + vo.getPointLocator().getDataTypeId());
                 }
@@ -117,7 +117,7 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
             this.quantizerMap.put(entry.getKey(), quantizer);
         }
     }
-    
+
     /**
      * Create a Bucket Calculator
      * @return
@@ -126,7 +126,7 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
         if(this.info.getTimePeriod() == null){
             return  new BucketsBucketCalculator(info.getFrom(), info.getTo(), 1);
         }else{
-           return new TimePeriodBucketCalculator(info.getFrom(), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
+            return new TimePeriodBucketCalculator(info.getFrom(), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
         }
     }
 }

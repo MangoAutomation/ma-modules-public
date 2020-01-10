@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.thread.ThreadModelProperty;
+import com.infiniteautomation.mango.rest.v2.model.thread.ThreadModel;
+import com.infiniteautomation.mango.rest.v2.model.thread.ThreadModelProperty;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

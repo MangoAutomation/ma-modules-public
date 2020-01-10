@@ -26,7 +26,7 @@ import com.serotonin.m2m2.util.UnitUtil;
 @SuppressWarnings("rawtypes")
 public class JScienceModule extends SimpleModule {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -38,12 +38,12 @@ public class JScienceModule extends SimpleModule {
         addDeserializer(Unit.class, new UnitJsonDeserializer());
         addSerializer(ProductUnit.class, new ProductUnitJsonSerializer());
         addDeserializer(ProductUnit.class, new ProductUnitJsonDeserializer());
-        
+
     }
 
     private class UnitJsonSerializer extends StdScalarSerializer<Unit> {
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 
@@ -82,7 +82,7 @@ public class JScienceModule extends SimpleModule {
             if (currentToken == JsonToken.VALUE_STRING) {
                 return UnitUtil.parseUcum(jsonParser.getText());
             }
-            throw deserializationContext.wrongTokenException(jsonParser,
+            throw deserializationContext.wrongTokenException(jsonParser, Unit.class,
                     JsonToken.VALUE_STRING,
                     "Expected unit value in String format");
         }
@@ -114,7 +114,7 @@ public class JScienceModule extends SimpleModule {
 
     private class ProductUnitJsonDeserializer extends StdScalarDeserializer<ProductUnit> {
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 
@@ -129,7 +129,7 @@ public class JScienceModule extends SimpleModule {
             if (currentToken == JsonToken.VALUE_STRING) {
                 return (ProductUnit) UnitUtil.parseUcum(jsonParser.getText());
             }
-            throw deserializationContext.wrongTokenException(jsonParser,
+            throw deserializationContext.wrongTokenException(jsonParser, ProductUnit.class,
                     JsonToken.VALUE_STRING,
                     "Expected unit value in String format");
         }

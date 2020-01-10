@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,12 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.query.TableModel;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.events.EventInstanceModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -51,6 +53,13 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/user-events")
 public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
 
+    private final BiFunction<EventInstance, User, EventInstanceModel> map;
+
+    public UserEventsV2Controller(RestModelMapper modelMapper) {
+        this.map = (vo, user) -> {
+            return modelMapper.map(vo, EventInstanceModel.class, user);
+        };
+    }
 
     @ApiOperation(
             value = "Query User Events",
@@ -74,7 +83,7 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
         List<EventInstanceModel> models = new ArrayList<>();
         //Convert to models
         for(EventInstance event : results) {
-            models.add(new EventInstanceModel(event));
+            models.add(map.apply(event, user));
         }
 
         return new ListWithTotal<EventInstanceModel>() {

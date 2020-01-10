@@ -14,7 +14,15 @@ public class XidPointValueTimeModel {
     private Object value;
     private ZonedDateTime timestamp;
     private String annotation;
-    
+    private DataTypeEnum type;
+
+    public DataTypeEnum getType() {
+        return type;
+    }
+    public void setType(DataTypeEnum type) {
+        this.type = type;
+    }
+
     public String getXid() {
         return xid;
     }

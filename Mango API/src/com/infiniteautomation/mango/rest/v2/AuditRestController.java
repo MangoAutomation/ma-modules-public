@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedBasicVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.audit.AuditEventInstanceModel;
 import com.infiniteautomation.mango.spring.service.AuditEventService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -29,7 +30,6 @@ import com.serotonin.m2m2.rt.event.type.AuditEventType;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.audit.AuditEventInstanceModel;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

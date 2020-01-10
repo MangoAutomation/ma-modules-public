@@ -30,12 +30,12 @@ import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
+import com.infiniteautomation.mango.rest.v2.model.logging.LogQueryArrayStream;
 import com.infiniteautomation.mango.rest.v2.model.query.TableModel;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.logging.LogQueryArrayStream;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
