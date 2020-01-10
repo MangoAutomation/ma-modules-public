@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,9 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.db.query.appender.ExportCodeColumnQueryAppender;
-import com.infiniteautomation.mango.db.query.appender.ReverseEnumColumnQueryAppender;
-import com.infiniteautomation.mango.db.query.appender.SQLColumnQueryAppender;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedBasicVORqlQueryWithTotal;
 import com.infiniteautomation.mango.spring.service.AuditEventService;
@@ -55,15 +53,18 @@ public class AuditRestController {
 
     //Map of keys -> model members to value -> Vo member/sql column
     protected Map<String, String> modelMap;
-    //Map of Vo member/sql column to value converter
-    protected Map<String, SQLColumnQueryAppender> appenders;
+    private final Map<String, Function<Object, Object>> valueConverterMap;
 
     @Autowired
     public AuditRestController(AuditEventService service) {
         this.service = service;
-        this.appenders = new HashMap<String, SQLColumnQueryAppender>();
-        this.appenders.put("alarmLevel", new ReverseEnumColumnQueryAppender<>(AlarmLevels.class));
-        this.appenders.put("changeType", new ExportCodeColumnQueryAppender(AuditEventInstanceVO.CHANGE_TYPE_CODES));
+        this.valueConverterMap = new HashMap<>();
+        this.valueConverterMap.put("alarmLevel", (toConvert) -> {
+            return Enum.valueOf(AlarmLevels.class, (String)toConvert).value();
+        });
+        this.valueConverterMap.put("changeType", (toConvert) -> {
+            return AuditEventInstanceVO.CHANGE_TYPE_CODES.getId((String)toConvert);
+        });
         this.modelMap = new HashMap<String,String>();
     }
 
@@ -106,14 +107,13 @@ public class AuditRestController {
         }).collect(Collectors.toList());
     }
 
-    public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-
+    protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (user.hasAdminRole()) {
-            return new StreamedBasicVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
+            return new StreamedBasicVORqlQueryWithTotal<>(service, rql, valueConverterMap, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            return new StreamedBasicVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
+            return new StreamedBasicVORqlQueryWithTotal<>(service, rql, valueConverterMap, user, vo -> map.apply(vo, user));
         }
     }
 
