@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -51,20 +52,40 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
         this(service, service.getDao().rqlToCondition(rql), item -> true, Function.identity());
     }
 
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql,  Map<String, Function<Object, Object>> valueConverterMap) {
+        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> true, Function.identity());
+    }
+
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder) {
         this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), Function.identity());
+    }
+
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, PermissionHolder holder) {
+        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> service.hasReadPermission(holder, item), Function.identity());
     }
 
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel) {
         this(service, service.getDao().rqlToCondition(rql), item -> true, toModel);
     }
 
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> true, toModel);
+    }
+
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel) {
         this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), toModel);
     }
 
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, PermissionHolder holder, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> service.hasReadPermission(holder, item), toModel);
+    }
+
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel) {
         this(service, service.getDao().rqlToCondition(rql), filter, toModel);
+    }
+
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), filter, toModel);
     }
 
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel) {
