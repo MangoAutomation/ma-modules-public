@@ -82,15 +82,14 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     @Override
     public void fromVO(DataPointVO point) {
-        PermissionService service = Common.getBean(PermissionService.class);
         this.id = point.getId();
         this.xid = point.getXid();
         this.name = point.getName();
         this.enabled = point.isEnabled();
 
         this.deviceName = point.getDeviceName();
-        this.readPermission = service.implodeRoles(point.getReadRoles());
-        this.setPermission = service.implodeRoles(point.getSetRoles());
+        this.readPermission = PermissionService.implodeRoles(point.getReadRoles());
+        this.setPermission = PermissionService.implodeRoles(point.getSetRoles());
         this.purgeOverride = point.isPurgeOverride();
         if (this.purgeOverride) {
             this.purgePeriod = new TimePeriodModel(point.getPurgePeriod(), point.getPurgeType());
@@ -110,8 +109,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.tags = point.getTags();
 
         this.loggingProperties = new LoggingPropertiesModel(point);
-        //TODO Use Model Mapper
-        this.textRenderer = TextRendererFactory.createModel(point);
 
         this.dataSourceId = point.getDataSourceId();
         this.dataSourceXid = point.getDataSourceXid();
@@ -153,6 +150,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if (deviceName != null) {
             point.setDeviceName(deviceName);
         }
+        //TODO Mango 4.0 Use ModelMapper.unmap
         if (readPermission != null) {
             point.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
         }

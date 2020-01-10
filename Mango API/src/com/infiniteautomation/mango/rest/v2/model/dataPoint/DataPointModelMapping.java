@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
+import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -30,12 +31,14 @@ public class DataPointModelMapping implements RestModelMapping<DataPointVO, Data
     @Override
     public DataPointModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         DataPointVO vo = (DataPointVO)from;
-        
+
         //First get the point locator
         PointLocatorModel<?> pointLocatorModel = mapper.map(vo.getPointLocator(), PointLocatorModel.class, user);
         DataPointModel model = new DataPointModel(vo);
         model.setPointLocator(pointLocatorModel);
-        
+        BaseTextRendererModel<?> textRenderer = mapper.map(vo.getTextRenderer(), BaseTextRendererModel.class, user);
+        model.setTextRenderer(textRenderer);
+
         return model;
     }
 
