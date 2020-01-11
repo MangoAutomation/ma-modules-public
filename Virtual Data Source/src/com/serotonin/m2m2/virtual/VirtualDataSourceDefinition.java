@@ -4,15 +4,16 @@
  */
 package com.serotonin.m2m2.virtual;
 
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
-public class VirtualDataSourceDefinition extends DataSourceDefinition {
-	
-	public static final String TYPE_NAME = "VIRTUAL";
-    
-	@Override
+public class VirtualDataSourceDefinition extends DataSourceDefinition<VirtualDataSourceVO> {
+
+    public static final String TYPE_NAME = "VIRTUAL";
+
+    @Override
     public String getDataSourceTypeName() {
         return TYPE_NAME;
     }
@@ -23,8 +24,11 @@ public class VirtualDataSourceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    public DataSourceVO<?> createDataSourceVO() {
+    public VirtualDataSourceVO createDataSourceVO() {
         return new VirtualDataSourceVO();
     }
+
+    @Override
+    public void validate(ProcessResult response, VirtualDataSourceVO ds, PermissionHolder user) { }
 
 }
