@@ -17,6 +17,8 @@ public class BinaryTextRendererModel extends BaseTextRendererModel<BinaryTextRen
     private String oneLabel;
     private String oneColour;
 
+    public BinaryTextRendererModel() { }
+
     public BinaryTextRendererModel(BinaryTextRenderer vo){
         fromVO(vo);
     }

@@ -16,7 +16,6 @@ import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
-import com.infiniteautomation.mango.spring.db.EventHandlerTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.serotonin.m2m2.vo.User;
@@ -27,7 +26,7 @@ import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
  */
 @Component("EventHandlerWebSocketHandlerV2")
 @WebSocketMapping("/websocket/event-handlers")
-public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> extends DaoNotificationWebSocketHandler<T, EventHandlerTableDefinition> {
+public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> extends DaoNotificationWebSocketHandler<T> {
 
     private final EventHandlerService<T> service;
     private final BiFunction<T, User, AbstractEventHandlerModel<T>> map;
@@ -59,7 +58,7 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> e
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends T, EventHandlerTableDefinition> event) {
+    protected void handleDaoEvent(DaoEvent<? extends T> event) {
         this.notify(event);
     }
 

@@ -33,7 +33,7 @@ public class DataPointModelMapping implements RestModelMapping<DataPointVO, Data
         DataPointVO vo = (DataPointVO)from;
 
         //First get the point locator
-        PointLocatorModel<?> pointLocatorModel = mapper.map(vo.getPointLocator(), PointLocatorModel.class, user);
+        AbstractPointLocatorModel<?> pointLocatorModel = mapper.map(vo.getPointLocator(), AbstractPointLocatorModel.class, user);
         DataPointModel model = new DataPointModel(vo);
         model.setPointLocator(pointLocatorModel);
         BaseTextRendererModel<?> textRenderer = mapper.map(vo.getTextRenderer(), BaseTextRendererModel.class, user);

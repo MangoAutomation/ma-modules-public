@@ -9,11 +9,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.role.Role;
@@ -45,7 +48,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     Boolean useRenderedUnit;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String renderedUnit;
-    PointLocatorModel<?> pointLocator;
+    AbstractPointLocatorModel<?> pointLocator;
     String chartColour;
     String plotType;
     LoggingPropertiesModel loggingProperties;
@@ -154,9 +157,22 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if (readPermission != null) {
             point.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
         }
+        //TODO Mango 4.0 Use ModelMapper.unmap
         if (setPermission != null) {
             point.setSetRoles(service.explodeLegacyPermissionGroupsToRoles(setPermission));
         }
+        //TODO Mango 4.0 Use ModelMapper.unmap
+        if(StringUtils.isNotEmpty(dataSourceXid)) {
+            Integer dsId = DataSourceDao.getInstance().getIdByXid(dataSourceXid);
+            if(dsId!= null) {
+                point.setDataSourceId(dsId);
+            }
+        }
+        //TODO Mango 4.0 Use ModelMapper.unmap
+        if(point.getDataSourceId() <= 0 && dataSourceId != null && dataSourceId > 0) {
+            point.setDataSourceId(dataSourceId);
+        }
+
         if (purgeOverride != null) {
             point.setPurgeOverride(purgeOverride);
             //Ensure that a purge period must be supplied
@@ -375,11 +391,11 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.renderedUnit = renderedUnit;
     }
 
-    public PointLocatorModel<?> getPointLocator() {
+    public AbstractPointLocatorModel<?> getPointLocator() {
         return pointLocator;
     }
 
-    public void setPointLocator(PointLocatorModel<?> pointLocator) {
+    public void setPointLocator(AbstractPointLocatorModel<?> pointLocator) {
         this.pointLocator = pointLocator;
     }
 

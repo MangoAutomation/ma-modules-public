@@ -11,7 +11,6 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListModelMapping;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
-import com.infiniteautomation.mango.spring.db.MailingListTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.serotonin.m2m2.vo.User;
@@ -22,7 +21,7 @@ import com.serotonin.m2m2.vo.mailingList.MailingList;
  */
 @Component
 @WebSocketMapping("/websocket/mailing-lists")
-public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler<MailingList, MailingListTableDefinition> {
+public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler<MailingList> {
 
     private final MailingListService service;
     private final MailingListModelMapping mapping;
@@ -48,7 +47,7 @@ public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends MailingList, MailingListTableDefinition> event) {
+    protected void handleDaoEvent(DaoEvent<? extends MailingList> event) {
         this.notify(event);
     }
 

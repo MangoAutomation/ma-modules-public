@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, login, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, defer, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
@@ -23,30 +23,9 @@ const DataPoint = client.DataPoint;
 describe('Data point service', function() {
     before('Login', function() { return login.call(this, client); });
 
-    it('Creates a new virtual data source', () => {
-        const ds = new DataSource({
-            xid: 'mango_client_test',
-            name: 'Mango client test',
-            deviceName: 'Mango client device name',
-            enabled: true,
-            modelType: 'VIRTUAL',
-            pollPeriod: { periods: 5, type: 'SECONDS' },
-            purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
-            alarmLevels: { POLL_ABORTED: 'URGENT' },
-            editPermission: 'superadmin'
-        });
-
-        return ds.save().then((savedDs) => {
-            assert.strictEqual(savedDs, ds);
-            assert.equal(savedDs.xid, 'mango_client_test');
-            assert.equal(savedDs.name, 'Mango client test');
-            assert.isNumber(savedDs.id);
-        });
-    });
-
-    it('Creates a binary virtual data point', () => {
-        const dp = new DataPoint({
-            xid : "dp_mango_client_test",
+    const newDataPoint = (xid, dsXid) => {
+        return new DataPoint({
+            xid : xid,
             deviceName : "_",
             name : "Virtual Test Point 1",
             enabled : false,
@@ -73,11 +52,7 @@ describe('Data point service', function() {
                 oneColour : "black",
                 type : "textRendererBinary"
             },
-            chartRenderer : {
-                limit : 10,
-                type : "chartRendererTable"
-            },
-            dataSourceXid : "mango_client_test",
+            dataSourceXid : dsXid,
             useIntegralUnit : false,
             useRenderedUnit : false,
             readPermission : '',
@@ -104,41 +79,63 @@ describe('Data point service', function() {
                 relinquishable : false
             }
         });
+    };
+    
+    const testPointXid1 = uuid();
+    const testPointXid2 = uuid();
+    
+    beforeEach('Create a virtual data source, points', function() {
+        this.ds = new DataSource({
+            xid: uuid(),
+            name: 'Mango client test',
+            enabled: true,
+            modelType: 'VIRTUAL',
+            pollPeriod: { periods: 5, type: 'HOURS' },
+            purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
+            alarmLevels: { POLL_ABORTED: 'URGENT' },
+            editPermission: null
+        });
 
-        return dp.save().then((savedDp) => {
-            assert.equal(savedDp.xid, 'dp_mango_client_test');
-            assert.equal(savedDp.name, 'Virtual Test Point 1');
-            assert.equal(savedDp.enabled, false);
-            assert.isNumber(savedDp.id);
+        return this.ds.save().then((savedDs) => {
+            assert.strictEqual(savedDs.name, 'Mango client test');
+            assert.isNumber(savedDs.id);
+        }).then(() => {
+            this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid);
+            this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid);
+            return Promise.all([this.testPoint1.save(), this.testPoint2.save()]);
         });
     });
+
+    afterEach('Deletes the new virtual data source and its points', function() {
+        return this.ds.delete();
+    });
     
-    it('Enables the binary data point', () => {
-        return DataPoint.get('dp_mango_client_test').then(dataPoint => {
+    it('Enables the data point', function() {
+        return DataPoint.get(testPointXid1).then(dataPoint => {
             return dataPoint.setEnabled(true);
         }).then(dataPoint => {
             assert.isTrue(dataPoint.enabled);
         });
     });
     
-    it('Restarts the binary data point', () => {
-        return DataPoint.get('dp_mango_client_test').then(dataPoint => {
+    it('Restarts the data point', function() {
+        return DataPoint.get(testPointXid1).then(dataPoint => {
             return dataPoint.setEnabled(true, true);
         }).then(dataPoint => {
             assert.isTrue(dataPoint.enabled);
         });
     });
     
-    it('Disables the binary data point', () => {
-        return DataPoint.get('dp_mango_client_test').then(dataPoint => {
+    it('Disables the data point', function() {
+        return DataPoint.get(testPointXid1).then(dataPoint => {
             return dataPoint.setEnabled(false);
         }).then(dataPoint => {
             assert.isFalse(dataPoint.enabled);
         });
     });
     
-    it('Can change the data point name', () => {
-        return DataPoint.get('dp_mango_client_test').then(dataPoint => {
+    it('Can change the data point name', function() {
+        return DataPoint.get(testPointXid1).then(dataPoint => {
             dataPoint.name = 'Changed name';
             return dataPoint.save();
         }).then(dataPoint => {
@@ -146,7 +143,7 @@ describe('Data point service', function() {
         });
     });
     
-    it('Lists all data points', () => {
+    it('Lists all data points', function() {
         return DataPoint.list().then((dpList) => {
             assert.isArray(dpList);
             assert.isNumber(dpList.total);
@@ -154,20 +151,20 @@ describe('Data point service', function() {
         });
     });
 
-    it('Queries for the new data point', () => {
-        return DataPoint.query('xid=dp_mango_client_test').then((dpList) => {
+    it('Queries for the new data point', function() {
+        return DataPoint.query(`xid=${testPointXid1}`).then((dpList) => {
             assert.isArray(dpList);
             assert.isNumber(dpList.total);
             assert.equal(dpList.length, dpList.total);
             assert.equal(dpList.length, 1);
-            assert.equal(dpList[0].name, 'Changed name');
+            assert.equal(dpList[0].name, this.testPoint1.name);
         });
     });
     
-    it('Can create data points using minimal JSON', () => {
+    it('Can create data points using minimal JSON', function() {
         const dp = new DataPoint({
             name: 'Node mango client test 2',
-            dataSourceXid : 'mango_client_test',
+            dataSourceXid : this.ds.xid,
             pointLocator : {
                 startValue : '0',
                 modelType : 'PL.VIRTUAL',
@@ -187,101 +184,14 @@ describe('Data point service', function() {
             assert.isNumber(savedDp.id);
         });
     });
-    
-    it('Can create data points with a template using minimal JSON', () => {
-        const dp = new DataPoint({
-            xid: 'dp_mango_client_test_3',
-            name: 'Node mango client test 3',
-            templateXid : 'Numeric_Default',
-            dataSourceXid : 'mango_client_test',
-            pointLocator : {
-                startValue : '0',
-                modelType : 'PL.VIRTUAL',
-                dataType : 'NUMERIC',
-                settable : false,
-                changeType : 'BROWNIAN',
-                max: 100,
-                maxChange: 0.01,
-                min: 0
-            }
-        });
-
-        return dp.save().then((savedDp) => {
-            assert.strictEqual(savedDp.xid, 'dp_mango_client_test_3');
-            assert.strictEqual(savedDp.name, 'Node mango client test 3');
-            assert.strictEqual(savedDp.enabled, false);
-            assert.strictEqual(savedDp.templateXid, 'Numeric_Default');
-            assert.strictEqual(savedDp.templateName, 'Numeric');
-            assert.isNumber(savedDp.id);
-        });
-    });
-    
-    it('Can update a data point with a template using minimal JSON', () => {
-        const dp = new DataPoint({
-            originalId: 'dp_mango_client_test_3',
-            name: 'Node mango client test 3 - changed'
-        });
-
-        return dp.save().then((savedDp) => {
-            assert.strictEqual(savedDp.xid, 'dp_mango_client_test_3');
-            assert.strictEqual(savedDp.name, 'Node mango client test 3 - changed');
-            assert.strictEqual(savedDp.enabled, false);
-            assert.strictEqual(savedDp.templateXid, 'Numeric_Default');
-            assert.strictEqual(savedDp.templateName, 'Numeric');
-            assert.isNumber(savedDp.id);
-        });
-    });
-
-    it('Can update a data point and remove its template', function () {
-        this.timeout(5000);
-        const dp = new DataPoint({
-            originalId: 'dp_mango_client_test_3',
-            templateXid: null
-        });
-
-        return dp.save().then((savedDp) => {
-            assert.strictEqual(savedDp.xid, 'dp_mango_client_test_3');
-            assert.strictEqual(savedDp.enabled, false);
-            assert.strictEqual(savedDp.templateXid, null);
-            assert.notProperty(savedDp, 'templateName');
-            assert.isNumber(savedDp.id);
-        });
-    });
-
-    it('Can update data point read permissions', function () {
-        this.timeout(5000);
-        return client.restRequest({
-            path: `/rest/v2/data-points/bulk-apply-read-permissions?xid=dp_mango_client_test`,
-            method: 'POST',
-            data: 'user,superadmin'
-        }).then(response => {
-            assert.equal(response.data, 1);
-            return DataPoint.get('dp_mango_client_test').then(point => {
-                assert.strictEqual(point.readPermission, 'user,superadmin');
-            });
-        });
-    });
-    it('Can update data point set permissions', function () {
-        this.timeout(5000);
-        return client.restRequest({
-            path: `/rest/v2/data-points/bulk-apply-set-permissions?xid=dp_mango_client_test`,
-            method: 'POST',
-            data: 'permission1,permission2'
-        }).then(response => {
-            assert.equal(response.data, 1);
-            return DataPoint.get('dp_mango_client_test').then(point => {
-                assert.strictEqual(point.setPermission, 'permission1,permission2,write');
-            });
-        });
-    });
-    
+        
     it('Gets v2 websocket notifications for data point create', function() {
         this.timeout(5000);
         
         let ws;
         const socketOpenDeferred = defer();
         const actionFinishedDeferred = defer();
-
+        const dsXid = this.ds.xid;
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
                 path: '/rest/v2/websocket/data-points'
@@ -317,11 +227,11 @@ describe('Data point service', function() {
             });
 
             return socketOpenDeferred.promise;
-        }).then(() => delay(1000)).then(() => {
+        }).then(function() { delay(1000); }).then(function() {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             const dp = new DataPoint({
                 name: 'Node mango client ws',
-                dataSourceXid : 'mango_client_test',
+                dataSourceXid : dsXid,
                 pointLocator : {
                     startValue : '0',
                     modelType : 'PL.VIRTUAL',
@@ -338,7 +248,7 @@ describe('Data point service', function() {
                 method: 'POST',
                 data: dp
             }).then(response => {
-                //TODO Could assert but not really the purpose here
+                
             }, error =>{
                 actionFinishedDeferred.reject(error);
             });
@@ -347,11 +257,6 @@ describe('Data point service', function() {
           //Close websocket 
             ws.close();
         });
-    });
-    
-    
-    it('Deletes the new virtual data source and its points', () => {
-        return DataSource.delete('mango_client_test');
     });
 
 });

@@ -22,7 +22,6 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
-import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.events.AuthTokensRevokedEvent;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
@@ -113,7 +112,7 @@ public final class MangoWebSocketSessionTracker {
     }
 
     @EventListener
-    private void userDaoEvent(DaoEvent<User, UserTableDefinition> event) {
+    private void userDaoEvent(DaoEvent<User> event) {
         if (log.isDebugEnabled()) {
             log.debug("User DAO event received " + event.toString());
         }
@@ -125,7 +124,7 @@ public final class MangoWebSocketSessionTracker {
         }
     }
 
-    private void userDeleted(DaoEvent<User, UserTableDefinition> event) {
+    private void userDeleted(DaoEvent<User> event) {
         int userId = event.getVo().getId();
 
         Set<WebSocketSession> jwtSessions = jwtSessionsByUserId.removeAll(userId);
@@ -151,7 +150,7 @@ public final class MangoWebSocketSessionTracker {
         }
     }
 
-    private void userUpdated(DaoEvent<User, UserTableDefinition> event) {
+    private void userUpdated(DaoEvent<User> event) {
         User updatedUser = event.getVo();
         int userId = updatedUser.getId();
 

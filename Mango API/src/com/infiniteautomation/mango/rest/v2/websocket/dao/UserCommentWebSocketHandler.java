@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
-import com.infiniteautomation.mango.spring.db.UserCommentTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
@@ -21,7 +20,7 @@ import com.serotonin.m2m2.vo.comment.UserCommentVO;
  */
 @Component
 @WebSocketMapping("/websocket/user-comments")
-public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler<UserCommentVO, UserCommentTableDefinition>{
+public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler<UserCommentVO>{
 
     @Override
     protected boolean hasPermission(User user, UserCommentVO vo) {
@@ -38,7 +37,7 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends UserCommentVO, UserCommentTableDefinition> event) {
+    protected void handleDaoEvent(DaoEvent<? extends UserCommentVO> event) {
         this.notify(event);
     }
 

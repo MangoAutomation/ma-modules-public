@@ -14,7 +14,6 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
-import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
@@ -25,7 +24,7 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
  */
 @Component
 @WebSocketMapping("/websocket/event-instances")
-public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandler<EventInstanceVO, EventInstanceTableDefinition> {
+public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandler<EventInstanceVO> {
 
     private final BiFunction<EventInstanceVO, User, EventInstanceModel> map;
 
@@ -52,7 +51,7 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends EventInstanceVO, EventInstanceTableDefinition> event) {
+    protected void handleDaoEvent(DaoEvent<? extends EventInstanceVO> event) {
         this.notify(event);
     }
 

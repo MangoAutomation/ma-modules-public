@@ -19,7 +19,6 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMessageType;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketNotification;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
-import com.infiniteautomation.mango.spring.db.AbstractBasicTableDefinition;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.User;
@@ -27,7 +26,7 @@ import com.serotonin.m2m2.vo.User;
 /**
  * @author Jared Wiltshire
  */
-public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO, TABLE extends AbstractBasicTableDefinition> extends DaoNotificationWebSocketHandler<T,TABLE> {
+public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO> extends DaoNotificationWebSocketHandler<T> {
 
     public static final String SUBSCRIPTION_ATTRIBUTE = "DaoNotificationSubscription";
     public static final String REQUEST_TYPE_SUBSCRIPTION = "SUBSCRIPTION";

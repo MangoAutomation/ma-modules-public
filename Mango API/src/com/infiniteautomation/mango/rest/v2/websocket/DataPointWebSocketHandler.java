@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
-import com.infiniteautomation.mango.spring.db.DataPointTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DataPointTagsUpdatedEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -23,7 +22,7 @@ import com.serotonin.m2m2.vo.User;
  */
 @Component
 @WebSocketMapping("/websocket/data-points")
-public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<DataPointVO, DataPointTableDefinition> {
+public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<DataPointVO> {
 
     public static final String TAGS_UPDATED = "tagsUpdated";
 
@@ -53,7 +52,7 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends DataPointVO, DataPointTableDefinition> event) {
+    protected void handleDaoEvent(DaoEvent<? extends DataPointVO> event) {
         this.notify(event);
     }
 }
