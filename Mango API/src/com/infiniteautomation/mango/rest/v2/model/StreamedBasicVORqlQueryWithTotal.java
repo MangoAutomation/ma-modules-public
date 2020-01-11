@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.jooq.Field;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -86,6 +87,10 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
 
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
         this(service, service.getDao().rqlToCondition(rql, valueConverterMap), filter, toModel);
+    }
+
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
+        this(service, service.getDao().rqlToCondition(rql, fieldMap, valueConverterMap), filter, toModel);
     }
 
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel) {

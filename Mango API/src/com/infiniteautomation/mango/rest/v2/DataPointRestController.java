@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,7 @@ import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -52,6 +53,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -96,19 +98,26 @@ public class DataPointRestController {
     private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
 
     private final BiFunction<DataPointVO, User, DataPointModel> map;
-
+    private final Map<String, Function<Object, Object>> valueConverters;
+    private final Map<String, Field<?>> fieldMap;
     private final DataPointService service;
     private final PermissionService permissionService;
 
     @Autowired
     public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper,
-            DataPointService service, PermissionService permissionService) {
+            DataPointService service, DataSourceTableDefinition dataSourceTable, PermissionService permissionService) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
         this.service = service;
         this.permissionService = permissionService;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, DataPointModel.class, user);
         };
+        this.valueConverters = new HashMap<>();
+        //Setup any exposed special query aliases to map model fields to db columns
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("dataSourceName", dataSourceTable.getAlias("name"));
+        this.fieldMap.put("dataSourceTypeName", dataSourceTable.getAlias("typeName"));
+        this.fieldMap.put("dataSourceXid", dataSourceTable.getAlias("xid"));
     }
 
     @ApiOperation(
@@ -540,15 +549,15 @@ public class DataPointRestController {
         };
 
         if (user.hasAdminRole()) {
-            return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), rql, transformPoint);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, transformPoint);
         } else {
             // Add some conditions to restrict based on user permissions
-            ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
+            ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) DataPointDao.getInstance().rqlToCondition(rql, this.fieldMap, this.valueConverters);
             conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
 
             DataPointFilter dataPointFilter = new DataPointFilter(user);
 
-            return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), conditions, item -> {
+            return new StreamedVORqlQueryWithTotal<>(service, conditions, item -> {
                 boolean oldFilterMatches = dataPointFilter.hasDataPointReadPermission(item);
 
                 // this is just a double check, permissions should be accounted for via SQL restrictions added by DataPointDao.userHasPermission()

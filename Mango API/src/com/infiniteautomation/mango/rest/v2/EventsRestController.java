@@ -5,13 +5,17 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,6 +35,7 @@ import com.infiniteautomation.mango.rest.v2.model.TranslatableMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
+import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
@@ -59,13 +64,33 @@ public class EventsRestController {
     private final EventInstanceService service;
     private final BiFunction<EventInstanceVO, User, EventInstanceModel> map;
 
+    private final Map<String, Function<Object, Object>> valueConverters;
+    private final Map<String, Field<?>> fieldMap;
+
     @Autowired
-    public EventsRestController(RestModelMapper modelMapper, EventInstanceService service) {
+    public EventsRestController(RestModelMapper modelMapper, EventInstanceService service,
+            EventInstanceTableDefinition eventTable) {
         this.modelMapper = modelMapper;
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, EventInstanceModel.class, user);
         };
+
+        this.valueConverters = new HashMap<>();
+        //Setup any exposed special query aliases to map model fields to db columns
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("activeTimestamp", eventTable.getAlias("activeTs"));
+        this.fieldMap.put("rtnTimestamp", eventTable.getAlias("rtnTs"));
+        this.fieldMap.put("userNotified", eventTable.getAlias("silenced"));
+        this.fieldMap.put("userId", EventInstanceTableDefinition.USER_EVENTS_USERID_ALIAS);
+        this.fieldMap.put("acknowledged", eventTable.getAlias("ackTs"));
+        this.fieldMap.put("acknowledgedTimestamp", eventTable.getAlias("ackTs"));
+        this.fieldMap.put("eventType", eventTable.getAlias("typeName"));
+        this.fieldMap.put("referenceId1", eventTable.getAlias("typeRef1"));
+        this.fieldMap.put("referenceId2", eventTable.getAlias("typeRef1"));
+        this.fieldMap.put("acknowledged", eventTable.getAlias("ackTs"));
+        this.fieldMap.put("active", eventTable.getAlias("rtnTs"));
+
     }
 
     @ApiOperation(
@@ -175,11 +200,11 @@ public class EventsRestController {
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> true, vo -> map.apply(vo, user));
         } else {
             //TODO we may only need this restriction
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
         }
     }
 }

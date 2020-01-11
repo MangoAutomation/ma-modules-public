@@ -19,8 +19,11 @@ import com.serotonin.m2m2.vo.AbstractVO;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
+ * Use StreamedVORqlQueryWithTotal instead (need service)
+ *
  * @author Jared Wiltshire
  */
+@Deprecated
 public class StreamedVOQueryWithTotal<T extends AbstractVO<?>, TABLE extends AbstractBasicTableDefinition, DAO extends AbstractBasicDao<T, TABLE>> implements StreamedArrayWithTotal {
     private final DAO dao;
     private final ConditionSortLimit conditions;

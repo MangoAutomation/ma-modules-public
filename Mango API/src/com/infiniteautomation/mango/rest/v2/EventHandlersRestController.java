@@ -10,12 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +39,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHa
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.spring.db.EventHandlerTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -76,6 +79,9 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
     private final BiFunction<T, User, AbstractEventHandlerModel<T>> map;
     private final MangoJavaScriptService javaScriptService;
 
+    private final Map<String, Function<Object, Object>> valueConverters;
+    private final Map<String, Field<?>> fieldMap;
+
     @Autowired
     public EventHandlersRestController(EventHandlerService<T> service, MangoJavaScriptService javaScriptService, final RestModelMapper modelMapper) {
         this.service = service;
@@ -91,6 +97,14 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             return model;
         };
         this.javaScriptService = javaScriptService;
+
+        this.valueConverters = new HashMap<>();
+        //Setup any exposed special query aliases to map model fields to db columns
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("eventTypeName", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_EVENT_TYPE_NAME_ALIAS);
+        this.fieldMap.put("eventSubtypeName", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_EVENT_SUB_TYPE_NAME_ALIAS);
+        this.fieldMap.put("eventTypeRef1", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_TYPEREF1_ALIAS);
+        this.fieldMap.put("eventTypeRef2", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_TYPEREF2_ALIAS);
     }
 
     @ApiOperation(
@@ -298,9 +312,9 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, vo -> map.apply(vo, user));
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
         }
     }
 

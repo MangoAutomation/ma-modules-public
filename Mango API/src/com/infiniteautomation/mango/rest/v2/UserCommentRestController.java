@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedBasicVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
+import com.infiniteautomation.mango.spring.db.UserCommentTableDefinition;
+import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.UserCommentService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
@@ -52,15 +55,20 @@ public class UserCommentRestController {
 
     private final UserCommentService service;
     private final Map<String, Function<Object, Object>> valueConverterMap;
+    private final Map<String, Field<?>> fieldMap;
     private final BiFunction<UserCommentVO, PermissionHolder, UserCommentModel> map = (vo, user) -> {return new UserCommentModel(vo);};
 
     @Autowired
-    public UserCommentRestController(UserCommentService service){
+    public UserCommentRestController(UserCommentService service, UserCommentTableDefinition userCommentTable, UserTableDefinition userTable){
         this.service = service;
         this.valueConverterMap = new HashMap<>();
         this.valueConverterMap.put("valueConverterMap", (toConvert) -> {
             return UserCommentVO.COMMENT_TYPE_CODES.getId((String)toConvert);
         });
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("username", userTable.getAlias("username"));
+        this.fieldMap.put("referenceId", userCommentTable.getAlias("typeKey"));
+        this.fieldMap.put("timestamp", userCommentTable.getAlias("ts"));
     }
 
     @ApiOperation(
@@ -182,6 +190,6 @@ public class UserCommentRestController {
     }
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        return new StreamedBasicVORqlQueryWithTotal<>(service, rql, valueConverterMap, vo -> map.apply(vo, user));
+        return new StreamedBasicVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverterMap, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
     }
 }
