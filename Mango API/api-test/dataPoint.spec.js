@@ -29,7 +29,6 @@ describe('Data point service', function() {
             deviceName : "_",
             name : "Virtual Test Point 1",
             enabled : false,
-            templateXid : "Binary_Default",
             loggingProperties : {
                 tolerance : 0.0,
                 discardExtremeValues : false,
@@ -66,7 +65,6 @@ describe('Data point service', function() {
                 type : "YEARS"
             },
             unit : "",
-            pointFolderId : 0,
             integralUnit : "s",
             renderedUnit : "",
             modelType : "DATA_POINT",
