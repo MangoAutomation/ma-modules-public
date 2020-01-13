@@ -51,6 +51,4 @@ public class PlainTextRendererModel extends ConvertingTextRendererModel<PlainRen
     public String getType() {
         return PlainRenderer.getDefinition().getName();
     }
-
-
 }
