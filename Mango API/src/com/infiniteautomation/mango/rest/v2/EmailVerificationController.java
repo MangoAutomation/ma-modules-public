@@ -12,6 +12,7 @@ import javax.mail.internet.AddressException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,13 +27,16 @@ import com.infiniteautomation.mango.jwt.JwtSignerVerifier;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -55,11 +59,15 @@ public class EmailVerificationController {
 
     private final UsersService service;
     private final EmailAddressVerificationService emailVerificationService;
+    private final PermissionHolder systemSuperadmin;
 
     @Autowired
-    public EmailVerificationController(UsersService service, EmailAddressVerificationService emailVerificationService) {
+    public EmailVerificationController(UsersService service, EmailAddressVerificationService emailVerificationService,
+            @Qualifier(MangoRuntimeContextConfiguration.SYSTEM_SUPERADMIN_PERMISSION_HOLDER)
+    PermissionHolder systemSuperadmin) {
         this.service = service;
         this.emailVerificationService = emailVerificationService;
+        this.systemSuperadmin = systemSuperadmin;
     }
 
     /**
@@ -72,8 +80,16 @@ public class EmailVerificationController {
             @RequestBody PublicEmailVerificationRequest body) throws AddressException, TemplateException, IOException {
 
         body.ensureValid();
-        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), null, null, null);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        PermissionHolder existing = Common.getUser();
+        Common.removeUser();
+        Common.setUser(systemSuperadmin);
+        try {
+            emailVerificationService.sendVerificationEmail(body.getEmailAddress(), null, null);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }finally {
+            Common.removeUser();
+            Common.setUser(existing);
+        }
     }
 
     @ApiOperation(value = "Creates a token for verifying an email address and sends it to that email address",
@@ -92,7 +108,7 @@ public class EmailVerificationController {
             userToUpdate = this.service.get(username);
         }
 
-        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, null, user);
+        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, null);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -114,9 +130,9 @@ public class EmailVerificationController {
 
         String token;
         if (body.isSendEmail()) {
-            token = emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, body.getExpiry(), user);
+            token = emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, body.getExpiry());
         } else {
-            token = emailVerificationService.generateToken(body.getEmailAddress(), userToUpdate, body.getExpiry(), user);
+            token = emailVerificationService.generateToken(body.getEmailAddress(), userToUpdate, body.getExpiry());
         }
 
         CreateTokenResponse response = new CreateTokenResponse();
