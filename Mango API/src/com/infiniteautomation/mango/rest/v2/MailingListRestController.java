@@ -83,7 +83,7 @@ public class MailingListRestController {
             )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public ResponseEntity<MailingListModel> get(
-            @ApiParam(value = "XID of Mailing List to update", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of Mailing List to get", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
