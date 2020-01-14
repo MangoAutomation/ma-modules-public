@@ -8,21 +8,19 @@ import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
+import org.jooq.Record;
+import org.jooq.SelectJoinStep;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -31,41 +29,42 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.infiniteautomation.mango.db.query.JoinClause;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
-import com.infiniteautomation.mango.spring.events.DaoEventType;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitializer;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.db.MappedRowCallback;
-import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.SchemaDefinition;
+import com.serotonin.m2m2.db.dao.RoleDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.WatchListDataPointModel;
 
 /**
  * @author Matthew Lohbihler
  * @author Terry Packer
  */
 @Repository
-public class WatchListDao extends AbstractDao<WatchListVO> {
+public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinition> {
 
-    public static String TABLE_NAME = "watchLists";
-    private final String SELECT_POINTS;
     private static final LazyInitializer<WatchListDao> springInstance = new LazyInitializer<>();
 
+    private final DataPointDao dataPointDao;
+    private final UserTableDefinition userTable;
 
-    private WatchListDao(@Autowired DataPointDao dataPointDao) {
-        super(AuditEvent.TYPE_NAME, "w",
-                new String[] {"u.username"}, //to allow filtering on username
-                false,
-                new TranslatableMessage("internal.monitor.WATCHLIST_COUNT")
-                );
-        SELECT_POINTS = dataPointDao.getSelectAllSql() + " JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
+    @Autowired
+    private WatchListDao(WatchListTableDefinition table, DataPointDao dataPointDao,
+            UserTableDefinition userTable,
+            @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
+            ApplicationEventPublisher publisher) {
+        super(AuditEvent.TYPE_NAME, table,
+                new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
+                mapper, publisher);
+        this.dataPointDao = dataPointDao;
+        this.userTable = userTable;
     }
 
     /**
@@ -82,141 +81,27 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     }
 
     /**
-     * Note: this method only returns basic watchlist information. No data points or share users.
-     */
-    public List<WatchListVO> getWatchLists(final User user) {
-        final List<WatchListVO> result = new ArrayList<>();
-        query(SELECT_ALL_FIXED_SORT, new Object[0], rowMapper, new MappedRowCallback<WatchListVO>() {
-            @Override
-            public void row(WatchListVO wl, int index) {
-                if (wl.isReader(user))
-                    result.add(wl);
-            }
-        });
-        return result;
-    }
-
-    /**
-     * Note: this method only returns basic watchlist information. No data points or share users.
-     */
-    public List<WatchListVO> getWatchLists() {
-        return getAll();
-    }
-
-    public void populateWatchlistData(List<WatchListVO> watchLists) {
-        for (WatchListVO watchList : watchLists)
-            populateWatchlistData(watchList);
-    }
-
-    public void populateWatchlistData(WatchListVO watchList) {
-        if (watchList == null)
-            return;
-
-        if(watchList != null)
-            getPoints(watchList.getId(), new MappedRowCallback<DataPointVO>() {
-                @Override
-                public void row(DataPointVO item, int index) {
-                    watchList.getPointList().add(item);
-                }
-            });
-    }
-
-    /**
-     * Note: this method only returns basic watchlist information. No data points or share users.
-     */
-    public WatchListVO getWatchList(String xid) {
-        WatchListVO watchlist = getByXid(xid);
-        populateWatchlistData(watchlist);
-        return watchlist;
-    }
-
-    public WatchListVO getSelectedWatchList(int userId) {
-        WatchListVO watchList = queryForObject(
-                SELECT_ALL + "JOIN selectedWatchList s ON s.watchListId=w.id WHERE s.userId=?", new Object[] { userId },
-                rowMapper, null);
-        populateWatchlistData(watchList);
-        return watchList;
-    }
-
-    public void saveSelectedWatchList(int userId, int watchListId) {
-        int count = ejt.update("UPDATE selectedWatchList SET watchListId=? WHERE userId=?", new Object[] { watchListId,
-                userId });
-        if (count == 0)
-            ejt.update("INSERT INTO selectedWatchList (userId, watchListId) VALUES (?,?)", new Object[] { userId,
-                    watchListId });
-    }
-
-    public WatchListVO createNewWatchList(WatchListVO wl, int userId) {
-        wl.setUserId(userId);
-        save(wl);
-        return wl;
-    }
-
-    public void saveWatchList(final WatchListVO wl) {
-        save(wl);
-    }
-
-    public void deleteWatchList(final int watchListId) {
-        delete(watchListId);
-    }
-
-    /**
-     * Stream all results back
-     * @param callback
-     */
-    @Override
-    public void getAll(MappedRowCallback<WatchListVO> callback){
-        query(SELECT_ALL, new Object[]{}, rowMapper, callback);
-    }
-
-    /**
-     * Get By ID
-     *
-     * @param id
-     * @return
-     */
-    @Override
-    public WatchListVO get(int id) {
-        WatchListVO wvo = super.get(id);
-        populateWatchlistData(wvo);
-        return wvo;
-    }
-
-    private final String SELECT_POINT_SUMMARIES = "SELECT dp.xid,dp.name,dp.deviceName,dp.pointFolderId,dp.readPermission,dp.setPermission from dataPoints as dp JOIN watchListPoints wlp ON wlp.dataPointId = dp.id WHERE wlp.watchListId=? order by wlp.sortOrder";
-    public List<WatchListDataPointModel> getPointSummaries(int watchListId){
-        return query(SELECT_POINT_SUMMARIES, new Object[]{watchListId}, new RowMapper<WatchListDataPointModel>(){
-
-            @Override
-            public WatchListDataPointModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-                int i=0;
-                WatchListDataPointModel model = new WatchListDataPointModel();
-                model.setXid(rs.getString(++i));
-                model.setName(rs.getString(++i));
-                model.setDeviceName(rs.getString(++i));
-                model.setPointFolderId(rs.getInt(++i));
-                model.setReadPermission(rs.getString(++i));
-                model.setSetPermission(rs.getString(++i));
-                return model;
-            }
-
-        });
-    }
-
-    /**
      * Get the Data Points for a Given Watchlist
      * @param watchListId
      * @param callback
      */
-    public void getPoints(int watchListId, final MappedRowCallback<DataPointVO> callback){
+    public void getPoints(int watchListId, final Consumer<DataPointVO> callback){
+
+        SelectJoinStep<Record> selectPoints = dataPointDao.getJoinedSelectQuery();
+        selectPoints.join(table.POINTS_TABLE_AS_ALIAS)
+        .on(table.POINTS_DATA_POINT_ID_ALIAS.eq(dataPointDao.getTable().getAlias("id")))
+        .where(table.POINTS_DATA_POINT_WATCHLIST_ID_ALIAS.eq(watchListId))
+        .orderBy(table.POINTS_DATA_POINT_WATCHLIST_SORT_ORDER);
 
         RowMapper<DataPointVO> pointMapper = DataPointDao.getInstance().getRowMapper();
+        String sql = selectPoints.getSQL();
+        List<Object> args = selectPoints.getBindValues();
 
-        this.ejt.query(SELECT_POINTS, new Object[]{watchListId}, new RowCallbackHandler(){
+        this.ejt.query(sql, args.toArray(new Object[args.size()]), new RowCallbackHandler(){
             private int row = 0;
-
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                callback.row(pointMapper.mapRow(rs, row), row);
+                callback.accept(pointMapper.mapRow(rs, row));
                 row++;
             }
 
@@ -224,50 +109,21 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
     }
 
     @Override
-    public void delete(WatchListVO vo, String initiatorId) {
-        super.delete(vo, initiatorId);
-        super.publishEvent(new DaoEvent<WatchListVO>(WatchListDao.this, DaoEventType.DELETE, vo, initiatorId, null));
+    public void saveRelationalData(WatchListVO vo, boolean insert) {
+        if(!insert) {
+            ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
+        }
+        ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+
+        //Replace the role mappings
+        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getReadRoles(), vo, PermissionService.READ, insert);
+        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getEditRoles(), vo, PermissionService.EDIT, insert);
     }
 
     @Override
-    protected void insert(WatchListVO vo, String initiatorId) {
-        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                WatchListDao.super.insert(vo, initiatorId);
-
-                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
-            }
-        });
-
-        super.publishEvent(new DaoEvent<WatchListVO>(WatchListDao.this, DaoEventType.CREATE, vo, initiatorId, null));
-    }
-
-    @Override
-    protected void update(WatchListVO vo, String initiatorId, String originalXid) {
-        final AtomicReference<String> oldXidHolder = new AtomicReference<>(originalXid);
-
-        getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                String oldXid = originalXid;
-                if (oldXid == null) {
-                    oldXid = getXid(vo.getId());
-                    oldXidHolder.set(oldXid);
-                }
-
-                WatchListDao.super.update(vo, initiatorId, oldXid);
-
-                ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
-                ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
-            }
-        });
-
-        super.publishEvent(new DaoEvent<WatchListVO>(WatchListDao.this, DaoEventType.UPDATE, vo, initiatorId, oldXidHolder.get()));
-    }
-
-    protected String getXid(int id) {
-        return ejt.queryForObject("SELECT xid FROM " + tableName + " WHERE id=?", String.class, id);
+    public void deleteRelationalData(WatchListVO vo) {
+        RoleDao.getInstance().deleteRolesForVoPermission(vo, PermissionService.READ);
+        RoleDao.getInstance().deleteRolesForVoPermission(vo, PermissionService.EDIT);
     }
 
     private static class InsertPoints implements BatchPreparedStatementSetter {
@@ -290,33 +146,11 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
-     */
     @Override
     protected String getXidPrefix() {
         return WatchListVO.XID_PREFIX;
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
-     */
-    @Override
-    public WatchListVO getNewVo() {
-        return new WatchListVO();
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
-     */
-    @Override
-    protected String getTableName() {
-        return TABLE_NAME;
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(java.lang.Object)
-     */
     @Override
     protected Object[] voToObjectArray(WatchListVO vo) {
         String jsonData = null;
@@ -335,55 +169,16 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
                 vo.getXid(),
                 vo.getUserId(),
                 vo.getName(),
-                vo.getReadPermission(),
-                vo.getEditPermission(),
                 vo.getType(),
                 jsonData
         };
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
-     */
     @Override
-    protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
-        LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
-        map.put("id", Types.INTEGER);
-        map.put("xid", Types.VARCHAR);
-        map.put("userId", Types.INTEGER);
-        map.put("name", Types.VARCHAR);
-        map.put("readPermission", Types.VARCHAR);
-        map.put("editPermission", Types.VARCHAR);
-        map.put("type", Types.VARCHAR);
-        map.put("data", Types.CLOB);
-        return map;
+    public <R extends Record> SelectJoinStep<R> joinTables(SelectJoinStep<R> select) {
+        return select = select.leftJoin(userTable.getTableAsAlias()).on(userTable.getAlias("id").eq(table.getAlias("userId")));
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getJoins()
-     */
-    @Override
-    protected List<JoinClause> getJoins() {
-        List<JoinClause> joins = new ArrayList<JoinClause>();
-        joins.add(new JoinClause(JOIN, SchemaDefinition.USERS_TABLE, "u", "w.userId = u.id"));
-        return joins;
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
-     */
-    @Override
-    protected Map<String, IntStringPair> getPropertiesMap() {
-        Map<String, IntStringPair> map = new HashMap<String, IntStringPair>();
-        //So we can filter/sort on username in the models
-        map.put("username", new IntStringPair(Types.VARCHAR, "u.username"));
-        return map;
-
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
-     */
     @Override
     public RowMapper<WatchListVO> getRowMapper() {
         return rowMapper;
@@ -400,8 +195,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             wl.setXid(rs.getString(++i));
             wl.setUserId(rs.getInt(++i));
             wl.setName(rs.getString(++i));
-            wl.setReadPermission(rs.getString(++i));
-            wl.setEditPermission(rs.getString(++i));
             wl.setType(rs.getString(++i));
             //Read the data
             try{
@@ -418,7 +211,6 @@ public class WatchListDao extends AbstractDao<WatchListVO> {
             }catch(Exception e){
                 LOG.error(e.getMessage(), e);
             }
-            wl.setUsername(rs.getString(++i));
             return wl;
         }
     }

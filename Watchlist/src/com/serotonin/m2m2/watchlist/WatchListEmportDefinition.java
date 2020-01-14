@@ -4,23 +4,27 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.infiniteautomation.mango.emport.ImportContext;
+import com.infiniteautomation.mango.spring.service.WatchListService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class WatchListEmportDefinition extends EmportDefinition {
-    
-	public static final String elementId = "watchLists";
+
+    public static final String elementId = "watchLists";
+
+    @Autowired
+    private WatchListService service;
 
     @Override
     public String getElementId() {
@@ -34,9 +38,7 @@ public class WatchListEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        List<WatchListVO> wls = WatchListDao.getInstance().getWatchLists();
-        WatchListDao.getInstance().populateWatchlistData(wls);
-        return wls;
+        return service.getDao().getAll();
     }
 
     @Override
@@ -44,31 +46,33 @@ public class WatchListEmportDefinition extends EmportDefinition {
         JsonObject watchListJson = jsonValue.toJsonObject();
 
         String xid = watchListJson.getString("xid");
-        if (StringUtils.isBlank(xid))
-            xid = WatchListDao.getInstance().generateUniqueXid();
+        WatchListVO vo = null;
+        if (StringUtils.isBlank(xid)) {
+            xid = service.getDao().generateUniqueXid();
+        }else {
+            try {
+                vo = service.get(xid);
+            }catch(NotFoundException e) {
 
-        WatchListVO watchList = WatchListDao.getInstance().getWatchList(xid);
-        if (watchList == null) {
-            watchList = new WatchListVO();
-            watchList.setXid(xid);
+            }
+        }
+
+        if(vo == null) {
+            vo = new WatchListVO();
+            vo.setXid(xid);
         }
 
         try {
-            importContext.getReader().readInto(watchList, watchListJson);
-
-            // Now validate it. Use a new response object so we can distinguish errors in this user from other
-            // errors.
-            ProcessResult watchListResponse = new ProcessResult();
-            watchList.validate(watchListResponse);
-            if (watchListResponse.getHasMessages())
-                // Too bad. Copy the errors into the actual response.
-                importContext.copyValidationMessages(watchListResponse, "emport.watchList.prefix", xid);
-            else {
-                // Sweet. Save it.
-                boolean isnew = watchList.getId() == Common.NEW_ID;
-                WatchListDao.getInstance().save(watchList);
-                importContext.addSuccessMessage(isnew, "emport.watchList.prefix", xid);
+            importContext.getReader().readInto(vo, watchListJson);
+            boolean isnew = vo.getId() == Common.NEW_ID;
+            if(isnew) {
+                service.insert(vo);
+            }else {
+                service.update(vo.getId(), vo);
             }
+            importContext.addSuccessMessage(isnew, "emport.watchList.prefix", xid);
+        }catch(ValidationException e) {
+            importContext.copyValidationMessages(e.getValidationResult(), "emport.watchList.prefix", xid);
         }
         catch (TranslatableJsonException e) {
             importContext.getResult().addGenericMessage("emport.watchList.prefix", xid, e.getMsg());

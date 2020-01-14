@@ -5,22 +5,24 @@
 package com.serotonin.m2m2.watchlist;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
-import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * @author Terry Packer
  *
  */
-public class WatchListPermissionDefinition extends PermissionDefinition{
+public class WatchListPermissionDefinition extends PermissionDefinition {
 
     public static final String PERMISSION = "watchlist.view";
 
     @Override
-    public String getPermissionKey() {
-        return "watchList.permission.view";
+    public TranslatableMessage getDescription() {
+        return new TranslatableMessage("watchList.permission.view");
     }
 
     @Override
@@ -29,7 +31,7 @@ public class WatchListPermissionDefinition extends PermissionDefinition{
     }
 
     @Override
-    public List<String> getDefaultGroups() {
-        return Collections.singletonList(Permissions.USER_DEFAULT);
+    protected Set<Role> getDefaultRoles() {
+        return Collections.singleton(PermissionHolder.USER_ROLE.get());
     }
 }

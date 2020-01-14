@@ -2,37 +2,34 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.serotonin.m2m2.web.mvc.rest.v1.model;
+package com.infiniteautomation.mango.spring.rest.v2.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.vo.DataPointVO;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.serotonin.m2m2.vo.IDataPoint;
 
 /**
  * @author Terry Packer
  *
  */
-public class WatchListDataPointModel{
+public class WatchListDataPointModel {
 
     private String xid;
     private String name;
     private String deviceName;
-    private int pointFolderId;
     private String readPermission;
     private String setPermission;
-	
-	public WatchListDataPointModel(){ }
-	
-	public WatchListDataPointModel(DataPointVO vo){
-		this.xid = vo.getXid();
-		this.name = vo.getName();
-		this.deviceName = vo.getDeviceName();
-		this.pointFolderId = vo.getPointFolderId();
-		this.readPermission = vo.getReadPermission();
-		this.setPermission = vo.getSetPermission();
-	}
-	
-	public String getXid() {
+
+    public WatchListDataPointModel(){ }
+
+    public WatchListDataPointModel(IDataPoint vo){
+        this.xid = vo.getXid();
+        this.name = vo.getName();
+        this.deviceName = vo.getDeviceName();
+        this.readPermission = PermissionService.implodeRoles(vo.getReadRoles());
+        this.setPermission = PermissionService.implodeRoles(vo.getSetRoles());
+    }
+
+    public String getXid() {
         return xid;
     }
 
@@ -56,13 +53,6 @@ public class WatchListDataPointModel{
         this.deviceName = deviceName;
     }
 
-    public int getPointFolderId() {
-        return pointFolderId;
-    }
-    public void setPointFolderId(int pointFolderId) {
-        this.pointFolderId = pointFolderId;
-    }
-
     public String getReadPermission() {
         return readPermission;
     }
@@ -81,10 +71,4 @@ public class WatchListDataPointModel{
     public String toString() {
         return "XID: " + this.xid;
     }
-
-    @JsonIgnore
-	public DataPointVO getDataPointVO() {
-		return DataPointDao.getInstance().getByXid(xid);
-	}
-	
 }
