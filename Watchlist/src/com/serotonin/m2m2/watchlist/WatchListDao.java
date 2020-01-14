@@ -155,9 +155,8 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
     protected Object[] voToObjectArray(WatchListVO vo) {
         String jsonData = null;
         try{
-            WatchListDbDataModel1 data = new WatchListDbDataModel1();
+            WatchListDbDataModel2 data = new WatchListDbDataModel2();
             data.query = vo.getQuery();
-            data.folderIds = vo.getFolderIds();
             data.params = vo.getParams();
             data.data = vo.getData();
             jsonData =  this.getObjectWriter(WatchListDbDataModel1.class).writeValueAsString(data);
@@ -203,7 +202,6 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
                     WatchListDbDataModel data = getObjectReader(WatchListDbDataModel.class).readValue(c.getCharacterStream());
                     if (data != null) {
                         wl.setQuery(data.query);
-                        wl.setFolderIds(data.folderIds);
                         wl.setParams(data.params);
                         wl.setData(data.data);
                     }
@@ -217,13 +215,12 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
 
     @JsonTypeInfo(use=Id.NAME, include=As.PROPERTY, property="version", defaultImpl=WatchListDbDataModel1.class)
     @JsonSubTypes({
-        @Type(name = "1", value = WatchListDbDataModel1.class)
+        @Type(name = "1", value = WatchListDbDataModel1.class),
+        @Type(name = "2", value = WatchListDbDataModel2.class)
     })
     private static abstract class WatchListDbDataModel {
         @JsonProperty
         String query;
-        @JsonProperty
-        List<Integer> folderIds;
         @JsonProperty
         List<WatchListParameter> params;
         @JsonProperty
@@ -231,6 +228,12 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
     }
 
     private static class WatchListDbDataModel1 extends WatchListDbDataModel {
+        @JsonProperty
+        List<Integer> folderIds;
+    }
+
+    private static class WatchListDbDataModel2 extends WatchListDbDataModel {
+
     }
 
     @Override

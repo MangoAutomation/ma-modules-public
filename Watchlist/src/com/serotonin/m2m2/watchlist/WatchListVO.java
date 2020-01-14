@@ -40,11 +40,9 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     public static final String XID_PREFIX = "WL_";
     public static final String STATIC_TYPE = "static"; //current types also include hierarchy, query, and tags
     public static final String QUERY_TYPE = "query";
-    public static final String HIERARCHY_TYPE = "hierarchy";
     public static final String TAGS_TYPE = "tags";
 
     private int userId;
-    //TODO When we remove the legacy code reduce these objects to summaries only
     private final List<IDataPoint> pointList = new CopyOnWriteArrayList<>();
     @JsonProperty
     private Set<Role> readRoles;
@@ -54,8 +52,6 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     private String type;
     @JsonProperty
     private String query;
-    @JsonProperty
-    private List<Integer> folderIds;
     @JsonProperty
     List<WatchListParameter> params;
     private Map<String, Object> data;
@@ -139,14 +135,6 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
 
     public void setQuery(String query) {
         this.query = query;
-    }
-
-    public List<Integer> getFolderIds() {
-        return folderIds;
-    }
-
-    public void setFolderIds(List<Integer> folderIds) {
-        this.folderIds = folderIds;
     }
 
     public List<WatchListParameter> getParams() {

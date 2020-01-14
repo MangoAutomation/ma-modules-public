@@ -5,7 +5,6 @@
 package com.infiniteautomation.mango.spring.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -19,6 +18,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
@@ -26,6 +26,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
+import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListTableDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
@@ -75,7 +76,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
 
     @Override
     public Set<Role> getCreatePermissionRoles() {
-        return Collections.singleton(PermissionHolder.USER_ROLE.get());
+        return ModuleRegistry.getPermissionDefinition(WatchListCreatePermission.PERMISSION).getRoles();
     }
 
     @Override
@@ -125,6 +126,15 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
 
     protected ProcessResult commonValidation(WatchListVO vo, PermissionHolder user) {
         ProcessResult response = super.validate(vo, user);
+        switch(vo.getType()) {
+            case WatchListVO.STATIC_TYPE:
+            case WatchListVO.QUERY_TYPE:
+            case WatchListVO.TAGS_TYPE:
+                break;
+            default:
+                response.addContextualMessage("type", "validate.invalidValueWithAcceptable", vo.getType(), WatchListVO.STATIC_TYPE + "," + WatchListVO.QUERY_TYPE + "," + WatchListVO.TAGS_TYPE);
+        }
+
         //Validate the owner
         if(userDao.getXidById(vo.getUserId()) == null){
             response.addContextualMessage("userId", "watchlists.validate.userDNE");

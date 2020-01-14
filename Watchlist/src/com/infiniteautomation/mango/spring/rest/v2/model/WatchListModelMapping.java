@@ -4,9 +4,6 @@
 
 package com.infiniteautomation.mango.spring.rest.v2.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +15,6 @@ import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListVO;
@@ -77,18 +73,16 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
         vo.setReadRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getReadPermission()));
         vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getEditPermission()));
 
-        List<IDataPoint> points = new ArrayList<>();
         ProcessResult result = new ProcessResult();
         for(WatchListDataPointModel summary : model.getPoints()) {
             try {
-                points.add(dataPointService.getSummary(summary.getXid()));
+                vo.getPointList().add(dataPointService.getSummary(summary.getXid()));
             }catch(NotFoundException e) {
                 result.addContextualMessage("points", "watchList.validate.pointNotFound", summary.getXid());
             }catch(PermissionException e) {
                 result.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", summary.getXid());
             }
         }
-
         if(result.getHasMessages()) {
             throw new ValidationException(result);
         }

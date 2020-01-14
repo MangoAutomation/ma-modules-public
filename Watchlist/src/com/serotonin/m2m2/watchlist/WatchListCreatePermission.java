@@ -1,7 +1,7 @@
 /**
- * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
- * @author Terry Packer
+ * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
+
 package com.serotonin.m2m2.watchlist;
 
 import java.util.Collections;
@@ -13,16 +13,16 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 
 /**
- * @author Terry Packer
  *
+ * @author Terry Packer
  */
-public class WatchListPermissionDefinition extends PermissionDefinition {
+public class WatchListCreatePermission extends PermissionDefinition {
 
-    public static final String PERMISSION = "watchlist.view";
+    public static final String PERMISSION = "watchList.create";
 
     @Override
     public TranslatableMessage getDescription() {
-        return new TranslatableMessage("watchList.permission.view");
+        return new TranslatableMessage("watchList.permission.create");
     }
 
     @Override
@@ -34,4 +34,5 @@ public class WatchListPermissionDefinition extends PermissionDefinition {
     protected Set<Role> getDefaultRoles() {
         return Collections.singleton(PermissionHolder.USER_ROLE.get());
     }
+
 }
