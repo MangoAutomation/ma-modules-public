@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.spring.rest.v2;
+package com.infiniteautomation.mango.rest.v2;
 
 import java.io.IOException;
 import java.net.URI;
@@ -37,15 +37,15 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.WatchListModel;
+import com.infiniteautomation.mango.rest.v2.model.WatchListModelMapping;
+import com.infiniteautomation.mango.rest.v2.model.WatchListSummaryModel;
+import com.infiniteautomation.mango.rest.v2.model.WatchListSummaryModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListWithRecipientsModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
-import com.infiniteautomation.mango.spring.rest.v2.model.WatchListModel;
-import com.infiniteautomation.mango.spring.rest.v2.model.WatchListModelMapping;
-import com.infiniteautomation.mango.spring.rest.v2.model.WatchListSummaryModel;
-import com.infiniteautomation.mango.spring.rest.v2.model.WatchListSummaryModelMapping;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.DataPointVO;

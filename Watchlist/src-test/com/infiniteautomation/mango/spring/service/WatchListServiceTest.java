@@ -13,17 +13,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
+import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.IDataPoint;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
-import com.serotonin.m2m2.watchlist.WatchListDao;
 import com.serotonin.m2m2.watchlist.WatchListSchemaDefinition;
-import com.serotonin.m2m2.watchlist.WatchListTableDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 
 /**
@@ -38,12 +38,6 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         definitions.add(new WatchListSchemaDefinition());
         definitions.add(new WatchListCreatePermission());
         addModule("watchList", definitions);
-    }
-
-    @Before
-    @Override
-    public void before() {
-        super.before();
     }
 
     @Override
@@ -78,22 +72,25 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         assertEquals(expected.getName(), actual.getName());
 
         assertEquals(expected.getType(), actual.getType());
-
+        assertEquals(expected.getUserId(), actual.getUserId());
+        assertEquals(expected.getData().size(), actual.getData().size());
+        expected.getData().keySet().forEach(key -> {
+            assertEquals(expected.getData().get(key), (actual.getData().get(key)));
+        });
 
     }
 
     @Override
-    WatchListVO newVO() {
+    WatchListVO newVO(User owner) {
         WatchListVO vo = new WatchListVO();
         vo.setName(UUID.randomUUID().toString());
         vo.setType(WatchListVO.STATIC_TYPE);
-
+        vo.setUserId(owner.getId());
         for(IDataPoint point : createMockDataPoints(5)) {
             vo.getPointList().add(point);
         }
-
         Map<String, Object> randomData = new HashMap<>();
-        randomData.put(UUID.randomUUID().toString(), UUID.randomUUID());
+        randomData.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         vo.setData(randomData);
 
         return vo;
@@ -104,7 +101,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         WatchListVO copy = existing.copy();
         copy.setName(UUID.randomUUID().toString());
         Map<String, Object> randomData = new HashMap<>();
-        randomData.put(UUID.randomUUID().toString(), UUID.randomUUID());
+        randomData.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         copy.setData(randomData);
         return copy;
     }

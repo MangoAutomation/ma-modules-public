@@ -6,6 +6,7 @@ package com.serotonin.m2m2.watchlist;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,9 +46,9 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     private int userId;
     private final List<IDataPoint> pointList = new CopyOnWriteArrayList<>();
     @JsonProperty
-    private Set<Role> readRoles;
+    private Set<Role> readRoles = Collections.emptySet();
     @JsonProperty
-    private Set<Role> editRoles;
+    private Set<Role> editRoles = Collections.emptySet();
     @JsonProperty
     private String type;
     @JsonProperty

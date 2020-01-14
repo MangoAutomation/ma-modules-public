@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
+import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
@@ -27,8 +29,6 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
-import com.serotonin.m2m2.watchlist.WatchListDao;
-import com.serotonin.m2m2.watchlist.WatchListTableDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 
 import net.jazdw.rql.parser.ASTNode;

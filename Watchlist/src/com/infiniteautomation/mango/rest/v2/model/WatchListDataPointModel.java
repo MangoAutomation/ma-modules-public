@@ -2,7 +2,7 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.spring.rest.v2.model;
+package com.infiniteautomation.mango.rest.v2.model;
 
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.vo.IDataPoint;

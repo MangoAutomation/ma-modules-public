@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.serotonin.m2m2.watchlist;
+package com.infiniteautomation.mango.spring.dao;
 
 import java.util.List;
 
@@ -26,7 +26,6 @@ public class WatchListTableDefinition extends AbstractTableDefinition {
     public static final String TABLE_NAME = "watchlists";
 
     public final Field<Integer> USER_ID = DSL.field(DSL.name("userId"), SQLDataType.INTEGER.nullable(false));
-    public final Field<String> NAME = DSL.field(DSL.name("name"), SQLDataType.VARCHAR(255));
     public final Field<String> TYPE = DSL.field(DSL.name("type"), SQLDataType.VARCHAR(20));
     public final Field<String> DATA = DSL.field(DSL.name("data"), SQLDataType.CLOB);
 
@@ -44,7 +43,6 @@ public class WatchListTableDefinition extends AbstractTableDefinition {
     protected void addFields(List<Field<?>> fields) {
         super.addFields(fields);
         fields.add(USER_ID);
-        fields.add(NAME);
         fields.add(TYPE);
         fields.add(DATA);
     }

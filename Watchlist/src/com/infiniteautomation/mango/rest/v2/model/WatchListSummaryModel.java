@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.spring.rest.v2.model;
+package com.infiniteautomation.mango.rest.v2.model;
 
 import java.util.List;
 import java.util.Map;

@@ -2,7 +2,7 @@
     Copyright (C) 2014 Infinite Automation Systems Inc. All rights reserved.
     @author Matthew Lohbihler
  */
-package com.serotonin.m2m2.watchlist;
+package com.infiniteautomation.mango.spring.dao;
 
 import java.sql.Clob;
 import java.sql.PreparedStatement;
@@ -42,6 +42,9 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.RoleDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.watchlist.AuditEvent;
+import com.serotonin.m2m2.watchlist.WatchListParameter;
+import com.serotonin.m2m2.watchlist.WatchListVO;
 
 /**
  * @author Matthew Lohbihler
@@ -159,15 +162,15 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
             data.query = vo.getQuery();
             data.params = vo.getParams();
             data.data = vo.getData();
-            jsonData =  this.getObjectWriter(WatchListDbDataModel1.class).writeValueAsString(data);
+            jsonData =  this.getObjectWriter(WatchListDbDataModel2.class).writeValueAsString(data);
         }catch(JsonProcessingException e){
             LOG.error(e.getMessage(), e);
         }
 
         return new Object[]{
                 vo.getXid(),
-                vo.getUserId(),
                 vo.getName(),
+                vo.getUserId(),
                 vo.getType(),
                 jsonData
         };
@@ -192,8 +195,8 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
             WatchListVO wl = new WatchListVO();
             wl.setId(rs.getInt(++i));
             wl.setXid(rs.getString(++i));
-            wl.setUserId(rs.getInt(++i));
             wl.setName(rs.getString(++i));
+            wl.setUserId(rs.getInt(++i));
             wl.setType(rs.getString(++i));
             //Read the data
             try{

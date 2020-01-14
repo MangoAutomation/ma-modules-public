@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.MangoTestBase;
