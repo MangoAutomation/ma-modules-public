@@ -27,6 +27,9 @@ public class Upgrade6 extends Upgrade29 {
     @Override
     protected void upgrade() throws Exception {
 
+        //First drop any watch lists of type 'hierarhcy'
+        ejt.update("DELETE FROM watchLists WHERE type='hierarchy'");
+
         //Convert permissions into roles
         Map<String, Role> roles = getExistingRoles();
         //Move current permissions to roles
